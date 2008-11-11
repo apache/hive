@@ -1,0 +1,17 @@
+Hive Change Log
+
+Trunk (unreleased changes)
+
+  INCOMPATIBLE CHANGES
+
+  NEW FEATURES
+
+  IMPROVEMENTS
+
+  OPTIMIZATIONS
+
+  BUG FIXES
+
+    HIVE-54. Create this file to record the patches going into a 
+    particular release. (dhruba)
+
