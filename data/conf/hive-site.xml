@@ -13,13 +13,13 @@
 
 <property>
   <name>hadoop.bin.path</name>
-  <value>${user.dir}/../../../../bin/hadoop</value>
+  <value>${user.dir}/../hadoopcore/bin/hadoop</value>
   <description>Path to hadoop binary. Assumes that by default we are executing from hive/</description>
 </property>
 
 <property>
   <name>hadoop.config.dir</name>
-  <value>${user.dir}/../../../../conf</value>
+  <value>${user.dir}/../hadoopcore/conf</value>
   <description>Path to hadoop configuration. Again assumes that by default we are executing from hive/</description>
 </property>
 
@@ -32,7 +32,7 @@
 
 <property>
   <name>javax.jdo.option.ConnectionURL</name>
-  <value>jdbc:derby:;databaseName=../../../../build/contrib/hive/test/junit_metastore_db;create=true</value>
+  <value>jdbc:derby:;databaseName=../build/test/junit_metastore_db;create=true</value>
 </property>
 
 <property>
@@ -59,13 +59,13 @@
 <property>
   <!--  this should eventually be deprecated since the metastore should supply this -->
   <name>hive.metastore.warehouse.dir</name>
-  <value>file://${user.dir}/../../../../build/contrib/hive/ql/test/data/warehouse/</value>
+  <value>file://${user.dir}/../build/ql/test/data/warehouse/</value>
   <description></description>
 </property>
 
 <property>
   <name>hive.metastore.metadb.dir</name>
-  <value>file://${user.dir}/../../../../build/contrib/hive/ql/test/data/metadb/</value>
+  <value>file://${user.dir}/../build/ql/test/data/metadb/</value>
   <description> 
   Required by metastore server or if the uris argument below is not supplied
   </description>
@@ -85,32 +85,32 @@
 
 <property>
   <name>test.log.dir</name>
-  <value>${user.dir}/../../../../build/contrib/hive/ql/test/logs</value>
+  <value>${user.dir}/../build/ql/test/logs</value>
   <description></description>
 </property>
 
 <property>
   <name>test.src.dir</name>
-  <value>file://${user.dir}/../../../../src/contrib/hive/ql/src/test</value>
+  <value>file://${user.dir}/../ql/src/test</value>
   <description></description>
 </property>
 
 <property>
   <name>test.data.files</name>
-  <value>${user.dir}/../../../../build/contrib/hive/ql/test/data/files</value>
+  <value>${user.dir}/../build/ql/test/data/files</value>
   <description></description>
 </property>
 
 <property>
   <name>test.query.file1</name>
-  <value>file://${user.dir}/../../../../src/contrib/hive/ql/src/test/org/apache/hadoop/hive/ql/input2.q</value>
+  <value>file://${user.dir}/../ql/src/test/org/apache/hadoop/hive/ql/input2.q</value>
   <value></value>
   <description></description>
 </property>
 
 <property>
   <name>hive.jar.path</name>
-  <value>${user.dir}/../../../../build/contrib/hive/ql/hive_exec.jar</value>
+  <value>${user.dir}/../build/ql/hive_exec.jar</value>
   <description></description>
 </property>
 

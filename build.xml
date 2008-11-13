@@ -20,11 +20,8 @@
 
 <project name="hive" default="deploy" >
 
-  <import file="../build-contrib.xml"/>
-
-  <property name="hadoop.root" location="${basedir}/../../.."/>
   <property name="hive.root" location="${basedir}"/>
-  <property name="build.dir.hive" location="${hadoop.root}/build/contrib/hive"/>
+  <property name="build.dir.hive" location="${hive.root}/build"/>
   <property name="target.dir" location="${build.dir.hive}/dist"/>
   <property name="target.lib.dir" location="${target.dir}/lib"/>
   <property name="target.conf.dir" location="${target.dir}/conf"/>
@@ -157,7 +154,7 @@
     <copy todir="${target.example.dir}/files" preservelastmodified="true" flatten="true">
       <fileset dir="${test.data.dir}/files" includes="*.*"/>
     </copy>
-    <copy file="${basedir}/README" todir="${target.dir}"/>
+    <copy file="${basedir}/README.txt" todir="${target.dir}"/>
     <copy todir="${target.example.dir}/queries" preservelastmodified="true" flatten="true">
       <fileset dir="${ql.test.query.dir}/positive" includes="*.q"/>
     </copy>

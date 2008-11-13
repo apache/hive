@@ -12,6 +12,9 @@ Trunk (unreleased changes)
 
   BUG FIXES
 
+    HIVE-60. Fix the build scripts for the new hive tree.
+    (Ashish through zshao)
+
     HIVE-54. Create this file to record the patches going into a 
     particular release. (dhruba)
 
