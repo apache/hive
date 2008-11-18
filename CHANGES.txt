@@ -18,3 +18,6 @@ Trunk (unreleased changes)
     HIVE-54. Create this file to record the patches going into a 
     particular release. (dhruba)
 
+    HIVE-12. Improve README for Hive.
+    (Ashish Thusoo via dhruba)
+

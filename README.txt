@@ -10,7 +10,21 @@ on other similar platforms. It does not work on Cygwin right now. Most of
 our testing has been on Hadoop 0.17 - so we would advise running it against 
 this version of hadoop - even though it may compile/work against other versions
 
+Useful mailing lists
+--------------------
 
+1. hive-user@hadoop.apache.org - To discuss and ask usage questions. Send an 
+   empty email to hive-user-subscribe@hadoop.apache.org in order to subscribe 
+   to this mailing list.
+
+2. hive-core@hadoop.apache.org - For discussions around code, design and
+   features. Send an empty email to hive-core-subscribe@hadoop.apache.org in
+   order to subscribe to this mailing list.
+
+3. hive-commits@hadoop.apache.org - In order to monitor the commits to the 
+   source repository. Send an empty email to hive-commits-subscribe@hadoop.apache.org in
+   order to subscribe to this mailing list.
+ 
 Downloading and building
 ------------------------
 
@@ -78,7 +92,8 @@ Note that setting hive.root.logger via the 'set' command does not
 change logging properties since they are determined at initialization time.
 
 Error logs are very useful to debug problems. Please send them with 
-any bugs (of which there are many!) to athusoo@facebok.com.
+any bugs (of which there are many!) to the JIRA at
+https://issues.apache.org/jira/browse/HIVE.
 
 
 DDL Operations
