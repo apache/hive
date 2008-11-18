@@ -6,6 +6,9 @@ Trunk (unreleased changes)
 
   NEW FEATURES
 
+    HIVE-62. Support nested types.
+    (Ashish Thusoo via dhruba)
+
   IMPROVEMENTS
 
   OPTIMIZATIONS
@@ -20,4 +23,5 @@ Trunk (unreleased changes)
 
     HIVE-12. Improve README for Hive.
     (Ashish Thusoo via dhruba)
+
 

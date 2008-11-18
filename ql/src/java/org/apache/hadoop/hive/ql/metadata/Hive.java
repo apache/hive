@@ -662,9 +662,9 @@ public class Hive {
     try {
       return MetaStoreUtils.getFieldsFromDeserializer(name, serde);
     } catch (SerDeException e) {
-      throw new HiveException("Error in getting fields from serde.", e);
+      throw new HiveException("Error in getting fields from serde. " + e.getMessage(), e);
     } catch (MetaException e) {
-      throw new HiveException("Error in getting fields from serde.", e);
+      throw new HiveException("Error in getting fields from serde." + e.getMessage(), e);
     }
   }
 

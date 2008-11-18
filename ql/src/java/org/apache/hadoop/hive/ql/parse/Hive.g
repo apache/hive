@@ -113,6 +113,7 @@ TOK_EXPLAIN;
 TOK_TABLESERIALIZER;
 TOK_TABLEPROPERTIES;
 TOK_TABLEPROPLIST;
+TOK_TABTYPE;
 TOK_LIMIT;
 TOK_TABLEPROPERTY;
 }
@@ -207,8 +208,16 @@ alterStatementSerdeProperties
     -> ^(TOK_ALTERTABLE_SERDEPROPERTIES $name tableProperties)
     ;
 
+tabTypeExpr
+   : Identifier (DOT^ (Identifier | KW_ELEM_TYPE | KW_KEY_TYPE | KW_VALUE_TYPE))*
+   ;
+   
+partTypeExpr
+    :  tabTypeExpr partitionSpec? -> ^(TOK_TABTYPE tabTypeExpr partitionSpec?)
+    ;
+
 descStatement
-    : KW_DESCRIBE (isExtended=KW_EXTENDED)? (tab=tabName)  -> ^(TOK_DESCTABLE $tab $isExtended?)
+    : KW_DESCRIBE (isExtended=KW_EXTENDED)? (parttype=partTypeExpr)  -> ^(TOK_DESCTABLE $parttype $isExtended?)
     ;
 
 showStatement
@@ -853,6 +862,7 @@ KW_TERMINATED: 'TERMINATED';
 KW_COLLECTION: 'COLLECTION';
 KW_ITEMS: 'ITEMS';
 KW_KEYS: 'KEYS';
+KW_KEY_TYPE: '$KEY$';
 KW_LINES: 'LINES';
 KW_STORED: 'STORED';
 KW_SEQUENCEFILE: 'SEQUENCEFILE';
@@ -878,6 +888,8 @@ KW_SERDEPROPERTIES: 'SERDEPROPERTIES';
 KW_LIMIT: 'LIMIT';
 KW_SET: 'SET';
 KW_PROPERTIES: 'TBLPROPERTIES';
+KW_VALUE_TYPE: '$VALUE$';
+KW_ELEM_TYPE: '$ELEM$';
 
 // Operators
 

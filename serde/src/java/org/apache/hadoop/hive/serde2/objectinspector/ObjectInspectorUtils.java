@@ -261,7 +261,4 @@ public class ObjectInspectorUtils {
     throw new RuntimeException("cannot find field " + fieldName + " from " + fields); 
     // return null;
   }
-
-  
-  
 }

@@ -48,6 +48,8 @@ import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.util.StringUtils;
 
@@ -553,18 +555,30 @@ public class MetaStoreUtils {
     String [] names = tableName.split("\\.");
     String last_name = names[names.length-1];
     for(int i = 1; i < names.length; i++) {
-      if (!(oi instanceof StructObjectInspector)) {
-        oi = deserializer.getObjectInspector();
-        break;
+
+      if (oi instanceof StructObjectInspector) {
+        StructObjectInspector soi = (StructObjectInspector)oi;
+        StructField sf = soi.getStructFieldRef(names[i]);
+        if (sf == null) {
+          throw new MetaException("Invalid Field " + names[i]);
+        } else {
+          oi = sf.getFieldObjectInspector();
+        }
       }
-      StructObjectInspector soi = (StructObjectInspector)oi;
-      StructField sf = soi.getStructFieldRef(names[i]);
-      if (sf == null) {
-        // If invalid field, then return the schema of the table
-        oi = deserializer.getObjectInspector();
-        break;
-      } else {
-        oi = sf.getFieldObjectInspector();
+      else if (oi instanceof ListObjectInspector && names[i].equalsIgnoreCase("$elem$")) {
+        ListObjectInspector loi = (ListObjectInspector)oi;
+        oi = loi.getListElementObjectInspector();
+      }
+      else if (oi instanceof MapObjectInspector && names[i].equalsIgnoreCase("$key$")) {
+        MapObjectInspector moi = (MapObjectInspector)oi;
+        oi = moi.getMapKeyObjectInspector();
+      }
+      else if (oi instanceof MapObjectInspector && names[i].equalsIgnoreCase("$value$")) {
+        MapObjectInspector moi = (MapObjectInspector)oi;
+        oi = moi.getMapValueObjectInspector();
+       }
+      else {
+        throw new MetaException("Unknown type for " + names[i]);
       }
     }
 

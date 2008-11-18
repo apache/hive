@@ -1,0 +1,7 @@
+lint	array<int>	'from deserializer'
+$elem$	int	'from deserializer'
+$key$	string	'from deserializer'
+$value$	string	'from deserializer'
+myint	int	'from deserializer'
+mystring	string	'from deserializer'
+myint	int	'from deserializer'

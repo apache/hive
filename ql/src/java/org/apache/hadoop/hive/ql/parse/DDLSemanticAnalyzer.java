@@ -402,15 +402,34 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     return colList;
   }
-  
+
+  /**
+   * Get the fully qualified name in the ast. e.g. the ast of the form ^(DOT ^(DOT a b) c) 
+   * will generate a name of the form a.b.c
+   *
+   * @param ast The AST from which the qualified name has to be extracted
+   * @return String
+   */
+  private String getFullyQualifiedName(CommonTree ast) {
+    if (ast.getChildCount() == 0) {
+      return ast.getText();
+    }
+
+    return getFullyQualifiedName((CommonTree)ast.getChild(0)) + "." +
+           getFullyQualifiedName((CommonTree)ast.getChild(1));
+  }
+
   private void analyzeDescribeTable(CommonTree ast) 
   throws SemanticException {
-    Tree table_t = ast.getChild(0);
-    String tableName = table_t.getChild(0).getText();
+    CommonTree tableTypeExpr = (CommonTree)ast.getChild(0);
+    // Walk the tree and generate a list of components
+    ArrayList<String> comp_list = new ArrayList<String>();
+    String tableName = getFullyQualifiedName((CommonTree)tableTypeExpr.getChild(0));
+
     HashMap<String, String> partSpec = null;
     // get partition metadata if partition specified
-    if (table_t.getChildCount() == 2) {
-      CommonTree partspec = (CommonTree) table_t.getChild(1);
+    if (tableTypeExpr.getChildCount() == 2) {
+      CommonTree partspec = (CommonTree) tableTypeExpr.getChild(1);
       partSpec = new LinkedHashMap<String, String>();
       for (int i = 0; i < partspec.getChildCount(); ++i) {
         CommonTree partspec_val = (CommonTree) partspec.getChild(i);

@@ -1,0 +1,2 @@
+FAILED: Error in metadata: Error in getting fields from serde.Unknown type for abc
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

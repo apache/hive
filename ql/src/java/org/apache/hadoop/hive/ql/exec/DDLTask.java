@@ -321,14 +321,19 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
 
       descTableDesc descTbl = work.getDescTblDesc();
+
       if (descTbl != null) {
+
+        String colPath = descTbl.getTableName();
+        String tableName = colPath.substring(0, colPath.indexOf('.') == -1 ? colPath.length() : colPath.indexOf('.'));
+
         // describe the table - populate the output stream
-        Table tbl = db.getTable(descTbl.getTableName(), false);
+        Table tbl = db.getTable(tableName, false);
         Partition part = null;
         try {
           if(tbl == null) {
             DataOutput outStream = (DataOutput)fs.open(descTbl.getResFile());
-            String errMsg = "Table " + descTbl.getTableName() + " does not exist";
+            String errMsg = "Table " + tableName + " does not exist";
             outStream.write(errMsg.getBytes("UTF-8"));
             ((FSDataOutputStream)outStream).close();
             return 0;
@@ -337,11 +342,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             part = db.getPartition(tbl, descTbl.getPartSpec(), false);
             if(part == null) {
               DataOutput outStream = (DataOutput)fs.open(descTbl.getResFile());
-              String errMsg = "Partition " + descTbl.getPartSpec() + " for table " + descTbl.getTableName() + " does not exist";
+              String errMsg = "Partition " + descTbl.getPartSpec() + " for table " + tableName + " does not exist";
               outStream.write(errMsg.getBytes("UTF-8"));
               ((FSDataOutputStream)outStream).close();
               return 0;
             }
+            tbl = part.getTable();
           }
         } catch (FileNotFoundException e) {
           LOG.info("describe table: " + StringUtils.stringifyException(e));
@@ -358,10 +364,17 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           
           // write the results in the file
           DataOutput os = (DataOutput)fs.create(descTbl.getResFile());
-          List<FieldSchema> cols = tbl.getCols();
-          if(part != null) {
-            cols = part.getTPartition().getSd().getCols();
+          List<FieldSchema> cols = null;
+          if (colPath.equals(tableName)) {
+            cols = tbl.getCols();
+            if (part != null) {
+              cols = part.getTPartition().getSd().getCols();
+            }
           }
+          else {
+            cols = db.getFieldsFromDeserializer(colPath, tbl.getDeserializer());
+          }
+
           Iterator<FieldSchema> iterCols = cols.iterator();
           boolean firstCol = true;
           while (iterCols.hasNext())
@@ -382,35 +395,37 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             firstCol = false;
           }
 
-          // also return the partitioning columns
-          List<FieldSchema> partCols = tbl.getPartCols();
-          Iterator<FieldSchema> iterPartCols = partCols.iterator();
-          while (iterPartCols.hasNext())
-          {
-            os.write(terminator);
-            FieldSchema col = iterPartCols.next();
-            os.write(col.getName().getBytes("UTF-8"));
-            os.write(separator);
-            os.write(col.getType().getBytes("UTF-8"));
-            if (col.getComment() != null)
+          if (tableName.equals(colPath)) {
+            // also return the partitioning columns
+            List<FieldSchema> partCols = tbl.getPartCols();
+            Iterator<FieldSchema> iterPartCols = partCols.iterator();
+            while (iterPartCols.hasNext())
             {
+              os.write(terminator);
+              FieldSchema col = iterPartCols.next();
+              os.write(col.getName().getBytes("UTF-8"));
               os.write(separator);
-              os.write(col.getComment().getBytes("UTF-8"));
+              os.write(col.getType().getBytes("UTF-8"));
+              if (col.getComment() != null)
+              {
+                os.write(separator);
+                os.write(col.getComment().getBytes("UTF-8"));
+              }
+            }
+          
+            // if extended desc table then show the complete details of the table
+            if(descTbl.isExt()) {
+              if(part != null) {
+                // show partition informatio
+                os.write("\n\nDetailed Partition Information:\n".getBytes("UTF-8"));
+                os.write(part.getTPartition().toString().getBytes("UTF-8"));
+              } else {
+                os.write("\nDetailed Table Information:\n".getBytes("UTF-8"));
+                os.write(tbl.getTTable().toString().getBytes("UTF-8"));
+              }
             }
           }
-          
-          // if extended desc table then show the complete details of the table
-          if(descTbl.isExt()) {
-            if(part != null) {
-              // show partition informatio
-              os.write("\n\nDetailed Partition Information:\n".getBytes("UTF-8"));
-              os.write(part.getTPartition().toString().getBytes("UTF-8"));
-            } else {
-              os.write("\nDetailed Table Information:\n".getBytes("UTF-8"));
-              os.write(tbl.getTTable().toString().getBytes("UTF-8"));
-            }
-          }
-          
+
           LOG.info("DDLTask: written data for " +  tbl.getName());
           ((FSDataOutputStream)os).close();
           
