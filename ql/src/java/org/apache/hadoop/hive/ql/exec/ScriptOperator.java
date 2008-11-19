@@ -208,7 +208,10 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
       outThread = new StreamThread(scriptIn, new OutputStreamProcessor(
           scriptOutputDeserializer.getObjectInspector()), "OutputProcessor");
       outThread.start();
-      errThread = new StreamThread(scriptErr, new ErrorStreamProcessor (), "ErrorProcessor");
+      errThread = new StreamThread(scriptErr,
+                                   new ErrorStreamProcessor
+                                   (HiveConf.getIntVar(hconf, HiveConf.ConfVars.SCRIPTERRORLIMIT)),
+                                   "ErrorProcessor");
       errThread.start();
 
     } catch (Exception e) {
@@ -297,9 +300,17 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
   }
 
   class ErrorStreamProcessor implements StreamProcessor {
-    public ErrorStreamProcessor () {}
+    private long bytesCopied = 0;
+    private long maxBytes;
+
+    public ErrorStreamProcessor (int maxBytes) {
+      this.maxBytes = (long)maxBytes;
+    }
     public void processLine(Text line) throws HiveException {
-      System.err.println(line.toString());
+      if((maxBytes < 0) || (bytesCopied < maxBytes)) {
+        System.err.println(line.toString());
+      }
+      bytesCopied += line.getLength();
     }
     public void close() {
     }

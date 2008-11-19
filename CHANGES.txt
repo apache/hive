@@ -27,4 +27,7 @@ Trunk (unreleased changes)
     HIVE-68. Fix casting to short.
     (Ashish Thusoo via dhruba)
 
+    HIVE-70. A configuration variable that limits the amount of data
+    writen by a task to its standard error.
+    (Joydeep Sen Sarma via dhruba) 
 

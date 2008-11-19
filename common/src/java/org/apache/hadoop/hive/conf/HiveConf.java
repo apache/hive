@@ -47,6 +47,7 @@ public class HiveConf extends Configuration {
     PLAN("hive.exec.plan", null),
     SCRATCHDIR("hive.exec.scratchdir", "/tmp/"+System.getProperty("user.name")+"/hive"),
     SUBMITVIACHILD("hive.exec.submitviachild", "false"),
+    SCRIPTERRORLIMIT("hive.exec.script.maxerrsize", 100000),
 
     // hadoop stuff
     HADOOPBIN("hadoop.bin.path", System.getProperty("user.dir") + "/../../../bin/hadoop"),
