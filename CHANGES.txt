@@ -31,3 +31,6 @@ Trunk (unreleased changes)
     writen by a task to its standard error.
     (Joydeep Sen Sarma via dhruba) 
 
+    HIVE-17. Remove duplicate entries for hive.metastore.uris in config file.
+    (Jeff Hammerbacher via dhruba) 
+

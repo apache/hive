@@ -50,20 +50,15 @@
 </property>
 
 <property>
-  <name>hive.metastore.uris</name>
-  <value>thift://</value>
-  <description>Comma separated list of URIs of metastore servers. The first server that can be connected to will be used.</description>
-</property>
-
-<property>
   <name>hive.metastore.metadb.dir</name>
   <value>file:///var/metastore/metadb/</value>
   <description>The location of filestore metadata base dir</description>
 </property>
+
 <property>
   <name>hive.metastore.uris</name>
   <value>file:///var/metastore/metadb/</value>
-  <description></description>
+  <description>Comma separated list of URIs of metastore servers. The first server that can be connected to will be used.</description>
 </property>
 
 <property>
