@@ -115,6 +115,8 @@ public class FunctionRegistry {
                 UDFToBoolean.class.getSimpleName());
     registerUDF(Byte.class.getName(), UDFToByte.class, OperatorType.PREFIX, false,
                 UDFToByte.class.getSimpleName());
+    registerUDF(Short.class.getName(), UDFToShort.class, OperatorType.PREFIX, false,
+                UDFToShort.class.getSimpleName());
     registerUDF(Integer.class.getName(), UDFToInteger.class, OperatorType.PREFIX, false,
                 UDFToInteger.class.getSimpleName());
     registerUDF(Long.class.getName(), UDFToLong.class, OperatorType.PREFIX, false,

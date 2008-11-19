@@ -48,6 +48,7 @@ public class exprNodeFuncDesc extends exprNodeDesc implements Serializable {
     super(typeInfo);
     assert(UDFClass != null);
     this.UDFClass = UDFClass;
+    assert(UDFMethod != null);
     this.UDFMethod = UDFMethod;
     this.children = children;
   }

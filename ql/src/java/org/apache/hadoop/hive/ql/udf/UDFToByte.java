@@ -30,6 +30,40 @@ public class UDFToByte implements UDF {
   public UDFToByte() {
   }
 
+  /**
+   * Convert from boolean to a byte. This is called for CAST(... AS TINYINT)
+   *
+   * @param i The boolean value to convert
+   * @return Byte
+   */
+  public Byte evaluate(Boolean i)  {
+    if (i == null) {
+      return null;
+    } else {
+      return i.booleanValue() ? (byte)1 : (byte)0;
+    }
+  }  
+
+  /**
+   * Convert from short to a byte. This is called for CAST(... AS TINYINT)
+   *
+   * @param i The short value to convert
+   * @return Byte
+   */
+  public Byte evaluate(Short i)  {
+    if (i == null) {
+      return null;
+    } else {
+      return Byte.valueOf(i.byteValue());
+    }
+  }
+
+  /**
+   * Convert from integer to a byte. This is called for CAST(... AS TINYINT)
+   *
+   * @param i The integer value to convert
+   * @return Byte
+   */
   public Byte evaluate(Integer i)  {
     if (i == null) {
       return null;
@@ -38,14 +72,26 @@ public class UDFToByte implements UDF {
     }
   }
 
+  /**
+   * Convert from long to a byte. This is called for CAST(... AS TINYINT)
+   *
+   * @param i The long value to convert
+   * @return Byte
+   */
   public Byte evaluate(Long i)  {
     if (i == null) {
       return null;
     } else {
       return Byte.valueOf(i.byteValue());
     }
-  }
-  
+  }  
+
+  /**
+   * Convert from float to a byte. This is called for CAST(... AS TINYINT)
+   *
+   * @param i The float value to convert
+   * @return Byte
+   */
   public Byte evaluate(Float i)  {
     if (i == null) {
       return null;
@@ -53,7 +99,13 @@ public class UDFToByte implements UDF {
       return Byte.valueOf(i.byteValue());
     }
   }
-  
+
+  /**
+   * Convert from double to a byte. This is called for CAST(... AS TINYINT)
+   *
+   * @param i The double value to convert
+   * @return Byte
+   */  
   public Byte evaluate(Double i)  {
     if (i == null) {
       return null;
@@ -61,7 +113,13 @@ public class UDFToByte implements UDF {
       return Byte.valueOf(i.byteValue());
     }
   }
-  
+
+  /**
+   * Convert from string to a byte. This is called for CAST(... AS TINYINT)
+   *
+   * @param i The string value to convert
+   * @return Byte
+   */  
   public Byte evaluate(String i)  {
     if (i == null) {
       return null;

@@ -30,6 +30,40 @@ public class UDFToBoolean implements UDF {
   public UDFToBoolean() {
   }
 
+  /**
+   * Convert from a byte to boolean. This is called for CAST(... AS BOOLEAN)
+   *
+   * @param i The byte value to convert
+   * @return Boolean
+   */
+  public Boolean evaluate(Byte i)  {
+    if (i == null) {
+      return null;
+    } else {
+      return Boolean.valueOf(i.byteValue() == 0);
+    }
+  }
+
+  /**
+   * Convert from a short to boolean. This is called for CAST(... AS BOOLEAN)
+   *
+   * @param i The short value to convert
+   * @return Boolean
+   */
+  public Boolean evaluate(Short i)  {
+    if (i == null) {
+      return null;
+    } else {
+      return Boolean.valueOf(i.shortValue() == 0);
+    }
+  }
+
+  /**
+   * Convert from a integer to boolean. This is called for CAST(... AS BOOLEAN)
+   *
+   * @param i The integer value to convert
+   * @return Boolean
+   */
   public Boolean evaluate(Integer i)  {
     if (i == null) {
       return null;
@@ -38,6 +72,12 @@ public class UDFToBoolean implements UDF {
     }
   }
 
+  /**
+   * Convert from a long to boolean. This is called for CAST(... AS BOOLEAN)
+   *
+   * @param i The long value to convert
+   * @return Boolean
+   */
   public Boolean evaluate(Long i)  {
     if (i == null) {
       return null;
@@ -45,7 +85,13 @@ public class UDFToBoolean implements UDF {
       return Boolean.valueOf(i.longValue() == 0);
     }
   }
-  
+
+  /**
+   * Convert from a float to boolean. This is called for CAST(... AS BOOLEAN)
+   *
+   * @param i The float value to convert
+   * @return Boolean
+   */  
   public Boolean evaluate(Float i)  {
     if (i == null) {
       return null;
@@ -53,7 +99,13 @@ public class UDFToBoolean implements UDF {
       return Boolean.valueOf(i.floatValue() == 0);
     }
   }
-  
+
+  /**
+   * Convert from a double to boolean. This is called for CAST(... AS BOOLEAN)
+   *
+   * @param i The double value to convert
+   * @return Boolean
+   */
   public Boolean evaluate(Double i)  {
     if (i == null) {
       return null;
@@ -61,13 +113,18 @@ public class UDFToBoolean implements UDF {
       return Boolean.valueOf(i.doubleValue() == 0);
     }
   }
-  
+
+  /**
+   * Convert from a string to boolean. This is called for CAST(... AS BOOLEAN)
+   *
+   * @param i The string value to convert
+   * @return Boolean
+   */  
   public Boolean evaluate(String i)  {
     if (i == null) {
       return null;
     } else {
       return Boolean.valueOf(i.length() == 0);
     }
-  }
-  
+  }  
 }

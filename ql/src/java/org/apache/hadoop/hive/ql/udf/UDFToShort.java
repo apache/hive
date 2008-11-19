@@ -23,112 +23,112 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
 
 
-public class UDFToDouble implements UDF {
+public class UDFToShort implements UDF {
 
-  private static Log LOG = LogFactory.getLog(UDFToDouble.class.getName());
+  private static Log LOG = LogFactory.getLog(UDFToByte.class.getName());
 
-  public UDFToDouble() {
+  public UDFToShort() {
   }
 
   /**
-   * Convert from boolean to a double. This is called for CAST(... AS DOUBLE)
+   * Convert from boolean to a short. This is called for CAST(... AS SMALLINT)
    *
    * @param i The boolean value to convert
-   * @return Double
+   * @return Short
    */
-  public Double evaluate(Boolean i)  {
+  public Short evaluate(Boolean i)  {
     if (i == null) {
       return null;
     } else {
-      return i.booleanValue() ? 1.0 : 0.0;
+      return i.booleanValue() ? (short)1 : (short)0;
     }
   }
 
   /**
-   * Convert from boolean to a double. This is called for CAST(... AS DOUBLE)
+   * Convert from byte to a short. This is called for CAST(... AS SMALLINT)
    *
    * @param i The byte value to convert
-   * @return Double
+   * @return Short
    */
-  public Double evaluate(Byte i)  {
+  public Short evaluate(Byte i)  {
     if (i == null) {
       return null;
     } else {
-      return Double.valueOf(i.doubleValue());
+      return Short.valueOf(i.shortValue());
     }
   }
-  
+
   /**
-   * Convert from short to a double. This is called for CAST(... AS DOUBLE)
-   *
-   * @param i The short value to convert
-   * @return Double
-   */
-  public Double evaluate(Short i)  {
-    if (i == null) {
-      return null;
-    } else {
-      return Double.valueOf(i.doubleValue());
-    }
-  }
-  
-  /**
-   * Convert from integer to a double. This is called for CAST(... AS DOUBLE)
+   * Convert from integer to a short. This is called for CAST(... AS SMALLINT)
    *
    * @param i The integer value to convert
-   * @return Double
+   * @return Short
    */
-  public Double evaluate(Integer i)  {
+  public Short evaluate(Integer i)  {
     if (i == null) {
       return null;
     } else {
-      return Double.valueOf(i.doubleValue());
+      return Short.valueOf(i.shortValue());
     }
   }
-  
+
   /**
-   * Convert from long to a double. This is called for CAST(... AS DOUBLE)
+   * Convert from long to a short. This is called for CAST(... AS SMALLINT)
    *
    * @param i The long value to convert
-   * @return Double
+   * @return Short
    */
-  public Double evaluate(Long i)  {
+  public Short evaluate(Long i)  {
     if (i == null) {
       return null;
     } else {
-      return Double.valueOf(i.doubleValue());
-    }
-  }
- 
-  /**
-   * Convert from float to a double. This is called for CAST(... AS DOUBLE)
-   *
-   * @param i The float value to convert
-   * @return Double
-   */
-  public Double evaluate(Float i)  {
-    if (i == null) {
-      return null;
-    } else {
-      return Double.valueOf(i.doubleValue());
+      return Short.valueOf(i.shortValue());
     }
   }
   
   /**
-   * Convert from string to a double. This is called for CAST(... AS DOUBLE)
+   * Convert from float to a short. This is called for CAST(... AS SMALLINT)
+   *
+   * @param i The float value to convert
+   * @return Short
+   */
+  public Short evaluate(Float i)  {
+    if (i == null) {
+      return null;
+    } else {
+      return Short.valueOf(i.shortValue());
+    }
+  }
+  
+  /**
+   * Convert from double to a short. This is called for CAST(... AS SMALLINT)
+   *
+   * @param i The double value to convert
+   * @return Short
+   */
+  public Short evaluate(Double i)  {
+    if (i == null) {
+      return null;
+    } else {
+      return Short.valueOf(i.shortValue());
+    }
+  }
+  
+  /**
+   * Convert from string to a short. This is called for CAST(... AS SMALLINT)
    *
    * @param i The string value to convert
-   * @return Double
+   * @return Short
    */
-  public Double evaluate(String i)  {
+  public Short evaluate(String i)  {
     if (i == null) {
       return null;
     } else {
       try {
-        return Double.valueOf(i);
+        return Short.valueOf(i);
       } catch (NumberFormatException e) {
-        // MySQL returns 0 if the string is not a well-formed double value.
-        // return Double.valueOf(0);
+        // MySQL returns 0 if the string is not a well-formed numeric value.
+        // return Byte.valueOf(0);
         // But we decided to return NULL instead, which is more conservative.
         return null;
       }

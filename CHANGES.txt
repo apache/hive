@@ -24,4 +24,7 @@ Trunk (unreleased changes)
     HIVE-12. Improve README for Hive.
     (Ashish Thusoo via dhruba)
 
+    HIVE-68. Fix casting to short.
+    (Ashish Thusoo via dhruba)
+
 

@@ -46,6 +46,14 @@ public class UDFToString implements UDF {
     }
   }
   
+  public String evaluate(Short i)  {
+    if (i == null) {
+      return null;
+    } else {
+      return i.toString();
+    }
+  }
+    
   public String evaluate(Integer i)  {
     if (i == null) {
       return null;

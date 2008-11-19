@@ -30,6 +30,26 @@ public class UDFToLong implements UDF {
   public UDFToLong() {
   }
 
+  /**
+   * Convert from boolean to a long. This is called for CAST(... AS BIGINT)
+   *
+   * @param i The boolean value to convert
+   * @return Long
+   */
+  public Long evaluate(Boolean i)  {
+    if (i == null) {
+      return null;
+    } else {
+      return i.booleanValue() ? (long)1 : (long)0;
+    }
+  }
+
+  /**
+   * Convert from byte to a long. This is called for CAST(... AS BIGINT)
+   *
+   * @param i The byte value to convert
+   * @return Long
+   */
   public Long evaluate(Byte i)  {
     if (i == null) {
       return null;
@@ -38,6 +58,26 @@ public class UDFToLong implements UDF {
     }
   }
   
+  /**
+   * Convert from short to a long. This is called for CAST(... AS BIGINT)
+   *
+   * @param i The short value to convert
+   * @return Long
+   */
+  public Long evaluate(Short i)  {
+    if (i == null) {
+      return null;
+    } else {
+      return Long.valueOf(i.longValue());
+    }
+  }
+  
+  /**
+   * Convert from integer to a long. This is called for CAST(... AS BIGINT)
+   *
+   * @param i The integer value to convert
+   * @return Long
+   */
   public Long evaluate(Integer i)  {
     if (i == null) {
       return null;
@@ -46,11 +86,22 @@ public class UDFToLong implements UDF {
     }
   }
 
+  /**
+   * Convert from long to a long. This is called for CAST(... AS BIGINT)
+   *
+   * @param i The long value to convert
+   * @return Long
+   */
   public Long evaluate(Long i)  {
     return i;
   }
 
-  
+  /**
+   * Convert from float to a long. This is called for CAST(... AS BIGINT)
+   *
+   * @param i The float value to convert
+   * @return Long
+   */
   public Long evaluate(Float i)  {
     if (i == null) {
       return null;
@@ -59,6 +110,12 @@ public class UDFToLong implements UDF {
     }
   }
   
+  /**
+   * Convert from double to a long. This is called for CAST(... AS BIGINT)
+   *
+   * @param i The double value to convert
+   * @return Long
+   */
   public Long evaluate(Double i)  {
     if (i == null) {
       return null;
@@ -67,6 +124,12 @@ public class UDFToLong implements UDF {
     }
   }
   
+  /**
+   * Convert from string to a long. This is called for CAST(... AS BIGINT)
+   *
+   * @param i The string value to convert
+   * @return Long
+   */
   public Long evaluate(String i)  {
     if (i == null) {
       return null;

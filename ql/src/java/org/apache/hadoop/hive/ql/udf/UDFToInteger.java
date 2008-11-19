@@ -30,6 +30,12 @@ public class UDFToInteger implements UDF {
   public UDFToInteger() {
   }
 
+  /**
+   * Convert from boolean to an integer. This is called for CAST(... AS INT)
+   *
+   * @param i The boolean value to convert
+   * @return Integer
+   */
   public Integer evaluate(Boolean i)  {
     if (i == null) {
       return null;
@@ -38,6 +44,12 @@ public class UDFToInteger implements UDF {
     }
   }
   
+  /**
+   * Convert from byte to an integer. This is called for CAST(... AS INT)
+   *
+   * @param i The byte value to convert
+   * @return Integer
+   */
   public Integer evaluate(Byte i)  {
     if (i == null) {
       return null;
@@ -46,6 +58,26 @@ public class UDFToInteger implements UDF {
     }
   }
   
+  /**
+   * Convert from short to an integer. This is called for CAST(... AS INT)
+   *
+   * @param i The short value to convert
+   * @return Integer
+   */
+  public Integer evaluate(Short i)  {
+    if (i == null) {
+      return null;
+    } else {
+      return Integer.valueOf(i.shortValue());
+    }
+  }
+  
+  /**
+   * Convert from long to an integer. This is called for CAST(... AS INT)
+   *
+   * @param i The long value to convert
+   * @return Integer
+   */
   public Integer evaluate(Long i)  {
     if (i == null) {
       return null;
@@ -54,6 +86,12 @@ public class UDFToInteger implements UDF {
     }
   }
   
+  /**
+   * Convert from float to an integer. This is called for CAST(... AS INT)
+   *
+   * @param i The float value to convert
+   * @return Integer
+   */
   public Integer evaluate(Float i)  {
     if (i == null) {
       return null;
@@ -62,6 +100,12 @@ public class UDFToInteger implements UDF {
     }
   }
   
+  /**
+   * Convert from double to an integer. This is called for CAST(... AS INT)
+   *
+   * @param i The double value to convert
+   * @return Integer
+   */
   public Integer evaluate(Double i)  {
     if (i == null) {
       return null;
@@ -70,6 +114,12 @@ public class UDFToInteger implements UDF {
     }
   }
   
+  /**
+   * Convert from string to an integer. This is called for CAST(... AS INT)
+   *
+   * @param i The string value to convert
+   * @return Integer
+   */
   public Integer evaluate(String i)  {
     if (i == null) {
       return null;

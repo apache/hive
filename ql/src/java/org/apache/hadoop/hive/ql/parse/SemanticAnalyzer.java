@@ -3401,6 +3401,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     conversionFunctionTextHashMap = new HashMap<Integer, String>();
     conversionFunctionTextHashMap.put(HiveParser.TOK_BOOLEAN, Boolean.class.getName());
     conversionFunctionTextHashMap.put(HiveParser.TOK_TINYINT, Byte.class.getName());
+    conversionFunctionTextHashMap.put(HiveParser.TOK_SMALLINT, Short.class.getName());
     conversionFunctionTextHashMap.put(HiveParser.TOK_INT, Integer.class.getName());
     conversionFunctionTextHashMap.put(HiveParser.TOK_BIGINT, Long.class.getName());
     conversionFunctionTextHashMap.put(HiveParser.TOK_FLOAT, Float.class.getName());

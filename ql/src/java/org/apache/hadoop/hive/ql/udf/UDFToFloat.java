@@ -30,6 +30,26 @@ public class UDFToFloat implements UDF {
   public UDFToFloat() {
   }
 
+  /**
+   * Convert from boolean to a float. This is called for CAST(... AS FLOAT)
+   *
+   * @param i The boolean value to convert
+   * @return Float
+   */
+  public Float evaluate(Boolean i)  {
+    if (i == null) {
+      return null;
+    } else {
+      return i.booleanValue() ? (float)1.0 : (float)0.0;
+    }
+  }
+  
+  /**
+   * Convert from byte to a float. This is called for CAST(... AS FLOAT)
+   *
+   * @param i The byte value to convert
+   * @return Float
+   */
   public Float evaluate(Byte i)  {
     if (i == null) {
       return null;
@@ -38,6 +58,26 @@ public class UDFToFloat implements UDF {
     }
   }
   
+  /**
+   * Convert from short to a float. This is called for CAST(... AS FLOAT)
+   *
+   * @param i The short value to convert
+   * @return Float
+   */
+  public Float evaluate(Short i)  {
+    if (i == null) {
+      return null;
+    } else {
+      return Float.valueOf(i.floatValue());
+    }
+  }
+  
+  /**
+   * Convert from integer to a float. This is called for CAST(... AS FLOAT)
+   *
+   * @param i The integer value to convert
+   * @return Float
+   */
   public Float evaluate(Integer i)  {
     if (i == null) {
       return null;
@@ -46,6 +86,12 @@ public class UDFToFloat implements UDF {
     }
   }
   
+  /**
+   * Convert from long to a float. This is called for CAST(... AS FLOAT)
+   *
+   * @param i The long value to convert
+   * @return Float
+   */
   public Float evaluate(Long i)  {
     if (i == null) {
       return null;
@@ -54,7 +100,12 @@ public class UDFToFloat implements UDF {
     }
   }
 
-  
+  /**
+   * Convert from double to a float. This is called for CAST(... AS FLOAT)
+   *
+   * @param i The double value to convert
+   * @return Float
+   */  
   public Float evaluate(Double i)  {
     if (i == null) {
       return null;
@@ -63,6 +114,12 @@ public class UDFToFloat implements UDF {
     }
   }
   
+  /**
+   * Convert from string to a float. This is called for CAST(... AS FLOAT)
+   *
+   * @param i The string value to convert
+   * @return Float
+   */
   public Float evaluate(String i)  {
     if (i == null) {
       return null;
