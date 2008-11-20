@@ -1992,6 +1992,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Add the limit operator to get the value fields
     Operator curr = genLimitPlan(dest, qb, input, limit);
 
+    // If it is a outer most query, the exact limit is applied by the fetch task
     if (isOuterQuery)
       return curr;
 
@@ -2523,7 +2524,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         curr = genConversionOps(dest, qb, curr);
         // exact limit can be taken care of by the fetch operator
         if (limit != null) {
-          curr = genLimitMapRedPlan(dest, qb, curr, limit.intValue(), true);
+          curr = genLimitMapRedPlan(dest, qb, curr, limit.intValue(), qb.getIsQuery());
           qb.getParseInfo().setOuterQueryLimit(limit.intValue());
         }
         curr = genFileSinkPlan(dest, qb, curr);

@@ -37,3 +37,6 @@ Trunk (unreleased changes)
     HIVE-72. Generate correct results when partition pruning is not strict
     and no map-reduce jobs are needed.  (Namim Jain via dhruba) 
 
+    HIVE-75. Make limit work when applied to outermost block that is not
+    a query.  (Namim Jain via dhruba) 
+

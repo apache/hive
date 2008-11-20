@@ -1,0 +1,69 @@
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF T1 a)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB T2)) (TOK_SELECT (TOK_SELEXPR (TOK_COLREF a key)) (TOK_SELEXPR (TOK_COLREF a value))) (TOK_LIMIT 20)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        a 
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              Limit
+                Reduce Output Operator
+                  sort order: 
+                  tag: -1
+                  value expressions:
+                        expr: 0
+                        type: string
+                        expr: 1
+                        type: string
+      # Reducers: 1
+      Reduce Operator Tree:
+        Extract
+          Limit
+            File Output Operator
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
+                  name: t2
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+            replace:
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
+                name: t2
+
+
+193	val_193
+213	val_213
+128	val_128
+66	val_66
+369	val_369
+224	val_224
+273	val_273
+150	val_150
+401	val_401
+238	val_238
+265	val_265
+484	val_484
+98	val_98
+278	val_278
+255	val_255
+409	val_409
+165	val_165
+27	val_27
+311	val_311
+86	val_86
