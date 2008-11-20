@@ -1,0 +1,37 @@
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF SRCPART x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF x))) (TOK_WHERE (= (TOK_COLREF x ds) (- (- 2008 04) 08))) (TOK_LIMIT 10)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        x 
+            Filter Operator
+              predicate:
+                  expr: (ds = ((2008 - 4) - 8))
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                      expr: ds
+                      type: string
+                      expr: hr
+                      type: string
+                Limit
+                  File Output Operator
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+
+

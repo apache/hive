@@ -34,3 +34,6 @@ Trunk (unreleased changes)
     HIVE-17. Remove duplicate entries for hive.metastore.uris in config file.
     (Jeff Hammerbacher via dhruba) 
 
+    HIVE-72. Generate correct results when partition pruning is not strict
+    and no map-reduce jobs are needed.  (Namim Jain via dhruba) 
+

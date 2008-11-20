@@ -269,15 +269,72 @@ public class PartitionPruner {
         this.prunerExpr = SemanticAnalyzer.getFuncExprNodeDesc("AND", this.prunerExpr, desc);
     }
   }
-  
-  /** From the table metadata prune the partitions to return the partitions **/
+
+  /**
+   * list of the partitions satisfying the pruning criteria - contains both confirmed and unknown partitions
+   */
+  public static class PrunedPartitionList {
+    // confirmed partitions - satisfy the partition criteria
+    private Set<Partition>  confirmedPartns;
+
+    // unknown partitions - may/may not satisfy the partition criteria
+    private Set<Partition>  unknownPartns;
+
+    /**
+     * @param confirmedPartns  confirmed paritions
+     * @param unknownPartns    unknown partitions
+     */
+    public PrunedPartitionList(Set<Partition> confirmedPartns, Set<Partition> unknownPartns) {
+      this.confirmedPartns  = confirmedPartns;
+      this.unknownPartns    = unknownPartns;
+    }
+
+    /**
+     * get confirmed partitions
+     * @return confirmedPartns  confirmed paritions
+     */
+    public Set<Partition>  getConfirmedPartns() {
+      return confirmedPartns;
+    }
+
+    /**
+     * get unknown partitions
+     * @return unknownPartns  unknown paritions
+     */
+    public Set<Partition>  getUnknownPartns() {
+      return unknownPartns;
+    }
+
+    /**
+     * set confirmed partitions
+     * @param confirmedPartns  confirmed paritions
+     */
+    public void setConfirmedPartns(Set<Partition> confirmedPartns) {
+      this.confirmedPartns = confirmedPartns;
+    }
+
+    /**
+     * set unknown partitions
+     * @param unknownPartns    unknown partitions
+     */
+    public void setUnknownPartns(Set<Partition> unknownPartns) {
+      this.unknownPartns   = unknownPartns;
+    }
+  }
+
+  /** 
+   * From the table metadata prune the partitions to return the partitions.
+   * Evaluate the parition pruner for each partition and return confirmed and unknown partitions separately
+   */
   @SuppressWarnings("nls")
-  public Set<Partition> prune() throws HiveException {
+  public PrunedPartitionList prune() throws HiveException {
     LOG.trace("Started pruning partiton");
     LOG.trace("tabname = " + this.tab.getName());
     LOG.trace("prune Expression = " + this.prunerExpr);
 
-    LinkedHashSet<Partition> ret_parts = new LinkedHashSet<Partition>();
+    LinkedHashSet<Partition> true_parts = new LinkedHashSet<Partition>();
+    LinkedHashSet<Partition> unkn_parts = new LinkedHashSet<Partition>();
+
     try {
       StructObjectInspector rowObjectInspector = (StructObjectInspector)this.tab.getDeserializer().getObjectInspector();
       Object[] rowWithPart = new Object[2];
@@ -311,15 +368,22 @@ public class PartitionPruner {
         if (evaluator != null) {
           evaluator.evaluate(rowWithPart, rowWithPartObjectInspector, inspectableObject);
           LOG.trace("prune result for partition " + partSpec + ": " + inspectableObject.o);
-          if (!Boolean.FALSE.equals(inspectableObject.o)) {
+          if (Boolean.TRUE.equals(inspectableObject.o)) {
             LOG.debug("retained partition: " + partSpec);
-            ret_parts.add(part);
-          } else {
+            true_parts.add(part);
+          } 
+          else if (Boolean.FALSE.equals(inspectableObject.o)) {
             LOG.trace("pruned partition: " + partSpec);
+          } 
+          else {
+            LOG.debug("unknown partition: " + partSpec);
+            unkn_parts.add(part);
           }
         }
-        else
-          ret_parts.add(part);
+        else {
+          // is there is no parition pruning, all of them are needed
+          true_parts.add(part);
+        }
       }
     }
     catch (Exception e) {
@@ -327,7 +391,7 @@ public class PartitionPruner {
     }
 
     // Now return the set of partitions
-    return ret_parts;
+    return new PrunedPartitionList(true_parts, unkn_parts);
   }
 
   public Table getTable() {

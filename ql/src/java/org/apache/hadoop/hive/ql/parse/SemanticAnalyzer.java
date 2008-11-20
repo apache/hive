@@ -2869,16 +2869,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if (pr.containsPartitionCols()) {
             List<Path> listP = new ArrayList<Path>();
             List<partitionDesc> partP = new ArrayList<partitionDesc>();
+            PartitionPruner.PrunedPartitionList partsList = null;
             Set<Partition> parts = null;
             try {
-              parts = pr.prune();
-              Iterator<Partition> iterParts = parts.iterator();
-              while (iterParts.hasNext()) {
-              	Partition part = iterParts.next();
-                listP.add(part.getPartitionPath());
-                partP.add(Utilities.getPartitionDesc(part));
+              partsList = pr.prune();
+              // If there is any unknown partition, create a map-reduce job for the filter to prune correctly
+              if (partsList.getUnknownPartns().size() == 0) {
+                parts = partsList.getConfirmedPartns();
+                Iterator<Partition> iterParts = parts.iterator();
+                while (iterParts.hasNext()) {
+                  Partition part = iterParts.next();
+                  listP.add(part.getPartitionPath());
+                  partP.add(Utilities.getPartitionDesc(part));
+                }
+                fetch = new fetchWork(listP, partP, qb.getParseInfo().getOuterQueryLimit());
               }
-              fetch = new fetchWork(listP, partP, qb.getParseInfo().getOuterQueryLimit());
             } catch (HiveException e) {
               // Has to use full name to make sure it does not conflict with org.apache.commons.lang.StringUtils
               LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
@@ -2952,7 +2957,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       PartitionPruner pruner = this.aliasToPruner.get(alias_id);
       Set<Partition> parts = null;
       try {
-        parts = pruner.prune();
+        // pass both confirmed and unknown partitions through the map-reduce framework
+        PartitionPruner.PrunedPartitionList partsList = pruner.prune();
+        parts = partsList.getConfirmedPartns();
+        parts.addAll(partsList.getUnknownPartns());
       } catch (HiveException e) {
         // Has to use full name to make sure it does not conflict with org.apache.commons.lang.StringUtils
         LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
