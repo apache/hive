@@ -40,3 +40,7 @@ Trunk (unreleased changes)
     HIVE-75. Make limit work when applied to outermost block that is not
     a query.  (Namim Jain via dhruba) 
 
+    HIVE-76. Fix for column number mismatch between query and destination
+    tables when alias.* expressions are present in the select list of a 
+    join. (Ashish Thusoo via dhruba)
+

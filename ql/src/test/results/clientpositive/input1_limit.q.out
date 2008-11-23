@@ -24,7 +24,6 @@ STAGE PLANS:
                       type: string
                 Limit
                   Reduce Output Operator
-                    sort order: 
                     tag: -1
                     value expressions:
                           expr: 0
@@ -77,9 +76,8 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /tmp/hive-njain/153468547/613626322.10002 
+        /tmp/hive-athusoo/8552631/401018009.10002 
           Reduce Output Operator
-            sort order: 
             tag: -1
             value expressions:
                   expr: 0

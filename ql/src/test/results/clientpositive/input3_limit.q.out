@@ -18,7 +18,6 @@ STAGE PLANS:
                     type: string
               Limit
                 Reduce Output Operator
-                  sort order: 
                   tag: -1
                   value expressions:
                         expr: 0
@@ -47,23 +46,23 @@ STAGE PLANS:
                 name: t2
 
 
-193	val_193
-213	val_213
-128	val_128
-66	val_66
-369	val_369
-224	val_224
-273	val_273
-150	val_150
-401	val_401
 238	val_238
-265	val_265
-484	val_484
-98	val_98
-278	val_278
-255	val_255
-409	val_409
-165	val_165
-27	val_27
-311	val_311
 86	val_86
+311	val_311
+27	val_27
+165	val_165
+409	val_409
+255	val_255
+278	val_278
+98	val_98
+484	val_484
+265	val_265
+193	val_193
+401	val_401
+150	val_150
+273	val_273
+224	val_224
+369	val_369
+66	val_66
+128	val_128
+213	val_213

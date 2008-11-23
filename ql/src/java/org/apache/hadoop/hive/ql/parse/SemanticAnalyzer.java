@@ -883,6 +883,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for(ColumnInfo colInfo: input.getColumnInfos()) {
       String name = colInfo.getInternalName();
       String [] tmp = input.reverseLookup(name);
+
+      // Skip the colinfos which are not for this particular alias 
+      if (tabAlias != null && !tmp[0].equalsIgnoreCase(tabAlias)) {
+        continue;
+      }
+ 
       exprNodeColumnDesc expr = new exprNodeColumnDesc(colInfo.getType(), name);
       col_list.add(expr);
       output.put(alias, tmp[1], new ColumnInfo(pos.toString(), colInfo.getType()));
@@ -1909,7 +1915,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Vector<ColumnInfo> rowFields = opParseCtx.get(input).getRR().getColumnInfos();
     if (tableFields.size() != rowFields.size()) {
       String reason = "Table " + dest + " has " + tableFields.size() + " columns but query has "
-          + rowFields + ".";
+          + rowFields.size() + " columns.";
       throw new SemanticException(ErrorMsg.TARGET_TABLE_COLUMN_MISMATCH.getMsg(
           qb.getParseInfo().getDestForClause(dest), reason));
     }
