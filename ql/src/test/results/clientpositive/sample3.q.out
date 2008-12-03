@@ -1,0 +1,241 @@
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF srcbucket (TOK_TABLESAMPLE 1 5 (TOK_COLREF key)) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_COLREF s key)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        s 
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              Filter Operator
+                predicate:
+                    expr: (((default_sample_hashfn(0) & 2147483647) % 5) = 0)
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: 0
+                        type: string
+                  File Output Operator
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+86
+27
+484
+150
+128
+213
+146
+281
+277
+209
+394
+466
+399
+489
+439
+367
+475
+155
+128
+489
+72
+277
+399
+169
+498
+286
+187
+54
+213
+137
+489
+353
+272
+466
+411
+119
+100
+191
+308
+95
+196
+457
+187
+470
+137
+169
+77
+72
+90
+277
+272
+452
+402
+317
+95
+498
+321
+119
+489
+218
+209
+367
+344
+263
+191
+128
+2
+321
+335
+466
+105
+114
+90
+164
+164
+187
+119
+439
+169
+443
+277
+178
+317
+493
+353
+407
+18
+100
+498
+146
+362
+18
+281
+344
+448
+222
+90
+169
+281
+245
+425
+272
+231
+448
+31
+443
+371
+402
+128
+240
+286
+335
+367
+59
+349
+123
+402
+128
+63
+344
+277
+114
+209
+281
+114
+254
+196
+86
+222
+411
+281
+68
+119
+376
+213
+132
+191
+349
+475
+399
+77
+114
+443
+484
+407
+367
+2
+349
+164
+326
+308
+119
+358
+105
+416
+77
+461
+40
+385
+259
+303
+245
+303
+277
+132
+443
+399
+317
+330
+209
+489
+295
+105
+204
+439
+457
+470
+196
+119
+268
+295
+407
+439
+335
+164
+349
+371
+123
+182
+353
+371
+385
+40
+259
+178
+100
+22
+402
+137
+196
+100
+407
+371
+308
+178
+457
+227

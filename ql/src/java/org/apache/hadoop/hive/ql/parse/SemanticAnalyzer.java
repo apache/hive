@@ -865,6 +865,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     CommonTree whereExpr = qb.getParseInfo().getWhrForClause(dest);
     OpParseContext inputCtx = opParseCtx.get(input);
     RowResolver inputRR = inputCtx.getRR();
+
     Operator output = putOpInsertMap(
       OperatorFactory.getAndMakeChild(
         new filterDesc(genExprNodeDesc(qb.getMetaData(), (CommonTree)whereExpr.getChild(0), inputRR)),
@@ -2703,9 +2704,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ArrayList<exprNodeDesc> args = new ArrayList<exprNodeDesc>();
     if (useBucketCols) {
       for (String col : bucketCols) {
-    	 ColumnInfo ci = rwsch.get(alias, col);
-         // TODO: change type to the one in the table schema
-    	 args.add(new exprNodeColumnDesc(ci.getType().getPrimitiveClass(), col));
+        ColumnInfo ci = rwsch.get(alias, col);
+        // TODO: change type to the one in the table schema
+        args.add(new exprNodeColumnDesc(ci.getType().getPrimitiveClass(), ci.getInternalName()));
       }
     }
     else {
@@ -2841,7 +2842,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     
     Operator output = putOpInsertMap(tableOp, rwsch);
-
     LOG.debug("Created Table Plan for " + alias + " " + tableOp.toString());
 
     return output;

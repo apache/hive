@@ -17,6 +17,8 @@ Trunk (unreleased changes)
 
   BUG FIXES
 
+    HIVE-108. Sampling to use internal column name. (Namit through zshao)
+
     HIVE-60. Fix the build scripts for the new hive tree.
     (Ashish through zshao)
 
