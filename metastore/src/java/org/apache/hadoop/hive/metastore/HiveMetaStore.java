@@ -314,10 +314,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         logStartFunction("drop_table", dbname, name);
         boolean success = false;
         Path tblPath = null;
+        Table tbl = null;
         try {
           getMS().openTransaction();
           // drop any partitions
-          Table tbl = get_table(dbname, name);
+          tbl = get_table(dbname, name);
           if (tbl == null) {
             throw new NoSuchObjectException(name + " doesn't exist");
           }
@@ -332,11 +333,23 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         } finally {
           if(!success) {
             getMS().rollbackTransaction();
-          } else if(deleteData && (tblPath != null)) {
+          } else if(deleteData && (tblPath != null) && !isExternal(tbl)) {
             wh.deleteDir(tblPath, true);
             // ok even if the data is not deleted
           }
         }
+      }
+
+      private boolean isExternal(Table table) {
+        if(table == null) {
+          return false;
+        }
+        Map<String, String> params = table.getParameters();
+        if(params == null) {
+          return false;
+        }
+        
+        return "TRUE".equalsIgnoreCase(params.get("EXTERNAL"));
       }
 
       public Table get_table(String dbname, String name) throws MetaException, NoSuchObjectException {

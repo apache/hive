@@ -35,7 +35,7 @@ package org.apache.hadoop.hive.metastore;
  * limitations under the License.
  */
 
-import java.util.List;
+import java.util.Properties;
 
 import org.apache.hadoop.hive.metastore.api.MetaException;
 
@@ -48,23 +48,23 @@ public class TestDrop extends MetaStoreTestBase {
   public void testDrop() throws Exception {
     try {
       DB db = DB.createDB("foo1", conf_);
-      {
-        List<String> tables = db.getTables(".+");
-        //            System.err.println("tables=" + tables);
-        assertTrue(tables.size() == 0);
-      }
+      assertEquals(0, db.getTables(".+").size());
+      //drop and delete data
       Table bar1 = Table.create(db, "bar1", createSchema("foo1","bar1"), conf_);
-      {
-        List<String> tables = db.getTables(".+");
-        //            System.err.println("tables=" + tables);
-        assertTrue(tables.size() == 1);
-      }
+      assertEquals(1, db.getTables(".+").size());
       bar1.drop();
-      {
-        List<String> tables = db.getTables(".+");
-        //            System.err.println("tables=" + tables);
-        assertTrue(tables.size() == 0);
-      }
+      assertFalse(fileSys_.exists(bar1.getPath()));
+      assertEquals(0, db.getTables(".+").size());
+      
+      //drop and don't delete the data, external table
+      Properties schema2 = createSchema("foo2","bar2");
+      schema2.setProperty("EXTERNAL", "TRUE");
+      Table bar2 = Table.create(db, "bar2", schema2, conf_);
+      assertEquals(1, db.getTables(".+").size());
+      bar2.drop();
+      assertTrue(fileSys_.exists(bar2.getPath()));
+      assertEquals(0, db.getTables(".+").size());
+      
       cleanup();
     } catch(MetaException e) {
       e.printStackTrace();

@@ -24,6 +24,8 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -321,8 +323,12 @@ public class TestHiveMetaStore extends TestCase {
     sd.getSerdeInfo().setParameters(new HashMap<String, String>());
     sd.getSerdeInfo().getParameters().put(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, "1");
     
-    tbl.setTableName(tblName2);
-    client.createTable(tbl);
+    tbl2.setTableName(tblName2);
+    tbl2.setParameters(new HashMap<String, String>());
+    tbl2.getParameters().put("EXTERNAL", "TRUE");
+    tbl2.getSd().setLocation(tbl.getSd().getLocation() +"-2");
+    
+    client.createTable(tbl2);
   
     Table tbl3 = client.getTable(dbName, tblName2);
     assertNotNull(tbl3);
@@ -331,15 +337,19 @@ public class TestHiveMetaStore extends TestCase {
     assertEquals(tbl3.getSd().getCols().size(), typ1.getFields().size());
     assertEquals(tbl3.getSd().isCompressed(), false);
     assertEquals(tbl3.getSd().getNumBuckets(), 1);
-    assertEquals(tbl3.getSd().getLocation(), tbl.getSd().getLocation());
+    assertEquals(tbl3.getSd().getLocation(), tbl2.getSd().getLocation());
     
   
     assertEquals("Use this for comments etc", tbl2.getSd().getParameters().get("test_param_1"));
     assertEquals("name", tbl2.getSd().getBucketCols().get(0));
     assertTrue("Partition key list is not empty",  (tbl2.getPartitionKeys() == null) || (tbl2.getPartitionKeys().size() == 0));
     
+    FileSystem fs = FileSystem.get(hiveConf);
     client.dropTable(dbName, tblName);
+    assertFalse(fs.exists(new Path(tbl.getSd().getLocation())));
+    
     client.dropTable(dbName, tblName2);
+    assertTrue(fs.exists(new Path(tbl2.getSd().getLocation())));
   
     ret = client.dropType(typeName);
     assertTrue("Unable to drop type " + typeName, ret);

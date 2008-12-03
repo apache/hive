@@ -17,6 +17,9 @@ Trunk (unreleased changes)
 
   BUG FIXES
 
+    HIVE-86. Drop table should not delete data for external tables.
+    (Johan Oskarsson through zshao)
+
     HIVE-108. Sampling to use internal column name. (Namit through zshao)
 
     HIVE-60. Fix the build scripts for the new hive tree.

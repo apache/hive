@@ -54,6 +54,33 @@ public class RWTable extends ROTable {
     path.getFileSystem(this.conf_).mkdirs(path);
   }
 
+  /**
+   * drop
+   *
+   * delete the schema for this table and optionally delete the data. Note the data is actually moved to the
+   * Trash, not really deleted.
+   *
+   * @param deleteData should we delete the underlying data or just the schema?
+   * @exception MetaException if any problems instantiating this object
+   *
+   */
+  @SuppressWarnings("nls")
+  public void drop(boolean deleteData) throws MetaException {
+    if(this.o_rdonly_) {
+      throw new RuntimeException("cannot perform write operation on a read-only table");
+    }
+
+    if(deleteData) {
+      MetaStoreUtils.deleteWHDirectory(this.whPath_, this.conf_, this.use_trash_);
+    }
+    
+    try {
+      this.store_.drop(this.parent_, this.tableName_);
+    } catch(IOException e) {
+      throw new MetaException(e.getMessage());
+    }
+    this.o_rdonly_ = true; // the table is dropped, so can only do reads now
+  }
 
   /**
    * drop
@@ -66,19 +93,9 @@ public class RWTable extends ROTable {
    */
   @SuppressWarnings("nls")
   public void drop() throws MetaException {
-
-    if(this.o_rdonly_) {
-      throw new RuntimeException("cannot perform write operation on a read-only table");
-    }
-
-
-    MetaStoreUtils.deleteWHDirectory(this.whPath_, this.conf_, this.use_trash_);
-    try {
-      this.store_.drop(this.parent_, this.tableName_);
-    } catch(IOException e) {
-      throw new MetaException(e.getMessage());
-    }
-    this.o_rdonly_ = true; // the table is dropped, so can only do reads now
+    //external table, don't delete the data;
+    boolean isExternal = "TRUE".equalsIgnoreCase(this.schema_.getProperty("EXTERNAL"));
+    drop(!isExternal);
   }
 
   /**
