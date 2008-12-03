@@ -33,6 +33,7 @@ STAGE PLANS:
                     key expressions:
                           expr: tkey
                           type: string
+                    sort order: +
                     Map-reduce partition columns:
                           expr: tkey
                           type: string

@@ -30,6 +30,7 @@ STAGE PLANS:
                           type: string
                           expr: 1
                           type: string
+                    sort order: ++
                     Map-reduce partition columns:
                           expr: 0
                           type: string
@@ -48,6 +49,7 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              sort order: ++
               Map-reduce partition columns:
                     expr: key
                     type: string

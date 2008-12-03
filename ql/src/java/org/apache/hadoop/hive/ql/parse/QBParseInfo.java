@@ -40,7 +40,20 @@ public class QBParseInfo {
   private HashMap<String, CommonTree> destToSelExpr;
   private HashMap<String, CommonTree> destToWhereExpr;
   private HashMap<String, CommonTree> destToGroupby;
+  /**
+   * ClusterBy is a short name for both DistributeBy and SortBy.  
+   */
   private HashMap<String, CommonTree> destToClusterby;
+  /**
+   * DistributeBy controls the hashcode of the row, which determines which reducer
+   * the rows will go to. 
+   */
+  private HashMap<String, CommonTree> destToDistributeby;
+  /**
+   * SortBy controls the reduce keys, which affects the order of rows 
+   * that the reducer receives. 
+   */
+  private HashMap<String, CommonTree> destToSortby;
   private HashMap<String, Integer>    destToLimit;
   private int outerQueryLimit;
 
@@ -59,6 +72,8 @@ public class QBParseInfo {
     this.destToWhereExpr = new HashMap<String, CommonTree>();
     this.destToGroupby = new HashMap<String, CommonTree>();
     this.destToClusterby = new HashMap<String, CommonTree>();
+    this.destToDistributeby = new HashMap<String, CommonTree>();
+    this.destToSortby = new HashMap<String, CommonTree>();
     this.destToLimit = new HashMap<String, Integer>();
     
     this.destToAggregationExprs = new HashMap<String, HashMap<String, CommonTree> >();
@@ -101,8 +116,31 @@ public class QBParseInfo {
     this.nameToDest.put(clause, ast);
   }
 
+  /**
+   * Set the Cluster By AST for the clause.  
+   * @param clause the name of the clause
+   * @param ast the abstract syntax tree
+   */
   public void setClusterByExprForClause(String clause, CommonTree ast) {
     this.destToClusterby.put(clause, ast);
+  }
+
+  /**
+   * Set the Distribute By AST for the clause.  
+   * @param clause the name of the clause
+   * @param ast the abstract syntax tree
+   */
+  public void setDistributeByExprForClause(String clause, CommonTree ast) {
+    this.destToDistributeby.put(clause, ast);
+  }
+
+  /**
+   * Set the Sort By AST for the clause.  
+   * @param clause the name of the clause
+   * @param ast the abstract syntax tree
+   */
+  public void setSortByExprForClause(String clause, CommonTree ast) {
+    this.destToSortby.put(clause, ast);
   }
 
   public void setSrcForAlias(String alias, CommonTree ast) {
@@ -137,8 +175,31 @@ public class QBParseInfo {
     return this.destToSelExpr.get(clause);
   }
 
+  /**
+   * Get the Cluster By AST for the clause.  
+   * @param clause the name of the clause
+   * @return the abstract syntax tree
+   */
   public CommonTree getClusterByForClause(String clause) {
     return this.destToClusterby.get(clause);
+  }
+
+  /**
+   * Get the Distribute By AST for the clause.  
+   * @param clause the name of the clause
+   * @return the abstract syntax tree
+   */
+  public CommonTree getDistributeByForClause(String clause) {
+    return this.destToDistributeby.get(clause);
+  }
+
+  /**
+   * Get the Sort By AST for the clause.  
+   * @param clause the name of the clause
+   * @return the abstract syntax tree
+   */
+  public CommonTree getSortByForClause(String clause) {
+    return this.destToSortby.get(clause);
   }
 
   public CommonTree getSrcForAlias(String alias) {

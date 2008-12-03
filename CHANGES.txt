@@ -11,6 +11,8 @@ Trunk (unreleased changes)
 
   IMPROVEMENTS
 
+    HIVE-69. genMapRedTasks uses tree walker. (Namit through zshao)
+
   OPTIMIZATIONS
 
   BUG FIXES

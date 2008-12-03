@@ -37,6 +37,13 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.ql.optimizer.Optimizer;
+import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext;
+import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
+import org.apache.hadoop.hive.ql.optimizer.GenMROperator;
+import org.apache.hadoop.hive.ql.optimizer.GenMRTableScan1;
+import org.apache.hadoop.hive.ql.optimizer.GenMRFileSink1;
+import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink1;
+import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink2;
 import org.apache.hadoop.hive.ql.plan.*;
 import org.apache.hadoop.hive.ql.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.ql.typeinfo.TypeInfoFactory;
@@ -363,6 +370,26 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // Get the clusterby aliases - these are aliased to the entries in the
         // select list
         qbp.setClusterByExprForClause(ctx_1.dest, ast);
+      }
+        break;
+
+      case HiveParser.TOK_DISTRIBUTEBY: {
+        // Get the distribute by  aliases - these are aliased to the entries in the
+        // select list
+        qbp.setDistributeByExprForClause(ctx_1.dest, ast);
+        if (qbp.getClusterByForClause(ctx_1.dest) != null) {
+          throw new SemanticException(ErrorMsg.CLUSTERBY_DISTRIBUTEBY_CONFLICT.getMsg(ast));
+        }
+      }
+        break;
+
+      case HiveParser.TOK_SORTBY: {
+        // Get the sort by aliases - these are aliased to the entries in the
+        // select list
+        qbp.setSortByExprForClause(ctx_1.dest, ast);
+        if (qbp.getClusterByForClause(ctx_1.dest) != null) {
+          throw new SemanticException(ErrorMsg.CLUSTERBY_SORTBY_CONFLICT.getMsg(ast));
+        }
       }
         break;
 
@@ -824,7 +851,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("nls")
-  private Operator<? extends Serializable> putOpInsertMap(Operator<? extends Serializable> op, RowResolver rr) {
+  private Operator<? extends Serializable> putOpInsertMap(Operator<? extends Serializable> op, RowResolver rr) 
+  {
     OpParseContext ctx = new OpParseContext(rr);
     opParseCtx.put(op, ctx);
     return op;
@@ -2011,37 +2039,74 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private Operator genReduceSinkPlan(String dest, QB qb,
                                      Operator input, int numReducers) throws SemanticException {
 
-    // First generate the expression for the key
-    // The cluster by clause has the aliases for the keys
-    ArrayList<exprNodeDesc> keyCols = new ArrayList<exprNodeDesc>();
     RowResolver inputRR = opParseCtx.get(input).getRR();
-    
-    CommonTree clby = qb.getParseInfo().getClusterByForClause(dest);
-    if (clby != null) {
-      int ccount = clby.getChildCount();
+
+    // First generate the expression for the partition and sort keys
+    // The cluster by clause / distribute by clause has the aliases for partition function 
+    CommonTree partitionExprs = qb.getParseInfo().getClusterByForClause(dest);
+    if (partitionExprs == null) {
+      partitionExprs = qb.getParseInfo().getDistributeByForClause(dest);
+    }
+    ArrayList<exprNodeDesc> partitionCols = new ArrayList<exprNodeDesc>();
+    if (partitionExprs != null) {
+      int ccount = partitionExprs.getChildCount();
       for(int i=0; i<ccount; ++i) {
-        CommonTree cl = (CommonTree)clby.getChild(i);
+        CommonTree cl = (CommonTree)partitionExprs.getChild(i);
+        ColumnInfo colInfo = inputRR.get(qb.getParseInfo().getAlias(),
+                                         unescapeIdentifier(cl.getText()));
+        if (colInfo == null) {
+          throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(cl));
+        }
+        partitionCols.add(new exprNodeColumnDesc(colInfo.getType(), colInfo.getInternalName()));
+      }
+    }
+
+    CommonTree sortExprs = qb.getParseInfo().getClusterByForClause(dest);
+    if (sortExprs == null) {
+      sortExprs = qb.getParseInfo().getSortByForClause(dest);
+    }
+
+    ArrayList<exprNodeDesc> sortCols = new ArrayList<exprNodeDesc>();
+    StringBuilder order = new StringBuilder();
+    if (sortExprs != null) {
+      int ccount = sortExprs.getChildCount();
+      for(int i=0; i<ccount; ++i) {
+        CommonTree cl = (CommonTree)sortExprs.getChild(i);
+        
+        if (cl.getType() == HiveParser.TOK_TABSORTCOLNAMEASC) {
+          // SortBy ASC
+          order.append("+");
+          cl = (CommonTree) cl.getChild(0);
+        } else if (cl.getType() == HiveParser.TOK_TABSORTCOLNAMEDESC) {
+          // SortBy DESC
+          order.append("-");
+          cl = (CommonTree) cl.getChild(0);
+        } else {
+          // ClusterBy
+          order.append("+");
+        }
+
         ColumnInfo colInfo = inputRR.get(qb.getParseInfo().getAlias(),
                                          unescapeIdentifier(cl.getText()));
         if (colInfo == null) {
           throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(cl));
         }
         
-        keyCols.add(new exprNodeColumnDesc(colInfo.getType(), colInfo.getInternalName()));
+        sortCols.add(new exprNodeColumnDesc(colInfo.getType(), colInfo.getInternalName()));
       }
     }
 
-    ArrayList<exprNodeDesc> valueCols = new ArrayList<exprNodeDesc>();
-
     // For the generation of the values expression just get the inputs
     // signature and generate field expressions for those
+    ArrayList<exprNodeDesc> valueCols = new ArrayList<exprNodeDesc>();
     for(ColumnInfo colInfo: inputRR.getColumnInfos()) {
       valueCols.add(new exprNodeColumnDesc(colInfo.getType(), colInfo.getInternalName()));
     }
 
     Operator interim = putOpInsertMap(
       OperatorFactory.getAndMakeChild(
-        PlanUtils.getReduceSinkDesc(keyCols, valueCols, -1, keyCols.size(), numReducers, false),
+        PlanUtils.getReduceSinkDesc(sortCols, valueCols, -1, partitionCols, order.toString(),
+            numReducers, false),
         new RowSchema(inputRR.getColumnInfos()),
         input), inputRR);
 
@@ -2227,8 +2292,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (int i=0; i<right.length; i++) {
       Operator oi = (i==0 && right[i] == null ? left : right[i]);
       reduceSinkDesc now = ((ReduceSinkOperator)(oi)).getConf();
-      now.setKeySerializeInfo(PlanUtils.getBinarySortableTableDesc(
-          PlanUtils.getFieldSchemasFromColumnList(now.getKeyCols(), "joinkey")));
+      now.setKeySerializeInfo(
+          PlanUtils.getBinarySortableTableDesc(
+              PlanUtils.getFieldSchemasFromColumnList(now.getKeyCols(), "joinkey"),
+              now.getOrder()
+          )
+      );
     }
   }
   
@@ -2519,14 +2588,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       curr = genSelectPlan(dest, qb, curr);
       Integer limit = qbp.getDestLimit(dest);
 
-      if (qbp.getIsSubQ()) {
-        if (qbp.getClusterByForClause(dest) != null)
-          curr = genReduceSinkPlan(dest, qb, curr, -1);
-        if (limit != null) 
-          curr = genLimitMapRedPlan(dest, qb, curr, limit.intValue(), false);
+      if (qbp.getClusterByForClause(dest) != null
+          || qbp.getDistributeByForClause(dest) != null
+          || qbp.getSortByForClause(dest) != null) {
+        curr = genReduceSinkPlan(dest, qb, curr, -1);
       }
-      else
-      {
+
+      if (qbp.getIsSubQ()) {
+        if (limit != null) {
+          curr = genLimitMapRedPlan(dest, qb, curr, limit.intValue(), false);
+        }
+      } else {
         curr = genConversionOps(dest, qb, curr);
         // exact limit can be taken care of by the fetch operator
         if (limit != null) {
@@ -2693,7 +2765,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       
       // Create the root of the operator tree
-      top = putOpInsertMap(OperatorFactory.get(forwardDesc.class, new RowSchema(rwsch.getColumnInfos())), rwsch);
+      top = putOpInsertMap(OperatorFactory.get(tableScanDesc.class, new RowSchema(rwsch.getColumnInfos())), rwsch);
 
       // Add this to the list of top operators - we always start from a table scan
       this.topOps.put(alias_id, top);
@@ -2930,223 +3002,49 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       mvTask = TaskFactory.get(mv, this.conf);
     }
 
-    // Maintain a map from the top level left most reducer in each of these
-    // trees
-    // to a task. This tells us whether we have to allocate another
-    // root level task or we can reuse an existing one
-    HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = 
-        new HashMap<Operator<? extends Serializable>, Task<? extends Serializable>>();
-    for (String alias_id : this.topOps.keySet()) {
-      Operator<? extends Serializable> topOp = this.topOps.get(alias_id);
-      Operator<? extends Serializable> reduceSink = getReduceSink(topOp);
-      Operator<? extends Serializable> reducer = null;
-      if (reduceSink != null) 
-        reducer = reduceSink.getChildOperators().get(0);      
-      Task<? extends Serializable> rootTask = opTaskMap.get(reducer);
-      if (rootTask == null) {
-        rootTask = TaskFactory.get(getMapRedWork(), this.conf);
-        opTaskMap.put(reducer, rootTask);
-        ((mapredWork) rootTask.getWork()).setReducer(reducer);
-        reduceSinkDesc desc = (reduceSink == null) ? null : (reduceSinkDesc)reduceSink.getConf();
+    // generate map reduce plans
+    GenMRProcContext procCtx = 
+      new GenMRProcContext(
+        new HashMap<Operator<? extends Serializable>, Task<? extends Serializable>>(),
+        new ArrayList<Operator<? extends Serializable>>(),
+        getParseContext(), mvTask, this.rootTasks, this.scratchDir, this.randomid, this.pathid,
+        new HashMap<Operator<? extends Serializable>, GenMapRedCtx>());
 
-        // The number of reducers may be specified in the plan in some cases, or may need to be inferred
-        if (desc != null) {
-          if (desc.getNumReducers() != -1)
-            ((mapredWork) rootTask.getWork()).setNumReduceTasks(new Integer(desc.getNumReducers()));
-          else if (desc.getInferNumReducers() == true)
-            ((mapredWork) rootTask.getWork()).setInferNumReducers(true);
-        }
-        this.rootTasks.add(rootTask);
-      }
-      genTaskPlan(topOp, rootTask, opTaskMap, mvTask);
+    // create a walker which walks the tree in a DFS manner while maintaining the operator stack. The dispatcher
+    // generates the plan from the operator tree
+    Map<Rule, OperatorProcessor> opRules = new LinkedHashMap<Rule, OperatorProcessor>();
+    opRules.put(new RuleRegExp(new String("R0"), ".*"), new GenMROperator());
+    opRules.put(new RuleRegExp(new String("R1"), "TS"), new GenMRTableScan1());
+    opRules.put(new RuleRegExp(new String("R2"), "TS.*RS"), new GenMRRedSink1());
+    opRules.put(new RuleRegExp(new String("R3"), "RS.*RS"), new GenMRRedSink2());
+    opRules.put(new RuleRegExp(new String("R4"), ".*FS"), new GenMRFileSink1());
 
-      // Generate the map work for this alias_id
-      PartitionPruner pruner = this.aliasToPruner.get(alias_id);
-      Set<Partition> parts = null;
-      try {
-        // pass both confirmed and unknown partitions through the map-reduce framework
-        PartitionPruner.PrunedPartitionList partsList = pruner.prune();
-        parts = partsList.getConfirmedPartns();
-        parts.addAll(partsList.getUnknownPartns());
-      } catch (HiveException e) {
-        // Has to use full name to make sure it does not conflict with org.apache.commons.lang.StringUtils
-        LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
-        throw new SemanticException(e.getMessage(), e);
-      }
-      SamplePruner samplePruner = this.aliasToSamplePruner.get(alias_id);
-      mapredWork plan = (mapredWork) rootTask.getWork();
-      for (Partition part : parts) {
-        // Later the properties have to come from the partition as opposed
-        // to from the table in order to support versioning.
-        Path paths[];
-        if (samplePruner != null) {
-          paths = samplePruner.prune(part);
-        }
-        else {
-          paths = part.getPath();
-        }
-        for (Path p: paths) {
-          String path = p.toString();
-          LOG.debug("Adding " + path + " of table" + alias_id);
-          // Add the path to alias mapping
-          if (plan.getPathToAliases().get(path) == null) {
-            plan.getPathToAliases().put(path, new ArrayList<String>());
-          }
-          plan.getPathToAliases().get(path).add(alias_id);
-          plan.getPathToPartitionInfo().put(path, Utilities.getPartitionDesc(part));
-          LOG.debug("Information added for path " + path);
-        }
-      }
-      plan.getAliasToWork().put(alias_id, topOp);
-      setKeyAndValueDesc(plan, topOp);
-      LOG.debug("Created Map Work for " + alias_id);
-    }
+    // The dispatcher fires the processor corresponding to the closest matching rule and passes the context along
+    Dispatcher disp = new DefaultRuleDispatcher(opRules, procCtx);
+    
+    OpGraphWalker ogw = new GenMapRedWalker(disp);
+    ogw.startWalking(this.topOps.values());
+
+    // reduce sink does not have any kids
+    breakOperatorTree(procCtx.getRootOps());
   }
 
-  private void setKeyAndValueDesc(mapredWork plan, Operator<? extends Serializable> topOp) {
-    if (topOp instanceof ReduceSinkOperator) {
-      ReduceSinkOperator rs = (ReduceSinkOperator)topOp;
-      plan.setKeyDesc(rs.getConf().getKeySerializeInfo());
-      int tag = Math.max(0, rs.getConf().getTag());
-      List<tableDesc> tagToSchema = plan.getTagToValueDesc();
-      while (tag + 1 > tagToSchema.size()) {
-        tagToSchema.add(null);
-      }
-      tagToSchema.set(tag, rs.getConf().getValueSerializeInfo());
-    } else {
-      List<Operator<? extends Serializable>> children = topOp.getChildOperators(); 
-      if (children != null) {
-        for(Operator<? extends Serializable> op: children) {
-          setKeyAndValueDesc(plan, op);
-        }
-      }
-    }
-  }
-  @SuppressWarnings("nls")
-  private void genTaskPlan(Operator<? extends Serializable> op, Task<? extends Serializable> currTask,
-      HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> redTaskMap, 
-      Task<? extends Serializable> mvTask) {
-    // Check if this is a file sink operator
-    if ((op.getClass() == FileSinkOperator.class) && (mvTask != null)) { 
-      // If this is a file sink operator then set the move task to be dependent
-      // on the current task
-      currTask.addDependentTask(mvTask);
-    }
-
-    List<Operator<? extends Serializable>> childOps = op.getChildOperators();
-
-    // If there are no children then we are done
-    if (childOps == null) {
+  private void breakOperatorTree(Collection<Operator<? extends Serializable>> topOps) {
+    if (topOps == null) 
       return;
-    }
-
-    // Otherwise go through the children and check for the operator following
-    // the reduce sink operator
-    mapredWork plan = (mapredWork) currTask.getWork();
-    for (int i = 0; i < childOps.size(); ++i) {
-      Operator<? extends Serializable> child = childOps.get(i);
-      
-      if (child.getClass() == ReduceSinkOperator.class) {
-        // Get the operator following the reduce sink
-        assert (child.getChildOperators().size() == 1);
-
-        Operator<? extends Serializable> reducer = child.getChildOperators().get(0);
-        assert (plan.getReducer() != null);
-        if (plan.getReducer() == reducer) {
-          if (child.getChildOperators().get(0).getClass() == JoinOperator.class)
-            plan.setNeedsTagging(true);
-
-          // Recurse on the reducer
-          genTaskPlan(reducer, currTask, redTaskMap, mvTask);
-        }
-        else if (plan.getReducer() != reducer) {
-          Task<? extends Serializable> ctask = null;
-          mapredWork cplan = null;
-
-          // First check if the reducer already has an associated task
-          ctask = redTaskMap.get(reducer);
-          if (ctask == null) {
-            // For this case we need to generate a new task
-            cplan = getMapRedWork();
-            ctask = TaskFactory.get(cplan, this.conf);
-            // Add the reducer
-            cplan.setReducer(reducer);
-            if (((reduceSinkDesc)child.getConf()).getNumReducers() != -1)
-              cplan.setNumReduceTasks(new Integer(((reduceSinkDesc)child.getConf()).getNumReducers()));
-            else
-              cplan.setInferNumReducers(((reduceSinkDesc)child.getConf()).getInferNumReducers());
-            redTaskMap.put(reducer, ctask);
-
-            // Recurse on the reducer
-            genTaskPlan(reducer, ctask, redTaskMap, mvTask);
-
-            // generate the temporary file
-            String taskTmpDir = this.scratchDir + File.separator + this.randomid + '.' + this.pathid ;
-            this.pathid++;
-
-            // Go over the row schema of the input operator and generate the
-            // column names using that
-            StringBuilder sb = new StringBuilder();
-            boolean isfirst = true;
-            for(ColumnInfo colInfo: op.getSchema().getSignature()) {
-              if (!isfirst) {
-                sb.append(",");
-              }
-              sb.append(colInfo.getInternalName());
-              isfirst = false;
-            }
-
-            tableDesc tt_desc = PlanUtils.getBinaryTableDesc(
-                PlanUtils.getFieldSchemasFromRowSchema(op.getSchema(), "temporarycol")); 
-
-            // Create a file sink operator for this file name
-            Operator<? extends Serializable> fs_op = putOpInsertMap(OperatorFactory.get(new fileSinkDesc(taskTmpDir, tt_desc),
-                                                                                        op.getSchema()), null);
-
-            // replace the reduce child with this operator
-            childOps.set(i, fs_op);
-            
-            List<Operator<? extends Serializable>> parent = new ArrayList<Operator<? extends Serializable>>();
-            parent.add(op);
-            fs_op.setParentOperators(parent);
-
-            // Add the path to alias mapping
-            if (cplan.getPathToAliases().get(taskTmpDir) == null) {
-              cplan.getPathToAliases().put(taskTmpDir, new ArrayList<String>());
-            }
-
-            String streamDesc;
-            if (child.getChildOperators().get(0).getClass() == JoinOperator.class)
-              streamDesc = "$INTNAME";
-            else
-              streamDesc = taskTmpDir;
-
-
-            cplan.getPathToAliases().get(taskTmpDir).add(streamDesc);
-
-            cplan.getPathToPartitionInfo().put(taskTmpDir,
-                                               new partitionDesc(tt_desc, null));
-
-            cplan.getAliasToWork().put(streamDesc, child);
-            setKeyAndValueDesc(cplan, child);
-
-            // Make this task dependent on the current task
-            currTask.addDependentTask(ctask);
-
-            // TODO: Allocate work to remove the temporary files and make that
-            // dependent on the cTask
-            if (child.getChildOperators().get(0).getClass() == JoinOperator.class)
-              cplan.setNeedsTagging(true);
-          }
-        }
-        child.setChildOperators(null);
-
-      } else {
-        // For any other operator just recurse
-        genTaskPlan(child, currTask, redTaskMap, mvTask);
-      }
+    Iterator<Operator<? extends Serializable>> topOpsIter = topOps.iterator();
+    while (topOpsIter.hasNext()) {
+      Operator<? extends Serializable> topOp = topOpsIter.next();
+      breakOperatorTree(topOp);
     }
   }
+
+  private void breakOperatorTree(Operator<? extends Serializable> topOp) {
+    breakOperatorTree(topOp.getChildOperators());
+    if (topOp instanceof ReduceSinkOperator)
+      topOp.setChildOperators(null);
+  }
+
 
   @SuppressWarnings("nls")
   public Phase1Ctx initPhase1Ctx() {
@@ -3156,23 +3054,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ctx_1.dest = "reduce";
 
     return ctx_1;
-  }
-
-  private mapredWork getMapRedWork() {
-
-    mapredWork work = new mapredWork();
-    work.setPathToAliases(new LinkedHashMap<String, ArrayList<String>>());
-    work.setPathToPartitionInfo(new LinkedHashMap<String, partitionDesc>());
-    work.setAliasToWork(new HashMap<String, Operator<? extends Serializable>>());
-    work.setTagToValueDesc(new ArrayList<tableDesc>());
-    work.setReducer(null);
-
-    return work;
-  }
-
-  private boolean pushSelect(Operator<? extends Serializable> op, List<String> colNames) {
-    if (opParseCtx.get(op).getRR().getColumnInfos().size() == colNames.size()) return false;
-    return true;
   }
 
   @Override
@@ -3203,7 +3084,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     pCtx = optm.optimize();
     init(pCtx);
     qb = pCtx.getQB();
-
+    
     // Do any partition pruning
     genPartitionPruners(qb);
     LOG.info("Completed partition pruning");

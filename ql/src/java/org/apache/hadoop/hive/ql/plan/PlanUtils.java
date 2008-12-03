@@ -102,7 +102,7 @@ public class PlanUtils {
   /** 
    * Generate the table descriptor of DynamicSerDe and TBinarySortableProtocol.
    */
-  public static tableDesc getBinarySortableTableDesc(List<FieldSchema> fieldSchemas) {
+  public static tableDesc getBinarySortableTableDesc(List<FieldSchema> fieldSchemas, String order) {
     String structName = "binary_sortable_table";
     return new tableDesc(
         DynamicSerDe.class,
@@ -110,10 +110,13 @@ public class PlanUtils {
         SequenceFileOutputFormat.class,
         Utilities.makeProperties(
             "name", structName,        
-            org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, TBinarySortableProtocol.class.getName(),
+            org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT,
+              TBinarySortableProtocol.class.getName(),
             org.apache.hadoop.hive.serde.Constants.SERIALIZATION_DDL, 
-              MetaStoreUtils.getDDLFromFieldSchema(structName, fieldSchemas)
-        ));    
+              MetaStoreUtils.getDDLFromFieldSchema(structName, fieldSchemas),
+            org.apache.hadoop.hive.serde.Constants.SERIALIZATION_SORT_ORDER, 
+              order
+        ));
   }
 
   /** 
@@ -182,11 +185,12 @@ public class PlanUtils {
   public static reduceSinkDesc getReduceSinkDesc(ArrayList<exprNodeDesc> keyCols, 
                                                  ArrayList<exprNodeDesc> valueCols, 
                                                  int tag, 
-                                                 ArrayList<exprNodeDesc> partitionCols, 
+                                                 ArrayList<exprNodeDesc> partitionCols,
+                                                 String order,
                                                  int numReducers, boolean inferNumReducers) {
     
     return new reduceSinkDesc(keyCols, valueCols, tag, partitionCols, numReducers, inferNumReducers,
-        getBinarySortableTableDesc(getFieldSchemasFromColumnList(keyCols, "reducesinkkey")),
+        getBinarySortableTableDesc(getFieldSchemasFromColumnList(keyCols, "reducesinkkey"), order),
         getBinaryTableDesc(getFieldSchemasFromColumnList(valueCols, "reducesinkvalue")));
   }
 
@@ -221,7 +225,12 @@ public class PlanUtils {
       partitionCols.add(SemanticAnalyzer.getFuncExprNodeDesc("rand"));
     }
     
-    return getReduceSinkDesc(keyCols, valueCols, tag, partitionCols, numReducers, inferNumReducers);
+    StringBuilder order = new StringBuilder();
+    for (int i=0; i<keyCols.size(); i++) {
+      order.append("+");
+    }
+    return getReduceSinkDesc(keyCols, valueCols, tag, partitionCols, order.toString(),
+        numReducers, inferNumReducers);
   }
   
   

@@ -15,10 +15,11 @@ STAGE PLANS:
                     expr: key
                     type: string
               Group By Operator
-              
-                    expr: sum(UDFToDouble(0))
+                aggregations:
+                      expr: sum(UDFToDouble(0))
                 mode: hash
                 Reduce Output Operator
+                  sort order: 
                   Map-reduce partition columns:
                         expr: rand()
                         type: double
@@ -28,8 +29,8 @@ STAGE PLANS:
                         type: double
       Reduce Operator Tree:
         Group By Operator
-        
-              expr: sum(VALUE.0)
+          aggregations:
+                expr: sum(VALUE.0)
           mode: unknown
           Select Operator
             expressions:

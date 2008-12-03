@@ -28,7 +28,7 @@
              <boolean>true</boolean> 
             </void> 
             <void property="sourceDir"> 
-             <string>/tmp/hive-athusoo/37064530/676639755.10000.insclause-0</string> 
+             <string>/tmp/hive-njain/1238482884/612877942.10000.insclause-0</string> 
             </void> 
             <void property="targetDir"> 
              <string>../build/ql/test/data/warehouse/union.out</string> 
@@ -55,7 +55,7 @@
      <object class="java.util.HashMap"> 
       <void method="put"> 
        <string>null-subquery1:unioninput-subquery1:src</string> 
-       <object id="ForwardOperator0" class="org.apache.hadoop.hive.ql.exec.ForwardOperator"> 
+       <object id="TableScanOperator0" class="org.apache.hadoop.hive.ql.exec.TableScanOperator"> 
         <void property="childOperators"> 
          <object class="java.util.ArrayList"> 
           <void method="add"> 
@@ -67,7 +67,7 @@
                 <void property="childOperators"> 
                  <object id="ArrayList0" class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <object id="ForwardOperator1" class="org.apache.hadoop.hive.ql.exec.ForwardOperator"> 
+                   <object id="ForwardOperator0" class="org.apache.hadoop.hive.ql.exec.ForwardOperator"> 
                     <void property="childOperators"> 
                      <object class="java.util.ArrayList"> 
                       <void method="add"> 
@@ -79,7 +79,7 @@
                             <void property="conf"> 
                              <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                               <void property="dirName"> 
-                               <string>/tmp/hive-athusoo/37064530/676639755.10000.insclause-0</string> 
+                               <string>/tmp/hive-njain/1238482884/612877942.10000.insclause-0</string> 
                               </void> 
                               <void property="tableInfo"> 
                                <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -185,7 +185,7 @@
                         <void property="parentOperators"> 
                          <object class="java.util.ArrayList"> 
                           <void method="add"> 
-                           <object idref="ForwardOperator1"/> 
+                           <object idref="ForwardOperator0"/> 
                           </void> 
                          </object> 
                         </void> 
@@ -314,7 +314,7 @@
                             <void property="parentOperators"> 
                              <object class="java.util.ArrayList"> 
                               <void method="add"> 
-                               <object id="ForwardOperator2" class="org.apache.hadoop.hive.ql.exec.ForwardOperator"> 
+                               <object id="TableScanOperator1" class="org.apache.hadoop.hive.ql.exec.TableScanOperator"> 
                                 <void property="childOperators"> 
                                  <object class="java.util.ArrayList"> 
                                   <void method="add"> 
@@ -536,7 +536,7 @@
             <void property="parentOperators"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
-               <object idref="ForwardOperator0"/> 
+               <object idref="TableScanOperator0"/> 
               </void> 
              </object> 
             </void> 
@@ -583,14 +583,14 @@
       </void> 
       <void method="put"> 
        <string>null-subquery2:unioninput-subquery2:src</string> 
-       <object idref="ForwardOperator2"/> 
+       <object idref="TableScanOperator1"/> 
       </void> 
      </object> 
     </void> 
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/athusoo/apacheprojects/hive_local_ws1/trunk/build/ql/test/data/warehouse/src</string> 
+       <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>null-subquery1:unioninput-subquery1:src</string> 
@@ -605,7 +605,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/athusoo/apacheprojects/hive_local_ws1/trunk/build/ql/test/data/warehouse/src</string> 
+       <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"/> 
@@ -657,7 +657,7 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/data/users/athusoo/apacheprojects/hive_local_ws1/trunk/build/ql/test/data/warehouse/src</string> 
+             <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/src</string> 
             </void> 
            </object> 
           </void> 

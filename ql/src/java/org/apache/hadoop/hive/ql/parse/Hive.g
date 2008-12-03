@@ -54,6 +54,8 @@ TOK_ALIASLIST;
 TOK_GROUPBY;
 TOK_ORDERBY;
 TOK_CLUSTERBY;
+TOK_DISTRIBUTEBY;
+TOK_SORTBY;
 TOK_UNION;
 TOK_JOIN;
 TOK_LEFTOUTERJOIN;
@@ -391,16 +393,24 @@ regular_body
    whereClause?
    groupByClause?
    orderByClause?
-   clusterByClause? 
-   limitClause? -> ^(TOK_QUERY fromClause ^(TOK_INSERT insertClause selectClause whereClause? groupByClause? orderByClause? clusterByClause? limitClause?))
+   clusterByClause?
+   distributeByClause?
+   sortByClause?
+   limitClause? -> ^(TOK_QUERY fromClause ^(TOK_INSERT insertClause
+                     selectClause whereClause? groupByClause? orderByClause? clusterByClause?
+                     distributeByClause? sortByClause? limitClause?))
    |
    selectClause
    fromClause
    whereClause?
    groupByClause?
    orderByClause?
-   clusterByClause? 
-   limitClause? -> ^(TOK_QUERY fromClause ^(TOK_INSERT ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE)) selectClause whereClause? groupByClause? orderByClause? clusterByClause? limitClause?))
+   clusterByClause?
+   distributeByClause?
+   sortByClause?
+   limitClause? -> ^(TOK_QUERY fromClause ^(TOK_INSERT ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
+                     selectClause whereClause? groupByClause? orderByClause? clusterByClause?
+                     distributeByClause? sortByClause? limitClause?))
    ;
 
 
@@ -410,20 +420,28 @@ body
    selectClause
    whereClause?
    groupByClause?
-   orderByClause? 
-   clusterByClause? 
-   limitClause? -> ^(TOK_INSERT insertClause? selectClause whereClause? groupByClause? orderByClause? clusterByClause? limitClause?)
+   orderByClause?
+   clusterByClause?
+   distributeByClause?
+   sortByClause?
+   limitClause? -> ^(TOK_INSERT insertClause?
+                     selectClause whereClause? groupByClause? orderByClause? clusterByClause?
+                     distributeByClause? sortByClause? limitClause?)
    |
    selectClause
    whereClause?
    groupByClause?
-   orderByClause? 
-   clusterByClause? 
-   limitClause? -> ^(TOK_INSERT ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE)) selectClause whereClause? groupByClause? orderByClause? clusterByClause? limitClause?)
+   orderByClause?
+   clusterByClause?
+   distributeByClause?
+   sortByClause?
+   limitClause? -> ^(TOK_INSERT ^(TOK_DESTINATION ^(TOK_DIR TOK_TMP_FILE))
+                     selectClause whereClause? groupByClause? orderByClause? clusterByClause?
+                     distributeByClause? sortByClause? limitClause?)
    ;
-   
+
 insertClause
-   : 
+   :
    KW_INSERT KW_OVERWRITE destination -> ^(TOK_DESTINATION destination)
    ;
 
@@ -446,12 +464,17 @@ selectClause
     KW_SELECT (KW_ALL | dist=KW_DISTINCT)?
     selectList -> {$dist == null}? ^(TOK_SELECT selectList)
                ->                  ^(TOK_SELECTDI selectList)
+    |
+    KW_SELECT KW_TRANSFORM trfmClause -> ^(TOK_SELECT ^(TOK_SELEXPR trfmClause) )
+    |
+    KW_MAP trfmClause -> ^(TOK_SELECT ^(TOK_SELEXPR trfmClause) )
+    |
+    KW_REDUCE trfmClause -> ^(TOK_SELECT ^(TOK_SELEXPR trfmClause) )
     ;
 
 selectList
     :
     selectItem ( COMMA  selectItem )* -> selectItem+
-    | trfmClause -> ^(TOK_SELEXPR trfmClause)
     ;
 
 selectItem
@@ -461,10 +484,9 @@ selectItem
     
 trfmClause
     :
-    KW_TRANSFORM
-    LPAREN expressionList RPAREN
+    ( LPAREN expressionList RPAREN | expressionList )
     KW_USING StringLiteral
-    (KW_AS LPAREN aliasList RPAREN)?
+    (KW_AS (LPAREN aliasList RPAREN | aliasList) )?
     -> ^(TOK_TRANSFORM expressionList StringLiteral aliasList?)
     ;
     
@@ -585,18 +607,25 @@ orderByExpression
 
 clusterByClause
     :
-    KW_CLUSTER KW_BY 
-    Identifier 
+    KW_CLUSTER KW_BY
+    Identifier
     ( COMMA Identifier )* -> ^(TOK_CLUSTERBY Identifier+)
     ;
 
-clusterByExpression
-    :
-    expression
+distributeByClause:
+    KW_DISTRIBUTE KW_BY
+    Identifier
+    ( COMMA Identifier )* -> ^(TOK_DISTRIBUTEBY Identifier+)
+    ;
+
+sortByClause:
+    KW_SORT KW_BY
+    columnNameOrder
+    ( COMMA columnNameOrder)* -> ^(TOK_SORTBY columnNameOrder+)
     ;
 
 // fun(par1, par2, par3)
-function 
+function
     : // LEFT and RIGHT keywords are also function names
     Identifier
     LPAREN (
@@ -822,6 +851,8 @@ KW_LOCAL: 'LOCAL';
 KW_TRANSFORM : 'TRANSFORM';
 KW_USING: 'USING';
 KW_CLUSTER: 'CLUSTER';
+KW_DISTRIBUTE: 'DISTRIBUTE';
+KW_SORT: 'SORT';
 KW_UNION: 'UNION';
 KW_LOAD: 'LOAD';
 KW_DATA: 'DATA';
@@ -849,6 +880,7 @@ KW_TIMESTAMP: 'TIMESTAMP';
 KW_STRING: 'STRING';
 KW_ARRAY: 'ARRAY';
 KW_MAP: 'MAP';
+KW_REDUCE: 'REDUCE';
 KW_PARTITIONED: 'PARTITIONED';
 KW_CLUSTERED: 'CLUSTERED';
 KW_SORTED: 'SORTED';

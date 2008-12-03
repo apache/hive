@@ -10,7 +10,7 @@
      <object class="java.util.HashMap"> 
       <void method="put"> 
        <string>c:b:src2</string> 
-       <object id="ForwardOperator0" class="org.apache.hadoop.hive.ql.exec.ForwardOperator"> 
+       <object id="TableScanOperator0" class="org.apache.hadoop.hive.ql.exec.TableScanOperator"> 
         <void property="childOperators"> 
          <object class="java.util.ArrayList"> 
           <void method="add"> 
@@ -59,6 +59,10 @@
                           <void method="put"> 
                            <string>name</string> 
                            <string>binary_sortable_table</string> 
+                          </void> 
+                          <void method="put"> 
+                           <string>serialization.sort.order</string> 
+                           <string>+</string> 
                           </void> 
                           <void method="put"> 
                            <string>serialization.ddl</string> 
@@ -378,7 +382,7 @@
             <void property="parentOperators"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
-               <object idref="ForwardOperator0"/> 
+               <object idref="TableScanOperator0"/> 
               </void> 
              </object> 
             </void> 
@@ -425,7 +429,7 @@
       </void> 
       <void method="put"> 
        <string>c:a:src1</string> 
-       <object id="ForwardOperator1" class="org.apache.hadoop.hive.ql.exec.ForwardOperator"> 
+       <object id="TableScanOperator1" class="org.apache.hadoop.hive.ql.exec.TableScanOperator"> 
         <void property="childOperators"> 
          <object class="java.util.ArrayList"> 
           <void method="add"> 
@@ -470,6 +474,10 @@
                           <void method="put"> 
                            <string>name</string> 
                            <string>binary_sortable_table</string> 
+                          </void> 
+                          <void method="put"> 
+                           <string>serialization.sort.order</string> 
+                           <string>+</string> 
                           </void> 
                           <void method="put"> 
                            <string>serialization.ddl</string> 
@@ -778,7 +786,7 @@
             <void property="parentOperators"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
-               <object idref="ForwardOperator1"/> 
+               <object idref="TableScanOperator1"/> 
               </void> 
              </object> 
             </void> 
@@ -834,7 +842,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/home/njain/workspace/hadoop-0.17/build/contrib/hive/ql/test/data/warehouse/src</string> 
+       <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>c:a:src1</string> 
@@ -849,7 +857,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/home/njain/workspace/hadoop-0.17/build/contrib/hive/ql/test/data/warehouse/src</string> 
+       <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"/> 
@@ -901,7 +909,7 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/home/njain/workspace/hadoop-0.17/build/contrib/hive/ql/test/data/warehouse/src</string> 
+             <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/src</string> 
             </void> 
            </object> 
           </void> 
@@ -931,7 +939,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>/tmp/hive-njain/198286603/204778341.10001.insclause-0</string> 
+                     <string>/tmp/hive-njain/1109739262/425333867.10001.insclause-0</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 

@@ -18,22 +18,20 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.util.*;
-import java.io.*;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.parse.OpParseContext;
-import org.apache.hadoop.hive.ql.plan.mapredWork;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.mapred.OutputCollector;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.explain;
-import org.apache.hadoop.hive.ql.parse.RowResolver;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.mapredWork;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.mapred.OutputCollector;
 
 /**
  * Base operator implementation
@@ -289,22 +287,12 @@ public abstract class Operator <T extends Serializable> implements Serializable 
     }    
   }
 
-  public List<String> mergeColListsFromChildren(List<String> colList, 
-                                        HashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx) {
-    return colList;
-  }
-
-  public List<String> genColLists(HashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx) 
-    throws SemanticException {
-    List<String> colList = new ArrayList<String>();
-    if (childOperators != null)
-      for(Operator<? extends Serializable> o: childOperators)
-        colList = Utilities.mergeUniqElems(colList, o.genColLists(opParseCtx));
-
-    List<String> cols = mergeColListsFromChildren(colList, opParseCtx);
-    OpParseContext ctx = opParseCtx.get(this);
-    ctx.setColNames(cols);
-    return cols;
+  /**
+   * returns the name of the operator - specific subclasses can override the name as and when needed
+   * @return the name of the operator
+   */
+  public String getOperatorName() {
+    return new String("OP");
   }
 
 }

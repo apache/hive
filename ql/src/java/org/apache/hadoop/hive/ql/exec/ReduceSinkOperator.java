@@ -18,17 +18,16 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.HashMap;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.reduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.tableDesc;
-import org.apache.hadoop.hive.ql.io.*;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
@@ -38,9 +37,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.hive.ql.parse.OpParseContext;
-import org.apache.hadoop.hive.ql.parse.RowResolver;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
  * Reduce Sink Operator sends output to the reduce stage
@@ -200,61 +196,12 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
       throw new HiveException (e);
     }
   }
-  
-  public List<String> genColLists(HashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx) 
-    throws SemanticException {
-    RowResolver redSinkRR = opParseCtx.get(this).getRR();
-    List<String> childColLists = new ArrayList<String>();
 
-    for(Operator<? extends Serializable> o: childOperators)
-      childColLists = Utilities.mergeUniqElems(childColLists, o.genColLists(opParseCtx));
-
-    List<String> colLists = new ArrayList<String>();
-    ArrayList<exprNodeDesc> keys = conf.getKeyCols();
-    for (exprNodeDesc key : keys)
-      colLists = Utilities.mergeUniqElems(colLists, key.getCols());
-
-    // In case of extract child, see the columns used and propagate them
-    if ((childOperators.size() == 1) && (childOperators.get(0) instanceof ExtractOperator)) {
-      assert parentOperators.size() == 1;
-      Operator<? extends Serializable> par = parentOperators.get(0);
-      RowResolver parRR = opParseCtx.get(par).getRR();
-
-      for (String childCol : childColLists) {
-        String [] nm = redSinkRR.reverseLookup(childCol);
-        ColumnInfo cInfo = parRR.get(nm[0],nm[1]);
-        if (!colLists.contains(cInfo.getInternalName()))
-          colLists.add(cInfo.getInternalName());
-      }
-    }
-    else if ((childOperators.size() == 1) && (childOperators.get(0) instanceof JoinOperator)) {
-      assert parentOperators.size() == 1;
-      Operator<? extends Serializable> par = parentOperators.get(0);
-      RowResolver parRR = opParseCtx.get(par).getRR();
-      RowResolver childRR = opParseCtx.get(childOperators.get(0)).getRR();
-
-      for (String childCol : childColLists) {
-        String [] nm = childRR.reverseLookup(childCol);
-        ColumnInfo cInfo = redSinkRR.get(nm[0],nm[1]);
-        if (cInfo != null) {
-          cInfo = parRR.get(nm[0], nm[1]);
-          if (!colLists.contains(cInfo.getInternalName()))
-            colLists.add(cInfo.getInternalName());
-        }
-      }
-    }
-    else {
-      
-      // Reduce Sink contains the columns needed - no need to aggregate from children
-      ArrayList<exprNodeDesc> vals = conf.getValueCols();
-      for (exprNodeDesc val : vals)
-        colLists = Utilities.mergeUniqElems(colLists, val.getCols());
-    }
-
-    OpParseContext ctx = opParseCtx.get(this);
-    ctx.setColNames(colLists);
-    opParseCtx.put(this, ctx);
-    return colLists;
+  /**
+   * @return the name of the operator
+   */
+  public String getOperatorName() {
+    return new String("RS");
   }
-
+  
 }

@@ -163,4 +163,11 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
       throw new HiveException (e);
     }
   }
+
+  /**
+   * @return the name of the operator
+   */
+  public String getOperatorName() {
+    return new String("FS");
+  }
 }

@@ -12,10 +12,11 @@ STAGE PLANS:
         src 
             Select Operator
               Group By Operator
-              
-                    expr: count(1)
+                aggregations:
+                      expr: count(1)
                 mode: hash
                 Reduce Output Operator
+                  sort order: 
                   Map-reduce partition columns:
                         expr: rand()
                         type: double
@@ -25,8 +26,8 @@ STAGE PLANS:
                         type: bigint
       Reduce Operator Tree:
         Group By Operator
-        
-              expr: count(VALUE.0)
+          aggregations:
+                expr: count(VALUE.0)
           mode: unknown
           Select Operator
             expressions:

@@ -18,19 +18,15 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import java.util.List;
 
 /**
  * Implementation of the Operator Parse Context. It maintains the parse context
  * that may be needed by an operator. Currently, it only maintains the row
- * resolver and the list of columns used by the operator
+ * resolver.
  **/
 
 public class OpParseContext {
   private RowResolver rr;  // row resolver for the operator
-
-  // list of internal column names used
-  private List<String> colNames;
 
   /**
    * @param rr row resolver
@@ -51,19 +47,5 @@ public class OpParseContext {
    */
   public void setRR(RowResolver rr) {
     this.rr = rr;
-  }
-
-  /**
-   * @return the column names desired
-   */
-  public List<String> getColNames() {
-    return colNames;
-  }
-
-  /**
-   * @param colNames the column names to set
-   */
-  public void setColNames(List<String> colNames) {
-    this.colNames = colNames;
   }
 }

@@ -19,6 +19,7 @@ STAGE PLANS:
                 key expressions:
                       expr: substr(0, 4, 1)
                       type: string
+                sort order: +
                 Map-reduce partition columns:
                       expr: rand()
                       type: double
@@ -38,11 +39,12 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /tmp/hive-njain/911936039/66288606.10001 
+        /tmp/hive-njain/53979816/107916670.10001 
           Reduce Output Operator
             key expressions:
                   expr: 0
                   type: string
+            sort order: +
             Map-reduce partition columns:
                   expr: 0
                   type: string

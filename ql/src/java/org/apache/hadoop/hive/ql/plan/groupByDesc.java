@@ -70,7 +70,7 @@ public class groupByDesc implements java.io.Serializable {
     this.keys = keys;
   }
   
-  @explain(displayName="")
+  @explain(displayName="aggregations")
   public java.util.ArrayList<org.apache.hadoop.hive.ql.plan.aggregationDesc> getAggregators() {
     return this.aggregators;
   }

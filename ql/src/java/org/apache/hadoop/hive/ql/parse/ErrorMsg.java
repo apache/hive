@@ -63,6 +63,8 @@ public enum ErrorMsg {
   INVALID_TBL_DDL_SERDE("Either list of columns or a custom serializer should be specified"),
   TARGET_TABLE_COLUMN_MISMATCH("Cannot insert into target table because column number/types are different"),
   TABLE_ALIAS_NOT_ALLOWED("Table Alias not Allowed in Sampling Clause"),
+  CLUSTERBY_DISTRIBUTEBY_CONFLICT("Cannot have both Cluster By and Distribute By Clauses"),
+  CLUSTERBY_SORTBY_CONFLICT("Cannot have both Cluster By and Sort By Clauses"),
   NON_BUCKETED_TABLE("Sampling Expression Needed for Non-Bucketed Table");
 
   private String mesg;

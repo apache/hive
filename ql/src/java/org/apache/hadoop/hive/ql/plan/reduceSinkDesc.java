@@ -139,5 +139,17 @@ public class reduceSinkDesc implements Serializable {
   public void setValueSerializeInfo(tableDesc valueSerializeInfo) {
     this.valueSerializeInfo = valueSerializeInfo;
   }
+
+  /**
+   * Returns the sort order of the key columns.
+   * @return null, which means ascending order for all key columns,
+   *   or a String of the same length as key columns, that consists of only 
+   *   "+" (ascending order) and "-" (descending order). 
+   */
+  @explain(displayName="sort order")
+  public String getOrder() {
+    return keySerializeInfo.getProperties().getProperty(
+        org.apache.hadoop.hive.serde.Constants.SERIALIZATION_SORT_ORDER);
+  }
   
 }

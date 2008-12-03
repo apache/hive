@@ -15,6 +15,7 @@ STAGE PLANS:
               key expressions:
                     expr: key
                     type: string
+              sort order: +
               Map-reduce partition columns:
                     expr: rand()
                     type: double
@@ -24,8 +25,8 @@ STAGE PLANS:
                     type: string
       Reduce Operator Tree:
         Group By Operator
-        
-              expr: sum(UDFToDouble(VALUE.0))
+          aggregations:
+                expr: sum(UDFToDouble(VALUE.0))
           keys:
                 expr: KEY.0
                 type: string
@@ -39,11 +40,12 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /tmp/hive-njain/485297652/61546074.10001 
+        /tmp/hive-njain/450793281/288129670.10001 
           Reduce Output Operator
             key expressions:
                   expr: 0
                   type: string
+            sort order: +
             Map-reduce partition columns:
                   expr: 0
                   type: string
@@ -53,8 +55,8 @@ STAGE PLANS:
                   type: double
       Reduce Operator Tree:
         Group By Operator
-        
-              expr: sum(VALUE.0)
+          aggregations:
+                expr: sum(VALUE.0)
           keys:
                 expr: KEY.0
                 type: string

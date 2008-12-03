@@ -26,6 +26,7 @@ STAGE PLANS:
                   key expressions:
                         expr: tkey
                         type: string
+                  sort order: +
                   Map-reduce partition columns:
                         expr: tkey
                         type: string
@@ -47,11 +48,12 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /tmp/hive-njain/195632265/461794176.10001 
+        /tmp/hive-njain/458204227/247333025.10001 
           Reduce Output Operator
             key expressions:
                   expr: 0
                   type: string
+            sort order: +
             Map-reduce partition columns:
                   expr: 0
                   type: string

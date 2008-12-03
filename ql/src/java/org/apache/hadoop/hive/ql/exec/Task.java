@@ -109,11 +109,17 @@ public abstract class Task <T extends Serializable> implements Serializable {
     return parentTasks;
   }
 
-  public void addDependentTask(Task<? extends Serializable> dependent) {
+  /**
+   * Add a dependent task on the current task. Return if the dependency already existed or is this a new one
+   * @return true if the task got added false if it already existed
+   */
+  public boolean addDependentTask(Task<? extends Serializable> dependent) {
+    boolean ret = false;
     if (getChildTasks() == null) {
       setChildTasks(new ArrayList<Task<? extends Serializable>>());
     }
     if (!getChildTasks().contains(dependent)) {
+      ret = true;
       getChildTasks().add(dependent);
       if (dependent.getParentTasks() == null) {
         dependent.setParentTasks(new ArrayList<Task<? extends Serializable>>());
@@ -121,6 +127,19 @@ public abstract class Task <T extends Serializable> implements Serializable {
       if (!dependent.getParentTasks().contains(this)) {
         dependent.getParentTasks().add(this);
       }
+    }
+    return ret;
+  }
+
+  /**
+   * remove the dependent task
+   * @param dependent the task to remove
+   */
+  public void removeDependentTask(Task<? extends Serializable> dependent) {
+    if ((getChildTasks() != null) && (getChildTasks().contains(dependent))) {
+      getChildTasks().remove(dependent);
+      if ((dependent.getParentTasks() != null) && (dependent.getParentTasks().contains(this)))
+        dependent.getParentTasks().remove(this);
     }
   }
 

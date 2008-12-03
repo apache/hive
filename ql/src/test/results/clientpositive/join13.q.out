@@ -21,6 +21,7 @@ STAGE PLANS:
                 key expressions:
                       expr: 0
                       type: string
+                sort order: +
                 Map-reduce partition columns:
                       expr: 0
                       type: string
@@ -45,6 +46,7 @@ STAGE PLANS:
                   key expressions:
                         expr: 0
                         type: string
+                  sort order: +
                   Map-reduce partition columns:
                         expr: 0
                         type: string
@@ -75,6 +77,7 @@ STAGE PLANS:
             key expressions:
                   expr: (UDFToDouble(0) + UDFToDouble(2))
                   type: double
+            sort order: +
             Map-reduce partition columns:
                   expr: (UDFToDouble(0) + UDFToDouble(2))
                   type: double
@@ -103,6 +106,7 @@ STAGE PLANS:
                   key expressions:
                         expr: UDFToDouble(0)
                         type: double
+                  sort order: +
                   Map-reduce partition columns:
                         expr: UDFToDouble(0)
                         type: double

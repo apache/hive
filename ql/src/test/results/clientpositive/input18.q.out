@@ -29,6 +29,7 @@ STAGE PLANS:
                   key expressions:
                         expr: key
                         type: string
+                  sort order: +
                   Map-reduce partition columns:
                         expr: key
                         type: string

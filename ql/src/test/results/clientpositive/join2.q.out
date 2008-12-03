@@ -4,8 +4,7 @@ ABSTRACT SYNTAX TREE:
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2, Stage-1
-  Stage-0 depends on stages: Stage-2, Stage-1
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -20,6 +19,7 @@ STAGE PLANS:
                 key expressions:
                       expr: 0
                       type: string
+                sort order: +
                 Map-reduce partition columns:
                       expr: 0
                       type: string
@@ -36,6 +36,7 @@ STAGE PLANS:
                 key expressions:
                       expr: 0
                       type: string
+                sort order: +
                 Map-reduce partition columns:
                       expr: 0
                       type: string
@@ -64,6 +65,7 @@ STAGE PLANS:
               key expressions:
                     expr: UDFToDouble(key)
                     type: double
+              sort order: +
               Map-reduce partition columns:
                     expr: UDFToDouble(key)
                     type: double
@@ -78,6 +80,7 @@ STAGE PLANS:
             key expressions:
                   expr: (UDFToDouble(0) + UDFToDouble(1))
                   type: double
+            sort order: +
             Map-reduce partition columns:
                   expr: (UDFToDouble(0) + UDFToDouble(1))
                   type: double
