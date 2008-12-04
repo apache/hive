@@ -80,6 +80,13 @@ public class FunctionRegistry {
     registerUDF("positive", UDFOPPositive.class, OperatorType.PREFIX, true, "+");
     registerUDF("negative", UDFOPNegative.class, OperatorType.PREFIX, true, "-");
 
+    registerUDF("day", UDFDayOfMonth.class, OperatorType.PREFIX, false);
+    registerUDF("dayofmonth", UDFDayOfMonth.class, OperatorType.PREFIX, false);
+    registerUDF("month", UDFMonth.class, OperatorType.PREFIX, false);
+    registerUDF("year", UDFYear.class, OperatorType.PREFIX, false);
+    registerUDF("from_unixtime", UDFFromUnixTime.class, OperatorType.PREFIX, false);
+    registerUDF("to_date", UDFDate.class, OperatorType.PREFIX, false);
+    
     registerUDF("+", UDFOPPlus.class, OperatorType.INFIX, true);
     registerUDF("-", UDFOPMinus.class, OperatorType.INFIX, true);
     registerUDF("*", UDFOPMultiply.class, OperatorType.INFIX, true);

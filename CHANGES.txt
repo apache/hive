@@ -6,6 +6,8 @@ Trunk (unreleased changes)
 
   NEW FEATURES
 
+    HIVE-118. Add date related functions. (zshao)
+
     HIVE-62. Support nested types.
     (Ashish Thusoo via dhruba)
 
