@@ -6,6 +6,8 @@ Trunk (unreleased changes)
 
   NEW FEATURES
 
+    HIVE-113. Distribute by and sort by support. (zshao)
+
     HIVE-118. Add date related functions. (zshao)
 
     HIVE-62. Support nested types.

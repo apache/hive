@@ -1,0 +1,72 @@
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (% (TOK_COLREF src key) 2) (% (TOK_COLREF src key) 5)) 'cat'))) (TOK_CLUSTERBY key))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (TOK_COLREF tmap key) (TOK_COLREF tmap value)) 'uniq -c | sed "s@^ *@@" | sed "s@\t@_@" | sed "s@ @\t@"' (TOK_ALIASLIST key value))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        tmap:src 
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              Select Operator
+                expressions:
+                      expr: (UDFToDouble(0) % UDFToDouble(2))
+                      type: double
+                      expr: (UDFToDouble(0) % UDFToDouble(5))
+                      type: double
+                Transform Operator
+                  command: cat
+                  output info:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                  Reduce Output Operator
+                    key expressions:
+                          expr: key
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: key
+                          type: string
+                    tag: -1
+                    value expressions:
+                          expr: key
+                          type: string
+                          expr: value
+                          type: string
+      Reduce Operator Tree:
+        Extract
+          Select Operator
+            expressions:
+                  expr: 0
+                  type: string
+                  expr: 1
+                  type: string
+            Transform Operator
+              command: uniq -c | sed "s@^ *@@" | sed "s@\t@_@" | sed "s@ @\t@"
+              output info:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+              File Output Operator
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
+                    name: dest1
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+            replace:
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
+                name: dest1
+
+
