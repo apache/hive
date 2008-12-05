@@ -62,7 +62,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 public class FetchTask extends Task<fetchWork> implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  static final private int MAX_ROWS  = 100;
+  private int maxRows = 100;
   
   public void initialize (HiveConf conf) {
    	super.initialize(conf);
@@ -99,7 +99,13 @@ public class FetchTask extends Task<fetchWork> implements Serializable {
   	assert false;
   	return 0;
   }
-  
+  /**
+   * Return the tableDesc of the fetchWork
+   */
+  public tableDesc getTblDesc() {
+    return work.getTblDesc();
+  }
+
   /**
    * A cache of InputFormat instances.
    */
@@ -246,11 +252,25 @@ public class FetchTask extends Task<fetchWork> implements Serializable {
 		value = currRecReader.createValue();
 		return currRecReader;
 	}
- 	
+ 
+  /**
+   * Return the maximum number of rows returned by fetch
+   */
+  public int getMaxRows() {
+    return maxRows;
+  }
+
+  /**
+   * Set the maximum number of rows returned by fetch
+   */
+  public void setMaxRows(int maxRows) {
+    this.maxRows = maxRows;
+  }
+	
   public boolean fetch(Vector<String> res) {
   	try {
       int numRows = 0;
-      int rowsRet = MAX_ROWS;
+      int rowsRet = maxRows;
       if ((work.getLimit() >= 0) && ((work.getLimit() - totalRows) < rowsRet))
         rowsRet = work.getLimit() - totalRows;
       if (rowsRet <= 0) {

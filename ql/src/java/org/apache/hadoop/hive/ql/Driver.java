@@ -26,6 +26,8 @@ import org.antlr.runtime.tree.CommonTree;
 
 import org.apache.commons.lang.StringUtils;
 
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.ParseException;
@@ -34,8 +36,10 @@ import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.serde.ByteStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 
@@ -45,7 +49,7 @@ import org.apache.commons.logging.LogFactory;
 public class Driver implements CommandProcessor {
 
   static final private Log LOG = LogFactory.getLog("hive.ql.Driver");
-  static final private int MAX_ROWS   = 100;
+  private int maxRows   = 100;
   ByteStream.Output bos = new ByteStream.Output();
   
   private ParseDriver  pd;
@@ -66,6 +70,43 @@ public class Driver implements CommandProcessor {
       jobs += countJobs(task.getChildTasks());
     }
     return jobs;
+  }
+
+  /**
+   * Return the Thrift DDL string of the result
+   */
+  public String getSchema() throws Exception {
+    if (sem != null && sem.getFetchTask() != null) {
+      if (!sem.getFetchTaskInit()) {
+        sem.setFetchTaskInit(true);
+        sem.getFetchTask().initialize(conf);
+      }
+      FetchTask ft = (FetchTask)sem.getFetchTask();
+
+      tableDesc td = ft.getTblDesc();
+      String tableName = td.getTableName();
+      if (tableName == null) {
+        tableName = "result";
+      }
+      List<FieldSchema> lst = MetaStoreUtils.getFieldsFromDeserializer(tableName, td.getDeserializer());
+      String schema = MetaStoreUtils.getDDLFromFieldSchema(tableName, lst);
+      return schema;
+    }
+    return null;
+  }
+
+  /**
+   * Return the maximum number of rows returned by getResults
+   */
+  public int getMaxRows() {
+    return maxRows;
+  }
+
+  /**
+   * Set the maximum number of rows returned by getResults
+   */
+  public void setMaxRows(int maxRows) {
+    this.maxRows = maxRows;
   }
 
   public boolean hasReduceTasks(List<Task<? extends Serializable>> tasks) {
@@ -218,14 +259,15 @@ public class Driver implements CommandProcessor {
   
   public boolean getResults(Vector<String> res) 
   {
-  	if (sem != null && sem.getFetchTask() != null) {
+    if (sem != null && sem.getFetchTask() != null) {
       if (!sem.getFetchTaskInit()) {
         sem.setFetchTaskInit(true);
         sem.getFetchTask().initialize(conf);
       }
-  		boolean ret = sem.getFetchTask().fetch(res);
-  		return ret;  		
-  	}
+      FetchTask ft = (FetchTask)sem.getFetchTask();
+      ft.setMaxRows(maxRows);
+      return ft.fetch(res);
+    }
 
     if (resStream == null)
       resStream = ctx.getStream();
@@ -234,7 +276,7 @@ public class Driver implements CommandProcessor {
     int numRows = 0;
     String row = null;
 
-    while (numRows < MAX_ROWS)
+    while (numRows < maxRows)
     {
       if (resStream == null) 
       {

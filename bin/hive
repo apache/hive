@@ -100,11 +100,21 @@ if [ ! -f ${HADOOP} ]; then
   exit 4;
 fi
 
-# override default value of hadoop.bin.path to point to what we are running off
-# if the user specified a -D override - this will be further overriden
-export HIVE_OPTS="-hiveconf hadoop.bin.path=$HADOOP"
+if [ "$1" == "service" ]; then
+  shift
+  CLASS=org.apache.hadoop.hive.service.HiveServer
+  JAR=${HIVE_LIB}/hive_service.jar
+  if [ "$HIVE_PORT" != "" ]; then
+    HIVE_OPTS=$HIVE_PORT
+  fi
+else
+  CLASS=org.apache.hadoop.hive.cli.CliDriver
+  JAR=${HIVE_LIB}/hive_cli.jar
+  # override default value of hadoop.bin.path to point to what we are running off
+  # if the user specified a -D override - this will be further overriden
+  export HIVE_OPTS="-hiveconf hadoop.bin.path=$HADOOP"
+fi
 
-CLASS=org.apache.hadoop.hive.cli.CliDriver
 
 if [ "${AUX_PARAM}" != "" ]; then
   HIVE_OPTS="$HIVE_OPTS -hiveconf hive.aux.jars.path=${AUX_PARAM}"
@@ -114,6 +124,5 @@ fi
 #echo "AUX_LIB_PATH"=$AUX_PARAM
 #echo "HADOOP_OPTS="$HADOOP_OPTS
 # note: $@ only works in "$@"
-#echo $HADOOP jar $AUX_JARS_CMD_LINE ${HIVE_LIB}/hive_cli.jar $CLASS $HIVE_OPTS "$@"
-exec $HADOOP jar $AUX_JARS_CMD_LINE ${HIVE_LIB}/hive_cli.jar $CLASS $HIVE_OPTS "$@"
-
+#echo $HADOOP jar $AUX_JARS_CMD_LINE $JAR $CLASS $HIVE_OPTS "$@"
+exec $HADOOP jar $AUX_JARS_CMD_LINE $JAR $CLASS $HIVE_OPTS "$@"

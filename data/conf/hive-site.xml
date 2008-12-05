@@ -97,7 +97,7 @@
 
 <property>
   <name>test.data.files</name>
-  <value>${user.dir}/../build/ql/test/data/files</value>
+  <value>${user.dir}/../data/files</value>
   <description></description>
 </property>
 

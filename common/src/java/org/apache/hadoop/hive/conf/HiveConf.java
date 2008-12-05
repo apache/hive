@@ -50,7 +50,7 @@ public class HiveConf extends Configuration {
     SCRIPTERRORLIMIT("hive.exec.script.maxerrsize", 100000),
 
     // hadoop stuff
-    HADOOPBIN("hadoop.bin.path", System.getProperty("user.dir") + "/../../../bin/hadoop"),
+    HADOOPBIN("hadoop.bin.path", System.getenv("HADOOP_HOME") + "/bin/hadoop"),
     HADOOPCONF("hadoop.config.dir", System.getProperty("user.dir") + "/../../../conf"),
     HADOOPFS("fs.default.name", "file:///"),
     HADOOPMAPFILENAME("map.input.file", null),

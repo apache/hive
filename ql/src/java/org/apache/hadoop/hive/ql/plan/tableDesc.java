@@ -53,6 +53,14 @@ public class tableDesc implements Serializable {
   public Class<? extends InputFormat> getInputFileFormatClass() {
     return this.inputFileFormatClass;
   }
+  /**
+   * Return a deserializer object corresponding to the tableDesc
+   */
+  public Deserializer getDeserializer() throws Exception {
+    Deserializer de = this.deserializerClass.newInstance();
+    de.initialize(null, properties);
+    return de;
+  }
   public void setInputFileFormatClass(final Class<? extends InputFormat> inputFileFormatClass) {
     this.inputFileFormatClass=inputFileFormatClass;
   }

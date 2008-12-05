@@ -57,6 +57,7 @@
   <property name="test.output" value="true"/>
   <property name="test.timeout" value="900000"/>
   <property name="test.junit.output.format" value="plain"/>
+  <property name="test.junit.output.usefile" value="true"/>
 
   <path id="test.classpath">
     <pathelement location="${test.build.classes}" />
@@ -84,6 +85,9 @@
       <include name="**/hive_*.jar"/>
     </fileset>
     <fileset dir="${src.dir.hive}/lib">
+      <include name="**/*.jar"/>
+    </fileset>
+    <fileset dir="${src.dir.hive}/ql/lib">
       <include name="**/*.jar"/>
     </fileset>
   </path>
@@ -183,6 +187,11 @@
         <isset property="overwrite"/>
       </not>
     </condition>
+    <condition property="standalone" value="false">
+      <not>
+        <isset property="standalone"/>
+      </not>
+    </condition>
   </target>
 
   <!-- target to deploy anttasks -->
@@ -213,11 +222,12 @@
       <jvmarg value="-Xdebug"/>
       <jvmarg value="-Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=y"/> -->
       <sysproperty key="test.output.overwrite" value="${overwrite}"/>
+      <sysproperty key="test.service.standalone.server" value="${standalone}"/>
       <sysproperty key="log4j.configuration" value="file://${test.data.dir}/conf/hive-log4j.properties"/>
       <sysproperty key="derby.stream.error.file" value="${test.build.dir}/derby.log"/>
-      <sysproperty key="hive.aux.jars.path" value="${test.build.dir}/test-udfs.jar,${test.src.data.dir}/files/TestSerDe.jar"/>
+      <sysproperty key="hive.aux.jars.path" value="${build.dir.hive}/ql/test/test-udfs.jar,${test.src.data.dir}/files/TestSerDe.jar"/>
       <classpath refid="${test.classpath.id}"/>
-      <formatter type="${test.junit.output.format}" />
+      <formatter type="${test.junit.output.format}" usefile="${test.junit.output.usefile}" />
       <batchtest todir="${test.build.dir}" unless="testcase">
         <fileset dir="${test.build.classes}"
                  includes="**/${test.include}.class"

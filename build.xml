@@ -67,6 +67,9 @@
     <subant target="compile">
       <fileset dir="." includes="cli/build.xml"/>
     </subant>
+    <subant target="compile">
+      <fileset dir="." includes="service/build.xml"/>
+    </subant>
   </target>
 
   <!-- ====================================================== -->
@@ -88,6 +91,9 @@
     </subant>
     <subant target="deploy">
       <fileset dir="." includes="cli/build.xml"/>
+    </subant>
+    <subant target="deploy">
+      <fileset dir="." includes="service/build.xml"/>
     </subant>
   </target>
 
