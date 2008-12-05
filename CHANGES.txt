@@ -25,6 +25,8 @@ Trunk (unreleased changes)
 
   BUG FIXES
 
+    HIVE-77. Thread safe query execution. (Joydeep through zshao)
+
     HIVE-86. Drop table should not delete data for external tables.
     (Johan Oskarsson through zshao)
 

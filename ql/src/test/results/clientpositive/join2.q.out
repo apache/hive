@@ -1,5 +1,5 @@
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF src src1) (TOK_TABREF src src2) (= (TOK_COLREF src1 key) (TOK_COLREF src2 key))) (TOK_TABREF src src3) (= (+ (TOK_COLREF src1 key) (TOK_COLREF src2 key)) (TOK_COLREF src3 key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_COLREF src1 key)) (TOK_SELEXPR (TOK_COLREF src3 value)))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF src src1) (TOK_TABREF src src2) (= (TOK_COLREF src1 key) (TOK_COLREF src2 key))) (TOK_TABREF src src3) (= (+ (TOK_COLREF src1 key) (TOK_COLREF src2 key)) (TOK_COLREF src3 key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest_j2)) (TOK_SELECT (TOK_SELEXPR (TOK_COLREF src1 key)) (TOK_SELEXPR (TOK_COLREF src3 value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -110,7 +110,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
                   serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
-                  name: dest1
+                  name: dest_j2
 
   Stage: Stage-0
     Move Operator
@@ -120,7 +120,7 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
                 serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
-                name: dest1
+                name: dest_j2
 
 
 0	val_0

@@ -26,6 +26,9 @@
   <property name="ql.test.template.dir" location="${basedir}/src/test/templates"/>
   <property name="ql.test.results.dir" location="${basedir}/src/test/results"/>
 
+  <property name="ql.test.query.clientpositive.dir" location="${ql.test.query.dir}/clientpositive"/>
+  <property name="ql.test.results.clientpositive.dir" location="${ql.test.results.dir}/clientpositive"/>
+
   <import file="../build-common.xml"/>
 
   <path id="test.classpath">
@@ -59,9 +62,9 @@
 
     <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli" 
               templatePath="${ql.test.template.dir}" template="TestCliDriver.vm" 
-              queryDirectory="${ql.test.query.dir}/clientpositive" 
+              queryDirectory="${ql.test.query.clientpositive.dir}" 
               queryFile="${qfile}"
-              resultsDirectory="${ql.test.results.dir}/clientpositive" className="TestCliDriver"
+              resultsDirectory="${ql.test.results.clientpositive.dir}" className="TestCliDriver"
               logFile="${test.log.dir}/testclidrivergen.log"/>
 
     <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli" 

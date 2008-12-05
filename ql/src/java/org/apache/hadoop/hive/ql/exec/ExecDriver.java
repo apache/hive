@@ -415,24 +415,47 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
    * fragment for passing such configuration information to ExecDriver
    */
   public static String generateCmdLine(HiveConf hconf) {
-    StringBuilder sb = new StringBuilder ();
-    Properties deltaP = hconf.getChangedProperties();
+    try {
+      StringBuilder sb = new StringBuilder ();
+      Properties deltaP = hconf.getChangedProperties();
+      boolean localMode = hconf.getVar(HiveConf.ConfVars.HADOOPJT).equals("local");
+      String hadoopSysDir = "mapred.system.dir";
+      String hadoopWorkDir = "mapred.local.dir";
 
-    for(Object one: deltaP.keySet()) {
-      String oneProp = (String)one;
-      String oneValue = deltaP.getProperty(oneProp);
+      for(Object one: deltaP.keySet()) {
+        String oneProp = (String)one;
+      
+        if(localMode && (oneProp.equals(hadoopSysDir) || oneProp.equals(hadoopWorkDir)))
+          continue;
 
-      sb.append("-jobconf ");
-      sb.append(oneProp);
-      sb.append("=");
-      try {
+        String oneValue = deltaP.getProperty(oneProp);
+
+        sb.append("-jobconf ");
+        sb.append(oneProp);
+        sb.append("=");
         sb.append(URLEncoder.encode(oneValue, "UTF-8"));
-      } catch (UnsupportedEncodingException e) {
-        throw new RuntimeException(e);
+        sb.append(" ");
       }
-      sb.append(" ");
+
+      // Multiple concurrent local mode job submissions can cause collisions in working dirs
+      // Workaround is to rename map red working dir to a temp dir in such a case
+      if(localMode) {
+        sb.append("-jobconf ");
+        sb.append(hadoopSysDir);
+        sb.append("=");
+        sb.append(URLEncoder.encode(hconf.get(hadoopSysDir) + "/" + Utilities.randGen.nextInt(), "UTF-8"));
+
+        sb.append(" ");
+        sb.append("-jobconf ");
+        sb.append(hadoopWorkDir);
+        sb.append("=");
+        sb.append(URLEncoder.encode(hconf.get(hadoopWorkDir) + "/" + Utilities.randGen.nextInt(), "UTF-8"));
+      }
+
+      return sb.toString();
+    } catch (UnsupportedEncodingException e) {
+      throw new RuntimeException(e);
     }
-    return sb.toString();
   }
 
   @Override

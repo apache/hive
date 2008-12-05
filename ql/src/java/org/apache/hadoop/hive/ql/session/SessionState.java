@@ -34,10 +34,14 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 
 import org.apache.commons.lang.StringUtils;
 
+/**
+ * SessionState encapsulates common data associated with a session
+ * 
+ * Also provides support for a thread static session object that can
+ * be accessed from any point in the code to interact with the user
+ * and to retrieve configuration information
+ */
 public class SessionState {
-
-  public static Log LOG = LogFactory.getLog("SessionState");
-  public static LogHelper console = new LogHelper(LOG);
 
   /**
    * current configuration
@@ -137,41 +141,42 @@ public class SessionState {
     return (conf.getVar(HiveConf.ConfVars.HIVESESSIONID));
   }
 
-
   /**
-   * Singleton Session object
+   * Singleton Session object per thread.
    *
-   * For multiple sessions - we could store in a hashmap or have a thread local var
    **/
-  private static SessionState ss;
+  private static ThreadLocal<SessionState> tss = new ThreadLocal<SessionState> ();
 
   /**
-   * start a new session
+   * start a new session and set it to current session
    */
   public static SessionState start(HiveConf conf) {
-    ss = new SessionState (conf);
+    SessionState ss = new SessionState (conf);
     ss.getConf().setVar(HiveConf.ConfVars.HIVESESSIONID, makeSessionId());
-    console = new LogHelper(LOG);
+    tss.set(ss);
     return (ss);
   }
 
+  /**
+   * set current session to existing session object
+   * if a thread is running multiple sessions - it must call this method with the new
+   * session object when switching from one session to another
+   */
   public static SessionState start(SessionState startSs) {
-    ss = startSs;
-    console = new LogHelper(LOG);
-    ss.getConf().setVar(HiveConf.ConfVars.HIVESESSIONID, makeSessionId());
-    return ss;
+    tss.set(startSs);
+    if(StringUtils.isEmpty(startSs.getConf().getVar(HiveConf.ConfVars.HIVESESSIONID))) {
+      startSs.getConf().setVar(HiveConf.ConfVars.HIVESESSIONID, makeSessionId());
+    }
+    return startSs;
   }
 
   /**
    * get the current session
    */
   public static SessionState get() {
-    return ss;
+    return tss.get();
   }
 
-  public static LogHelper getConsole() {
-    return console;
-  }
 
   private static String makeSessionId() {
     GregorianCalendar gc = new GregorianCalendar();
@@ -198,37 +203,42 @@ public class SessionState {
     }
   }
 
+  /**
+   * This class provides helper routines to emit informational and error messages to the user
+   * and log4j files while obeying the current session's verbosity levels.
+   * 
+   * NEVER write directly to the SessionStates standard output other than to emit result data
+   * DO use printInfo and printError provided by LogHelper to emit non result data strings
+   * 
+   * It is perfectly acceptable to have global static LogHelper objects (for example - once per module)
+   * LogHelper always emits info/error to current session as required.
+   */
   public static class LogHelper {
 
     protected Log LOG;
     protected boolean isSilent;
-    protected SessionState ss;
     
-    public LogHelper(SessionState ss, boolean isSilent, Log LOG) {
-      this.LOG = LOG;
-      this.isSilent = isSilent;
-      this.ss = ss;
-    }
-
     public LogHelper(Log LOG) {
-      // the session control silent or not
-      this(SessionState.get(), false, LOG);
+      this(LOG, false);
     }
 
     public LogHelper(Log LOG, boolean isSilent) {
-      // no session info - use isSilent setting passed in
-      this(null, isSilent, LOG);
+      this.LOG = LOG;
+      this.isSilent = isSilent;
     }
 
     public PrintStream getOutStream() {
+      SessionState ss = SessionState.get();
       return ((ss != null) && (ss.out != null)) ? ss.out : System.out;   
     }
 
     public PrintStream getErrStream() {
+      SessionState ss = SessionState.get();
       return ((ss != null) && (ss.err != null)) ? ss.err : System.err;
     }
 
     public boolean getIsSilent() {
+      SessionState ss = SessionState.get();
       // use the session or the one supplied in constructor
       return (ss != null) ? ss.getIsSilent() : isSilent;
     }
@@ -254,9 +264,21 @@ public class SessionState {
     }
   }
 
+  private static LogHelper _console;
+  /**
+   * initialize or retrieve console object for SessionState
+   */
+  private static LogHelper getConsole() {
+    if(_console == null) {
+      Log LOG = LogFactory.getLog("SessionState");
+      _console = new LogHelper(LOG);
+    }
+    return _console;
+  }
+
   public static String validateFile(Set<String> curFiles, String newFile) {
     SessionState ss = SessionState.get();
-    LogHelper console = SessionState.getConsole();
+    LogHelper console = getConsole();
     Configuration conf = (ss == null) ? new Configuration() : ss.getConf();
 
     try {

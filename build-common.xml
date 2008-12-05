@@ -52,7 +52,6 @@
   <property name="test.build.classes" value="${test.build.dir}/classes"/>
   <property name="test.build.javadoc" value="${test.build.dir}/docs/api"/>
   <property name="test.include" value="Test*"/>
-  <property name="test.exclude" value="TestSerDe"/>
   <property name="test.classpath.id" value="test.classpath"/>
   <property name="test.output" value="true"/>
   <property name="test.timeout" value="900000"/>
@@ -226,12 +225,15 @@
       <sysproperty key="log4j.configuration" value="file://${test.data.dir}/conf/hive-log4j.properties"/>
       <sysproperty key="derby.stream.error.file" value="${test.build.dir}/derby.log"/>
       <sysproperty key="hive.aux.jars.path" value="${build.dir.hive}/ql/test/test-udfs.jar,${test.src.data.dir}/files/TestSerDe.jar"/>
+      <sysproperty key="ql.test.query.clientpositive.dir" value="${ql.test.query.clientpositive.dir}"/>
+      <sysproperty key="ql.test.results.clientpositive.dir" value="${ql.test.results.clientpositive.dir}"/>
+
       <classpath refid="${test.classpath.id}"/>
       <formatter type="${test.junit.output.format}" usefile="${test.junit.output.usefile}" />
       <batchtest todir="${test.build.dir}" unless="testcase">
         <fileset dir="${test.build.classes}"
                  includes="**/${test.include}.class"
-                 excludes="**/${test.exclude}.class" />
+                 excludes="**/TestMTQueries.class,**/TestSerDe.class" />
       </batchtest>
       <batchtest todir="${test.build.dir}" if="testcase">
         <fileset dir="${test.build.classes}" includes="**/${testcase}.class"/>

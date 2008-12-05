@@ -24,6 +24,7 @@ import java.io.*;
 import java.util.*;
 
 import org.apache.hadoop.fs.FsShell;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.Utilities.StreamPrinter;
@@ -39,31 +40,22 @@ public class CliDriver {
   public final static String prompt = "hive";
   public final static String prompt2 = "    "; // when ';' is not yet seen
 
-  public static SetProcessor sp;
-  public static Driver qp;
-  public static FsShell dfs;
-  public static Log LOG = LogFactory.getLog("CliDriver");
+  private SetProcessor sp;
+  private Driver qp;
+  private FsShell dfs;
+  private LogHelper console;
 
-  /**
-   * delay console initialization until session has been initialized
-   */
-  public static LogHelper console;
-  public static LogHelper getConsole() {
-    if(console == null)
-      console = new LogHelper(LOG);
-    return (console);
-  }
-  
-  public CliDriver(CliSessionState ss) {
-    SessionState.start(ss);
+  public CliDriver() {
+    SessionState ss = SessionState.get();
     sp = new SetProcessor();
     qp = new Driver();
+    dfs = new FsShell(ss != null ? ss.getConf() : new Configuration ());
+    Log LOG = LogFactory.getLog("CliDriver");
+    console = new LogHelper(LOG);
   }
   
-  public static int processCmd(String cmd) {
-
+  public int processCmd(String cmd) {
     SessionState ss = SessionState.get();
-    LogHelper console = getConsole();
 
     String[] tokens = cmd.split("\\s+");
     String cmd_1 = cmd.substring(tokens[0].length());
@@ -105,10 +97,6 @@ public class CliDriver {
       }
 
     } else if (tokens[0].toLowerCase().equals("dfs")) {
-
-      // dfs shell commands
-      if(dfs == null)
-        dfs = new FsShell(ss.getConf());
 
       String [] alt_tokens = new String [tokens.length-1];
       System.arraycopy(tokens, 1, alt_tokens, 0, tokens.length-1);
@@ -180,6 +168,8 @@ public class CliDriver {
     } else {
       PrintStream out = ss.out;
 
+      long start = System.currentTimeMillis();
+
       ret = qp.run(cmd);
       Vector<String> res = new Vector<String>();
       while (qp.getResults(res)) {
@@ -193,12 +183,18 @@ public class CliDriver {
       if (ret == 0) {
         ret = cret;
       }
+
+      long end = System.currentTimeMillis();
+      if (end > start) {
+        double timeTaken = (double)(end-start)/1000.0;
+        console.printInfo("Time taken: " + timeTaken + " seconds", null);
+      }
     }
 
     return ret;
   }
 
-  public static int processLine(String line) {
+  public int processLine(String line) {
     int ret = 0;
     for(String oneCmd: line.split(";")) {
       oneCmd = oneCmd.trim();
@@ -214,7 +210,7 @@ public class CliDriver {
     return 0;
   }
 
-  public static int processReader(BufferedReader r) throws IOException {
+  public int processReader(BufferedReader r) throws IOException {
     String line;
     int ret = 0;
     while((line = r.readLine()) != null) {
@@ -258,17 +254,15 @@ public class CliDriver {
       conf.set((String) item.getKey(), (String) item.getValue());
     }
 
-    sp = new SetProcessor();
-    qp = new Driver();
-    dfs = new FsShell(ss.getConf());
+    CliDriver cli = new CliDriver ();
 
     if(ss.execString != null) {
-      System.exit(processLine(ss.execString));
+      System.exit(cli.processLine(ss.execString));
     }
 
     try {
       if(ss.fileName != null) {
-        System.exit(processReader(new BufferedReader(new FileReader(ss.fileName))));
+        System.exit(cli.processReader(new BufferedReader(new FileReader(ss.fileName))));
       }
     } catch (FileNotFoundException e) {
       System.err.println("Could not open input file for reading. ("+e.getMessage()+")");
@@ -298,21 +292,15 @@ public class CliDriver {
     String prefix = "";
     String curPrompt = prompt;
     while ((line = reader.readLine(curPrompt+"> ")) != null) {
-      long start = System.currentTimeMillis();
       if(line.trim().endsWith(";")) {
         line = prefix + " " + line;
-        ret = processLine(line);
+        ret = cli.processLine(line);
         prefix = "";
         curPrompt = prompt;
       } else {
         prefix = prefix + line;
         curPrompt = prompt2;
         continue;
-      }
-      long end = System.currentTimeMillis();
-      if (end > start) {
-        double timeTaken = (double)(end-start)/1000.0;
-        getConsole().printInfo("Time taken: " + timeTaken + " seconds", null);
       }
     }
 

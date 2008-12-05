@@ -41,7 +41,6 @@ public class TaskFactory {
 
   public static ArrayList<taskTuple<? extends Serializable>> taskvec;
   static {
-    id = 0;
     taskvec = new ArrayList<taskTuple<? extends Serializable>>();
     taskvec.add(new taskTuple<moveWork>(moveWork.class, MoveTask.class));
     taskvec.add(new taskTuple<fetchWork>(fetchWork.class, FetchTask.class));
@@ -54,10 +53,21 @@ public class TaskFactory {
     // taskvec.add(new taskTuple<mapredWork>(mapredWork.class, ExecDriver.class));
   }
 
-  private static int id;
+  private static ThreadLocal<Integer> tid = new ThreadLocal<Integer> () {
+    protected synchronized Integer initialValue() {
+        return new Integer(0);
+      }
+  };
+
+  public static int getAndIncrementId() {
+    int curValue = tid.get().intValue();
+    tid.set(new Integer(curValue+1));
+    return curValue;
+  }
+
   
   public static void resetId() {
-    id = 0;
+    tid.set(new Integer(0));
   }
   
   @SuppressWarnings("unchecked")
@@ -67,7 +77,7 @@ public class TaskFactory {
       if(t.workClass == workClass) {
         try {
           Task<T> ret = (Task<T>)t.taskClass.newInstance();
-          ret.setId("Stage-" + Integer.toString(id++));
+          ret.setId("Stage-" + Integer.toString(getAndIncrementId()));
           return ret;
         } catch (Exception e) {
           throw new RuntimeException(e);
@@ -90,7 +100,7 @@ public class TaskFactory {
         } else {
           ret = (Task<T>)ExecDriver.class.newInstance();
         }
-        ret.setId("Stage-" + Integer.toString(id++));
+        ret.setId("Stage-" + Integer.toString(getAndIncrementId()));
         return ret;
       } catch (Exception e) {
         throw new RuntimeException (e.getMessage(), e);
