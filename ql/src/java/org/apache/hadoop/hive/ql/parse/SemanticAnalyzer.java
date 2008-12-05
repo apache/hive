@@ -1915,7 +1915,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     Operator output = putOpInsertMap(
       OperatorFactory.getAndMakeChild(
-        new fileSinkDesc(queryTmpdir, table_desc),
+        new fileSinkDesc(queryTmpdir, table_desc,
+                         conf.getBoolVar(HiveConf.ConfVars.COMPRESSRESULT)),
         new RowSchema(inputRR.getColumnInfos()), input), inputRR);
 
     LOG.debug("Created FileSink Plan for clause: " + dest + "dest_path: "

@@ -21,6 +21,7 @@ STAGE PLANS:
                       expr: value
                       type: string
                 File Output Operator
+                  compressed: false
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
@@ -32,7 +33,7 @@ STAGE PLANS:
       tables:
             partition:
               table 2008-04-08
-            replace:
+            replace: true
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
@@ -65,6 +66,7 @@ STAGE PLANS:
                       expr: table
                       type: string
                 File Output Operator
+                  compressed: false
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat

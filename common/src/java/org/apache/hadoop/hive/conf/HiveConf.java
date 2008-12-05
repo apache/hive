@@ -48,6 +48,8 @@ public class HiveConf extends Configuration {
     SCRATCHDIR("hive.exec.scratchdir", "/tmp/"+System.getProperty("user.name")+"/hive"),
     SUBMITVIACHILD("hive.exec.submitviachild", "false"),
     SCRIPTERRORLIMIT("hive.exec.script.maxerrsize", 100000),
+    COMPRESSRESULT("hive.exec.compress.output", false),
+    COMPRESSINTERMEDIATE("hive.exec.compress.intermediate", false),
 
     // hadoop stuff
     HADOOPBIN("hadoop.bin.path", System.getenv("HADOOP_HOME") + "/bin/hadoop"),
@@ -94,12 +96,14 @@ public class HiveConf extends Configuration {
     public final String defaultVal;
     public final int defaultIntVal;
     public final Class valClass;
+    public final boolean defaultBoolVal;
 
     ConfVars(String varname, String defaultVal) {
       this.varname = varname;
       this.defaultVal = defaultVal;
       this.valClass = String.class;
       this.defaultIntVal = -1;
+      this.defaultBoolVal = false;
     }
 
     ConfVars(String varname, int defaultIntVal) {
@@ -107,6 +111,15 @@ public class HiveConf extends Configuration {
       this.defaultVal = null;
       this.defaultIntVal = defaultIntVal;
       this.valClass = Integer.class;
+      this.defaultBoolVal = false;
+    }
+
+    ConfVars(String varname, boolean defaultBoolVal) {
+      this.varname = varname;
+      this.defaultVal = null;
+      this.defaultIntVal = -1;
+      this.valClass = Boolean.class;
+      this.defaultBoolVal = defaultBoolVal;
     }
 
     public String toString() {
@@ -121,6 +134,15 @@ public class HiveConf extends Configuration {
 
   public int getIntVar(ConfVars var) {
     return getIntVar(this, var);
+  }
+
+  public static boolean getBoolVar(Configuration conf, ConfVars var) {
+    assert(var.valClass == Boolean.class);
+    return conf.getBoolean(var.varname, var.defaultBoolVal);
+  }
+
+  public boolean getBoolVar(ConfVars var) {
+    return getBoolVar(this, var);
   }
 
   public static String getVar(Configuration conf, ConfVars var) {

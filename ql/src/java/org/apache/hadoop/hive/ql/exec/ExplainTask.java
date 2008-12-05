@@ -141,7 +141,8 @@ public class ExplainTask extends Task<explainWork> implements Serializable {
   }
 
   private boolean isPrintable(Object val) {
-    if (val instanceof String ||
+    if (val instanceof Boolean ||
+        val instanceof String ||
         val instanceof Integer ||
         val instanceof Byte ||
         val instanceof Float ||

@@ -39,11 +39,11 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
-      Needs Tagging:
+      Needs Tagging: true
       Path -> Alias:
-        file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/src 
+        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive-trunk-compress/build/ql/test/data/warehouse/src 
       Path -> Partition:
-        file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/src 
+        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive-trunk-compress/build/ql/test/data/warehouse/src 
           Partition
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -57,7 +57,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                location file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/src
+                location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive-trunk-compress/build/ql/test/data/warehouse/src
               serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
               name: src
       Reduce Operator Tree:
@@ -78,7 +78,8 @@ STAGE PLANS:
                   expr: 3
                   type: string
             File Output Operator
-              directory: /tmp/hive-njain/562245695/1983405.10000.insclause-0
+              compressed: false
+              directory: /tmp/hive-jssarma/658145143/35270689.10000.insclause-0
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
@@ -91,15 +92,15 @@ STAGE PLANS:
                     serialization.lib org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
                     file.inputformat org.apache.hadoop.mapred.TextInputFormat
                     file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                    location file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/dest1
+                    location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive-trunk-compress/build/ql/test/data/warehouse/dest1
                   serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
                   name: dest1
 
   Stage: Stage-0
     Move Operator
       tables:
-            replace:
-            source: /tmp/hive-njain/562245695/1983405.10000.insclause-0
+            replace: true
+            source: /tmp/hive-jssarma/658145143/35270689.10000.insclause-0
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
@@ -112,7 +113,7 @@ STAGE PLANS:
                   serialization.lib org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
                   file.inputformat org.apache.hadoop.mapred.TextInputFormat
                   file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                  location file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/dest1
+                  location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive-trunk-compress/build/ql/test/data/warehouse/dest1
                 serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
                 name: dest1
 

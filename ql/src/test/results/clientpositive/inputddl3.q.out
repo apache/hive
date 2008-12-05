@@ -12,8 +12,8 @@ STAGE PLANS:
           field delimiter: 	
           # buckets: -1
           name: INPUTDDL3
-          isExternal:
-          isSequenceFile:
+          isExternal: false
+          isSequenceFile: false
 
 
 key	int

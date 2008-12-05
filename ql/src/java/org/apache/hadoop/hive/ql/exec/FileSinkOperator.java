@@ -94,14 +94,14 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
       outPath = new Path(conf.getDirName(), "_tmp."+Utilities.getTaskId(hconf));
       OutputFormat<?, ?> outputFormat = conf.getTableInfo().getOutputFileFormatClass().newInstance();
       final Class<? extends Writable> outputClass = serializer.getSerializedClass();
-      boolean isCompressed = FileOutputFormat.getCompressOutput(jc);
+      boolean isCompressed = conf.getCompressed();
 
       // The reason to keep these instead of using OutputFormat.getRecordWriter() is that
       // getRecordWriter does not give us enough control over the file name that we create.
       if(outputFormat instanceof IgnoreKeyTextOutputFormat) {
-        if(isCompressed) {
-          finalPath = new Path(conf.getDirName(), Utilities.getTaskId(hconf) + ".gz");
-        }
+        finalPath = new Path(conf.getDirName(), Utilities.getTaskId(hconf) +
+                             Utilities.getFileExtension(jc, isCompressed));
+
         String rowSeparatorString = conf.getTableInfo().getProperties().getProperty(Constants.LINE_DELIM, "\n");
         int rowSeparator = 0;
         try {
@@ -110,7 +110,7 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
           rowSeparator = rowSeparatorString.charAt(0); 
         }
         final int finalRowSeparator = rowSeparator;  
-        final OutputStream outStream = Utilities.createCompressedStream(jc, fs.create(outPath));
+        final OutputStream outStream = Utilities.createCompressedStream(jc, fs.create(outPath), isCompressed);
         outWriter = new RecordWriter () {
             public void write(Writable r) throws IOException {
               if (r instanceof Text) {
@@ -130,7 +130,8 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
           };
       } else if (outputFormat instanceof SequenceFileOutputFormat) {
         final SequenceFile.Writer outStream =
-            Utilities.createSequenceWriter(jc, fs, outPath, BytesWritable.class, outputClass);
+          Utilities.createSequenceWriter(jc, fs, outPath, BytesWritable.class, outputClass,
+                                         isCompressed);
         outWriter = new RecordWriter () {
             public void write(Writable r) throws IOException {
               outStream.append(commonKey, r);

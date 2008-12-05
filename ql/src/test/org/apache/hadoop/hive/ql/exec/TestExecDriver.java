@@ -165,7 +165,7 @@ public class TestExecDriver extends TestCase {
 
     Operator<fileSinkDesc> op2 = OperatorFactory.get(new fileSinkDesc
                                                      (tmpdir + "mapplan1.out",
-                                                     Utilities.defaultTd));
+                                                      Utilities.defaultTd, true));
     Operator<filterDesc> op1 =
       OperatorFactory.get(getTestFilterDesc("key"), op2);
 
@@ -179,7 +179,7 @@ public class TestExecDriver extends TestCase {
 
     Operator<fileSinkDesc> op3 = OperatorFactory.get(new fileSinkDesc
                                                      (tmpdir + "mapplan2.out",
-                                                     Utilities.defaultTd));
+                                                      Utilities.defaultTd, false));
 
     Operator<scriptDesc> op2 = OperatorFactory.get
       (new scriptDesc("/bin/cat",
@@ -212,7 +212,7 @@ public class TestExecDriver extends TestCase {
     // reduce side work
     Operator<fileSinkDesc> op3 = OperatorFactory.get(new fileSinkDesc
                                                      (tmpdir + "mapredplan1.out",
-                                                         Utilities.defaultTd));
+                                                      Utilities.defaultTd, false));
 
     Operator<extractDesc> op2 =  OperatorFactory.get
       (new extractDesc(new exprNodeColumnDesc(String.class, Utilities.ReduceField.VALUE.toString())), op3);
@@ -238,7 +238,7 @@ public class TestExecDriver extends TestCase {
     // reduce side work
     Operator<fileSinkDesc> op4 = OperatorFactory.get(new fileSinkDesc
                                                      (tmpdir + "mapredplan2.out",
-                                                         Utilities.defaultTd));
+                                                      Utilities.defaultTd, false));
 
     Operator<filterDesc> op3 =
       OperatorFactory.get(getTestFilterDesc("0"), op4);
@@ -281,7 +281,7 @@ public class TestExecDriver extends TestCase {
     // reduce side work
     Operator<fileSinkDesc> op4 = OperatorFactory.get(new fileSinkDesc
                                                      (tmpdir + "mapredplan3.out",
-                                                         Utilities.defaultTd));
+                                                      Utilities.defaultTd, false));
 
     Operator<selectDesc> op5 =  OperatorFactory.get
       (new selectDesc
@@ -327,7 +327,7 @@ public class TestExecDriver extends TestCase {
     // reduce side work
     Operator<fileSinkDesc> op3 = OperatorFactory.get(new fileSinkDesc
                                                      (tmpdir + "mapredplan4.out",
-                                                         Utilities.defaultTd));
+                                                      Utilities.defaultTd, false));
 
     Operator<extractDesc> op2 =  OperatorFactory.get
       (new extractDesc(new exprNodeColumnDesc(String.class, Utilities.ReduceField.VALUE.toString())), op3);
@@ -359,7 +359,7 @@ public class TestExecDriver extends TestCase {
     // reduce side work
     Operator<fileSinkDesc> op3 = OperatorFactory.get(new fileSinkDesc
                                                      (tmpdir + "mapredplan5.out",
-                                                         Utilities.defaultTd));
+                                                      Utilities.defaultTd, false));
 
     Operator<extractDesc> op2 =  OperatorFactory.get
       (new extractDesc(new exprNodeColumnDesc(String.class, Utilities.ReduceField.VALUE.toString())), op3);
@@ -397,7 +397,7 @@ public class TestExecDriver extends TestCase {
     // reduce side work
     Operator<fileSinkDesc> op3 = OperatorFactory.get(new fileSinkDesc
                                                      (tmpdir + "mapredplan6.out",
-                                                     Utilities.defaultTd));
+                                                      Utilities.defaultTd, false));
 
     Operator<filterDesc> op2 =
       OperatorFactory.get(getTestFilterDesc("0"), op3);
@@ -447,7 +447,7 @@ public class TestExecDriver extends TestCase {
       populateMapPlan1(db.getTable("src"));
       File planFile = generatePlanFile();
       executePlan(planFile);
-      fileDiff("lt100.txt", "mapplan1.out");
+      fileDiff("lt100.txt.deflate", "mapplan1.out");
     } catch (Throwable e) {
       e.printStackTrace();
       fail("Got Throwable");

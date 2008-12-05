@@ -25,7 +25,8 @@ STAGE PLANS:
                       expr: ds
                       type: string
                 File Output Operator
-                  directory: /tmp/hive-njain/238334885/114382058.10000.insclause-0
+                  compressed: false
+                  directory: /tmp/hive-jssarma/478508083/234898564.10000.insclause-0
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
@@ -38,7 +39,7 @@ STAGE PLANS:
                         serialization.lib org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
                         file.inputformat org.apache.hadoop.mapred.TextInputFormat
                         file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                        location file:/home/njain/workspace/hadoop-0.17/build/contrib/hive/ql/test/data/warehouse/dest1
+                        location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive-trunk-compress/build/ql/test/data/warehouse/dest1
                       serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
                       name: dest1
             Filter Operator
@@ -56,7 +57,8 @@ STAGE PLANS:
                       expr: ds
                       type: string
                 File Output Operator
-                  directory: /tmp/hive-njain/238334885/114382058.10001.insclause-1
+                  compressed: false
+                  directory: /tmp/hive-jssarma/478508083/234898564.10001.insclause-1
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
@@ -69,15 +71,15 @@ STAGE PLANS:
                         serialization.lib org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
                         file.inputformat org.apache.hadoop.mapred.TextInputFormat
                         file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                        location file:/home/njain/workspace/hadoop-0.17/build/contrib/hive/ql/test/data/warehouse/dest2
+                        location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive-trunk-compress/build/ql/test/data/warehouse/dest2
                       serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
                       name: dest2
-      Needs Tagging:
+      Needs Tagging: false
       Path -> Alias:
-        file:/home/njain/workspace/hadoop-0.17/build/contrib/hive/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
-        file:/home/njain/workspace/hadoop-0.17/build/contrib/hive/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
+        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive-trunk-compress/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive-trunk-compress/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
       Path -> Partition:
-        file:/home/njain/workspace/hadoop-0.17/build/contrib/hive/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive-trunk-compress/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
             partition values:
               ds 2008-04-08
@@ -95,10 +97,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                location file:/home/njain/workspace/hadoop-0.17/build/contrib/hive/ql/test/data/warehouse/srcpart
+                location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive-trunk-compress/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
               name: srcpart
-        file:/home/njain/workspace/hadoop-0.17/build/contrib/hive/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
+        file:/mnt/vol/devrs004.snc1/jssarma/projects/hive-trunk-compress/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
           Partition
             partition values:
               ds 2008-04-09
@@ -116,15 +118,15 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                location file:/home/njain/workspace/hadoop-0.17/build/contrib/hive/ql/test/data/warehouse/srcpart
+                location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive-trunk-compress/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
               name: srcpart
 
   Stage: Stage-0
     Move Operator
       tables:
-            replace:
-            source: /tmp/hive-njain/238334885/114382058.10000.insclause-0
+            replace: true
+            source: /tmp/hive-jssarma/478508083/234898564.10000.insclause-0
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
@@ -137,11 +139,11 @@ STAGE PLANS:
                   serialization.lib org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
                   file.inputformat org.apache.hadoop.mapred.TextInputFormat
                   file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                  location file:/home/njain/workspace/hadoop-0.17/build/contrib/hive/ql/test/data/warehouse/dest1
+                  location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive-trunk-compress/build/ql/test/data/warehouse/dest1
                 serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
                 name: dest1
-            replace:
-            source: /tmp/hive-njain/238334885/114382058.10001.insclause-1
+            replace: true
+            source: /tmp/hive-jssarma/478508083/234898564.10001.insclause-1
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
@@ -154,7 +156,7 @@ STAGE PLANS:
                   serialization.lib org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
                   file.inputformat org.apache.hadoop.mapred.TextInputFormat
                   file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                  location file:/home/njain/workspace/hadoop-0.17/build/contrib/hive/ql/test/data/warehouse/dest2
+                  location file:/mnt/vol/devrs004.snc1/jssarma/projects/hive-trunk-compress/build/ql/test/data/warehouse/dest2
                 serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
                 name: dest2
 

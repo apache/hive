@@ -61,6 +61,7 @@ import org.apache.hadoop.mapred.TextInputFormat;
 
 import com.facebook.thrift.protocol.TBinaryProtocol;
 import org.apache.hadoop.hive.serde2.ThriftDeserializer;
+import java.nio.channels.FileChannel;
 
 import org.antlr.runtime.tree.*;
 
@@ -408,13 +409,9 @@ public class QTestUtil {
     expf = new File(expf, qf.getName().concat(".out"));
     
     File outf = null;
-    if (!overWrite) {
-      outf = new File(logDir);
-      outf = new File(outf, qf.getName().concat(".out"));
-    }
-    else {
-      outf = expf;
-    }
+    outf = new File(logDir);
+    outf = new File(outf, qf.getName().concat(".out"));
+
     FileWriter outfd = new FileWriter(outf);
     if (e instanceof ParseException) {
       outfd.write("Parse Error: ");
@@ -441,6 +438,14 @@ public class QTestUtil {
     errPrinter.start();
     
     int exitVal = executor.waitFor();
+
+    if(exitVal != 0 && overWrite) {
+      System.out.println("Overwriting results");
+      cmdLine = "cp " + outf.getPath() + " " + expf.getPath();
+      executor = Runtime.getRuntime().exec(cmdLine);
+      exitVal = executor.waitFor();
+    }
+
     return exitVal;
   }
 
@@ -451,13 +456,9 @@ public class QTestUtil {
       File expf = new File(parseDir, tname.concat(".out"));
   
       File outf = null;
-      if (!overWrite) {
-        outf = new File(logDir);
-        outf = new File(outf, tname.concat(".out"));
-      }
-      else {
-        outf = expf;
-      }
+      outf = new File(logDir);
+      outf = new File(outf, tname.concat(".out"));
+
       FileWriter outfd = new FileWriter(outf);
       outfd.write(tree.toStringTree());
       outfd.close();
@@ -474,6 +475,14 @@ public class QTestUtil {
       errPrinter.start();
       
       int exitVal = executor.waitFor();
+
+      if(exitVal != 0 && overWrite) {
+        System.out.println("Overwriting results");
+        cmdLine = "cp " + outf.getPath() + " " + expf.getPath();
+        executor = Runtime.getRuntime().exec(cmdLine);
+        exitVal = executor.waitFor();
+      }
+
       return exitVal;
     }
     else {
@@ -488,13 +497,9 @@ public class QTestUtil {
       File planFile = new File(planDir, tname.concat(".xml"));
   
       File outf = null;
-      if (!overWrite) {
-        outf = new File(logDir);
-        outf = new File(outf, tname.concat(".xml"));
-      }
-      else {
-        outf = planFile;
-      }
+      outf = new File(logDir);
+      outf = new File(outf, tname.concat(".xml"));
+
       FileOutputStream ofs = new FileOutputStream(outf);
       for(Task<? extends Serializable> plan: tasks) {
         Utilities.serializeTasks(plan, ofs);
@@ -522,6 +527,13 @@ public class QTestUtil {
       errPrinter.start();
       
       int exitVal = executor.waitFor();
+      
+      if(exitVal != 0 && overWrite) {
+        System.out.println("Overwriting results");
+        String cmdLine = "cp " + outf.getPath() + " " + planFile.getPath();
+        executor = Runtime.getRuntime().exec(cmdLine);
+        exitVal = executor.waitFor();
+      }
 
       return exitVal;
     }
@@ -605,23 +617,14 @@ public class QTestUtil {
   public int checkCliDriverResults(String tname) throws Exception {
     String [] cmdArray;
 
-    if (!overWrite) {
-      cmdArray = new String[5];
-      cmdArray[0] = "diff";
-      cmdArray[1] = "-I";
-      cmdArray[2] = "\\(file:\\)\\|\\(tmp/hive-.*\\)";
-      cmdArray[3] = (new File(logDir, tname + ".out")).getPath();
-      cmdArray[4] = (new File(outDir, tname + ".out")).getPath();
-      System.out.println(cmdArray[0] + " " + cmdArray[1] + " " + cmdArray[2] + " " +
-                         cmdArray[3] + " " + cmdArray[4]);
-    }
-    else {
-      cmdArray = new String[3];
-      cmdArray[0] = "cp";
-      cmdArray[1] = (new File(logDir, tname + ".out")).getPath();
-      cmdArray[2] = (new File(outDir, tname + ".out")).getPath();
-      System.out.println(cmdArray[0] + " " + cmdArray[1] + " " + cmdArray[2]);
-    }
+    cmdArray = new String[5];
+    cmdArray[0] = "diff";
+    cmdArray[1] = "-I";
+    cmdArray[2] = "\\(file:\\)\\|\\(tmp/hive-.*\\)";
+    cmdArray[3] = (new File(logDir, tname + ".out")).getPath();
+    cmdArray[4] = (new File(outDir, tname + ".out")).getPath();
+    System.out.println(cmdArray[0] + " " + cmdArray[1] + " " + cmdArray[2] + " " +
+                       cmdArray[3] + " " + cmdArray[4]);
 
     Process executor = Runtime.getRuntime().exec(cmdArray);
 
@@ -632,6 +635,16 @@ public class QTestUtil {
     errPrinter.start();
     
     int exitVal = executor.waitFor();
+
+    if(exitVal != 0 && overWrite) {
+      System.out.println("Overwriting results");
+      cmdArray = new String[3];
+      cmdArray[0] = "cp";
+      cmdArray[1] = (new File(logDir, tname + ".out")).getPath();
+      cmdArray[2] = (new File(outDir, tname + ".out")).getPath();
+      executor = Runtime.getRuntime().exec(cmdArray);
+      exitVal = executor.waitFor();
+    }
 
     return exitVal;
   }

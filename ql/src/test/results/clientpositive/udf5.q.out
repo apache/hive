@@ -30,6 +30,7 @@ STAGE PLANS:
                       expr: year('2008-11-01 15:32:20')
                       type: int
                 File Output Operator
+                  compressed: false
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat

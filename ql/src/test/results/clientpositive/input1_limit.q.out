@@ -43,6 +43,7 @@ STAGE PLANS:
                       type: string
                 Limit
                   File Output Operator
+                    compressed: false
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.mapred.SequenceFileOutputFormat
@@ -52,6 +53,7 @@ STAGE PLANS:
         Extract
           Limit
             File Output Operator
+              compressed: false
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
@@ -61,13 +63,13 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
-            replace:
+            replace: true
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
                 serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
                 name: dest1
-            replace:
+            replace: true
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
@@ -77,7 +79,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /tmp/hive-njain/842103907/482854493.10002 
+        /tmp/hive-jssarma/891215760/586361272.10002 
           Reduce Output Operator
             sort order: 
             tag: -1
@@ -91,6 +93,7 @@ STAGE PLANS:
         Extract
           Limit
             File Output Operator
+              compressed: false
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat

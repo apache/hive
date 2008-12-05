@@ -31,6 +31,7 @@ STAGE PLANS:
                 type: string
           mode: partial1
           File Output Operator
+            compressed: false
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.mapred.SequenceFileOutputFormat
@@ -39,7 +40,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /tmp/hive-njain/142162733/220682119.10001 
+        /tmp/hive-jssarma/1453689426/82458415.10001 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -60,6 +61,7 @@ STAGE PLANS:
                   expr: 0
                   type: string
             File Output Operator
+              compressed: false
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
@@ -69,7 +71,7 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
-            replace:
+            replace: true
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat

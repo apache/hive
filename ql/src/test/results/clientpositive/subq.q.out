@@ -27,6 +27,7 @@ STAGE PLANS:
                         expr: 1
                         type: string
                   File Output Operator
+                    compressed: false
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
@@ -34,7 +35,7 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       files:
-            hdfs directory:
+            hdfs directory: true
             destination: ../build/ql/test/data/warehouse/union.out
 
 

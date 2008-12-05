@@ -133,7 +133,7 @@ public class TestOperators extends TestCase {
 
       // fileSinkOperator to dump the output of the select
       fileSinkDesc fsd = new fileSinkDesc ("file:///tmp" + File.separator + System.getProperty("user.name") + File.separator + "TestFileSinkOperator",
-                                           Utilities.defaultTd);
+                                           Utilities.defaultTd, false);
       Operator<fileSinkDesc> flop = OperatorFactory.get(fileSinkDesc.class);
       flop.setConf(fsd);
       ArrayList<Operator<? extends Serializable>> nextOp = new ArrayList<Operator<? extends Serializable>> ();

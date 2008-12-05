@@ -25,14 +25,17 @@ public class fileSinkDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   private String dirName;
   private tableDesc tableInfo;
+  private boolean compressed;
 
   public fileSinkDesc() { }
   public fileSinkDesc(
     final String dirName,
-    final tableDesc tableInfo) {
+    final tableDesc tableInfo,
+    final boolean compressed) {
 
     this.dirName = dirName;
     this.tableInfo = tableInfo;
+    this.compressed = compressed;
   }
   
   @explain(displayName="directory", normalExplain=false)
@@ -51,4 +54,12 @@ public class fileSinkDesc implements Serializable {
     this.tableInfo = tableInfo;
   }
 
+  @explain(displayName="compressed")
+  public boolean getCompressed() {
+    return compressed;
+  }
+
+  public void setCompressed(boolean compressed) {
+    this.compressed = compressed;
+  }
 }

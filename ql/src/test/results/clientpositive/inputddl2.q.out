@@ -12,8 +12,8 @@ STAGE PLANS:
           # buckets: -1
           partition columns: ds datetime, country string
           name: INPUTDDL2
-          isExternal:
-          isSequenceFile:
+          isExternal: false
+          isSequenceFile: false
 
 
 key	int

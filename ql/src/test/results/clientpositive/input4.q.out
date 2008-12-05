@@ -8,13 +8,13 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Copy
-      source: file:/home/njain/workspace/hadoop-0.17/src/contrib/hive/data/files/kv1.txt
-      destination: file:/tmp/hive-njain/-1533162426
+      source: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive-trunk-compress/data/files/kv1.txt
+      destination: file:/tmp/hive-jssarma/412426324
 
   Stage: Stage-1
     Move Operator
       tables:
-            replace:
+            replace: false
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat

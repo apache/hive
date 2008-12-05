@@ -55,6 +55,7 @@ STAGE PLANS:
                         expr: regexp_replace('hadoop', '(.)[a-z]*', '$1ive')
                         type: string
                   File Output Operator
+                    compressed: false
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
@@ -64,7 +65,7 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
-            replace:
+            replace: true
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat

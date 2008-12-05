@@ -11,7 +11,7 @@ STAGE PLANS:
           columns: key int, value string
           # buckets: -1
           name: INPUTDDL1
-          isExternal:
-          isSequenceFile:
+          isExternal: false
+          isSequenceFile: false
 
 

@@ -50,7 +50,7 @@ import org.apache.hadoop.hive.ql.parse.*;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
-
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -172,8 +172,11 @@ public class GenMapRedUtils {
       PlanUtils.getBinaryTableDesc(PlanUtils.getFieldSchemasFromRowSchema(parent.getSchema(), "temporarycol")); 
     
     // Create a file sink operator for this file name
-    Operator<? extends Serializable> fs_op = 
-      putOpInsertMap(OperatorFactory.get(new fileSinkDesc(taskTmpDir, tt_desc),parent.getSchema()), null, parseCtx);
+    Operator<? extends Serializable> fs_op =
+      putOpInsertMap(OperatorFactory.get
+                     (new fileSinkDesc(taskTmpDir, tt_desc,
+                                       parseCtx.getConf().getBoolVar(HiveConf.ConfVars.COMPRESSINTERMEDIATE)),
+                      parent.getSchema()), null, parseCtx);
     
     // replace the reduce child with this operator
     List<Operator<? extends Serializable>> childOpList = parent.getChildOperators();

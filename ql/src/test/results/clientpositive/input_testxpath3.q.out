@@ -23,6 +23,7 @@ STAGE PLANS:
                       expr: 1.myint
                       type: array<int>
                 File Output Operator
+                  compressed: false
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat

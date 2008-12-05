@@ -398,10 +398,34 @@ public class Utilities {
     }
     // Unreachable
   }
-  
+
+  /**
+   * Convert an output stream to a compressed output stream based on codecs 
+   * and compression options specified in the Job Configuration.
+   * @param jc Job Configuration
+   * @param out Output Stream to be converted into compressed output stream
+   * @return compressed output stream
+   */
   public static OutputStream createCompressedStream(JobConf jc,
-                                                    OutputStream out) throws IOException {
+                                                    OutputStream out)
+    throws IOException {
     boolean isCompressed = FileOutputFormat.getCompressOutput(jc);
+    return createCompressedStream(jc, out, isCompressed);
+  }
+  
+  /**
+   * Convert an output stream to a compressed output stream based on codecs
+   * codecs in the Job Configuration. Caller specifies directly whether file is 
+   * compressed or not
+   * @param jc Job Configuration
+   * @param out Output Stream to be converted into compressed output stream
+   * @param isCompressed whether the output stream needs to be compressed or not
+   * @return compressed output stream
+   */
+  public static OutputStream createCompressedStream(JobConf jc,
+                                                    OutputStream out,
+                                                    boolean isCompressed)
+    throws IOException {
     if(isCompressed) {
       Class<? extends CompressionCodec> codecClass =
         FileOutputFormat.getOutputCompressorClass(jc, DefaultCodec.class);
@@ -413,14 +437,63 @@ public class Utilities {
     }
   }
 
+  /**
+   * Based on compression option and configured output codec - get extension
+   * for output file. This is only required for text files - not sequencefiles
+   * @param jc Job Configuration
+   * @param isCompressed Whether the output file is compressed or not
+   * @return the required file extension (example: .gz)
+   */
+  public static String getFileExtension(JobConf jc, boolean isCompressed) {
+    if(!isCompressed) {
+      return "";
+    } else {
+      Class<? extends CompressionCodec> codecClass =
+        FileOutputFormat.getOutputCompressorClass(jc, DefaultCodec.class);
+      CompressionCodec codec = (CompressionCodec)
+        ReflectionUtils.newInstance(codecClass, jc);
+      return codec.getDefaultExtension();
+    }
+  }
+
+  /**
+   * Create a sequencefile output stream based on job configuration
+   * @param jc Job configuration
+   * @param fs File System to create file in
+   * @param file Path to be created
+   * @param keyClass Java Class for key
+   * @param valClass Java Class for value
+   * @return output stream over the created sequencefile
+   */
   public static SequenceFile.Writer createSequenceWriter(JobConf jc, FileSystem fs,
                                                          Path file, Class<?> keyClass,
-                                                         Class<?> valClass) throws IOException {
+                                                         Class<?> valClass)
+    throws IOException {
+    boolean isCompressed = SequenceFileOutputFormat.getCompressOutput(jc);
+    return createSequenceWriter(jc, fs, file, keyClass, valClass, isCompressed);
+  }
+
+  /**
+   * Create a sequencefile output stream based on job configuration
+   * Uses user supplied compression flag (rather than obtaining it from the Job Configuration)
+   * @param jc Job configuration
+   * @param fs File System to create file in
+   * @param file Path to be created
+   * @param keyClass Java Class for key
+   * @param valClass Java Class for value
+   * @return output stream over the created sequencefile
+   */
+  public static SequenceFile.Writer createSequenceWriter(JobConf jc, FileSystem fs,
+                                                         Path file, Class<?> keyClass,
+                                                         Class<?> valClass,
+                                                         boolean isCompressed)
+    throws IOException {
     CompressionCodec codec = null;
     CompressionType compressionType = CompressionType.NONE;
-    if (SequenceFileOutputFormat.getCompressOutput(jc)) {
+    Class codecClass = null;
+    if (isCompressed) {
       compressionType = SequenceFileOutputFormat.getOutputCompressionType(jc);
-      Class codecClass = SequenceFileOutputFormat.getOutputCompressorClass(jc, DefaultCodec.class);
+      codecClass = SequenceFileOutputFormat.getOutputCompressorClass(jc, DefaultCodec.class);
       codec = (CompressionCodec) 
         ReflectionUtils.newInstance(codecClass, jc);
     }
