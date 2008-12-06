@@ -754,6 +754,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   private void parseJoinCondition(QBJoinTree joinTree, CommonTree joinCond, Vector<String> leftSrc)
       throws SemanticException {
+    if (joinCond == null) 
+      return;
 
     switch (joinCond.getToken().getType()) {
     case HiveParser.KW_OR:
@@ -2415,7 +2417,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     joinTree.setFilters(filters);
 
     CommonTree joinCond = (CommonTree) joinParseTree.getChild(2);
-    assert joinCond != null;
     Vector<String> leftSrc = new Vector<String>();
     parseJoinCondition(joinTree, joinCond, leftSrc);
     if (leftSrc.size() == 1)
