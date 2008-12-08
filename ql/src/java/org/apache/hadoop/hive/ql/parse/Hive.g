@@ -5,6 +5,7 @@ options
 output=AST;
 ASTLabelType=CommonTree;
 backtrack=true;
+k=1;
 }
  
 tokens {
