@@ -17,6 +17,8 @@ Trunk (unreleased changes)
 
   IMPROVEMENTS
 
+    HIVE-102. Refactor DDLTask. (Johan Oskarsson through zshao)
+
     HIVE-85. New compression options for Hive. (Joydeep Sarma through zshao)
 
     HIVE-69. genMapRedTasks uses tree walker. (Namit through zshao)
