@@ -163,7 +163,7 @@ TOKEN: {
 |
 <tok_double_constant:   ["+","-"](<DIGIT>)*"."(<DIGIT>)+(["e","E"](["+","-"])?(<DIGIT>)+)?>
 |
-<IDENTIFIER: <LETTER>(<LETTER>|<DIGIT>|"."|"_")*>
+<IDENTIFIER: (<DIGIT>|<LETTER>|"_")(<LETTER>|<DIGIT>|"."|"_")*>
 |
 <#LETTER: (["a"-"z", "A"-"Z" ]) >
 |

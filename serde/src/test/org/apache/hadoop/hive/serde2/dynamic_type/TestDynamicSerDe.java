@@ -107,7 +107,7 @@ public class TestDynamicSerDe extends TestCase {
         schema.setProperty(Constants.SERIALIZATION_FORMAT, protocol);
         schema.setProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME, "test");
         schema.setProperty(Constants.SERIALIZATION_DDL,
-        "struct test { i32 hello, list<string> bye, map<string,i32> another, i32 nhello, double d, double nd}");
+        "struct test { i32 _hello, list<string> 2bye, map<string,i32> another, i32 nhello, double d, double nd}");
         schema.setProperty(Constants.SERIALIZATION_LIB, new DynamicSerDe().getClass().toString());
         HashMap<String, String> p = additionalParams.get(pp);
         if (p != null) {

@@ -33,6 +33,9 @@ Trunk (unreleased changes)
 
   BUG FIXES
 
+    HIVE-93. Dynamic serde to handle _-prefixed column names in DDL.
+    (Pete Wyckoff through zshao)
+
     HIVE-127. Fetch Task to pass the jobconf to SerDe. (Namit through zshao)
 
     HIVE-116. Let test depend on deploy. (Johan Oskarsson through zshao)

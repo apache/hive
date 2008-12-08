@@ -2142,9 +2142,13 @@ public class thrift_grammar/*@bgen(jjtree)*/implements thrift_grammarTreeConstan
     throw new Error("Missing return statement in function");
   }
 
+  /** Generated Token Manager. */
   public thrift_grammarTokenManager token_source;
   SimpleCharStream jj_input_stream;
-  public Token token, jj_nt;
+  /** Current token. */
+  public Token token;
+  /** Next token. */
+  public Token jj_nt;
   private int jj_ntk;
   private int jj_gen;
   final private int[] jj_la1 = new int[33];
@@ -2152,23 +2156,25 @@ public class thrift_grammar/*@bgen(jjtree)*/implements thrift_grammarTreeConstan
   static private int[] jj_la1_1;
   static private int[] jj_la1_2;
   static {
-      jj_la1_0();
-      jj_la1_1();
-      jj_la1_2();
+      jj_la1_init_0();
+      jj_la1_init_1();
+      jj_la1_init_2();
    }
-   private static void jj_la1_0() {
+   private static void jj_la1_init_0() {
       jj_la1_0 = new int[] {0x0,0x100,0xa3fee00,0xa3fee00,0x23fee00,0x100,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xb0000000,0x0,0x0,0x0,0x0,0xa0000000,0x0,0x0,0x0,0x0,0xa0000000,0xb0000000,0xa0000000,};
    }
-   private static void jj_la1_1() {
+   private static void jj_la1_init_1() {
       jj_la1_1 = new int[] {0x18000000,0x18019c20,0x0,0x0,0x0,0x19c20,0x11c20,0x18000000,0x400000,0x80000000,0x18000000,0x2000000,0x18000000,0x18000000,0x22700000,0x18000000,0x22700000,0x18000000,0x22700000,0x22700000,0x4003cf,0x2000,0x18000000,0x200,0x4000,0x5e01cf,0x100000,0x18000000,0xe0000,0x80000000,0x1cf,0x4001cf,0x4001cf,};
    }
-   private static void jj_la1_2() {
+   private static void jj_la1_init_2() {
       jj_la1_2 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1,0x0,0x1,0x0,0x1,0x1,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
    }
 
+  /** Constructor with InputStream. */
   public thrift_grammar(java.io.InputStream stream) {
      this(stream, null);
   }
+  /** Constructor with InputStream and supplied encoding */
   public thrift_grammar(java.io.InputStream stream, String encoding) {
     try { jj_input_stream = new SimpleCharStream(stream, encoding, 1, 1); } catch(java.io.UnsupportedEncodingException e) { throw new RuntimeException(e); }
     token_source = new thrift_grammarTokenManager(jj_input_stream);
@@ -2178,9 +2184,11 @@ public class thrift_grammar/*@bgen(jjtree)*/implements thrift_grammarTreeConstan
     for (int i = 0; i < 33; i++) jj_la1[i] = -1;
   }
 
+  /** Reinitialise. */
   public void ReInit(java.io.InputStream stream) {
      ReInit(stream, null);
   }
+  /** Reinitialise. */
   public void ReInit(java.io.InputStream stream, String encoding) {
     try { jj_input_stream.ReInit(stream, encoding, 1, 1); } catch(java.io.UnsupportedEncodingException e) { throw new RuntimeException(e); }
     token_source.ReInit(jj_input_stream);
@@ -2191,6 +2199,7 @@ public class thrift_grammar/*@bgen(jjtree)*/implements thrift_grammarTreeConstan
     for (int i = 0; i < 33; i++) jj_la1[i] = -1;
   }
 
+  /** Constructor. */
   public thrift_grammar(java.io.Reader stream) {
     jj_input_stream = new SimpleCharStream(stream, 1, 1);
     token_source = new thrift_grammarTokenManager(jj_input_stream);
@@ -2200,6 +2209,7 @@ public class thrift_grammar/*@bgen(jjtree)*/implements thrift_grammarTreeConstan
     for (int i = 0; i < 33; i++) jj_la1[i] = -1;
   }
 
+  /** Reinitialise. */
   public void ReInit(java.io.Reader stream) {
     jj_input_stream.ReInit(stream, 1, 1);
     token_source.ReInit(jj_input_stream);
@@ -2210,6 +2220,7 @@ public class thrift_grammar/*@bgen(jjtree)*/implements thrift_grammarTreeConstan
     for (int i = 0; i < 33; i++) jj_la1[i] = -1;
   }
 
+  /** Constructor with generated Token Manager. */
   public thrift_grammar(thrift_grammarTokenManager tm) {
     token_source = tm;
     token = new Token();
@@ -2218,6 +2229,7 @@ public class thrift_grammar/*@bgen(jjtree)*/implements thrift_grammarTreeConstan
     for (int i = 0; i < 33; i++) jj_la1[i] = -1;
   }
 
+  /** Reinitialise. */
   public void ReInit(thrift_grammarTokenManager tm) {
     token_source = tm;
     token = new Token();
@@ -2227,7 +2239,7 @@ public class thrift_grammar/*@bgen(jjtree)*/implements thrift_grammarTreeConstan
     for (int i = 0; i < 33; i++) jj_la1[i] = -1;
   }
 
-  final private Token jj_consume_token(int kind) throws ParseException {
+  private Token jj_consume_token(int kind) throws ParseException {
     Token oldToken;
     if ((oldToken = token).next != null) token = token.next;
     else token = token.next = token_source.getNextToken();
@@ -2241,6 +2253,8 @@ public class thrift_grammar/*@bgen(jjtree)*/implements thrift_grammarTreeConstan
     throw generateParseException();
   }
 
+
+/** Get the next Token. */
   final public Token getNextToken() {
     if (token.next != null) token = token.next;
     else token = token.next = token_source.getNextToken();
@@ -2249,6 +2263,7 @@ public class thrift_grammar/*@bgen(jjtree)*/implements thrift_grammarTreeConstan
     return token;
   }
 
+/** Get the specific Token. */
   final public Token getToken(int index) {
     Token t = token;
     for (int i = 0; i < index; i++) {
@@ -2258,23 +2273,21 @@ public class thrift_grammar/*@bgen(jjtree)*/implements thrift_grammarTreeConstan
     return t;
   }
 
-  final private int jj_ntk() {
+  private int jj_ntk() {
     if ((jj_nt=token.next) == null)
       return (jj_ntk = (token.next=token_source.getNextToken()).kind);
     else
       return (jj_ntk = jj_nt.kind);
   }
 
-  private java.util.Vector jj_expentries = new java.util.Vector();
+  private java.util.List jj_expentries = new java.util.ArrayList();
   private int[] jj_expentry;
   private int jj_kind = -1;
 
+  /** Generate ParseException. */
   public ParseException generateParseException() {
-    jj_expentries.removeAllElements();
+    jj_expentries.clear();
     boolean[] la1tokens = new boolean[71];
-    for (int i = 0; i < 71; i++) {
-      la1tokens[i] = false;
-    }
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
@@ -2298,19 +2311,21 @@ public class thrift_grammar/*@bgen(jjtree)*/implements thrift_grammarTreeConstan
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
-        jj_expentries.addElement(jj_expentry);
+        jj_expentries.add(jj_expentry);
       }
     }
     int[][] exptokseq = new int[jj_expentries.size()][];
     for (int i = 0; i < jj_expentries.size(); i++) {
-      exptokseq[i] = (int[])jj_expentries.elementAt(i);
+      exptokseq[i] = (int[])jj_expentries.get(i);
     }
     return new ParseException(token, exptokseq, tokenImage);
   }
 
+  /** Enable tracing. */
   final public void enable_tracing() {
   }
 
+  /** Disable tracing. */
   final public void disable_tracing() {
   }
 
