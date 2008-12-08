@@ -18,7 +18,7 @@
 -->
 
 
-<project name="hivecommon" default="jar">
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="hivecommon" default="jar">
 
   <property name="name" value="${ant.project.name}"/>
 
@@ -26,14 +26,18 @@
   <property name="hive.conf.dir" value="${hive.root}/conf"/>
   <property name="dist.dir" location="${hive.root}"/>
 
-  <property name="hadoop.jar" location="${hive.root}/hadoopcore/lib/hadoop-0.20.0-dev-core.jar"/>
-
   <property name="src.dir.hive" location="${hive.root}"/>
   <property name="build.dir.hive" location="${hive.root}/build"/>
+  <property name="build.dir.hadoop" location="${hive.root}/build/hadoopcore"/>
   <property name="build.dir" location="${build.dir.hive}/${name}"/>
   <property name="build.classes" location="${build.dir}/classes"/>
   <property name="build.encoding" value="ISO-8859-1"/>
   <property name="deploy.dir" location="${build.dir.hive}"/>
+
+  <property name="hadoop.mirror" value="http://archive.apache.org/dist"/>
+  <property name="hadoop.version" value="0.19.0"/>
+  <property name="hadoop.root" location="${build.dir.hadoop}/hadoop-${hadoop.version}"/>
+  <property name="hadoop.jar" location="${hadoop.root}/hadoop-${hadoop.version}-core.jar"/>
 
   <property name="javac.debug" value="on"/>
   <property name="javac.version" value="1.5"/>
@@ -67,6 +71,21 @@
     <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
     <path refid="classpath"/>
   </path>
+
+  <import file="${hive.root}/ivy/get_ivy.xml"/>
+
+  <target name="settings-ivy" depends="init-ivy">
+    <ivy:settings file="${hive.root}/ivy/ivysettings.xml"/>
+  </target>
+
+  <target name="resolve" description="--> retrieve dependencies with ivy" depends="settings-ivy">
+    <ivy:retrieve pattern="${build.dir.hadoop}/[artifact]-[revision].[ext]"/>
+  </target>
+
+  <target name="install-hadoopcore" depends="resolve">
+    <untar src="${build.dir.hadoop}/hadoop-${hadoop.version}.tar.gz" dest="${build.dir.hadoop}" compression="gzip"/>
+    <chmod file="${hadoop.root}/bin/hadoop" perm="+x"/>
+  </target>
 
   <!-- I am not sure whether we need this target any more since that package does what is needed -->
   <target name="deploy" depends="jar">
@@ -107,6 +126,7 @@
     <mkdir dir="${build.dir}"/>
     <mkdir dir="${build.classes}"/>
     <mkdir dir="${build.dir.hive}/jexl/classes"/>
+    <mkdir dir="${build.dir.hadoop}"/>
     <mkdir dir="${test.build.dir}"/>
     <mkdir dir="${test.build.src}"/>
     <mkdir dir="${test.build.classes}"/>
@@ -121,7 +141,7 @@
     </copy>
   </target>
 
-  <target name="compile" depends="init">
+  <target name="compile" depends="init, resolve, install-hadoopcore">
     <echo message="Compiling: ${name}"/>
     <javac
      encoding="${build.encoding}"
@@ -220,6 +240,7 @@
       <!--
       <jvmarg value="-Xdebug"/>
       <jvmarg value="-Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=y"/> -->
+      <env key="HADOOP_HOME" value="${hadoop.root}"/>
       <sysproperty key="test.output.overwrite" value="${overwrite}"/>
       <sysproperty key="test.service.standalone.server" value="${standalone}"/>
       <sysproperty key="log4j.configuration" value="file://${test.data.dir}/conf/hive-log4j.properties"/>

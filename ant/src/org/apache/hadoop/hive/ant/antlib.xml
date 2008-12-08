@@ -21,4 +21,6 @@
 <antlib>
   <taskdef name="qtestgen"
            classname="org.apache.hadoop.hive.ant.QTestGenTask" />
+  <taskdef name="getversionpref"
+           classname="org.apache.hadoop.hive.ant.GetVersionPref" />
 </antlib>

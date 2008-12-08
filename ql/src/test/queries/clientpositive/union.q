@@ -13,4 +13,4 @@ FROM (
 ) unioninput
 INSERT OVERWRITE DIRECTORY '../build/ql/test/data/warehouse/union.out' SELECT unioninput.*;
 
-!../hadoopcore/bin/hadoop dfs -cat ../build/ql/test/data/warehouse/union.out/*;
+dfs -cat ../build/ql/test/data/warehouse/union.out/*;

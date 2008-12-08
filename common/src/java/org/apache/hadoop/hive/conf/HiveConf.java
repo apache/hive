@@ -53,7 +53,7 @@ public class HiveConf extends Configuration {
 
     // hadoop stuff
     HADOOPBIN("hadoop.bin.path", System.getenv("HADOOP_HOME") + "/bin/hadoop"),
-    HADOOPCONF("hadoop.config.dir", System.getProperty("user.dir") + "/../../../conf"),
+    HADOOPCONF("hadoop.config.dir", System.getenv("HADOOP_HOME") + "/conf"),
     HADOOPFS("fs.default.name", "file:///"),
     HADOOPMAPFILENAME("map.input.file", null),
     HADOOPJT("mapred.job.tracker", "local"),

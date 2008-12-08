@@ -18,4 +18,4 @@ INSERT OVERWRITE DIRECTORY '../build/ql/test/data/warehouse/dest4.out' SELECT sr
 SELECT dest1.* FROM dest1;
 SELECT dest2.* FROM dest2;
 SELECT dest3.* FROM dest3;
-!../hadoopcore/bin/hadoop dfs -cat ../build/ql/test/data/warehouse/dest4.out/*;
+dfs -cat ../build/ql/test/data/warehouse/dest4.out/*;
