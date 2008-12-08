@@ -27,6 +27,9 @@ Trunk (unreleased changes)
 
   BUG FIXES
 
+    HIVE-90. Fixed TestGetDBs for File.list() order.
+    (Johan Oskarsson through zshao)
+
     HIVE-111. Support join without a ON clause. (Namit through zshao)
 
     HIVE-77. Thread safe query execution. (Joydeep through zshao)

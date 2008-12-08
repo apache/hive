@@ -55,9 +55,9 @@ public class TestGetDBs extends MetaStoreTestBase {
       DB.createDB("foo2", conf_);
       List<String> dbs = MetaStore.getDbs(conf_);
       assertTrue(dbs.size() == 3);
-      assertTrue(dbs.get(0).equals("foo1"));
-      assertTrue(dbs.get(1).equals("foo2"));
-      assertTrue(dbs.get(2).equals("default"));
+      assertTrue(dbs.contains("foo1"));
+      assertTrue(dbs.contains("foo2"));
+      assertTrue(dbs.contains("default"));
       cleanup();
     } catch(MetaException e) {
       e.printStackTrace();

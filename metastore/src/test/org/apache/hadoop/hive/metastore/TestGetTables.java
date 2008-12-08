@@ -48,12 +48,12 @@ public class TestGetTables extends MetaStoreTestBase {
       List<String> tables = db.getTables(".+");
       assertTrue(tables.size() == 0);
     }
-    Table bar1 = Table.create(db, "bar1", createSchema("foo1","bar1"), conf_);
-    Table bar2 = Table.create(db, "bar2", createSchema("foo1","bar2"), conf_);
+    Table.create(db, "bar1", createSchema("foo1","bar1"), conf_);
+    Table.create(db, "bar2", createSchema("foo1","bar2"), conf_);
     List<String> tables = db.getTables(".+");
     assertTrue(tables.size() == 2);
-    assertTrue(tables.get(0).equals("bar1"));
-    assertTrue(tables.get(1).equals("bar2"));
+    assertTrue(tables.contains("bar1"));
+    assertTrue(tables.contains("bar2"));
     cleanup();
   }
 }
