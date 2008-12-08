@@ -30,6 +30,8 @@ Trunk (unreleased changes)
 
   BUG FIXES
 
+    HIVE-116. Let test depend on deploy. (Johan Oskarsson through zshao)
+
     HIVE-90. Fixed TestGetDBs for File.list() order.
     (Johan Oskarsson through zshao)
 

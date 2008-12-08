@@ -100,7 +100,7 @@
   <!-- ====================================================== -->
   <!-- Test all the contribs.                               -->
   <!-- ====================================================== -->
-  <target name="test" depends="clean-test">
+  <target name="test" depends="clean-test,deploy">
     <subant target="test">
       <fileset dir="." includes="*/build.xml" excludes="ant/build.xml"/>
     </subant>
