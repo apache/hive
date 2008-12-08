@@ -77,7 +77,7 @@ public class FetchTask extends Task<fetchWork> implements Serializable {
        Properties mSerdeProp = new Properties();
        mSerdeProp.put(Constants.SERIALIZATION_FORMAT, "" + Utilities.tabCode);
        mSerdeProp.put(Constants.SERIALIZATION_NULL_FORMAT, "NULL");
-       mSerde.initialize(null, mSerdeProp);
+       mSerde.initialize(job, mSerdeProp);
        
        currPath = null;
        currTbl = null;
@@ -231,7 +231,7 @@ public class FetchTask extends Task<fetchWork> implements Serializable {
  			inputSplits = inputFormat.getSplits(job, 1); 		
  			splitNum = 0;
       serde = tmp.getDeserializerClass().newInstance();
-      serde.initialize(null, tmp.getProperties());
+      serde.initialize(job, tmp.getProperties());
       LOG.debug("Creating fetchTask with deserializer typeinfo: " + serde.getObjectInspector().getTypeName());
       LOG.debug("deserializer properties: " + tmp.getProperties());
       if (!tblDataDone)
