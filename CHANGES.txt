@@ -6,6 +6,9 @@ Trunk (unreleased changes)
 
   NEW FEATURES
 
+    HIVE-140. Event Based Infrastructure for Syntax Trees in the compiler.
+    (Ashish Thusoo through zshao)
+
     HIVE-98. Dependency management with hadoop core using ivy.
     (Ashish Thusoo through zshao)
 
