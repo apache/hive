@@ -343,6 +343,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ctx_1.dest = "insclause-" + ctx_1.nextNum;
         ctx_1.nextNum++;
 
+        // is there a insert in the subquery
+        if (qbp.getIsSubQ()) {
+          CommonTree ch = (CommonTree)ast.getChild(0);
+          if ((ch.getToken().getType() != HiveParser.TOK_DIR) ||
+              (((CommonTree)ch.getChild(0)).getToken().getType() != HiveParser.TOK_TMP_FILE))
+            throw new SemanticException(ErrorMsg.NO_INSERT_INSUBQUERY.getMsg(ast));
+        }
+
         qbp.setDestForClause(ctx_1.dest, (CommonTree) ast.getChild(0));
       }
         break;

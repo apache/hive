@@ -43,6 +43,7 @@ public enum ErrorMsg {
   DUPLICATE_GROUPBY_KEY("Repeated Key in Group By"),
   UNSUPPORTED_MULTIPLE_DISTINCTS("DISTINCT on Different Columns not Supported"),
   NO_SUBQUERY_ALIAS("No Alias For Subquery"),
+  NO_INSERT_INSUBQUERY("Cannot insert in a Subquery. Inserting to table "),
   NON_KEY_EXPR_IN_GROUPBY("Expression Not In Group By Key"),
   INVALID_XPATH("General . and [] Operators are Not Supported"),
   INVALID_PATH("Invalid Path"),

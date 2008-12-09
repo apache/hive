@@ -36,6 +36,8 @@ Trunk (unreleased changes)
 
   BUG FIXES
 
+    HIVE-103. Disable inserts in sub queries. (Namit Jain through zshao)
+
     HIVE-92. Fixed union all for non-embedded query. (Namit Jain through zshao)
 
     HIVE-93. Dynamic serde to handle _-prefixed column names in DDL.
