@@ -409,6 +409,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           qbp.setDestLimit(ctx_1.dest, new Integer(ast.getChild(0).getText()));
         }
         break;
+
+      case HiveParser.TOK_UNION:
+        // currently, we dont support subq1 union subq2 - the user has to explicitly say: 
+        // select * from (subq1 union subq2) subqalias
+        if (!qbp.getIsSubQ())
+          throw new SemanticException(ErrorMsg.UNION_NOTIN_SUBQ.getMsg());
+
       default:
         skipRecursion = false;
         break;

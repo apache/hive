@@ -65,6 +65,7 @@ public enum ErrorMsg {
   TABLE_ALIAS_NOT_ALLOWED("Table Alias not Allowed in Sampling Clause"),
   CLUSTERBY_DISTRIBUTEBY_CONFLICT("Cannot have both Cluster By and Distribute By Clauses"),
   CLUSTERBY_SORTBY_CONFLICT("Cannot have both Cluster By and Sort By Clauses"),
+  UNION_NOTIN_SUBQ("Top level Union is not supported currently; use a subquery for the union"),
   NON_BUCKETED_TABLE("Sampling Expression Needed for Non-Bucketed Table");
 
   private String mesg;
