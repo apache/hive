@@ -56,25 +56,26 @@ public class CliDriver {
   
   public int processCmd(String cmd) {
     SessionState ss = SessionState.get();
-
-    String[] tokens = cmd.split("\\s+");
-    String cmd_1 = cmd.substring(tokens[0].length());
+    
+    String cmd_trimmed = cmd.trim();
+    String[] tokens = cmd_trimmed.split("\\s+");
+    String cmd_1 = cmd_trimmed.substring(tokens[0].length());
     int ret = 0;
     
     if(tokens[0].toLowerCase().equals("set")) {
 
       ret = sp.run(cmd_1);
 
-    } else if (cmd.toLowerCase().equals("quit") || cmd.toLowerCase().equals("exit")) {
+    } else if (cmd_trimmed.toLowerCase().equals("quit") || cmd_trimmed.toLowerCase().equals("exit")) {
 
       // if we have come this far - either the previous commands
       // are all successful or this is command line. in either case
       // this counts as a successful run
       System.exit(0);
 
-    } else if (cmd.startsWith("!")) {
+    } else if (cmd_trimmed.startsWith("!")) {
 
-      String shell_cmd = cmd.substring(1);
+      String shell_cmd = cmd_trimmed.substring(1);
 
       //shell_cmd = "/bin/bash -c \'" + shell_cmd + "\'";
       try {
@@ -165,7 +166,7 @@ public class CliDriver {
         ss.delete_resource(t);
       }
 
-    } else {
+    } else if (!cmd_trimmed.equals("")) {
       PrintStream out = ss.out;
 
       long start = System.currentTimeMillis();
@@ -197,7 +198,6 @@ public class CliDriver {
   public int processLine(String line) {
     int ret = 0;
     for(String oneCmd: line.split(";")) {
-      oneCmd = oneCmd.trim();
       if(oneCmd.equals(""))
         continue;
       
@@ -212,13 +212,18 @@ public class CliDriver {
 
   public int processReader(BufferedReader r) throws IOException {
     String line;
+    StringBuffer qsb = new StringBuffer();
     int ret = 0;
+
     while((line = r.readLine()) != null) {
-      ret = processLine(line);
-      if(ret != 0) {
-        return ret;
-      }
+      qsb.append(line + "\n");
     }
+
+    ret = processLine(qsb.toString());
+    if (ret != 0) {
+      return ret;
+    }
+
     return 0;
   }
 

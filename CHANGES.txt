@@ -36,6 +36,9 @@ Trunk (unreleased changes)
 
   BUG FIXES
 
+    HIVE-47. CLI to support multiline queries from an input file.
+    (Ashish through zshao)
+
     HIVE-103. Disable inserts in sub queries. (Namit Jain through zshao)
 
     HIVE-92. Fixed union all for non-embedded query. (Namit Jain through zshao)

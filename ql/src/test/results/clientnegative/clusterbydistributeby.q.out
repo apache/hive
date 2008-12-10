@@ -1,1 +1,1 @@
-FAILED: Error in semantic analysis: line 6:14 Cannot have both Cluster By and Distribute By Clauses tkey
+FAILED: Error in semantic analysis: line 8:14 Cannot have both Cluster By and Distribute By Clauses tkey
