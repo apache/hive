@@ -36,6 +36,8 @@ Trunk (unreleased changes)
 
   BUG FIXES
 
+    HIVE-162. Fix join0.q test failure with hadoop 0.17. (zshao)
+
     HIVE-146. Fix builds for non-default build directory.
     (David Phillips through zshao)
 
