@@ -28,7 +28,7 @@
 
   <property name="src.dir.hive" location="${hive.root}"/>
   <property name="build.dir.hive" location="${hive.root}/build"/>
-  <property name="build.dir.hadoop" location="${hive.root}/build/hadoopcore"/>
+  <property name="build.dir.hadoop" location="${build.dir.hive}/hadoopcore"/>
   <property name="build.dir" location="${build.dir.hive}/${name}"/>
   <property name="build.classes" location="${build.dir}/classes"/>
   <property name="build.encoding" value="ISO-8859-1"/>
@@ -98,7 +98,7 @@
   <!-- the normal classpath -->
   <path id="common-classpath">
     <pathelement location="${hadoop.jar}"/>
-    <pathelement location="${hive.root}/build/classes"/>
+    <pathelement location="${build.dir.hive}/classes"/>
     <fileset dir="${build.dir.hive}">
       <include name="**/hive_*.jar"/>
     </fileset>
@@ -111,18 +111,18 @@
   </path>
 
   <path id="classpath">
-    <pathelement location="${hive.root}/build/common/classes"/>
-    <pathelement location="${hive.root}/build/serde/classes"/>
-    <pathelement location="${hive.root}/build/metastore/classes"/>
-    <pathelement location="${hive.root}/build/ql/classes"/>
-    <pathelement location="${hive.root}/build/cli/classes"/>
+    <pathelement location="${build.dir.hive}/common/classes"/>
+    <pathelement location="${build.dir.hive}/serde/classes"/>
+    <pathelement location="${build.dir.hive}/metastore/classes"/>
+    <pathelement location="${build.dir.hive}/ql/classes"/>
+    <pathelement location="${build.dir.hive}/cli/classes"/>
     <fileset dir="${test.src.data.dir}" includes="files/*.jar"/>
     <fileset dir="${basedir}" includes="lib/*.jar"/>
     <path refid="common-classpath"/>
   </path>
 
   <target name="init">
-    <mkdir dir="${hive.root}/build"/>
+    <mkdir dir="${build.dir.hive}"/>
     <mkdir dir="${build.dir}"/>
     <mkdir dir="${build.classes}"/>
     <mkdir dir="${build.dir.hive}/jexl/classes"/>
