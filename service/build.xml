@@ -50,7 +50,7 @@
     </javac>
   </target>
  
-  <target name="compile" depends="thriftif,core-compile">
+  <target name="compile" depends="core-compile">
   </target>
 
   <target name="clean">
