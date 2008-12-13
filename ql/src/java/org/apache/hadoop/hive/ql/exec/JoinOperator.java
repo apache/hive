@@ -175,7 +175,7 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
 
     iterators = new Stack<Iterator<ArrayList<Object>>>();
     
-    joinEmitInterval = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEPARTITIONNAME);
+    joinEmitInterval = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEJOINEMITINTERVAL);
   }
 
   public void startGroup() throws HiveException {

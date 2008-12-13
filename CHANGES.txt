@@ -39,6 +39,9 @@ Trunk (unreleased changes)
 
   BUG FIXES
 
+    HIVE-169. Fixed configuration parameter used for determining join interval 
+    in JoinOperator. (Namit Jain via zshao)
+
     HIVE-147. Add a tool for extracting lineage info from hive sql.
     (Suresh Antony via zshao)
 
