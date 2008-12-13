@@ -6,6 +6,9 @@ Trunk (unreleased changes)
 
   NEW FEATURES
 
+    HIVE-147. Add a tool for extracting lineage info from hive sql.
+    (Suresh Antony via zshao)
+
     HIVE-140. Event Based Infrastructure for Syntax Trees in the compiler.
     (Ashish Thusoo through zshao)
 
@@ -35,6 +38,9 @@ Trunk (unreleased changes)
   OPTIMIZATIONS
 
   BUG FIXES
+
+    HIVE-147. Add a tool for extracting lineage info from hive sql.
+    (Suresh Antony via zshao)
 
     HIVE-114. Drop partition does not delete data for external tables now.
     (Johan Oskarsson via zshao)

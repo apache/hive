@@ -41,7 +41,7 @@ public class DefaultASTEventDispatcher implements
 	/**
 	 * Constructs the default event dispatcher
 	 */
-	DefaultASTEventDispatcher() {
+	public  DefaultASTEventDispatcher() {
 		dispatchMap = new HashMap<ASTEvent, ArrayList<ASTEventProcessor>>();
 	}
 	
