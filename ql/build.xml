@@ -109,7 +109,7 @@
       <equals arg1="${hadoop.version.prefix}" arg2="0.19"/>
     </condition>
 
-    <copy todir="${build.dir}/gen-java">
+    <copy todir="${build.dir}/java">
       <fileset dir="${src.dir}">
         <include name="**/*.java"/>
       </fileset>
@@ -124,7 +124,7 @@
     <echo message="Compiling: ${name}"/>
     <javac
      encoding="${build.encoding}"
-     srcdir="${build.dir}/gen-java"
+     srcdir="${build.dir}/java:${build.dir}/gen-java"
      includes="**/*.java"
      destdir="${build.classes}"
      debug="${javac.debug}"

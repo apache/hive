@@ -36,6 +36,9 @@ Trunk (unreleased changes)
 
   BUG FIXES
 
+    HIVE-144. Hive/ql java source copied to build/ql/java to make it work 
+    with eclipse. (Johan Oskarsson via zshao)
+
     HIVE-129. Fix aux.jar packaging to work properly with 0.17 and 0.18 
     versions of hadoop. (Joydeep Sarma via zshao)
 
