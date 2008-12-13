@@ -36,6 +36,9 @@ Trunk (unreleased changes)
 
   BUG FIXES
 
+    HIVE-114. Drop partition does not delete data for external tables now.
+    (Johan Oskarsson via zshao)
+
     HIVE-144. Hive/ql java source copied to build/ql/java to make it work 
     with eclipse. (Johan Oskarsson via zshao)
 

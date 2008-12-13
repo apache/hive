@@ -340,6 +340,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       }
 
+      /**
+       * Is this an external table?
+       * @param table Check if this table is external.
+       * @return True if the table is external, otherwise false.
+       */
       private boolean isExternal(Table table) {
         if(table == null) {
           return false;
@@ -480,6 +485,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         LOG.info("Partition values:" + part_vals);
         boolean success = false;
         Path partPath = null;
+        Table tbl = null;
         try {
           getMS().openTransaction();
           Partition part = this.get_partition(db_name, tbl_name, part_vals);
@@ -494,12 +500,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
           success  = getMS().commitTransaction();
           partPath = new Path(part.getSd().getLocation());
+          tbl = get_table(db_name, tbl_name);
         } finally {
           if(!success) {
             getMS().rollbackTransaction();
           } else if(deleteData && (partPath != null)) {
-            wh.deleteDir(partPath, true);
-            // ok even if the data is not deleted
+            if(tbl != null && !isExternal(tbl)) {
+              wh.deleteDir(partPath, true);
+              // ok even if the data is not deleted
+            }
           }
         }
         return true;

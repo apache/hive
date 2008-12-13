@@ -125,6 +125,7 @@ public class TestHiveMetaStore extends TestCase {
     part.setParameters(new HashMap<String, String>());
     part.setSd(tbl.getSd());
     part.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo());
+    part.getSd().setLocation(tbl.getSd().getLocation() + "/part1");
   
     Partition retp = client.add_partition(part);
     assertNotNull("Unable to create partition " + part, retp);
@@ -132,8 +133,13 @@ public class TestHiveMetaStore extends TestCase {
     Partition part2 = client.getPartition(dbName, tblName, part.getValues());
     assertTrue("Partitions are not same",part.equals(part2));
   
+    FileSystem fs = FileSystem.get(this.hiveConf);
+    Path partPath = new Path(part2.getSd().getLocation());
+    
+    assertTrue(fs.exists(partPath));
     ret = client.dropPartition(dbName, tblName, part.getValues(), true);
     assertTrue(ret);
+    assertFalse(fs.exists(partPath));
   
     // add the partition again so that drop table with a partition can be tested
     retp = client.add_partition(part);
@@ -143,7 +149,17 @@ public class TestHiveMetaStore extends TestCase {
   
     ret = client.dropType(typeName);
     assertTrue("Unable to drop type " + typeName, ret);
-  
+
+    //recreate table as external, drop partition and it should
+    //still exist
+    tbl.setParameters(new HashMap<String, String>());
+    tbl.getParameters().put("EXTERNAL", "TRUE");
+    client.createTable(tbl);
+    retp = client.add_partition(part);
+    assertTrue(fs.exists(partPath));
+    client.dropPartition(dbName, tblName, part.getValues(), true);
+    assertTrue(fs.exists(partPath));
+    
     ret = client.dropDatabase(dbName);
     assertTrue("Unable to create the databse " + dbName, ret);
     } catch (Exception e) {
