@@ -23,6 +23,8 @@ import java.util.*;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.URLDecoder;
+import java.net.URL;
+import java.net.URLClassLoader;
 
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.lang.StringUtils;
@@ -86,13 +88,19 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
     String realFiles = getRealFiles(job);
     if (realFiles != null && realFiles.length() > 0) {
       job.set("tmpfiles", realFiles);
+
+      // workaround for hadoop-17 - jobclient only looks at commandlineconfig
+      Configuration commandConf = JobClient.getCommandLineConfig();
+      if(commandConf != null) {
+        commandConf.set("tmpfiles", realFiles);
+      }
     }
   }
 
   /**
    * Constructor/Initialization for invocation as independent utility
    */
-  public ExecDriver(mapredWork plan, JobConf job, boolean isSilent) {
+  public ExecDriver(mapredWork plan, JobConf job, boolean isSilent) throws HiveException {
     setWork(plan);
     this.job = job;
     LOG = LogFactory.getLog(this.getClass().getName());
@@ -217,6 +225,27 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
         work.setNumReduceTasks(Integer.valueOf(newRed));
       }
     }
+  }
+
+  /**
+   * Add new elements to the classpath
+   * @param newPaths Array of classpath elements
+   */
+  private static void addToClassPath(String [] newPaths) throws Exception {
+    Thread curThread = Thread.currentThread();
+    URLClassLoader loader = (URLClassLoader)curThread.getContextClassLoader();
+    List<URL> curPath = Arrays.asList(loader.getURLs());
+    ArrayList<URL> newPath = new ArrayList<URL> ();
+
+    for(String onestr: newPaths) {
+      URL oneurl = (new File(onestr)).toURL();
+      if(!curPath.contains(oneurl)) {
+        newPath.add(oneurl);
+      }
+    }
+    
+    loader = new URLClassLoader(newPath.toArray(new URL[0]), loader);
+    curThread.setContextClassLoader(loader);
   }
 
   /**
@@ -401,6 +430,20 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
       pathData = fs.open(new Path(planFileName));
     }
     
+    // workaround for hadoop-17 - libjars are not added to classpath. this affects local
+    // mode execution
+    boolean localMode = HiveConf.getVar(conf, HiveConf.ConfVars.HADOOPJT).equals("local");
+    if(localMode) {
+      String auxJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEAUXJARS);
+      if (StringUtils.isNotBlank(auxJars)) {
+        try {
+          addToClassPath(StringUtils.split(auxJars, ","));
+        } catch (Exception e) {
+          throw new HiveException (e.getMessage(), e);
+        }
+      }
+    }
+
     mapredWork plan = Utilities.deserializeMapRedWork(pathData);
     ExecDriver ed = new ExecDriver(plan, conf, isSilent);
     int ret = ed.execute();

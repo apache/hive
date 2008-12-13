@@ -36,6 +36,9 @@ Trunk (unreleased changes)
 
   BUG FIXES
 
+    HIVE-129. Fix aux.jar packaging to work properly with 0.17 and 0.18 
+    versions of hadoop. (Joydeep Sarma via zshao)
+
     HIVE-162. Fix join0.q test failure with hadoop 0.17. (zshao)
 
     HIVE-146. Fix builds for non-default build directory.

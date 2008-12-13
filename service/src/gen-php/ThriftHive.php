@@ -744,6 +744,9 @@ class ThriftHive_fetchN_result {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ThriftHive_fetchN_result');
     if ($this->success !== null) {
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
       $xfer += $output->writeFieldBegin('success', TType::LST, 0);
       {
         $output->writeListBegin(TType::STRING, count($this->success));
@@ -911,6 +914,9 @@ class ThriftHive_fetchAll_result {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ThriftHive_fetchAll_result');
     if ($this->success !== null) {
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
       $xfer += $output->writeFieldBegin('success', TType::LST, 0);
       {
         $output->writeListBegin(TType::STRING, count($this->success));

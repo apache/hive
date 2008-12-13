@@ -587,7 +587,7 @@ public class ThriftHive {
     public String toString() {
       StringBuilder sb = new StringBuilder("execute_result(");
       sb.append("ex:");
-      sb.append(this.ex.toString());
+      sb.append(this.ex);
       sb.append(")");
       return sb.toString();
     }
@@ -810,7 +810,7 @@ public class ThriftHive {
       sb.append("success:");
       sb.append(this.success);
       sb.append(",ex:");
-      sb.append(this.ex.toString());
+      sb.append(this.ex);
       sb.append(")");
       return sb.toString();
     }
@@ -1120,7 +1120,7 @@ public class ThriftHive {
       sb.append("success:");
       sb.append(this.success);
       sb.append(",ex:");
-      sb.append(this.ex.toString());
+      sb.append(this.ex);
       sb.append(")");
       return sb.toString();
     }
@@ -1376,7 +1376,7 @@ public class ThriftHive {
       sb.append("success:");
       sb.append(this.success);
       sb.append(",ex:");
-      sb.append(this.ex.toString());
+      sb.append(this.ex);
       sb.append(")");
       return sb.toString();
     }
@@ -1599,7 +1599,7 @@ public class ThriftHive {
       sb.append("success:");
       sb.append(this.success);
       sb.append(",ex:");
-      sb.append(this.ex.toString());
+      sb.append(this.ex);
       sb.append(")");
       return sb.toString();
     }
