@@ -40,13 +40,17 @@ public class DefaultRuleDispatcher implements Dispatcher {
   
   private Map<Rule, OperatorProcessor>  opProcRules;
   private OperatorProcessorContext      opProcCtx;
-  
+  private OperatorProcessor             defaultProc;
+
   /**
    * constructor
+   * @param defaultProc defualt processor to be fired if no rule matches
    * @param opp operator processor that handles actual processing of the node
    * @param opProcCtx operator processor context, which is opaque to the dispatcher
    */
-  public DefaultRuleDispatcher(Map<Rule, OperatorProcessor> opp, OperatorProcessorContext opProcCtx) {
+  public DefaultRuleDispatcher(OperatorProcessor defaultProc, 
+                               Map<Rule, OperatorProcessor> opp, OperatorProcessorContext opProcCtx) {
+    this.defaultProc = defaultProc;
     this.opProcRules = opp;
     this.opProcCtx   = opProcCtx;
   }
@@ -66,14 +70,18 @@ public class DefaultRuleDispatcher implements Dispatcher {
     int minCost = Integer.MAX_VALUE;
     for (Rule r : opProcRules.keySet()) {
       int cost = r.cost(opStack);
-      if (cost <= minCost) {
+      if ((cost >= 0) && (cost <= minCost)) {
         minCost = cost;
         rule = r;
       }
     }
 
-    assert rule != null;
-    OperatorProcessor proc = opProcRules.get(rule);
+    OperatorProcessor proc;
+
+    if (rule == null)
+      proc = defaultProc;
+    else
+      proc = opProcRules.get(rule);
 
     // If the processor has registered a process method for the particular operator, invoke it.
     // Otherwise implement the generic function, which would definitely be implemented

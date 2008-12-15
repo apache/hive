@@ -92,8 +92,9 @@ public class GenMRRedSink1 implements OperatorProcessor {
     // This will happen in case of joins. The current plan can be thrown away after being merged with the
     // original plan
     else {
-      GenMapRedUtils.joinPlan(opMapTask, ctx);
+      GenMapRedUtils.joinPlan(op, null, opMapTask, ctx);
       currTask = opMapTask;
+      ctx.setCurrTask(currTask);
     }
 
     mapCurrCtx.put(op, new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrTopOp(), ctx.getCurrAliasId()));

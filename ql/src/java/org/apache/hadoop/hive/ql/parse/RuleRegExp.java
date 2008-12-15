@@ -37,22 +37,6 @@ public class RuleRegExp implements Rule {
   private Pattern   pattern;
 
   /**
-   * 
-   * @param stack the operators encountered so far
-   * @return operators names in the stack in the form of a string
-   **/
-  private String getOpNameString(Stack<Operator<? extends Serializable>> stack) {
-    String name = new String();
-    Iterator<Operator<? extends Serializable>> iter = stack.iterator();
-    while (iter.hasNext()) {
-      Operator<? extends Serializable> op = iter.next();
-      name = name.concat(op.getOperatorName());
-    }
-
-    return name;
-  }
-
-  /**
    * The rule specified by the regular expression. Note that, the regular expression is specified in terms of operator
    * name. For eg: TS.*RS -> means TableScan operator followed by anything any number of times followed by ReduceSink
    * @param ruleName name of the rule
@@ -71,12 +55,16 @@ public class RuleRegExp implements Rule {
    * @throws SemanticException
    */
   public int cost(Stack<Operator<? extends Serializable>> stack) throws SemanticException {
-    String opStackName = getOpNameString(stack);
-    Matcher m = pattern.matcher(opStackName);
-    if (m.matches()) 
-      return m.group().length();
-    
-    return Integer.MAX_VALUE;
+    int numElems = stack.size();
+    String name = new String();
+    for (int pos = numElems - 1; pos >= 0; pos--) {
+      name = stack.get(pos).getOperatorName().concat(name);
+      Matcher m = pattern.matcher(name);
+      if (m.matches()) 
+        return m.group().length();
+    }
+
+    return -1;
   }
 
   /**

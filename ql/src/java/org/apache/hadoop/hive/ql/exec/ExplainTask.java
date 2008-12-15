@@ -331,9 +331,10 @@ public class ExplainTask extends Task<explainWork> implements Serializable {
     throws Exception {
     out.print(indentString(indent));
     out.println("STAGE PLANS:");
+    HashSet<Task<? extends Serializable>> displayedSet = new HashSet<Task<? extends Serializable>>();
     for(Task<? extends Serializable> rootTask: rootTasks) {
       outputPlan(rootTask, out, work.getExtended(),
-                 new HashSet<Task<? extends Serializable>>(), indent+2);
+                 displayedSet, indent+2);
     }
   }
 

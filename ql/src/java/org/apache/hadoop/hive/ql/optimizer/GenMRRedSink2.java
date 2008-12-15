@@ -67,8 +67,9 @@ public class GenMRRedSink2 implements OperatorProcessor {
     if (opMapTask == null)
       GenMapRedUtils.splitPlan(op, ctx);
     else {
-      GenMapRedUtils.joinPlan(opMapTask, ctx);
+      GenMapRedUtils.joinPlan(op, currTask, opMapTask, ctx);
       currTask = opMapTask;
+      ctx.setCurrTask(currTask);
     }
 
     mapCurrCtx.put(op, new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrTopOp(), ctx.getCurrAliasId()));

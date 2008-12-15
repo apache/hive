@@ -3030,15 +3030,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // create a walker which walks the tree in a DFS manner while maintaining the operator stack. The dispatcher
     // generates the plan from the operator tree
     Map<Rule, OperatorProcessor> opRules = new LinkedHashMap<Rule, OperatorProcessor>();
-    opRules.put(new RuleRegExp(new String("R0"), ".*"), new GenMROperator());
     opRules.put(new RuleRegExp(new String("R1"), "TS"), new GenMRTableScan1());
     opRules.put(new RuleRegExp(new String("R2"), "TS.*RS"), new GenMRRedSink1());
     opRules.put(new RuleRegExp(new String("R3"), "RS.*RS"), new GenMRRedSink2());
-    opRules.put(new RuleRegExp(new String("R4"), ".*FS"), new GenMRFileSink1());
+    opRules.put(new RuleRegExp(new String("R4"), "FS"), new GenMRFileSink1());
 
     // The dispatcher fires the processor corresponding to the closest matching rule and passes the context along
-    Dispatcher disp = new DefaultRuleDispatcher(opRules, procCtx);
-    
+    Dispatcher disp = new DefaultRuleDispatcher(new GenMROperator(), opRules, procCtx);
+
     OpGraphWalker ogw = new GenMapRedWalker(disp);
     ogw.startWalking(this.topOps.values());
 

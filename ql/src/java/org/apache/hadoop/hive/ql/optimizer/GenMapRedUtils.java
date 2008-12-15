@@ -116,10 +116,18 @@ public class GenMapRedUtils {
    * @param task for the old task for the current reducer
    * @param opProcCtx processing context
    */
-  public static void joinPlan(Task<? extends Serializable> task, GenMRProcContext opProcCtx) throws SemanticException {
+  public static void joinPlan(ReduceSinkOperator op,
+                              Task<? extends Serializable> oldTask, 
+                              Task<? extends Serializable> task, 
+                              GenMRProcContext opProcCtx) throws SemanticException {
     Task<? extends Serializable> currTask = task;
     mapredWork plan = (mapredWork) currTask.getWork();
     Operator<? extends Serializable> currTopOp = opProcCtx.getCurrTopOp();
+
+    // terminate the old task and make current task dependent on it
+    if (oldTask != null) {
+      splitTasks(op, oldTask, currTask, opProcCtx);
+    }
 
     if (currTopOp != null) {
       List<Operator<? extends Serializable>> seenOps = opProcCtx.getSeenOps();
@@ -132,6 +140,8 @@ public class GenMapRedUtils {
       currTopOp = null;
       opProcCtx.setCurrTopOp(currTopOp);
     }
+
+    opProcCtx.setCurrTask(currTask);
   }
 
   /**
@@ -139,7 +149,8 @@ public class GenMapRedUtils {
    * @param op the reduce sink operator encountered
    * @param opProcCtx processing context
    */
-  public static void splitPlan(ReduceSinkOperator op, GenMRProcContext opProcCtx) {
+  public static void splitPlan(ReduceSinkOperator op, GenMRProcContext opProcCtx) 
+    throws SemanticException {
     // Generate a new task              
     mapredWork cplan = getMapRedWork();
     ParseContext parseCtx = opProcCtx.getParseCtx();
@@ -157,75 +168,9 @@ public class GenMapRedUtils {
 
     HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = opProcCtx.getOpTaskMap();
     opTaskMap.put(reducer, redTask);
-    
-    // generate the temporary file
-    String scratchDir = opProcCtx.getScratchDir();
-    int randomid = opProcCtx.getRandomId();
-    int pathid   = opProcCtx.getPathId();
-    
-    String taskTmpDir = scratchDir + File.separator + randomid + '.' + pathid ;
-    pathid++;
-    opProcCtx.setPathId(pathid);
-    
-    Operator<? extends Serializable> parent = op.getParentOperators().get(0);
-    tableDesc tt_desc = 
-      PlanUtils.getBinaryTableDesc(PlanUtils.getFieldSchemasFromRowSchema(parent.getSchema(), "temporarycol")); 
-    
-    // Create a file sink operator for this file name
-    Operator<? extends Serializable> fs_op =
-      putOpInsertMap(OperatorFactory.get
-                     (new fileSinkDesc(taskTmpDir, tt_desc,
-                                       parseCtx.getConf().getBoolVar(HiveConf.ConfVars.COMPRESSINTERMEDIATE)),
-                      parent.getSchema()), null, parseCtx);
-    
-    // replace the reduce child with this operator
-    List<Operator<? extends Serializable>> childOpList = parent.getChildOperators();
-    for (int pos = 0; pos < childOpList.size(); pos++) {
-      if (childOpList.get(pos) == op) {
-        childOpList.set(pos, fs_op);
-        break;
-      }
-    }
-    
-    List<Operator<? extends Serializable>> parentOpList = new ArrayList<Operator<? extends Serializable>>();
-    parentOpList.add(parent);
-    fs_op.setParentOperators(parentOpList);
-    
-    // Add the path to alias mapping
-    if (cplan.getPathToAliases().get(taskTmpDir) == null) {
-      cplan.getPathToAliases().put(taskTmpDir, new ArrayList<String>());
-    }
-    
-    String streamDesc;
-    if (reducer.getClass() == JoinOperator.class)
-      streamDesc = "$INTNAME";
-    else
-      streamDesc = taskTmpDir;
-    
-    cplan.getPathToAliases().get(taskTmpDir).add(streamDesc);
-    cplan.getPathToPartitionInfo().put(taskTmpDir, new partitionDesc(tt_desc, null));
-    cplan.getAliasToWork().put(streamDesc, op);
-    setKeyAndValueDesc(cplan, op);
-    
-    // Make this task dependent on the current task
     Task<? extends Serializable> currTask    = opProcCtx.getCurrTask();
-    currTask.addDependentTask(redTask);
-    
-    // TODO: Allocate work to remove the temporary files and make that
-    // dependent on the redTask
-    if (reducer.getClass() == JoinOperator.class)
-      cplan.setNeedsTagging(true);
-    
-    Operator<? extends Serializable> currTopOp = opProcCtx.getCurrTopOp();
-    String currAliasId = opProcCtx.getCurrAliasId();
 
-    currTopOp = null;
-    currAliasId = null;
-    currTask = redTask;
-
-    opProcCtx.setCurrTask(currTask);
-    opProcCtx.setCurrTopOp(currTopOp);
-    opProcCtx.setCurrAliasId(currAliasId);
+    splitTasks(op, currTask, redTask, opProcCtx);
     opProcCtx.getRootOps().add(op);
   }
 
@@ -343,4 +288,95 @@ public class GenMapRedUtils {
     parseCtx.getOpParseCtx().put(op, ctx);
     return op;
   }
+
+  @SuppressWarnings("nls")
+  /**
+   * Merge the tasks - by creating a temporary file between them.
+   * @param op reduce sink operator being processed
+   * @param oldTask the parent task
+   * @param task the child task
+   * @param opProcCtx context
+   **/
+  private static void splitTasks(ReduceSinkOperator op,
+                                 Task<? extends Serializable> oldTask, 
+                                 Task<? extends Serializable> task, 
+                                 GenMRProcContext opProcCtx) throws SemanticException {
+    Task<? extends Serializable> currTask = task;
+    mapredWork plan = (mapredWork) currTask.getWork();
+    Operator<? extends Serializable> currTopOp = opProcCtx.getCurrTopOp();
+    
+    ParseContext parseCtx = opProcCtx.getParseCtx();
+    oldTask.addDependentTask(currTask);
+    
+    // generate the temporary file
+    String scratchDir = opProcCtx.getScratchDir();
+    int randomid = opProcCtx.getRandomId();
+    int pathid   = opProcCtx.getPathId();
+      
+    String taskTmpDir = scratchDir + File.separator + randomid + '.' + pathid ;
+    pathid++;
+    opProcCtx.setPathId(pathid);
+    
+    Operator<? extends Serializable> parent = op.getParentOperators().get(0);
+    tableDesc tt_desc = 
+      PlanUtils.getBinaryTableDesc(PlanUtils.getFieldSchemasFromRowSchema(parent.getSchema(), "temporarycol")); 
+    
+    // Create a file sink operator for this file name
+    Operator<? extends Serializable> fs_op =
+      putOpInsertMap(OperatorFactory.get
+                     (new fileSinkDesc(taskTmpDir, tt_desc,
+                                       parseCtx.getConf().getBoolVar(HiveConf.ConfVars.COMPRESSINTERMEDIATE)),
+                      parent.getSchema()), null, parseCtx);
+    
+    // replace the reduce child with this operator
+    List<Operator<? extends Serializable>> childOpList = parent.getChildOperators();
+    for (int pos = 0; pos < childOpList.size(); pos++) {
+      if (childOpList.get(pos) == op) {
+        childOpList.set(pos, fs_op);
+        break;
+      }
+    }
+    
+    List<Operator<? extends Serializable>> parentOpList = new ArrayList<Operator<? extends Serializable>>();
+    parentOpList.add(parent);
+    fs_op.setParentOperators(parentOpList);
+    
+    Operator<? extends Serializable> reducer = op.getChildOperators().get(0);
+    
+    String streamDesc;
+    mapredWork cplan = (mapredWork) currTask.getWork();
+    
+    if (reducer.getClass() == JoinOperator.class) {
+      String origStreamDesc;
+      streamDesc = "$INTNAME";
+      origStreamDesc = streamDesc;
+      int pos = 0;
+      while (cplan.getAliasToWork().get(streamDesc) != null)
+        streamDesc = origStreamDesc.concat(String.valueOf(++pos));
+    }
+    else
+      streamDesc = taskTmpDir;
+    
+    // Add the path to alias mapping
+    if (cplan.getPathToAliases().get(taskTmpDir) == null) {
+      cplan.getPathToAliases().put(taskTmpDir, new ArrayList<String>());
+    }
+    
+    cplan.getPathToAliases().get(taskTmpDir).add(streamDesc);
+    cplan.getPathToPartitionInfo().put(taskTmpDir, new partitionDesc(tt_desc, null));
+    cplan.getAliasToWork().put(streamDesc, op);
+    setKeyAndValueDesc(cplan, op);
+
+    // TODO: Allocate work to remove the temporary files and make that
+    // dependent on the redTask
+    if (reducer.getClass() == JoinOperator.class)
+      cplan.setNeedsTagging(true);
+
+    currTopOp = null;
+    String currAliasId = null;
+    
+    opProcCtx.setCurrTopOp(currTopOp);
+    opProcCtx.setCurrAliasId(currAliasId);
+    opProcCtx.setCurrTask(currTask);
+  }    
 }
