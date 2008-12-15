@@ -28,35 +28,24 @@ Useful mailing lists
 Downloading and building
 ------------------------
 
-You can either build hive jar files for your environment:
-- apply patch
-- cd hadoop/src/contrib/hive
-- src/contrib/hive> ant -Dtarget.dir=<your-install-dir> package
+- svn co http://svn.apache.org/repos/asf/hadoop/hive/trunk hive_trunk
+- cd hive_trunk
+- hive_trunk> ant -Dtarget.dir=<your-install-dir> -Dhadoop.version='0.17.0' package
 
-Or you can use the pre-packaged jars that is available at the following location
-and untar it: 
-http://mirror.facebook.com/facebook/hive/hadoop-0.17/dist.tar.gz
-
-$ wget http://mirror.facebook.com/facebook/hive/hadoop-0.17/dist.tar.gz
-$ tar zxvf dist.tar.gz
-$ cd dist
-$ ls
-README  bin conf  lib 
-
-bin/ (all the shell scripts)
-lib/ (required jar files)
-conf/ (configuration files)
+You can replace 0.17.0 with 0.18.1, 0.19.0 etc to match the version of hadoop
+that you are using.
 
 In the rest of the README, we use dist and <install-dir> interchangeably.
 
 Running Hive
 ------------
 
-Hive uses hadoop  that means:
+Hive uses hadoop that means:
 - you must have hadoop in your path OR
 - export HADOOP=<hadoop-install-dir>/bin/hadoop
 
 To use hive command line interface (cli) from the shell:
+$ cd <install-dir>
 $ bin/hive
 
 Using Hive
@@ -101,17 +90,17 @@ DDL Operations
 
 Creating Hive tables and browsing through them
 
-hive> CREATE TABLE pokes (foo INT, bar STRING);  
+hive> CREATE TABLE pokes (foo INT, bar STRING);
 
 Creates a table called pokes with two columns, first being an 
 integer and other a string columns
 
-hive> CREATE TABLE invites (foo INT, bar STRING) PARTITIONED BY (ds STRING);  
+hive> CREATE TABLE invites (foo INT, bar STRING) PARTITIONED BY (ds STRING);
 
 Creates a table called invites with two columns and a partition column 
-called ds. The partition column is a virtual column  it is not part 
-of the data itself  but is derived from the partition that a 
-particular dataset is loaded into.
+called ds. The partition column is a virtual column.  It is not part 
+of the data itself, but is derived from the partition that a particular 
+dataset is loaded into.
 
 
 By default tables are assumed to be of text input format and the 
@@ -125,8 +114,8 @@ lists all the tables
 
 hive> SHOW TABLES '.*s';
 
-lists all the table that end with 's'. The pattern matching follows Java regular 
-expressions. Check out this link for documentation 
+lists all the table that end with 's'. The pattern matching follows Java 
+regular expressions. Check out this link for documentation 
 http://java.sun.com/javase/6/docs/api/java/util/regex/Pattern.html
 
 hive> DESCRIBE invites;
@@ -141,6 +130,7 @@ Altering tables. Table name can be changed and additional columns can be dropped
 
 hive> ALTER TABLE pokes ADD COLUMNS (new_col INT);
 hive> ALTER TABLE invites ADD COLUMNS (new_col2 INT COMMENT 'a comment');
+hive> ALTER TABLE pokes REPLACE COLUMNS (c1 INT, c2 STRING);
 hive> ALTER TABLE events RENAME TO 3koobecaf;
 
 Dropping tables
@@ -215,8 +205,8 @@ Runtime configuration
 EXAMPLE QUERIES
 ---------------
 
-Some example queries are shown below. They are available in examples/queries.
-More are available in the hive contrib sources src/test/queries/positive
+Some example queries are shown below. More are available in the hive code:
+ql/src/test/queries/{positive,clientpositive}.
 
 SELECTS and FILTERS
 -------------------
@@ -277,12 +267,12 @@ INSERT OVERWRITE LOCAL DIRECTORY '/tmp/dest4.out' SELECT src.value WHERE src.key
 
 STREAMING
 ---------
-hive> FROM invites a INSERT OVERWRITE TABLE events
-    > SELECT TRANSFORM(a.foo, a.bar) AS (oof, rab)
-    > USING '/bin/cat' WHERE a.ds > '2008-08-09';
+hive> FROM invites a INSERT OVERWRITE TABLE events 
+    > MAP a.foo, a.bar USING '/bin/cat' 
+    > AS oof, rab WHERE a.ds > '2008-08-09';
 
 This streams the data in the map phase through the script /bin/cat (like hadoop streaming).
-Similarly - streaming can be used on the reduce side (please see the Hive Tutorial or examples)
+Similarly - streaming can be used on the reduce side. Please look for files mapreduce*.q.
 
 KNOWN BUGS/ISSUES
 -----------------
@@ -291,6 +281,7 @@ KNOWN BUGS/ISSUES
 * hive cli creates derby.log in the directory from which it has been invoked.
 * COUNT(*) does not work for now. Use COUNT(1) instead.
 * ORDER BY not supported yet.
+* CASE not supported yet.
 * Only string and thrift types (http://developers.facebook.com/thrift) have been tested.
 * When doing Join, please put the table with big number of rows containing the same join key to
 the rightmost in the JOIN clause. Otherwise we may see OutOfMemory errors.
@@ -298,71 +289,104 @@ the rightmost in the JOIN clause. Otherwise we may see OutOfMemory errors.
 FUTURE FEATURES
 ---------------
 * EXPLODE function to generate multiple rows from a column of list type.
-* Simpler syntax for running Map/Reduce scripts.
-* ORDER BY and SORT BY.
 * Table statistics for query optimization.
 
 Developing Hive using Eclipse
 ------------------------
-1. Set up hadoop development environment with Eclipse:
-http://wiki.apache.org/hadoop/EclipseEnvironment
+1. Follow the 3 steps in "Downloading and building" section above
 
-2. Download Hive src code from:
-http://mirror.facebook.com/facebook/hive
+2. Change the first line in conf/hive-log4j.properties to the following
+ line to see error messages on the console.
+hive.root.logger=INFO,console
 
-If hadoop version is 0.17.x or 0.18.x, use
-http://mirror.facebook.com/facebook/hive/hadoop-0.17/
+3. Run tests to make sure everything works.  It may take 20 minutes.
+ant -Dhadoop.version='0.17.0' -logfile test.log test"
 
-If hadoop version is 0.19.x or up or trunk, use
-http://mirror.facebook.com/facebook/hive/hadoop-0.19/
+4. Create an empty java project in Eclipse and close it.
 
-3. Extract the Hive src code to src/contrib/hive, make sure this file (README)
-  is in src/contrib/hive.
-
-4. In src/contrib/hive, run "ant package"
-
-5. In src/contrib/hive, run "ant -logfile test.log test" to make sure
-   everything works.  This test may take 20 minutes.
+5. Add the following section to Eclipse project's .project file:
+	<linkedResources>
+		<link>
+			<name>cli_src_java</name>
+			<type>2</type>
+			<location>/xxx/hive_trunk/cli/src/java</location>
+		</link>
+		<link>
+			<name>common_src_java</name>
+			<type>2</type>
+			<location>/xxx/hive_trunk/common/src/java</location>
+		</link>
+		<link>
+			<name>metastore_src_gen-javabean</name>
+			<type>2</type>
+			<location>/xxx/hive_trunk/metastore/src/gen-javabean</location>
+		</link>
+		<link>
+			<name>metastore_src_java</name>
+			<type>2</type>
+			<location>/xxx/hive_trunk/metastore/src/java</location>
+		</link>
+		<link>
+			<name>metastore_src_model</name>
+			<type>2</type>
+			<location>/xxx/hive_trunk/metastore/src/model</location>
+		</link>
+		<link>
+			<name>ql_src_java</name>
+			<type>2</type>
+			<location>/xxx/hive_trunk/ql/src/java</location>
+		</link>
+		<link>
+			<name>serde_src_gen-java</name>
+			<type>2</type>
+			<location>/xxx/hive_trunk/serde/src/gen-java</location>
+		</link>
+		<link>
+			<name>serde_src_java</name>
+			<type>2</type>
+			<location>/xxx/hive_trunk/serde/src/java</location>
+		</link>
+	</linkedResources>
 
 6. Add the following list to the Eclipse project's .classpath file:
-       <classpathentry kind="src" path="build/contrib/hive/ql/test/src"/>
-       <classpathentry kind="src" path="build/contrib/hive/ql/gen-java"/>
-       <classpathentry kind="src" path="src/contrib/hive/cli/src/java"/>
-       <classpathentry kind="src" path="src/contrib/hive/common/src/java"/>
-       <classpathentry kind="src" path="src/contrib/hive/metastore/src/model"/>
-       <classpathentry kind="src" path="src/contrib/hive/metastore/src/gen-javabean"/>
-       <classpathentry kind="src" path="src/contrib/hive/metastore/src/java"/>
-       <classpathentry kind="src" path="src/contrib/hive/metastore/src/test"/>
-       <classpathentry kind="src" path="src/contrib/hive/ql/src/java"/>
-       <classpathentry kind="src" path="src/contrib/hive/ql/src/test"/>
-       <classpathentry kind="src" path="src/contrib/hive/serde/src/gen-java"/>
-       <classpathentry kind="src" path="src/contrib/hive/serde/src/java"/>
-       <classpathentry kind="src" path="src/contrib/hive/serde/src/test"/>
-       <classpathentry kind="lib" path="src/contrib/hive/cli/lib/jline-0.9.94.jar"/>
-       <classpathentry kind="lib" path="src/contrib/hive/lib/asm-3.1.jar"/>
-       <classpathentry kind="lib" path="src/contrib/hive/lib/commons-lang-2.4.jar"/>
-       <classpathentry kind="lib" path="src/contrib/hive/lib/derby.jar"/>
-       <classpathentry kind="lib" path="src/contrib/hive/lib/jdo2-api-2.1.jar"/>
-       <classpathentry kind="lib" path="src/contrib/hive/lib/jpox-core-1.2.2.jar"/>
-       <classpathentry kind="lib" path="src/contrib/hive/lib/jpox-enhancer-1.2.2.jar"/>
-       <classpathentry kind="lib" path="src/contrib/hive/lib/jpox-rdbms-1.2.2.jar"/>
-       <classpathentry kind="lib" path="src/contrib/hive/lib/libfb303.jar"/>
-       <classpathentry kind="lib" path="src/contrib/hive/lib/libthrift.jar"/>
-       <classpathentry kind="lib" path="src/contrib/hive/ql/lib/antlr-3.0.1.jar"/>
-       <classpathentry kind="lib" path="src/contrib/hive/ql/lib/antlr-runtime-3.0.1.jar"/>
-       <classpathentry kind="lib" path="src/contrib/hive/ql/lib/commons-jexl-1.1.jar"/>
-       <classpathentry kind="lib" path="build/contrib/hive/metastore/metastore_model.jar" sourcepath="src/contrib/hive/metastore/src/model"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="metastore_src_model"/>
+	<classpathentry kind="src" path="metastore_src_gen-javabean"/>
+	<classpathentry kind="src" path="serde_src_gen-java"/>
+	<classpathentry kind="src" path="cli_src_java"/>
+	<classpathentry kind="src" path="ql_src_java"/>
+	<classpathentry kind="src" path="metastore_src_java"/>
+	<classpathentry kind="src" path="serde_src_java"/>
+	<classpathentry kind="src" path="common_src_java"/>
+	<classpathentry kind="lib" path="/xxx/hive_trunk/lib/asm-3.1.jar"/>
+	<classpathentry kind="lib" path="/xxx/hive_trunk/lib/commons-cli-2.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="/xxx/hive_trunk/lib/commons-collections-3.2.1.jar"/>
+	<classpathentry kind="lib" path="/xxx/hive_trunk/lib/commons-lang-2.4.jar"/>
+	<classpathentry kind="lib" path="/xxx/hive_trunk/lib/commons-logging-1.0.4.jar"/>
+	<classpathentry kind="lib" path="/xxx/hive_trunk/lib/commons-logging-api-1.0.4.jar"/>
+	<classpathentry kind="lib" path="/xxx/hive_trunk/lib/derby.jar"/>
+	<classpathentry kind="lib" path="/xxx/hive_trunk/lib/jdo2-api-2.1.jar"/>
+	<classpathentry kind="lib" path="/xxx/hive_trunk/lib/jpox-core-1.2.2.jar"/>
+	<classpathentry kind="lib" path="/xxx/hive_trunk/lib/jpox-enhancer-1.2.2.jar"/>
+	<classpathentry kind="lib" path="/xxx/hive_trunk/lib/jpox-rdbms-1.2.2.jar"/>
+	<classpathentry kind="lib" path="/xxx/hive_trunk/lib/libfb303.jar"/>
+	<classpathentry kind="lib" path="/xxx/hive_trunk/lib/libthrift.jar"/>
+	<classpathentry kind="lib" path="/xxx/hive_trunk/lib/log4j-1.2.15.jar"/>
+	<classpathentry kind="lib" path="/xxx/hive_trunk/lib/velocity-1.5.jar"/>
+	<classpathentry kind="lib" path="/xxx/hive_trunk/ql/lib/antlr-3.0.1.jar"/>
+	<classpathentry kind="lib" path="/xxx/hive_trunk/ql/lib/antlr-runtime-3.0.1.jar"/>
+	<classpathentry kind="lib" path="/xxx/hive_trunk/ql/lib/commons-jexl-1.1.jar"/>
+	<classpathentry kind="lib" path="/xxx/hive_trunk/ql/lib/stringtemplate-3.1b1.jar"/>
+	<classpathentry kind="lib" path="/xxx/hive_trunk/cli/lib/jline-0.9.94.jar"/>
+	<classpathentry kind="lib" path="/xxx/hive_trunk/build/hadoopcore/hadoop-0.19.0/hadoop-0.19.0-core.jar"/>
 
-7. Develop using Eclipse.
+7. Try building hive inside Eclipse, and develop using Eclipse.
 
 
 Development Tips
 ------------------------
-* You may change the first line in conf/hive-log4j.properties to the following line to see error messages on the console.
-hive.root.logger=INFO,console
-Otherwise you will see error messages in /tmp/<username>
 * You may use the following line to test a specific testcase with a specific query file.
-ant -Dtestcase=TestParse -Dqfile=udf4.q test
-ant -Dtestcase=TestParseNegative -Dqfile=invalid_dot.q test
-ant -Dtestcase=TestCliDriver -Dqfile=udf1.q test
-ant -Dtestcase=TestNegativeCliDriver -Dqfile=invalid_tbl_name.q test
+ant -Dhadoop.version='0.17.0' -Dtestcase=TestParse -Dqfile=udf4.q test
+ant -Dhadoop.version='0.17.0' -Dtestcase=TestParseNegative -Dqfile=invalid_dot.q test
+ant -Dhadoop.version='0.17.0' -Dtestcase=TestCliDriver -Dqfile=udf1.q test
+ant -Dhadoop.version='0.17.0' -Dtestcase=TestNegativeCliDriver -Dqfile=invalid_tbl_name.q test

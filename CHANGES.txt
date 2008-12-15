@@ -26,6 +26,8 @@ Trunk (unreleased changes)
 
   IMPROVEMENTS
 
+    HIVE-157. Update README.txt to remove refs to mirror.facebook.com. (zshao)
+
     HIVE-95. Improve cli error messages by lowering backtracking to 1.
     (Pete Wyckoff through zshao)
 
