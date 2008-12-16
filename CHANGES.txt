@@ -43,6 +43,9 @@ Trunk (unreleased changes)
 
   BUG FIXES
 
+    HIVE-158. Make table aliases work for sampled tables in joins.
+    (Raghotham Murthy via zshao)
+
     HIVE-168. Fixed join on a subquery with a group by. (Namit Jain via zshao)
 
     HIVE-169. Fixed configuration parameter used for determining join interval 

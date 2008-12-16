@@ -2384,7 +2384,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         || (left.getToken().getType() == HiveParser.TOK_SUBQUERY)) {
       String table_name = unescapeIdentifier(left.getChild(0).getText());
       String alias = left.getChildCount() == 1 ? table_name : 
-        unescapeIdentifier(left.getChild(1).getText().toLowerCase());
+        unescapeIdentifier(left.getChild(left.getChildCount()-1).getText().toLowerCase());
       joinTree.setLeftAlias(alias);
       String[] leftAliases = new String[1];
       leftAliases[0] = alias;
@@ -2409,7 +2409,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         || (right.getToken().getType() == HiveParser.TOK_SUBQUERY)) {
       String table_name = unescapeIdentifier(right.getChild(0).getText());
       String alias = right.getChildCount() == 1 ? table_name : 
-        unescapeIdentifier(right.getChild(1).getText().toLowerCase());
+        unescapeIdentifier(right.getChild(right.getChildCount()-1).getText().toLowerCase());
       String[] rightAliases = new String[1];
       rightAliases[0] = alias;
       joinTree.setRightAliases(rightAliases);
