@@ -198,7 +198,7 @@ public class DynamicSerDeFieldList extends DynamicSerDeSimpleNode implements Ser
     return struct;
   }
 
-
+  
   TField field = new TField();
   public void serialize(Object o, ObjectInspector oi, TProtocol oprot) throws TException, SerDeException, NoSuchFieldException,IllegalAccessException  {
     // Assuming the ObjectInspector represents exactly the same type as this struct.
@@ -212,7 +212,8 @@ public class DynamicSerDeFieldList extends DynamicSerDeSimpleNode implements Ser
     List<? extends StructField> fields = soi.getAllStructFieldRefs();
     if (fields.size() != ordered_types.length) {
       throw new SerDeException("Trying to serialize " + fields.size() 
-          + " fields into a struct with " + ordered_types.length);
+          + " fields into a struct with " + ordered_types.length
+          + " object=" + o + " objectinspector=" + oi.getTypeName());
     }
     for (int i=0; i<fields.size(); i++) {
       Object f = soi.getStructFieldData(o, fields.get(i));
