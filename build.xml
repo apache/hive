@@ -114,7 +114,7 @@
   </target>
 
   <!-- ====================================================== -->
-  <!-- Clean all the contribs.                              -->
+  <!-- Clean all the contribs.                                -->
   <!-- ====================================================== -->
   <target name="clean">
     <subant target="clean">
@@ -122,6 +122,15 @@
     </subant>
     <delete dir="${target.dir}"/>
     <delete dir="${build.dir.hive}"/>
+  </target>
+
+  <!-- ====================================================== -->
+  <!-- Generate some of the test data.                        -->
+  <!-- ====================================================== -->
+  <target name="gen-testdata" depends="deploy">
+    <subant target="gen-testdata">
+      <fileset dir="." includes="serde/build.xml"/>
+    </subant>
   </target>
 
   <target name="package" depends="deploy">

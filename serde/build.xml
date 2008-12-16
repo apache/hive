@@ -67,4 +67,16 @@ to call at top-level: ant deploy-contrib compile-core-test
     </exec>
   </target>
 
+  <target name="gen-testdata" depends="compile-test,test-jar">
+    <echo>Generating data/files/complex.seq... </echo>
+    <java
+     dir="${hive.root}"
+     classname="org.apache.hadoop.hive.serde2.thrift_test.CreateSequenceFile"
+     fork="true"
+     failonerror="true">
+      <arg value="data/files/complex.seq"/>
+      <classpath refid="${test.classpath.id}"/>
+    </java>
+  </target>
+
 </project>

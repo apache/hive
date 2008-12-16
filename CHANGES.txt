@@ -26,6 +26,8 @@ Trunk (unreleased changes)
 
   IMPROVEMENTS
 
+    HIVE-180. Data Generator for thrift-serialized sequence files. (zshao)
+
     HIVE-157. Update README.txt to remove refs to mirror.facebook.com. (zshao)
 
     HIVE-95. Improve cli error messages by lowering backtracking to 1.
