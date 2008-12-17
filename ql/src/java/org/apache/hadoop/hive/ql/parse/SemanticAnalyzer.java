@@ -1086,6 +1086,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     RowResolver inputRR = opParseCtx.get(input).getRR();
     boolean selectStar = false;
     
+    LOG.debug("genSelectPlan: input = " + inputRR.toString());
     // Iterate over the selects
     for (int i = 0; i < selExprList.getChildCount(); ++i) {
 
@@ -1203,6 +1204,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return r;
   }
   
+  /**
+   * Generate the GroupByOperator for the Query Block (parseInfo.getXXX(dest)).
+   * The new GroupByOperator will be a child of the reduceSinkOperatorInfo.
+   * 
+   * @param mode The mode of the aggregation (PARTIAL1 or COMPLETE)
+   * @return the new GroupByOperator
+   */
   @SuppressWarnings("nls")
   private Operator genGroupByPlanGroupByOperator(
         QBParseInfo parseInfo, String dest, Operator reduceSinkOperatorInfo,
@@ -1271,6 +1279,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     );
   }
 
+  /**
+   * Generate the GroupByOperator for the Query Block (parseInfo.getXXX(dest)).
+   * The new GroupByOperator will be a child of the reduceSinkOperatorInfo.
+   * 
+   * @param mode The mode of the aggregation (PARTIAL2)
+   * @return the new GroupByOperator
+   */
   @SuppressWarnings("nls")
   private Operator genGroupByPlanGroupByOperator1(
         QBParseInfo parseInfo, String dest, Operator reduceSinkOperatorInfo,
@@ -1337,6 +1352,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       String aggName = value.getChild(0).getText();
       Class<? extends UDAF> aggClass = FunctionRegistry.getUDAF(aggName);
+      Method aggEvaluateMethod = FunctionRegistry.getUDAFEvaluateMethod(aggName, mode);
       assert (aggClass != null);
       ArrayList<exprNodeDesc> aggParameters = new ArrayList<exprNodeDesc>();
       String text = entry.getKey();
@@ -1350,7 +1366,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       aggregations.add(new aggregationDesc(aggClass, aggParameters, ((mode == groupByDesc.Mode.FINAL) ? false : (value.getToken().getType() == HiveParser.TOK_FUNCTIONDI))));
       groupByOutputRowResolver.put("", value.toStringTree(),
                                     new ColumnInfo(Integer.valueOf(groupByKeys.size() + aggregations.size() - 1).toString(),
-                                                   paraExprInfo.getType()));
+                                        aggEvaluateMethod.getReturnType()));
     }
 
     return putOpInsertMap(
@@ -1360,6 +1376,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         groupByOutputRowResolver);
   }
 
+  /**
+   * Generate the map-side GroupByOperator for the Query Block (qb.getParseInfo().getXXX(dest)).
+   * The new GroupByOperator will be a child of the inputOperatorInfo.
+   * 
+   * @param mode The mode of the aggregation (HASH)
+   * @return the new GroupByOperator
+   */
   @SuppressWarnings("nls")
   private Operator genGroupByPlanMapGroupByOperator(QB qb, String dest, Operator inputOperatorInfo, 
                                                     groupByDesc.Mode mode) throws SemanticException {
@@ -1472,6 +1495,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return newParameters;
   }
 
+  /**
+   * Generate the ReduceSinkOperator for the Group By Query Block (parseInfo.getXXX(dest)).
+   * The new ReduceSinkOperator will be a child of inputOperatorInfo.
+   * 
+   * It will put all Group By keys and the distinct field (if any) in the map-reduce sort key,
+   * and all other fields in the map-reduce value.
+   * 
+   * The map-reduce partition key will be random() if there is no distinct, or the same as
+   * the map-reduce sort key otherwise.  
+   * 
+   * @return the new ReduceSinkOperator.
+   * @throws SemanticException
+   */
   @SuppressWarnings("nls")
   private Operator genGroupByPlanReduceSinkOperator(QBParseInfo parseInfo,
       String dest, Operator inputOperatorInfo)
@@ -1539,6 +1575,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       reduceSinkOutputRowResolver);
   }
 
+  /**
+   * Generate the ReduceSinkOperator for the Group By Query Block (qb.getPartInfo().getXXX(dest)).
+   * The new ReduceSinkOperator will be a child of inputOperatorInfo.
+   * 
+   * It will put all Group By keys and the distinct field (if any) in the map-reduce sort key,
+   * and all other fields in the map-reduce value.
+   * 
+   * @param numPartitionFields  the number of fields for map-reduce partitioning.
+   *      This is usually the number of fields in the Group By keys.
+   * @return the new ReduceSinkOperator.
+   * @throws SemanticException
+   */
   @SuppressWarnings("nls")
   private Operator genGroupByPlanReduceSinkOperator(QB qb,
       String dest, Operator inputOperatorInfo, int numPartitionFields) throws SemanticException {
@@ -1607,6 +1655,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     );
   }
 
+  /**
+   * Generate the second ReduceSinkOperator for the Group By Plan (parseInfo.getXXX(dest)).
+   * The new ReduceSinkOperator will be a child of groupByOperatorInfo.
+   * 
+   * The second ReduceSinkOperator will put the group by keys in the map-reduce sort
+   * key, and put the partial aggregation results in the map-reduce value. 
+   *  
+   * @param numPartitionFields the number of fields in the map-reduce partition key.
+   *     This should always be the same as the number of Group By keys.  We should be 
+   *     able to remove this parameter since in this phase there is no distinct any more.  
+   * @return the new ReduceSinkOperator.
+   * @throws SemanticException
+   */
   @SuppressWarnings("nls")
   private Operator genGroupByPlanReduceSinkOperator2MR(
       QBParseInfo parseInfo, String dest, Operator groupByOperatorInfo, int numPartitionFields)
@@ -1651,6 +1712,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     );
   }
 
+  /**
+   * Generate the second GroupByOperator for the Group By Plan (parseInfo.getXXX(dest)).
+   * The new GroupByOperator will do the second aggregation based on the partial aggregation 
+   * results.
+   * 
+   * @param mode the mode of aggregation (FINAL)  
+   * @return the new GroupByOperator
+   * @throws SemanticException
+   */
   @SuppressWarnings("nls")
   private Operator genGroupByPlanGroupByOperator2MR(
     QBParseInfo parseInfo, String dest, Operator reduceSinkOperatorInfo2, groupByDesc.Mode mode)
@@ -1681,6 +1751,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       CommonTree value = entry.getValue();
       String aggName = value.getChild(0).getText();
       Class<? extends UDAF> aggClass = FunctionRegistry.getUDAF(aggName);
+      Method aggEvaluateMethod = FunctionRegistry.getUDAFEvaluateMethod(aggName, mode);
       assert (aggClass != null);
       ArrayList<exprNodeDesc> aggParameters = new ArrayList<exprNodeDesc>();
       String text = entry.getKey();
@@ -1694,7 +1765,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       aggregations.add(new aggregationDesc(aggClass, aggParameters, ((mode == groupByDesc.Mode.FINAL) ? false : (value.getToken().getType() == HiveParser.TOK_FUNCTIONDI))));
       groupByOutputRowResolver2.put("", value.toStringTree(),
                                     new ColumnInfo(Integer.valueOf(groupByKeys.size() + aggregations.size() - 1).toString(),
-                                                   paraExprInfo.getType()));
+                                        aggEvaluateMethod.getReturnType()));
     }
 
     return putOpInsertMap(
@@ -1994,9 +2065,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             throw new SemanticException(ErrorMsg.TARGET_TABLE_COLUMN_MISMATCH.getMsg(
                 qb.getParseInfo().getDestForClause(dest), reason));
           }
-        } else {
-          expressions.add(column);
         }
+        expressions.add(column);
       }
     }
     
@@ -3433,7 +3503,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         desc = new exprNodeIndexDesc(t, children.get(0), children.get(1));
       }
       else {
-        throw new SemanticException(ErrorMsg.NON_COLLECTION_TYPE.getMsg(expr));
+        throw new SemanticException(ErrorMsg.NON_COLLECTION_TYPE.getMsg(expr, 
+            myt.getTypeName()));
       }
     } else {
       // other operators or functions

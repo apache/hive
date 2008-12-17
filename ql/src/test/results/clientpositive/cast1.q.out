@@ -34,13 +34,29 @@ STAGE PLANS:
                         type: boolean
                         expr: UDFToInteger(true)
                         type: int
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
-                        name: dest1
+                  Select Operator
+                    expressions:
+                          expr: 0
+                          type: int
+                          expr: 1
+                          type: double
+                          expr: 2
+                          type: double
+                          expr: 3
+                          type: double
+                          expr: 4
+                          type: int
+                          expr: UDFToString(5)
+                          type: string
+                          expr: 6
+                          type: int
+                    File Output Operator
+                      compressed: false
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
+                          name: dest1
 
   Stage: Stage-0
     Move Operator
@@ -49,8 +65,8 @@ STAGE PLANS:
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
+                serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
                 name: dest1
 
 
-5	5.0	5.0	5.0	5	false	1
+5	5.0	5.0	5.0	5	FALSE	1

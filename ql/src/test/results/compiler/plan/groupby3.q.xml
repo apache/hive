@@ -20,7 +20,7 @@
         <void property="aliasToWork"> 
          <object class="java.util.HashMap"> 
           <void method="put"> 
-           <string>/tmp/hive-njain/332856862/73535516.10002</string> 
+           <string>/tmp/hive-zshao/1268121/343796403.10002</string> 
            <object id="ReduceSinkOperator0" class="org.apache.hadoop.hive.ql.exec.ReduceSinkOperator"> 
             <void property="conf"> 
              <object class="org.apache.hadoop.hive.ql.plan.reduceSinkDesc"> 
@@ -176,7 +176,7 @@
                     <void property="conf"> 
                      <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                       <void property="dirName"> 
-                       <string>/tmp/hive-njain/332856862/73535516.10002</string> 
+                       <string>/tmp/hive-zshao/1268121/343796403.10002</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object id="tableDesc2" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -853,10 +853,10 @@
         <void property="pathToAliases"> 
          <object class="java.util.LinkedHashMap"> 
           <void method="put"> 
-           <string>/tmp/hive-njain/332856862/73535516.10002</string> 
+           <string>/tmp/hive-zshao/1268121/343796403.10002</string> 
            <object class="java.util.ArrayList"> 
             <void method="add"> 
-             <string>/tmp/hive-njain/332856862/73535516.10002</string> 
+             <string>/tmp/hive-zshao/1268121/343796403.10002</string> 
             </void> 
            </object> 
           </void> 
@@ -865,7 +865,7 @@
         <void property="pathToPartitionInfo"> 
          <object class="java.util.LinkedHashMap"> 
           <void method="put"> 
-           <string>/tmp/hive-njain/332856862/73535516.10002</string> 
+           <string>/tmp/hive-zshao/1268121/343796403.10002</string> 
            <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
             <void property="tableDesc"> 
              <object idref="tableDesc2"/> 
@@ -887,7 +887,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>/tmp/hive-njain/229394155.10001.insclause-0</string> 
+                     <string>/tmp/hive-zshao/147248168.10001.insclause-0</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -943,7 +943,7 @@
                          <string>1</string> 
                         </void> 
                         <void property="type"> 
-                         <object idref="PrimitiveTypeInfo0"/> 
+                         <object idref="PrimitiveTypeInfo1"/> 
                         </void> 
                        </object> 
                       </void> 
@@ -953,7 +953,7 @@
                          <string>2</string> 
                         </void> 
                         <void property="type"> 
-                         <object idref="PrimitiveTypeInfo0"/> 
+                         <object idref="PrimitiveTypeInfo1"/> 
                         </void> 
                        </object> 
                       </void> 
@@ -1005,7 +1005,7 @@
                      <string>2</string> 
                     </void> 
                     <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo0"/> 
+                     <object idref="PrimitiveTypeInfo1"/> 
                     </void> 
                    </object> 
                   </void> 
@@ -1015,7 +1015,7 @@
                      <string>0</string> 
                     </void> 
                     <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo0"/> 
+                     <object idref="PrimitiveTypeInfo1"/> 
                     </void> 
                    </object> 
                   </void> 
@@ -1199,7 +1199,7 @@
                  <string>0</string> 
                 </void> 
                 <void property="type"> 
-                 <object idref="PrimitiveTypeInfo0"/> 
+                 <object idref="PrimitiveTypeInfo1"/> 
                 </void> 
                </object> 
               </void> 
@@ -1219,7 +1219,7 @@
                  <string>2</string> 
                 </void> 
                 <void property="type"> 
-                 <object idref="PrimitiveTypeInfo0"/> 
+                 <object idref="PrimitiveTypeInfo1"/> 
                 </void> 
                </object> 
               </void> 
@@ -1281,7 +1281,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-104/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src</string> 
@@ -1293,7 +1293,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-104/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"/> 
@@ -1345,7 +1345,7 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/src</string> 
+             <string>file:/data/users/zshao/sync/apache-trunk-HIVE-104/build/ql/test/data/warehouse/src</string> 
             </void> 
            </object> 
           </void> 

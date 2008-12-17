@@ -266,11 +266,11 @@ public class TCTLSeparatedProtocol extends TProtocol
    */
 
   public TCTLSeparatedProtocol(TTransport trans) {
-    this(trans, defaultPrimarySeparator, defaultSecondarySeparator, defaultMapSeparator, defaultRowSeparator, false, 4096);
+    this(trans, defaultPrimarySeparator, defaultSecondarySeparator, defaultMapSeparator, defaultRowSeparator, true, 4096);
   }
 
   public TCTLSeparatedProtocol(TTransport trans, int buffer_size) {
-    this(trans, defaultPrimarySeparator, defaultSecondarySeparator, defaultMapSeparator, defaultRowSeparator, false, buffer_size);
+    this(trans, defaultPrimarySeparator, defaultSecondarySeparator, defaultMapSeparator, defaultRowSeparator, true, buffer_size);
   }
 
   /**
@@ -287,8 +287,7 @@ public class TCTLSeparatedProtocol extends TProtocol
                                int bufferSize) {
     super(trans);
 
-    returnNulls = returnNulls;
-
+    this.returnNulls = returnNulls;
 
     this.primarySeparator = primarySeparator;
     this.secondarySeparator = secondarySeparator;
@@ -702,31 +701,56 @@ public class TCTLSeparatedProtocol extends TProtocol
   public byte readByte() throws TException {
     String val = readString();
     lastPrimitiveWasNullFlag = val == null;
-    return  val == null || val.isEmpty() ? 0 : Byte.valueOf(val).byteValue();
+    try {
+      return val == null || val.isEmpty() ? 0 : Byte.valueOf(val).byteValue();
+    } catch (NumberFormatException e) {
+      lastPrimitiveWasNullFlag = true;
+      return 0;
+    }
   }
 
   public short readI16() throws TException {
     String val = readString();
     lastPrimitiveWasNullFlag = val == null;
-    return val == null || val.isEmpty() ? 0 : Short.valueOf(val).shortValue();
+    try {
+      return val == null || val.isEmpty() ? 0 : Short.valueOf(val).shortValue();
+    } catch (NumberFormatException e) {
+      lastPrimitiveWasNullFlag = true;
+      return 0;
+    }
   }
 
   public int readI32() throws TException {
     String val = readString();
     lastPrimitiveWasNullFlag = val == null;
-    return val == null || val.isEmpty() ? 0 : Integer.valueOf(val).intValue();
+    try {
+      return val == null || val.isEmpty() ? 0 : Integer.valueOf(val).intValue();
+    } catch (NumberFormatException e) {
+      lastPrimitiveWasNullFlag = true;
+      return 0;
+    }
   }
 
   public long readI64() throws TException {
     String val = readString();
     lastPrimitiveWasNullFlag = val == null;
-    return val == null || val.isEmpty() ? 0 : Long.valueOf(val).longValue();
+    try {
+      return val == null || val.isEmpty() ? 0 : Long.valueOf(val).longValue();
+    } catch (NumberFormatException e) {
+      lastPrimitiveWasNullFlag = true;
+      return 0;
+    }
   }
 
   public double readDouble() throws TException {
     String val = readString();
     lastPrimitiveWasNullFlag = val == null;
-    return val == null || val.isEmpty() ? 0 :Double.valueOf(val).doubleValue();
+    try {
+      return val == null || val.isEmpty() ? 0 :Double.valueOf(val).doubleValue();
+    } catch (NumberFormatException e) {
+      lastPrimitiveWasNullFlag = true;
+      return 0;
+    }
   }
 
   public String readString() throws TException {

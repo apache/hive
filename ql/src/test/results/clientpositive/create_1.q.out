@@ -1,0 +1,18 @@
+a	string
+b	string
+a	string
+b	string
+Detailed Table Information:
+Table(tableName:table1,dbName:default,owner:zshao,createTime:1228887062,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:string,comment:null), FieldSchema(name:b,type:string,comment:null)],location:file:/data/users/zshao/sync/apache-trunk/build/ql/test/data/warehouse/table1,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[],parameters:{})
+a	string
+b	int
+a	string
+b	int
+Detailed Table Information:
+Table(tableName:table2,dbName:default,owner:zshao,createTime:1228887063,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:string,comment:null), FieldSchema(name:b,type:int,comment:null)],location:file:/data/users/zshao/sync/apache-trunk/build/ql/test/data/warehouse/table2,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe,parameters:{serialization.format=org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[],parameters:{})
+a	string
+b	string
+a	string
+b	string
+Detailed Table Information:
+Table(tableName:table3,dbName:default,owner:zshao,createTime:1228887063,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:string,comment:null), FieldSchema(name:b,type:string,comment:null)],location:file:/data/users/zshao/sync/apache-trunk/build/ql/test/data/warehouse/table3,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe,parameters:{serialization.format=9,field.delim=	}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[],parameters:{})

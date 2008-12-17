@@ -43,7 +43,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /tmp/hive-jssarma/190784876/1532193204.10001 
+        /tmp/hive-zshao/75837910/35360202.10001 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -66,7 +66,7 @@ STAGE PLANS:
           keys:
                 expr: KEY.0
                 type: string
-          mode: unknown
+          mode: final
           Select Operator
             expressions:
                   expr: 0
@@ -75,13 +75,21 @@ STAGE PLANS:
                   type: bigint
                   expr: concat(0, UDFToString(2))
                   type: string
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
-                  name: dest_g2
+            Select Operator
+              expressions:
+                    expr: 0
+                    type: string
+                    expr: UDFToInteger(1)
+                    type: int
+                    expr: 2
+                    type: string
+              File Output Operator
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
+                    name: dest_g2
 
   Stage: Stage-0
     Move Operator
@@ -90,7 +98,7 @@ STAGE PLANS:
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
+                serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
                 name: dest_g2
 
 

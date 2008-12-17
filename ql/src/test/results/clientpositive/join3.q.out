@@ -73,13 +73,19 @@ STAGE PLANS:
                   type: string
                   expr: 3
                   type: string
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
-                  name: dest1
+            Select Operator
+              expressions:
+                    expr: UDFToInteger(0)
+                    type: int
+                    expr: 1
+                    type: string
+              File Output Operator
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
+                    name: dest1
 
   Stage: Stage-0
     Move Operator
@@ -88,7 +94,7 @@ STAGE PLANS:
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
+                serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
                 name: dest1
 
 

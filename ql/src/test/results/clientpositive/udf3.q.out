@@ -40,7 +40,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /tmp/hive-jssarma/1415018212/1021817615.10001 
+        /tmp/hive-zshao/546652046/1647731334.10001 
           Reduce Output Operator
             sort order: 
             tag: -1
@@ -63,7 +63,7 @@ STAGE PLANS:
                 expr: count(VALUE.2)
                 expr: sum(VALUE.3)
                 expr: min(VALUE.4)
-          mode: unknown
+          mode: final
           Select Operator
             expressions:
                   expr: 2
@@ -71,7 +71,7 @@ STAGE PLANS:
                   expr: 3
                   type: double
                   expr: 1
-                  type: string
+                  type: double
                   expr: 4
                   type: double
                   expr: 0

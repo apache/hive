@@ -20,13 +20,19 @@ STAGE PLANS:
                       type: string
                       expr: value
                       type: string
-                File Output Operator
-                  compressed: false
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
-                      name: dest1
+                Select Operator
+                  expressions:
+                        expr: UDFToInteger(0)
+                        type: int
+                        expr: 1
+                        type: string
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
+                        name: dest1
             Filter Operator
               predicate:
                   expr: ((key >= 100) and (key < 200))
@@ -37,13 +43,19 @@ STAGE PLANS:
                       type: string
                       expr: value
                       type: string
-                File Output Operator
-                  compressed: false
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
-                      name: dest2
+                Select Operator
+                  expressions:
+                        expr: UDFToInteger(0)
+                        type: int
+                        expr: 1
+                        type: string
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
+                        name: dest2
             Filter Operator
               predicate:
                   expr: (key >= 200)
@@ -52,13 +64,17 @@ STAGE PLANS:
                 expressions:
                       expr: key
                       type: string
-                File Output Operator
-                  compressed: false
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
-                      name: dest3
+                Select Operator
+                  expressions:
+                        expr: UDFToInteger(0)
+                        type: int
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
+                        name: dest3
 
   Stage: Stage-0
     Move Operator
@@ -67,13 +83,13 @@ STAGE PLANS:
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
+                serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
                 name: dest1
             replace: true
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
+                serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
                 name: dest2
             partition:
               ds 2008-04-08
@@ -82,7 +98,7 @@ STAGE PLANS:
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
+                serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
                 name: dest3
 
 

@@ -203,6 +203,8 @@ public class Hive {
       }
       tbl.checkValidity();
       msc.createTable(tbl.getTTable());
+    } catch (HiveException e) {
+      throw e;
     } catch (Exception e) {
       throw new HiveException(e);
     }

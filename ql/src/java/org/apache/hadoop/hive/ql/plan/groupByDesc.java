@@ -55,6 +55,8 @@ public class groupByDesc implements java.io.Serializable {
       return "partial2";
     case HASH:
       return "hash";
+    case FINAL:
+      return "final";
     }
   
     return "unknown";

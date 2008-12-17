@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.ql.plan.showTablesDesc;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde.thrift.columnsetSerDe;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
+import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
@@ -396,7 +397,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             .printInfo("Replacing columns for columnsetSerDe and changing to typed SerDe");
         tbl.setSerializationLib(MetadataTypedColumnsetSerDe.class.getName());
       } else if (!tbl.getSerializationLib().equals(
-          MetadataTypedColumnsetSerDe.class.getName())) {
+          MetadataTypedColumnsetSerDe.class.getName())
+          && !tbl.getSerializationLib().equals(
+          DynamicSerDe.class.getName())) {
         console
             .printError("Replace columns is not supported for this table. SerDe may be incompatible.");
         return 1;
@@ -524,19 +527,23 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     /**
-     * For now, if the user specifies either the map or the collections
-     * delimiter, we infer the table to DynamicSerDe/TCTLSeparatedProtocol. In
-     * the future, we should infer this for any delimiters specified, but this
-     * will break older hive tables, so not for now.
+     * If the user didn't specify a SerDe, and any of the columns are not of type String, 
+     * we will have to use DynamicSerDe instead.
      */
-    if (crtTbl.getCollItemDelim() != null || crtTbl.getMapKeyDelim() != null) {
-      tbl
-          .setSerializationLib(org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe.class
-              .getName());
-      tbl.setSerdeParam(
-          org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT,
-          org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol.class
-              .getName());
+    if (crtTbl.getSerName() == null) {
+      boolean useDynamicSerDe = false;
+      if (crtTbl.getCols() != null) {
+        for (FieldSchema field: crtTbl.getCols()) {
+          if (!Constants.STRING_TYPE_NAME.equalsIgnoreCase(field.getType())) {
+            useDynamicSerDe = true;
+          }
+        }
+      }
+      if (useDynamicSerDe) {
+        LOG.info("Default to DynamicSerDe for table " + crtTbl.getTableName() );
+        tbl.setSerializationLib(org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe.class.getName());
+        tbl.setSerdeParam(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol.class.getName());
+      }
     }
 
     if (crtTbl.getComment() != null)

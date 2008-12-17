@@ -42,7 +42,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /tmp/hive-jssarma/786365372/1698354371.10001 
+        /tmp/hive-zshao/618493432/49810635.10001 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -62,7 +62,7 @@ STAGE PLANS:
           keys:
                 expr: KEY.0
                 type: string
-          mode: unknown
+          mode: final
           Select Operator
             expressions:
                   expr: 0
@@ -80,7 +80,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        /tmp/hive-jssarma/786365372/1698354371.10002 
+        /tmp/hive-zshao/618493432/49810635.10002 
           Reduce Output Operator
             sort order: 
             tag: -1
@@ -93,13 +93,19 @@ STAGE PLANS:
       Reduce Operator Tree:
         Extract
           Limit
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
-                  name: dest1
+            Select Operator
+              expressions:
+                    expr: UDFToInteger(0)
+                    type: int
+                    expr: 1
+                    type: double
+              File Output Operator
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
+                    name: dest1
 
   Stage: Stage-0
     Move Operator
@@ -108,7 +114,7 @@ STAGE PLANS:
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
+                serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
                 name: dest1
 
 

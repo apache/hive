@@ -43,6 +43,9 @@ Trunk (unreleased changes)
 
   BUG FIXES
 
+    HIVE-104. Tables with at least 1 non-string columns to use DynamicSerDe.
+    (zshao)
+
     HIVE-158. Make table aliases work for sampled tables in joins.
     (Raghotham Murthy via zshao)
 

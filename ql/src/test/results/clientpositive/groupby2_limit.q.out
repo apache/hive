@@ -41,7 +41,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /tmp/hive-jssarma/426666771/995404034.10002 
+        /tmp/hive-zshao/42329253/238260652.10002 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -61,7 +61,7 @@ STAGE PLANS:
           keys:
                 expr: KEY.0
                 type: string
-          mode: unknown
+          mode: final
           Select Operator
             expressions:
                   expr: 0

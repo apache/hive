@@ -43,7 +43,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /tmp/hive-jssarma/793012867/112314829.10001 
+        /tmp/hive-zshao/695280947/659390410.10001 
           Reduce Output Operator
             sort order: 
             tag: -1
@@ -66,15 +66,15 @@ STAGE PLANS:
                 expr: avg(VALUE.2)
                 expr: min(VALUE.3)
                 expr: max(VALUE.4)
-          mode: unknown
+          mode: final
           Select Operator
             expressions:
                   expr: 1
                   type: double
                   expr: 2
-                  type: string
+                  type: double
                   expr: 0
-                  type: string
+                  type: double
                   expr: 4
                   type: double
                   expr: 3
@@ -84,7 +84,7 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
+                  serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
                   name: dest1
 
   Stage: Stage-0
@@ -94,7 +94,7 @@ STAGE PLANS:
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
+                serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
                 name: dest1
 
 
