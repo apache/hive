@@ -1512,6 +1512,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private Operator genGroupByPlanReduceSinkOperator(QBParseInfo parseInfo,
       String dest, Operator inputOperatorInfo)
       throws SemanticException {
+
+    return genGroupByPlanReduceSinkOperator(parseInfo, dest, inputOperatorInfo, -1, false);
+  }
+
+  @SuppressWarnings("nls")
+  private Operator genGroupByPlanReduceSinkOperator(QBParseInfo parseInfo,
+    String dest, Operator inputOperatorInfo, int numReducers, boolean inferNumReducers)
+    throws SemanticException {
     RowResolver reduceSinkInputRowResolver = opParseCtx.get(inputOperatorInfo).getRR();
     RowResolver reduceSinkOutputRowResolver = new RowResolver();
     reduceSinkOutputRowResolver.setIsExprResolver(true);
@@ -1569,7 +1577,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return putOpInsertMap(
       OperatorFactory.getAndMakeChild(
         PlanUtils.getReduceSinkDesc(reduceKeys, reduceValues, -1,
-                                    (parseInfo.getDistinctFuncExprForClause(dest) == null ? -1 : Integer.MAX_VALUE), -1, false),
+                                    (parseInfo.getDistinctFuncExprForClause(dest) == null ? -1 : Integer.MAX_VALUE), numReducers, inferNumReducers),
         new RowSchema(reduceSinkOutputRowResolver.getColumnInfos()),
         inputOperatorInfo),
       reduceSinkOutputRowResolver);
@@ -1885,12 +1893,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Operator groupByOperatorInfo = genGroupByPlanMapGroupByOperator(qb,
       dest, inputOperatorInfo, groupByDesc.Mode.HASH);
 
-    // ////// Generate ReduceSink Operator
-    Operator reduceSinkOperatorInfo = 
-      genGroupByPlanReduceSinkOperator(parseInfo, dest, groupByOperatorInfo);
-
     // Optimize the scenario when there are no grouping keys and no distinct - 2 map-reduce jobs are not needed
+    // For eg: select count(1) from T where t.ds = ....
     if (!optimizeMapAggrGroupBy(dest, qb)) {
+
+      // ////// Generate ReduceSink Operator
+      Operator reduceSinkOperatorInfo = 
+        genGroupByPlanReduceSinkOperator(parseInfo, dest, groupByOperatorInfo);
+      
       // ////// Generate GroupbyOperator for a partial aggregation
       Operator groupByOperatorInfo2 = genGroupByPlanGroupByOperator1(parseInfo, dest, reduceSinkOperatorInfo, 
                                                                          groupByDesc.Mode.PARTIAL2);
@@ -1902,8 +1912,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // ////// Generate GroupbyOperator3
       return genGroupByPlanGroupByOperator2MR(parseInfo, dest, reduceSinkOperatorInfo2, groupByDesc.Mode.FINAL);
     }
-    else
+    else {
+      // ////// Generate ReduceSink Operator
+      Operator reduceSinkOperatorInfo = 
+        genGroupByPlanReduceSinkOperator(parseInfo, dest, groupByOperatorInfo, 1, false);
+      
       return genGroupByPlanGroupByOperator2MR(parseInfo, dest, reduceSinkOperatorInfo, groupByDesc.Mode.FINAL);
+    }
   }
 
   @SuppressWarnings("nls")

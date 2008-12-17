@@ -87,6 +87,7 @@ public class HiveConf extends Configuration {
     HIVEALIAS("hive.alias", ""),
     HIVEMAPSIDEAGGREGATE("hive.map.aggr", "false"),
     HIVEJOINEMITINTERVAL("hive.join.emit.interval", 1000),
+      HIVEMAPAGGRHASHMEMORY("hive.map.aggr.hash.percentmemory", (float)0.5),
     
     // Default file format for CREATE TABLE statement
     // Options: TextFile, SequenceFile
@@ -95,6 +96,7 @@ public class HiveConf extends Configuration {
     public final String varname;
     public final String defaultVal;
     public final int defaultIntVal;
+    public final float defaultFloatVal;
     public final Class valClass;
     public final boolean defaultBoolVal;
 
@@ -103,6 +105,7 @@ public class HiveConf extends Configuration {
       this.defaultVal = defaultVal;
       this.valClass = String.class;
       this.defaultIntVal = -1;
+      this.defaultFloatVal = -1;
       this.defaultBoolVal = false;
     }
 
@@ -110,7 +113,17 @@ public class HiveConf extends Configuration {
       this.varname = varname;
       this.defaultVal = null;
       this.defaultIntVal = defaultIntVal;
+      this.defaultFloatVal = -1;
       this.valClass = Integer.class;
+      this.defaultBoolVal = false;
+    }
+
+    ConfVars(String varname, float defaultFloatVal) {
+      this.varname = varname;
+      this.defaultVal = null;
+      this.defaultIntVal = -1;
+      this.defaultFloatVal = defaultFloatVal;
+      this.valClass = Float.class;
       this.defaultBoolVal = false;
     }
 
@@ -118,6 +131,7 @@ public class HiveConf extends Configuration {
       this.varname = varname;
       this.defaultVal = null;
       this.defaultIntVal = -1;
+      this.defaultFloatVal = -1;
       this.valClass = Boolean.class;
       this.defaultBoolVal = defaultBoolVal;
     }
@@ -134,6 +148,15 @@ public class HiveConf extends Configuration {
 
   public int getIntVar(ConfVars var) {
     return getIntVar(this, var);
+  }
+
+  public static float getFloatVar(Configuration conf, ConfVars var) {
+    assert(var.valClass == Float.class);
+    return conf.getFloat(var.varname, var.defaultFloatVal);
+  }
+
+  public float getFloatVar(ConfVars var) {
+    return getFloatVar(this, var);
   }
 
   public static boolean getBoolVar(Configuration conf, ConfVars var) {

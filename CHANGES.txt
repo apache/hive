@@ -26,6 +26,8 @@ Trunk (unreleased changes)
 
   IMPROVEMENTS
 
+    HIVE-170. Map-side aggregations to estimate memory size. (Namit via zshao)
+
     HIVE-180. Data Generator for thrift-serialized sequence files. (zshao)
 
     HIVE-157. Update README.txt to remove refs to mirror.facebook.com. (zshao)
