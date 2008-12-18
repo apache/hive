@@ -147,6 +147,9 @@
     <exec executable="cp" failonerror="true">
       <arg line="-p '${hive.root}/bin/hive' '${target.bin.dir}'"/>
     </exec>
+    <exec executable="cp" failonerror="true">
+      <arg line="-r '${hive.root}/bin/ext' '${target.bin.dir}'" />
+    </exec>
     <copy file="${hive.root}/bin/hive-config.sh" todir="${target.bin.dir}"/>
     <copy file="${basedir}/conf/hive-default.xml" todir="${target.conf.dir}"/>
     <copy file="${basedir}/conf/hive-log4j.properties" todir="${target.conf.dir}"/>

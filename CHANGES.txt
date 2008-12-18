@@ -26,6 +26,8 @@ Trunk (unreleased changes)
 
   IMPROVEMENTS
 
+    HIVE-107. Case structure for bin/hive. (Edward Capriolo via zshao)
+
     HIVE-101. Set svn:ignore for the root. (Johan Oskarsson via zshao)
 
     HIVE-170. Map-side aggregations to estimate memory size. (Namit via zshao)
