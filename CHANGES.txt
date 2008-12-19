@@ -52,6 +52,8 @@ Trunk (unreleased changes)
 
   BUG FIXES
 
+    HIVE-188. Hive CLI quits when stdout is closed. (zshao)
+
     HIVE-104. Tables with at least 1 non-string columns to use DynamicSerDe.
     (zshao)
 

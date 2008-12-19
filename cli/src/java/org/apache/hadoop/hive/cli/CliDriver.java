@@ -178,6 +178,9 @@ public class CliDriver {
           out.println(r);
       	}
         res.clear();
+        if (out.checkError()) {
+          break;
+        }
       }
       
       int cret = qp.close();
