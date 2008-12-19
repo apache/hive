@@ -52,6 +52,9 @@ Trunk (unreleased changes)
 
   BUG FIXES
 
+    HIVE-184. Tests fail due to including old hive jar files.
+    (David Phillips via zshao)
+
     HIVE-188. Hive CLI quits when stdout is closed. (zshao)
 
     HIVE-104. Tables with at least 1 non-string columns to use DynamicSerDe.

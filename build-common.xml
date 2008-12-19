@@ -99,15 +99,9 @@
   <path id="common-classpath">
     <pathelement location="${hadoop.jar}"/>
     <pathelement location="${build.dir.hive}/classes"/>
-    <fileset dir="${build.dir.hive}">
-      <include name="**/hive_*.jar"/>
-    </fileset>
-    <fileset dir="${src.dir.hive}/lib">
-      <include name="**/*.jar"/>
-    </fileset>
-    <fileset dir="${src.dir.hive}/ql/lib">
-      <include name="**/*.jar"/>
-    </fileset>
+    <fileset dir="${build.dir.hive}" includes="hive_*.jar"/>
+    <fileset dir="${src.dir.hive}/lib" includes="*.jar"/>
+    <fileset dir="${src.dir.hive}/ql/lib" includes="*.jar"/>
   </path>
 
   <path id="classpath">
