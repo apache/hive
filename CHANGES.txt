@@ -52,6 +52,8 @@ Trunk (unreleased changes)
 
   BUG FIXES
 
+    HIVE-190. Fixed tests failed due to test running order. (zshao)
+
     HIVE-184. Tests fail due to including old hive jar files.
     (David Phillips via zshao)
 
