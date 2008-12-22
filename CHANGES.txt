@@ -26,9 +26,6 @@ Trunk (unreleased changes)
 
   IMPROVEMENTS
 
-    HIVE-126. Don't fetch information on Partitions from HDFS instead of 
-    MetaStore. (Johan Oskarsson via zshao)
-
     HIVE-181. Restore UDFTestLength unit test for UDFs.
     (David Phillips via zshao)
 

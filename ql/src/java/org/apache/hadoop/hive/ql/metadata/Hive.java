@@ -510,6 +510,16 @@ public class Hive {
       for (org.apache.hadoop.hive.metastore.api.Partition tpart : tParts) {
         parts.add(new Partition(tbl, tpart));
       }
+      // get the partitions on the HDFS location
+      List<Partition> hdfsPartitions = tbl.getPartitionsFromHDFS();
+      if(hdfsPartitions.size() != parts.size()) {
+        // HACK: either we are connecting to old metastore or metadata is out of sync with data
+        // TODO: for the former case, move this logic into OLD metastore and compare 
+        // the two lists here for any conflict between metadata and data
+        LOG.error("Metadata for partitions doesn't match the data in HDFS. Table name: " + tbl.getName());
+        // let's trust hdfs partitions for now
+        return hdfsPartitions;
+      }
       return parts;
     } else {
       // create an empty partition. 
