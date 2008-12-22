@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.ql.plan.partitionDesc;
 import org.apache.hadoop.hive.ql.plan.fileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
+import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -54,7 +55,7 @@ import org.apache.hadoop.fs.Path;
  * Processor Context for creating map reduce task. Walk the tree in a DFS manner and process the nodes. Some state is 
  * maintained about the current nodes visited so far.
  */
-public class GenMRProcContext extends OperatorProcessorContext {
+public class GenMRProcContext extends NodeProcessorCtx {
 
   /** 
    * GenMapRedCtx is used to keep track of the current state. 

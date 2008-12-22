@@ -35,6 +35,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
+import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
+import org.apache.hadoop.hive.ql.lib.Dispatcher;
+import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.ql.optimizer.Optimizer;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext;
@@ -53,6 +59,7 @@ import org.apache.hadoop.hive.ql.exec.*;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.hadoop.hive.ql.lib.Node;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.commons.lang.StringUtils;
@@ -70,7 +77,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private List<loadTableDesc> loadTableWork;
   private List<loadFileDesc> loadFileWork;
   private QB qb;
-  private CommonTree ast;
+  private ASTNode ast;
 
   private static class Phase1Ctx {
     String dest;
@@ -119,7 +126,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
   
   @SuppressWarnings("nls")
-  public void doPhase1QBExpr(CommonTree ast, QBExpr qbexpr, String id,
+  public void doPhase1QBExpr(ASTNode ast, QBExpr qbexpr, String id,
       String alias) throws SemanticException {
 
     assert (ast.getToken() != null);
@@ -136,14 +143,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // query 1
       assert (ast.getChild(0) != null);
       QBExpr qbexpr1 = new QBExpr(alias + "-subquery1");
-      doPhase1QBExpr((CommonTree) ast.getChild(0), qbexpr1, id + "-subquery1",
+      doPhase1QBExpr((ASTNode) ast.getChild(0), qbexpr1, id + "-subquery1",
           alias + "-subquery1");
       qbexpr.setQBExpr1(qbexpr1);
 
       // query 2
       assert (ast.getChild(0) != null);
       QBExpr qbexpr2 = new QBExpr(alias + "-subquery2");
-      doPhase1QBExpr((CommonTree) ast.getChild(1), qbexpr2, id + "-subquery2",
+      doPhase1QBExpr((ASTNode) ast.getChild(1), qbexpr2, id + "-subquery2",
           alias + "-subquery2");
       qbexpr.setQBExpr2(qbexpr2);
     }
@@ -151,13 +158,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private HashMap<String, CommonTree> doPhase1GetAggregationsFromSelect(
-      CommonTree selExpr) {
+  private HashMap<String, ASTNode> doPhase1GetAggregationsFromSelect(
+      ASTNode selExpr) {
     // Iterate over the selects search for aggregation Trees.
     // Use String as keys to eliminate duplicate trees.
-    HashMap<String, CommonTree> aggregationTrees = new HashMap<String, CommonTree>();
+    HashMap<String, ASTNode> aggregationTrees = new HashMap<String, ASTNode>();
     for (int i = 0; i < selExpr.getChildCount(); ++i) {
-      CommonTree sel = (CommonTree) selExpr.getChild(i).getChild(0);
+      ASTNode sel = (ASTNode) selExpr.getChild(i).getChild(0);
       doPhase1GetAllAggregations(sel, aggregationTrees);
     }
     return aggregationTrees;
@@ -172,8 +179,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    *          the key to the HashTable is the toStringTree() representation of
    *          the aggregation subtree.
    */
-  private void doPhase1GetAllAggregations(CommonTree expressionTree,
-      HashMap<String, CommonTree> aggregations) {
+  private void doPhase1GetAllAggregations(ASTNode expressionTree,
+      HashMap<String, ASTNode> aggregations) {
     if (expressionTree.getToken().getType() == HiveParser.TOK_FUNCTION
         || expressionTree.getToken().getType() == HiveParser.TOK_FUNCTIONDI) {
       assert (expressionTree.getChildCount() != 0);
@@ -185,16 +192,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     for (int i = 0; i < expressionTree.getChildCount(); i++) {
-      doPhase1GetAllAggregations((CommonTree) expressionTree.getChild(i),
+      doPhase1GetAllAggregations((ASTNode) expressionTree.getChild(i),
           aggregations);
     }
   }
 
-  private CommonTree doPhase1GetDistinctFuncExpr(
-      HashMap<String, CommonTree> aggregationTrees) throws SemanticException {
-    CommonTree expr = null;
-    for (Map.Entry<String, CommonTree> entry : aggregationTrees.entrySet()) {
-      CommonTree value = entry.getValue();
+  private ASTNode doPhase1GetDistinctFuncExpr(
+      HashMap<String, ASTNode> aggregationTrees) throws SemanticException {
+    ASTNode expr = null;
+    for (Map.Entry<String, ASTNode> entry : aggregationTrees.entrySet()) {
+      ASTNode value = entry.getValue();
       assert (value != null);
       if (value.getToken().getType() == HiveParser.TOK_FUNCTIONDI) {
         if (expr == null) {
@@ -207,7 +214,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return expr;
   }
 
-  private void processTable(QB qb, CommonTree tabref) throws SemanticException {
+  private void processTable(QB qb, ASTNode tabref) throws SemanticException {
     // For each table reference get the table name
     // and the alias (if alias is not present, the table name
     // is used as an alias)
@@ -217,7 +224,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // tablename tablesample
       // OR
       // tablename alias
-      CommonTree ct = (CommonTree)tabref.getChild(1);
+      ASTNode ct = (ASTNode)tabref.getChild(1);
       if (ct.getToken().getType() == HiveParser.TOK_TABLESAMPLE) {
         tableSamplePresent = true;
       }
@@ -230,18 +237,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       aliasIndex = 2;
       tableSamplePresent = true;
     }
-    CommonTree tableTree = (CommonTree)(tabref.getChild(0));
+    ASTNode tableTree = (ASTNode)(tabref.getChild(0));
     String alias = unescapeIdentifier(tabref.getChild(aliasIndex).getText());
     // If the alias is already there then we have a conflict
     if (qb.exists(alias)) {
       throw new SemanticException(ErrorMsg.AMBIGOUS_TABLE_ALIAS.getMsg(tabref.getChild(aliasIndex)));
     }
     if (tableSamplePresent) {
-      CommonTree sampleClause = (CommonTree)tabref.getChild(1);
-      ArrayList<CommonTree> sampleCols = new ArrayList<CommonTree>();
+      ASTNode sampleClause = (ASTNode)tabref.getChild(1);
+      ArrayList<ASTNode> sampleCols = new ArrayList<ASTNode>();
       if (sampleClause.getChildCount() > 2) {
         for (int i = 2; i < sampleClause.getChildCount(); i++) {
-          sampleCols.add((CommonTree)sampleClause.getChild(i));
+          sampleCols.add((ASTNode)sampleClause.getChild(i));
         }
       }
       // TODO: For now only support sampling on up to two columns
@@ -262,13 +269,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     qb.getParseInfo().setSrcForAlias(alias, tableTree);
   }
 
-  private void processSubQuery(QB qb, CommonTree subq) throws SemanticException {
+  private void processSubQuery(QB qb, ASTNode subq) throws SemanticException {
 
     // This is a subquery and must have an alias
     if (subq.getChildCount() != 2) {
       throw new SemanticException(ErrorMsg.NO_SUBQUERY_ALIAS.getMsg(subq));
     }
-    CommonTree subqref = (CommonTree) subq.getChild(0);
+    ASTNode subqref = (ASTNode) subq.getChild(0);
     String alias = unescapeIdentifier(subq.getChild(1).getText());
 
     // Recursively do the first phase of semantic analysis for the subquery
@@ -284,7 +291,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     qb.setSubqAlias(alias, qbexpr);
   }
 
-  private boolean isJoinToken(CommonTree node)
+  private boolean isJoinToken(ASTNode node)
   {
     if ((node.getToken().getType() == HiveParser.TOK_JOIN) ||
         (node.getToken().getType() == HiveParser.TOK_LEFTOUTERJOIN) ||
@@ -296,13 +303,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("nls")
-  private void processJoin(QB qb, CommonTree join) throws SemanticException {
+  private void processJoin(QB qb, ASTNode join) throws SemanticException {
     int numChildren = join.getChildCount();
     if ((numChildren != 2) && (numChildren != 3))
       throw new SemanticException("Join with multiple children");
 
     for (int num = 0; num < numChildren; num++) {
-      CommonTree child = (CommonTree) join.getChild(num);
+      ASTNode child = (ASTNode) join.getChild(num);
       if (child.getToken().getType() == HiveParser.TOK_TABREF)
         processTable(qb, child);
       else if (child.getToken().getType() == HiveParser.TOK_SUBQUERY)
@@ -313,7 +320,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings({"fallthrough", "nls"})
-  public void doPhase1(CommonTree ast, QB qb, Phase1Ctx ctx_1)
+  public void doPhase1(ASTNode ast, QB qb, Phase1Ctx ctx_1)
       throws SemanticException {
 
     QBParseInfo qbp = qb.getParseInfo();
@@ -328,7 +335,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_SELECT:
         qb.countSel();
         qbp.setSelExprForClause(ctx_1.dest, ast);
-        HashMap<String, CommonTree> aggregations = doPhase1GetAggregationsFromSelect(ast);
+        HashMap<String, ASTNode> aggregations = doPhase1GetAggregationsFromSelect(ast);
         qbp.setAggregationExprsForClause(ctx_1.dest, aggregations);
         qbp.setDistinctFuncExprForClause(ctx_1.dest,
             doPhase1GetDistinctFuncExpr(aggregations));
@@ -345,13 +352,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
         // is there a insert in the subquery
         if (qbp.getIsSubQ()) {
-          CommonTree ch = (CommonTree)ast.getChild(0);
+          ASTNode ch = (ASTNode)ast.getChild(0);
           if ((ch.getToken().getType() != HiveParser.TOK_DIR) ||
-              (((CommonTree)ch.getChild(0)).getToken().getType() != HiveParser.TOK_TMP_FILE))
+              (((ASTNode)ch.getChild(0)).getToken().getType() != HiveParser.TOK_TMP_FILE))
             throw new SemanticException(ErrorMsg.NO_INSERT_INSUBQUERY.getMsg(ast));
         }
 
-        qbp.setDestForClause(ctx_1.dest, (CommonTree) ast.getChild(0));
+        qbp.setDestForClause(ctx_1.dest, (ASTNode) ast.getChild(0));
       }
         break;
 
@@ -361,7 +368,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException("Multiple Children " + child_count);
 
         // Check if this is a subquery
-        CommonTree frm = (CommonTree) ast.getChild(0);
+        ASTNode frm = (ASTNode) ast.getChild(0);
         if (frm.getToken().getType() == HiveParser.TOK_TABREF)
           processTable(qb, frm);
         else if (frm.getToken().getType() == HiveParser.TOK_SUBQUERY)
@@ -436,7 +443,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       for (int child_pos = 0; child_pos < child_count; ++child_pos) {
 
         // Recurse
-        doPhase1((CommonTree) ast.getChild(child_pos), qb, ctx_1);
+        doPhase1((ASTNode) ast.getChild(child_pos), qb, ctx_1);
       }
     }
   }
@@ -477,9 +484,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Pass each where clause to the pruner
       for(String clause: qbp.getClauseNames()) {
 
-        CommonTree whexp = (CommonTree)qbp.getWhrForClause(clause);
+        ASTNode whexp = (ASTNode)qbp.getWhrForClause(clause);
         if (whexp != null) {
-          pruner.addExpression((CommonTree)whexp.getChild(0));
+          pruner.addExpression((ASTNode)whexp.getChild(0));
         }
       }
 
@@ -498,15 +505,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             pos++;
             continue;
           }
-          Vector<CommonTree> filters = qb.getQbJoinTree().getFilters().get(pos);
-          for (CommonTree cond : filters) {
+          Vector<ASTNode> filters = qb.getQbJoinTree().getFilters().get(pos);
+          for (ASTNode cond : filters) {
             pruner.addJoinOnExpression(cond);
             if (pruner.hasPartitionPredicate(cond))
               joinPartnPruner.put(alias_id, new Boolean(true));
           }
           if (qb.getQbJoinTree().getJoinSrc() != null) {
             filters = qb.getQbJoinTree().getFilters().get(0);
-            for (CommonTree cond : filters) {
+            for (ASTNode cond : filters) {
               pruner.addJoinOnExpression(cond);
               if (pruner.hasPartitionPredicate(cond))
                 joinPartnPruner.put(alias_id, new Boolean(true));
@@ -524,10 +531,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // Pass each where clause to the pruner
          for(String clause: qbp.getClauseNames()) {
           
-           CommonTree whexp = (CommonTree)qbp.getWhrForClause(clause);
+           ASTNode whexp = (ASTNode)qbp.getWhrForClause(clause);
            if (pruner.getTable().isPartitioned() &&
                conf.getVar(HiveConf.ConfVars.HIVEPARTITIONPRUNER).equalsIgnoreCase("strict") &&
-               (whexp == null || !pruner.hasPartitionPredicate((CommonTree)whexp.getChild(0)))) {
+               (whexp == null || !pruner.hasPartitionPredicate((ASTNode)whexp.getChild(0)))) {
              throw new SemanticException(ErrorMsg.NO_PARTITION_PREDICATE.getMsg(whexp != null ? whexp : qbp.getSelForClause(clause), 
                                                                                 " for Alias " + alias + " Table " + pruner.getTable().getName()));
            }
@@ -605,7 +612,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       QBParseInfo qbp = qb.getParseInfo();
 
       for (String name : qbp.getClauseNamesForDest()) {
-        CommonTree ast = qbp.getDestForClause(name);
+        ASTNode ast = qbp.getDestForClause(name);
         switch (ast.getToken().getType()) {
         case HiveParser.TOK_TAB: {
           tableSpec ts = new tableSpec(this.db, ast, true);
@@ -625,7 +632,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             // This is a dfs file
             String fname = stripQuotes(ast.getChild(0).getText());
             if ((!qb.getParseInfo().getIsSubQ()) &&
-                (((CommonTree)ast.getChild(0)).getToken().getType() == HiveParser.TOK_TMP_FILE))
+                (((ASTNode)ast.getChild(0)).getToken().getType() == HiveParser.TOK_TMP_FILE))
             {
               fname = getTmpFileName();
               ctx.setResDir(new Path(fname));
@@ -689,7 +696,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @SuppressWarnings("nls")
   private void parseJoinCondPopulateAlias(QBJoinTree joinTree,
-      CommonTree condn, Vector<String> leftAliases, Vector<String> rightAliases)
+      ASTNode condn, Vector<String> leftAliases, Vector<String> rightAliases)
       throws SemanticException {
     // String[] allAliases = joinTree.getAllAliases();
     switch (condn.getToken().getType()) {
@@ -715,19 +722,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_FUNCTION:
       // check all the arguments
       for (int i = 1; i < condn.getChildCount(); i++)
-        parseJoinCondPopulateAlias(joinTree, (CommonTree) condn.getChild(i),
+        parseJoinCondPopulateAlias(joinTree, (ASTNode) condn.getChild(i),
             leftAliases, rightAliases);
       break;
 
     default:
       // This is an operator - so check whether it is unary or binary operator
       if (condn.getChildCount() == 1)
-        parseJoinCondPopulateAlias(joinTree, (CommonTree) condn.getChild(0),
+        parseJoinCondPopulateAlias(joinTree, (ASTNode) condn.getChild(0),
             leftAliases, rightAliases);
       else if (condn.getChildCount() == 2) {
-        parseJoinCondPopulateAlias(joinTree, (CommonTree) condn.getChild(0),
+        parseJoinCondPopulateAlias(joinTree, (ASTNode) condn.getChild(0),
             leftAliases, rightAliases);
-        parseJoinCondPopulateAlias(joinTree, (CommonTree) condn.getChild(1),
+        parseJoinCondPopulateAlias(joinTree, (ASTNode) condn.getChild(1),
             leftAliases, rightAliases);
       } else
         throw new SemanticException(condn.toStringTree() + " encountered with "
@@ -737,7 +744,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void populateAliases(Vector<String> leftAliases,
-      Vector<String> rightAliases, CommonTree condn, QBJoinTree joinTree,
+      Vector<String> rightAliases, ASTNode condn, QBJoinTree joinTree,
       Vector<String> leftSrc) throws SemanticException {
     if ((leftAliases.size() != 0) && (rightAliases.size() != 0))
       throw new SemanticException(ErrorMsg.INVALID_JOIN_CONDITION_1.getMsg(condn));
@@ -767,7 +774,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @param leftSrc   left sources
    * @throws SemanticException
    */
-  private void parseJoinCondition(QBJoinTree joinTree, CommonTree joinCond, Vector<String> leftSrc)
+  private void parseJoinCondition(QBJoinTree joinTree, ASTNode joinCond, Vector<String> leftSrc)
       throws SemanticException {
     if (joinCond == null) 
       return;
@@ -777,19 +784,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(ErrorMsg.INVALID_JOIN_CONDITION_3.getMsg(joinCond));
       
     case HiveParser.KW_AND:
-      parseJoinCondition(joinTree, (CommonTree) joinCond
+      parseJoinCondition(joinTree, (ASTNode) joinCond
           .getChild(0), leftSrc);
-      parseJoinCondition(joinTree, (CommonTree) joinCond
+      parseJoinCondition(joinTree, (ASTNode) joinCond
           .getChild(1), leftSrc);
       break;
 
     case HiveParser.EQUAL:
-      CommonTree leftCondn = (CommonTree) joinCond.getChild(0);
+      ASTNode leftCondn = (ASTNode) joinCond.getChild(0);
       Vector<String> leftCondAl1 = new Vector<String>();
       Vector<String> leftCondAl2 = new Vector<String>();
       parseJoinCondPopulateAlias(joinTree, leftCondn, leftCondAl1, leftCondAl2);
 
-      CommonTree rightCondn = (CommonTree) joinCond.getChild(1);
+      ASTNode rightCondn = (ASTNode) joinCond.getChild(1);
       Vector<String> rightCondAl1 = new Vector<String>();
       Vector<String> rightCondAl2 = new Vector<String>();
       parseJoinCondPopulateAlias(joinTree, rightCondn, rightCondAl1, rightCondAl2);
@@ -837,7 +844,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
         
       for (int ci=childrenBegin; ci<joinCond.getChildCount(); ci++)
-        parseJoinCondPopulateAlias(joinTree, (CommonTree)joinCond.getChild(ci), leftAlias.get(ci-childrenBegin), rightAlias.get(ci-childrenBegin));
+        parseJoinCondPopulateAlias(joinTree, (ASTNode)joinCond.getChild(ci), leftAlias.get(ci-childrenBegin), rightAlias.get(ci-childrenBegin));
 
       boolean leftAliasNull = true;
       for (Vector<String> left : leftAlias) {
@@ -879,13 +886,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private Operator genFilterPlan(String dest, QB qb,
       Operator input) throws SemanticException {
 
-    CommonTree whereExpr = qb.getParseInfo().getWhrForClause(dest);
+    ASTNode whereExpr = qb.getParseInfo().getWhrForClause(dest);
     OpParseContext inputCtx = opParseCtx.get(input);
     RowResolver inputRR = inputCtx.getRR();
 
     Operator output = putOpInsertMap(
       OperatorFactory.getAndMakeChild(
-        new filterDesc(genExprNodeDesc(qb.getMetaData(), (CommonTree)whereExpr.getChild(0), inputRR)),
+        new filterDesc(genExprNodeDesc(qb.getMetaData(), (ASTNode)whereExpr.getChild(0), inputRR)),
           new RowSchema(inputRR.getColumnInfos()), input), inputRR);
  
     LOG.debug("Created Filter Plan for " + qb.getId() + ":" + dest + " row schema: " + inputRR.toString());
@@ -899,7 +906,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @param input the input operator
    */
   @SuppressWarnings("nls")
-  private Operator genFilterPlan(QB qb, CommonTree condn, Operator input) throws SemanticException {
+  private Operator genFilterPlan(QB qb, ASTNode condn, Operator input) throws SemanticException {
 
     OpParseContext inputCtx = opParseCtx.get(input);
     RowResolver inputRR = inputCtx.getRR();
@@ -913,7 +920,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("nls")
-  private void genColList(String tabAlias, String alias, CommonTree sel,
+  private void genColList(String tabAlias, String alias, ASTNode sel,
     ArrayList<exprNodeDesc> col_list, RowResolver input, Integer pos,
     RowResolver output) throws SemanticException {
 
@@ -974,7 +981,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
 
   @SuppressWarnings("nls")
-  private Operator genScriptPlan(CommonTree trfm, QB qb,
+  private Operator genScriptPlan(ASTNode trfm, QB qb,
       Operator input) throws SemanticException {
     // If there is no "AS" clause, the output schema will be "key,value"
     ArrayList<String> outputColList = new ArrayList<String>();
@@ -983,10 +990,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       outputColList.add("key");
       outputColList.add("value");
     } else {
-      CommonTree collist = (CommonTree) trfm.getChild(2);
+      ASTNode collist = (ASTNode) trfm.getChild(2);
       int ccount = collist.getChildCount();
       for (int i=0; i < ccount; ++i) {
-        outputColList.add(unescapeIdentifier(((CommonTree)collist.getChild(i)).getText()));
+        outputColList.add(unescapeIdentifier(((ASTNode)collist.getChild(i)).getText()));
       }
     }
     
@@ -1020,26 +1027,26 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * This function is a wrapper of parseInfo.getGroupByForClause which automatically
    * translates SELECT DISTINCT a,b,c to SELECT a,b,c GROUP BY a,b,c.
    */
-  static List<CommonTree> getGroupByForClause(QBParseInfo parseInfo, String dest) {
+  static List<ASTNode> getGroupByForClause(QBParseInfo parseInfo, String dest) {
     if (parseInfo.getSelForClause(dest).getToken().getType() == HiveParser.TOK_SELECTDI) {
-      CommonTree selectExprs = parseInfo.getSelForClause(dest);
-      List<CommonTree> result = new ArrayList<CommonTree>(selectExprs == null 
+      ASTNode selectExprs = parseInfo.getSelForClause(dest);
+      List<ASTNode> result = new ArrayList<ASTNode>(selectExprs == null 
           ? 0 : selectExprs.getChildCount());
       if (selectExprs != null) {
         for (int i = 0; i < selectExprs.getChildCount(); ++i) {
           // table.column AS alias
-          CommonTree grpbyExpr = (CommonTree) selectExprs.getChild(i).getChild(0);
+          ASTNode grpbyExpr = (ASTNode) selectExprs.getChild(i).getChild(0);
           result.add(grpbyExpr);
         }
       }
       return result;
     } else {
-      CommonTree grpByExprs = parseInfo.getGroupByForClause(dest);
-      List<CommonTree> result = new ArrayList<CommonTree>(grpByExprs == null 
+      ASTNode grpByExprs = parseInfo.getGroupByForClause(dest);
+      List<ASTNode> result = new ArrayList<ASTNode>(grpByExprs == null 
           ? 0 : grpByExprs.getChildCount());
       if (grpByExprs != null) {
         for (int i = 0; i < grpByExprs.getChildCount(); ++i) {
-          CommonTree grpbyExpr = (CommonTree) grpByExprs.getChild(i);
+          ASTNode grpbyExpr = (ASTNode) grpByExprs.getChild(i);
           result.add(grpbyExpr);
         }
       }
@@ -1047,20 +1054,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
   
-  private static String getColAlias(CommonTree selExpr, String defaultName) {
+  private static String getColAlias(ASTNode selExpr, String defaultName) {
     if (selExpr.getChildCount() == 2) {
       // return zz for "xx + yy AS zz"
       return unescapeIdentifier(selExpr.getChild(1).getText()); 
     }
 
-    CommonTree root = (CommonTree)selExpr.getChild(0);
+    ASTNode root = (ASTNode)selExpr.getChild(0);
     while (root.getType() == HiveParser.DOT || root.getType() == HiveParser.TOK_COLREF) {
       if (root.getType() == HiveParser.TOK_COLREF && root.getChildCount() == 1) {
-        root = (CommonTree) root.getChild(0);
+        root = (ASTNode) root.getChild(0);
       }
       else {
         assert(root.getChildCount() == 2);
-        root = (CommonTree) root.getChild(1);
+        root = (ASTNode) root.getChild(1);
       }
     }
     if (root.getType() == HiveParser.Identifier) {
@@ -1076,11 +1083,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private Operator genSelectPlan(String dest, QB qb,
     Operator input) throws SemanticException {
 
-    CommonTree selExprList = qb.getParseInfo().getSelForClause(dest);
+    ASTNode selExprList = qb.getParseInfo().getSelForClause(dest);
 
     ArrayList<exprNodeDesc> col_list = new ArrayList<exprNodeDesc>();
     RowResolver out_rwsch = new RowResolver();
-    CommonTree trfm = null;
+    ASTNode trfm = null;
     String alias = qb.getParseInfo().getAlias();
     Integer pos = Integer.valueOf(0);
     RowResolver inputRR = opParseCtx.get(input).getRR();
@@ -1091,9 +1098,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (int i = 0; i < selExprList.getChildCount(); ++i) {
 
       // list of the columns
-      CommonTree selExpr = (CommonTree) selExprList.getChild(i);
+      ASTNode selExpr = (ASTNode) selExprList.getChild(i);
       String colAlias = getColAlias(selExpr, "_C" + i);
-      CommonTree sel = (CommonTree)selExpr.getChild(0);
+      ASTNode sel = (ASTNode)selExpr.getChild(0);
       
       if (sel.getToken().getType() == HiveParser.TOK_ALLCOLREF) {
         String tabAlias = null;
@@ -1106,9 +1113,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException(ErrorMsg.INVALID_TRANSFORM.getMsg(sel));
         }
         trfm = sel;
-        CommonTree cols = (CommonTree) trfm.getChild(0);
+        ASTNode cols = (ASTNode) trfm.getChild(0);
         for (int j = 0; j < cols.getChildCount(); ++j) {
-          CommonTree expr = (CommonTree) cols.getChild(j);
+          ASTNode expr = (ASTNode) cols.getChild(j);
           if (expr.getToken().getType() == HiveParser.TOK_ALLCOLREF) {
             String tabAlias = null;
             if (sel.getChildCount() == 1)
@@ -1180,17 +1187,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @param mode     The mode of the aggregation. This affects the evaluate method.
    * @param aggClasses  The classes of the parameters to the UDAF. 
    * @param aggParameters  The actual exprNodeDesc of the parameters.
-   * @param aggTree   The CommonTree node of the UDAF in the query.
+   * @param aggTree   The ASTNode node of the UDAF in the query.
    * @return UDAFInfo
    * @throws SemanticException when the UDAF is not found or has problems.
    */
   UDAFInfo getUDAFInfo(String aggName, groupByDesc.Mode mode, ArrayList<Class<?>> aggClasses,
-      ArrayList<exprNodeDesc> aggParameters, CommonTree aggTree) throws SemanticException {
+      ArrayList<exprNodeDesc> aggParameters, ASTNode aggTree) throws SemanticException {
     UDAFInfo r = new UDAFInfo();
     r.aggregateMethod = FunctionRegistry.getUDAFMethod(aggName, aggClasses);
     if (null == r.aggregateMethod) {
       String reason = "Looking for UDAF \"" + aggName + "\" with parameters " + aggClasses;
-      throw new SemanticException(ErrorMsg.INVALID_FUNCTION_SIGNATURE.getMsg((CommonTree)aggTree.getChild(0), reason));
+      throw new SemanticException(ErrorMsg.INVALID_FUNCTION_SIGNATURE.getMsg((ASTNode)aggTree.getChild(0), reason));
     }
 
     r.convertedParameters = convertParameters(r.aggregateMethod, aggParameters);
@@ -1198,7 +1205,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     r.evaluateMethod = FunctionRegistry.getUDAFEvaluateMethod(aggName, mode);
     if (r.evaluateMethod == null) {
       String reason = "UDAF \"" + aggName + "\" does not have evaluate()/evaluatePartial() methods.";
-      throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg((CommonTree)aggTree.getChild(0), reason)); 
+      throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg((ASTNode)aggTree.getChild(0), reason)); 
     }
     
     return r;
@@ -1221,9 +1228,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     groupByOutputRowResolver.setIsExprResolver(true);
     ArrayList<exprNodeDesc> groupByKeys = new ArrayList<exprNodeDesc>();
     ArrayList<aggregationDesc> aggregations = new ArrayList<aggregationDesc>();
-    List<CommonTree> grpByExprs = getGroupByForClause(parseInfo, dest);
+    List<ASTNode> grpByExprs = getGroupByForClause(parseInfo, dest);
     for (int i = 0; i < grpByExprs.size(); ++i) {
-      CommonTree grpbyExpr = grpByExprs.get(i);
+      ASTNode grpbyExpr = grpByExprs.get(i);
       String text = grpbyExpr.toStringTree();
       ColumnInfo exprInfo = groupByInputRowResolver.get("",text);
 
@@ -1237,11 +1244,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                                    new ColumnInfo(field, exprInfo.getType()));
     }
     // For each aggregation
-    HashMap<String, CommonTree> aggregationTrees = parseInfo
+    HashMap<String, ASTNode> aggregationTrees = parseInfo
         .getAggregationExprsForClause(dest);
     assert (aggregationTrees != null);
-    for (Map.Entry<String, CommonTree> entry : aggregationTrees.entrySet()) {
-      CommonTree value = entry.getValue();
+    for (Map.Entry<String, ASTNode> entry : aggregationTrees.entrySet()) {
+      ASTNode value = entry.getValue();
       String aggName = value.getChild(0).getText();
       Class<? extends UDAF> aggClass = FunctionRegistry.getUDAF(aggName);
       assert (aggClass != null);
@@ -1250,7 +1257,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // 0 is the function name
       for (int i = 1; i < value.getChildCount(); i++) {
         String text = value.getChild(i).toStringTree();
-        CommonTree paraExpr = (CommonTree)value.getChild(i);
+        ASTNode paraExpr = (ASTNode)value.getChild(i);
         ColumnInfo paraExprInfo = groupByInputRowResolver.get("",text);
         if (paraExprInfo == null) {
           throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(paraExpr));
@@ -1296,9 +1303,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     groupByOutputRowResolver.setIsExprResolver(true);
     ArrayList<exprNodeDesc> groupByKeys = new ArrayList<exprNodeDesc>();
     ArrayList<aggregationDesc> aggregations = new ArrayList<aggregationDesc>();
-    List<CommonTree> grpByExprs = getGroupByForClause(parseInfo, dest);
+    List<ASTNode> grpByExprs = getGroupByForClause(parseInfo, dest);
     for (int i = 0; i < grpByExprs.size(); ++i) {
-      CommonTree grpbyExpr = grpByExprs.get(i);
+      ASTNode grpbyExpr = grpByExprs.get(i);
       String text = grpbyExpr.toStringTree();
       ColumnInfo exprInfo = groupByInputRowResolver.get("",text);
 
@@ -1314,7 +1321,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // If there is a distinctFuncExp, add all parameters to the reduceKeys.
     if (parseInfo.getDistinctFuncExprForClause(dest) != null) {
-      CommonTree value = parseInfo.getDistinctFuncExprForClause(dest);
+      ASTNode value = parseInfo.getDistinctFuncExprForClause(dest);
       String aggName = value.getChild(0).getText();
       Class<? extends UDAF> aggClass = FunctionRegistry.getUDAF(aggName);
       assert (aggClass != null);
@@ -1323,7 +1330,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // 0 is the function name
       for (int i = 1; i < value.getChildCount(); i++) {
         String text = value.getChild(i).toStringTree();
-        CommonTree paraExpr = (CommonTree)value.getChild(i);
+        ASTNode paraExpr = (ASTNode)value.getChild(i);
         ColumnInfo paraExprInfo = groupByInputRowResolver.get("",text);
         if (paraExprInfo == null) {
           throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(paraExpr));
@@ -1343,10 +1350,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                                        udaf.evaluateMethod.getReturnType()));
     }
 
-    HashMap<String, CommonTree> aggregationTrees = parseInfo
+    HashMap<String, ASTNode> aggregationTrees = parseInfo
         .getAggregationExprsForClause(dest);
-    for (Map.Entry<String, CommonTree> entry : aggregationTrees.entrySet()) {
-      CommonTree value = entry.getValue();
+    for (Map.Entry<String, ASTNode> entry : aggregationTrees.entrySet()) {
+      ASTNode value = entry.getValue();
       if (value.getToken().getType() == HiveParser.TOK_FUNCTIONDI)
         continue;
 
@@ -1393,9 +1400,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     groupByOutputRowResolver.setIsExprResolver(true);
     ArrayList<exprNodeDesc> groupByKeys = new ArrayList<exprNodeDesc>();
     ArrayList<aggregationDesc> aggregations = new ArrayList<aggregationDesc>();
-    List<CommonTree> grpByExprs = getGroupByForClause(parseInfo, dest);
+    List<ASTNode> grpByExprs = getGroupByForClause(parseInfo, dest);
     for (int i = 0; i < grpByExprs.size(); ++i) {
-      CommonTree grpbyExpr = grpByExprs.get(i);
+      ASTNode grpbyExpr = grpByExprs.get(i);
       exprNodeDesc grpByExprNode = genExprNodeDesc(qb.getMetaData(), grpbyExpr, groupByInputRowResolver);
 
       groupByKeys.add(grpByExprNode);
@@ -1406,11 +1413,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // If there is a distinctFuncExp, add all parameters to the reduceKeys.
     if (parseInfo.getDistinctFuncExprForClause(dest) != null) {
-      CommonTree value = parseInfo.getDistinctFuncExprForClause(dest);
+      ASTNode value = parseInfo.getDistinctFuncExprForClause(dest);
       int numDistn=0;
       // 0 is function name
       for (int i = 1; i < value.getChildCount(); i++) {
-        CommonTree parameter = (CommonTree) value.getChild(i);
+        ASTNode parameter = (ASTNode) value.getChild(i);
         String text = parameter.toStringTree();
         if (groupByOutputRowResolver.get("",text) == null) {
           exprNodeDesc distExprNode = genExprNodeDesc(qb.getMetaData(), parameter, groupByInputRowResolver);
@@ -1423,12 +1430,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // For each aggregation
-    HashMap<String, CommonTree> aggregationTrees = parseInfo
+    HashMap<String, ASTNode> aggregationTrees = parseInfo
         .getAggregationExprsForClause(dest);
     assert (aggregationTrees != null);
 
-    for (Map.Entry<String, CommonTree> entry : aggregationTrees.entrySet()) {
-      CommonTree value = entry.getValue();
+    for (Map.Entry<String, ASTNode> entry : aggregationTrees.entrySet()) {
+      ASTNode value = entry.getValue();
       String aggName = value.getChild(0).getText();
       Class<? extends UDAF> aggClass = FunctionRegistry.getUDAF(aggName);
       assert (aggClass != null);
@@ -1436,7 +1443,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ArrayList<Class<?>> aggClasses = new ArrayList<Class<?>>();
       // 0 is the function name
       for (int i = 1; i < value.getChildCount(); i++) {
-        CommonTree paraExpr = (CommonTree)value.getChild(i);
+        ASTNode paraExpr = (ASTNode)value.getChild(i);
         exprNodeDesc paraExprNode = genExprNodeDesc(qb.getMetaData(), paraExpr, groupByInputRowResolver);
 
         aggParameters.add(paraExprNode);
@@ -1526,9 +1533,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ArrayList<exprNodeDesc> reduceKeys = new ArrayList<exprNodeDesc>();
 
     // Pre-compute group-by keys and store in reduceKeys
-    List<CommonTree> grpByExprs = getGroupByForClause(parseInfo, dest);
+    List<ASTNode> grpByExprs = getGroupByForClause(parseInfo, dest);
     for (int i = 0; i < grpByExprs.size(); ++i) {
-      CommonTree grpbyExpr = grpByExprs.get(i);
+      ASTNode grpbyExpr = grpByExprs.get(i);
       String text = grpbyExpr.toStringTree();
 
       if (reduceSinkOutputRowResolver.get("", text) == null) {
@@ -1542,10 +1549,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // If there is a distinctFuncExp, add all parameters to the reduceKeys.
     if (parseInfo.getDistinctFuncExprForClause(dest) != null) {
-      CommonTree value = parseInfo.getDistinctFuncExprForClause(dest);
+      ASTNode value = parseInfo.getDistinctFuncExprForClause(dest);
       // 0 is function name
       for (int i = 1; i < value.getChildCount(); i++) {
-        CommonTree parameter = (CommonTree) value.getChild(i);
+        ASTNode parameter = (ASTNode) value.getChild(i);
         String text = parameter.toStringTree();
         if (reduceSinkOutputRowResolver.get("",text) == null) {
           ColumnInfo exprInfo = reduceSinkInputRowResolver.get("", text);
@@ -1559,17 +1566,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // Put partial aggregation results in reduceValues
     ArrayList<exprNodeDesc> reduceValues = new ArrayList<exprNodeDesc>();
-    HashMap<String, CommonTree> aggregationTrees = parseInfo
+    HashMap<String, ASTNode> aggregationTrees = parseInfo
         .getAggregationExprsForClause(dest);
     int inputField = reduceKeys.size();
 
-    for (Map.Entry<String, CommonTree> entry : aggregationTrees.entrySet()) {
+    for (Map.Entry<String, ASTNode> entry : aggregationTrees.entrySet()) {
 
       TypeInfo type = reduceSinkInputRowResolver.getColumnInfos().get(inputField).getType(); 
       reduceValues.add(new exprNodeColumnDesc(
           type, (Integer.valueOf(inputField)).toString()));
       inputField++;
-      reduceSinkOutputRowResolver.put("", ((CommonTree)entry.getValue()).toStringTree(),
+      reduceSinkOutputRowResolver.put("", ((ASTNode)entry.getValue()).toStringTree(),
                                       new ColumnInfo(Utilities.ReduceField.VALUE.toString() + "." + (Integer.valueOf(reduceValues.size()-1)).toString(),
                                                      type));
     }
@@ -1605,9 +1612,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ArrayList<exprNodeDesc> reduceKeys = new ArrayList<exprNodeDesc>();
     // Pre-compute group-by keys and store in reduceKeys
 
-    List<CommonTree> grpByExprs = getGroupByForClause(parseInfo, dest);
+    List<ASTNode> grpByExprs = getGroupByForClause(parseInfo, dest);
     for (int i = 0; i < grpByExprs.size(); ++i) {
-      CommonTree grpbyExpr = grpByExprs.get(i);
+      ASTNode grpbyExpr = grpByExprs.get(i);
       reduceKeys.add(genExprNodeDesc(qb.getMetaData(), grpbyExpr, reduceSinkInputRowResolver));
       String text = grpbyExpr.toStringTree();
       if (reduceSinkOutputRowResolver.get("", text) == null) {
@@ -1621,10 +1628,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // If there is a distinctFuncExp, add all parameters to the reduceKeys.
     if (parseInfo.getDistinctFuncExprForClause(dest) != null) {
-      CommonTree value = parseInfo.getDistinctFuncExprForClause(dest);
+      ASTNode value = parseInfo.getDistinctFuncExprForClause(dest);
       // 0 is function name
       for (int i = 1; i < value.getChildCount(); i++) {
-        CommonTree parameter = (CommonTree) value.getChild(i);
+        ASTNode parameter = (ASTNode) value.getChild(i);
         String text = parameter.toStringTree();
         if (reduceSinkOutputRowResolver.get("",text) == null) {
           reduceKeys.add(genExprNodeDesc(qb.getMetaData(), parameter, reduceSinkInputRowResolver));
@@ -1637,13 +1644,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // Put parameters to aggregations in reduceValues
     ArrayList<exprNodeDesc> reduceValues = new ArrayList<exprNodeDesc>();
-    HashMap<String, CommonTree> aggregationTrees = parseInfo
+    HashMap<String, ASTNode> aggregationTrees = parseInfo
         .getAggregationExprsForClause(dest);
-    for (Map.Entry<String, CommonTree> entry : aggregationTrees.entrySet()) {
-        CommonTree value = entry.getValue();
+    for (Map.Entry<String, ASTNode> entry : aggregationTrees.entrySet()) {
+        ASTNode value = entry.getValue();
       // 0 is function name
       for (int i = 1; i < value.getChildCount(); i++) {
-        CommonTree parameter = (CommonTree) value.getChild(i);
+        ASTNode parameter = (ASTNode) value.getChild(i);
         String text = parameter.toStringTree();
         if (reduceSinkOutputRowResolver.get("",text) == null) {
           reduceValues.add(genExprNodeDesc(qb.getMetaData(), parameter, reduceSinkInputRowResolver));
@@ -1685,9 +1692,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     reduceSinkOutputRowResolver2.setIsExprResolver(true);
     ArrayList<exprNodeDesc> reduceKeys = new ArrayList<exprNodeDesc>();
     // Get group-by keys and store in reduceKeys
-    List<CommonTree> grpByExprs = getGroupByForClause(parseInfo, dest);
+    List<ASTNode> grpByExprs = getGroupByForClause(parseInfo, dest);
     for (int i = 0; i < grpByExprs.size(); ++i) {
-      CommonTree grpbyExpr = grpByExprs.get(i);
+      ASTNode grpbyExpr = grpByExprs.get(i);
       String field = (Integer.valueOf(i)).toString();
       TypeInfo typeInfo = reduceSinkInputRowResolver2.get("", grpbyExpr.toStringTree()).getType();
       reduceKeys.add(new exprNodeColumnDesc(typeInfo, field));
@@ -1698,11 +1705,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Get partial aggregation results and store in reduceValues
     ArrayList<exprNodeDesc> reduceValues = new ArrayList<exprNodeDesc>();
     int inputField = reduceKeys.size();
-    HashMap<String, CommonTree> aggregationTrees = parseInfo
+    HashMap<String, ASTNode> aggregationTrees = parseInfo
         .getAggregationExprsForClause(dest);
-    for (Map.Entry<String, CommonTree> entry : aggregationTrees.entrySet()) {
+    for (Map.Entry<String, ASTNode> entry : aggregationTrees.entrySet()) {
       String field = (Integer.valueOf(inputField)).toString();
-      CommonTree t = entry.getValue();
+      ASTNode t = entry.getValue();
       TypeInfo typeInfo = reduceSinkInputRowResolver2.get("", t.toStringTree()).getType();
       reduceValues.add(new exprNodeColumnDesc(typeInfo, field));
       inputField++;
@@ -1738,9 +1745,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     groupByOutputRowResolver2.setIsExprResolver(true);
     ArrayList<exprNodeDesc> groupByKeys = new ArrayList<exprNodeDesc>();
     ArrayList<aggregationDesc> aggregations = new ArrayList<aggregationDesc>();
-    List<CommonTree> grpByExprs = getGroupByForClause(parseInfo, dest);
+    List<ASTNode> grpByExprs = getGroupByForClause(parseInfo, dest);
     for (int i = 0; i < grpByExprs.size(); ++i) {
-      CommonTree grpbyExpr = grpByExprs.get(i);
+      ASTNode grpbyExpr = grpByExprs.get(i);
       String text = grpbyExpr.toStringTree();
       ColumnInfo exprInfo = groupByInputRowResolver2.get("",text);
       if (exprInfo == null) {
@@ -1753,10 +1760,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       groupByOutputRowResolver2.put("",grpbyExpr.toStringTree(),
                                     new ColumnInfo(field, exprInfo.getType()));
     }
-    HashMap<String, CommonTree> aggregationTrees = parseInfo
+    HashMap<String, ASTNode> aggregationTrees = parseInfo
         .getAggregationExprsForClause(dest);
-    for (Map.Entry<String, CommonTree> entry : aggregationTrees.entrySet()) {
-      CommonTree value = entry.getValue();
+    for (Map.Entry<String, ASTNode> entry : aggregationTrees.entrySet()) {
+      ASTNode value = entry.getValue();
       String aggName = value.getChild(0).getText();
       Class<? extends UDAF> aggClass = FunctionRegistry.getUDAF(aggName);
       Method aggEvaluateMethod = FunctionRegistry.getUDAFEvaluateMethod(aggName, mode);
@@ -1866,7 +1873,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private boolean optimizeMapAggrGroupBy(String dest, QB qb) {
-    List<CommonTree> grpByExprs = getGroupByForClause(qb.getParseInfo(), dest);
+    List<ASTNode> grpByExprs = getGroupByForClause(qb.getParseInfo(), dest);
     if ((grpByExprs != null) && !grpByExprs.isEmpty())
       return false;
 
@@ -2147,7 +2154,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // First generate the expression for the partition and sort keys
     // The cluster by clause / distribute by clause has the aliases for partition function 
-    CommonTree partitionExprs = qb.getParseInfo().getClusterByForClause(dest);
+    ASTNode partitionExprs = qb.getParseInfo().getClusterByForClause(dest);
     if (partitionExprs == null) {
       partitionExprs = qb.getParseInfo().getDistributeByForClause(dest);
     }
@@ -2155,7 +2162,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (partitionExprs != null) {
       int ccount = partitionExprs.getChildCount();
       for(int i=0; i<ccount; ++i) {
-        CommonTree cl = (CommonTree)partitionExprs.getChild(i);
+        ASTNode cl = (ASTNode)partitionExprs.getChild(i);
         ColumnInfo colInfo = inputRR.get(qb.getParseInfo().getAlias(),
                                          unescapeIdentifier(cl.getText()));
         if (colInfo == null) {
@@ -2165,7 +2172,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    CommonTree sortExprs = qb.getParseInfo().getClusterByForClause(dest);
+    ASTNode sortExprs = qb.getParseInfo().getClusterByForClause(dest);
     if (sortExprs == null) {
       sortExprs = qb.getParseInfo().getSortByForClause(dest);
     }
@@ -2175,16 +2182,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (sortExprs != null) {
       int ccount = sortExprs.getChildCount();
       for(int i=0; i<ccount; ++i) {
-        CommonTree cl = (CommonTree)sortExprs.getChild(i);
+        ASTNode cl = (ASTNode)sortExprs.getChild(i);
         
         if (cl.getType() == HiveParser.TOK_TABSORTCOLNAMEASC) {
           // SortBy ASC
           order.append("+");
-          cl = (CommonTree) cl.getChild(0);
+          cl = (ASTNode) cl.getChild(0);
         } else if (cl.getType() == HiveParser.TOK_TABSORTCOLNAMEDESC) {
           // SortBy DESC
           order.append("-");
-          cl = (CommonTree) cl.getChild(0);
+          cl = (ASTNode) cl.getChild(0);
         } else {
           // ClusterBy
           order.append("+");
@@ -2293,9 +2300,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ArrayList<exprNodeDesc> reduceKeys = new ArrayList<exprNodeDesc>();
 
     // Compute join keys and store in reduceKeys
-    Vector<CommonTree> exprs = joinTree.getExpressions().get(pos);
+    Vector<ASTNode> exprs = joinTree.getExpressions().get(pos);
     for (int i = 0; i < exprs.size(); i++) {
-      CommonTree expr = exprs.get(i);
+      ASTNode expr = exprs.get(i);
       reduceKeys.add(genExprNodeDesc(qb.getMetaData(), expr, inputRS));
     }
 
@@ -2332,8 +2339,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (leftChild != null)
     {
       Operator joinOp = genJoinOperator(qb, leftChild, map);
-      Vector<CommonTree> filter = joinTree.getFilters().get(0);
-      for (CommonTree cond: filter) 
+      Vector<ASTNode> filter = joinTree.getFilters().get(0);
+      for (ASTNode cond: filter) 
         joinOp = genFilterPlan(qb, cond, joinOp);
       
       joinSrcOp = genJoinReduceSinkChild(qb, joinTree, joinOp, null, 0);
@@ -2417,7 +2424,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * traverses the query tree recursively,
    */
   private void pushJoinFilters(QB qb, QBJoinTree joinTree, HashMap<String, Operator> map) throws SemanticException {
-    Vector<Vector<CommonTree>> filters = joinTree.getFilters();
+    Vector<Vector<ASTNode>> filters = joinTree.getFilters();
     if (joinTree.getJoinSrc() != null)
       pushJoinFilters(qb, joinTree.getJoinSrc(), map);
 
@@ -2425,8 +2432,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (String src : joinTree.getBaseSrc()) {
       if (src != null) {
         Operator srcOp = map.get(src);
-        Vector<CommonTree> filter = filters.get(pos);
-        for (CommonTree cond: filter) 
+        Vector<ASTNode> filter = filters.get(pos);
+        for (ASTNode cond: filter) 
           srcOp = genFilterPlan(qb, cond, srcOp);
         map.put(src, srcOp);
       }
@@ -2434,7 +2441,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
   
-  private QBJoinTree genJoinTree(CommonTree joinParseTree)
+  private QBJoinTree genJoinTree(ASTNode joinParseTree)
       throws SemanticException {
     QBJoinTree joinTree = new QBJoinTree();
     joinCond[] condn = new joinCond[1];
@@ -2462,8 +2469,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     joinTree.setJoinCond(condn);
 
-    CommonTree left = (CommonTree) joinParseTree.getChild(0);
-    CommonTree right = (CommonTree) joinParseTree.getChild(1);
+    ASTNode left = (ASTNode) joinParseTree.getChild(0);
+    ASTNode right = (ASTNode) joinParseTree.getChild(1);
 
     if ((left.getToken().getType() == HiveParser.TOK_TABREF)
         || (left.getToken().getType() == HiveParser.TOK_SUBQUERY)) {
@@ -2506,17 +2513,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     } else
       assert false;
 
-    Vector<Vector<CommonTree>> expressions = new Vector<Vector<CommonTree>>();
-    expressions.add(new Vector<CommonTree>());
-    expressions.add(new Vector<CommonTree>());
+    Vector<Vector<ASTNode>> expressions = new Vector<Vector<ASTNode>>();
+    expressions.add(new Vector<ASTNode>());
+    expressions.add(new Vector<ASTNode>());
     joinTree.setExpressions(expressions);
 
-    Vector<Vector<CommonTree>> filters = new Vector<Vector<CommonTree>>();
-    filters.add(new Vector<CommonTree>());
-    filters.add(new Vector<CommonTree>());
+    Vector<Vector<ASTNode>> filters = new Vector<Vector<ASTNode>>();
+    filters.add(new Vector<ASTNode>());
+    filters.add(new Vector<ASTNode>());
     joinTree.setFilters(filters);
 
-    CommonTree joinCond = (CommonTree) joinParseTree.getChild(2);
+    ASTNode joinCond = (ASTNode) joinParseTree.getChild(2);
     Vector<String> leftSrc = new Vector<String>();
     parseJoinCondition(joinTree, joinCond, leftSrc);
     if (leftSrc.size() == 1)
@@ -2548,16 +2555,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       baseSrc[i + trgtBaseSrc.length - 1] = nodeBaseSrc[i];
     target.setBaseSrc(baseSrc);
 
-    Vector<Vector<CommonTree>> expr = target.getExpressions();
+    Vector<Vector<ASTNode>> expr = target.getExpressions();
     for (int i = 0; i < nodeRightAliases.length; i++)
       expr.add(node.getExpressions().get(i + 1));
 
-    Vector<Vector<CommonTree>> filter = target.getFilters();
+    Vector<Vector<ASTNode>> filter = target.getFilters();
     for (int i = 0; i < nodeRightAliases.length; i++)
       filter.add(node.getFilters().get(i + 1));
 
     if (node.getFilters().get(0).size() != 0) {
-      Vector<CommonTree> filterPos = filter.get(pos);
+      Vector<ASTNode> filterPos = filter.get(pos);
       filterPos.addAll(node.getFilters().get(0));
     }
 
@@ -2599,8 +2606,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (leftAlias == null)
       return -1;
 
-    Vector<CommonTree> nodeCondn = node.getExpressions().get(0);
-    Vector<CommonTree> targetCondn = null;
+    Vector<ASTNode> nodeCondn = node.getExpressions().get(0);
+    Vector<ASTNode> targetCondn = null;
 
     if (leftAlias.equals(target.getLeftAlias()))
     {
@@ -2812,7 +2819,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     else {
-      for(CommonTree expr: ts.getExprs()) {
+      for(ASTNode expr: ts.getExprs()) {
     	  args.add(genExprNodeDesc(qbm, expr, rwsch));
       }
     }
@@ -2884,7 +2891,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (ts != null) {
       int num = ts.getNumerator();
       int den = ts.getDenominator();
-      ArrayList<CommonTree> sampleExprs = ts.getExprs();
+      ArrayList<ASTNode> sampleExprs = ts.getExprs();
       
       // TODO: Do the type checking of the expressions
       List<String> tabBucketCols = tab.getBucketCols();
@@ -2916,7 +2923,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             throw new SemanticException(ErrorMsg.TABLE_ALIAS_NOT_ALLOWED.getMsg());
           }
 
-          if (((CommonTree)sampleExprs.get(i).getChild(0)).getText().equalsIgnoreCase(tabBucketCols.get(j))) {
+          if (((ASTNode)sampleExprs.get(i).getChild(0)).getText().equalsIgnoreCase(tabBucketCols.get(j))) {
             colFound = true;
           }
         }
@@ -2985,7 +2992,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // process join
     if (qb.getParseInfo().getJoinExpr() != null) {
-      CommonTree joinExpr = qb.getParseInfo().getJoinExpr();
+      ASTNode joinExpr = qb.getParseInfo().getJoinExpr();
       QBJoinTree joinTree = genJoinTree(joinExpr);
       qb.setQbJoinTree(joinTree);
       mergeJoinTree(qb);
@@ -3114,17 +3121,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // create a walker which walks the tree in a DFS manner while maintaining the operator stack. The dispatcher
     // generates the plan from the operator tree
-    Map<Rule, OperatorProcessor> opRules = new LinkedHashMap<Rule, OperatorProcessor>();
-    opRules.put(new RuleRegExp(new String("R1"), "TS"), new GenMRTableScan1());
-    opRules.put(new RuleRegExp(new String("R2"), "TS.*RS"), new GenMRRedSink1());
-    opRules.put(new RuleRegExp(new String("R3"), "RS.*RS"), new GenMRRedSink2());
-    opRules.put(new RuleRegExp(new String("R4"), "FS"), new GenMRFileSink1());
+    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    opRules.put(new RuleRegExp(new String("R1"), "TS%"), new GenMRTableScan1());
+    opRules.put(new RuleRegExp(new String("R2"), "TS%.*RS%"), new GenMRRedSink1());
+    opRules.put(new RuleRegExp(new String("R3"), "RS%.*RS%"), new GenMRRedSink2());
+    opRules.put(new RuleRegExp(new String("R4"), "FS%"), new GenMRFileSink1());
 
     // The dispatcher fires the processor corresponding to the closest matching rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(new GenMROperator(), opRules, procCtx);
 
-    OpGraphWalker ogw = new GenMapRedWalker(disp);
-    ogw.startWalking(this.topOps.values());
+    GraphWalker ogw = new GenMapRedWalker(disp);
+    ArrayList<Node> topNodes = new ArrayList<Node>();
+    topNodes.addAll(this.topOps.values());
+    ogw.startWalking(topNodes);
 
     // reduce sink does not have any kids
     breakOperatorTree(procCtx.getRootOps());
@@ -3159,7 +3168,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   @SuppressWarnings("nls")
-  public void analyzeInternal(CommonTree ast, Context ctx) throws SemanticException {
+  public void analyzeInternal(ASTNode ast, Context ctx) throws SemanticException {
     this.ctx = ctx;
     reset();
 
@@ -3311,7 +3320,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @throws SemanticException
    */
   @SuppressWarnings("nls")
-  private exprNodeDesc genExprNodeDesc(QBMetaData qbm, CommonTree expr, RowResolver input)
+  private exprNodeDesc genExprNodeDesc(QBMetaData qbm, ASTNode expr, RowResolver input)
   throws SemanticException {
     //  We recursively create the exprNodeDesc.  Base cases:  when we encounter 
     //  a column ref, we convert that into an exprNodeColumnDesc;  when we encounter 
@@ -3373,7 +3382,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         int childrenBegin = (isFunction ? 1 : 0);
         ArrayList<exprNodeDesc> children = new ArrayList<exprNodeDesc>(expr.getChildCount() - childrenBegin);
         for (int ci=childrenBegin; ci<expr.getChildCount(); ci++) {
-          children.add(genExprNodeDesc(qbm, (CommonTree)expr.getChild(ci), input));
+          children.add(genExprNodeDesc(qbm, (ASTNode)expr.getChild(ci), input));
         }
         
         // Create function desc
@@ -3407,20 +3416,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     conversionFunctionTextHashMap.put(HiveParser.TOK_DATE, java.sql.Date.class.getName());
   }
   
-  public static boolean isRedundantConversionFunction(CommonTree expr, boolean isFunction, ArrayList<exprNodeDesc> children) {
+  public static boolean isRedundantConversionFunction(ASTNode expr, boolean isFunction, ArrayList<exprNodeDesc> children) {
     if (!isFunction) return false;
     // children is always one less than the expr.getChildCount(), since the latter contains function name.
     assert(children.size() == expr.getChildCount() - 1);
     // conversion functions take a single parameter
     if (children.size() != 1) return false;
-    String funcText = conversionFunctionTextHashMap.get(((CommonTree)expr.getChild(0)).getType());
+    String funcText = conversionFunctionTextHashMap.get(((ASTNode)expr.getChild(0)).getType());
     // not a conversion function 
     if (funcText == null) return false;
     // return true when the child type and the conversion target type is the same
     return children.get(0).getTypeInfo().getPrimitiveClass().getName().equals(funcText);
   }
   
-  public static String getFunctionText(CommonTree expr, boolean isFunction) {
+  public static String getFunctionText(ASTNode expr, boolean isFunction) {
     String funcText = null;
     if (!isFunction) {
       // For operator, the function name is the operator text, unless it's in our special dictionary
@@ -3434,19 +3443,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // For TOK_FUNCTION, the function name is stored in the first child, unless it's in our
       // special dictionary.
       assert(expr.getChildCount() >= 1);
-      int funcType = ((CommonTree)expr.getChild(0)).getType();
+      int funcType = ((ASTNode)expr.getChild(0)).getType();
       funcText = specialFunctionTextHashMap.get(funcType);
       if (funcText == null) {
         funcText = conversionFunctionTextHashMap.get(funcType);
       }
       if (funcText == null) {
-        funcText = ((CommonTree)expr.getChild(0)).getText();
+        funcText = ((ASTNode)expr.getChild(0)).getText();
       }
     }
     return funcText;
   }
   
-  static exprNodeDesc getXpathOrFuncExprNodeDesc(CommonTree expr, boolean isFunction,
+  static exprNodeDesc getXpathOrFuncExprNodeDesc(ASTNode expr, boolean isFunction,
       ArrayList<exprNodeDesc> children)
       throws SemanticException {
     // return the child directly if the conversion is redundant.
@@ -3526,9 +3535,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       Class<? extends UDF> udf = FunctionRegistry.getUDFClass(funcText);
       if (udf == null) {
       	if (isFunction)
-          throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg((CommonTree)expr.getChild(0)));
+          throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg((ASTNode)expr.getChild(0)));
       	else
-          throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg((CommonTree)expr));
+          throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg((ASTNode)expr));
       }
       
       desc = getFuncExprNodeDesc(funcText, children);
@@ -3540,7 +3549,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   
         if (isFunction) {
           String reason = "Looking for UDF \"" + expr.getChild(0).getText() + "\" with parameters " + argumentClasses;
-          throw new SemanticException(ErrorMsg.INVALID_FUNCTION_SIGNATURE.getMsg((CommonTree)expr.getChild(0), reason));
+          throw new SemanticException(ErrorMsg.INVALID_FUNCTION_SIGNATURE.getMsg((ASTNode)expr.getChild(0), reason));
         } else {
           String reason = "Looking for Operator \"" + expr.getText() + "\" with parameters " + argumentClasses;
           throw new SemanticException(ErrorMsg.INVALID_OPERATOR_SIGNATURE.getMsg(expr, reason));
@@ -3561,7 +3570,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return desc;
   }
 
-  static exprNodeDesc genSimpleExprNodeDesc(CommonTree expr) throws SemanticException {
+  static exprNodeDesc genSimpleExprNodeDesc(ASTNode expr) throws SemanticException {
     exprNodeDesc desc = null;
     switch(expr.getType()) {
       case HiveParser.TOK_NULL:
@@ -3613,7 +3622,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @return String
    * @throws SemanticException
    */
-  static String getTabAliasForCol(QBMetaData qbm, String colName, CommonTree pt) 
+  static String getTabAliasForCol(QBMetaData qbm, String colName, ASTNode pt) 
   throws SemanticException {
 	  String tabAlias = null;
 	  boolean found = false;

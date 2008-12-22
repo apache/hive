@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.antlr.runtime.tree.CommonTree;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
@@ -37,11 +36,11 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     super(conf);
   }
 
-  public void analyzeInternal(CommonTree ast, Context ctx) throws SemanticException {
+  public void analyzeInternal(ASTNode ast, Context ctx) throws SemanticException {
     
     // Create a semantic analyzer for the query
-    BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(conf, (CommonTree)ast.getChild(0));
-    sem.analyze((CommonTree)ast.getChild(0), ctx);
+    BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(conf, (ASTNode)ast.getChild(0));
+    sem.analyze((ASTNode)ast.getChild(0), ctx);
     
     boolean extended = false;
     if (ast.getChildCount() > 1) {
@@ -61,7 +60,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     	tasks.add(fetchTask); 
     		
     rootTasks.add(TaskFactory.get(new explainWork(ctx.getResFile(), tasks,
-                                                  ((CommonTree)ast.getChild(0)).toStringTree(),
+                                                  ((ASTNode)ast.getChild(0)).toStringTree(),
                                                   extended), this.conf));
   }
 }

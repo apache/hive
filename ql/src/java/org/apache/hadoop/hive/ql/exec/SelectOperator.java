@@ -87,4 +87,12 @@ public class SelectOperator extends Operator <selectDesc> implements Serializabl
     }
     forward(output, outputObjectInspector);
   }
+
+  /**
+   * @return the name of the operator
+   */
+  @Override
+  public String getName() {
+    return new String("SEL");
+  }
 }

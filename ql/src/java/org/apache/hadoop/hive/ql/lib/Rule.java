@@ -16,25 +16,25 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.parse;
+package org.apache.hadoop.hive.ql.lib;
 
-import java.io.Serializable;
-import java.util.Collection;
-
-import org.apache.hadoop.hive.ql.exec.Operator;
+import java.util.Stack;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
- * Interface for operator graph walker.
+ * Rule interface for Operators
+ * Used in operator dispatching to dispatch process/visitor functions for operators
  */
-public interface OpGraphWalker {
+public interface Rule {
 
   /**
-   * starting point for walking.
-   * 
-   * @param startOps list of starting operators
+   * @return the cost of the rule - the lower the cost, the better the rule matches
    * @throws SemanticException
    */
-  public abstract void startWalking(Collection<Operator<? extends Serializable>> startOps)
-      throws SemanticException;
+  public int cost(Stack<Node> stack) throws SemanticException;
 
+  /**
+   * @return the name of the rule - may be useful for debugging
+   */
+  public String getName();
 }

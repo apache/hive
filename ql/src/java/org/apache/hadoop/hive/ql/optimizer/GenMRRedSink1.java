@@ -18,54 +18,35 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Set;
-import java.util.Stack;
 import java.io.Serializable;
-import java.io.File;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
-import org.apache.hadoop.hive.ql.exec.TableScanOperator;
-import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.plan.mapredWork;
-import org.apache.hadoop.hive.ql.plan.reduceSinkDesc;
-import org.apache.hadoop.hive.ql.plan.tableDesc;
-import org.apache.hadoop.hive.ql.plan.partitionDesc;
-import org.apache.hadoop.hive.ql.plan.fileSinkDesc;
-import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.metadata.*;
-import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.parse.OperatorProcessor;
+import org.apache.hadoop.hive.ql.lib.Node;
+import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 
 /**
  * Processor for the rule - table scan followed by reduce sink
  */
-public class GenMRRedSink1 implements OperatorProcessor {
+public class GenMRRedSink1 implements NodeProcessor {
 
   public GenMRRedSink1() {
   }
 
   /**
    * Reduce Scan encountered 
-   * @param op the reduce sink operator encountered
+   * @param nd the reduce sink operator encountered
    * @param opProcCtx context
    */
-  public void process(ReduceSinkOperator op, OperatorProcessorContext opProcCtx) throws SemanticException {
+  public void process(Node nd, NodeProcessorCtx opProcCtx) throws SemanticException {
+    ReduceSinkOperator op = (ReduceSinkOperator)nd;
     GenMRProcContext ctx = (GenMRProcContext)opProcCtx;
 
     Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx.getMapCurrCtx();
@@ -100,13 +81,4 @@ public class GenMRRedSink1 implements OperatorProcessor {
     mapCurrCtx.put(op, new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrTopOp(), ctx.getCurrAliasId()));
   }
 
-  /**
-   * Reduce Scan encountered 
-   * @param op the reduce sink operator encountered
-   * @param opProcCtx context
-   */
-  public void process(Operator<? extends Serializable> op, OperatorProcessorContext opProcCtx) throws SemanticException {
-    // should never be called
-    assert false;
-  }
 }

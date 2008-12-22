@@ -23,32 +23,28 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
-import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.exec.OperatorFactory;
-import org.apache.hadoop.hive.ql.plan.mapredWork;
-import org.apache.hadoop.hive.ql.plan.reduceSinkDesc;
-import org.apache.hadoop.hive.ql.metadata.*;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.parse.OperatorProcessor;
+import org.apache.hadoop.hive.ql.lib.Node;
+import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 
 /**
  * Processor for the rule - reduce sink followed by reduce sink
  */
-public class GenMRRedSink2 implements OperatorProcessor {
+public class GenMRRedSink2 implements NodeProcessor {
 
   public GenMRRedSink2() {
   }
 
   /**
    * Reduce Scan encountered 
-   * @param op the reduce sink operator encountered
+   * @param nd the reduce sink operator encountered
    * @param opProcCtx context
    */
-  public void process(ReduceSinkOperator op, OperatorProcessorContext opProcCtx) throws SemanticException {
+  public void process(Node nd, NodeProcessorCtx opProcCtx) throws SemanticException {
+    ReduceSinkOperator op = (ReduceSinkOperator)nd;
     GenMRProcContext ctx = (GenMRProcContext)opProcCtx;
 
     Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx.getMapCurrCtx();
@@ -73,16 +69,6 @@ public class GenMRRedSink2 implements OperatorProcessor {
     }
 
     mapCurrCtx.put(op, new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrTopOp(), ctx.getCurrAliasId()));
-  }
-
-  /**
-   * Reduce Scan encountered 
-   * @param op the operator encountered
-   * @param opProcCtx context
-   */
-  public void process(Operator<? extends Serializable> op, OperatorProcessorContext opProcCtx) throws SemanticException {
-    // should never be called
-    assert false;
   }
 
 }

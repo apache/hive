@@ -16,25 +16,10 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.parse;
-
-import java.io.Serializable;
-import java.util.Stack;
-
-import org.apache.hadoop.hive.ql.exec.Operator;
+package org.apache.hadoop.hive.ql.lib;
 
 /**
- * Dispatcher interface for Operators
- * Used in operator graph walking to dispatch process/visitor functions for operators
+ * Operator Processor Context
  */
-public interface Dispatcher {
-
-  /**
-   * dispatcher function
-   * @param op operator to process
-   * @param Stack operator stack to process
-   * @throws SemanticException
-   */
-  public abstract void dispatch(Operator<? extends Serializable> op, Stack<Operator<? extends Serializable>> stack) 
-    throws SemanticException;
+public abstract class NodeProcessorCtx {
 }

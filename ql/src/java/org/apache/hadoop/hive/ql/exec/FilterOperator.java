@@ -73,4 +73,13 @@ public class FilterOperator extends Operator <filterDesc> implements Serializabl
           conditionInspectableObject.o.getClass().getName());
     }
   }
+
+  /**
+   * @return the name of the operator
+   */
+  @Override
+  public String getName() {
+    return new String("FIL");
+  }
+
 }

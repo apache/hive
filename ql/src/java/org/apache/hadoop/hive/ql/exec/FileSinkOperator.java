@@ -168,7 +168,7 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
   /**
    * @return the name of the operator
    */
-  public String getOperatorName() {
+  public String getName() {
     return new String("FS");
   }
 }

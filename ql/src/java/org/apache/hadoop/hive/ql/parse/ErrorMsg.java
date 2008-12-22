@@ -74,45 +74,45 @@ public enum ErrorMsg {
     this.mesg = mesg;
   }
 
-  private int getLine(CommonTree tree) {
+  private int getLine(ASTNode tree) {
     if (tree.getChildCount() == 0) {
       return tree.getToken().getLine();
     }
 
-    return getLine((CommonTree)tree.getChild(0));
+    return getLine((ASTNode)tree.getChild(0));
   }
 
-  private int getCharPositionInLine(CommonTree tree) {
+  private int getCharPositionInLine(ASTNode tree) {
     if (tree.getChildCount() == 0) {
       return tree.getToken().getCharPositionInLine();
     }
 
-    return getCharPositionInLine((CommonTree)tree.getChild(0));
+    return getCharPositionInLine((ASTNode)tree.getChild(0));
   }
 
   // Dirty hack as this will throw away spaces and other things - find a better way!
-  private String getText(CommonTree tree) {
+  private String getText(ASTNode tree) {
     if (tree.getChildCount() == 0) {
       return tree.getText();
     }
 
-    return getText((CommonTree)tree.getChild(tree.getChildCount() - 1));
+    return getText((ASTNode)tree.getChild(tree.getChildCount() - 1));
   }
 
-  String getMsg(CommonTree tree) {
+  String getMsg(ASTNode tree) {
     return "line " + getLine(tree) + ":" + getCharPositionInLine(tree) + " " + mesg + " " + getText(tree);
   }
 
   String getMsg(Tree tree) {
-    return getMsg((CommonTree)tree);
+    return getMsg((ASTNode)tree);
   }
 
-  String getMsg(CommonTree tree, String reason) {
+  String getMsg(ASTNode tree, String reason) {
     return "line " + getLine(tree) + ":" + getCharPositionInLine(tree) + " " + mesg + " " + getText(tree) + ": " + reason;
   }
 
   String getMsg(Tree tree, String reason) {
-    return getMsg((CommonTree)tree, reason);
+    return getMsg((ASTNode)tree, reason);
   }
 
   String getMsg() {

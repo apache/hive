@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.util.ArrayList;
-import org.antlr.runtime.tree.CommonTree;
 
 /**
  * 
@@ -50,7 +49,7 @@ public class TableSample {
    * the table does not have any clustering column, the usage of a table sample clause
    * without an ON part is disallowed by the compiler
    */
-  private ArrayList<CommonTree> exprs;
+  private ArrayList<ASTNode> exprs;
   
   /**
    * Flag to indicate that input files can be pruned
@@ -65,7 +64,7 @@ public class TableSample {
    * @param den The denominator
    * @param exprs The list of expressions in the ON part of the TABLESAMPLE clause
    */
-  public TableSample(String num, String den, ArrayList<CommonTree> exprs) {
+  public TableSample(String num, String den, ArrayList<ASTNode> exprs) {
     this.numerator = Integer.valueOf(num).intValue();
     this.denominator = Integer.valueOf(den).intValue();
     this.exprs = exprs;
@@ -110,9 +109,9 @@ public class TableSample {
   /**
    * Gets the ON part's expression list
    * 
-   * @return ArrayList<CommonTree>
+   * @return ArrayList<ASTNode>
    */
-  public ArrayList<CommonTree> getExprs() {
+  public ArrayList<ASTNode> getExprs() {
     return this.exprs;
   }
   
@@ -121,7 +120,7 @@ public class TableSample {
    * 
    * @param exprs The expression list
    */
-  public void setExprs(ArrayList<CommonTree> exprs) {
+  public void setExprs(ArrayList<ASTNode> exprs) {
     this.exprs = exprs;
   }
 

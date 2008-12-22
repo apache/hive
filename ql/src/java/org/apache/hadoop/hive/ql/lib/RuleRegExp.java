@@ -16,49 +16,45 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.parse;
+package org.apache.hadoop.hive.ql.lib;
 
 import java.util.Stack;
-import java.util.Iterator;
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
-import java.io.Serializable;
+import java.util.regex.Pattern;
 
-import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
- * Rule interface for Operators
- * Used in operator dispatching to dispatch process/visitor functions for operators
+ * Rule interface for Nodes
+ * Used in Node dispatching to dispatch process/visitor functions for Nodes
  */
 public class RuleRegExp implements Rule {
   
   private String    ruleName;
-  private String    regExp;
   private Pattern   pattern;
 
   /**
-   * The rule specified by the regular expression. Note that, the regular expression is specified in terms of operator
-   * name. For eg: TS.*RS -> means TableScan operator followed by anything any number of times followed by ReduceSink
+   * The rule specified by the regular expression. Note that, the regular expression is specified in terms of Node
+   * name. For eg: TS.*RS -> means TableScan Node followed by anything any number of times followed by ReduceSink
    * @param ruleName name of the rule
    * @param regExp regular expression for the rule
    **/
   public RuleRegExp(String ruleName, String regExp) {
     this.ruleName = ruleName;
-    this.regExp   = regExp;
     pattern       = Pattern.compile(regExp);
   }
 
   /**
    * This function returns the cost of the rule for the specified stack. Lower the cost, the better the rule is matched
-   * @param stacl operator stack encountered so far
+   * @param stack Node stack encountered so far
    * @return cost of the function
    * @throws SemanticException
    */
-  public int cost(Stack<Operator<? extends Serializable>> stack) throws SemanticException {
-    int numElems = stack.size();
+  public int cost(Stack<Node> stack) throws SemanticException {
+    int numElems = (stack != null ? stack.size() : 0);
     String name = new String();
     for (int pos = numElems - 1; pos >= 0; pos--) {
-      name = stack.get(pos).getOperatorName().concat(name);
+      name = stack.get(pos).getName() + "%" + name;
       Matcher m = pattern.matcher(name);
       if (m.matches()) 
         return m.group().length();
@@ -68,7 +64,7 @@ public class RuleRegExp implements Rule {
   }
 
   /**
-   * @return the name of the operator
+   * @return the name of the Node
    **/
   public String getName() {
     return ruleName;

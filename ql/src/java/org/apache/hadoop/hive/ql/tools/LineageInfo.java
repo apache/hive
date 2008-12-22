@@ -20,13 +20,21 @@
 package org.apache.hadoop.hive.ql.tools;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.TreeSet;
 
-import org.antlr.runtime.tree.CommonTree;
-import org.apache.hadoop.hive.ql.parse.ASTEvent;
-import org.apache.hadoop.hive.ql.parse.ASTEventProcessor;
-import org.apache.hadoop.hive.ql.parse.DefaultASTEventDispatcher;
-import org.apache.hadoop.hive.ql.parse.DefaultASTProcessor;
+import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
+import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
+import org.apache.hadoop.hive.ql.lib.Dispatcher;
+import org.apache.hadoop.hive.ql.lib.Node;
+import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.RuleRegExp;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
@@ -40,7 +48,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  *  Later we can expand to add join tables etc.
  *
  */
-public class LineageInfo  implements ASTEventProcessor {
+public class LineageInfo  implements NodeProcessor {
 
 	/**
 	 * Stores input tables in sql
@@ -66,44 +74,50 @@ public class LineageInfo  implements ASTEventProcessor {
 		return OutputTableList;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.apache.hadoop.hive.ql.parse.ASTEventProcessor#process(org.antlr.runtime.tree.CommonTree)
+	/**
+	 * Implements the process method for the NodeProcessor interface.
 	 */
-	public void process(CommonTree pt) {
+  @Override
+  public void process(Node nd, NodeProcessorCtx procCtx)
+      throws SemanticException {
+    ASTNode pt = (ASTNode)nd;
+    switch (pt.getToken().getType()) {
 
-		switch (pt.getToken().getType()) {
+    case HiveParser.TOK_DESTINATION: {
+      if (pt.getChild(0).getType() == HiveParser.TOK_TAB) {
+        OutputTableList.add(pt.getChild(0).getChild(0).getText()) ;
+      }
 
-		case HiveParser.TOK_DESTINATION: {
-			if (pt.getChild(0).getType() == HiveParser.TOK_TAB) {
-				OutputTableList.add(pt.getChild(0).getChild(0).getText())	;
-			}
-
-		}
-		break;
-		case HiveParser.TOK_FROM: {
-			CommonTree tabRef = (CommonTree) pt.getChild(0);
-			String table_name = tabRef.getChild(0).getText();
-			inputTableList.add(table_name);
-		}
-		break;
-		}
-	}
+    }
+    break;
+    case HiveParser.TOK_FROM: {
+      if (((ASTNode)pt.getChild(0)).getToken().getType() == HiveParser.TOK_TABREF) {
+        ASTNode tabRef = (ASTNode) pt.getChild(0);
+        String table_name = tabRef.getChild(0).getText();
+        inputTableList.add(table_name);
+      }
+    }
+    break;
+    }
+    
+  }
+  
 	/**
 	 *  parses given query and gets the lineage info.
 	 * @param query
 	 * @throws ParseException
 	 */
-	public void getLineageInfo(String query) throws ParseException
+	public void getLineageInfo(String query) throws ParseException, SemanticException
 	{
 
 		/*
 		 *  Get the AST tree
 		 */
 		ParseDriver pd = new ParseDriver();
-		CommonTree tree = pd.parse(query);
+		ASTNode tree = pd.parse(query);
 
 		while ((tree.getToken() == null) && (tree.getChildCount() > 0)) {
-			tree = (CommonTree) tree.getChild(0);
+			tree = (ASTNode) tree.getChild(0);
 		}
 
 		/*
@@ -111,14 +125,19 @@ public class LineageInfo  implements ASTEventProcessor {
 		 */
 		inputTableList.clear();
 		OutputTableList.clear();
-		DefaultASTEventDispatcher dispatcher = new DefaultASTEventDispatcher();
-		dispatcher.register(ASTEvent.SRC_TABLE, this);
-		dispatcher.register(ASTEvent.DESTINATION, this);
+    
+    // create a walker which walks the tree in a DFS manner while maintaining the operator stack. The dispatcher
+    // generates the plan from the operator tree
+    Map<Rule, NodeProcessor> rules = new LinkedHashMap<Rule, NodeProcessor>();
 
-		DefaultASTProcessor eventProcessor = new DefaultASTProcessor();
-
-		eventProcessor.setDispatcher(dispatcher);
-		eventProcessor.process(tree);
+    // The dispatcher fires the processor corresponding to the closest matching rule and passes the context along
+    Dispatcher disp = new DefaultRuleDispatcher(this, rules, null);
+    GraphWalker ogw = new DefaultGraphWalker(disp);
+   
+    // Create a list of topop nodes
+    ArrayList<Node> topNodes = new ArrayList<Node>();
+    topNodes.add(tree);
+    ogw.startWalking(topNodes);
 	}
 
 	public static void main(String[] args) throws IOException, ParseException,

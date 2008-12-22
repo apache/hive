@@ -22,42 +22,34 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
-
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
-import org.apache.hadoop.hive.ql.exec.ExtractOperator;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
-import org.apache.hadoop.hive.ql.exec.FilterOperator;
-import org.apache.hadoop.hive.ql.exec.GroupByOperator;
-import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
-import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.ScriptOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
-import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.parse.DefaultDispatcher;
-import org.apache.hadoop.hive.ql.parse.Dispatcher;
-import org.apache.hadoop.hive.ql.parse.DefaultOpGraphWalker;
-import org.apache.hadoop.hive.ql.parse.OpGraphWalker;
+import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
+import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
+import org.apache.hadoop.hive.ql.lib.Dispatcher;
+import org.apache.hadoop.hive.ql.lib.Node;
+import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.Rule;
+import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
-import org.apache.hadoop.hive.ql.parse.OperatorProcessor;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.QB;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.aggregationDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.groupByDesc;
-import org.apache.hadoop.hive.ql.plan.reduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.selectDesc;
-import org.apache.hadoop.hive.ql.parse.Rule;
 
 /**
  * Implementation of one of the rule-based optimization steps. ColumnPruner gets the current operator tree. The \
@@ -162,16 +154,31 @@ public class ColumnPruner implements Transform {
     boolean done = true;    
 
     // generate pruned column list for all relevant operators
-    ColumnPrunerProcessor cpp = new ColumnPrunerProcessor(opToParseCtxMap);
-    Dispatcher disp = new DefaultDispatcher(cpp);
-    OpGraphWalker ogw = new ColumnPrunerWalker(disp);
-    ogw.startWalking(pGraphContext.getTopOps().values());
+    ColumnPrunerProcCtx cppCtx = new ColumnPrunerProcCtx(opToParseCtxMap);
+    
+    // create a walker which walks the tree in a DFS manner while maintaining the operator stack. The dispatcher
+    // generates the plan from the operator tree
+    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    opRules.put(new RuleRegExp("R1", "FIL%"), ColumnPrunerProcFactory.getFilterProc());
+    opRules.put(new RuleRegExp("R2", "GBY%"), ColumnPrunerProcFactory.getGroupByProc());
+    opRules.put(new RuleRegExp("R3", "RS%"), ColumnPrunerProcFactory.getReduceSinkProc());
+    opRules.put(new RuleRegExp("R4", "SEL%"), ColumnPrunerProcFactory.getSelectProc());
+
+    // The dispatcher fires the processor corresponding to the closest matching rule and passes the context along
+    Dispatcher disp = new DefaultRuleDispatcher(ColumnPrunerProcFactory.getDefaultProc(), opRules, cppCtx);
+    GraphWalker ogw = new ColumnPrunerWalker(disp);
+   
+    // Create a list of topop nodes
+    ArrayList<Node> topNodes = new ArrayList<Node>();
+    topNodes.addAll(pGraphContext.getTopOps().values());
+    ogw.startWalking(topNodes);
 
     // create a new select operator if any of input tables' columns can be pruned
     for (String alias_id : pGraphContext.getTopOps().keySet()) {
       Operator<? extends Serializable> topOp = pGraphContext.getTopOps().get(alias_id);
 
-      List<String> colNames = cpp.getPrunedColList(topOp);
+      List<String> colNames = cppCtx.getPrunedColList(topOp);
+      
       // do we need to push a SELECT - all the columns of the table are not used
       if (pushSelect(topOp, colNames)) {
         topOp.setChildOperators(null);
@@ -198,157 +205,11 @@ public class ColumnPruner implements Transform {
     }	
     return pGraphContext;
 	}
-
-	/**
-	 * Column pruner processor
-	 **/
-	public static class ColumnPrunerProcessor implements OperatorProcessor {
-	  private  Map<Operator<? extends Serializable>,List<String>> prunedColLists = 
-	    new HashMap<Operator<? extends Serializable>, List<String>>();
-	  private HashMap<Operator<? extends Serializable>, OpParseContext> opToParseCtxMap;
-	    
-    public ColumnPrunerProcessor(HashMap<Operator<? extends Serializable>, OpParseContext> opToParseContextMap) {
-	    this.opToParseCtxMap = opToParseContextMap;
-	  }
-
-    /**
-     * @return the prunedColLists
-     */
-    public List<String> getPrunedColList(Operator<? extends Serializable> op) {
-      return prunedColLists.get(op);
-    }
-
-	  private List<String> genColLists(Operator<? extends Serializable> curOp) throws SemanticException {
-	    List<String> colList = new ArrayList<String>();
-	    if(curOp.getChildOperators() != null) {
-	      for(Operator<? extends Serializable> child: curOp.getChildOperators())
-	        colList = Utilities.mergeUniqElems(colList, prunedColLists.get(child));
-	    }
-	    return colList;
-	  }
-
-    public void process(FilterOperator op, OperatorProcessorContext ctx) throws SemanticException {
-	    exprNodeDesc condn = op.getConf().getPredicate();
-	    // get list of columns used in the filter
-	    List<String> cl = condn.getCols();
-	    // merge it with the downstream col list
-	    prunedColLists.put(op, Utilities.mergeUniqElems(genColLists(op), cl));
-	  }
-
-    public void process(GroupByOperator op, OperatorProcessorContext ctx) throws SemanticException {
-	    List<String> colLists = new ArrayList<String>();
-	    groupByDesc conf = op.getConf();
-	    ArrayList<exprNodeDesc> keys = conf.getKeys();
-	    for (exprNodeDesc key : keys)
-	      colLists = Utilities.mergeUniqElems(colLists, key.getCols());
-
-	    ArrayList<aggregationDesc> aggrs = conf.getAggregators();
-	    for (aggregationDesc aggr : aggrs) { 
-	      ArrayList<exprNodeDesc> params = aggr.getParameters();
-	      for (exprNodeDesc param : params) 
-	        colLists = Utilities.mergeUniqElems(colLists, param.getCols());
-	    }
-
-	    prunedColLists.put(op, colLists);
-	  }
-
-    public void process(Operator<? extends Serializable> op, OperatorProcessorContext ctx) throws SemanticException {
-	    prunedColLists.put(op, genColLists(op));
-	  }
-
-    public void process(ReduceSinkOperator op, OperatorProcessorContext ctx) throws SemanticException {
-	    RowResolver redSinkRR = opToParseCtxMap.get(op).getRR();
-	    reduceSinkDesc conf = op.getConf();
-	    List<Operator<? extends Serializable>> childOperators = op.getChildOperators();
-	    List<Operator<? extends Serializable>> parentOperators = op.getParentOperators();
-	    List<String> childColLists = new ArrayList<String>();
-
-	    for(Operator<? extends Serializable> child: childOperators)
-	      childColLists = Utilities.mergeUniqElems(childColLists, prunedColLists.get(child));
-
-	    List<String> colLists = new ArrayList<String>();
-	    ArrayList<exprNodeDesc> keys = conf.getKeyCols();
-	    for (exprNodeDesc key : keys)
-	      colLists = Utilities.mergeUniqElems(colLists, key.getCols());
-
-	    if ((childOperators.size() == 1) && (childOperators.get(0) instanceof JoinOperator)) {
-	      assert parentOperators.size() == 1;
-	      Operator<? extends Serializable> par = parentOperators.get(0);
-	      RowResolver parRR = opToParseCtxMap.get(par).getRR();
-	      RowResolver childRR = opToParseCtxMap.get(childOperators.get(0)).getRR();
-
-	      for (String childCol : childColLists) {
-	        String [] nm = childRR.reverseLookup(childCol);
-	        ColumnInfo cInfo = redSinkRR.get(nm[0],nm[1]);
-	        if (cInfo != null) {
-	          cInfo = parRR.get(nm[0], nm[1]);
-	          if (!colLists.contains(cInfo.getInternalName()))
-	            colLists.add(cInfo.getInternalName());
-	        }
-	      }
-	    }
-	    else {
-	      // Reduce Sink contains the columns needed - no need to aggregate from children
-	      ArrayList<exprNodeDesc> vals = conf.getValueCols();
-	      for (exprNodeDesc val : vals)
-	        colLists = Utilities.mergeUniqElems(colLists, val.getCols());
-	    }
-
-	    prunedColLists.put(op, colLists);
-	  }
-
-    public void process(SelectOperator op, OperatorProcessorContext ctx) throws SemanticException {
-	    List<String> cols = new ArrayList<String>();
-
-	    if(op.getChildOperators() != null) {
-	      for(Operator<? extends Serializable> child: op.getChildOperators()) {
-	        // If one of my children is a FileSink or Script, return all columns.
-	        // Without this break, a bug in ReduceSink to Extract edge column pruning will manifest
-	        // which should be fixed before remove this
-	        if ((child instanceof FileSinkOperator) || (child instanceof ScriptOperator)) {
-	          prunedColLists.put(op, getColsFromSelectExpr(op));
-	          return;
-	        }
-	        cols = Utilities.mergeUniqElems(cols, prunedColLists.get(child));
-	      }
-	    }
-
-	    selectDesc conf = op.getConf();
-	    if (conf.isSelectStar() && !cols.isEmpty()) {
-	      // The input to the select does not matter. Go over the expressions 
-	      // and return the ones which have a marked column
-	      prunedColLists.put(op, getSelectColsFromChildren(op, cols));
-	      return;
-	    }
-	    prunedColLists.put(op, getColsFromSelectExpr(op));
-	  }
-
-	  private List<String> getColsFromSelectExpr(SelectOperator op) {
-	    List<String> cols = new ArrayList<String>();
-	    selectDesc conf = op.getConf();
-	    ArrayList<exprNodeDesc> exprList = conf.getColList();
-	    for (exprNodeDesc expr : exprList)
-	      cols = Utilities.mergeUniqElems(cols, expr.getCols());
-	    return cols;
-	  }
-
-	  private List<String> getSelectColsFromChildren(SelectOperator op, List<String> colList) {
-	    List<String> cols = new ArrayList<String>();
-	    selectDesc conf = op.getConf();
-	    ArrayList<exprNodeDesc> selectExprs = conf.getColList();
-
-	    for (String col : colList) {
-	      // col is the internal name i.e. position within the expression list
-	      exprNodeDesc expr = selectExprs.get(Integer.parseInt(col));
-	      cols = Utilities.mergeUniqElems(cols, expr.getCols());
-	    }
-	    return cols;
-	  }
-	}
+	
 	/**
 	 * Walks the op tree in post order fashion (skips selects with file sink or script op children)
 	 */
-	public static class ColumnPrunerWalker extends DefaultOpGraphWalker {
+	public static class ColumnPrunerWalker extends DefaultGraphWalker {
 
 	  public ColumnPrunerWalker(Dispatcher disp) {
       super(disp);
@@ -358,30 +219,33 @@ public class ColumnPruner implements Transform {
 	   * Walk the given operator
 	   */
 	  @Override
-	  public void walk(Operator<? extends Serializable> op) throws SemanticException {
+	  public void walk(Node nd) throws SemanticException {
 	    boolean walkChildren = true;
+	    opStack.push(nd);
 
 	    // no need to go further down for a select op with a file sink or script child
 	    // since all cols are needed for these ops
-	    if(op instanceof SelectOperator) {
-	      for(Operator<? extends Serializable> child: op.getChildOperators()) {
+	    if(nd instanceof SelectOperator) {
+	      for(Node child: nd.getChildren()) {
 	        if ((child instanceof FileSinkOperator) || (child instanceof ScriptOperator))
 	          walkChildren = false;
 	      }
 	    }
 
-	    if((op.getChildOperators() == null) 
-	        || getDispatchedList().containsAll(op.getChildOperators()) 
+	    if((nd.getChildren() == null) 
+	        || getDispatchedList().containsAll(nd.getChildren()) 
 	        || !walkChildren) {
 	      // all children are done or no need to walk the children
-	      dispatch(op, null);
+	      dispatch(nd, opStack);
+	      opStack.pop();
 	      return;
 	    }
 	    // move all the children to the front of queue
-	    getToWalk().removeAll(op.getChildOperators());
-	    getToWalk().addAll(0, op.getChildOperators());
+	    getToWalk().removeAll(nd.getChildren());
+	    getToWalk().addAll(0, nd.getChildren());
 	    // add self to the end of the queue
-	    getToWalk().add(op);
+	    getToWalk().add(nd);
+	    opStack.pop();
 	  }
 	}
 }

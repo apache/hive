@@ -23,27 +23,29 @@ import java.util.HashMap;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.parse.OperatorProcessor;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.plan.mapredWork;
-import org.apache.hadoop.hive.ql.metadata.*;
+import org.apache.hadoop.hive.ql.lib.Node;
+import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
  * Processor for the rule - table scan followed by reduce sink
  */
-public class GenMRFileSink1 implements OperatorProcessor {
+public class GenMRFileSink1 implements NodeProcessor {
 
   public GenMRFileSink1() {
   }
 
   /**
    * File Sink Operator encountered 
-   * @param op the file sink operator encountered
+   * @param nd the file sink operator encountered
    * @param opProcCtx context
    */
-  public void process(FileSinkOperator op, OperatorProcessorContext opProcCtx) throws SemanticException {
+  public void process(Node nd, NodeProcessorCtx opProcCtx) throws SemanticException {
+    FileSinkOperator op = (FileSinkOperator)nd;
     GenMRProcContext ctx = (GenMRProcContext)opProcCtx;
     boolean ret = false;
 
@@ -80,14 +82,5 @@ public class GenMRFileSink1 implements OperatorProcessor {
           currTask.removeDependentTask(mvTask);
       }
     }
-  }
-
-  /**
-   * @param op the operator encountered
-   * @param opProcCtx context
-   */
-  public void process(Operator<? extends Serializable> op, OperatorProcessorContext opProcCtx) throws SemanticException {
-    // should never be called
-    assert false;
   }
 }

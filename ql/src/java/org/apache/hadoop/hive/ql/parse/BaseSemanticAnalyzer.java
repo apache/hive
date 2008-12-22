@@ -25,8 +25,6 @@ import java.io.UnsupportedEncodingException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.antlr.runtime.tree.CommonTree;
-
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -66,9 +64,9 @@ public abstract class BaseSemanticAnalyzer {
     }
   }
 
-  public abstract void analyzeInternal(CommonTree ast, Context ctx) throws SemanticException;
+  public abstract void analyzeInternal(ASTNode ast, Context ctx) throws SemanticException;
 
-  public void analyze(CommonTree ast, Context ctx) throws SemanticException {
+  public void analyze(ASTNode ast, Context ctx) throws SemanticException {
     scratchDir = ctx.getScratchDir();
     analyzeInternal(ast, ctx);
   }
@@ -241,7 +239,7 @@ public abstract class BaseSemanticAnalyzer {
     public HashMap<String, String> partSpec;
     public Partition partHandle;
 
-    public tableSpec(Hive db, CommonTree ast, boolean forceCreatePartition) throws SemanticException {
+    public tableSpec(Hive db, ASTNode ast, boolean forceCreatePartition) throws SemanticException {
 
       assert(ast.getToken().getType() == HiveParser.TOK_TAB);
       int childIndex = 0;
@@ -254,10 +252,10 @@ public abstract class BaseSemanticAnalyzer {
         // get partition metadata if partition specified
         if (ast.getChildCount() == 2) {
           childIndex = 1;
-          CommonTree partspec = (CommonTree) ast.getChild(1);
+          ASTNode partspec = (ASTNode) ast.getChild(1);
           partSpec = new LinkedHashMap<String, String>();
           for (int i = 0; i < partspec.getChildCount(); ++i) {
-            CommonTree partspec_val = (CommonTree) partspec.getChild(i);
+            ASTNode partspec_val = (ASTNode) partspec.getChild(i);
             String val = stripQuotes(partspec_val.getChild(1).getText());
             partSpec.put(unescapeIdentifier(partspec_val.getChild(0).getText()), val);
           }

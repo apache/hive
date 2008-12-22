@@ -18,21 +18,17 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import java.io.Serializable;
-import java.util.List;
 import java.util.Stack;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-
-import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import java.util.Vector;
 import org.apache.hadoop.hive.ql.exec.*;
+import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
+import org.apache.hadoop.hive.ql.lib.Dispatcher;
+import org.apache.hadoop.hive.ql.lib.Node;
 
 /**
  * Walks the operator tree in pre order fashion
  */
-public class GenMapRedWalker extends DefaultOpGraphWalker {
-  private Stack<Operator<? extends Serializable>> opStack;
+public class GenMapRedWalker extends DefaultGraphWalker {
 
   /**
    * constructor of the walker - the dispatcher is passed
@@ -40,30 +36,29 @@ public class GenMapRedWalker extends DefaultOpGraphWalker {
    */
   public GenMapRedWalker(Dispatcher disp) {
     super(disp);
-    opStack = new Stack<Operator<? extends Serializable>>();
   }
   
   /**
    * Walk the given operator
-   * @param op operator being walked
+   * @param nd operator being walked
    */
   @Override
-  public void walk(Operator<? extends Serializable> op) throws SemanticException {
-    List<Operator<? extends Serializable>> children = op.getChildOperators();
+  public void walk(Node nd) throws SemanticException {
+    Vector<Node> children = nd.getChildren();
     
     // maintain the stack of operators encountered
-    opStack.push(op);
-    dispatch(op, opStack);
+    opStack.push(nd);
+    dispatch(nd, opStack);
 
     // kids of reduce sink operator need not be traversed again
     if ((children == null) ||
-        ((op instanceof ReduceSinkOperator) && (getDispatchedList().containsAll(children)))) {
+        ((nd instanceof ReduceSinkOperator) && (getDispatchedList().containsAll(children)))) {
       opStack.pop();
       return;
     }
 
     // move all the children to the front of queue
-    for (Operator<? extends Serializable> ch : children)
+    for (Node ch : children)
       walk(ch);
 
     // done with this operator

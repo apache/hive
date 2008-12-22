@@ -26,6 +26,9 @@ Trunk (unreleased changes)
 
   IMPROVEMENTS
 
+    HIVE-186. Refactor code to use a single graph, nodeprocessor, dispatcher
+    and rule abstraction. (Ashish Thusoo via zshao)
+
     HIVE-192. Add database name parameter to getTable and dropTable.
     (Johan Oskarsson via zshao)
 

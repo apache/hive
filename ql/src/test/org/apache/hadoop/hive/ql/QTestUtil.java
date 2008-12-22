@@ -35,7 +35,6 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.antlr.runtime.tree.CommonTree;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -48,6 +47,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities.StreamPrinter;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
@@ -463,7 +463,7 @@ public class QTestUtil {
     return exitVal;
   }
 
-  public int checkParseResults(String tname, CommonTree tree) throws Exception {
+  public int checkParseResults(String tname, ASTNode tree) throws Exception {
 
     if (tree != null) {
       File parseDir = new File(outDir, "parse");
@@ -663,18 +663,18 @@ public class QTestUtil {
     return exitVal;
   }
 
-  public CommonTree parseQuery(String tname) throws Exception {
+  public ASTNode parseQuery(String tname) throws Exception {
 
     return pd.parse(qMap.get(tname));
   }
 
-  public List<Task<? extends Serializable>> analyzeAST(CommonTree ast) throws Exception {
+  public List<Task<? extends Serializable>> analyzeAST(ASTNode ast) throws Exception {
 
     // Do semantic analysis and plan generation
     Context ctx = new Context(conf);
     ctx.makeScratchDir();
     while((ast.getToken() == null) && (ast.getChildCount() > 0)) {
-      ast = (CommonTree)ast.getChild(0);
+      ast = (ASTNode)ast.getChild(0);
     }
     
     sem.analyze(ast, ctx);

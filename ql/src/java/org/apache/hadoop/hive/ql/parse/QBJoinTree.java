@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.util.Vector;
 
-import org.antlr.runtime.tree.CommonTree;
-
 /**
  * Internal representation of the join tree
  *
@@ -38,10 +36,10 @@ public class QBJoinTree
   private boolean       noOuterJoin;
   
   // join conditions
-  private Vector<Vector<CommonTree>> expressions;
+  private Vector<Vector<ASTNode>> expressions;
 
   // filters
-  private Vector<Vector<CommonTree>> filters;
+  private Vector<Vector<ASTNode>> filters;
   
   /**
    * constructor 
@@ -80,11 +78,11 @@ public class QBJoinTree
     this.leftAliases = leftAliases;
   }
 
-  public Vector<Vector<CommonTree>> getExpressions() {
+  public Vector<Vector<ASTNode>> getExpressions() {
     return expressions;
   }
 
-  public void setExpressions(Vector<Vector<CommonTree>> expressions) {
+  public void setExpressions(Vector<Vector<ASTNode>> expressions) {
     this.expressions = expressions;
   }
 
@@ -131,14 +129,14 @@ public class QBJoinTree
 	/**
 	 * @return the filters
 	 */
-	public Vector<Vector<CommonTree>> getFilters() {
+	public Vector<Vector<ASTNode>> getFilters() {
 		return filters;
 	}
 
 	/**
 	 * @param filters the filters to set
 	 */
-	public void setFilters(Vector<Vector<CommonTree>> filters) {
+	public void setFilters(Vector<Vector<ASTNode>> filters) {
 		this.filters = filters;
 	}
 

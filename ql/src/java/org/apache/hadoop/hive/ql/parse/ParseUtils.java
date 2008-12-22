@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import org.antlr.runtime.tree.CommonTree;
-
 /**
  * Library of utility functions used in the parse code
  *
@@ -32,7 +30,7 @@ public class ParseUtils {
 	 * @param node The parse tree node
 	 * @return boolean
 	 */
-	public static boolean isJoinToken(CommonTree node) {
+	public static boolean isJoinToken(ASTNode node) {
 		if ((node.getToken().getType() == HiveParser.TOK_JOIN)
 				|| (node.getToken().getType() == HiveParser.TOK_LEFTOUTERJOIN)
 				|| (node.getToken().getType() == HiveParser.TOK_RIGHTOUTERJOIN)

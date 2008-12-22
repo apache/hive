@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.tool;
 
 import java.util.TreeSet;
-import java.util.Vector;
 
 import org.apache.hadoop.hive.ql.tools.LineageInfo;
 
@@ -27,6 +26,22 @@ import junit.framework.TestCase;
 
 public class TestLineageInfo extends TestCase {
 
+  /**
+   * Checks whether the test outputs match the expected outputs
+   * @param lep The LineageInfo extracted from the test
+   * @param i The set of input tables
+   * @param o The set of output tables
+   */
+  private void checkOutput(LineageInfo lep, TreeSet<String> i, TreeSet<String> o) {
+    
+    if ( !i.equals(lep.getInputTableList())){
+      fail("Input table not same");
+    }
+    if (! o.equals(lep.getOutputTableList())){
+      fail("Output table not same");
+    }    
+  }
+  
 	public void testSimpleQuery(){
 		LineageInfo lep = new LineageInfo();
 		try{
@@ -36,19 +51,12 @@ public class TestLineageInfo extends TestCase {
 			TreeSet<String> o = new TreeSet<String>();
 			 i.add("srcpart");
 			 o.add("dest1");
-			 if ( !i.equals(lep.getInputTableList())){
-				 fail("Input table not same");
-			 }
-			 if (! o.equals(lep.getOutputTableList())){
-				 fail("Output table not same");
-			 }
-						 
+			 checkOutput(lep, i, o);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 			fail("Failed");
 		}
-					
 	}
 	
 	public void testSimpleQuery2(){
@@ -59,21 +67,13 @@ public class TestLineageInfo extends TestCase {
 					);
 			TreeSet<String> i = new TreeSet<String>();
 			TreeSet<String> o = new TreeSet<String>();
-			 i.add("src");
-			 
-			 if ( !i.equals(lep.getInputTableList())){
-				 fail("Input table not same");
-			 }
-			 if (! o.equals(lep.getOutputTableList())){
-				 fail("Output table not same");
-			 }
-			 
+			i.add("src");
+			checkOutput(lep, i, o);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 			fail("Failed");
-		}
-					
+		}			
 	}
 	
 	public void testSimpleQuery3(){
@@ -84,21 +84,14 @@ public class TestLineageInfo extends TestCase {
 					);
 			TreeSet<String> i = new TreeSet<String>();
 			TreeSet<String> o = new TreeSet<String>();
-			 i.add("src");
-			 i.add("src1");
-			 if ( !i.equals(lep.getInputTableList())){
-				 fail("Input table not same");
-			 }
-			 if (! o.equals(lep.getOutputTableList())){
-				 fail("Output table not same");
-			 }
-			 
+			i.add("src");
+			i.add("src1");
+			checkOutput(lep, i, o);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 			fail("Failed");
 		}
-			
 	}
 	
 	public void testSimpleQuery4(){
@@ -108,14 +101,9 @@ public class TestLineageInfo extends TestCase {
 					"FROM ( FROM ( FROM src1 src1 SELECT src1.key AS c1, src1.value AS c2 WHERE src1.key > 10 and src1.key < 20) a RIGHT OUTER JOIN ( FROM src2 src2 SELECT src2.key AS c3, src2.value AS c4 WHERE src2.key > 15 and src2.key < 25) b ON (a.c1 = b.c3) SELECT a.c1 AS c1, a.c2 AS c2, b.c3 AS c3, b.c4 AS c4) c SELECT c.c1, c.c2, c.c3, c.c4"					);
 			TreeSet<String> i = new TreeSet<String>();
 			TreeSet<String> o = new TreeSet<String>();
-			 i.add("src1");
-			 i.add("src2");
-			 if ( !i.equals(lep.getInputTableList())){
-				 fail("Input table not same");
-			 }
-			 if (! o.equals(lep.getOutputTableList())){
-				 fail("Output table not same");
-			 } 
+			i.add("src1");
+			i.add("src2");
+			checkOutput(lep, i, o);
 		}
 		catch (Exception e) {
 			e.printStackTrace();

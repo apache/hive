@@ -23,26 +23,28 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.OperatorProcessor;
+import org.apache.hadoop.hive.ql.lib.Node;
+import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 
 /**
  * Processor for the rule - no specific rule fired
  */
-public class GenMROperator implements OperatorProcessor {
+public class GenMROperator implements NodeProcessor {
 
   public GenMROperator() {
   }
 
   /**
    * Reduce Scan encountered 
-   * @param op the reduce sink operator encountered
-   * @param opProcCtx context
+   * @param nd the reduce sink operator encountered
+   * @param procCtx context
    */
-  public void process(Operator<? extends Serializable> op, OperatorProcessorContext opProcCtx) throws SemanticException {
-    GenMRProcContext ctx = (GenMRProcContext)opProcCtx;
+  public void process(Node nd, NodeProcessorCtx procCtx) throws SemanticException {
+    GenMRProcContext ctx = (GenMRProcContext)procCtx;
 
     Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx.getMapCurrCtx();
-    mapCurrCtx.put(op, new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrTopOp(), ctx.getCurrAliasId()));
+    mapCurrCtx.put((Operator<? extends Serializable>)nd, new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrTopOp(), ctx.getCurrAliasId()));
   }
 }

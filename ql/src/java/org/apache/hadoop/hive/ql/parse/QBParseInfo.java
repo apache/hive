@@ -33,86 +33,86 @@ public class QBParseInfo {
 
   private boolean isSubQ;
   private String alias;
-  private CommonTree joinExpr;
-  private HashMap<String, CommonTree> aliasToSrc;
-  private HashMap<String, CommonTree> nameToDest;
+  private ASTNode joinExpr;
+  private HashMap<String, ASTNode> aliasToSrc;
+  private HashMap<String, ASTNode> nameToDest;
   private HashMap<String, TableSample> nameToSample;
-  private HashMap<String, CommonTree> destToSelExpr;
-  private HashMap<String, CommonTree> destToWhereExpr;
-  private HashMap<String, CommonTree> destToGroupby;
+  private HashMap<String, ASTNode> destToSelExpr;
+  private HashMap<String, ASTNode> destToWhereExpr;
+  private HashMap<String, ASTNode> destToGroupby;
   /**
    * ClusterBy is a short name for both DistributeBy and SortBy.  
    */
-  private HashMap<String, CommonTree> destToClusterby;
+  private HashMap<String, ASTNode> destToClusterby;
   /**
    * DistributeBy controls the hashcode of the row, which determines which reducer
    * the rows will go to. 
    */
-  private HashMap<String, CommonTree> destToDistributeby;
+  private HashMap<String, ASTNode> destToDistributeby;
   /**
    * SortBy controls the reduce keys, which affects the order of rows 
    * that the reducer receives. 
    */
-  private HashMap<String, CommonTree> destToSortby;
+  private HashMap<String, ASTNode> destToSortby;
   private HashMap<String, Integer>    destToLimit;
   private int outerQueryLimit;
 
   // used by GroupBy
-  private HashMap<String, HashMap<String, CommonTree> > destToAggregationExprs;
-  private HashMap<String, CommonTree> destToDistinctFuncExpr;
+  private HashMap<String, HashMap<String, ASTNode> > destToAggregationExprs;
+  private HashMap<String, ASTNode> destToDistinctFuncExpr;
 
   @SuppressWarnings("unused")
   private static final Log LOG = LogFactory.getLog(QBParseInfo.class.getName());
   
   public QBParseInfo(String alias, boolean isSubQ) {
-    this.aliasToSrc = new HashMap<String, CommonTree>();
-    this.nameToDest = new HashMap<String, CommonTree>();
+    this.aliasToSrc = new HashMap<String, ASTNode>();
+    this.nameToDest = new HashMap<String, ASTNode>();
     this.nameToSample = new HashMap<String, TableSample>();
-    this.destToSelExpr = new HashMap<String, CommonTree>();
-    this.destToWhereExpr = new HashMap<String, CommonTree>();
-    this.destToGroupby = new HashMap<String, CommonTree>();
-    this.destToClusterby = new HashMap<String, CommonTree>();
-    this.destToDistributeby = new HashMap<String, CommonTree>();
-    this.destToSortby = new HashMap<String, CommonTree>();
+    this.destToSelExpr = new HashMap<String, ASTNode>();
+    this.destToWhereExpr = new HashMap<String, ASTNode>();
+    this.destToGroupby = new HashMap<String, ASTNode>();
+    this.destToClusterby = new HashMap<String, ASTNode>();
+    this.destToDistributeby = new HashMap<String, ASTNode>();
+    this.destToSortby = new HashMap<String, ASTNode>();
     this.destToLimit = new HashMap<String, Integer>();
     
-    this.destToAggregationExprs = new HashMap<String, HashMap<String, CommonTree> >();
-    this.destToDistinctFuncExpr = new HashMap<String, CommonTree>();
+    this.destToAggregationExprs = new HashMap<String, HashMap<String, ASTNode> >();
+    this.destToDistinctFuncExpr = new HashMap<String, ASTNode>();
     
     this.alias = alias;
     this.isSubQ = isSubQ;
     this.outerQueryLimit = -1;
   }
 
-  public void setAggregationExprsForClause(String clause, HashMap<String, CommonTree> aggregationTrees) {
+  public void setAggregationExprsForClause(String clause, HashMap<String, ASTNode> aggregationTrees) {
     this.destToAggregationExprs.put(clause, aggregationTrees);
   }
 
-  public HashMap<String, CommonTree> getAggregationExprsForClause(String clause) {
+  public HashMap<String, ASTNode> getAggregationExprsForClause(String clause) {
     return this.destToAggregationExprs.get(clause);
   }
 
-  public void setDistinctFuncExprForClause(String clause, CommonTree ast) {
+  public void setDistinctFuncExprForClause(String clause, ASTNode ast) {
     this.destToDistinctFuncExpr.put(clause, ast);
   }
   
-  public CommonTree getDistinctFuncExprForClause(String clause) {
+  public ASTNode getDistinctFuncExprForClause(String clause) {
     return this.destToDistinctFuncExpr.get(clause);
   }
   
-  public void setSelExprForClause(String clause, CommonTree ast) {
+  public void setSelExprForClause(String clause, ASTNode ast) {
     this.destToSelExpr.put(clause, ast);
   }
 
-  public void setWhrExprForClause(String clause, CommonTree ast) {
+  public void setWhrExprForClause(String clause, ASTNode ast) {
     this.destToWhereExpr.put(clause, ast);
   }
 
-  public void setGroupByExprForClause(String clause, CommonTree ast) {
+  public void setGroupByExprForClause(String clause, ASTNode ast) {
     this.destToGroupby.put(clause, ast);
   }
 
-  public void setDestForClause(String clause, CommonTree ast) {
+  public void setDestForClause(String clause, ASTNode ast) {
     this.nameToDest.put(clause, ast);
   }
 
@@ -121,7 +121,7 @@ public class QBParseInfo {
    * @param clause the name of the clause
    * @param ast the abstract syntax tree
    */
-  public void setClusterByExprForClause(String clause, CommonTree ast) {
+  public void setClusterByExprForClause(String clause, ASTNode ast) {
     this.destToClusterby.put(clause, ast);
   }
 
@@ -130,7 +130,7 @@ public class QBParseInfo {
    * @param clause the name of the clause
    * @param ast the abstract syntax tree
    */
-  public void setDistributeByExprForClause(String clause, CommonTree ast) {
+  public void setDistributeByExprForClause(String clause, ASTNode ast) {
     this.destToDistributeby.put(clause, ast);
   }
 
@@ -139,11 +139,11 @@ public class QBParseInfo {
    * @param clause the name of the clause
    * @param ast the abstract syntax tree
    */
-  public void setSortByExprForClause(String clause, CommonTree ast) {
+  public void setSortByExprForClause(String clause, ASTNode ast) {
     this.destToSortby.put(clause, ast);
   }
 
-  public void setSrcForAlias(String alias, CommonTree ast) {
+  public void setSrcForAlias(String alias, ASTNode ast) {
     this.aliasToSrc.put(alias.toLowerCase(), ast);
   }
 
@@ -155,23 +155,23 @@ public class QBParseInfo {
     return this.nameToDest.keySet();
   }
 
-  public CommonTree getDestForClause(String clause) {
+  public ASTNode getDestForClause(String clause) {
     return this.nameToDest.get(clause);
   }
 
-  public CommonTree getWhrForClause(String clause) {
+  public ASTNode getWhrForClause(String clause) {
     return this.destToWhereExpr.get(clause);
   }
 
-  public HashMap<String, CommonTree> getDestToWhereExpr() {
+  public HashMap<String, ASTNode> getDestToWhereExpr() {
     return destToWhereExpr;
   }
 
-  public CommonTree getGroupByForClause(String clause) {
+  public ASTNode getGroupByForClause(String clause) {
     return this.destToGroupby.get(clause);
   }
 
-  public CommonTree getSelForClause(String clause) {
+  public ASTNode getSelForClause(String clause) {
     return this.destToSelExpr.get(clause);
   }
 
@@ -180,7 +180,7 @@ public class QBParseInfo {
    * @param clause the name of the clause
    * @return the abstract syntax tree
    */
-  public CommonTree getClusterByForClause(String clause) {
+  public ASTNode getClusterByForClause(String clause) {
     return this.destToClusterby.get(clause);
   }
 
@@ -189,7 +189,7 @@ public class QBParseInfo {
    * @param clause the name of the clause
    * @return the abstract syntax tree
    */
-  public CommonTree getDistributeByForClause(String clause) {
+  public ASTNode getDistributeByForClause(String clause) {
     return this.destToDistributeby.get(clause);
   }
 
@@ -198,11 +198,11 @@ public class QBParseInfo {
    * @param clause the name of the clause
    * @return the abstract syntax tree
    */
-  public CommonTree getSortByForClause(String clause) {
+  public ASTNode getSortByForClause(String clause) {
     return this.destToSortby.get(clause);
   }
 
-  public CommonTree getSrcForAlias(String alias) {
+  public ASTNode getSrcForAlias(String alias) {
     return this.aliasToSrc.get(alias.toLowerCase());
   }
 
@@ -214,11 +214,11 @@ public class QBParseInfo {
     return this.isSubQ;
   }
 
-  public CommonTree getJoinExpr() {
+  public ASTNode getJoinExpr() {
     return this.joinExpr;
   }
 
-  public void setJoinExpr(CommonTree joinExpr) {
+  public void setJoinExpr(ASTNode joinExpr) {
     this.joinExpr = joinExpr;
   }
 
@@ -260,40 +260,40 @@ public class QBParseInfo {
        (!destToClusterby.isEmpty()))
       return false;
     
-    Iterator<Map.Entry<String, HashMap<String, CommonTree>>> aggrIter = destToAggregationExprs.entrySet().iterator();
+    Iterator<Map.Entry<String, HashMap<String, ASTNode>>> aggrIter = destToAggregationExprs.entrySet().iterator();
     while (aggrIter.hasNext()) {
-      HashMap<String, CommonTree> h = aggrIter.next().getValue();
+      HashMap<String, ASTNode> h = aggrIter.next().getValue();
       if ((h != null) && (!h.isEmpty()))
         return false;
     }
       	
     if (!destToDistinctFuncExpr.isEmpty()) {
-      Iterator<Map.Entry<String, CommonTree>> distn = destToDistinctFuncExpr.entrySet().iterator();
+      Iterator<Map.Entry<String, ASTNode>> distn = destToDistinctFuncExpr.entrySet().iterator();
       while (distn.hasNext()) {
-        CommonTree ct = distn.next().getValue();
+        ASTNode ct = distn.next().getValue();
         if (ct != null) 
           return false;
       }
     }
         
-    Iterator<Map.Entry<String, CommonTree>> iter = nameToDest.entrySet().iterator();
+    Iterator<Map.Entry<String, ASTNode>> iter = nameToDest.entrySet().iterator();
     while (iter.hasNext()) {
-      Map.Entry<String, CommonTree> entry = iter.next();
-      CommonTree v = entry.getValue();
-      if (!(((CommonTree)v.getChild(0)).getToken().getType() == HiveParser.TOK_TMP_FILE))
+      Map.Entry<String, ASTNode> entry = iter.next();
+      ASTNode v = entry.getValue();
+      if (!(((ASTNode)v.getChild(0)).getToken().getType() == HiveParser.TOK_TMP_FILE))
         return false;
     }
       	
     iter = destToSelExpr.entrySet().iterator();
     while (iter.hasNext()) {
-      Map.Entry<String, CommonTree> entry = iter.next();
-      CommonTree selExprList = entry.getValue();
+      Map.Entry<String, ASTNode> entry = iter.next();
+      ASTNode selExprList = entry.getValue();
       // Iterate over the selects
       for (int i = 0; i < selExprList.getChildCount(); ++i) {
         
         // list of the columns
-        CommonTree selExpr = (CommonTree) selExprList.getChild(i);
-        CommonTree sel = (CommonTree)selExpr.getChild(0);
+        ASTNode selExpr = (ASTNode) selExprList.getChild(i);
+        ASTNode sel = (ASTNode)selExpr.getChild(0);
         
         if (sel.getToken().getType() != HiveParser.TOK_ALLCOLREF)
           return false;

@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileStatus;
@@ -156,7 +155,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @Override
-  public void analyzeInternal(CommonTree ast, Context ctx) throws SemanticException {
+  public void analyzeInternal(ASTNode ast, Context ctx) throws SemanticException {
     isLocal = isOverWrite = false;
     Tree from_t = ast.getChild(0);
     Tree table_t = ast.getChild(1);
@@ -185,7 +184,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // initialize destination table/partition
-    tableSpec ts = new tableSpec(db, (CommonTree) table_t, true);
+    tableSpec ts = new tableSpec(db, (ASTNode) table_t, true);
     URI toURI = (ts.partHandle != null) ? ts.partHandle.getDataLocation() : ts.tableHandle.getDataLocation();
 
     // make sure the arguments make sense

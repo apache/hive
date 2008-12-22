@@ -245,12 +245,32 @@ public class ParseDriver {
 
   }
 
-  public CommonTree parse(String command) throws ParseException {
+  /**
+   * Tree adaptor for making antlr return ASTNodes instead of CommonTree nodes
+   * so that the graph walking algorithms and the rules framework defined in
+   * ql.lib can be used with the AST Nodes.
+   */
+  static final TreeAdaptor adaptor = new CommonTreeAdaptor() {
+    /**
+     * Creates an ASTNode for the given token. The ASTNode is a wrapper around antlr's
+     * CommonTree class that implements the Node interface.
+     * 
+     * @param payload The token.
+     * @return Object (which is actually an ASTNode) for the token.
+     */
+    @Override
+    public Object create(Token payload) {
+      return new ASTNode(payload);
+    }
+  };
+  
+  public ASTNode parse(String command) throws ParseException {
     LOG.info("Parsing command: " + command);
       
     HiveLexerX lexer = new HiveLexerX(new ANTLRNoCaseStringStream(command));
     TokenStream tokens = new TokenRewriteStream(lexer);
     HiveParserX parser = new HiveParserX(tokens);
+    parser.setTreeAdaptor(adaptor);
     HiveParser.statement_return r = null;
     try {
       r = parser.statement();
@@ -268,7 +288,7 @@ public class ParseDriver {
       throw new ParseException(parser.getErrors());
     }
       
-    return (CommonTree)r.getTree();
+    return (ASTNode)r.getTree();
   }
 }
 

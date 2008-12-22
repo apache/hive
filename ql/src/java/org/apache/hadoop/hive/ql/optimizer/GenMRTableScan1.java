@@ -22,12 +22,12 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.parse.OperatorProcessor;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.plan.mapredWork;
-import org.apache.hadoop.hive.ql.metadata.*;
+import org.apache.hadoop.hive.ql.lib.Node;
+import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
@@ -35,16 +35,17 @@ import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 /**
  * Processor for the rule - table scan
  */
-public class GenMRTableScan1 implements OperatorProcessor {
+public class GenMRTableScan1 implements NodeProcessor {
   public GenMRTableScan1() {
   }
 
   /**
    * Table Sink encountered 
-   * @param op the table sink operator encountered
+   * @param nd the table sink operator encountered
    * @param opProcCtx context
    */
-  public void process(TableScanOperator op, OperatorProcessorContext opProcCtx) throws SemanticException {
+  public void process(Node nd, NodeProcessorCtx opProcCtx) throws SemanticException {
+    TableScanOperator op = (TableScanOperator)nd;
     GenMRProcContext ctx = (GenMRProcContext)opProcCtx;
     ParseContext parseCtx = ctx.getParseCtx();
     Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx.getMapCurrCtx();
@@ -67,14 +68,5 @@ public class GenMRTableScan1 implements OperatorProcessor {
     assert false;
   }
 
-  /**
-   * Table Sink encountered 
-   * @param op the table sink operator encountered
-   * @param opProcCtx context
-   */
-  public void process(Operator<? extends Serializable> op, OperatorProcessorContext opProcCtx) throws SemanticException {
-    // should never be called
-    assert false;
-  }
 }
 

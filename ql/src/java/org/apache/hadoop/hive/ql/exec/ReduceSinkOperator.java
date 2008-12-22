@@ -200,7 +200,7 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
   /**
    * @return the name of the operator
    */
-  public String getOperatorName() {
+  public String getName() {
     return new String("RS");
   }
   

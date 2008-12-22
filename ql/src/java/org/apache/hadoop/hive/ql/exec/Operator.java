@@ -21,7 +21,9 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Vector;
 import java.util.Map;
+import org.apache.hadoop.hive.ql.lib.Node;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,7 +38,7 @@ import org.apache.hadoop.mapred.OutputCollector;
 /**
  * Base operator implementation
  **/
-public abstract class Operator <T extends Serializable> implements Serializable {
+public abstract class Operator <T extends Serializable> implements Serializable, Node {
 
   // Bean methods
 
@@ -55,6 +57,23 @@ public abstract class Operator <T extends Serializable> implements Serializable 
     return childOperators;
   }
 
+  /**
+   * Implements the getChildren function for the Node Interface.
+   */
+  public Vector<Node> getChildren() {
+    
+    if (getChildOperators() == null) {
+      return null;
+    }
+    
+    Vector<Node> ret_vec = new Vector<Node>();
+    for(Operator<? extends Serializable> op: getChildOperators()) {
+      ret_vec.add(op);
+    }
+    
+    return ret_vec;
+  }
+  
   public void setParentOperators(List<Operator<? extends Serializable>> parentOperators) {
     this.parentOperators = parentOperators;
   }
@@ -288,10 +307,10 @@ public abstract class Operator <T extends Serializable> implements Serializable 
   }
 
   /**
-   * returns the name of the operator - specific subclasses can override the name as and when needed
+   * Implements the getName function for the Node Interface.
    * @return the name of the operator
    */
-  public String getOperatorName() {
+  public String getName() {
     return new String("OP");
   }
 

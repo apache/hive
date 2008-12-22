@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import org.antlr.runtime.tree.CommonTree;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -36,7 +34,7 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
     super(conf);
   }
   
-  public void analyzeInternal(CommonTree ast, Context ctx) throws SemanticException {
+  public void analyzeInternal(ASTNode ast, Context ctx) throws SemanticException {
     String functionName = ast.getChild(0).getText();
     String className = unescapeSQLString(ast.getChild(1).getText());
     createFunctionDesc desc = new createFunctionDesc(functionName, className);

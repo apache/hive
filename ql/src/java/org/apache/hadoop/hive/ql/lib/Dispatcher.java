@@ -16,10 +16,24 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.optimizer;
+package org.apache.hadoop.hive.ql.lib;
+
+import java.util.Stack;
+
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
- * Operator Processor Context
+ * Dispatcher interface for Operators
+ * Used in operator graph walking to dispatch process/visitor functions for operators
  */
-public abstract class OperatorProcessorContext {
+public interface Dispatcher {
+
+  /**
+   * dispatcher function
+   * @param nd operator to process
+   * @param Stack operator stack to process
+   * @throws SemanticException
+   */
+  public abstract void dispatch(Node nd, Stack<Node> stack) 
+    throws SemanticException;
 }

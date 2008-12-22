@@ -22,7 +22,7 @@ import java.io.DataInput;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
-import org.antlr.runtime.tree.CommonTree;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -160,10 +160,10 @@ public class Driver implements CommandProcessor {
       resStream = null;
       
       pd = new ParseDriver();
-      CommonTree tree = pd.parse(command);
+      ASTNode tree = pd.parse(command);
 
       while((tree.getToken() == null) && (tree.getChildCount() > 0)) {
-        tree = (CommonTree)tree.getChild(0);
+        tree = (ASTNode)tree.getChild(0);
       }
 
       sem = SemanticAnalyzerFactory.get(conf, tree);

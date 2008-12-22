@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.util.*;
 
-import org.antlr.runtime.tree.*;
-
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.metadata.*;
@@ -89,7 +87,7 @@ public class PartitionPruner {
    * @throws SemanticException
    */
   @SuppressWarnings("nls")
-  private exprNodeDesc genExprNodeDesc(CommonTree expr)
+  private exprNodeDesc genExprNodeDesc(ASTNode expr)
   throws SemanticException {
     //  We recursively create the exprNodeDesc.  Base cases:  when we encounter 
     //  a column ref, we convert that into an exprNodeColumnDesc;  when we encounter 
@@ -117,7 +115,7 @@ public class PartitionPruner {
         }
         else {
           colName = BaseSemanticAnalyzer.unescapeIdentifier(expr.getChild(0).getText());
-          tabAlias = SemanticAnalyzer.getTabAliasForCol(this.metaData, colName, (CommonTree)expr.getChild(0));
+          tabAlias = SemanticAnalyzer.getTabAliasForCol(this.metaData, colName, (ASTNode)expr.getChild(0));
         }
 
         // Set value to null if it's not partition column
@@ -150,7 +148,7 @@ public class PartitionPruner {
         int childrenBegin = (isFunction ? 1 : 0);
         ArrayList<exprNodeDesc> children = new ArrayList<exprNodeDesc>(expr.getChildCount() - childrenBegin);
         for (int ci=childrenBegin; ci<expr.getChildCount(); ci++) {
-          exprNodeDesc child = genExprNodeDesc((CommonTree)expr.getChild(ci));
+          exprNodeDesc child = genExprNodeDesc((ASTNode)expr.getChild(ci));
           assert(child.getTypeInfo() != null);
           children.add(child);
         }
@@ -205,7 +203,7 @@ public class PartitionPruner {
     return false;
   }
   
-  public boolean hasPartitionPredicate(CommonTree expr) {
+  public boolean hasPartitionPredicate(ASTNode expr) {
 
     int tokType = expr.getType();
     boolean hasPPred = false;
@@ -227,7 +225,7 @@ public class PartitionPruner {
         // Create all children
         int childrenBegin = (isFunction ? 1 : 0);
         for (int ci=childrenBegin; ci<expr.getChildCount(); ci++) {
-          hasPPred = (hasPPred || hasPartitionPredicate((CommonTree)expr.getChild(ci)));
+          hasPPred = (hasPPred || hasPartitionPredicate((ASTNode)expr.getChild(ci)));
         }
         break;
       }
@@ -238,7 +236,7 @@ public class PartitionPruner {
 
   /** Add an expression */
   @SuppressWarnings("nls")
-  public void addExpression(CommonTree expr) throws SemanticException {
+  public void addExpression(ASTNode expr) throws SemanticException {
     LOG.trace("adding pruning Tree = " + expr.toStringTree());
     exprNodeDesc desc = genExprNodeDesc(expr);
     // Ignore null constant expressions
@@ -257,7 +255,7 @@ public class PartitionPruner {
    * condition.
    */
   @SuppressWarnings("nls")
-  public void addJoinOnExpression(CommonTree expr) throws SemanticException {
+  public void addJoinOnExpression(ASTNode expr) throws SemanticException {
     LOG.trace("adding pruning Tree = " + expr.toStringTree());
     exprNodeDesc desc = genExprNodeDesc(expr);
     // Ignore null constant expressions

@@ -10,9 +10,6 @@ import java.util.*;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.exec.Task;
 
-import org.antlr.runtime.*;
-import org.antlr.runtime.tree.*;
-
 public class $className extends TestCase {
 
   private QTestUtil qt;
@@ -58,7 +55,7 @@ public class $className extends TestCase {
     try {
       System.out.println("Begin query: " + "$fname");
       qt.init("$fname");
-      CommonTree tree = qt.parseQuery("$fname");
+      ASTNode tree = qt.parseQuery("$fname");
       List<Task<? extends Serializable>> tasks = qt.analyzeAST(tree);
       fail("Unexpected success for query: " + "$fname");
     }

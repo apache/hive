@@ -15,25 +15,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.parse;
 
-import java.io.Serializable;
+package org.apache.hadoop.hive.ql.lib;
 
-import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.optimizer.OperatorProcessorContext;
+import java.util.Collection;
+
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
- * Base class for processing operators which is no-op. The specific processors can register their own context with
- * the dispatcher.
+ * Interface for operator graph walker.
  */
-public interface OperatorProcessor {
-  
+public interface GraphWalker {
+
   /**
-   * generic process for all ops that don't have specific implementations
-   * @param op operator to process
-   * @param opProcCtx operator processor context
+   * starting point for walking.
+   * 
+   * @param startNodes list of starting operators
    * @throws SemanticException
    */
-  public void process(Operator<? extends Serializable> op, OperatorProcessorContext opProcCtx) 
-    throws SemanticException;
+  public void startWalking(Collection<Node> startNodes)
+      throws SemanticException;
+
 }

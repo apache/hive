@@ -52,7 +52,7 @@ public class TableScanOperator extends Operator<tableScanDesc> implements Serial
    * The operator name for this operator type. This is used to construct the rule for an operator
    * @return the operator name
    **/
-  public String getOperatorName() {
+  public String getName() {
     return new String("TS");
   }
 

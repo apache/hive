@@ -25,7 +25,6 @@ import java.util.List;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.plan.loadFileDesc;
 import org.apache.hadoop.hive.ql.plan.loadTableDesc;
-import org.antlr.runtime.tree.CommonTree;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.conf.HiveConf;
 
@@ -41,7 +40,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 
 public class ParseContext {
   private QB qb;
-  private CommonTree ast;
+  private ASTNode ast;
   private HashMap<String, PartitionPruner> aliasToPruner;
   private HashMap<String, SamplePruner> aliasToSamplePruner;
   private HashMap<String, Operator<? extends Serializable>> topOps;
@@ -73,7 +72,7 @@ public class ParseContext {
    * @param topSelOps
    *          list of operators for the selects introduced for column pruning
    */
-  public ParseContext(HiveConf conf, QB qb, CommonTree ast,
+  public ParseContext(HiveConf conf, QB qb, ASTNode ast,
       HashMap<String, PartitionPruner> aliasToPruner,
       HashMap<String, SamplePruner> aliasToSamplePruner,
       HashMap<String, Operator<? extends Serializable>> topOps,
@@ -142,7 +141,7 @@ public class ParseContext {
   /**
    * @return the ast
    */
-  public CommonTree getParseTree() {
+  public ASTNode getParseTree() {
     return ast;
   }
 
@@ -150,7 +149,7 @@ public class ParseContext {
    * @param ast
    *          the parsetree to set
    */
-  public void setParseTree(CommonTree ast) {
+  public void setParseTree(ASTNode ast) {
     this.ast = ast;
   }
 

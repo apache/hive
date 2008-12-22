@@ -610,4 +610,12 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
 
     return colLists;
   }
+
+  /**
+   * @return the name of the operator
+   */
+  @Override
+  public String getName() {
+    return new String("GBY");
+  }
 }

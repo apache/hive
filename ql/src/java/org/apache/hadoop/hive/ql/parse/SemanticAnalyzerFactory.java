@@ -18,13 +18,12 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import org.antlr.runtime.tree.*;
 import org.apache.hadoop.hive.conf.HiveConf;
 
 
 public class SemanticAnalyzerFactory {
 
-  public static BaseSemanticAnalyzer get(HiveConf conf, CommonTree tree) throws SemanticException {
+  public static BaseSemanticAnalyzer get(HiveConf conf, ASTNode tree) throws SemanticException {
     if(tree.getToken() == null) {
       throw new RuntimeException ("Empty Syntax Tree");
     } else {

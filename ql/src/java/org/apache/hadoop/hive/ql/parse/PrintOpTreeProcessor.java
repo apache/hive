@@ -21,12 +21,12 @@ package org.apache.hadoop.hive.ql.parse;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Stack;
-
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.optimizer.OperatorProcessorContext;
+import org.apache.hadoop.hive.ql.lib.Node;
+import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 
-public class PrintOpTreeProcessor implements OperatorProcessor {
+public class PrintOpTreeProcessor implements NodeProcessor {
   
   private PrintStream out;
   private HashMap<Operator<? extends Serializable>, Integer> opMap = new HashMap<Operator<? extends Serializable>, Integer>();
@@ -70,7 +70,8 @@ public class PrintOpTreeProcessor implements OperatorProcessor {
     return ret.toString();
   }
   
-  public void process(Operator<? extends Serializable> op, OperatorProcessorContext ctx) throws SemanticException {
+  public void process(Node nd, NodeProcessorCtx ctx) throws SemanticException {
+    Operator<? extends Serializable> op = (Operator<? extends Serializable>)nd;
     if (opMap.get(op) == null) {
       opMap.put(op, curNum++);
     }
