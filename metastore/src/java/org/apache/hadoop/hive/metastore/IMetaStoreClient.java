@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.ExistingDependentsException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -42,14 +43,58 @@ public interface IMetaStoreClient {
   public List<String> getTables(String dbName, String tablePattern) throws MetaException, UnknownTableException, TException,
       UnknownDBException;
 
-  public void dropTable(String tableName, boolean deleteData) throws MetaException, UnknownTableException, TException, NoSuchObjectException;
+  /**
+   * Drop the table.
+   * @param tableName The table to drop
+   * @param deleteData Should we delete the underlying data
+   * @throws MetaException Could not drop table properly.
+   * @throws UnknownTableException The table wasn't found.
+   * @throws TException A thrift communication error occurred
+   * @throws NoSuchObjectException The table wasn't found.
+   */
+  public void dropTable(String tableName, boolean deleteData) 
+    throws MetaException, UnknownTableException, TException, NoSuchObjectException;
+
+  /**
+   * Drop the table.
+   * @param dbName The database for this table
+   * @param tableName The table to drop
+   * @throws MetaException Could not drop table properly.
+   * @throws NoSuchObjectException The table wasn't found.
+   * @throws TException A thrift communication error occurred
+   * @throws ExistingDependentsException
+   */
+  public void dropTable(String dbname, String tableName, boolean deleteData, 
+      boolean ignoreUknownTab) throws ExistingDependentsException, 
+      MetaException, TException, NoSuchObjectException;
 
   //public void createTable(String tableName, Properties schema) throws MetaException, UnknownTableException,
     //  TException;
 
   public boolean tableExists(String tableName) throws MetaException, TException, UnknownDBException;
 
-  public Table getTable(String tableName) throws MetaException, TException, NoSuchObjectException;
+  /**
+   * Get a table object. 
+   * @param tableName Name of the table to fetch.
+   * @return An object representing the table.
+   * @throws MetaException Could not fetch the table
+   * @throws TException A thrift communication error occurred 
+   * @throws NoSuchObjectException In case the table wasn't found.
+   */
+  public Table getTable(String tableName) throws MetaException, 
+    TException, NoSuchObjectException;
+  
+  /**
+   * Get a table object. 
+   * @param dbName The database the table is located in.
+   * @param tableName Name of the table to fetch.
+   * @return An object representing the table.
+   * @throws MetaException Could not fetch the table
+   * @throws TException A thrift communication error occurred 
+   * @throws NoSuchObjectException In case the table wasn't found.
+   */
+  public Table getTable(String dbName, String tableName) 
+    throws MetaException, TException, NoSuchObjectException;
 
   /**
    * @param table_name

@@ -25,6 +25,7 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.DB;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -43,10 +44,12 @@ import com.facebook.thrift.protocol.TBinaryProtocol;
 public class TestHive extends TestCase {
   private Hive hm;
   private HiveConf hiveConf;
+  private FileSystem fs;
 
   protected void setUp() throws Exception {
     super.setUp();
     hiveConf = new HiveConf(this.getClass());
+    fs = FileSystem.get(hiveConf);
     try {
       this.hm = Hive.get(hiveConf);
     } catch (Exception e) {
@@ -221,14 +224,15 @@ public class TestHive extends TestCase {
     return tbl;
   }
 
-  public void testGetTables() throws Throwable {
+  public void testGetAndDropTables() throws Throwable {
     try {
       String dbName = "db_for_testgettables";
+      String table1Name = "table1";
       hm.dropDatabase(dbName);
       hm.createDatabase(dbName, "");
 
       List<String> ts = new ArrayList<String>(2);
-      ts.add("table1");
+      ts.add(table1Name);
       ts.add("table2");
       Table tbl1 = createTestTable(dbName, ts.get(0));
       hm.createTable(tbl1);
@@ -243,6 +247,17 @@ public class TestHive extends TestCase {
       fts = hm.getTablesForDb(dbName, ".*1");
       assertEquals(1, fts.size());
       assertEquals(ts.get(0), fts.get(0));
+      
+      //also test getting a table from a specific db
+      Table table1 = hm.getTable(dbName, table1Name);
+      assertNotNull(table1);
+      assertEquals(table1Name, table1.getName());
+      
+      assertTrue(fs.exists(table1.getPath()));
+      //and test dropping this specific table
+      hm.dropTable(dbName, table1Name);
+      assertFalse(fs.exists(table1.getPath()));
+      
       hm.dropDatabase(dbName);
     } catch (Throwable e) {
       System.err.println(StringUtils.stringifyException(e));

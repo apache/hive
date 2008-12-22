@@ -36,6 +36,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Constants;
+import org.apache.hadoop.hive.metastore.api.ExistingDependentsException;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -321,6 +322,17 @@ public class MetaStoreClient implements IMetaStoreClient {
     Properties schema = this.getSchema(tableName);
     return MetaStoreUtils.getTable(conf, schema);
   }
+  
+  /**
+   * This operation is unsupported in this metastore.
+   * @see MetaStoreClient#getTable(String)
+   */
+  public Table getTable(String dbName, String tableName) throws MetaException,
+    TException, NoSuchObjectException {
+    throw new UnsupportedOperationException("getTable from a specific db " +
+    		"not supported by this metastore");
+  }
+  
 
   //These will disappear when the server is unified for both filestore and dbstore
   @Override
@@ -443,5 +455,15 @@ public class MetaStoreClient implements IMetaStoreClient {
       throws NoSuchObjectException, MetaException, TException {
     return false;
   }
+  
+  /**
+   * This operation is unsupported in this metastore.
+   * @see MetaStoreClient#dropTable(String, String) 
+   */
+  public void dropTable(String dbname, String name, boolean deleteData, boolean ignoreUknownTab) throws 
+    ExistingDependentsException, MetaException, TException, NoSuchObjectException {
+    
+    throw new UnsupportedOperationException("Operation not supported in this metastore");
+  }  
 
 }

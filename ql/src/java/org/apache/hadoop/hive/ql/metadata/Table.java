@@ -28,11 +28,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
-import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
@@ -52,7 +50,6 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
-import org.apache.hadoop.util.StringUtils;
 
 
 /**
@@ -565,56 +562,6 @@ public class Table {
 
   public List<Order> getSortCols() {
     return getTTable().getSd().getSortCols();
-  }
-
-  private static void getPartPaths(FileSystem fs, Path p, Vector<String> partPaths) throws IOException {
-    // Base case for recursion
-    if (fs.isFile(p)) {
-      if (!partPaths.contains(p.getParent().toString())) {
-        partPaths.add(p.getParent().toString());
-      }
-    }
-    else {
-      FileStatus [] dirs = fs.listStatus(p);
-
-      if (dirs.length != 0 ) {
-        for(int i=0; i < dirs.length; ++i) {
-          getPartPaths(fs, dirs[i].getPath(), partPaths);
-        }
-      }
-      else {
-        // This is an empty partition
-        if (!partPaths.contains(p.toString())) {
-          partPaths.add(p.toString());
-        }
-      }
-    }
-
-    return;
-  }
-
-  static final Pattern pat = Pattern.compile("([^/]+)=([^/]+)");
-  public List<Partition> getPartitionsFromHDFS() throws HiveException {
-    ArrayList<Partition> ret = new ArrayList<Partition> ();
-    FileSystem fs = null;
-    Vector<String> partPaths = new Vector<String>();
-
-    try {
-      fs = FileSystem.get(getDataLocation(), Hive.get().getConf());
-      getPartPaths(fs, new Path(getDataLocation().getPath()), partPaths);
-      for(String partPath: partPaths) {
-        Path tmpPath = new Path(partPath);
-        if(!fs.getFileStatus(tmpPath).isDir()) {
-          throw new HiveException("Data in hdfs is messed up. Table " + getName() + " has a partition " + partPath + " that is not a directory");
-        }
-        ret.add(new Partition(this, tmpPath));
-      }
-    } catch (IOException e) {
-      LOG.error(StringUtils.stringifyException(e));
-      throw new HiveException("DB Error: Table " + getDataLocation() + " message: " + e.getMessage());
-    }
-
-    return ret;
   }
   
 };

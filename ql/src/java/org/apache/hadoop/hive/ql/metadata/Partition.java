@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -36,7 +35,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 
 /**
  * A Hive Table Partition: is a fundamental storage unit within a Table
@@ -84,7 +82,7 @@ public class Partition {
         // is same as the table partition. 
         this.partPath = table.getPath();
       }
-      spec = makeSpecFromPath();
+      spec = createSpec(tbl, tp);
       
       URI tmpURI = table.getDataLocation();
       try {
@@ -95,83 +93,24 @@ public class Partition {
       }
     }
     
-    // This is used when a Partition object is created solely from the hdfs partition directories
-    Partition(Table tbl, Path path) throws HiveException {
-      this.table = tbl;
-      // initialize the tPartition(thrift object) with the data from path and  table
-      this.tPartition = new org.apache.hadoop.hive.metastore.api.Partition();
-      this.tPartition.setDbName(tbl.getDbName());
-      this.tPartition.setTableName(tbl.getName());
-      StorageDescriptor sd = tbl.getTTable().getSd();
-      StorageDescriptor psd = new StorageDescriptor(
-          sd.getCols(), sd.getLocation(), sd.getInputFormat(), sd.getOutputFormat(),
-          sd.isCompressed(), sd.getNumBuckets(), sd.getSerdeInfo(), sd.getBucketCols(),
-          sd.getSortCols(), new HashMap<String, String>());
-      this.tPartition.setSd(psd);
-      // change the partition location
-      if(table.isPartitioned()) {
-        this.partPath = path;
-      } else {
-        // We are in the HACK territory. SemanticAnalyzer expects a single partition whose schema
-        // is same as the table partition. 
-        this.partPath = table.getPath();
+    /**
+     * Creates a partition name -> value spec map object
+     * @param tbl Use the information from this table.
+     * @param tp Use the information from this partition.
+     * @return Partition name to value mapping.
+     */
+    private LinkedHashMap<String, String> createSpec(Table tbl, 
+        org.apache.hadoop.hive.metastore.api.Partition tp) {
+      
+      List<FieldSchema> fsl = tbl.getPartCols();
+      List<String> tpl = tp.getValues();
+      LinkedHashMap<String, String> spec = new LinkedHashMap<String, String>();
+      for (int i = 0; i < tbl.getPartCols().size(); i++) {
+        FieldSchema fs = fsl.get(i);
+        String value = tpl.get(i);
+        spec.put(fs.getName(), value);
       }
-      spec = makeSpecFromPath();
-      psd.setLocation(this.partPath.toString());
-      List<String> partVals = new ArrayList<String> ();
-      tPartition.setValues(partVals);
-      for (FieldSchema field : tbl.getPartCols()) {
-        partVals.add(spec.get(field.getName()));
-      }
-      try {
-        this.partName = Warehouse.makePartName(tbl.getPartCols(), partVals);
-      } catch (MetaException e) {
-        throw new HiveException("Invalid partition key values", e);
-      }
-    }
-    
-    static final Pattern pat = Pattern.compile("([^/]+)=([^/]+)");
-    private LinkedHashMap<String, String> makeSpecFromPath() throws HiveException {
-      // Keep going up the path till it equals the parent
-      Path currPath = this.partPath;
-      LinkedHashMap<String, String> partSpec = new LinkedHashMap<String, String>();
-      List<FieldSchema> pcols = this.table.getPartCols();
-      for(int i = 0; i < pcols.size(); i++) {
-        FieldSchema col =  pcols.get(pcols.size() - i - 1);
-        if (currPath == null) {
-          throw new HiveException("Out of path components while expecting key: " + col.getName());
-        }
-        String component = currPath.getName();
-        // Check if the component is either of the form k=v
-        // or is the first component
-        // if neither is true then this is an invalid path
-        Matcher m = pat.matcher(component);
-        if (m.matches()) {
-          String k = m.group(1);
-          String v = m.group(2);
-
-          if (!k.equals(col.getName())) {
-            throw new HiveException("Key mismatch expected: " + col.getName() + " and got: " + k);
-          }
-          if (partSpec.containsKey(k)) {
-            throw new HiveException("Key " + k + " defined at two levels");
-          }
-
-          partSpec.put(k, v);
-        }
-        else {
-          throw new HiveException("Path " + currPath.toString() + " not a valid path");
-        }
-        currPath = currPath.getParent();
-      }
-      // reverse the list since we checked the part from leaf dir to table's base dir
-      LinkedHashMap<String, String> newSpec = new LinkedHashMap<String, String>();
-      for(int i = 0; i < table.getPartCols().size(); i++) {
-        FieldSchema  field = table.getPartCols().get(i);
-        String val = partSpec.get(field.getName());
-        newSpec.put(field.getName(), val);
-      }
-      return newSpec;
+      return spec;
     }
 
     public URI makePartURI(LinkedHashMap<String, String> spec) throws HiveException {
