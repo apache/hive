@@ -3043,11 +3043,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Task<? extends Serializable> mvTask = null;
     Task<? extends Serializable> fetchTask = null;
 
-    if (qb.isSelectStarQuery()) {
+    QBParseInfo qbParseInfo = qb.getParseInfo();
+    if (qb.isSelectStarQuery()
+        && qbParseInfo.getDestToClusterBy().isEmpty()
+        && qbParseInfo.getDestToDistributeBy().isEmpty()
+        && qbParseInfo.getDestToSortBy().isEmpty()) {
       Iterator<Map.Entry<String, Table>> iter = qb.getMetaData().getAliasToTable().entrySet().iterator();
       Table tab = ((Map.Entry<String, Table>)iter.next()).getValue();
       if (!tab.isPartitioned()) {
-        if (qb.getParseInfo().getDestToWhereExpr().isEmpty())
+        if (qbParseInfo.getDestToWhereExpr().isEmpty())
           fetch = new fetchWork(tab.getPath(), Utilities.getTableDesc(tab), qb.getParseInfo().getOuterQueryLimit()); 
       }
       else {

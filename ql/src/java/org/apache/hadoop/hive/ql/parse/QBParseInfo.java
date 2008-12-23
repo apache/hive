@@ -170,7 +170,7 @@ public class QBParseInfo {
   public ASTNode getGroupByForClause(String clause) {
     return this.destToGroupby.get(clause);
   }
-
+  
   public ASTNode getSelForClause(String clause) {
     return this.destToSelExpr.get(clause);
   }
@@ -184,6 +184,10 @@ public class QBParseInfo {
     return this.destToClusterby.get(clause);
   }
 
+  public HashMap<String, ASTNode> getDestToClusterBy() {
+    return destToClusterby;
+  }
+  
   /**
    * Get the Distribute By AST for the clause.  
    * @param clause the name of the clause
@@ -193,6 +197,10 @@ public class QBParseInfo {
     return this.destToDistributeby.get(clause);
   }
 
+  public HashMap<String, ASTNode> getDestToDistributeBy() {
+    return destToDistributeby;
+  }
+  
   /**
    * Get the Sort By AST for the clause.  
    * @param clause the name of the clause
@@ -202,6 +210,11 @@ public class QBParseInfo {
     return this.destToSortby.get(clause);
   }
 
+  public HashMap<String, ASTNode> getDestToSortBy() {
+    return destToSortby;
+  }
+  
+  
   public ASTNode getSrcForAlias(String alias) {
     return this.aliasToSrc.get(alias.toLowerCase());
   }
