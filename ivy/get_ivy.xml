@@ -24,7 +24,9 @@
 <property name="ivy.jar.dir" value="${ivy.home}/lib" />
 <property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar" />
 
-<target name="download-ivy" unless="offline">
+<available property="ivy.installed" file="${ivy.home}/apache-ivy-${ivy.install.version}.installed"/>
+
+<target name="download-ivy" unless="ivy.installed">
 
    <mkdir dir="${ivy.jar.dir}"/>
    <!-- download Ivy from web site so that it can be used even without any special installation -->
@@ -43,6 +45,7 @@
      </fileset>
    </copy>
 
+  <touch file="${ivy.home}/apache-ivy-${ivy.install.version}.installed"/>
 </target>
 
 <target name="init-ivy" depends="download-ivy">

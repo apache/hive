@@ -153,12 +153,12 @@
     <copy file="${basedir}/conf/hive-log4j.properties" todir="${target.conf.dir}"/>
     <copy file="${basedir}/conf/jpox.properties" todir="${target.conf.dir}"/>
     <copy todir="${target.lib.dir}/php">
-      <fileset dir="${hive.root}/serde/src/gen-php"/>
-      <fileset dir="${hive.root}/metastore/src/gen-php"/>
+      <fileset dir="${hive.root}/serde/src/gen-php" excludes="**/.svn"/>
+      <fileset dir="${hive.root}/metastore/src/gen-php" excludes="**/.svn"/>
     </copy>
     <copy todir="${target.lib.dir}/py">
-      <fileset dir="${hive.root}/serde/src/gen-py"/>
-      <fileset dir="${hive.root}/metastore/src/gen-py"/>
+      <fileset dir="${hive.root}/serde/src/gen-py" excludes="**/.svn"/>
+      <fileset dir="${hive.root}/metastore/src/gen-py" excludes="**/.svn"/>
     </copy>
     <copy todir="${target.lib.dir}" preservelastmodified="true" flatten="true">
       <fileset dir="${hive.root}" includes="*/*.jar, */*/*.jar" excludes="**/antlr-2*,**/antlr-3*"/>
@@ -168,12 +168,36 @@
       <fileset file="${build.dir.hive}/metastore/hive_metastore.jar"/>
     </copy>
     <copy todir="${target.example.dir}/files" preservelastmodified="true" flatten="true">
-      <fileset dir="${test.data.dir}/files" includes="*.*"/>
+      <fileset dir="${test.data.dir}/files" includes="*.*" excludes="**/.svn"/>
     </copy>
     <copy file="${basedir}/README.txt" todir="${target.dir}"/>
     <copy todir="${target.example.dir}/queries" preservelastmodified="true" flatten="true">
-      <fileset dir="${ql.test.query.dir}/positive" includes="*.q"/>
+      <fileset dir="${ql.test.query.dir}/positive" includes="*.q" excludes="**/.svn"/>
     </copy>
+  </target>
+
+  <target name="eclipse-files" depends="init"
+          description="Generate files for Eclipse">
+    <pathconvert property="eclipse.project">
+      <path path="${basedir}"/>
+      <regexpmapper from="^.*/([^/]+)$$" to="\1" handledirsep="yes"/>
+    </pathconvert>
+    <copy todir="." overwrite="true">
+      <fileset dir="eclipse-templates">
+        <exclude name="**/README.txt"/>
+        <exclude name="**/.svn"/>
+      </fileset>
+      <filterset>
+        <filter token="PROJECT" value="${eclipse.project}"/>
+      </filterset>
+    </copy>
+  </target>
+
+  <target name="clean-eclipse-files"
+          description="Delete files for Eclipse">
+    <delete includeemptydirs="true">
+      <fileset dir="." includes=".classpath .project .settings/ .externalToolBuilders/"/>
+    </delete>
   </target>
 
 </project>

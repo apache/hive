@@ -29,6 +29,8 @@ Trunk (unreleased changes)
 
   IMPROVEMENTS
 
+    HIVE-166. Create eclipse project template. (Ashish Thusoo via zshao)
+
     HIVE-186. Refactor code to use a single graph, nodeprocessor, dispatcher
     and rule abstraction. (Ashish Thusoo via zshao)
 
