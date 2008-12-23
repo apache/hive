@@ -10,10 +10,11 @@ STAGE PLANS:
         Create Table
           columns: key int, value string
           field delimiter: 	
+          input format: org.apache.hadoop.mapred.TextInputFormat
           # buckets: -1
+          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           name: TEST15
           isExternal: false
-          isSequenceFile: false
 
 
 key	int

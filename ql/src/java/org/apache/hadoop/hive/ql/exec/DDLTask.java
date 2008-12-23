@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
@@ -58,9 +57,6 @@ import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde.thrift.columnsetSerDe;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
-import org.apache.hadoop.mapred.SequenceFileInputFormat;
-import org.apache.hadoop.mapred.SequenceFileOutputFormat;
-import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.util.StringUtils;
 
 import com.facebook.thrift.TException;
@@ -551,13 +547,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (crtTbl.getLocation() != null)
       tblStorDesc.setLocation(crtTbl.getLocation());
 
-    if (crtTbl.isSequenceFile()) {
-      tbl.setInputFormatClass(SequenceFileInputFormat.class);
-      tbl.setOutputFormatClass(SequenceFileOutputFormat.class);
-    } else {
-      tbl.setOutputFormatClass(IgnoreKeyTextOutputFormat.class);
-      tbl.setInputFormatClass(TextInputFormat.class);
-    }
+    tbl.setInputFormatClass(crtTbl.getInputFormat());
+    tbl.setOutputFormatClass(crtTbl.getOutputFormat());
 
     if (crtTbl.isExternal())
       tbl.setProperty("EXTERNAL", "TRUE");

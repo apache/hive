@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.alterTableDesc;
 import org.apache.hadoop.hive.ql.plan.createTableDesc;
@@ -45,6 +46,9 @@ import org.apache.hadoop.hive.ql.plan.showTablesDesc;
 import org.apache.hadoop.hive.ql.plan.alterTableDesc.alterTableTypes;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.mapred.SequenceFileInputFormat;
+import org.apache.hadoop.mapred.SequenceFileOutputFormat;
+import org.apache.hadoop.mapred.TextInputFormat;
 
 public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private static final Log LOG = LogFactory.getLog("hive.ql.parse.DDLSemanticAnalyzer");
@@ -62,6 +66,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     TokenToTypeName.put(HiveParser.TOK_DATETIME, Constants.DATETIME_TYPE_NAME);
     TokenToTypeName.put(HiveParser.TOK_TIMESTAMP, Constants.TIMESTAMP_TYPE_NAME);
   }
+  private static final String TEXTFILE_INPUT = TextInputFormat.class.getName();
+  private static final String TEXTFILE_OUTPUT = IgnoreKeyTextOutputFormat.class.getName();
+  private static final String SEQUENCEFILE_INPUT = SequenceFileInputFormat.class.getName();
+  private static final String SEQUENCEFILE_OUTPUT = SequenceFileOutputFormat.class.getName();
 
   public static String getTypeName(int token) {
     return TokenToTypeName.get(token);
@@ -127,11 +135,16 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String            mapKeyDelim   = null;
     String            lineDelim     = null;
     String            comment       = null;
-    boolean           isSequenceFile  = 
-      "SequenceFile".equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.HIVEDEFAULTFILEFORMAT));
+    String            inputFormat   = TEXTFILE_INPUT;
+    String            outputFormat  = TEXTFILE_OUTPUT;
     String            location      = null;
     String            serde         = null;
     Map<String, String> mapProp     = null;
+
+    if ("SequenceFile".equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.HIVEDEFAULTFILEFORMAT))) {
+      inputFormat = SEQUENCEFILE_INPUT;
+      outputFormat = SEQUENCEFILE_OUTPUT;
+    }
 
     LOG.info("Creating table" + tableName);    
     int numCh = ast.getChildCount();
@@ -193,10 +206,16 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           }
           break;
         case HiveParser.TOK_TBLSEQUENCEFILE:
-          isSequenceFile = true;
+          inputFormat = SEQUENCEFILE_INPUT;
+          outputFormat = SEQUENCEFILE_OUTPUT;
           break;
         case HiveParser.TOK_TBLTEXTFILE:
-          isSequenceFile = false;
+          inputFormat = TEXTFILE_INPUT;
+          outputFormat = TEXTFILE_OUTPUT;
+          break;
+        case HiveParser.TOK_TABLEFILEFORMAT:
+          inputFormat = unescapeSQLString(child.getChild(0).getText());
+          outputFormat = unescapeSQLString(child.getChild(1).getText());
           break;
         case HiveParser.TOK_TABLELOCATION:
           location = unescapeSQLString(child.getChild(0).getText());
@@ -209,7 +228,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       new createTableDesc(tableName, isExt, cols, partCols, bucketCols, 
                           sortCols, numBuckets,
                           fieldDelim, collItemDelim, mapKeyDelim, lineDelim,
-                          comment, isSequenceFile, location, serde, mapProp);
+                          comment, inputFormat, outputFormat, location, serde, mapProp);
 
     validateCreateTable(crtTblDesc);
     rootTasks.add(TaskFactory.get(new DDLWork(crtTblDesc), conf));

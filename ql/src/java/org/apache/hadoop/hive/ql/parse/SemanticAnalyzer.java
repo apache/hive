@@ -58,6 +58,8 @@ import org.apache.hadoop.hive.ql.udf.UDFOPPositive;
 import org.apache.hadoop.hive.ql.exec.*;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.hive.ql.lib.Node;
 
@@ -596,6 +598,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(qb.getParseInfo().getSrcForAlias(alias)));
         }
 
+        if (!InputFormat.class.isAssignableFrom(tab.getInputFormatClass()))
+          throw new SemanticException(ErrorMsg.INVALID_INPUT_FORMAT_TYPE.getMsg(qb.getParseInfo().getSrcForAlias(alias)));
+
         qb.getMetaData().setSrcForAlias(alias, tab);
       }
 
@@ -616,6 +621,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         switch (ast.getToken().getType()) {
         case HiveParser.TOK_TAB: {
           tableSpec ts = new tableSpec(this.db, ast, true);
+
+          if (!OutputFormat.class.isAssignableFrom(ts.tableHandle.getOutputFormatClass()))
+            throw new SemanticException(ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE.getMsg(ast));
 
           if(ts.partSpec == null) {
             // This is a table

@@ -29,6 +29,9 @@ Trunk (unreleased changes)
 
   IMPROVEMENTS
 
+    HIVE-177. Allow specifying custom input and output format in CREATE TABLE.
+    (David Phillips via zshao)
+
     HIVE-166. Create eclipse project template. (Ashish Thusoo via zshao)
 
     HIVE-186. Refactor code to use a single graph, nodeprocessor, dispatcher

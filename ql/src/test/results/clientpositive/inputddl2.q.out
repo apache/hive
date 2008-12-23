@@ -9,11 +9,12 @@ STAGE PLANS:
       Create Table Operator:
         Create Table
           columns: key int, value string
+          input format: org.apache.hadoop.mapred.TextInputFormat
           # buckets: -1
+          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
           partition columns: ds datetime, country string
           name: INPUTDDL2
           isExternal: false
-          isSequenceFile: false
 
 
 key	int

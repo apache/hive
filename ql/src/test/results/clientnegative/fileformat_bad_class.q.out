@@ -1,0 +1,2 @@
+FAILED: Error in metadata: Class not found: ClassDoesNotExist
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

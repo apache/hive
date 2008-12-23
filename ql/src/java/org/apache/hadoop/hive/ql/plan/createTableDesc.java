@@ -42,7 +42,8 @@ public class createTableDesc extends ddlDesc implements Serializable
   String              mapKeyDelim;
   String              lineDelim;
   String              comment;
-  boolean             isSequenceFile;
+  String              inputFormat;
+  String              outputFormat;
   String              location;
   String              serName;
   Map<String, String> mapProp;
@@ -53,7 +54,7 @@ public class createTableDesc extends ddlDesc implements Serializable
                          int numBuckets, String fieldDelim, 
                          String collItemDelim,
                          String mapKeyDelim, String lineDelim, 
-                         String comment, boolean isSequenceFile, 
+                         String comment, String inputFormat, String outputFormat,
                          String location, String serName, Map<String, String> mapProp) {
     this.tableName       = tableName;
     this.isExternal      = isExternal;
@@ -63,7 +64,8 @@ public class createTableDesc extends ddlDesc implements Serializable
     this.cols            = cols;
     this.comment         = comment;
     this.fieldDelim      = fieldDelim;
-    this.isSequenceFile    = isSequenceFile;
+    this.inputFormat     = inputFormat;
+    this.outputFormat    = outputFormat;
     this.lineDelim       = lineDelim;
     this.location        = location;
     this.mapKeyDelim     = mapKeyDelim;
@@ -171,13 +173,22 @@ public class createTableDesc extends ddlDesc implements Serializable
     this.comment = comment;
   }
 
-  @explain(displayName="isSequenceFile")
-  public boolean isSequenceFile() {
-    return isSequenceFile;
+  @explain(displayName="input format")
+  public String getInputFormat() {
+    return inputFormat;
   }
 
-  public void setSequenceFile(boolean isSequenceFile) {
-    this.isSequenceFile = isSequenceFile;
+  public void setInputFormat(String inputFormat) {
+    this.inputFormat = inputFormat;
+  }
+
+  @explain(displayName="output format")
+  public String getOutputFormat() {
+    return outputFormat;
+  }
+
+  public void setOutputFormat(String outputFormat) {
+    this.outputFormat = outputFormat;
   }
 
   @explain(displayName="location")

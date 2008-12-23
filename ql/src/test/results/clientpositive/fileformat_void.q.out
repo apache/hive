@@ -1,0 +1,22 @@
+ABSTRACT SYNTAX TREE:
+  (TOK_CREATETABLE dest1 (TOK_TABCOLLIST (TOK_TABCOL key TOK_INT) (TOK_TABCOL value TOK_STRING)) (TOK_TABLEFILEFORMAT 'java.lang.Void' 'java.lang.Void'))
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+      Create Table Operator:
+        Create Table
+          columns: key int, value string
+          input format: java.lang.Void
+          # buckets: -1
+          output format: java.lang.Void
+          name: dest1
+          isExternal: false
+
+
+key	int
+value	string
+Detailed Table Information:
+Table(tableName:dest1,dbName:default,owner:dphillips,createTime:1229530913,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:key,type:int,comment:null), FieldSchema(name:value,type:string,comment:null)],location:file:/vm/tmp/hive/build/ql/test/data/warehouse/dest1,inputFormat:java.lang.Void,outputFormat:java.lang.Void,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[],parameters:{})
