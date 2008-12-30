@@ -40,7 +40,7 @@ public class UDFToBoolean implements UDF {
     if (i == null) {
       return null;
     } else {
-      return Boolean.valueOf(i.byteValue() == 0);
+      return Boolean.valueOf(i.byteValue() != 0);
     }
   }
 
@@ -54,7 +54,7 @@ public class UDFToBoolean implements UDF {
     if (i == null) {
       return null;
     } else {
-      return Boolean.valueOf(i.shortValue() == 0);
+      return Boolean.valueOf(i.shortValue() != 0);
     }
   }
 
@@ -68,7 +68,7 @@ public class UDFToBoolean implements UDF {
     if (i == null) {
       return null;
     } else {
-      return Boolean.valueOf(i.intValue() == 0);
+      return Boolean.valueOf(i.intValue() != 0);
     }
   }
 
@@ -82,7 +82,7 @@ public class UDFToBoolean implements UDF {
     if (i == null) {
       return null;
     } else {
-      return Boolean.valueOf(i.longValue() == 0);
+      return Boolean.valueOf(i.longValue() != 0);
     }
   }
 
@@ -96,7 +96,7 @@ public class UDFToBoolean implements UDF {
     if (i == null) {
       return null;
     } else {
-      return Boolean.valueOf(i.floatValue() == 0);
+      return Boolean.valueOf(i.floatValue() != 0);
     }
   }
 
@@ -110,21 +110,8 @@ public class UDFToBoolean implements UDF {
     if (i == null) {
       return null;
     } else {
-      return Boolean.valueOf(i.doubleValue() == 0);
+      return Boolean.valueOf(i.doubleValue() != 0);
     }
   }
 
-  /**
-   * Convert from a string to boolean. This is called for CAST(... AS BOOLEAN)
-   *
-   * @param i The string value to convert
-   * @return Boolean
-   */  
-  public Boolean evaluate(String i)  {
-    if (i == null) {
-      return null;
-    } else {
-      return Boolean.valueOf(i.length() == 0);
-    }
-  }  
 }

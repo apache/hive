@@ -66,6 +66,8 @@ Trunk (unreleased changes)
 
   BUG FIXES
 
+    HIVE-197. Fixed UDFToBoolean. (zshao)
+
     HIVE-171. Fixed select star with cluster by, distribute by and sort by.
     (zshao)
 
