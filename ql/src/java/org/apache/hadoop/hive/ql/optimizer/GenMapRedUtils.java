@@ -298,16 +298,20 @@ public class GenMapRedUtils {
    * @param opProcCtx context
    **/
   private static void splitTasks(ReduceSinkOperator op,
-                                 Task<? extends Serializable> oldTask, 
-                                 Task<? extends Serializable> task, 
+                                 Task<? extends Serializable> parentTask, 
+                                 Task<? extends Serializable> childTask, 
                                  GenMRProcContext opProcCtx) throws SemanticException {
-    Task<? extends Serializable> currTask = task;
-    mapredWork plan = (mapredWork) currTask.getWork();
+    mapredWork plan = (mapredWork) childTask.getWork();
     Operator<? extends Serializable> currTopOp = opProcCtx.getCurrTopOp();
     
     ParseContext parseCtx = opProcCtx.getParseCtx();
-    oldTask.addDependentTask(currTask);
-    
+    parentTask.addDependentTask(childTask);
+
+    // Root Task cannot depend on any other task, therefore childTask cannot be a root Task
+    List<Task<? extends Serializable>> rootTasks = opProcCtx.getRootTasks();
+    if (rootTasks.contains(childTask))
+      rootTasks.remove(childTask);
+
     // generate the temporary file
     String scratchDir = opProcCtx.getScratchDir();
     int randomid = opProcCtx.getRandomId();
@@ -344,7 +348,7 @@ public class GenMapRedUtils {
     Operator<? extends Serializable> reducer = op.getChildOperators().get(0);
     
     String streamDesc;
-    mapredWork cplan = (mapredWork) currTask.getWork();
+    mapredWork cplan = (mapredWork) childTask.getWork();
     
     if (reducer.getClass() == JoinOperator.class) {
       String origStreamDesc;
@@ -377,6 +381,6 @@ public class GenMapRedUtils {
     
     opProcCtx.setCurrTopOp(currTopOp);
     opProcCtx.setCurrAliasId(currAliasId);
-    opProcCtx.setCurrTask(currTask);
+    opProcCtx.setCurrTask(childTask);
   }    
 }

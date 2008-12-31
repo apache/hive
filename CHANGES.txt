@@ -69,6 +69,9 @@ Trunk (unreleased changes)
 
   BUG FIXES
 
+    HIVE-151. Tasks depending on other tasks cannot be a root task.
+    (Namit Jain via zshao)
+
     HIVE-197. Fixed UDFToBoolean. (zshao)
 
     HIVE-171. Fixed select star with cluster by, distribute by and sort by.
