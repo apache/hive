@@ -4,6 +4,9 @@ Trunk (unreleased changes)
 
   INCOMPATIBLE CHANGES
 
+    HIVE-194. Support specifying decimal places for ROUND function.
+    ROUND always rounds away from zero now. (David Phillips via zshao)
+
   NEW FEATURES
 
     HIVE-148. Extend bin/hive to include the lineage tool.
@@ -28,9 +31,6 @@ Trunk (unreleased changes)
     (Ashish Thusoo via dhruba)
 
   IMPROVEMENTS
-
-    HIVE-194. Support specifying decimal places for ROUND function.
-    (David Phillips via zshao)
 
     HIVE-177. Allow specifying custom input and output format in CREATE TABLE.
     (David Phillips via zshao)
