@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
 import org.apache.hadoop.hive.ql.lib.Rule;
-import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
@@ -50,82 +49,75 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  */
 public class LineageInfo  implements NodeProcessor {
 
-	/**
-	 * Stores input tables in sql
-	 */
-	TreeSet<String> inputTableList = new TreeSet<String>();
-	/**
-	 * Stores output tables in sql
-	 */
-	TreeSet<String> OutputTableList= new TreeSet<String>();
+  /**
+   * Stores input tables in sql
+   */
+  TreeSet<String> inputTableList = new TreeSet<String>();
+  /**
+   * Stores output tables in sql
+   */
+  TreeSet<String> OutputTableList= new TreeSet<String>();
 
-	/**
-	 * 
-	 * @return java.util.TreeSet 
-	 */
-	public TreeSet<String> getInputTableList() {
-		return inputTableList;
-	}
+  /**
+   * 
+   * @return java.util.TreeSet 
+   */
+  public TreeSet<String> getInputTableList() {
+    return inputTableList;
+  }
 
-	/**
-	 * @return java.util.TreeSet
-	 */
-	public TreeSet<String> getOutputTableList() {
-		return OutputTableList;
-	}
+  /**
+   * @return java.util.TreeSet
+   */
+  public TreeSet<String> getOutputTableList() {
+    return OutputTableList;
+  }
 
-	/**
-	 * Implements the process method for the NodeProcessor interface.
-	 */
+  /**
+   * Implements the process method for the NodeProcessor interface.
+   */
   @Override
   public void process(Node nd, NodeProcessorCtx procCtx)
-      throws SemanticException {
+  throws SemanticException {
     ASTNode pt = (ASTNode)nd;
+
     switch (pt.getToken().getType()) {
 
-    case HiveParser.TOK_DESTINATION: {
-      if (pt.getChild(0).getType() == HiveParser.TOK_TAB) {
-        OutputTableList.add(pt.getChild(0).getChild(0).getText()) ;
-      }
+    case HiveParser.TOK_TAB:
+      OutputTableList.add(pt.getChild(0).getText()) ;
+      break;
 
+    case HiveParser.TOK_TABREF:
+      String table_name = ((ASTNode)pt.getChild(0)).getText();
+      inputTableList.add(table_name);
+      break;
     }
-    break;
-    case HiveParser.TOK_FROM: {
-      if (((ASTNode)pt.getChild(0)).getToken().getType() == HiveParser.TOK_TABREF) {
-        ASTNode tabRef = (ASTNode) pt.getChild(0);
-        String table_name = tabRef.getChild(0).getText();
-        inputTableList.add(table_name);
-      }
-    }
-    break;
-    }
-    
+
   }
-  
-	/**
-	 *  parses given query and gets the lineage info.
-	 * @param query
-	 * @throws ParseException
-	 */
-	public void getLineageInfo(String query) throws ParseException, SemanticException
-	{
 
-		/*
-		 *  Get the AST tree
-		 */
-		ParseDriver pd = new ParseDriver();
-		ASTNode tree = pd.parse(query);
+  /**
+   *  parses given query and gets the lineage info.
+   * @param query
+   * @throws ParseException
+   */
+  public void getLineageInfo(String query) throws ParseException, SemanticException {
 
-		while ((tree.getToken() == null) && (tree.getChildCount() > 0)) {
-			tree = (ASTNode) tree.getChild(0);
-		}
+    /*
+     *  Get the AST tree
+     */
+    ParseDriver pd = new ParseDriver();
+    ASTNode tree = pd.parse(query);
 
-		/*
-		 * initialize Event Processor and dispatcher.
-		 */
-		inputTableList.clear();
-		OutputTableList.clear();
-    
+    while ((tree.getToken() == null) && (tree.getChildCount() > 0)) {
+      tree = (ASTNode) tree.getChild(0);
+    }
+
+    /*
+     * initialize Event Processor and dispatcher.
+     */
+    inputTableList.clear();
+    OutputTableList.clear();
+
     // create a walker which walks the tree in a DFS manner while maintaining the operator stack. The dispatcher
     // generates the plan from the operator tree
     Map<Rule, NodeProcessor> rules = new LinkedHashMap<Rule, NodeProcessor>();
@@ -133,28 +125,28 @@ public class LineageInfo  implements NodeProcessor {
     // The dispatcher fires the processor corresponding to the closest matching rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(this, rules, null);
     GraphWalker ogw = new DefaultGraphWalker(disp);
-   
+
     // Create a list of topop nodes
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.add(tree);
     ogw.startWalking(topNodes);
-	}
+  }
 
-	public static void main(String[] args) throws IOException, ParseException,
-	SemanticException {
+  public static void main(String[] args) throws IOException, ParseException,
+  SemanticException {
 
-		String query = args[0];
+    String query = args[0];
 
-		LineageInfo lep = new LineageInfo();
+    LineageInfo lep = new LineageInfo();
 
-		lep.getLineageInfo(query);
+    lep.getLineageInfo(query);
 
-		for (String tab : lep.getInputTableList()) {
-			System.out.println("InputTable=" + tab);
-		}
+    for (String tab : lep.getInputTableList()) {
+      System.out.println("InputTable=" + tab);
+    }
 
-		for (String tab : lep.getOutputTableList()) {
-			System.out.println("OutputTable=" + tab);
-		}
-	}
+    for (String tab : lep.getOutputTableList()) {
+      System.out.println("OutputTable=" + tab);
+    }
+  }
 }

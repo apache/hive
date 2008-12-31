@@ -170,3 +170,6 @@ Trunk (unreleased changes)
     HIVE-196. Two test runs can run simultaneously on the same machine.
     (Ashish Thusoo via dhruba)
 
+    HIVE-202. Fix Lineage for join queries.
+    (Suresh Antony via dhruba)
+
