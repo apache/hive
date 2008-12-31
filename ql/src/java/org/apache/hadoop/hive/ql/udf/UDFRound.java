@@ -18,24 +18,27 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 import org.apache.hadoop.hive.ql.exec.UDF;
 
 
 public class UDFRound implements UDF {
 
-  private static Log LOG = LogFactory.getLog(UDFRound.class.getName());
-
   public UDFRound() {
   }
 
-  public Long evaluate(Double i)  {
-    if (i == null) {
+  public Long evaluate(Double n) {
+    if (n == null)
       return null;
-    } else {
-      return Long.valueOf(Math.round(i));
-    }
+    return evaluate(n, 0).longValue();
+  }
+
+  public Double evaluate(Double n, Integer i) {
+    if ((n == null) || (i == null))
+      return null;
+    return BigDecimal.valueOf(n).setScale(i, RoundingMode.HALF_UP).doubleValue();
   }
   
 }
