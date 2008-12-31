@@ -56,7 +56,7 @@ public class TestFlatFileInputFormat extends TestCase  {
       conf = new Configuration();
       job = new JobConf(conf);
       fs = FileSystem.getLocal(conf);
-      dir = new Path(System.getProperty("test.build.data",".") + "/mapred");
+      dir = new Path(System.getProperty("test.data.dir",".") + "/mapred");
       file = new Path(dir, "test.txt");
       reporter = Reporter.NULL;
       fs.delete(dir, true);
@@ -133,7 +133,7 @@ public class TestFlatFileInputFormat extends TestCase  {
       conf = new Configuration();
       job = new JobConf(conf);
       fs = FileSystem.getLocal(conf);
-      dir = new Path(System.getProperty("test.build.data",".") + "/mapred");
+      dir = new Path(System.getProperty("test.data.dir",".") + "/mapred");
       file = new Path(dir, "test.txt");
       reporter = Reporter.NULL;
       fs.delete(dir, true);
@@ -210,7 +210,7 @@ public class TestFlatFileInputFormat extends TestCase  {
       conf = new Configuration();
       job = new JobConf(conf);
       fs = FileSystem.getLocal(conf);
-      dir = new Path(System.getProperty("test.build.data",".") + "/mapred");
+      dir = new Path(System.getProperty("test.data.dir",".") + "/mapred");
       file = new Path(dir, "test.txt");
       reporter = Reporter.NULL;
       fs.delete(dir, true);

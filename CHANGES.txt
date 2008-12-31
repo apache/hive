@@ -164,3 +164,6 @@ Trunk (unreleased changes)
     tables when alias.* expressions are present in the select list of a 
     join. (Ashish Thusoo via dhruba)
 
+    HIVE-196. Two test runs can run simultaneously on the same machine.
+    (Ashish Thusoo via dhruba)
+

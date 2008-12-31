@@ -68,7 +68,7 @@ import org.antlr.runtime.tree.*;
 public class QTestUtil {
 
   private String testWarehouse;
-  private String tmpdir = "/tmp/"+System.getProperty("user.name")+"/";
+  private String tmpdir =  System.getProperty("user.dir")+"/../build/ql/tmp";
   private Path tmppath = new Path(tmpdir);
   private String testFiles;
   private String outDir;
@@ -524,7 +524,7 @@ public class QTestUtil {
       cmdArray[1] = "-b";
       cmdArray[2] = "-I";
       cmdArray[3] = "\\(\\(<java version=\".*\" class=\"java.beans.XMLDecoder\">\\)" +
-        "\\|\\(<string>/tmp/.*</string>\\)" +
+        "\\|\\(<string>.*/tmp/.*</string>\\)" +
         "\\|\\(<string>file:.*</string>\\)" +
         "\\|\\(<string>/.*/warehouse/.*</string>\\)\\)";
       cmdArray[4] = outf.getPath();
@@ -634,7 +634,7 @@ public class QTestUtil {
     cmdArray = new String[5];
     cmdArray[0] = "diff";
     cmdArray[1] = "-I";
-    cmdArray[2] = "\\(file:\\)\\|\\(tmp/hive-.*\\)";
+    cmdArray[2] = "\\(file:\\)\\|\\(/tmp/.*\\)";
     cmdArray[3] = (new File(logDir, tname + ".out")).getPath();
     cmdArray[4] = (new File(outDir, tname + ".out")).getPath();
     System.out.println(cmdArray[0] + " " + cmdArray[1] + " " + cmdArray[2] + " " +

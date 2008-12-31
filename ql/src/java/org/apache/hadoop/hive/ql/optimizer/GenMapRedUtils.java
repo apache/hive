@@ -313,7 +313,7 @@ public class GenMapRedUtils {
     int randomid = opProcCtx.getRandomId();
     int pathid   = opProcCtx.getPathId();
       
-    String taskTmpDir = scratchDir + File.separator + randomid + '.' + pathid ;
+    String taskTmpDir = (new Path(scratchDir + File.separator + randomid + '.' + pathid)).toString();
     pathid++;
     opProcCtx.setPathId(pathid);
     

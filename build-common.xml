@@ -38,6 +38,7 @@
   <property name="hadoop.version" value="0.19.0"/>
   <property name="hadoop.root" location="${build.dir.hadoop}/hadoop-${hadoop.version}"/>
   <property name="hadoop.jar" location="${hadoop.root}/hadoop-${hadoop.version}-core.jar"/>
+  <property name="hadoop.conf.dir" location="${hadoop.root}/conf"/>
 
   <property name="javac.debug" value="on"/>
   <property name="javac.version" value="1.5"/>

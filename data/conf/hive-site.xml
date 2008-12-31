@@ -12,7 +12,7 @@
 <!-- Hive Execution Parameters -->
 <property>
   <name>hive.exec.scratchdir</name>
-  <value>/tmp/hive-${user.name}</value>
+  <value>${user.dir}/../build/ql/tmp</value>
   <description>Scratch space for Hive jobs</description>
 </property>
 
