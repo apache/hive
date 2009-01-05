@@ -40,7 +40,7 @@ Trunk (unreleased changes)
     HIVE-186. Refactor code to use a single graph, nodeprocessor, dispatcher
     and rule abstraction. (Ashish Thusoo via zshao)
 
-    HIVE-192. Add database name parameter to getTable and dropTable.
+    HIVE-182. Add database name parameter to getTable and dropTable.
     (Johan Oskarsson via zshao)
 
     HIVE-181. Restore UDFTestLength unit test for UDFs.
