@@ -69,6 +69,9 @@ Trunk (unreleased changes)
 
   BUG FIXES
 
+    HIVE-206. Fixed partition pruning check for uppercase table names.
+    (Ashish Thusoo via zshao)
+
     HIVE-151. Tasks depending on other tasks cannot be a root task.
     (Namit Jain via zshao)
 

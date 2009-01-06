@@ -213,7 +213,7 @@ public class PartitionPruner {
         assert(expr.getChildCount() == 2);
         String tabAlias = BaseSemanticAnalyzer.unescapeIdentifier(expr.getChild(0).getText());
         String colName = BaseSemanticAnalyzer.unescapeIdentifier(expr.getChild(1).getText());
-        if (tabAlias.equals(tableAlias) && tab.isPartitionKey(colName)) {
+        if (tabAlias.equalsIgnoreCase(tableAlias) && tab.isPartitionKey(colName)) {
           hasPPred = true;
         }
         break;
