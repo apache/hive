@@ -70,6 +70,9 @@
     <subant target="compile">
       <fileset dir="." includes="service/build.xml"/>
     </subant>
+    <subant target="compile">
+      <fileset dir="." includes="jdbc/build.xml"/>
+    </subant>
   </target>
 
   <!-- ====================================================== -->
@@ -94,6 +97,9 @@
     </subant>
     <subant target="deploy">
       <fileset dir="." includes="service/build.xml"/>
+    </subant>
+    <subant target="deploy">
+      <fileset dir="." includes="jdbc/build.xml"/>
     </subant>
   </target>
 

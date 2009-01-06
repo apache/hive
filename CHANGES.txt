@@ -173,3 +173,6 @@ Trunk (unreleased changes)
     HIVE-202. Fix Lineage for join queries.
     (Suresh Antony via dhruba)
 
+    HIVE-48.  Support JDBC connections for interoperability between 
+    Hive and RDBMS.  (Raghotham Murthy and Michi Mutsuzaki via dhruba)
+

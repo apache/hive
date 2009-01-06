@@ -84,10 +84,7 @@ public class Driver implements CommandProcessor {
       FetchTask ft = (FetchTask)sem.getFetchTask();
 
       tableDesc td = ft.getTblDesc();
-      String tableName = td.getTableName();
-      if (tableName == null) {
-        tableName = "result";
-      }
+      String tableName = "result";
       List<FieldSchema> lst = MetaStoreUtils.getFieldsFromDeserializer(tableName, td.getDeserializer());
       String schema = MetaStoreUtils.getDDLFromFieldSchema(tableName, lst);
       return schema;
