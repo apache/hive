@@ -42,7 +42,6 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.io.Writable;
@@ -63,24 +62,56 @@ import com.facebook.thrift.TException;
 public class Hive {
 
   static final private Log LOG = LogFactory.getLog("hive.ql.metadata.Hive");
-
-  private HiveConf conf;
-  private IMetaStoreClient msc;
-
   static Hive db = null;
   
+  private HiveConf conf = null;
+  private ThreadLocal<IMetaStoreClient> threadLocalMSC = new ThreadLocal() {
+    protected synchronized Object initialValue() {
+        return null;
+    }
+    
+    public synchronized void remove() {
+      if( this.get() != null ) {
+        ((IMetaStoreClient)this.get()).close();
+      }
+      super.remove();
+    }
+  };
+  
   /**
-   * get
-   *
-   * @param c
-   * @return
+   * Returns hive object for the current thread. If one is not initialized then a new one is created 
+   * If the new configuration is different in metadata conf vars then a new one is created.
+   * @param c new Hive Configuration
+   * @return Hive object for current thread
    * @exception
    *
    */
   public static Hive get(HiveConf c) throws HiveException {
-    if(db == null) {
-      // TODO - this doesn't work if the user switches to a different metadb server
-      // during the same session. revisit.
+    boolean needsRefresh = false;
+
+    if(db != null) {
+      for(HiveConf.ConfVars oneVar: HiveConf.metaVars) {
+        String oldVar = db.getConf().getVar(oneVar);
+        String newVar = c.getVar(oneVar);
+        if(oldVar.compareToIgnoreCase(newVar) != 0) {
+          needsRefresh = true;
+          break;
+        }
+      }
+    }
+    return get(c, needsRefresh);
+  }
+
+  /**
+   * get a connection to metastore. see get(HiveConf) function for comments
+   * @param c new conf
+   * @param needsRefresh if true then creates a new one
+   * @return
+   * @throws HiveException
+   */
+  public static Hive get(HiveConf c, boolean needsRefresh) throws HiveException {
+    if(db == null || needsRefresh) {
+      closeCurrent();
       c.set("fs.scheme.class","dfs");
       db = new Hive(c);
     }
@@ -89,9 +120,15 @@ public class Hive {
 
   public static Hive get() throws HiveException {
     if(db == null) {
-      db = new Hive(new HiveConf(ParseDriver.class));
+      db = new Hive(new HiveConf(Hive.class));
     }
     return db;
+  }
+  
+  public static void closeCurrent() {
+    if(db != null) {
+      db.close();
+    }
   }
   
   /**
@@ -103,22 +140,14 @@ public class Hive {
    */
   private Hive(HiveConf c) throws  HiveException {
     this.conf = c;
-    try {
-       msc = this.createMetaStoreClient();
-    } catch (MetaException e) {
-      throw new HiveException("Unable to open connection to metastore", e);
-    }
   }
   
-  public static void closeCurrent() {
-    if(Hive.db != null) {
-      LOG.info("Closing current connection to Hive Metastore.");
-      if(db.msc != null) {
-        db.msc.close();
-      }
-      db.msc = null;
-      db = null;
-    }
+  /**
+   * closes the connection to metastore for the calling thread
+   */
+  private void close() {
+    LOG.info("Closing current thread's connection to Hive Metastore.");
+    db.threadLocalMSC.remove();
   }
   
   /**
@@ -186,7 +215,7 @@ public class Hive {
   public void alterTable(String tblName,
       Table newTbl) throws InvalidOperationException,
       MetaException, TException {
-    msc.alter_table(MetaStoreUtils.DEFAULT_DATABASE_NAME, tblName, newTbl.getTTable());
+    getMSC().alter_table(MetaStoreUtils.DEFAULT_DATABASE_NAME, tblName, newTbl.getTTable());
   }
 
   /**
@@ -201,7 +230,7 @@ public class Hive {
         tbl.setFields(MetaStoreUtils.getFieldsFromDeserializer(tbl.getName(), tbl.getDeserializer()));
       }
       tbl.checkValidity();
-      msc.createTable(tbl.getTTable());
+      getMSC().createTable(tbl.getTTable());
     } catch (HiveException e) {
       throw e;
     } catch (Exception e) {
@@ -259,7 +288,7 @@ public class Hive {
       boolean ignoreUnknownTab) throws HiveException {
     
     try {
-      msc.dropTable(dbName, tableName, deleteData, ignoreUnknownTab);
+      getMSC().dropTable(dbName, tableName, deleteData, ignoreUnknownTab);
     } catch (NoSuchObjectException e) {
       if (!ignoreUnknownTab) {
         throw new HiveException(e);
@@ -333,7 +362,7 @@ public class Hive {
     Table table = new Table();
     org.apache.hadoop.hive.metastore.api.Table tTable = null;
     try {
-      tTable = msc.getTable(dbName, tableName);
+      tTable = getMSC().getTable(dbName, tableName);
     } catch (NoSuchObjectException e) {
       if(throwException) {
         LOG.error(StringUtils.stringifyException(e));
@@ -387,7 +416,7 @@ public class Hive {
    */
   public List<String> getTablesByPattern(String tablePattern) throws HiveException {
     try {
-      return msc.getTables(MetaStoreUtils.DEFAULT_DATABASE_NAME, tablePattern);
+      return getMSC().getTables(MetaStoreUtils.DEFAULT_DATABASE_NAME, tablePattern);
     } catch(Exception e) {
       throw new HiveException(e);
     }
@@ -396,7 +425,7 @@ public class Hive {
   // for testing purposes
   protected List<String> getTablesForDb(String database, String tablePattern) throws HiveException {
     try {
-      return msc.getTables(database, tablePattern);
+      return getMSC().getTables(database, tablePattern);
     } catch(Exception e) {
       throw new HiveException(e);
     }
@@ -413,7 +442,7 @@ public class Hive {
    */
   protected boolean createDatabase(String name, String locationUri) throws AlreadyExistsException,
       MetaException, TException {
-    return msc.createDatabase(name, locationUri);
+    return getMSC().createDatabase(name, locationUri);
   }
 
   /**
@@ -424,7 +453,7 @@ public class Hive {
    * @see org.apache.hadoop.hive.metastore.HiveMetaStoreClient#dropDatabase(java.lang.String)
    */
   protected boolean dropDatabase(String name) throws MetaException, TException {
-    return msc.dropDatabase(name);
+    return getMSC().dropDatabase(name);
   }
 
   /**
@@ -485,7 +514,7 @@ public class Hive {
       pvals.add(partSpec.get(field.getName()));
     }
     try {
-      tpart = msc.appendPartition(MetaStoreUtils.DEFAULT_DATABASE_NAME, tbl.getName(), pvals);;
+      tpart = getMSC().appendPartition(MetaStoreUtils.DEFAULT_DATABASE_NAME, tbl.getName(), pvals);;
     } catch (Exception e) {
       LOG.error(StringUtils.stringifyException(e));
       throw new HiveException(e);
@@ -516,10 +545,10 @@ public class Hive {
     }
     org.apache.hadoop.hive.metastore.api.Partition tpart = null;
     try {
-      tpart = msc.getPartition(MetaStoreUtils.DEFAULT_DATABASE_NAME, tbl.getName(), pvals);
+      tpart = getMSC().getPartition(MetaStoreUtils.DEFAULT_DATABASE_NAME, tbl.getName(), pvals);
       if(tpart == null && forceCreate) {
         LOG.debug("creating partition for table "  + tbl.getName() + " with partition spec : " + partSpec);
-        tpart = msc.appendPartition(MetaStoreUtils.DEFAULT_DATABASE_NAME, tbl.getName(), pvals);;
+        tpart = getMSC().appendPartition(MetaStoreUtils.DEFAULT_DATABASE_NAME, tbl.getName(), pvals);;
       }
       if(tpart == null){
         return null;
@@ -534,7 +563,7 @@ public class Hive {
   public boolean dropPartition(String db_name, String tbl_name, List<String> part_vals,
       boolean deleteData) throws HiveException {
     try {
-      return msc.dropPartition(db_name, tbl_name, part_vals, deleteData);
+      return getMSC().dropPartition(db_name, tbl_name, part_vals, deleteData);
     } catch (NoSuchObjectException e) {
       throw new HiveException("Partition or table doesn't exist.", e);
     } catch (Exception e) {
@@ -545,7 +574,7 @@ public class Hive {
   public List<String> getPartitionNames(String dbName, String tblName, short max) throws HiveException {
     List names = null;
     try {
-      names = msc.listPartitionNames(dbName, tblName, max);
+      names = getMSC().listPartitionNames(dbName, tblName, max);
     } catch (Exception e) {
       LOG.error(StringUtils.stringifyException(e));
       throw new HiveException(e);
@@ -563,7 +592,7 @@ public class Hive {
     if(tbl.isPartitioned()) {
       List<org.apache.hadoop.hive.metastore.api.Partition> tParts;
       try {
-        tParts = msc.listPartitions(tbl.getDbName(), tbl.getName(), (short) -1);
+        tParts = getMSC().listPartitions(tbl.getDbName(), tbl.getName(), (short) -1);
       } catch (Exception e) {
         LOG.error(StringUtils.stringifyException(e));
         throw new HiveException(e);
@@ -710,6 +739,19 @@ public class Hive {
       return new HiveMetaStoreClient(this.conf);
     }
     return new MetaStoreClient(this.conf);
+  }
+  
+  /**
+   * 
+   * @return the metastore client for the current thread
+   * @throws MetaException
+   */
+  private IMetaStoreClient getMSC() throws MetaException {
+    IMetaStoreClient msc = threadLocalMSC.get();
+    if(msc == null) {
+      msc = this.createMetaStoreClient();
+    }
+    return msc;
   }
 
   public static List<FieldSchema> getFieldsFromDeserializer(String name, Deserializer serde) throws HiveException {

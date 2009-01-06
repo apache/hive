@@ -92,19 +92,10 @@ public class SessionState {
     this.conf = conf;
     this.db = db;
 
-    for(HiveConf.ConfVars oneVar: metaVars) {
+    for(HiveConf.ConfVars oneVar: HiveConf.metaVars) {
       dbOptions.put(oneVar, conf.getVar(oneVar));
     }
   }
-
-  /**
-   * metastore related options that the db is initialized against
-   */
-  protected final static HiveConf.ConfVars [] metaVars = {
-    HiveConf.ConfVars.METASTOREDIRECTORY,
-    HiveConf.ConfVars.METASTOREWAREHOUSE,
-    HiveConf.ConfVars.METASTOREURIS
-  };
 
   /**
    * cached values of such options
@@ -115,7 +106,7 @@ public class SessionState {
   public Hive getDb() throws HiveException {
     boolean needsRefresh = false;
 
-    for(HiveConf.ConfVars oneVar: metaVars) {
+    for(HiveConf.ConfVars oneVar: HiveConf.metaVars) {
       if(!StringUtils.isEmpty(StringUtils.difference(dbOptions.get(oneVar), conf.getVar(oneVar)))) {
         needsRefresh = true;
         break;
@@ -123,7 +114,7 @@ public class SessionState {
     }
     
     if((db == null) || needsRefresh) {
-      db = Hive.get(conf);
+      db = Hive.get(conf, needsRefresh);
     }
   
     return db;

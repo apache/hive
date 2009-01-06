@@ -53,17 +53,14 @@ import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.serde2.thrift.test.Complex;
 import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde2.ThriftDeserializer;
+import org.apache.hadoop.hive.serde2.thrift.test.Complex;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 
 import com.facebook.thrift.protocol.TBinaryProtocol;
-import org.apache.hadoop.hive.serde2.ThriftDeserializer;
-import java.nio.channels.FileChannel;
-
-import org.antlr.runtime.tree.*;
 
 public class QTestUtil {
 
@@ -706,13 +703,6 @@ public class QTestUtil {
         // assumption is that environment has already been cleaned once globally
         // hence each thread does not call cleanUp() and createSources() again
         qt.cliInit(fname, false);
-        /*
-          XXX Ugly hack - uncomment this to test without DDLs.
-          Should be removed once DDL/metastore mt issues are resolved
-          synchronized (this.getClass()) {
-          qt.executeOne(fname);
-          }
-        */
         qt.executeClient(fname);
       } catch (Throwable e) {
         System.err.println("Query file " + fname + " failed with exception " + e.getMessage());

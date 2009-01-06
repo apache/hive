@@ -41,6 +41,15 @@ public class HiveConf extends Configuration {
   protected String auxJars;
   private static final Log l4j = LogFactory.getLog(HiveConf.class);
 
+  /**
+   * metastore related options that the db is initialized against
+   */
+  public final static HiveConf.ConfVars [] metaVars = {
+    HiveConf.ConfVars.METASTOREDIRECTORY,
+    HiveConf.ConfVars.METASTOREWAREHOUSE,
+    HiveConf.ConfVars.METASTOREURIS
+  };
+
   public static enum ConfVars {
     // QL execution stuff
     SCRIPTWRAPPER("hive.exec.script.wrapper", null),

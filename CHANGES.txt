@@ -176,3 +176,5 @@ Trunk (unreleased changes)
     HIVE-48.  Support JDBC connections for interoperability between 
     Hive and RDBMS.  (Raghotham Murthy and Michi Mutsuzaki via dhruba)
 
+    HIVE-84.  Make MetaStore Client thread safe.  (Prasad Chakka via dhruba)
+
