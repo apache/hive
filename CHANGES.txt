@@ -32,6 +32,8 @@ Trunk (unreleased changes)
 
   IMPROVEMENTS
 
+    HIVE-209. Enabling asserts in tests. (Prasad Chakka via zshao)
+
     HIVE-177. Allow specifying custom input and output format in CREATE TABLE.
     (David Phillips via zshao)
 

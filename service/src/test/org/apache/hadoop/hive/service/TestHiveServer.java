@@ -187,6 +187,8 @@ public class TestHiveServer extends TestCase {
     client.execute(sql);
     row = client.fetchOne();
     dsp.setProperty(Constants.SERIALIZATION_DDL, client.getSchema());
+    // Need a new DynamicSerDe instance - re-initialization is not supported.
+    ds = new DynamicSerDe();
     ds.initialize(new Configuration(), dsp);
     o = ds.deserialize(new BytesWritable(row.getBytes()));
   }

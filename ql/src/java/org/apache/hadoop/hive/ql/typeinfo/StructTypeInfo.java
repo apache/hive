@@ -75,7 +75,6 @@ public class StructTypeInfo extends TypeInfo implements Serializable{
   /** For TypeInfoFactory use only.
    */
   StructTypeInfo(List<String> names, List<TypeInfo> typeInfos) {
-    assert(allStructFieldNames.size() == typeInfos.size());
     allStructFieldNames = new ArrayList<String>();
     allStructFieldNames.addAll(names);
     allStructFieldTypeInfos = new ArrayList<TypeInfo>();

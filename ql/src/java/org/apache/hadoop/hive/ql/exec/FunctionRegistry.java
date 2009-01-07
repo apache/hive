@@ -236,6 +236,11 @@ public class FunctionRegistry {
     if (from.equals(java.sql.Date.class) && to.equals(String.class)) {
       return true;
     }
+    // Void can be converted to any type
+    if (from.equals(Void.class)) {
+      return true;
+    }
+    
     // Allow implicit conversion from Byte -> Integer -> Long -> Float -> Double -> String
     Integer f = numericTypes.get(from);
     Integer t = numericTypes.get(to);

@@ -252,11 +252,14 @@
       <batchtest todir="${test.build.dir}" unless="testcase">
         <fileset dir="${test.build.classes}"
                  includes="**/${test.include}.class"
-                 excludes="**/TestMTQueries.class,**/TestSerDe.class" />
+                 excludes="**/TestSerDe.class" />
       </batchtest>
       <batchtest todir="${test.build.dir}" if="testcase">
         <fileset dir="${test.build.classes}" includes="**/${testcase}.class"/>
       </batchtest>
+      <assertions>
+        <enable />
+      </assertions>
     </junit>
     <fail if="tests.failed">Tests failed!</fail>
   </target>

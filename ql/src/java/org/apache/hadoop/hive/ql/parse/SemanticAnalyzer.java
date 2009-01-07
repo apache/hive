@@ -186,11 +186,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (expressionTree.getToken().getType() == HiveParser.TOK_FUNCTION
         || expressionTree.getToken().getType() == HiveParser.TOK_FUNCTIONDI) {
       assert (expressionTree.getChildCount() != 0);
-      assert (expressionTree.getChild(0).getType() == HiveParser.Identifier);
-      String functionName = unescapeIdentifier(expressionTree.getChild(0).getText());
-      if (FunctionRegistry.getUDAF(functionName) != null) {
-        aggregations.put(expressionTree.toStringTree(), expressionTree);
-        return;
+      if (expressionTree.getChild(0).getType() == HiveParser.Identifier) {
+        String functionName = unescapeIdentifier(expressionTree.getChild(0).getText());
+        if (FunctionRegistry.getUDAF(functionName) != null) {
+          aggregations.put(expressionTree.toStringTree(), expressionTree);
+          return;
+        }
       }
     }
     for (int i = 0; i < expressionTree.getChildCount(); i++) {

@@ -192,8 +192,7 @@ public class DynamicSerDeFieldList extends DynamicSerDeSimpleNode implements Ser
     }
     if(thrift_mode && !stopSeen) {
       // strip off the STOP marker, which may be left if all the fields were in the serialization
-      TField field = iprot.readFieldBegin();
-      assert(field.type == TType.STOP);
+      iprot.readFieldBegin();
     }
     return struct;
   }

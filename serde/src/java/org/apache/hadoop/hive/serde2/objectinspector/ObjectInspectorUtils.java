@@ -42,7 +42,7 @@ public class ObjectInspectorUtils {
   public static boolean isPrimitiveClass(Class<?> c) {
     return ((c == String.class) || (c == Boolean.class) ||
             (c == Character.class) || (c == java.sql.Date.class) || 
-            java.lang.Number.class.isAssignableFrom(c) ||
+            java.lang.Number.class.isAssignableFrom(c) || (c == Void.class) ||
             c.isPrimitive());
   }
   
