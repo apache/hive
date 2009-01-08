@@ -76,13 +76,14 @@ STAGE PLANS:
                 name: dest1
 
 
--1103622755	{"myint":64,"mystring":"512"}
--1147582749	{"myint":1,"mystring":"1"}
--1220068486	{"myint":0,"mystring":"0"}
--1281615204	{"myint":36,"mystring":"216"}
--1587372270	{"myint":9,"mystring":"27"}
--1883609158	{"myint":81,"mystring":"729"}
--2091002568	{"myint":4,"mystring":"8"}
--240543261	{"myint":16,"mystring":"64"}
-1539139271	{"myint":49,"mystring":"343"}
-1914724542	{"myint":25,"mystring":"125"}
+NULL	{"myint":null,"mystring":null}
+-1461153966	{"myint":49,"mystring":"343"}
+-1952710705	{"myint":25,"mystring":"125"}
+-734328905	{"myint":16,"mystring":"64"}
+-751827636	{"myint":4,"mystring":"8"}
+1244525196	{"myint":36,"mystring":"216"}
+1638581586	{"myint":64,"mystring":"512"}
+1712634731	{"myint":0,"mystring":"0"}
+336964422	{"myint":81,"mystring":"729"}
+465985201	{"myint":1,"mystring":"1"}
+477111225	{"myint":9,"mystring":"27"}

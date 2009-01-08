@@ -98,7 +98,12 @@ public class CreateSequenceFile {
       Writable value = serde.serialize(complex);
       writer.append(key, value);
     }
-    
+
+    // Add an all-null record
+    Complex complex = new Complex(0, null, null, null, null, null);
+    Writable value = serde.serialize(complex);
+    writer.append(key, value);
+
     // Close files
     writer.close();
   }

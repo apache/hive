@@ -61,11 +61,15 @@ public class ExprNodeFieldEvaluator extends ExprNodeEvaluator {
     result.oi = resultObjectInspector;
     if (desc.getIsList()) {
       List<?> list = ((ListObjectInspector)leftInspectableObject.oi).getList(leftInspectableObject.o);
-      List<Object> r = new ArrayList<Object>(list.size());
-      for(int i=0; i<list.size(); i++) {
-        r.add(structObjectInspector.getStructFieldData(list.get(i), field));
+      if (list == null) {
+        result.o = null;
+      } else {
+        List<Object> r = new ArrayList<Object>(list.size());
+        for(int i=0; i<list.size(); i++) {
+          r.add(structObjectInspector.getStructFieldData(list.get(i), field));
+        }
+        result.o = r;
       }
-      result.o = r;
     } else {
       result.o = structObjectInspector.getStructFieldData(leftInspectableObject.o, field);
     }

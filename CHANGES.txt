@@ -71,6 +71,8 @@ Trunk (unreleased changes)
 
   BUG FIXES
 
+    HIVE-161. Fixed xpath x.y when x is a null list. (zshao)
+
     HIVE-206. Fixed partition pruning check for uppercase table names.
     (Ashish Thusoo via zshao)
 
