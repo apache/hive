@@ -158,18 +158,15 @@ public class DynamicSerDe implements SerDe, Serializable {
     }
   }
 
-  @Override
   public ObjectInspector getObjectInspector() throws SerDeException {
     return dynamicSerDeStructBaseToObjectInspector(this.bt);
   }
 
-  @Override
   public Class<? extends Writable> getSerializedClass() {
     return BytesWritable.class;
   }
 
   BytesWritable ret = new BytesWritable();
-  @Override
   public Writable serialize(Object obj, ObjectInspector objInspector)
   throws SerDeException {
     try {

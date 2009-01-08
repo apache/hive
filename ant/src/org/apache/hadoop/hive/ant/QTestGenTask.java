@@ -58,6 +58,8 @@ public class QTestGenTask extends Task {
  
   protected String resultsDirectory;
 
+  protected String logDirectory;
+
   protected String template;
 
   protected String className;
@@ -121,6 +123,14 @@ public class QTestGenTask extends Task {
     return outputDirectory;
   }
 
+  public void setLogDirectory(String logDirectory) {
+    this.logDirectory = logDirectory;
+  }
+
+  public String getLogDirectory() {
+    return this.logDirectory;
+  }
+
   public void setResultsDirectory(String resultsDirectory) {
     this.resultsDirectory = resultsDirectory;
   }
@@ -167,6 +177,10 @@ public class QTestGenTask extends Task {
       throw new BuildException("No queryDirectory or queryFile specified");
     }
 
+    if (logDirectory == null) {
+      throw new BuildException("No logDirectory specified");
+    }
+
     if (resultsDirectory == null) {
       throw new BuildException("No resultsDirectory specified");
     }
@@ -178,6 +192,7 @@ public class QTestGenTask extends Task {
     File [] qFiles = null;
     File outDir = null;
     File resultsDir = null;
+    File logDir = null;
     
     try {
       File inpDir = null;
@@ -198,6 +213,11 @@ public class QTestGenTask extends Task {
       outDir = new File(outputDirectory);
       if (!outDir.exists()) {
         outDir.mkdirs();
+      }
+
+      logDir = new File(logDirectory);
+      if (!logDir.exists()) {
+        throw new BuildException("Log Directory " + logDir.getCanonicalPath() + " does not exist");
       }
       
       resultsDir = new File(resultsDirectory);
@@ -232,6 +252,7 @@ public class QTestGenTask extends Task {
       ctx.put("className", className);
       ctx.put("qfiles", qFiles);
       ctx.put("resultsDir", resultsDir);
+      ctx.put("logDir", logDir);
 
       File outFile = new File(outDir, className + ".java");
       FileWriter writer = new FileWriter(outFile);

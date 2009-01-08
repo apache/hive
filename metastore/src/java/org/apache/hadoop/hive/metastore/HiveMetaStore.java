@@ -581,7 +581,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       }
 
-      @Override
       public List<String> get_tables(String dbname, String pattern) throws MetaException {
         this.incrementCounter("get_tables");
         logStartFunction("get_tables: db=" + dbname + " pat=" + pattern);

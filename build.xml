@@ -184,6 +184,14 @@
 
   <target name="eclipse-files" depends="init"
           description="Generate files for Eclipse">
+
+    <condition property="hadoop.version" value="0.19">
+      <not>
+        <isset property="hadoop.version"/>
+      </not>
+    </condition>
+    <echo message="Using hadoop version ${hadoop.version}"/>
+
     <pathconvert property="eclipse.project">
       <path path="${basedir}"/>
       <regexpmapper from="^.*/([^/]+)$$" to="\1" handledirsep="yes"/>
@@ -195,8 +203,16 @@
       </fileset>
       <filterset>
         <filter token="PROJECT" value="${eclipse.project}"/>
+        <filter token="HADOOPVER" value="${hadoop.version}"/>
       </filterset>
     </copy>
+    <move todir="." includeemptydirs="false">
+      <fileset dir=".">
+        <include name="*.launchtemplate"/>
+      </fileset>
+      <mapper type="glob" from="*.launchtemplate" to="*.launch"/>
+    </move>
+
   </target>
 
   <target name="clean-eclipse-files"

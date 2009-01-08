@@ -43,7 +43,7 @@
   </path>
 
 
-  <target name="gen-test" depends="deploy-ant-tasks, test-conditions" >
+  <target name="gen-test" depends="deploy-ant-tasks, test-conditions, test-init" >
     <taskdef name="qtestgen" classname="org.apache.hadoop.hive.ant.QTestGenTask"
              classpath="${build.dir.hive}/hive_anttasks.jar:${hive.root}/lib/velocity-1.5.jar:${hive.root}/lib/commons-collections-3.2.1.jar:${hive.root}/lib/commons-lang-2.4.jar"/>
     
@@ -52,28 +52,32 @@
               queryDirectory="${ql.test.query.dir}/positive"
               queryFile="${qfile}"
               resultsDirectory="${ql.test.results.dir}/compiler" className="TestParse"
-              logFile="${test.log.dir}/testparsegen.log"/>
+              logFile="${test.log.dir}/testparsegen.log"
+              logDirectory="${test.log.dir}/positive"/>
     
     <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/ql/parse" 
               templatePath="${ql.test.template.dir}" template="TestParseNegative.vm" 
               queryDirectory="${ql.test.query.dir}/negative" 
               queryFile="${qfile}"
               resultsDirectory="${ql.test.results.dir}/compiler/errors" className="TestParseNegative"
-              logFile="${test.log.dir}/testparseneggen.log"/>
+              logFile="${test.log.dir}/testparseneggen.log"
+              logDirectory="${test.log.dir}/negative"/>
 
     <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli" 
               templatePath="${ql.test.template.dir}" template="TestCliDriver.vm" 
               queryDirectory="${ql.test.query.clientpositive.dir}" 
               queryFile="${qfile}"
               resultsDirectory="${ql.test.results.clientpositive.dir}" className="TestCliDriver"
-              logFile="${test.log.dir}/testclidrivergen.log"/>
+              logFile="${test.log.dir}/testclidrivergen.log"
+              logDirectory="${test.log.dir}/clientpositive"/>
 
     <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli" 
               templatePath="${ql.test.template.dir}" template="TestNegativeCliDriver.vm" 
               queryDirectory="${ql.test.query.dir}/clientnegative" 
               queryFile="${qfile}"
               resultsDirectory="${ql.test.results.dir}/clientnegative" className="TestNegativeCliDriver"
-              logFile="${test.log.dir}/testnegclidrivergen.log"/>
+              logFile="${test.log.dir}/testnegclidrivergen.log"
+              logDirectory="${test.log.dir}/clientnegative"/>
 
   </target>
 

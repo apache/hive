@@ -154,13 +154,13 @@ public class QTestUtil {
     }
   }
 
-  public QTestUtil(String outDir) throws Exception {
+  public QTestUtil(String outDir, String logDir) throws Exception {
     this.outDir = outDir;
+    this.logDir = logDir;
     conf = new HiveConf(Driver.class);
 
     // System.out.println(conf.toString());
     testFiles = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
-    logDir = conf.get("test.log.dir");
 
     String ow = System.getProperty("test.output.overwrite");
     overWrite = false;
@@ -724,15 +724,16 @@ public class QTestUtil {
    * In multithreaded mode each query file is run in a separate thread. the caller has to 
    * arrange that different query files do not collide (in terms of destination tables)
    */
-  public static boolean queryListRunner(File [] qfiles, String [] resDirs, boolean mt) {
+  public static boolean queryListRunner(File [] qfiles, String [] resDirs, String[] logDirs, boolean mt) {
 
     assert(qfiles.length == resDirs.length);
+    assert(qfiles.length == logDirs.length);
     boolean failed = false;        
 
     try {
       QTestUtil[] qt = new QTestUtil [qfiles.length];
       for(int i=0; i<qfiles.length; i++) {
-        qt[i] = new QTestUtil(resDirs[i]);
+        qt[i] = new QTestUtil(resDirs[i], logDirs[i]);
         qt[i].addFile(qfiles[i]);
       }
 

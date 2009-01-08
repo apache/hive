@@ -40,7 +40,6 @@ public class ASTNode extends CommonTree implements Node {
   /* (non-Javadoc)
    * @see org.apache.hadoop.hive.ql.lib.Node#getChildren()
    */
-  @Override
   public Vector<Node> getChildren() {
     if (super.getChildCount() == 0) {
       return null;
@@ -57,7 +56,6 @@ public class ASTNode extends CommonTree implements Node {
   /* (non-Javadoc)
    * @see org.apache.hadoop.hive.ql.lib.Node#getName()
    */
-  @Override
   public String getName() {
     return (new Integer(super.getToken().getType())).toString();
   }

@@ -90,12 +90,10 @@ public class ObjectStore implements RawStore, Configurable {
   
   public ObjectStore() {}
 
-  @Override
   public Configuration getConf() {
     return hiveConf;
   }
 
-  @Override
   @SuppressWarnings("nls")
   public void setConf(Configuration conf) {
     this.hiveConf = conf;

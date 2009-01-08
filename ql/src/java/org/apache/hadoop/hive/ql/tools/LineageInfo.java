@@ -76,7 +76,6 @@ public class LineageInfo  implements NodeProcessor {
   /**
    * Implements the process method for the NodeProcessor interface.
    */
-  @Override
   public void process(Node nd, NodeProcessorCtx procCtx)
   throws SemanticException {
     ASTNode pt = (ASTNode)nd;

@@ -132,6 +132,10 @@
 
   <target name="test-init">
     <mkdir dir="${test.data.dir}"/>
+    <mkdir dir="${test.log.dir}/clientpositive"/>
+    <mkdir dir="${test.log.dir}/clientnegative"/>
+    <mkdir dir="${test.log.dir}/positive"/>
+    <mkdir dir="${test.log.dir}/negative"/>
     <copy todir="${test.data.dir}">
       <fileset dir="${test.src.data.dir}">
         <exclude name="**/.svn"/>
@@ -230,8 +234,6 @@
   <!-- target to run the tests -->
   <target name="test"
   	depends="test-conditions,gen-test,compile-test,test-jar,test-init">
-    <delete dir="${test.log.dir}"/>
-    <mkdir dir="${test.log.dir}"/>
     <junit showoutput="${test.output}" printsummary="yes" haltonfailure="no"
            fork="yes" maxmemory="256m" dir="${basedir}" timeout="${test.timeout}"
            errorProperty="tests.failed" failureProperty="tests.failed" filtertrace="off">

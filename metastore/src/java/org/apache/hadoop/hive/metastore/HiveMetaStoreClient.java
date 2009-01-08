@@ -472,7 +472,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     return getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
   }
 
-  @Override
   public List<String> listPartitionNames(String dbName, String tblName, short max)
       throws MetaException, TException {
     // TODO Auto-generated method stub

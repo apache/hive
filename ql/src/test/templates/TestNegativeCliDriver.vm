@@ -25,7 +25,7 @@ public class $className extends TestCase {
   @Override
   protected void setUp() {
     try {
-      qt = new QTestUtil("$resultsDir.getCanonicalPath()");
+      qt = new QTestUtil("$resultsDir.getCanonicalPath()", "$logDir.getCanonicalPath()");
 
 #foreach ($qf in $qfiles)
       qt.addFile("$qf.getCanonicalPath()");

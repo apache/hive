@@ -55,13 +55,11 @@ public class FileStore implements RawStore {
 
   private Configuration conf;
 
-  @Override
   public Configuration getConf() {
     // TODO Auto-generated method stub
     return null;
   }
 
-  @Override
   public void setConf(Configuration conf) {
     this.conf = conf;
     String msRootPath = HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREDIRECTORY);
@@ -105,7 +103,6 @@ public class FileStore implements RawStore {
     return f;
   }
 
-  @Override
   public boolean createDatabase(Database db) throws MetaException {
     // ignores the location param
     boolean mkdir = getDBDir(db.getName()).mkdir();
@@ -115,7 +112,6 @@ public class FileStore implements RawStore {
     return mkdir;
   }
 
-  @Override
   public boolean createDatabase(String name) throws MetaException {
     return this.createDatabase(new Database(name, "ignored param"));
   }
@@ -220,7 +216,6 @@ public class FileStore implements RawStore {
     return names;
   }
 
-  @Override
   public List<String> getTables(String dbName, String pattern) throws MetaException {
     try {
       return this.getTablesByPattern(new DB(dbName, conf), pattern);
@@ -243,12 +238,10 @@ public class FileStore implements RawStore {
     return dbName.equals(MetaStore.DefaultDB) || f.isDirectory();
   }
 
-  @Override
   public boolean dropDatabase(String dbname) {
     return true; // no-op
   }
 
-  @Override
   public Database getDatabase(String name) throws NoSuchObjectException {
     try {
       DB db = new DB(name, conf);
@@ -259,7 +252,6 @@ public class FileStore implements RawStore {
     }
   }
 
-  @Override
   /**
    * getDatabases
    *
@@ -292,14 +284,12 @@ public class FileStore implements RawStore {
     return getSchemaFile(dbName, tableName).exists();
   }
 
-  @Override
   public void alterTable(String dbname, String name, Table newTable) throws InvalidObjectException,
       MetaException {
     // TODO Auto-generated method stub
     throw new MetaException("Not yet implemented");
   }
 
-  @Override
   public void createTable(Table tbl) throws InvalidObjectException, MetaException {
     Properties p = MetaStoreUtils.getSchema(tbl);
     try {
@@ -310,7 +300,6 @@ public class FileStore implements RawStore {
     }
   }
 
-  @Override
   public boolean dropTable(String dbName, String tableName) throws MetaException {
     try {
       new DB(dbName, conf).getTable(tableName, false).drop();
@@ -321,7 +310,6 @@ public class FileStore implements RawStore {
     return true;
   }
 
-  @Override
   public Table getTable(String dbName, String tableName) throws MetaException {
     try {
       Properties p = new DB(dbName, conf).getTable(tableName, true).getSchema();
@@ -332,67 +320,55 @@ public class FileStore implements RawStore {
     }
   }
 
-  @Override
   public boolean createType(Type type) {
     return true; // no-op
   }
 
-  @Override
   public boolean dropType(String typeName) {
     return true; // no-op
   }
 
-  @Override
   public boolean addPartition(Partition part) throws InvalidObjectException, MetaException {
     return true; // no-op as there is no metadata 
   }
 
-  @Override
   public boolean dropPartition(String dbName, String tableName, List<String> part_vals)
       throws MetaException {
     return true; // no-op
   }
 
-  @Override
   public Partition getPartition(String dbName, String tableName, List<String> part_vals)
       throws MetaException {
     // TODO Auto-generated method stub
     throw new MetaException("Not yet implemented");
   }
 
-  @Override
   public List<Partition> getPartitions(String dbName, String tableName, int max)
       throws MetaException {
     // TODO Auto-generated method stub
     throw new MetaException("Not yet implemented");
   }
 
-  @Override
   public Type getType(String typeName) {
     return null; // no-op
   }
 
-  @Override
   public boolean openTransaction() {
     return true;
   }
 
-  @Override
   public void rollbackTransaction() {
     // no-op
   }
 
-  @Override
   public boolean commitTransaction() {
     return true; // no-op
   }
 
-  @Override
   public void shutdown() {
     // no-op
   }
 
-  @Override
   public List<String> listPartitionNames(String db_name, String tbl_name, short max_parts)
       throws MetaException {
     // TODO Auto-generated method stub

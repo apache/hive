@@ -335,14 +335,12 @@ public class MetaStoreClient implements IMetaStoreClient {
   
 
   //These will disappear when the server is unified for both filestore and dbstore
-  @Override
   public List<Partition> listPartitions(String dbName, String tableName, short max_parts)
       throws NoSuchObjectException, MetaException, TException {
     //TODO: move the code from Table.getPartitions() to here
     return new ArrayList<Partition>();
   }
 
-  @Override
   public Partition getPartition(String dbName, String tableName, List<String> partVals)
       throws MetaException, TException {
     if(partVals.size() == 0) {
@@ -362,7 +360,6 @@ public class MetaStoreClient implements IMetaStoreClient {
     }
   }
 
-  @Override
   public void createTable(Table tbl) throws AlreadyExistsException, InvalidObjectException,
       MetaException, NoSuchObjectException, TException {
     Properties schema = MetaStoreUtils.getSchema(tbl);
@@ -425,26 +422,22 @@ public class MetaStoreClient implements IMetaStoreClient {
     return tPartition;
   }
 
-  @Override
   public void alter_table(String defaultDatabaseName, String tblName, Table table)
       throws InvalidOperationException, MetaException, TException {
     throw new MetaException("Not yet implementd in filestore");
   }
 
-  @Override
   public boolean createDatabase(String name, String location_uri) throws AlreadyExistsException,
       MetaException, TException {
     // TODO Auto-generated method stub
     return false;
   }
 
-  @Override
   public boolean dropDatabase(String name) throws MetaException, TException {
     // TODO Auto-generated method stub
     return false;
   }
 
-  @Override
   public List<String> listPartitionNames(String db_name, String tbl_name, short max_parts)
       throws MetaException, TException {
     // TODO Auto-generated method stub

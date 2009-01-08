@@ -99,7 +99,6 @@ public class HiveServer extends ThriftHive {
      *
      * @param query HiveQL query to execute
      */
-    @Override
     public void execute(String query) throws HiveServerException, TException {
       HiveServerHandler.LOG.info("Running the query: " + query);
       int rc = 0;
@@ -117,7 +116,6 @@ public class HiveServer extends ThriftHive {
     /**
      * Return the schema of the query result
      */
-    @Override
     public String getSchema() throws HiveServerException, TException {
       try {
         return driver.getSchema();
@@ -132,7 +130,6 @@ public class HiveServer extends ThriftHive {
      * 
      * @return the next row in a query result set. null if there is no more row to fetch.
      */
-    @Override
     public String fetchOne() throws HiveServerException, TException {
       driver.setMaxRows(1);
       Vector<String> result = new Vector<String>();
@@ -155,7 +152,6 @@ public class HiveServer extends ThriftHive {
      *         row to fetch or numRows == 0. 
      * @throws HiveServerException Invalid value for numRows (numRows < 0)
      */
-    @Override
     public List<String> fetchN(int numRows) throws HiveServerException, TException {
       if (numRows < 0) {
         throw new HiveServerException("Invalid argument for number of rows: " + numRows);
@@ -174,7 +170,6 @@ public class HiveServer extends ThriftHive {
      * TODO: Currently the server buffers all the rows before returning them 
      * to the client. Decide whether the buffering should be done in the client.
      */
-    @Override
     public List<String> fetchAll() throws HiveServerException, TException {
       Vector<String> rows = new Vector<String>();
       Vector<String> result = new Vector<String>();

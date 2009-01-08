@@ -185,3 +185,6 @@ Trunk (unreleased changes)
 
     HIVE-84.  Make MetaStore Client thread safe.  (Prasad Chakka via dhruba)
 
+    HIVE-203. Fix eclipse templates to get junit tests to run.
+    (Ashish Thusoo via dhruba)
+

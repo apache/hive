@@ -104,7 +104,6 @@ public class TBinarySortableProtocol extends TProtocol implements ConfigurableTP
    */
   boolean ascending; 
   
-  @Override
   public void initialize(Configuration conf, Properties tbl) throws TException {
     sortOrder = tbl.getProperty(Constants.SERIALIZATION_SORT_ORDER);
     if (sortOrder == null) {
@@ -534,12 +533,10 @@ public class TBinarySortableProtocol extends TProtocol implements ConfigurableTP
   }
 
   boolean lastPrimitiveWasNull;
-  @Override
   public boolean lastPrimitiveWasNull() throws TException {
     return lastPrimitiveWasNull;
   }
 
-  @Override
   public void writeNull() throws TException {
     writeRawBytes(nullByte, 0, 1);
   }
