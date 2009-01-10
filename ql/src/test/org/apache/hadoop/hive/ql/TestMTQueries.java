@@ -35,7 +35,7 @@ public class TestMTQueries extends TestCase {
 
   private String inpDir = System.getProperty("ql.test.query.clientpositive.dir");
   private String resDir = System.getProperty("ql.test.results.clientpositive.dir");
-  private String logDir = System.getProperty("test.log.dir"+"/clientpositive");
+  private String logDir = System.getProperty("test.log.dir") + "/clientpositive";
 
   public void testMTQueries1()  throws Exception {
     String[] testNames = new String [] {"join1.q", "join2.q", "groupby1.q", "groupby2.q", "join3.q", "input1.q", "input19.q"};

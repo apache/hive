@@ -248,6 +248,7 @@
       <sysproperty key="hive.aux.jars.path" value="${build.dir.hive}/ql/test/test-udfs.jar,${test.src.data.dir}/files/TestSerDe.jar"/>
       <sysproperty key="ql.test.query.clientpositive.dir" value="${ql.test.query.clientpositive.dir}"/>
       <sysproperty key="ql.test.results.clientpositive.dir" value="${ql.test.results.clientpositive.dir}"/>
+      <sysproperty key="test.log.dir" value="${test.log.dir}"/>
 
       <classpath refid="${test.classpath.id}"/>
       <formatter type="${test.junit.output.format}" usefile="${test.junit.output.usefile}" />
