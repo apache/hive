@@ -22,6 +22,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang.StringUtils;
@@ -109,7 +110,7 @@ public class Warehouse {
     return false;
   }
 
-  public static String makePartName(LinkedHashMap<String, String> spec) throws MetaException {
+  public static String makePartName(Map<String, String> spec) throws MetaException {
     StringBuffer suffixBuf = new StringBuffer();
     for(Entry<String, String> e: spec.entrySet()) {
       if(e.getValue() == null  || e.getValue().length() == 0) {

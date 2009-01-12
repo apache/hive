@@ -34,6 +34,7 @@ public class SemanticAnalyzerFactory {
       case HiveParser.TOK_CREATEEXTTABLE: 
       case HiveParser.TOK_DROPTABLE: 
       case HiveParser.TOK_DESCTABLE: 
+      case HiveParser.TOK_MSCK:
       case HiveParser.TOK_ALTERTABLE_ADDCOLS:
       case HiveParser.TOK_ALTERTABLE_REPLACECOLS:
       case HiveParser.TOK_ALTERTABLE_RENAME:

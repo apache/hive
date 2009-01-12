@@ -241,7 +241,7 @@ public class Table {
     return outputFormatClass;
   }
 
-  final public boolean isValidSpec(AbstractMap<String, String> spec) throws HiveException {
+  final public boolean isValidSpec(Map<String, String> spec) throws HiveException {
 
     // TODO - types need to be checked.
     List<FieldSchema> partCols = getTTable().getPartitionKeys();

@@ -28,6 +28,7 @@ public class DDLWork implements Serializable {
   private showTablesDesc       showTblsDesc;
   private showPartitionsDesc   showPartsDesc;
   private descTableDesc        descTblDesc;
+  private MsckDesc msckDesc;
 
   public DDLWork() { }
 
@@ -71,6 +72,10 @@ public class DDLWork implements Serializable {
    */
   public DDLWork(showPartitionsDesc showPartsDesc) {
     this.showPartsDesc = showPartsDesc;
+  }
+
+  public DDLWork(MsckDesc checkDesc) {
+    this.msckDesc = checkDesc;
   }
 
   /**
@@ -162,6 +167,20 @@ public class DDLWork implements Serializable {
    */
   public void setDescTblDesc(descTableDesc descTblDesc) {
     this.descTblDesc = descTblDesc;
+  }
+
+  /**
+   * @return Metastore check description
+   */
+  public MsckDesc getMsckDesc() {
+    return msckDesc;
+  }
+
+  /**
+   * @param msckDesc metastore check description
+   */
+  public void setMsckDesc(MsckDesc msckDesc) {
+    this.msckDesc = msckDesc;
   }
   
 }

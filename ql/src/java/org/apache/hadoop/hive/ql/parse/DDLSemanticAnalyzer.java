@@ -25,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.antlr.runtime.tree.CommonTree;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,6 +36,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.alterTableDesc;
@@ -97,8 +99,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     {
       ctx.setResFile(new Path(getTmpFileName()));
       analyzeShowTables(ast);
-    }
-    else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_RENAME)
+    } else if (ast.getToken().getType() == HiveParser.TOK_MSCK) {
+      ctx.setResFile(new Path(getTmpFileName()));
+      analyzeMetastoreCheck(ast);    
+    } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_RENAME)
       analyzeAlterTableRename(ast);
     else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_ADDCOLS)
       analyzeAlterTableModifyCols(ast, alterTableTypes.ADDCOLS);
@@ -495,13 +499,40 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     alterTableDesc alterTblDesc = new alterTableDesc(tblName, newCols, alterType);
     rootTasks.add(TaskFactory.get(new DDLWork(alterTblDesc), conf));
   }
-
+  
   private void analyzeAlterTableDropParts(ASTNode ast) throws SemanticException {
-    String tblName = null;
-    List<HashMap<String, String>> partSpecs = new ArrayList<HashMap<String, String>>();
-    int childIndex = 0;
+    String tblName = unescapeIdentifier(ast.getChild(0).getText());
     // get table metadata
-    tblName = unescapeIdentifier(ast.getChild(0).getText());
+    List<Map<String, String>> partSpecs = getPartitionSpecs(ast);
+    dropTableDesc dropTblDesc = new dropTableDesc(tblName, partSpecs);
+    rootTasks.add(TaskFactory.get(new DDLWork(dropTblDesc), conf));
+  }
+  
+  /**
+   * Verify that the information in the metastore matches up
+   * with the data on the fs.
+   * @param ast Query tree.
+   * @throws SemanticException
+   */
+  private void analyzeMetastoreCheck(CommonTree ast) throws SemanticException {
+    String tableName = null;
+    if(ast.getChildCount() > 0) {
+      tableName = unescapeIdentifier(ast.getChild(0).getText());
+    }
+    List<Map<String, String>> specs = getPartitionSpecs(ast);
+    MsckDesc checkDesc = new MsckDesc(tableName, specs, ctx.getResFile());
+    rootTasks.add(TaskFactory.get(new DDLWork(checkDesc), conf));   
+  }
+
+  /**
+   * Get the partition specs from the tree.
+   * @param ast Tree to extract partitions from.
+   * @return A list of partition name to value mappings.
+   * @throws SemanticException
+   */
+  private List<Map<String, String>> getPartitionSpecs(CommonTree ast) throws SemanticException {
+    List<Map<String, String>> partSpecs = new ArrayList<Map<String, String>>();
+    int childIndex = 0;
     // get partition metadata if partition specified
     for( childIndex = 1; childIndex < ast.getChildCount(); childIndex++) {
       ASTNode partspec = (ASTNode) ast.getChild(childIndex);
@@ -513,7 +544,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       partSpecs.add(partSpec);
     }
-    dropTableDesc dropTblDesc = new dropTableDesc(tblName, partSpecs);
-    rootTasks.add(TaskFactory.get(new DDLWork(dropTblDesc), conf));
+    return partSpecs;
   }
 }

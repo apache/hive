@@ -88,6 +88,7 @@ TOK_ALTERTABLE_DROPPARTS;
 TOK_ALTERTABLE_SERDEPROPERTIES;
 TOK_ALTERTABLE_SERIALIZER;
 TOK_ALTERTABLE_PROPERTIES;
+TOK_MSCK;
 TOK_SHOWTABLES;
 TOK_SHOWPARTITIONS;
 TOK_CREATEEXTTABLE;
@@ -163,6 +164,7 @@ ddlStatement
     | alterStatement
     | descStatement
     | showStatement
+    | metastoreCheck
     | createFunctionStatement
     ;
 
@@ -228,6 +230,11 @@ showStatement
     : KW_SHOW KW_TABLES showStmtIdentifier?  -> ^(TOK_SHOWTABLES showStmtIdentifier?)
     | KW_SHOW KW_PARTITIONS Identifier -> ^(TOK_SHOWPARTITIONS Identifier)
     ;
+    
+metastoreCheck
+    : KW_MSCK (KW_TABLE table=Identifier partitionSpec? (COMMA partitionSpec)*)?
+    -> ^(TOK_MSCK ($table partitionSpec*)?)
+    ;     
     
 createFunctionStatement
     : KW_CREATE KW_TEMPORARY KW_FUNCTION Identifier KW_AS StringLiteral
@@ -850,6 +857,7 @@ KW_PARTITIONS : 'PARTITIONS';
 KW_TABLE: 'TABLE';
 KW_TABLES: 'TABLES';
 KW_SHOW: 'SHOW';
+KW_MSCK: 'MSCK';
 KW_DIRECTORY: 'DIRECTORY';
 KW_LOCAL: 'LOCAL';
 KW_TRANSFORM : 'TRANSFORM';

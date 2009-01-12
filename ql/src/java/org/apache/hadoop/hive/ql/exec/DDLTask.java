@@ -18,12 +18,14 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.io.BufferedWriter;
 import java.io.DataOutput;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.Serializable;
+import java.io.Writer;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -41,11 +43,14 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.ql.metadata.CheckResult;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreChecker;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.alterTableDesc;
 import org.apache.hadoop.hive.ql.plan.createTableDesc;
@@ -102,6 +107,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (alterTbl != null) {
         return alterTable(db, alterTbl);
       }
+      
+      MsckDesc msckDesc = work.getMsckDesc();
+      if (msckDesc != null) {
+        return msck(db, fs, msckDesc);
+      }      
 
       descTableDesc descTbl = work.getDescTblDesc();
       if (descTbl != null) {
@@ -132,6 +142,95 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
     assert false;
     return 0;
+  }
+
+  /**
+   * MetastoreCheck, see if the data in the metastore matches
+   * what is on the dfs.
+   * Current version checks for tables and partitions that
+   * are either missing on disk on in the metastore.
+   * 
+   * @param db The database in question.
+   * @param fs FileSystem that will contain the file written.
+   * @param msckDesc Information about the tables and partitions
+   * we want to check for.
+   * @return Returns 0 when execution succeeds and above 0 if it fails.
+   */
+  private int msck(Hive db, FileSystem fs, MsckDesc msckDesc) {
+    
+    CheckResult result = new CheckResult();
+    try {
+      HiveMetaStoreChecker checker = new HiveMetaStoreChecker(db, fs);
+      checker.checkMetastore(
+        MetaStoreUtils.DEFAULT_DATABASE_NAME, msckDesc.getTableName(), 
+        msckDesc.getPartitionSpec(),
+        result);
+    } catch (HiveException e) {
+      LOG.warn("Failed to run metacheck: ", e);
+      return 1;
+    } catch (IOException e) {
+      LOG.warn("Failed to run metacheck: ", e);
+      return 1;
+    } finally {
+            
+      BufferedWriter resultOut = null;
+      try {
+        resultOut = new BufferedWriter(
+            new OutputStreamWriter(fs.create(msckDesc.getResFile())));
+        
+        boolean firstWritten = false;
+        firstWritten |= writeMsckResult(result.getTablesNotInMs(), 
+            "Tables not in metastore:", resultOut, firstWritten);
+        firstWritten |= writeMsckResult(result.getTablesNotOnFs(), 
+            "Tables missing on filesystem:", resultOut, firstWritten);      
+        firstWritten |= writeMsckResult(result.getPartitionsNotInMs(), 
+            "Partitions not in metastore:", resultOut, firstWritten);
+        firstWritten |= writeMsckResult(result.getPartitionsNotOnFs(), 
+            "Partitions missing from filesystem:", resultOut, firstWritten);      
+      } catch (IOException e) {
+        LOG.warn("Failed to save metacheck output: ", e);
+        return 1;
+      } finally {
+        if(resultOut != null) {
+          try {
+            resultOut.close();
+          } catch (IOException e) {
+            LOG.warn("Failed to close output file: ", e);
+            return 1;
+          }
+        }
+      }
+    }
+    
+    return 0;
+  }
+
+  /**
+   * Write the result of msck to a writer.
+   * @param result The result we're going to write
+   * @param msg Message to write.
+   * @param out Writer to write to
+   * @param wrote if any previous call wrote data
+   * @return true if something was written
+   * @throws IOException In case the writing fails
+   */
+  private boolean writeMsckResult(List<? extends Object> result, String msg, 
+      Writer out, boolean wrote) throws IOException {
+    
+    if(!result.isEmpty()) { 
+      if(wrote) {
+        out.write(terminator);
+      }
+      
+      out.write(msg);
+      for (Object entry : result) {
+        out.write(separator);
+        out.write(entry.toString());
+      }
+      return true;
+    }
+    
+    return false;
   }
 
   /**
@@ -455,7 +554,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       // drop partitions in the list
       Table tbl = db.getTable(dropTbl.getTableName());
       List<Partition> parts = new ArrayList<Partition>();
-      for (HashMap<String, String> partSpec : dropTbl.getPartSpecs()) {
+      for (Map<String, String> partSpec : dropTbl.getPartSpecs()) {
         Partition part = db.getPartition(tbl, partSpec, false);
         if (part == null) {
           console.printInfo("Partition " + partSpec + " does not exist.");

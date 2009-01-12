@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @explain(displayName="Drop Table")
 public class dropTableDesc extends ddlDesc implements Serializable 
@@ -28,7 +29,7 @@ public class dropTableDesc extends ddlDesc implements Serializable
   private static final long serialVersionUID = 1L;
   
   String            tableName;
-  List<HashMap<String, String>> partSpecs;
+  List<Map<String, String>> partSpecs;
 
   /**
    * @param tableName
@@ -38,7 +39,7 @@ public class dropTableDesc extends ddlDesc implements Serializable
     this.partSpecs = null;
   }
 
-  public dropTableDesc(String tableName, List<HashMap<String, String>> partSpecs) {
+  public dropTableDesc(String tableName, List<Map<String, String>> partSpecs) {
     this.tableName = tableName;
     this.partSpecs = partSpecs;
   }
@@ -61,14 +62,14 @@ public class dropTableDesc extends ddlDesc implements Serializable
   /**
    * @return the partSpecs
    */
-  public List<HashMap<String, String>> getPartSpecs() {
+  public List<Map<String, String>> getPartSpecs() {
     return partSpecs;
   }
 
   /**
    * @param partSpecs the partSpecs to set
    */
-  public void setPartSpecs(List<HashMap<String, String>> partSpecs) {
+  public void setPartSpecs(List<Map<String, String>> partSpecs) {
     this.partSpecs = partSpecs;
   }
 }

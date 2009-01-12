@@ -23,6 +23,7 @@ import java.net.URI;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 
@@ -507,14 +508,14 @@ public class Hive {
    * @return created partition object
    * @throws HiveException if table doesn't exist or partition already exists
    */
-  public Partition createPartition(Table tbl, AbstractMap<String, String> partSpec) throws HiveException {
+  public Partition createPartition(Table tbl, Map<String, String> partSpec) throws HiveException {
     org.apache.hadoop.hive.metastore.api.Partition tpart = null;
     List<String> pvals = new ArrayList<String>();
     for (FieldSchema field : tbl.getPartCols()) {
       pvals.add(partSpec.get(field.getName()));
     }
     try {
-      tpart = getMSC().appendPartition(MetaStoreUtils.DEFAULT_DATABASE_NAME, tbl.getName(), pvals);;
+      tpart = getMSC().appendPartition(tbl.getDbName(), tbl.getName(), pvals);
     } catch (Exception e) {
       LOG.error(StringUtils.stringifyException(e));
       throw new HiveException(e);
@@ -530,7 +531,7 @@ public class Hive {
    * @return result partition object or null if there is no partition
    * @throws HiveException
    */
-  public Partition getPartition(Table tbl, AbstractMap<String, String> partSpec, boolean forceCreate)
+  public Partition getPartition(Table tbl, Map<String, String> partSpec, boolean forceCreate)
       throws HiveException {
     if(!tbl.isValidSpec(partSpec)) {
       throw new HiveException("Invalid partition: " + partSpec);
@@ -545,10 +546,10 @@ public class Hive {
     }
     org.apache.hadoop.hive.metastore.api.Partition tpart = null;
     try {
-      tpart = getMSC().getPartition(MetaStoreUtils.DEFAULT_DATABASE_NAME, tbl.getName(), pvals);
+      tpart = getMSC().getPartition(tbl.getDbName(), tbl.getName(), pvals);
       if(tpart == null && forceCreate) {
         LOG.debug("creating partition for table "  + tbl.getName() + " with partition spec : " + partSpec);
-        tpart = getMSC().appendPartition(MetaStoreUtils.DEFAULT_DATABASE_NAME, tbl.getName(), pvals);;
+        tpart = getMSC().appendPartition(tbl.getDbName(), tbl.getName(), pvals);;
       }
       if(tpart == null){
         return null;
