@@ -167,6 +167,12 @@
           <exclude name="META-INF/MANIFEST.MF"/>
       </patternset>
     </unzip>
+    <unzip src="${hive.root}/lib/json.jar" dest="${build.dir.hive}/json/classes">
+      <patternset>
+          <exclude name="META-INF"/>
+          <exclude name="META-INF/MANIFEST.MF"/>
+      </patternset>
+    </unzip>
     <!-- jar jarfile="${build.dir}/hive_${name}.jar" basedir="${build.classes}" / -->
     <jar jarfile="${build.dir}/hive_exec.jar">
       <fileset dir="${build.dir.hive}/common/classes" includes="**/*.class"/>
@@ -175,6 +181,7 @@
       <fileset dir="${build.dir.hive}/jexl/classes" includes="**/*.class"/>
       <fileset dir="${build.dir.hive}/thrift/classes" includes="**/*.class"/>
       <fileset dir="${build.dir.hive}/commons-lang/classes" includes="**/StringUtils.class,**/WordUtils.class"/>
+      <fileset dir="${build.dir.hive}/json/classes" includes="**/*.class"/>
     </jar>
   </target>
 

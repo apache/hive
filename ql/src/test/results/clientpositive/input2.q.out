@@ -3,8 +3,8 @@ b	double
 a	array<int>
 b	double
 c	map<double,int>
-src	src1	src_sequencefile	src_thrift	srcbucket	srcpart	test2a	test2b
-src	src1	src_sequencefile	src_thrift	srcbucket	srcpart	test2b
+src	src1	src_json	src_sequencefile	src_thrift	srcbucket	srcpart	test2a	test2b
+src	src1	src_json	src_sequencefile	src_thrift	srcbucket	srcpart	test2b
 ABSTRACT SYNTAX TREE:
   TOK_SHOWTABLES
 

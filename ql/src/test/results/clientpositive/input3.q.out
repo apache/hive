@@ -3,7 +3,7 @@ b	double
 a	array<int>
 b	double
 c	map<double,int>
-src	src1	src_sequencefile	src_thrift	srcbucket	srcpart	test3a	test3b
+src	src1	src_json	src_sequencefile	src_thrift	srcbucket	srcpart	test3a	test3b
 ABSTRACT SYNTAX TREE:
   (TOK_ALTERTABLE_ADDCOLS TEST3b (TOK_TABCOLLIST (TOK_TABCOL X TOK_DOUBLE)))
 
@@ -42,7 +42,7 @@ a	array<int>
 b	double
 c	map<double,int>
 x	double
-src	src1	src_sequencefile	src_thrift	srcbucket	srcpart	test3a	test3c
+src	src1	src_json	src_sequencefile	src_thrift	srcbucket	srcpart	test3a	test3c
 ABSTRACT SYNTAX TREE:
   (TOK_ALTERTABLE_REPLACECOLS TEST3c (TOK_TABCOLLIST (TOK_TABCOL R1 TOK_INT) (TOK_TABCOL R2 TOK_DOUBLE)))
 
@@ -61,4 +61,4 @@ STAGE PLANS:
 r1	int
 r2	double
 Detailed Table Information:
-Table(tableName:test3c,dbName:default,owner:zshao,createTime:1229498330,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:r1,type:int,comment:null), FieldSchema(name:r2,type:double,comment:null)],location:file:/data/users/zshao/sync/apache-trunk-HIVE-104/build/ql/test/data/warehouse/test3b,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe,parameters:{serialization.format=org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[],parameters:{last_modified_by=zshao,last_modified_time=1229498331})
+Table(tableName:test3c,dbName:default,owner:zshao,createTime:1231804109,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:r1,type:int,comment:null), FieldSchema(name:r2,type:double,comment:null)],location:file:/data/users/zshao/sync/pp/build/ql/test/data/warehouse/test3b,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe,parameters:{serialization.format=org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[],parameters:{last_modified_by=zshao,last_modified_time=1231804109})

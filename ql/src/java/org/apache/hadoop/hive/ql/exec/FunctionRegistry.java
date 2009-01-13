@@ -86,7 +86,9 @@ public class FunctionRegistry {
     registerUDF("year", UDFYear.class, OperatorType.PREFIX, false);
     registerUDF("from_unixtime", UDFFromUnixTime.class, OperatorType.PREFIX, false);
     registerUDF("to_date", UDFDate.class, OperatorType.PREFIX, false);
-    
+
+    registerUDF("get_json_object", UDFJson.class, OperatorType.PREFIX, false);
+
     registerUDF("+", UDFOPPlus.class, OperatorType.INFIX, true);
     registerUDF("-", UDFOPMinus.class, OperatorType.INFIX, true);
     registerUDF("*", UDFOPMultiply.class, OperatorType.INFIX, true);

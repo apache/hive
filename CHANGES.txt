@@ -9,6 +9,8 @@ Trunk (unreleased changes)
 
   NEW FEATURES
 
+    HIVE-163. JSON udf function added. (Hao Liu via zshao)
+
     HIVE-142. Add a metastore check command. (Johan Oskarsson via zshao)
 
     HIVE-148. Extend bin/hive to include the lineage tool.

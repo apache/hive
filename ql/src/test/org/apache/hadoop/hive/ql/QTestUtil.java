@@ -198,7 +198,7 @@ public class QTestUtil {
   public void cleanUp() throws Exception {
     String warehousePath = ((new URI(testWarehouse)).getPath());
     // Drop any tables that remain due to unsuccessful runs
-    for(String s: new String [] {"src", "src1", "src_thrift", "src_sequencefile", 
+    for(String s: new String [] {"src", "src1", "src_json", "src_thrift", "src_sequencefile", 
                                  "srcpart", "srcbucket", "dest1", "dest2", 
                                  "dest3", "dest4", "dest4_sequencefile",
                                  "dest_j1", "dest_j2", "dest_g1", "dest_g2"}) {
@@ -279,6 +279,11 @@ public class QTestUtil {
     db.createTable(srcThrift);
     srcTables.add("src_thrift");
     
+    LinkedList<String> json_cols = new LinkedList<String>();
+    json_cols.add("json");
+    db.createTable("src_json", json_cols, null, TextInputFormat.class, IgnoreKeyTextOutputFormat.class);
+    srcTables.add("src_json");
+
     // load the input data into the src table
     fpath = new Path(testFiles, "kv1.txt");
     newfpath = new Path(tmppath, "kv1.txt");
@@ -307,6 +312,13 @@ public class QTestUtil {
     newfpath = new Path(tmppath, "complex.seq");
     fs.copyFromLocalFile(false, true, fpath, newfpath);
     db.loadTable(newfpath, "src_thrift", true);    
+    
+    // load the json data into the src_json table
+    fpath = new Path(testFiles, "json.txt");
+    newfpath = new Path(tmppath, "json.txt");
+    fs.copyFromLocalFile(false, true, fpath, newfpath);
+    db.loadTable(newfpath, "src_json", false);
+ 
   }
 
   public void init() throws Exception {

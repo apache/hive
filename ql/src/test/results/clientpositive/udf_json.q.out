@@ -1,0 +1,35 @@
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src_json)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION get_json_object (TOK_COLREF src_json json) '$.owner')))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src_json 
+            Select Operator
+              expressions:
+                    expr: get_json_object(json, '$.owner')
+                    type: string
+              File Output Operator
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+{"store":{"fruit":[{"weight":8,"type":"apple"},{"weight":9,"type":"pear"}],"book":[{"author":"Nigel Rees","category":"reference","title":"Sayings of the Century","price":8.95},{"author":"Herman Melville","category":"fiction","title":"Moby Dick","price":8.99,"isbn":"0-553-21311-3"},{"author":"J. R. R. Tolkien","category":"fiction","title":"The Lord of the Rings","price":22.99,"reader":[{"name":"bob","age":25},{"name":"jack","age":26}],"isbn":"0-395-19395-8"}],"basket":[[1,2,{"b":"y","a":"x"}],[3,4],[5,6]],"bicycle":{"price":19.95,"color":"red"}},"email":"amy@only_for_json_udf_test.net","owner":"amy"}
+amy	{"fruit":[{"weight":8,"type":"apple"},{"weight":9,"type":"pear"}],"book":[{"author":"Nigel Rees","category":"reference","title":"Sayings of the Century","price":8.95},{"author":"Herman Melville","category":"fiction","title":"Moby Dick","price":8.99,"isbn":"0-553-21311-3"},{"author":"J. R. R. Tolkien","category":"fiction","title":"The Lord of the Rings","price":22.99,"reader":[{"name":"bob","age":25},{"name":"jack","age":26}],"isbn":"0-395-19395-8"}],"basket":[[1,2,{"b":"y","a":"x"}],[3,4],[5,6]],"bicycle":{"price":19.95,"color":"red"}}
+{"price":19.95,"color":"red"}	[{"author":"Nigel Rees","category":"reference","title":"Sayings of the Century","price":8.95},{"author":"Herman Melville","category":"fiction","title":"Moby Dick","price":8.99,"isbn":"0-553-21311-3"},{"author":"J. R. R. Tolkien","category":"fiction","title":"The Lord of the Rings","price":22.99,"reader":[{"name":"bob","age":25},{"name":"jack","age":26}],"isbn":"0-395-19395-8"}]
+{"author":"Nigel Rees","category":"reference","title":"Sayings of the Century","price":8.95}	[{"author":"Nigel Rees","category":"reference","title":"Sayings of the Century","price":8.95},{"author":"Herman Melville","category":"fiction","title":"Moby Dick","price":8.99,"isbn":"0-553-21311-3"},{"author":"J. R. R. Tolkien","category":"fiction","title":"The Lord of the Rings","price":22.99,"reader":[{"name":"bob","age":25},{"name":"jack","age":26}],"isbn":"0-395-19395-8"}]
+reference	["reference","fiction","fiction"]	["0-553-21311-3","0-395-19395-8"]	[{"name":"bob","age":25},{"name":"jack","age":26}]
+25	[25,26]
+2	[[1,2,{"b":"y","a":"x"}],[3,4],[5,6]]	1	[1,2,{"b":"y","a":"x"}]	[1,2,{"b":"y","a":"x"},3,4,5,6]	y	["y"]
+NULL	NULL	NULL	NULL	NULL	NULL
