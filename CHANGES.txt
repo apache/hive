@@ -75,6 +75,9 @@ Trunk (unreleased changes)
 
   BUG FIXES
 
+    HIVE-222. Fixed Group by on a combination of disitinct and non distinct aggregates.
+    (Ashish Thusoo via zshao)
+
     HIVE-161. Fixed xpath x.y when x is a null list. (zshao)
 
     HIVE-206. Fixed partition pruning check for uppercase table names.

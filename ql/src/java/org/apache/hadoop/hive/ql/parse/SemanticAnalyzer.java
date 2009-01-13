@@ -1328,57 +1328,51 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                                    new ColumnInfo(field, exprInfo.getType()));
     }
 
-    // If there is a distinctFuncExp, add all parameters to the reduceKeys.
-    if (parseInfo.getDistinctFuncExprForClause(dest) != null) {
-      ASTNode value = parseInfo.getDistinctFuncExprForClause(dest);
-      String aggName = value.getChild(0).getText();
-      Class<? extends UDAF> aggClass = FunctionRegistry.getUDAF(aggName);
-      assert (aggClass != null);
-      ArrayList<exprNodeDesc> aggParameters = new ArrayList<exprNodeDesc>();
-      ArrayList<Class<?>> aggClasses = new ArrayList<Class<?>>();
-      // 0 is the function name
-      for (int i = 1; i < value.getChildCount(); i++) {
-        String text = value.getChild(i).toStringTree();
-        ASTNode paraExpr = (ASTNode)value.getChild(i);
-        ColumnInfo paraExprInfo = groupByInputRowResolver.get("",text);
-        if (paraExprInfo == null) {
-          throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(paraExpr));
-        }
-
-        String paraExpression = paraExprInfo.getInternalName();
-        assert(paraExpression != null);
-        aggParameters.add(new exprNodeColumnDesc(paraExprInfo.getType(), paraExprInfo.getInternalName()));
-        aggClasses.add(paraExprInfo.getType().getPrimitiveClass());
-      }
-
-      UDAFInfo udaf = getUDAFInfo(aggName, mode, aggClasses, aggParameters, value);
-      
-      aggregations.add(new aggregationDesc(aggClass, udaf.convertedParameters, true));
-      groupByOutputRowResolver.put("",value.toStringTree(),
-                                   new ColumnInfo(Integer.valueOf(groupByKeys.size() + aggregations.size() -1).toString(),
-                                       udaf.evaluateMethod.getReturnType()));
-    }
-
     HashMap<String, ASTNode> aggregationTrees = parseInfo
         .getAggregationExprsForClause(dest);
     for (Map.Entry<String, ASTNode> entry : aggregationTrees.entrySet()) {
       ASTNode value = entry.getValue();
-      if (value.getToken().getType() == HiveParser.TOK_FUNCTIONDI)
-        continue;
-
       String aggName = value.getChild(0).getText();
       Class<? extends UDAF> aggClass = FunctionRegistry.getUDAF(aggName);
-      Method aggEvaluateMethod = FunctionRegistry.getUDAFEvaluateMethod(aggName, mode);
       assert (aggClass != null);
-      ArrayList<exprNodeDesc> aggParameters = new ArrayList<exprNodeDesc>();
-      String text = entry.getKey();
-      ColumnInfo paraExprInfo = groupByInputRowResolver.get("",text);
-      if (paraExprInfo == null) {
-        throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(value));
+      Method aggEvaluateMethod = null;
+      ArrayList<exprNodeDesc> aggParameters = null;
+
+      if (value.getToken().getType() == HiveParser.TOK_FUNCTIONDI) {
+        ArrayList<Class<?>> aggClasses = new ArrayList<Class<?>>();
+        ArrayList<exprNodeDesc> params = new ArrayList<exprNodeDesc>();
+        // 0 is the function name
+        for (int i = 1; i < value.getChildCount(); i++) {
+          String text = value.getChild(i).toStringTree();
+          ASTNode paraExpr = (ASTNode)value.getChild(i);
+          ColumnInfo paraExprInfo = groupByInputRowResolver.get("",text);
+          if (paraExprInfo == null) {
+            throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(paraExpr));
+          }
+
+          String paraExpression = paraExprInfo.getInternalName();
+          assert(paraExpression != null);
+          params.add(new exprNodeColumnDesc(paraExprInfo.getType(), paraExprInfo.getInternalName()));
+          aggClasses.add(paraExprInfo.getType().getPrimitiveClass());
+        }
+        
+        UDAFInfo udaf = getUDAFInfo(aggName, mode, aggClasses, params, value);
+        aggParameters = udaf.convertedParameters;
+        aggEvaluateMethod = udaf.evaluateMethod;
       }
-      String paraExpression = paraExprInfo.getInternalName();
-      assert(paraExpression != null);
-      aggParameters.add(new exprNodeColumnDesc(paraExprInfo.getType(), paraExpression));
+      else {
+        aggParameters = new ArrayList<exprNodeDesc>();
+        aggEvaluateMethod = FunctionRegistry.getUDAFEvaluateMethod(aggName, mode);
+        String text = entry.getKey();
+        ColumnInfo paraExprInfo = groupByInputRowResolver.get("",text);
+        if (paraExprInfo == null) {
+          throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(value));
+        }
+        String paraExpression = paraExprInfo.getInternalName();
+        assert(paraExpression != null);
+        aggParameters.add(new exprNodeColumnDesc(paraExprInfo.getType(), paraExpression));
+      }
+
       aggregations.add(new aggregationDesc(aggClass, aggParameters, ((mode == groupByDesc.Mode.FINAL) ? false : (value.getToken().getType() == HiveParser.TOK_FUNCTIONDI))));
       groupByOutputRowResolver.put("", value.toStringTree(),
                                     new ColumnInfo(Integer.valueOf(groupByKeys.size() + aggregations.size() - 1).toString(),
