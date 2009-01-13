@@ -66,7 +66,7 @@ public class Partition {
     private Path partPath;
     private URI partURI;
 
-    Partition(Table tbl, org.apache.hadoop.hive.metastore.api.Partition tp) throws HiveException {
+    public Partition(Table tbl, org.apache.hadoop.hive.metastore.api.Partition tp) throws HiveException {
       this.table = tbl;
       this.tPartition = tp;
       partName = "";
