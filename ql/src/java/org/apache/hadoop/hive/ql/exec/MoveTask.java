@@ -124,7 +124,7 @@ public class MoveTask extends Task<moveWork> implements Serializable {
               Hive.get().getConf());
           dirs = fs.globStatus(new Path(tbd.getSourceDir()));
           files = new ArrayList<FileStatus>();
-          for (int i=0; i<dirs.length; i++) {
+          for (int i=0; (dirs != null && i<dirs.length); i++) {
             files.addAll(Arrays.asList(fs.listStatus(dirs[i].getPath())));
             // We only check one file, so exit the loop when we have at least one.
             if (files.size()>0) break;

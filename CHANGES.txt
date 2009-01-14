@@ -199,3 +199,6 @@ Trunk (unreleased changes)
 
     HIVE-220. Incorrect log directory in TestMTQueries causing null pointer
     exception.  (Prasad Chakka via dhruba)
+
+    HIVE-230.  Fix for a Null Pointer Exception that occured while loading a 
+    table from a query that returns empty data.  (Prasad Chakka via dhruba)
