@@ -38,6 +38,9 @@ Trunk (unreleased changes)
 
   IMPROVEMENTS
 
+    HIVE-126. Don't fetch information on Partitions from HDFS instead of MetaStore.
+    (Johan Oskarsson via zshao)
+
     HIVE-209. Enabling asserts in tests. (Prasad Chakka via zshao)
 
     HIVE-177. Allow specifying custom input and output format in CREATE TABLE.
