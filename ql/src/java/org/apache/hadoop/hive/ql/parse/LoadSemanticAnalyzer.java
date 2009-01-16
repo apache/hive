@@ -62,8 +62,6 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private URI initializeFromURI(String fromPath) throws IOException {
-    // TODO: support hdfs relative path names by defaulting to /user/<user.name>
-
     Path p = new Path(fromPath);
     URI fromURI = p.toUri();
 
@@ -74,15 +72,16 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       if(isLocal) {
         if(!fromPath.startsWith("/")) {
           // generate absolute path relative to current directory
-          p = new Path(new Path("file://"+System.getProperty("user.dir")), fromPath);
-        } else {
-          p = new Path("file://"+fromPath);
+          p = new Path(System.getProperty("user.dir"), fromPath);
         }
-        fromURI = p.toUri();
         fromScheme = "file";
+      } else {
+        if(!fromPath.startsWith("/") && StringUtils.isEmpty(fromURI.getAuthority()) ) {
+          // generate absolute path relative to current directory
+          p = new Path(new Path("/user/"+System.getProperty("user.name")), fromPath);
+        }
       }
     }
-
 
     fs = FileSystem.get(fromURI, conf);
     String fromAuthority = null;
@@ -100,7 +99,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     try {
-      fromURI = new URI(fromScheme, fromAuthority, fromURI.getPath(), null, null);
+      fromURI = new URI(fromScheme, fromAuthority, p.toString(), null, null);
     } catch (URISyntaxException e) {
       throw new RuntimeException (e);
     }

@@ -205,3 +205,6 @@ Trunk (unreleased changes)
 
     HIVE-230.  Fix for a Null Pointer Exception that occured while loading a 
     table from a query that returns empty data.  (Prasad Chakka via dhruba)
+
+    HIVE-232. Metastore.warehouse configuration should use inherited 
+    hadoop configuration (Prasad Chakka via dhruba)

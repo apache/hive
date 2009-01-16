@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +53,12 @@ public class Warehouse {
       throw new MetaException(HiveConf.ConfVars.METASTOREWAREHOUSE.varname + " is not set in the config or blank");
     }
     whRoot = new Path(whRootString);
+    URI uri = whRoot.toUri();
+    // if the METASTOREWAREHOUSE value doesn't have schema and authority specified then inherit
+    // from fs.default.name in hadoop-site.xml 
+    if ((uri.getScheme() == null) && (uri.getAuthority() == null)) {
+      whRoot = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.HADOOPFS), whRootString);
+    }
     try {
       fs  = whRoot.getFileSystem(conf);
     } catch (IOException e) {
