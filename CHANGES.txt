@@ -80,8 +80,11 @@ Trunk (unreleased changes)
 
   BUG FIXES
 
-    HIVE-222. Fixed Group by on a combination of disitinct and non distinct aggregates.
-    (Ashish Thusoo via zshao)
+    HIVE-235. Fixed DynamicSerDe to work with null values with Thrift
+    Protocols that can have missing fields for null values. (zshao)
+
+    HIVE-222. Fixed Group by on a combination of disitinct and non distinct
+    aggregates. (Ashish Thusoo via zshao)
 
     HIVE-161. Fixed xpath x.y when x is a null list. (zshao)
 

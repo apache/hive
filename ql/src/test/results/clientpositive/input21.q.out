@@ -1,0 +1,63 @@
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src_null)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_DISTRIBUTEBY c) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC d))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src_null 
+            Select Operator
+              expressions:
+                    expr: a
+                    type: string
+                    expr: b
+                    type: string
+                    expr: c
+                    type: string
+                    expr: d
+                    type: string
+              Reduce Output Operator
+                key expressions:
+                      expr: 3
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: 2
+                      type: string
+                tag: -1
+                value expressions:
+                      expr: 0
+                      type: string
+                      expr: 1
+                      type: string
+                      expr: 2
+                      type: string
+                      expr: 3
+                      type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+1.0	1	same	0
+1.0	1	same	1
+1.0	1	same	2
+1.0	1	same	3
+1.0	1	same	4
+NULL	1	same	5
+NULL	NULL	same	6
+1.0	NULL	same	7
+1.0	1	same	8
+1.0	1	same	9

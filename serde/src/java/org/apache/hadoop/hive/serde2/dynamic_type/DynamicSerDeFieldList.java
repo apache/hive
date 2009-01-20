@@ -119,23 +119,29 @@ public class DynamicSerDeFieldList extends DynamicSerDeSimpleNode implements Ser
    */
   protected boolean isRealThrift = false;
 
+  protected boolean[] fieldsPresent; 
   public Object deserialize(Object reuse, TProtocol iprot)  throws SerDeException, TException, IllegalAccessException {
     ArrayList<Object> struct = null;
 
     if (reuse == null) {
       struct = new ArrayList<Object>(this.getNumFields());
-      for(int i=0; i<this.getNumFields(); i++) {
+      for(int i=0; i<ordered_types.length; i++) {
         struct.add(null);
       }
     } else {
       struct = (ArrayList<Object>) reuse;
-      assert(struct.size() == this.getNumFields());
+      assert(struct.size() == ordered_types.length);
     }
 
     boolean fastSkips = iprot instanceof org.apache.hadoop.hive.serde2.thrift.SkippableTProtocol;
 
     // may need to strip away the STOP marker when in thrift mode
     boolean stopSeen = false;
+
+    if (fieldsPresent == null) {
+      fieldsPresent = new boolean[ordered_types.length];
+    }
+    Arrays.fill(fieldsPresent, false);
 
     // Read the fields.
     for(int i = 0; i < this.getNumFields(); i++) {
@@ -189,7 +195,15 @@ public class DynamicSerDeFieldList extends DynamicSerDeSimpleNode implements Ser
       if(thrift_mode) {
         iprot.readFieldEnd();
       }
+      fieldsPresent[orderedId] = true;
     }
+    
+    for(int i = 0; i < ordered_types.length; i++) {
+      if (!fieldsPresent[i]) {
+        struct.set(i, null);
+      }
+    }
+    
     if(thrift_mode && !stopSeen) {
       // strip off the STOP marker, which may be left if all the fields were in the serialization
       iprot.readFieldBegin();
