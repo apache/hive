@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.ql.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -112,8 +113,8 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
   transient int           numEntriesVarSize;
   transient int           numEntriesHashTable;
 
-  public void initialize(Configuration hconf) throws HiveException {
-    super.initialize(hconf);
+  public void initialize(Configuration hconf, Reporter reporter) throws HiveException {
+    super.initialize(hconf, reporter);
     totalMemory = Runtime.getRuntime().totalMemory();
 
     // init keyFields

@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.plan.filterDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.mapred.Reporter;
 
 /**
  * Filter operator implementation
@@ -45,8 +46,8 @@ public class FilterOperator extends Operator <filterDesc> implements Serializabl
     conditionInspectableObject = new InspectableObject();
   }
 
-  public void initialize(Configuration hconf) throws HiveException {
-    super.initialize(hconf);
+  public void initialize(Configuration hconf, Reporter reporter) throws HiveException {
+    super.initialize(hconf, reporter);
     try {
       this.conditionEvaluator = ExprNodeEvaluatorFactory.get(conf.getPredicate());
       statsMap.put(Counter.FILTERED, filtered_count);

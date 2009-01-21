@@ -23,6 +23,7 @@ import java.io.*;
 
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 
@@ -61,8 +62,8 @@ public class MapOperator extends Operator <mapredWork> implements Serializable {
   transient private List<ObjectInspector> partObjectInspectors;
   
 
-  public void initialize(Configuration hconf) throws HiveException {
-    super.initialize(hconf);
+  public void initialize(Configuration hconf, Reporter reporter) throws HiveException {
+    super.initialize(hconf, reporter);
     Path fpath = new Path((new Path (HiveConf.getVar(hconf, HiveConf.ConfVars.HADOOPMAPFILENAME))).toUri().getPath());
     ArrayList<Operator<? extends Serializable>> todo = new ArrayList<Operator<? extends Serializable>> ();
     statsMap.put(Counter.DESERIALIZE_ERRORS, deserialize_error_count);
@@ -163,7 +164,7 @@ public class MapOperator extends Operator <mapredWork> implements Serializable {
     this.setOutputCollector(out);
 
     for(Operator op: todo) {
-      op.initialize(hconf);
+      op.initialize(hconf, reporter);
     }
   }
 

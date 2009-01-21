@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.LineRecordReader.LineReader;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.fs.FileUtil;
@@ -161,8 +162,8 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
     }
   }
 
-  public void initialize(Configuration hconf) throws HiveException {
-    super.initialize(hconf);
+  public void initialize(Configuration hconf, Reporter reporter) throws HiveException {
+    super.initialize(hconf, reporter);
     statsMap.put(Counter.DESERIALIZE_ERRORS, deserialize_error_count);
     statsMap.put(Counter.SERIALIZE_ERRORS, serialize_error_count);
 

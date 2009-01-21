@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.mapred.Reporter;
 
 /**
  * Reduce Sink Operator sends output to the reduce stage
@@ -70,8 +71,8 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
   transient int tag;
   transient byte[] tagByte = new byte[1];
   
-  public void initialize(Configuration hconf) throws HiveException {
-    super.initialize(hconf);
+  public void initialize(Configuration hconf, Reporter reporter) throws HiveException {
+    super.initialize(hconf, reporter);
     try {
       keyEval = new ExprNodeEvaluator[conf.getKeyCols().size()];
       int i=0;

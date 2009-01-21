@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.plan.limitDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.conf.Configuration;
 
 /**
@@ -38,8 +39,8 @@ public class LimitOperator extends Operator<limitDesc> implements Serializable {
   transient protected int limit;
   transient protected int currCount;
 
-  public void initialize(Configuration hconf) throws HiveException {
-    super.initialize(hconf);
+  public void initialize(Configuration hconf, Reporter reporter) throws HiveException {
+    super.initialize(hconf, reporter);
     limit = conf.getLimit();
     currCount = 0;
   }

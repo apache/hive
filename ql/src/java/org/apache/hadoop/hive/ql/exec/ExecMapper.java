@@ -54,7 +54,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       try {
         oc = output;
         mo.setOutputCollector(oc);
-        mo.initialize(jc);
+        mo.initialize(jc, reporter);
         rp = reporter;
       } catch (HiveException e) {
         abort = true;
@@ -81,7 +81,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
     if(oc == null) {
       try {
         l4j.trace("Close called no row");
-        mo.initialize(jc);
+        mo.initialize(jc, null);
         rp = null;
       } catch (HiveException e) {
         abort = true;

@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.extractDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.conf.Configuration;
 
 /**
@@ -35,8 +36,8 @@ public class ExtractOperator extends Operator<extractDesc> implements Serializab
   transient protected ExprNodeEvaluator eval;
   transient protected InspectableObject result = new InspectableObject();
 
-  public void initialize(Configuration hconf) throws HiveException {
-    super.initialize(hconf);
+  public void initialize(Configuration hconf, Reporter reporter) throws HiveException {
+    super.initialize(hconf, reporter);
     eval = ExprNodeEvaluatorFactory.get(conf.getCol());
   }
 

@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.plan.collectDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.conf.Configuration;
 
 /**
@@ -38,8 +39,8 @@ public class CollectOperator extends Operator <collectDesc> implements Serializa
   transient protected ArrayList<ObjectInspector> rowInspectorList;
   transient int maxSize;
 
-  public void initialize(Configuration hconf) throws HiveException {
-    super.initialize(hconf);
+  public void initialize(Configuration hconf, Reporter reporter) throws HiveException {
+    super.initialize(hconf, reporter);
     rowList = new ArrayList<Object> ();
     rowInspectorList = new ArrayList<ObjectInspector> ();
     maxSize = conf.getBufferSize().intValue();

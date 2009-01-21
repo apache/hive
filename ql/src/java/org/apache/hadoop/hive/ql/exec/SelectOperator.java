@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.plan.selectDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.mapred.Reporter;
 
 /**
  * Select operator implementation
@@ -44,8 +45,8 @@ public class SelectOperator extends Operator <selectDesc> implements Serializabl
   
   boolean firstRow;
   
-  public void initialize(Configuration hconf) throws HiveException {
-    super.initialize(hconf);
+  public void initialize(Configuration hconf, Reporter reporter) throws HiveException {
+    super.initialize(hconf, reporter);
     try {
       ArrayList<exprNodeDesc> colList = conf.getColList();
       eval = new ExprNodeEvaluator[colList.size()];

@@ -75,8 +75,9 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
     }
   }
 
-  public void initialize(Configuration hconf) throws HiveException {
-    super.initialize(hconf);
+  public void initialize(Configuration hconf, Reporter reporter) throws HiveException {
+    super.initialize(hconf, reporter);
+    
     try {
       serializer = (Serializer)conf.getTableInfo().getDeserializerClass().newInstance();
       serializer.initialize(null, conf.getTableInfo().getProperties());
@@ -155,6 +156,7 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
   Writable recordValue; 
   public void process(Object row, ObjectInspector rowInspector) throws HiveException {
     try {
+      reporter.progress();
       // user SerDe to serialize r, and write it out
       recordValue = serializer.serialize(row, rowInspector);
       outWriter.write(recordValue);

@@ -22,6 +22,7 @@ import junit.framework.TestCase;
 import java.io.*;
 import java.util.*;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -85,7 +86,7 @@ public class TestOperators extends TestCase {
       op.setConf(filterCtx);
 
       // runtime initialization
-      op.initialize(null);
+      op.initialize(null, null);
 
       for(InspectableObject oner: r) {
         op.process(oner.o, oner.oi);
@@ -140,7 +141,7 @@ public class TestOperators extends TestCase {
       nextOp.add(flop);
 
       op.setChildOperators(nextOp);
-      op.initialize(new JobConf(TestOperators.class));
+      op.initialize(new JobConf(TestOperators.class), Reporter.NULL);
 
       // evaluate on row
       for(int i=0; i<5; i++) {
@@ -200,7 +201,7 @@ public class TestOperators extends TestCase {
       sop.setChildOperators(nextCollectOp);
 
 
-      op.initialize(new JobConf(TestOperators.class));
+      op.initialize(new JobConf(TestOperators.class), null);
 
       // evaluate on row
       for(int i=0; i<5; i++) {
@@ -270,7 +271,7 @@ public class TestOperators extends TestCase {
       // get map operator and initialize it
       MapOperator mo = new MapOperator();
       mo.setConf(mrwork);
-      mo.initialize(hconf);
+      mo.initialize(hconf, null);
 
       Text tw = new Text();
       InspectableObject io1 = new InspectableObject();

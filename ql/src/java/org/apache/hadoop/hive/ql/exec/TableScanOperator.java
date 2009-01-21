@@ -23,6 +23,7 @@ import java.io.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.tableScanDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.conf.Configuration;
 
 /**
@@ -32,8 +33,8 @@ import org.apache.hadoop.conf.Configuration;
  **/
 public class TableScanOperator extends Operator<tableScanDesc> implements Serializable {
   private static final long serialVersionUID = 1L;
-  public void initialize(Configuration hconf) throws HiveException {
-    super.initialize(hconf);
+  public void initialize(Configuration hconf, Reporter reporter) throws HiveException {
+    super.initialize(hconf, reporter);
     // nothing to do really ..
   }
 

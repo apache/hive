@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.mapred.Reporter;
 
 /**
  * Join operator implementation.
@@ -113,8 +114,9 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
   HashMap<Byte, Vector<ArrayList<Object>>> storage;
   int joinEmitInterval = -1;
   
-  public void initialize(Configuration hconf) throws HiveException {
-    super.initialize(hconf);
+  public void initialize(Configuration hconf, Reporter reporter) throws HiveException {
+    super.initialize(hconf, reporter);
+    
     totalSz = 0;
     // Map that contains the rows for each alias
     storage = new HashMap<Byte, Vector<ArrayList<Object>>>();

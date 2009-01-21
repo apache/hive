@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.plan.mapredWork;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.OutputCollector;
+import org.apache.hadoop.mapred.Reporter;
 
 /**
  * Base operator implementation
@@ -48,6 +49,14 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   protected List<Operator<? extends Serializable>> parentOperators;
 
   public Operator() {}
+  
+  /**
+   * Create an operator with a reporter.
+   * @param reporter Used to report progress of certain operators.
+   */
+  public Operator(Reporter reporter) {
+    this.reporter = reporter;
+  }
 
   public void setChildOperators(List<Operator<? extends Serializable>> childOperators) {
     this.childOperators = childOperators;
@@ -130,6 +139,7 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   transient protected mapredWork gWork;
   transient protected String alias;
   transient protected String joinAlias;
+  transient protected Reporter reporter;
 
   public void setOutputCollector(OutputCollector out) {
     this.out = out;
@@ -198,15 +208,16 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     return(ret);
   }
 
-  public void initialize (Configuration hconf) throws HiveException {
+  public void initialize (Configuration hconf, Reporter reporter) throws HiveException {
     LOG.info("Initializing Self");
+    this.reporter = reporter;
     
     if(childOperators == null) {
       return;
     }
     LOG.info("Initializing children:");
     for(Operator<? extends Serializable> op: childOperators) {
-      op.initialize(hconf);
+      op.initialize(hconf, reporter);
     }    
     LOG.info("Initialization Done");
   }
