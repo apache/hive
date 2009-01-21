@@ -22,13 +22,13 @@
           <void method="add"> 
            <object class="org.apache.hadoop.hive.ql.plan.loadFileDesc"> 
             <void property="columns"> 
-             <string>key,value</string> 
+             <string>unioninput.key,unioninput.value</string> 
             </void> 
             <void property="isDfsDir"> 
              <boolean>true</boolean> 
             </void> 
             <void property="sourceDir"> 
-             <string>/tmp/hive-njain/276583968/36258042.10000.insclause-0</string> 
+             <string>/data/users/pchakka/workspace/oshive/ql/../build/ql/tmp/797066151/209780209.10000.insclause-0</string> 
             </void> 
             <void property="targetDir"> 
              <string>../build/ql/test/data/warehouse/union.out</string> 
@@ -75,7 +75,7 @@
                         <void property="conf"> 
                          <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                           <void property="dirName"> 
-                           <string>/tmp/hive-njain/276583968/36258042.10000.insclause-0</string> 
+                           <string>/data/users/pchakka/workspace/oshive/ql/../build/ql/tmp/797066151/209780209.10000.insclause-0</string> 
                           </void> 
                           <void property="tableInfo"> 
                            <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -92,7 +92,7 @@
                              <object class="java.util.Properties"> 
                               <void method="put"> 
                                <string>columns</string> 
-                               <string>key,value</string> 
+                               <string>unioninput.key,unioninput.value</string> 
                               </void> 
                               <void method="put"> 
                                <string>serialization.format</string> 
@@ -378,7 +378,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>unioninput:src</string> 
@@ -390,7 +390,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"/> 
@@ -442,7 +442,7 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/src</string> 
+             <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src</string> 
             </void> 
            </object> 
           </void> 

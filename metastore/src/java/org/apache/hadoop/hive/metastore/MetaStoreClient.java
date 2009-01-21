@@ -329,8 +329,11 @@ public class MetaStoreClient implements IMetaStoreClient {
    */
   public Table getTable(String dbName, String tableName) throws MetaException,
     TException, NoSuchObjectException {
-    throw new UnsupportedOperationException("getTable from a specific db " +
-    		"not supported by this metastore");
+    if(dbName.equalsIgnoreCase(MetaStoreUtils.DEFAULT_DATABASE_NAME)) {
+      Properties schema = this.getSchema(tableName);
+      return MetaStoreUtils.getTable(conf, schema);
+    }
+    throw new UnsupportedOperationException("Operation not supported in this metastore");
   }
   
 

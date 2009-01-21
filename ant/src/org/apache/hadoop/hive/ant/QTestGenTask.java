@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ant;
 
 import java.io.*;
 import java.util.StringTokenizer;
+import java.util.Arrays;
 
 import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.BuildException;
@@ -206,6 +207,7 @@ public class QTestGenTask extends Task {
       }
       else {
         qFiles = inpDir.listFiles(new QFileFilter());
+        Arrays.sort(qFiles);
       }
 
       // Make sure the output directory exists, if it doesn't

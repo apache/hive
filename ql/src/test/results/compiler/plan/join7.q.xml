@@ -1249,7 +1249,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>c:a:src1</string> 
@@ -1267,7 +1267,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"/> 
@@ -1319,7 +1319,7 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/src</string> 
+             <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src</string> 
             </void> 
            </object> 
           </void> 
@@ -1349,7 +1349,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>/tmp/hive-njain/759592261/286929524.10001.insclause-0</string> 
+                     <string>/data/users/pchakka/workspace/oshive/ql/../build/ql/tmp/144356131/476198727.10001.insclause-0</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -1366,7 +1366,7 @@
                        <object class="java.util.Properties"> 
                         <void method="put"> 
                          <string>columns</string> 
-                         <string>c1,c2,c3,c4,c5,c6</string> 
+                         <string>c.c1,c.c2,c.c3,c.c4,c.c5,c.c6</string> 
                         </void> 
                         <void method="put"> 
                          <string>serialization.format</string> 

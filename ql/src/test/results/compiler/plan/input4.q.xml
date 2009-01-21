@@ -31,7 +31,7 @@
              <boolean>true</boolean> 
             </void> 
             <void property="sourceDir"> 
-             <string>/tmp/hive-njain/89591678/324016511.10000.insclause-0</string> 
+             <string>/data/users/pchakka/workspace/oshive/ql/../build/ql/tmp/952811677/1477355585.10000.insclause-0</string> 
             </void> 
             <void property="table"> 
              <object id="tableDesc0" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -80,7 +80,7 @@
                 </void> 
                 <void method="put"> 
                  <string>location</string> 
-                 <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/dest1</string> 
+                 <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/dest1</string> 
                 </void> 
                </object> 
               </void> 
@@ -468,7 +468,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>tmap:src</string> 
@@ -480,7 +480,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"/> 
@@ -532,7 +532,7 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/src</string> 
+             <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src</string> 
             </void> 
            </object> 
           </void> 
@@ -562,7 +562,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>/tmp/hive-njain/89591678/324016511.10000.insclause-0</string> 
+                     <string>/data/users/pchakka/workspace/oshive/ql/../build/ql/tmp/952811677/1477355585.10000.insclause-0</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object idref="tableDesc0"/> 
@@ -723,9 +723,9 @@
           <void property="schema"> 
            <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
             <void property="signature"> 
-             <object id="Vector2" class="java.util.Vector"> 
+             <object class="java.util.Vector"> 
               <void method="add"> 
-               <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+               <object id="ColumnInfo0" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                 <void property="internalName"> 
                  <string>0</string> 
                 </void> 
@@ -735,7 +735,7 @@
                </object> 
               </void> 
               <void method="add"> 
-               <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+               <object id="ColumnInfo1" class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                 <void property="internalName"> 
                  <string>1</string> 
                 </void> 
@@ -776,7 +776,14 @@
       <void property="schema"> 
        <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
         <void property="signature"> 
-         <object idref="Vector2"/> 
+         <object class="java.util.Vector"> 
+          <void method="add"> 
+           <object idref="ColumnInfo0"/> 
+          </void> 
+          <void method="add"> 
+           <object idref="ColumnInfo1"/> 
+          </void> 
+         </object> 
         </void> 
        </object> 
       </void> 

@@ -17,4 +17,7 @@ describe extended alter1;
 alter table alter1 set serde 'org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe';
 describe extended alter1;
 
+alter table alter1 replace columns (a int, b int, c string);
+describe alter1;
+
 drop table alter1;

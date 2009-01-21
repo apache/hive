@@ -953,7 +953,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
  
       exprNodeColumnDesc expr = new exprNodeColumnDesc(colInfo.getType(), name);
       col_list.add(expr);
-      output.put(alias, tmp[1], new ColumnInfo(pos.toString(), colInfo.getType()));
+      output.put(tmp[0], tmp[1], new ColumnInfo(pos.toString(), colInfo.getType()));
       pos = Integer.valueOf(pos.intValue() + 1);
     }
   }
@@ -1063,13 +1063,24 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
   
-  private static String getColAlias(ASTNode selExpr, String defaultName) {
+  private static String[] getColAlias(ASTNode selExpr, String defaultName) {
+    String colAlias = null;
+    String tabAlias = null;
+    String[] colRef = new String[2];
     if (selExpr.getChildCount() == 2) {
       // return zz for "xx + yy AS zz"
-      return unescapeIdentifier(selExpr.getChild(1).getText()); 
+      colAlias  = unescapeIdentifier(selExpr.getChild(1).getText());
+      colRef[0] = tabAlias;
+      colRef[1] = colAlias;
+      return colRef;
     }
 
-    ASTNode root = (ASTNode)selExpr.getChild(0);
+    ASTNode root = (ASTNode) selExpr.getChild(0);
+    if (root.getType() == HiveParser.TOK_COLREF && root.getChildCount() > 1) {
+      ASTNode tab = (ASTNode) root.getChild(0);
+      tabAlias = unescapeIdentifier(tab.getText());
+    }
+  
     while (root.getType() == HiveParser.DOT || root.getType() == HiveParser.TOK_COLREF) {
       if (root.getType() == HiveParser.TOK_COLREF && root.getChildCount() == 1) {
         root = (ASTNode) root.getChild(0);
@@ -1081,11 +1092,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     if (root.getType() == HiveParser.Identifier) {
       // Return zz for "xx.zz" and "xx.yy.zz"
-      return unescapeIdentifier(root.getText());
-    } else {
-      // Return defaultName if selExpr is not a simple xx.yy.zz 
-      return defaultName;
+      colAlias = unescapeIdentifier(root.getText());
     }
+    if(colAlias == null) {
+      // Return defaultName if selExpr is not a simple xx.yy.zz 
+      colAlias = defaultName;
+    }
+    colRef[0] = tabAlias;
+    colRef[1] = colAlias;
+    return colRef;
   }
   
   @SuppressWarnings("nls")
@@ -1108,11 +1123,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // list of the columns
       ASTNode selExpr = (ASTNode) selExprList.getChild(i);
-      String colAlias = getColAlias(selExpr, "_C" + i);
+      String[] colRef = getColAlias(selExpr, "_C" + i);
+      String colAlias = colRef[1];
+      String tabAlias = colRef[0];
       ASTNode sel = (ASTNode)selExpr.getChild(0);
       
       if (sel.getToken().getType() == HiveParser.TOK_ALLCOLREF) {
-        String tabAlias = null;
+        tabAlias = null;
         if (sel.getChildCount() == 1)
           tabAlias = unescapeIdentifier(sel.getChild(0).getText().toLowerCase());
         genColList(tabAlias, alias, sel, col_list, inputRR, pos, out_rwsch);
@@ -1126,7 +1143,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         for (int j = 0; j < cols.getChildCount(); ++j) {
           ASTNode expr = (ASTNode) cols.getChild(j);
           if (expr.getToken().getType() == HiveParser.TOK_ALLCOLREF) {
-            String tabAlias = null;
+            tabAlias = null;
             if (sel.getChildCount() == 1)
               tabAlias = unescapeIdentifier(sel.getChild(0).getText().toLowerCase());
 
@@ -1136,11 +1153,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             exprNodeDesc exp = genExprNodeDesc(qb.getMetaData(), expr, inputRR);
             col_list.add(exp);
             if (!StringUtils.isEmpty(alias) &&
-                (out_rwsch.get(alias, colAlias) != null)) {
+                (out_rwsch.get(null, colAlias) != null)) {
               throw new SemanticException(ErrorMsg.AMBIGOUS_COLUMN.getMsg(expr.getChild(1)));
             }
 
-            out_rwsch.put(alias, unescapeIdentifier(expr.getText()),
+            out_rwsch.put(tabAlias, unescapeIdentifier(expr.getText()),
                           new ColumnInfo((Integer.valueOf(pos)).toString(),
                                          exp.getTypeInfo()));
           }
@@ -1150,12 +1167,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         exprNodeDesc exp = genExprNodeDesc(qb.getMetaData(), sel, inputRR);
         col_list.add(exp);
         if (!StringUtils.isEmpty(alias) &&
-            (out_rwsch.get(alias, colAlias) != null)) {
+            (out_rwsch.get(null, colAlias) != null)) {
           throw new SemanticException(ErrorMsg.AMBIGOUS_COLUMN.getMsg(sel.getChild(1)));
         }
         // Since the as clause is lacking we just use the text representation
         // of the expression as the column name
-        out_rwsch.put(alias, colAlias,
+        out_rwsch.put(tabAlias, colAlias,
                       new ColumnInfo((Integer.valueOf(pos)).toString(),
                                      exp.getTypeInfo()));
       }
@@ -2166,12 +2183,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       int ccount = partitionExprs.getChildCount();
       for(int i=0; i<ccount; ++i) {
         ASTNode cl = (ASTNode)partitionExprs.getChild(i);
-        ColumnInfo colInfo = inputRR.get(qb.getParseInfo().getAlias(),
-                                         unescapeIdentifier(cl.getText()));
-        if (colInfo == null) {
-          throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(cl));
-        }
-        partitionCols.add(new exprNodeColumnDesc(colInfo.getType(), colInfo.getInternalName()));
+        partitionCols.add(genExprNodeDescFromColRef(cl, inputRR));
       }
     }
 
@@ -2200,13 +2212,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           order.append("+");
         }
 
-        ColumnInfo colInfo = inputRR.get(qb.getParseInfo().getAlias(),
-                                         unescapeIdentifier(cl.getText()));
-        if (colInfo == null) {
-          throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(cl));
-        }
-        
-        sortCols.add(new exprNodeColumnDesc(colInfo.getType(), colInfo.getInternalName()));
+        sortCols.add(genExprNodeDescFromColRef(cl, inputRR));
       }
     }
 
@@ -2719,6 +2725,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           qb.getParseInfo().setOuterQueryLimit(limit.intValue());
         }
         curr = genFileSinkPlan(dest, qb, curr);
+      }
+      
+      // change curr ops row resolver's tab aliases to query alias if it exists
+      if(qb.getParseInfo().getAlias() != null) {
+        RowResolver rr = opParseCtx.get(curr).getRR();
+        RowResolver newRR = new RowResolver();
+        String alias = qb.getParseInfo().getAlias();
+        for(ColumnInfo colInfo: rr.getColumnInfos()) {
+          String name = colInfo.getInternalName();
+          String [] tmp = rr.reverseLookup(name);
+          newRR.put(alias, tmp[1], colInfo);
+        }
+        opParseCtx.get(curr).setRR(newRR);
       }
     }
 
@@ -3352,33 +3371,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     int tokType = expr.getType();
     switch (tokType) {
       case HiveParser.TOK_COLREF: {
-
-        String tabAlias = null;
-        String colName = null;
-        if (expr.getChildCount() != 1) {
-          tabAlias = unescapeIdentifier(expr.getChild(0).getText());
-          colName = unescapeIdentifier(expr.getChild(1).getText());
-        }
-        else {
-          colName = unescapeIdentifier(expr.getChild(0).getText());
-        }
-
-        if (colName == null) {
-          throw new SemanticException(ErrorMsg.INVALID_XPATH.getMsg(expr));
-        }
-
-        colInfo = input.get(tabAlias, colName);
-
-        if (colInfo == null && input.getIsExprResolver()) {
-          throw new SemanticException(ErrorMsg.NON_KEY_EXPR_IN_GROUPBY.getMsg(expr));
-        }         
-        else if (tabAlias != null && !input.hasTableAlias(tabAlias)) {
-          throw new SemanticException(ErrorMsg.INVALID_TABLE_ALIAS.getMsg(expr.getChild(0)));
-        } else if (colInfo == null) {
-          throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(tabAlias == null? expr.getChild(0) : expr.getChild(1)));
-        }
-
-        desc = new exprNodeColumnDesc(colInfo.getType(), colInfo.getInternalName());
+        desc = genExprNodeDescFromColRef(expr, input);
         break;
       }
   
@@ -3398,6 +3391,49 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     assert(desc != null);
+    return desc;
+  }
+
+  /**
+   * Generates expression node from a TOK_COLREF AST Node
+   * @param expr Antrl node
+   * @param input row resolver for this col reference
+   * @return exprNodeDesc or null if ASTNode is not a TOK_COLREF
+   * @throws SemanticException
+   */
+  private exprNodeDesc genExprNodeDescFromColRef(ASTNode expr, RowResolver input)
+      throws SemanticException {
+    if(expr.getType() != HiveParser.TOK_COLREF) {
+      throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(expr));
+    }
+    exprNodeDesc desc;
+    ColumnInfo colInfo;
+    String tabAlias = null;
+    String colName = null;
+    if (expr.getChildCount() != 1) {
+      tabAlias = unescapeIdentifier(expr.getChild(0).getText());
+      colName = unescapeIdentifier(expr.getChild(1).getText());
+    }
+    else {
+      colName = unescapeIdentifier(expr.getChild(0).getText());
+    }
+
+    if (colName == null) {
+      throw new SemanticException(ErrorMsg.INVALID_XPATH.getMsg(expr));
+    }
+
+    colInfo = input.get(tabAlias, colName);
+
+    if (colInfo == null && input.getIsExprResolver()) {
+      throw new SemanticException(ErrorMsg.NON_KEY_EXPR_IN_GROUPBY.getMsg(expr));
+    }         
+    else if (tabAlias != null && !input.hasTableAlias(tabAlias)) {
+      throw new SemanticException(ErrorMsg.INVALID_TABLE_ALIAS.getMsg(expr.getChild(0)));
+    } else if (colInfo == null) {
+      throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(tabAlias == null? expr.getChild(0) : expr.getChild(1)));
+    }
+
+    desc = new exprNodeColumnDesc(colInfo.getType(), colInfo.getInternalName());
     return desc;
   }
 

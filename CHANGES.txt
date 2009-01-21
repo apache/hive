@@ -214,3 +214,6 @@ Trunk (unreleased changes)
 
     HIVE-239. Check that replace columns in alter table does not have names
     that are same as the partitioning columns (Prasad Chakka via athusoo)
+
+    HIVE-25. Enable Table aliases in cluster by, distribute by and sort
+    by clauses (Prasad Chakka via athusoo)

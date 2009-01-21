@@ -345,6 +345,12 @@ columnNameOrder
     ->                  ^(TOK_TABSORTCOLNAMEDESC Identifier)
     ;
 
+columnRefOrder
+    : tableColumn (asc=KW_ASC | desc=KW_DESC)? 
+    -> {$desc == null}? ^(TOK_TABSORTCOLNAMEASC tableColumn)
+    ->                  ^(TOK_TABSORTCOLNAMEDESC tableColumn)
+    ;
+
 columnNameType
     : colName=Identifier colType (KW_COMMENT comment=StringLiteral)?    
     -> {$comment == null}? ^(TOK_TABCOL $colName colType)
@@ -619,20 +625,20 @@ orderByExpression
 clusterByClause
     :
     KW_CLUSTER KW_BY
-    Identifier
-    ( COMMA Identifier )* -> ^(TOK_CLUSTERBY Identifier+)
+    tableColumn
+    ( COMMA tableColumn )* -> ^(TOK_CLUSTERBY tableColumn+)
     ;
 
 distributeByClause:
     KW_DISTRIBUTE KW_BY
-    Identifier
-    ( COMMA Identifier )* -> ^(TOK_DISTRIBUTEBY Identifier+)
+    tableColumn
+    ( COMMA tableColumn )* -> ^(TOK_DISTRIBUTEBY tableColumn+)
     ;
 
 sortByClause:
     KW_SORT KW_BY
-    columnNameOrder
-    ( COMMA columnNameOrder)* -> ^(TOK_SORTBY columnNameOrder+)
+    columnRefOrder
+    ( COMMA columnRefOrder)* -> ^(TOK_SORTBY columnRefOrder+)
     ;
 
 // fun(par1, par2, par3)

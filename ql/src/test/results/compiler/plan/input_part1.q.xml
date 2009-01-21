@@ -26,7 +26,7 @@
                     <void property="conf"> 
                      <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                       <void property="dirName"> 
-                       <string>/tmp/hive-njain/381790525/715994016.10001.insclause-0</string> 
+                       <string>/data/users/pchakka/workspace/oshive/ql/../build/ql/tmp/60338291/166255580.10001.insclause-0</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -43,7 +43,7 @@
                          <object class="java.util.Properties"> 
                           <void method="put"> 
                            <string>columns</string> 
-                           <string>key,value,hr,ds</string> 
+                           <string>srcpart.key,srcpart.value,srcpart.hr,srcpart.ds</string> 
                           </void> 
                           <void method="put"> 
                            <string>serialization.format</string> 
@@ -464,7 +464,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12</string> 
+       <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>srcpart</string> 
@@ -476,7 +476,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12</string> 
+       <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"> 
@@ -541,7 +541,7 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/srcpart</string> 
+             <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/srcpart</string> 
             </void> 
            </object> 
           </void> 

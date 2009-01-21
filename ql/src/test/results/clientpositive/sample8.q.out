@@ -1,5 +1,5 @@
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF srcpart (TOK_TABLESAMPLE 1 1 (TOK_COLREF key)) s) (TOK_TABREF srcpart (TOK_TABLESAMPLE 1 10 (TOK_COLREF key)) t))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF s))) (TOK_WHERE (and (and (and (and (and (= (TOK_COLREF t key) (TOK_COLREF s key)) (= (TOK_COLREF t value) (TOK_COLREF s value))) (= (TOK_COLREF s ds) '2008-04-08')) (= (TOK_COLREF s hr) '11')) (= (TOK_COLREF s ds) '2008-04-08')) (= (TOK_COLREF s hr) '11'))) (TOK_DISTRIBUTEBY key value) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC key) (TOK_TABSORTCOLNAMEASC value))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF srcpart (TOK_TABLESAMPLE 1 1 (TOK_COLREF key)) s) (TOK_TABREF srcpart (TOK_TABLESAMPLE 1 10 (TOK_COLREF key)) t))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF s))) (TOK_WHERE (and (and (and (and (and (= (TOK_COLREF t key) (TOK_COLREF s key)) (= (TOK_COLREF t value) (TOK_COLREF s value))) (= (TOK_COLREF s ds) '2008-04-08')) (= (TOK_COLREF s hr) '11')) (= (TOK_COLREF s ds) '2008-04-08')) (= (TOK_COLREF s hr) '11'))) (TOK_DISTRIBUTEBY (TOK_COLREF key) (TOK_COLREF value)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_COLREF key)) (TOK_TABSORTCOLNAMEASC (TOK_COLREF value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -48,12 +48,12 @@ STAGE PLANS:
                       type: string
       Needs Tagging: true
       Path -> Alias:
-        file:/mnt/vol/devrs005.snc1/rmurthy/hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
-        file:/mnt/vol/devrs005.snc1/rmurthy/hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
-        file:/mnt/vol/devrs005.snc1/rmurthy/hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 
-        file:/mnt/vol/devrs005.snc1/rmurthy/hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
+        file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 
+        file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
       Path -> Partition:
-        file:/mnt/vol/devrs005.snc1/rmurthy/hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
             partition values:
               ds 2008-04-08
@@ -71,10 +71,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                location file:/mnt/vol/devrs005.snc1/rmurthy/hive/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
               name: srcpart
-        file:/mnt/vol/devrs005.snc1/rmurthy/hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
             partition values:
               ds 2008-04-08
@@ -92,10 +92,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                location file:/mnt/vol/devrs005.snc1/rmurthy/hive/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
               name: srcpart
-        file:/mnt/vol/devrs005.snc1/rmurthy/hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 
+        file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 
           Partition
             partition values:
               ds 2008-04-09
@@ -113,10 +113,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                location file:/mnt/vol/devrs005.snc1/rmurthy/hive/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
               name: srcpart
-        file:/mnt/vol/devrs005.snc1/rmurthy/hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
+        file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
           Partition
             partition values:
               ds 2008-04-09
@@ -134,7 +134,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                location file:/mnt/vol/devrs005.snc1/rmurthy/hive/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
               name: srcpart
       Reduce Operator Tree:
@@ -160,7 +160,7 @@ STAGE PLANS:
                     type: string
               File Output Operator
                 compressed: false
-                directory: /tmp/hive-rmurthy/352392290/1281901534.10002
+                directory: /data/users/pchakka/workspace/oshive/build/ql/tmp/502758895/785997617.10002
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.mapred.SequenceFileOutputFormat
@@ -173,7 +173,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /tmp/hive-rmurthy/352392290/1281901534.10002 
+        /data/users/pchakka/workspace/oshive/build/ql/tmp/502758895/785997617.10002 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -198,9 +198,9 @@ STAGE PLANS:
                   type: string
       Needs Tagging: false
       Path -> Alias:
-        /tmp/hive-rmurthy/352392290/1281901534.10002 
+        /data/users/pchakka/workspace/oshive/build/ql/tmp/502758895/785997617.10002 
       Path -> Partition:
-        /tmp/hive-rmurthy/352392290/1281901534.10002 
+        /data/users/pchakka/workspace/oshive/build/ql/tmp/502758895/785997617.10002 
           Partition
           
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -214,12 +214,12 @@ STAGE PLANS:
         Extract
           File Output Operator
             compressed: false
-            directory: /tmp/hive-rmurthy/1317038554.10001.insclause-0
+            directory: /data/users/pchakka/workspace/oshive/ql/../build/ql/tmp/67235665.10001.insclause-0
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
                 properties:
-                  columns key,value,ds,hr
+                  columns s.key,s.value,s.ds,s.hr
                   serialization.format 1
 
   Stage: Stage-0
