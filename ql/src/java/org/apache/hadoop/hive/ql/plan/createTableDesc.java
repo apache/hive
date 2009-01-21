@@ -47,6 +47,7 @@ public class createTableDesc extends ddlDesc implements Serializable
   String              location;
   String              serName;
   Map<String, String> mapProp;
+  boolean             ifNotExists;
   
   public createTableDesc(String tableName, boolean isExternal, 
                          List<FieldSchema> cols, List<FieldSchema> partCols,
@@ -55,7 +56,8 @@ public class createTableDesc extends ddlDesc implements Serializable
                          String collItemDelim,
                          String mapKeyDelim, String lineDelim, 
                          String comment, String inputFormat, String outputFormat,
-                         String location, String serName, Map<String, String> mapProp) {
+                         String location, String serName, Map<String, String> mapProp,
+                         boolean ifNotExists) {
     this.tableName       = tableName;
     this.isExternal      = isExternal;
     this.bucketCols      = bucketCols;
@@ -73,6 +75,16 @@ public class createTableDesc extends ddlDesc implements Serializable
     this.partCols        = partCols;
     this.serName         = serName;
     this.mapProp         = mapProp;
+    this.ifNotExists     = ifNotExists;
+  }
+
+  @explain(displayName="if not exists")
+  public boolean getIfNotExists() {
+    return ifNotExists;
+  }
+
+  public void setIfNotExists(boolean ifNotExists) {
+    this.ifNotExists = ifNotExists;
   }
 
   @explain(displayName="name")

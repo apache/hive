@@ -9,6 +9,7 @@ STAGE PLANS:
       Create Table Operator:
         Create Table
           columns: key int, value string
+          if not exists: false
           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
           # buckets: -1
           output format: org.apache.hadoop.mapred.SequenceFileOutputFormat
@@ -19,7 +20,7 @@ STAGE PLANS:
 key	int
 value	string
 Detailed Table Information:
-Table(tableName:dest1,dbName:default,owner:dphillips,createTime:1229534167,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:key,type:int,comment:null), FieldSchema(name:value,type:string,comment:null)],location:file:/vm/tmp/hive/build/ql/test/data/warehouse/dest1,inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat,outputFormat:org.apache.hadoop.mapred.SequenceFileOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[],parameters:{})
+Table(tableName:dest1,dbName:default,owner:zshao,createTime:1232520065,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:key,type:int,comment:null), FieldSchema(name:value,type:string,comment:null)],location:file:/data/users/zshao/sync/apache-trunk-HIVE-240/build/ql/test/data/warehouse/dest1,inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat,outputFormat:org.apache.hadoop.mapred.SequenceFileOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe,parameters:{serialization.format=org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[],parameters:{})
 0	val_0
 4	val_4
 8	val_8

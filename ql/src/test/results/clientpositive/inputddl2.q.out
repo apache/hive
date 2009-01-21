@@ -9,6 +9,7 @@ STAGE PLANS:
       Create Table Operator:
         Create Table
           columns: key int, value string
+          if not exists: false
           input format: org.apache.hadoop.mapred.TextInputFormat
           # buckets: -1
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat

@@ -38,6 +38,8 @@ Trunk (unreleased changes)
 
   IMPROVEMENTS
 
+    HIVE-240. Support CREATE TABLE IF NOT EXISTS. (zshao)
+
     HIVE-126. Don't fetch information on Partitions from HDFS instead of
     MetaStore.  (Johan Oskarsson via zshao)
 

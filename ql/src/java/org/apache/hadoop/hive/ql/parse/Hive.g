@@ -121,6 +121,7 @@ TOK_TABLEPROPLIST;
 TOK_TABTYPE;
 TOK_LIMIT;
 TOK_TABLEPROPERTY;
+TOK_IFNOTEXISTS;
 }
 
 
@@ -168,10 +169,15 @@ ddlStatement
     | createFunctionStatement
     ;
 
+ifNotExists
+    : KW_IF KW_NOT KW_EXISTS
+    -> ^(TOK_IFNOTEXISTS)
+    ;
+
 createStatement
-    : KW_CREATE (ext=KW_EXTERNAL)? KW_TABLE name=Identifier (LPAREN columnNameTypeList RPAREN)? tableComment? tablePartition? tableBuckets? tableRowFormat? tableFileFormat? tableLocation?
-    -> {$ext == null}? ^(TOK_CREATETABLE $name columnNameTypeList? tableComment? tablePartition? tableBuckets? tableRowFormat? tableFileFormat? tableLocation?)
-    ->                 ^(TOK_CREATEEXTTABLE $name columnNameTypeList? tableComment? tablePartition? tableBuckets? tableRowFormat? tableFileFormat? tableLocation?)
+    : KW_CREATE (ext=KW_EXTERNAL)? KW_TABLE ifNotExists? name=Identifier (LPAREN columnNameTypeList RPAREN)? tableComment? tablePartition? tableBuckets? tableRowFormat? tableFileFormat? tableLocation?
+    -> {$ext == null}? ^(TOK_CREATETABLE $name ifNotExists? columnNameTypeList? tableComment? tablePartition? tableBuckets? tableRowFormat? tableFileFormat? tableLocation?)
+    ->                 ^(TOK_CREATEEXTTABLE $name ifNotExists? columnNameTypeList? tableComment? tablePartition? tableBuckets? tableRowFormat? tableFileFormat? tableLocation?)
     ;
 
 dropStatement
@@ -839,6 +845,9 @@ KW_AND : 'AND';
 KW_OR : 'OR';
 KW_NOT : 'NOT';
 KW_LIKE : 'LIKE';
+
+KW_IF : 'IF';
+KW_EXISTS : 'EXISTS';
 
 KW_ASC : 'ASC';
 KW_DESC : 'DESC';

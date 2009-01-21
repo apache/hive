@@ -697,7 +697,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     // create the table
-    db.createTable(tbl);
+    db.createTable(tbl, crtTbl.getIfNotExists());
     return 0;
   }
 }

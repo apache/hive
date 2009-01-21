@@ -144,6 +144,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String            location      = null;
     String            serde         = null;
     Map<String, String> mapProp     = null;
+    boolean           ifNotExists   = false;
 
     if ("SequenceFile".equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.HIVEDEFAULTFILEFORMAT))) {
       inputFormat = SEQUENCEFILE_INPUT;
@@ -156,6 +157,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     {
       ASTNode child = (ASTNode)ast.getChild(num);
       switch (child.getToken().getType()) {
+        case HiveParser.TOK_IFNOTEXISTS:
+          ifNotExists = true;
+          break;
         case HiveParser.TOK_TABCOLLIST:
           cols = getColumns(child);
           break;
@@ -232,7 +236,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       new createTableDesc(tableName, isExt, cols, partCols, bucketCols, 
                           sortCols, numBuckets,
                           fieldDelim, collItemDelim, mapKeyDelim, lineDelim,
-                          comment, inputFormat, outputFormat, location, serde, mapProp);
+                          comment, inputFormat, outputFormat, location, serde, 
+                          mapProp, ifNotExists);
 
     validateCreateTable(crtTblDesc);
     rootTasks.add(TaskFactory.get(new DDLWork(crtTblDesc), conf));

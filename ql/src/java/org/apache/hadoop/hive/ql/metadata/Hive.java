@@ -230,6 +230,16 @@ public class Hive {
    * @throws HiveException
    */
   public void createTable(Table tbl) throws HiveException {
+    createTable(tbl, false);
+  }
+  
+  /**
+   * Creates the table with the give objects
+   * @param tbl a table object
+   * @param ifNotExists if true, ignore AlreadyExistsException
+   * @throws HiveException
+   */
+  public void createTable(Table tbl, boolean ifNotExists) throws HiveException {
     try {
       tbl.initSerDe();
       if(tbl.getCols().size() == 0) {
@@ -237,6 +247,10 @@ public class Hive {
       }
       tbl.checkValidity();
       getMSC().createTable(tbl.getTTable());
+    } catch (AlreadyExistsException e) {
+      if (!ifNotExists) {
+        throw new HiveException(e);
+      }
     } catch (HiveException e) {
       throw e;
     } catch (Exception e) {
