@@ -184,7 +184,7 @@ public class Table {
       while (partColsIter.hasNext()) {
         String partCol = partColsIter.next().getName();
         if(colNames.contains(partCol.toLowerCase()))
-            throw new HiveException("Partition collumn name " + partCol + " conflicts with table columns.");
+            throw new HiveException("Partition column name " + partCol + " conflicts with table columns.");
       }
     }
     return;

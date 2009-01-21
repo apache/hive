@@ -40,7 +40,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.metadata.CheckResult;
@@ -50,8 +49,8 @@ import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreChecker;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
+import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.alterTableDesc;
 import org.apache.hadoop.hive.ql.plan.createTableDesc;
 import org.apache.hadoop.hive.ql.plan.descTableDesc;
@@ -63,8 +62,6 @@ import org.apache.hadoop.hive.serde.thrift.columnsetSerDe;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.util.StringUtils;
-
-import com.facebook.thrift.TException;
 
 /**
  * DDLTask implementation
@@ -249,7 +246,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     Table tbl = null;
     List<String> parts = null;
 
-    tbl = db.getTable(tabName);
+    tbl = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tabName);
 
     if (!tbl.isPartitioned()) {
       console.printError("Table " + tabName + " is not a partitioned table");
@@ -340,7 +337,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         colPath.indexOf('.') == -1 ? colPath.length() : colPath.indexOf('.'));
 
     // describe the table - populate the output stream
-    Table tbl = db.getTable(tableName, false);
+    Table tbl = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName, false);
     Partition part = null;
     try {
       if (tbl == null) {
@@ -383,7 +380,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           cols = part.getTPartition().getSd().getCols();
         }
       } else {
-        cols = db.getFieldsFromDeserializer(colPath, tbl.getDeserializer());
+        cols = Hive.getFieldsFromDeserializer(colPath, tbl.getDeserializer());
       }
 
       Iterator<FieldSchema> iterCols = cols.iterator();
@@ -456,7 +453,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    */
   private int alterTable(Hive db, alterTableDesc alterTbl) throws HiveException {
     // alter the table
-    Table tbl = db.getTable(alterTbl.getOldName());
+    Table tbl = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, alterTbl.getOldName());
     if (alterTbl.getOp() == alterTableDesc.alterTableTypes.RENAME)
       tbl.getTTable().setTableName(alterTbl.getNewName());
     else if (alterTbl.getOp() == alterTableDesc.alterTableTypes.ADDCOLS) {
@@ -526,13 +523,19 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         .currentTimeMillis() / 1000));
 
     try {
+      tbl.checkValidity();
+    } catch (HiveException e) {
+      console.printError("Invalid table columns : " + e.getMessage(), StringUtils.stringifyException(e));
+      return 1;
+    }
+
+    try {
       db.alterTable(alterTbl.getOldName(), tbl);
     } catch (InvalidOperationException e) {
+      console.printError("Invalid alter operation: " + e.getMessage());
       LOG.info("alter table: " + StringUtils.stringifyException(e));
       return 1;
-    } catch (MetaException e) {
-      return 1;
-    } catch (TException e) {
+    } catch (HiveException e) {
       return 1;
     }
     return 0;
@@ -549,10 +552,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int dropTable(Hive db, dropTableDesc dropTbl) throws HiveException {
     if (dropTbl.getPartSpecs() == null) {
       // drop the table
-      db.dropTable(dropTbl.getTableName());
+      db.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, dropTbl.getTableName());
     } else {
       // drop partitions in the list
-      Table tbl = db.getTable(dropTbl.getTableName());
+      Table tbl = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, dropTbl.getTableName());
       List<Partition> parts = new ArrayList<Partition>();
       for (Map<String, String> partSpec : dropTbl.getPartSpecs()) {
         Partition part = db.getPartition(tbl, partSpec, false);

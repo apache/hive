@@ -210,13 +210,18 @@ public class Hive {
    * @param tblName name of the existing table
    * @param newTbl new name of the table. could be the old name
    * @throws InvalidOperationException if the changes in metadata is not acceptable
-   * @throws MetaException
    * @throws TException
    */
   public void alterTable(String tblName,
       Table newTbl) throws InvalidOperationException,
-      MetaException, TException {
-    getMSC().alter_table(MetaStoreUtils.DEFAULT_DATABASE_NAME, tblName, newTbl.getTTable());
+      HiveException {
+    try {
+      getMSC().alter_table(MetaStoreUtils.DEFAULT_DATABASE_NAME, tblName, newTbl.getTTable());
+    } catch (MetaException e) {
+      throw new HiveException("Unable to alter table.", e);
+    } catch (TException e) {
+      throw new HiveException("Unable to alter table.", e);
+    }
   }
 
   /**
