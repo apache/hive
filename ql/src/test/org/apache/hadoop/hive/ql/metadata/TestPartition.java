@@ -10,6 +10,7 @@ import junit.framework.TestCase;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 
 /**
  * Test the partition class.
@@ -24,8 +25,12 @@ public class TestPartition extends TestCase {
    * Test that the Partition spec is created properly.
    */
   public void testPartition() throws HiveException, URISyntaxException {
+    StorageDescriptor sd = new StorageDescriptor();
+    sd.setLocation("partlocation");
+    
     Partition tp = new Partition();
     tp.setTableName(TABLENAME);
+    tp.setSd(sd);
     
     List<String> values = new ArrayList<String>();
     values.add(PARTITION_VALUE);

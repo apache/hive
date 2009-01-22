@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 
 import java.util.List;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ExistingDependentsException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
@@ -109,6 +110,19 @@ public interface IMetaStoreClient {
    */
   public Partition appendPartition(String tableName, String dbName, List<String> partVals)
       throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
+  
+  /**
+   * Add a partition to the table.
+   * @param partition The partition to add
+   * @return The partition added
+   * @throws InvalidObjectException Could not find table to add to
+   * @throws AlreadyExistsException Partition already exists
+   * @throws MetaException Could not add partition
+   * @throws TException Thrift exception
+   */
+  public Partition add_partition(Partition partition) 
+    throws InvalidObjectException, AlreadyExistsException, 
+      MetaException, TException;
 
   /**
    * @param tbl_name

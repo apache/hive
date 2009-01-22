@@ -460,6 +460,14 @@ public class MetaStoreClient implements IMetaStoreClient {
     ExistingDependentsException, MetaException, TException, NoSuchObjectException {
     
     throw new UnsupportedOperationException("Operation not supported in this metastore");
+  }
+
+  @Override
+  public Partition add_partition(Partition partition)
+      throws InvalidObjectException, AlreadyExistsException, MetaException,
+      TException {
+    throw new UnsupportedOperationException(
+    	"Operation not supported in this metastore");
   }  
 
 }

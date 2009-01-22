@@ -39,6 +39,7 @@ public class SemanticAnalyzerFactory {
       case HiveParser.TOK_ALTERTABLE_REPLACECOLS:
       case HiveParser.TOK_ALTERTABLE_RENAME:
       case HiveParser.TOK_ALTERTABLE_DROPPARTS:
+      case HiveParser.TOK_ALTERTABLE_ADDPARTS:
       case HiveParser.TOK_ALTERTABLE_PROPERTIES:
       case HiveParser.TOK_ALTERTABLE_SERIALIZER:
       case HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES:

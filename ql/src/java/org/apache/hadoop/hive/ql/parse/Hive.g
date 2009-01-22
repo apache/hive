@@ -84,6 +84,7 @@ TOK_DESCTABLE;
 TOK_ALTERTABLE_RENAME;
 TOK_ALTERTABLE_ADDCOLS;
 TOK_ALTERTABLE_REPLACECOLS;
+TOK_ALTERTABLE_ADDPARTS;
 TOK_ALTERTABLE_DROPPARTS;
 TOK_ALTERTABLE_SERDEPROPERTIES;
 TOK_ALTERTABLE_SERIALIZER;
@@ -108,6 +109,7 @@ TOK_TBLTEXTFILE;
 TOK_TABLEFILEFORMAT;
 TOK_TABCOLNAME;
 TOK_TABLELOCATION;
+TOK_PARTITIONLOCATION;
 TOK_TABLESAMPLE;
 TOK_TMP_FILE;
 TOK_TABSORTCOLNAMEASC;
@@ -188,6 +190,7 @@ alterStatement
     : alterStatementRename
     | alterStatementAddCol
     | alterStatementDropPartitions
+    | alterStatementAddPartitions
     | alterStatementProperties
     | alterStatementSerdeProperties
     ;
@@ -201,6 +204,16 @@ alterStatementAddCol
     : KW_ALTER KW_TABLE Identifier (add=KW_ADD | replace=KW_REPLACE) KW_COLUMNS LPAREN columnNameTypeList RPAREN
     -> {$add != null}? ^(TOK_ALTERTABLE_ADDCOLS Identifier columnNameTypeList)
     ->                 ^(TOK_ALTERTABLE_REPLACECOLS Identifier columnNameTypeList)
+    ;
+
+alterStatementAddPartitions
+    : KW_ALTER KW_TABLE Identifier KW_ADD partitionSpec partitionLocation? (partitionSpec partitionLocation?)*
+    -> ^(TOK_ALTERTABLE_ADDPARTS Identifier (partitionSpec partitionLocation?)+)
+    ;
+
+partitionLocation
+    :
+      KW_LOCATION locn=StringLiteral -> ^(TOK_PARTITIONLOCATION $locn)
     ;
 
 alterStatementDropPartitions

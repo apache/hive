@@ -38,11 +38,14 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.io.Writable;
@@ -52,6 +55,8 @@ import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.util.StringUtils;
 
 import com.facebook.thrift.TException;
+import com.facebook.thrift.protocol.TBinaryProtocol;
+import com.facebook.thrift.transport.TMemoryBuffer;
 
 /**
  * The Hive class contains information about this instance of Hive.
@@ -519,27 +524,48 @@ public class Hive {
       tbl.copyFiles(loadPath);
     }
   }
-  
+
   /**
-   * Creates a partition 
+   * Creates a partition.
    * @param tbl table for which partition needs to be created
    * @param partSpec partition keys and their values
    * @return created partition object
    * @throws HiveException if table doesn't exist or partition already exists
    */
-  public Partition createPartition(Table tbl, Map<String, String> partSpec) throws HiveException {
-    org.apache.hadoop.hive.metastore.api.Partition tpart = null;
-    List<String> pvals = new ArrayList<String>();
-    for (FieldSchema field : tbl.getPartCols()) {
-      pvals.add(partSpec.get(field.getName()));
-    }
+  public Partition createPartition(Table tbl, Map<String, String> partSpec)
+    throws HiveException {
+    
     try {
-      tpart = getMSC().appendPartition(tbl.getDbName(), tbl.getName(), pvals);
+      String loc = tbl.getTTable().getSd().getLocation() +
+        Path.SEPARATOR + Warehouse.makePartName(partSpec);
+      return createPartition(tbl, partSpec, new Path(loc));
+    } catch (MetaException e) {
+      throw new HiveException("Could not create partition location");
+    }
+  }
+  
+  /**
+   * Creates a partition 
+   * @param tbl table for which partition needs to be created
+   * @param partSpec partition keys and their values
+   * @param location location of this partition
+   * @return created partition object
+   * @throws HiveException if table doesn't exist or partition already exists
+   */
+  public Partition createPartition(Table tbl, Map<String, String> partSpec,
+      Path location) throws HiveException {
+        
+    org.apache.hadoop.hive.metastore.api.Partition partition = null;
+    
+    try {
+      Partition tmpPart = new Partition(tbl, partSpec, location);
+      partition = getMSC().add_partition(tmpPart.getTPartition());
     } catch (Exception e) {
       LOG.error(StringUtils.stringifyException(e));
       throw new HiveException(e);
     }
-    return new Partition(tbl, tpart);
+    
+    return new Partition(tbl, partition);
   }
 
   /**

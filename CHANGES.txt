@@ -222,3 +222,6 @@ Trunk (unreleased changes)
 
     HIVE-217. Report progress during FileSinkOperator in order to avoid
     Stream closes exceptions (Johan Oskarsson via athusoo)
+
+    HIVE-91. Add ADD PARTITION support to ALTER TABLE in order to add
+    partitions to a table (Johan Oskarsson via athusoo)

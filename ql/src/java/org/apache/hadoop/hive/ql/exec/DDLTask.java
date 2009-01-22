@@ -36,6 +36,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -49,6 +50,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreChecker;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.alterTableDesc;
@@ -105,6 +107,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         return alterTable(db, alterTbl);
       }
       
+      AddPartitionDesc addPartitionDesc = work.getAddPartitionDesc();
+      if (addPartitionDesc != null) {
+        return addPartition(db, addPartitionDesc);
+      }      
+      
       MsckDesc msckDesc = work.getMsckDesc();
       if (msckDesc != null) {
         return msck(db, fs, msckDesc);
@@ -138,6 +145,30 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       return (1);
     }
     assert false;
+    return 0;
+  }
+
+  /**
+   * Add a partition to a table.
+   * @param db Database to add the partition to.
+   * @param addPartitionDesc Add this partition.
+   * @return Returns 0 when execution succeeds and above 0 if it fails.
+   * @throws HiveException 
+   */
+  private int addPartition(Hive db, AddPartitionDesc addPartitionDesc) 
+    throws HiveException {
+    
+    Table tbl = db.getTable(addPartitionDesc.getDbName(), 
+        addPartitionDesc.getTableName());
+    
+    if(addPartitionDesc.getLocation() == null) {
+      db.createPartition(tbl, addPartitionDesc.getPartSpec());
+    } else {
+      //set partition path relative to table
+      db.createPartition(tbl, addPartitionDesc.getPartSpec(), 
+          new Path(tbl.getPath(), addPartitionDesc.getLocation()));
+    }
+    
     return 0;
   }
 

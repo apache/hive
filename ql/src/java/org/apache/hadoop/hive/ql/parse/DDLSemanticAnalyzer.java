@@ -26,16 +26,21 @@ import java.util.List;
 import java.util.Map;
 
 import org.antlr.runtime.tree.CommonTree;
+import org.antlr.runtime.tree.Tree;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
@@ -108,7 +113,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       analyzeAlterTableModifyCols(ast, alterTableTypes.ADDCOLS);
     else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_REPLACECOLS)
       analyzeAlterTableModifyCols(ast, alterTableTypes.REPLACECOLS);
-    else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_DROPPARTS)
+    else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_ADDPARTS) {
+      analyzeAlterTableAddParts(ast);
+    } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_DROPPARTS)
       analyzeAlterTableDropParts(ast);
     else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_PROPERTIES)
       analyzeAlterTableProps(ast);
@@ -514,6 +521,58 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
   
   /**
+   * Add one or more partitions to a table. Useful
+   * when the data has been copied to the right location
+   * by some other process.
+   * @param ast The parsed command tree.
+   * @throws SemanticException Parsin failed
+   */
+  private void analyzeAlterTableAddParts(CommonTree ast) 
+    throws SemanticException {
+    
+    String tblName = unescapeIdentifier(ast.getChild(0).getText());;
+    //partition name to value
+    List<Map<String, String>> partSpecs = getPartitionSpecs(ast);
+        
+    Iterator<Map<String, String>> partIter = partSpecs.iterator();
+    
+    String currentLocation = null;
+    Map<String, String> currentPart = null;
+    
+    int numCh = ast.getChildCount();
+    for (int num = 1; num < numCh; num++) {
+      CommonTree child = (CommonTree)ast.getChild(num);
+      switch (child.getToken().getType()) {
+      case HiveParser.TOK_PARTSPEC:
+        if(currentPart != null) {
+          AddPartitionDesc addPartitionDesc = 
+            new AddPartitionDesc(MetaStoreUtils.DEFAULT_DATABASE_NAME, 
+                tblName, currentPart, currentLocation);
+          rootTasks.add(TaskFactory.get(new DDLWork(addPartitionDesc), conf));
+        }
+        //create new partition, set values
+        currentLocation = null;
+        currentPart = partIter.next();
+        break;
+      case HiveParser.TOK_PARTITIONLOCATION:
+        //if location specified, set in partition
+        currentLocation = unescapeSQLString(child.getChild(0).getText());
+        break;
+      default:
+        throw new SemanticException("Unknown child: " + child);
+      }
+    }
+    
+    //add the last one
+    if(currentPart != null) {
+      AddPartitionDesc addPartitionDesc = 
+        new AddPartitionDesc(MetaStoreUtils.DEFAULT_DATABASE_NAME, 
+            tblName, currentPart, currentLocation);
+      rootTasks.add(TaskFactory.get(new DDLWork(addPartitionDesc), conf));
+    }
+  }  
+ 
+  /**
    * Verify that the information in the metastore matches up
    * with the data on the fs.
    * @param ast Query tree.
@@ -539,15 +598,18 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     List<Map<String, String>> partSpecs = new ArrayList<Map<String, String>>();
     int childIndex = 0;
     // get partition metadata if partition specified
-    for( childIndex = 1; childIndex < ast.getChildCount(); childIndex++) {
-      ASTNode partspec = (ASTNode) ast.getChild(childIndex);
-      HashMap<String, String> partSpec = new LinkedHashMap<String, String>();
-      for (int i = 0; i < partspec.getChildCount(); ++i) {
-        ASTNode partspec_val = (ASTNode) partspec.getChild(i);
-        String val = stripQuotes(partspec_val.getChild(1).getText());
-        partSpec.put(partspec_val.getChild(0).getText(), val);
+    for (childIndex = 1; childIndex < ast.getChildCount(); childIndex++) {
+      Tree partspec = ast.getChild(childIndex);
+      //sanity check
+      if(partspec.getType() == HiveParser.TOK_PARTSPEC) {
+        Map<String, String> partSpec = new LinkedHashMap<String, String>();
+        for (int i = 0; i < partspec.getChildCount(); ++i) {
+          CommonTree partspec_val = (CommonTree) partspec.getChild(i);
+          String val = stripQuotes(partspec_val.getChild(1).getText());
+          partSpec.put(partspec_val.getChild(0).getText(), val);
+        }
+        partSpecs.add(partSpec);
       }
-      partSpecs.add(partSpec);
     }
     return partSpecs;
   }

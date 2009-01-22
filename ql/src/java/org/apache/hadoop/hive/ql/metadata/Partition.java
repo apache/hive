@@ -20,10 +20,10 @@ package org.apache.hadoop.hive.ql.metadata;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,6 +35,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+
+import com.facebook.thrift.TException;
+import com.facebook.thrift.protocol.TBinaryProtocol;
+import com.facebook.thrift.transport.TMemoryBuffer;
 
 /**
  * A Hive Table Partition: is a fundamental storage unit within a Table
@@ -67,68 +72,84 @@ public class Partition {
     private URI partURI;
 
     public Partition(Table tbl, org.apache.hadoop.hive.metastore.api.Partition tp) throws HiveException {
-      this.table = tbl;
-      this.tPartition = tp;
-      partName = "";
-      if(table.isPartitioned()) {
-        try {
-          partName = Warehouse.makePartName(tbl.getPartCols(), tp.getValues());
-        } catch (MetaException e) {
-          throw new HiveException("Invalid partition for table " + tbl.getName(), e);
-        }
-        this.partPath = new Path(table.getPath(), partName);
-      } else {
-        // We are in the HACK territory. SemanticAnalyzer expects a single partition whose schema
-        // is same as the table partition. 
-        this.partPath = table.getPath();
-      }
-      spec = createSpec(tbl, tp);
+      initialize(tbl, tp);
+    }
+
+    /**
+     * Create partition object with the given info.
+     * @param tbl Table the partition will be in.
+     * @param partSpec Partition specifications.
+     * @param location Location of the partition, relative to the table.
+     * @throws HiveException Thrown if we could not create the partition.
+     */
+    public Partition(Table tbl, Map<String, String> partSpec, 
+        Path location) throws HiveException {
       
-      URI tmpURI = table.getDataLocation();
-      try {
-        partURI = new URI(tmpURI.getScheme(), tmpURI.getAuthority(),
-                          tmpURI.getPath() + "/" + partName, null, null);
-      } catch (URISyntaxException e) {
-        throw new RuntimeException(e);
+      List<String> pvals = new ArrayList<String>();
+      for (FieldSchema field : tbl.getPartCols()) {
+        pvals.add(partSpec.get(field.getName()));
       }
+      
+      org.apache.hadoop.hive.metastore.api.Partition tpart = 
+        new org.apache.hadoop.hive.metastore.api.Partition();
+      tpart.setDbName(tbl.getDbName());
+      tpart.setTableName(tbl.getName());
+      tpart.setValues(pvals);
+      
+      StorageDescriptor sd = new StorageDescriptor();
+      try {
+        //replace with THRIFT-138
+        TMemoryBuffer buffer = new TMemoryBuffer(1024);
+        TBinaryProtocol prot = new TBinaryProtocol(buffer);
+        tbl.getTTable().getSd().write(prot);
+        
+        sd.read(prot);
+      } catch (TException e) {
+        LOG.error("Could not create a copy of StorageDescription");
+        throw new HiveException("Could not create a copy of StorageDescription");
+      } 
+      
+      tpart.setSd(sd);
+      tpart.getSd().setLocation(location.toString());
+      
+      initialize(tbl, tpart);
     }
     
     /**
-     * Creates a partition name -> value spec map object
-     * @param tbl Use the information from this table.
-     * @param tp Use the information from this partition.
-     * @return Partition name to value mapping.
+     * Initializes this object with the given variables
+     * @param tbl Table the partition belongs to
+     * @param tp Thrift Partition object
+     * @throws HiveException Thrown if we cannot initialize the partition
      */
-    private LinkedHashMap<String, String> createSpec(Table tbl, 
-        org.apache.hadoop.hive.metastore.api.Partition tp) {
+    private void initialize(Table tbl, 
+        org.apache.hadoop.hive.metastore.api.Partition tp) 
+      throws HiveException {
       
-      List<FieldSchema> fsl = tbl.getPartCols();
-      List<String> tpl = tp.getValues();
-      LinkedHashMap<String, String> spec = new LinkedHashMap<String, String>();
-      for (int i = 0; i < tbl.getPartCols().size(); i++) {
-        FieldSchema fs = fsl.get(i);
-        String value = tpl.get(i);
-        spec.put(fs.getName(), value);
-      }
-      return spec;
-    }
-
-    public URI makePartURI(LinkedHashMap<String, String> spec) throws HiveException {
-      StringBuffer suffix = new StringBuffer();
-      if (table.getPartCols() != null) {
-        for(FieldSchema k: table.getPartCols()) {
-          suffix.append(k + "=" + spec.get(k.getName()) + "/");
+      this.table = tbl;
+      this.tPartition = tp;
+      this.partName = "";
+      
+      if(tbl.isPartitioned()) {
+        try {
+          this.partName = Warehouse.makePartName(tbl.getPartCols(), 
+              tp.getValues());
+        } catch (MetaException e) {
+          throw new HiveException("Invalid partition for table " + tbl.getName(),
+              e);
         }
+        this.partPath = new Path(tp.getSd().getLocation());
+      } else {
+        // We are in the HACK territory. 
+        // SemanticAnalyzer expects a single partition whose schema
+        // is same as the table partition. 
+        this.partPath = table.getPath();
       }
-      URI tmpURI = table.getDataLocation();
-      try {
-        return new URI(tmpURI.getScheme(), tmpURI.getAuthority(),
-            tmpURI.getPath() + suffix.toString(), null, null);
-      } catch (URISyntaxException e) {
-        throw new HiveException(e);
-      }
-    }
 
+      this.spec = new LinkedHashMap<String, String>(tbl.createSpec(tp));
+      this.partURI = partPath.toUri();
+    }
+    
+    
     public String getName() {
         return partName;
     }

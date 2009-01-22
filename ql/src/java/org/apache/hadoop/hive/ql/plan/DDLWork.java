@@ -28,6 +28,7 @@ public class DDLWork implements Serializable {
   private showTablesDesc       showTblsDesc;
   private showPartitionsDesc   showPartsDesc;
   private descTableDesc        descTblDesc;
+  private AddPartitionDesc addPartitionDesc;
   private MsckDesc msckDesc;
 
   public DDLWork() { }
@@ -72,6 +73,14 @@ public class DDLWork implements Serializable {
    */
   public DDLWork(showPartitionsDesc showPartsDesc) {
     this.showPartsDesc = showPartsDesc;
+  }
+  
+  /**
+   * @param addPartitionDesc information about the partitions
+   * we want to add.
+   */
+  public DDLWork(AddPartitionDesc addPartitionDesc) {
+    this.addPartitionDesc = addPartitionDesc;
   }
 
   public DDLWork(MsckDesc checkDesc) {
@@ -167,6 +176,22 @@ public class DDLWork implements Serializable {
    */
   public void setDescTblDesc(descTableDesc descTblDesc) {
     this.descTblDesc = descTblDesc;
+  }
+
+  /**
+   * @return information about the partitions
+   * we want to add.
+   */
+  public AddPartitionDesc getAddPartitionDesc() {
+    return addPartitionDesc;
+  }
+
+  /**
+   * @param addPartitionDesc information about the partitions
+   * we want to add.
+   */
+  public void setAddPartitionDesc(AddPartitionDesc addPartitionDesc) {
+    this.addPartitionDesc = addPartitionDesc;
   }
 
   /**

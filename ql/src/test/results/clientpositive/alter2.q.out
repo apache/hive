@@ -1,0 +1,36 @@
+a	int
+b	int
+insertdate	string
+Detailed Table Information:
+Table(tableName:alter2,dbName:default,owner:johan,createTime:1232538744,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:int,comment:null), FieldSchema(name:b,type:int,comment:null)],location:file:/home/johan/workspace/hive-91/build/ql/test/data/warehouse/alter2,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe,parameters:{serialization.format=org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[FieldSchema(name:insertdate,type:string,comment:null)],parameters:{})
+a	int
+b	int
+insertdate	string
+Detailed Table Information:
+Table(tableName:alter2,dbName:default,owner:johan,createTime:1232538744,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:int,comment:null), FieldSchema(name:b,type:int,comment:null)],location:file:/home/johan/workspace/hive-91/build/ql/test/data/warehouse/alter2,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe,parameters:{serialization.format=org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[FieldSchema(name:insertdate,type:string,comment:null)],parameters:{})
+insertdate=2008-01-01
+a	int
+b	int
+insertdate	string
+Detailed Table Information:
+Table(tableName:alter2,dbName:default,owner:johan,createTime:1232538744,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:int,comment:null), FieldSchema(name:b,type:int,comment:null)],location:file:/home/johan/workspace/hive-91/build/ql/test/data/warehouse/alter2,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe,parameters:{serialization.format=org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[FieldSchema(name:insertdate,type:string,comment:null)],parameters:{})
+insertdate=2008-01-01
+insertdate=2008-01-02
+a	int
+b	int
+insertdate	string
+Detailed Table Information:
+Table(tableName:alter2,dbName:default,owner:johan,createTime:1232538746,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:int,comment:null), FieldSchema(name:b,type:int,comment:null)],location:file:/home/johan/workspace/hive-91/build/ql/test/data/warehouse/alter2,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe,parameters:{serialization.format=org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[FieldSchema(name:insertdate,type:string,comment:null)],parameters:{EXTERNAL=TRUE})
+a	int
+b	int
+insertdate	string
+Detailed Table Information:
+Table(tableName:alter2,dbName:default,owner:johan,createTime:1232538746,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:int,comment:null), FieldSchema(name:b,type:int,comment:null)],location:file:/home/johan/workspace/hive-91/build/ql/test/data/warehouse/alter2,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe,parameters:{serialization.format=org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[FieldSchema(name:insertdate,type:string,comment:null)],parameters:{EXTERNAL=TRUE})
+insertdate=2008-01-01
+a	int
+b	int
+insertdate	string
+Detailed Table Information:
+Table(tableName:alter2,dbName:default,owner:johan,createTime:1232538746,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:int,comment:null), FieldSchema(name:b,type:int,comment:null)],location:file:/home/johan/workspace/hive-91/build/ql/test/data/warehouse/alter2,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe,parameters:{serialization.format=org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[FieldSchema(name:insertdate,type:string,comment:null)],parameters:{EXTERNAL=TRUE})
+insertdate=2008-01-01
+insertdate=2008-01-02

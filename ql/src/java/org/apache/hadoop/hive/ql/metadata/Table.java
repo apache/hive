@@ -24,6 +24,7 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -562,6 +563,25 @@ public class Table {
 
   public List<Order> getSortCols() {
     return getTTable().getSd().getSortCols();
+  }
+  
+  /**
+   * Creates a partition name -> value spec map object
+   * @param tp Use the information from this partition.
+   * @return Partition name to value mapping.
+   */
+  public Map<String, String> createSpec(
+      org.apache.hadoop.hive.metastore.api.Partition tp) {
+    
+    List<FieldSchema> fsl = getPartCols();
+    List<String> tpl = tp.getValues();
+    LinkedHashMap<String, String> spec = new LinkedHashMap<String, String>();
+    for (int i = 0; i < fsl.size(); i++) {
+      FieldSchema fs = fsl.get(i);
+      String value = tpl.get(i);
+      spec.put(fs.getName(), value);
+    }
+    return spec;
   }
   
 };
