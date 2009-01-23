@@ -301,12 +301,12 @@ public class CliDriver {
     String curPrompt = prompt;
     while ((line = reader.readLine(curPrompt+"> ")) != null) {
       if(line.trim().endsWith(";")) {
-        line = prefix + " " + line;
+        line = prefix + "\n" + line;
         ret = cli.processLine(line);
         prefix = "";
         curPrompt = prompt;
       } else {
-        prefix = prefix + line;
+        prefix = prefix + "\n" + line;
         curPrompt = prompt2;
         continue;
       }

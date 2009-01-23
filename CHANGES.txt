@@ -225,3 +225,6 @@ Trunk (unreleased changes)
 
     HIVE-91. Add ADD PARTITION support to ALTER TABLE in order to add
     partitions to a table (Johan Oskarsson via athusoo)
+
+    HIVE-242. Fix to allow CLI to interpret line breaks in any CLI
+    command (Prasad Chakka via athusoo)
