@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 
-import org.antlr.runtime.tree.*;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -35,6 +34,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
+import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
@@ -901,7 +901,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     Operator output = putOpInsertMap(
       OperatorFactory.getAndMakeChild(
-        new filterDesc(genExprNodeDesc(qb.getMetaData(), (ASTNode)whereExpr.getChild(0), inputRR)),
+        new filterDesc(genExprNodeDesc((ASTNode)whereExpr.getChild(0), inputRR)),
           new RowSchema(inputRR.getColumnInfos()), input), inputRR);
  
     LOG.debug("Created Filter Plan for " + qb.getId() + ":" + dest + " row schema: " + inputRR.toString());
@@ -921,7 +921,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     RowResolver inputRR = inputCtx.getRR();
     Operator output = putOpInsertMap(
       OperatorFactory.getAndMakeChild(
-        new filterDesc(genExprNodeDesc(qb.getMetaData(), condn, inputRR)),
+        new filterDesc(genExprNodeDesc(condn, inputRR)),
           new RowSchema(inputRR.getColumnInfos()), input), inputRR);
  
     LOG.debug("Created Filter Plan for " + qb.getId() + " row schema: " + inputRR.toString());
@@ -1150,7 +1150,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             genColList(tabAlias, alias, expr, col_list, inputRR, pos, out_rwsch);
             selectStar = true;
           } else {
-            exprNodeDesc exp = genExprNodeDesc(qb.getMetaData(), expr, inputRR);
+            exprNodeDesc exp = genExprNodeDesc(expr, inputRR);
             col_list.add(exp);
             if (!StringUtils.isEmpty(alias) &&
                 (out_rwsch.get(null, colAlias) != null)) {
@@ -1164,7 +1164,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       } else {
         // Case when this is an expression
-        exprNodeDesc exp = genExprNodeDesc(qb.getMetaData(), sel, inputRR);
+        exprNodeDesc exp = genExprNodeDesc(sel, inputRR);
         col_list.add(exp);
         if (!StringUtils.isEmpty(alias) &&
             (out_rwsch.get(null, colAlias) != null)) {
@@ -1203,36 +1203,58 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   static class UDAFInfo {
     ArrayList<exprNodeDesc> convertedParameters;
-    Method aggregateMethod;
-    Method evaluateMethod;
+    Class<?> retType;
+    Class<? extends UDAFEvaluator> evalClass;
   }
 
   /**
    * Returns the UDAFInfo struct for the aggregation
    * @param aggName  The name of the UDAF.
    * @param mode     The mode of the aggregation. This affects the evaluate method.
-   * @param aggClasses  The classes of the parameters to the UDAF. 
    * @param aggParameters  The actual exprNodeDesc of the parameters.
    * @param aggTree   The ASTNode node of the UDAF in the query.
    * @return UDAFInfo
    * @throws SemanticException when the UDAF is not found or has problems.
    */
-  UDAFInfo getUDAFInfo(String aggName, groupByDesc.Mode mode, ArrayList<Class<?>> aggClasses,
+  UDAFInfo getUDAFInfo(String aggName, groupByDesc.Mode mode,
       ArrayList<exprNodeDesc> aggParameters, ASTNode aggTree) throws SemanticException {
     UDAFInfo r = new UDAFInfo();
-    r.aggregateMethod = FunctionRegistry.getUDAFMethod(aggName, aggClasses);
-    if (null == r.aggregateMethod) {
-      String reason = "Looking for UDAF \"" + aggName + "\" with parameters " + aggClasses;
+    ArrayList<Class<?>> aggClasses = new ArrayList<Class<?>>();
+    for(exprNodeDesc expr: aggParameters) {
+      aggClasses.add(expr.getTypeInfo().getPrimitiveClass());
+    }
+    r.evalClass = FunctionRegistry.getUDAFEvaluator(aggName, aggClasses);
+    if (null == r.evalClass) {
+      String reason = "Looking for UDAF Evaluator\"" + aggName + "\" with parameters " + aggClasses;
+      throw new SemanticException(ErrorMsg.INVALID_FUNCTION_SIGNATURE.getMsg((ASTNode)aggTree.getChild(0), reason));
+    }
+    
+    Method aggregateMethod = null;
+    for(Method m: r.evalClass.getMethods()) {
+      if (m.getName().equalsIgnoreCase("iterate")) {
+        aggregateMethod = m;
+      }
+    }
+    
+    if (null == aggregateMethod) {
+      String reason = "Looking for UDAF Evaluator Iterator\"" + aggName + "\" with parameters " + aggClasses;
       throw new SemanticException(ErrorMsg.INVALID_FUNCTION_SIGNATURE.getMsg((ASTNode)aggTree.getChild(0), reason));
     }
 
-    r.convertedParameters = convertParameters(r.aggregateMethod, aggParameters);
+    r.convertedParameters = convertParameters(aggregateMethod, aggParameters);
     
-    r.evaluateMethod = FunctionRegistry.getUDAFEvaluateMethod(aggName, mode);
-    if (r.evaluateMethod == null) {
-      String reason = "UDAF \"" + aggName + "\" does not have evaluate()/evaluatePartial() methods.";
+    Method evaluateMethod = FunctionRegistry.getUDAFEvaluateMethod(aggName, mode);
+    String funcName = (mode == groupByDesc.Mode.COMPLETE || mode == groupByDesc.Mode.FINAL) ? "terminate" : "terminatePartial";
+    for(Method m: r.evalClass.getMethods()) {
+      if (m.getName().equalsIgnoreCase(funcName)) {
+        evaluateMethod = m;
+      }
+    }
+    if (evaluateMethod == null) {
+      String reason = "UDAF \"" + aggName + "\" does not have terminate()/terminatePartial() methods.";
       throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg((ASTNode)aggTree.getChild(0), reason)); 
     }
+    r.retType = evaluateMethod.getReturnType();
     
     return r;
   }
@@ -1279,7 +1301,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       Class<? extends UDAF> aggClass = FunctionRegistry.getUDAF(aggName);
       assert (aggClass != null);
       ArrayList<exprNodeDesc> aggParameters = new ArrayList<exprNodeDesc>();
-      ArrayList<Class<?>> aggClasses = new ArrayList<Class<?>>();
       // 0 is the function name
       for (int i = 1; i < value.getChildCount(); i++) {
         String text = value.getChild(i).toStringTree();
@@ -1292,16 +1313,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         String paraExpression = paraExprInfo.getInternalName();
         assert(paraExpression != null);
         aggParameters.add(new exprNodeColumnDesc(paraExprInfo.getType(), paraExprInfo.getInternalName()));
-        aggClasses.add(paraExprInfo.getType().getPrimitiveClass());
       }
 
-      UDAFInfo udaf = getUDAFInfo(aggName, mode, aggClasses, aggParameters, value);
+      UDAFInfo udaf = getUDAFInfo(aggName, mode, aggParameters, value);
       
-      aggregations.add(new aggregationDesc(aggClass, udaf.convertedParameters,
+      aggregations.add(new aggregationDesc(udaf.evalClass, udaf.convertedParameters,
           value.getToken().getType() == HiveParser.TOK_FUNCTIONDI));
       groupByOutputRowResolver.put("",value.toStringTree(),
                                    new ColumnInfo(Integer.valueOf(groupByKeys.size() + aggregations.size() -1).toString(),
-                                       udaf.evaluateMethod.getReturnType()));
+                                       udaf.retType));
     }
 
     return 
@@ -1352,12 +1372,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String aggName = value.getChild(0).getText();
       Class<? extends UDAF> aggClass = FunctionRegistry.getUDAF(aggName);
       assert (aggClass != null);
-      Method aggEvaluateMethod = null;
-      ArrayList<exprNodeDesc> aggParameters = null;
+      ArrayList<exprNodeDesc> aggParameters = new ArrayList<exprNodeDesc>();
 
       if (value.getToken().getType() == HiveParser.TOK_FUNCTIONDI) {
-        ArrayList<Class<?>> aggClasses = new ArrayList<Class<?>>();
-        ArrayList<exprNodeDesc> params = new ArrayList<exprNodeDesc>();
         // 0 is the function name
         for (int i = 1; i < value.getChildCount(); i++) {
           String text = value.getChild(i).toStringTree();
@@ -1369,17 +1386,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
           String paraExpression = paraExprInfo.getInternalName();
           assert(paraExpression != null);
-          params.add(new exprNodeColumnDesc(paraExprInfo.getType(), paraExprInfo.getInternalName()));
-          aggClasses.add(paraExprInfo.getType().getPrimitiveClass());
+          aggParameters.add(new exprNodeColumnDesc(paraExprInfo.getType(), paraExprInfo.getInternalName()));
         }
         
-        UDAFInfo udaf = getUDAFInfo(aggName, mode, aggClasses, params, value);
-        aggParameters = udaf.convertedParameters;
-        aggEvaluateMethod = udaf.evaluateMethod;
       }
       else {
-        aggParameters = new ArrayList<exprNodeDesc>();
-        aggEvaluateMethod = FunctionRegistry.getUDAFEvaluateMethod(aggName, mode);
         String text = entry.getKey();
         ColumnInfo paraExprInfo = groupByInputRowResolver.get("",text);
         if (paraExprInfo == null) {
@@ -1390,10 +1401,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         aggParameters.add(new exprNodeColumnDesc(paraExprInfo.getType(), paraExpression));
       }
 
-      aggregations.add(new aggregationDesc(aggClass, aggParameters, ((mode == groupByDesc.Mode.FINAL) ? false : (value.getToken().getType() == HiveParser.TOK_FUNCTIONDI))));
+      UDAFInfo udaf = getUDAFInfo(aggName, mode, aggParameters, value);
+      aggregations.add(new aggregationDesc(udaf.evalClass, udaf.convertedParameters, 
+          ((mode == groupByDesc.Mode.FINAL) ? false : (value.getToken().getType() == HiveParser.TOK_FUNCTIONDI))));
       groupByOutputRowResolver.put("", value.toStringTree(),
                                     new ColumnInfo(Integer.valueOf(groupByKeys.size() + aggregations.size() - 1).toString(),
-                                        aggEvaluateMethod.getReturnType()));
+                                        udaf.retType));
     }
 
     return putOpInsertMap(
@@ -1423,7 +1436,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     List<ASTNode> grpByExprs = getGroupByForClause(parseInfo, dest);
     for (int i = 0; i < grpByExprs.size(); ++i) {
       ASTNode grpbyExpr = grpByExprs.get(i);
-      exprNodeDesc grpByExprNode = genExprNodeDesc(qb.getMetaData(), grpbyExpr, groupByInputRowResolver);
+      exprNodeDesc grpByExprNode = genExprNodeDesc(grpbyExpr, groupByInputRowResolver);
 
       groupByKeys.add(grpByExprNode);
       String field = (Integer.valueOf(i)).toString();
@@ -1440,7 +1453,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ASTNode parameter = (ASTNode) value.getChild(i);
         String text = parameter.toStringTree();
         if (groupByOutputRowResolver.get("",text) == null) {
-          exprNodeDesc distExprNode = genExprNodeDesc(qb.getMetaData(), parameter, groupByInputRowResolver);
+          exprNodeDesc distExprNode = genExprNodeDesc(parameter, groupByInputRowResolver);
           groupByKeys.add(distExprNode);
           numDistn++;
           String field = (Integer.valueOf(grpByExprs.size() + numDistn -1)).toString();
@@ -1464,19 +1477,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // 0 is the function name
       for (int i = 1; i < value.getChildCount(); i++) {
         ASTNode paraExpr = (ASTNode)value.getChild(i);
-        exprNodeDesc paraExprNode = genExprNodeDesc(qb.getMetaData(), paraExpr, groupByInputRowResolver);
+        exprNodeDesc paraExprNode = genExprNodeDesc(paraExpr, groupByInputRowResolver);
 
         aggParameters.add(paraExprNode);
-        aggClasses.add(paraExprNode.getTypeInfo().getPrimitiveClass());
       }
 
-      UDAFInfo udaf = getUDAFInfo(aggName, mode, aggClasses, aggParameters, value);
+      UDAFInfo udaf = getUDAFInfo(aggName, mode, aggParameters, value);
       
-      aggregations.add(new aggregationDesc(aggClass, udaf.convertedParameters,
+      aggregations.add(new aggregationDesc(udaf.evalClass, udaf.convertedParameters,
                                            value.getToken().getType() == HiveParser.TOK_FUNCTIONDI));
       groupByOutputRowResolver.put("",value.toStringTree(),
                                    new ColumnInfo(Integer.valueOf(groupByKeys.size() + aggregations.size() -1).toString(),
-                                       udaf.evaluateMethod.getReturnType()));
+                                       udaf.retType));
     }
 
     return putOpInsertMap(
@@ -1506,7 +1518,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         Class<?> from = desc.getTypeInfo().getPrimitiveClass();
         Class<?> to = pType;
         assert(FunctionRegistry.implicitConvertable(from, to));
-        Method conv = FunctionRegistry.getUDFMethod(to.getName(), true, from);
+        Method conv = FunctionRegistry.getUDFMethod(to.getName(), from);
         assert(conv != null);
         Class<? extends UDF> c = FunctionRegistry.getUDFClass(to.getName());
         assert(c != null);
@@ -1635,7 +1647,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     List<ASTNode> grpByExprs = getGroupByForClause(parseInfo, dest);
     for (int i = 0; i < grpByExprs.size(); ++i) {
       ASTNode grpbyExpr = grpByExprs.get(i);
-      reduceKeys.add(genExprNodeDesc(qb.getMetaData(), grpbyExpr, reduceSinkInputRowResolver));
+      reduceKeys.add(genExprNodeDesc(grpbyExpr, reduceSinkInputRowResolver));
       String text = grpbyExpr.toStringTree();
       if (reduceSinkOutputRowResolver.get("", text) == null) {
         reduceSinkOutputRowResolver.put("", text,
@@ -1654,7 +1666,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ASTNode parameter = (ASTNode) value.getChild(i);
         String text = parameter.toStringTree();
         if (reduceSinkOutputRowResolver.get("",text) == null) {
-          reduceKeys.add(genExprNodeDesc(qb.getMetaData(), parameter, reduceSinkInputRowResolver));
+          reduceKeys.add(genExprNodeDesc(parameter, reduceSinkInputRowResolver));
           reduceSinkOutputRowResolver.put("", text,
                                           new ColumnInfo(Utilities.ReduceField.KEY.toString() + "." + Integer.valueOf(reduceKeys.size() - 1).toString(),
                                               reduceKeys.get(reduceKeys.size()-1).getTypeInfo()));
@@ -1673,7 +1685,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ASTNode parameter = (ASTNode) value.getChild(i);
         String text = parameter.toStringTree();
         if (reduceSinkOutputRowResolver.get("",text) == null) {
-          reduceValues.add(genExprNodeDesc(qb.getMetaData(), parameter, reduceSinkInputRowResolver));
+          reduceValues.add(genExprNodeDesc(parameter, reduceSinkInputRowResolver));
           reduceSinkOutputRowResolver.put("", text,
                                           new ColumnInfo(Utilities.ReduceField.VALUE.toString() + "." + Integer.valueOf(reduceValues.size() - 1).toString(),
                                               reduceValues.get(reduceValues.size()-1).getTypeInfo()));
@@ -1783,12 +1795,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     HashMap<String, ASTNode> aggregationTrees = parseInfo
         .getAggregationExprsForClause(dest);
     for (Map.Entry<String, ASTNode> entry : aggregationTrees.entrySet()) {
-      ASTNode value = entry.getValue();
-      String aggName = value.getChild(0).getText();
-      Class<? extends UDAF> aggClass = FunctionRegistry.getUDAF(aggName);
-      Method aggEvaluateMethod = FunctionRegistry.getUDAFEvaluateMethod(aggName, mode);
-      assert (aggClass != null);
       ArrayList<exprNodeDesc> aggParameters = new ArrayList<exprNodeDesc>();
+      ArrayList<Class<?>> aggParamTypes = new ArrayList<Class<?>>();
+      ASTNode value = entry.getValue();
       String text = entry.getKey();
       ColumnInfo paraExprInfo = groupByInputRowResolver2.get("",text);
       if (paraExprInfo == null) {
@@ -1797,10 +1806,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String paraExpression = paraExprInfo.getInternalName();
       assert(paraExpression != null);
       aggParameters.add(new exprNodeColumnDesc(paraExprInfo.getType(), paraExpression));
-      aggregations.add(new aggregationDesc(aggClass, aggParameters, ((mode == groupByDesc.Mode.FINAL) ? false : (value.getToken().getType() == HiveParser.TOK_FUNCTIONDI))));
+      aggParamTypes.add(paraExprInfo.getType().getPrimitiveClass());
+
+      String aggName = value.getChild(0).getText();
+      Class<? extends UDAF> aggClass = FunctionRegistry.getUDAF(aggName);
+      assert (aggClass != null);
+
+      UDAFInfo udaf = getUDAFInfo(aggName, mode, aggParameters, value);      
+      aggregations.add(new aggregationDesc(udaf.evalClass, udaf.convertedParameters, 
+                                           ((mode == groupByDesc.Mode.FINAL) ? false : (value.getToken().getType() == HiveParser.TOK_FUNCTIONDI))));
       groupByOutputRowResolver2.put("", value.toStringTree(),
                                     new ColumnInfo(Integer.valueOf(groupByKeys.size() + aggregations.size() - 1).toString(),
-                                        aggEvaluateMethod.getReturnType()));
+                                        udaf.retType));
     }
 
     return putOpInsertMap(
@@ -2099,7 +2116,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             // cannot convert to complex types
             column = null; 
           } else {
-            column = getFuncExprNodeDesc(tableFieldTypeInfo.getPrimitiveClass().getName(), column);
+            column = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc(tableFieldTypeInfo.getPrimitiveClass().getName(), column);
           }
           if (column == null) {
             String reason = "Cannot convert column " + i + " from " + rowFieldTypeInfo + " to " 
@@ -2183,7 +2200,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       int ccount = partitionExprs.getChildCount();
       for(int i=0; i<ccount; ++i) {
         ASTNode cl = (ASTNode)partitionExprs.getChild(i);
-        partitionCols.add(genExprNodeDescFromColRef(cl, inputRR));
+        partitionCols.add(genExprNodeDesc(cl, inputRR));
       }
     }
 
@@ -2212,7 +2229,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           order.append("+");
         }
 
-        sortCols.add(genExprNodeDescFromColRef(cl, inputRR));
+        sortCols.add(genExprNodeDesc(cl, inputRR));
       }
     }
 
@@ -2312,7 +2329,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Vector<ASTNode> exprs = joinTree.getExpressions().get(pos);
     for (int i = 0; i < exprs.size(); i++) {
       ASTNode expr = exprs.get(i);
-      reduceKeys.add(genExprNodeDesc(qb.getMetaData(), expr, inputRS));
+      reduceKeys.add(genExprNodeDesc(expr, inputRS));
     }
 
     // Walk over the input row resolver and copy in the output
@@ -2403,7 +2420,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Add implicit type conversion if necessary
       for(int i=0; i<right.length; i++) {
         if (!commonClass.isAssignableFrom(keys.get(i).get(k).getTypeInfo().getPrimitiveClass())) {
-          keys.get(i).set(k, getFuncExprNodeDesc(commonClass.getName(), keys.get(i).get(k)));
+          keys.get(i).set(k, TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc(commonClass.getName(), keys.get(i).get(k)));
         }
       }
     }
@@ -2842,21 +2859,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     else {
       for(ASTNode expr: ts.getExprs()) {
-    	  args.add(genExprNodeDesc(qbm, expr, rwsch));
+    	  args.add(genExprNodeDesc(expr, rwsch));
       }
     }
 
-    exprNodeDesc hashfnExpr = getFuncExprNodeDesc("default_sample_hashfn", args);
+    exprNodeDesc hashfnExpr = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("default_sample_hashfn", args);
     assert(hashfnExpr != null);
     LOG.info("hashfnExpr = " + hashfnExpr);
-    exprNodeDesc andExpr = getFuncExprNodeDesc("&", hashfnExpr, intMaxExpr);
+    exprNodeDesc andExpr = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("&", hashfnExpr, intMaxExpr);
     assert(andExpr != null);
     LOG.info("andExpr = " + andExpr);
-    exprNodeDesc modExpr = getFuncExprNodeDesc("%", andExpr, denominatorExpr);
+    exprNodeDesc modExpr = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("%", andExpr, denominatorExpr);
     assert(modExpr != null);
     LOG.info("modExpr = " + modExpr);
     LOG.info("numeratorExpr = " + numeratorExpr);
-    exprNodeDesc equalsExpr = getFuncExprNodeDesc("==", modExpr, numeratorExpr);
+    exprNodeDesc equalsExpr = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("==", modExpr, numeratorExpr);
     LOG.info("equalsExpr = " + equalsExpr);
     assert(equalsExpr != null);
     return equalsExpr;
@@ -3159,7 +3176,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     GraphWalker ogw = new GenMapRedWalker(disp);
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(this.topOps.values());
-    ogw.startWalking(topNodes);
+    ogw.startWalking(topNodes, null);
 
     // reduce sink does not have any kids
     breakOperatorTree(procCtx.getRootOps());
@@ -3240,379 +3257,65 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     return;
   }
-  
-  /**
-   * Get the exprNodeDesc
-   * @param name
-   * @param children
-   * @return
-   */
-  public static exprNodeDesc getFuncExprNodeDesc(String name, exprNodeDesc... children) {
-    return getFuncExprNodeDesc(name, Arrays.asList(children));
-  }
-  
-  /**
-   * This function create an ExprNodeDesc for a UDF function given the children (arguments).
-   * It will insert implicit type conversion functions if necessary. 
-   * @throws SemanticException 
-   */
-  public static exprNodeDesc getFuncExprNodeDesc(String udfName, List<exprNodeDesc> children) {
-    // Find the corresponding method
-    ArrayList<Class<?>> argumentClasses = new ArrayList<Class<?>>(children.size());
-    for(int i=0; i<children.size(); i++) {
-      exprNodeDesc child = children.get(i);
-      assert(child != null);
-      TypeInfo childTypeInfo = child.getTypeInfo();
-      assert(childTypeInfo != null);
-      
-      // Note: we don't pass the element types of MAP/LIST to UDF.
-      // That will work for null test and size but not other more complex functionalities like list slice etc.
-      // For those more complex functionalities, we plan to have a ComplexUDF interface which has an evaluate
-      // method that accepts a list of objects and a list of objectinspectors. 
-      switch (childTypeInfo.getCategory()) {
-        case PRIMITIVE: {
-          argumentClasses.add(childTypeInfo.getPrimitiveClass());
-          break;
-        }
-        case MAP: {
-          argumentClasses.add(Map.class);
-          break;
-        }
-        case LIST: {
-          argumentClasses.add(List.class);
-          break;
-        }
-        case STRUCT: {
-          argumentClasses.add(Object.class);
-          break;
-        }
-        default: {
-          // should never happen
-          assert(false);
-        }
-      }
-    }
-    Method udfMethod = FunctionRegistry.getUDFMethod(udfName, false, argumentClasses);
-    if (udfMethod == null) return null;
-
-    ArrayList<exprNodeDesc> ch = new ArrayList<exprNodeDesc>();
-    Class<?>[] pTypes = udfMethod.getParameterTypes();
-
-    for (int i = 0; i < children.size(); i++)
-    {
-      exprNodeDesc desc = children.get(i);
-      Class<?> pType = ObjectInspectorUtils.generalizePrimitive(pTypes[i]);
-      if (desc instanceof exprNodeNullDesc) {
-        exprNodeConstantDesc newCh = new exprNodeConstantDesc(TypeInfoFactory.getPrimitiveTypeInfo(pType), null);
-        ch.add(newCh);
-      } else if (pType.isAssignableFrom(argumentClasses.get(i))) {
-        // no type conversion needed
-        ch.add(desc);
-      } else {
-        // must be implicit type conversion
-        Class<?> from = argumentClasses.get(i);
-        Class<?> to = pType;
-        assert(FunctionRegistry.implicitConvertable(from, to));
-        Method m = FunctionRegistry.getUDFMethod(to.getName(), true, from);
-        assert(m != null);
-        Class<? extends UDF> c = FunctionRegistry.getUDFClass(to.getName());
-        assert(c != null);
-
-        // get the conversion method
-        ArrayList<exprNodeDesc> conversionArg = new ArrayList<exprNodeDesc>(1);
-        conversionArg.add(desc);
-        ch.add(new exprNodeFuncDesc(
-              TypeInfoFactory.getPrimitiveTypeInfo(pType),
-              c, m, conversionArg));
-      }
-    }
-
-    exprNodeFuncDesc desc = new exprNodeFuncDesc(
-      TypeInfoFactory.getPrimitiveTypeInfo(udfMethod.getReturnType()),
-      FunctionRegistry.getUDFClass(udfName),
-      udfMethod, ch);
-    return desc;
-  }
-
 
   /**
    * Generates and expression node descriptor for the expression passed in the arguments. This
    * function uses the row resolver and the metadata informatinon that are passed as arguments
    * to resolve the column names to internal names.
-   * @param qbm The metadata infromation for the query block
    * @param expr The expression
    * @param input The row resolver
    * @return exprNodeDesc
    * @throws SemanticException
    */
   @SuppressWarnings("nls")
-  private exprNodeDesc genExprNodeDesc(QBMetaData qbm, ASTNode expr, RowResolver input)
+  private exprNodeDesc genExprNodeDesc(ASTNode expr, RowResolver input)
   throws SemanticException {
     //  We recursively create the exprNodeDesc.  Base cases:  when we encounter 
     //  a column ref, we convert that into an exprNodeColumnDesc;  when we encounter 
     //  a constant, we convert that into an exprNodeConstantDesc.  For others we just 
     //  build the exprNodeFuncDesc with recursively built children.
     
-    exprNodeDesc desc = null;
-
     //  If the current subExpression is pre-calculated, as in Group-By etc.
     ColumnInfo colInfo = input.get("", expr.toStringTree());
     if (colInfo != null) {
-      desc = new exprNodeColumnDesc(colInfo.getType(), colInfo.getInternalName()); 
-      return desc;
+      return new exprNodeColumnDesc(colInfo.getType(), colInfo.getInternalName());
     }
 
-    //  Is this a simple expr node (not a TOK_COLREF or a TOK_FUNCTION or an operator)?
-    desc = genSimpleExprNodeDesc(expr);
-    if (desc != null) {
-      return desc;
-    }
+    // Create the walker, the rules dispatcher and the context.
+    TypeCheckCtx tcCtx = new TypeCheckCtx(input);
     
-    int tokType = expr.getType();
-    switch (tokType) {
-      case HiveParser.TOK_COLREF: {
-        desc = genExprNodeDescFromColRef(expr, input);
-        break;
-      }
-  
-      default: {
-        boolean isFunction = (expr.getType() == HiveParser.TOK_FUNCTION);
-        
-        // Create all children
-        int childrenBegin = (isFunction ? 1 : 0);
-        ArrayList<exprNodeDesc> children = new ArrayList<exprNodeDesc>(expr.getChildCount() - childrenBegin);
-        for (int ci=childrenBegin; ci<expr.getChildCount(); ci++) {
-          children.add(genExprNodeDesc(qbm, (ASTNode)expr.getChild(ci), input));
-        }
-        
-        // Create function desc
-        desc = getXpathOrFuncExprNodeDesc(expr, isFunction, children);
-        break;
-      }
+    // create a walker which walks the tree in a DFS manner while maintaining the operator stack. The dispatcher
+    // generates the plan from the operator tree
+    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    StringBuilder sb = new StringBuilder();
+    Formatter fm = new Formatter(sb);
+    opRules.put(new RuleRegExp("R1", HiveParser.TOK_NULL + "%"), TypeCheckProcFactory.getNullExprProcessor());
+    opRules.put(new RuleRegExp("R2", HiveParser.Number + "%"), TypeCheckProcFactory.getNumExprProcessor());
+    opRules.put(new RuleRegExp("R3", HiveParser.Identifier + "%|" + 
+                                     HiveParser.StringLiteral + "%|" + 
+                                     HiveParser.TOK_CHARSETLITERAL + "%"), 
+                               TypeCheckProcFactory.getStrExprProcessor());
+    opRules.put(new RuleRegExp("R4", HiveParser.KW_TRUE + "%|" + HiveParser.KW_FALSE + "%"), 
+                               TypeCheckProcFactory.getBoolExprProcessor());
+    opRules.put(new RuleRegExp("R4", HiveParser.TOK_COLREF + "%"), TypeCheckProcFactory.getColumnExprProcessor());
+
+    // The dispatcher fires the processor corresponding to the closest matching rule and passes the context along
+    Dispatcher disp = new DefaultRuleDispatcher(TypeCheckProcFactory.getDefaultExprProcessor(), opRules, tcCtx);
+    GraphWalker ogw = new DefaultGraphWalker(disp);
+   
+    // Create a list of topop nodes
+    ArrayList<Node> topNodes = new ArrayList<Node>();
+    topNodes.add(expr);
+    HashMap<Node, Object> nodeOutputs = new HashMap<Node, Object>();
+    ogw.startWalking(topNodes, nodeOutputs);
+    exprNodeDesc desc = (exprNodeDesc)nodeOutputs.get(expr);
+    if (desc == null) {
+      throw new SemanticException(tcCtx.getError());
     }
-    assert(desc != null);
+
     return desc;
   }
-
-  /**
-   * Generates expression node from a TOK_COLREF AST Node
-   * @param expr Antrl node
-   * @param input row resolver for this col reference
-   * @return exprNodeDesc or null if ASTNode is not a TOK_COLREF
-   * @throws SemanticException
-   */
-  private exprNodeDesc genExprNodeDescFromColRef(ASTNode expr, RowResolver input)
-      throws SemanticException {
-    if(expr.getType() != HiveParser.TOK_COLREF) {
-      throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(expr));
-    }
-    exprNodeDesc desc;
-    ColumnInfo colInfo;
-    String tabAlias = null;
-    String colName = null;
-    if (expr.getChildCount() != 1) {
-      tabAlias = unescapeIdentifier(expr.getChild(0).getText());
-      colName = unescapeIdentifier(expr.getChild(1).getText());
-    }
-    else {
-      colName = unescapeIdentifier(expr.getChild(0).getText());
-    }
-
-    if (colName == null) {
-      throw new SemanticException(ErrorMsg.INVALID_XPATH.getMsg(expr));
-    }
-
-    colInfo = input.get(tabAlias, colName);
-
-    if (colInfo == null && input.getIsExprResolver()) {
-      throw new SemanticException(ErrorMsg.NON_KEY_EXPR_IN_GROUPBY.getMsg(expr));
-    }         
-    else if (tabAlias != null && !input.hasTableAlias(tabAlias)) {
-      throw new SemanticException(ErrorMsg.INVALID_TABLE_ALIAS.getMsg(expr.getChild(0)));
-    } else if (colInfo == null) {
-      throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(tabAlias == null? expr.getChild(0) : expr.getChild(1)));
-    }
-
-    desc = new exprNodeColumnDesc(colInfo.getType(), colInfo.getInternalName());
-    return desc;
-  }
-
-  static HashMap<Integer, String> specialUnaryOperatorTextHashMap;
-  static HashMap<Integer, String> specialFunctionTextHashMap;
-  static HashMap<Integer, String> conversionFunctionTextHashMap;
-  static {
-    specialUnaryOperatorTextHashMap = new HashMap<Integer, String>();
-    specialUnaryOperatorTextHashMap.put(HiveParser.PLUS, "positive");
-    specialUnaryOperatorTextHashMap.put(HiveParser.MINUS, "negative");
-    specialFunctionTextHashMap = new HashMap<Integer, String>();
-    specialFunctionTextHashMap.put(HiveParser.TOK_ISNULL, "isnull");
-    specialFunctionTextHashMap.put(HiveParser.TOK_ISNOTNULL, "isnotnull");
-    conversionFunctionTextHashMap = new HashMap<Integer, String>();
-    conversionFunctionTextHashMap.put(HiveParser.TOK_BOOLEAN, Boolean.class.getName());
-    conversionFunctionTextHashMap.put(HiveParser.TOK_TINYINT, Byte.class.getName());
-    conversionFunctionTextHashMap.put(HiveParser.TOK_SMALLINT, Short.class.getName());
-    conversionFunctionTextHashMap.put(HiveParser.TOK_INT, Integer.class.getName());
-    conversionFunctionTextHashMap.put(HiveParser.TOK_BIGINT, Long.class.getName());
-    conversionFunctionTextHashMap.put(HiveParser.TOK_FLOAT, Float.class.getName());
-    conversionFunctionTextHashMap.put(HiveParser.TOK_DOUBLE, Double.class.getName());
-    conversionFunctionTextHashMap.put(HiveParser.TOK_STRING, String.class.getName());
-    conversionFunctionTextHashMap.put(HiveParser.TOK_DATE, java.sql.Date.class.getName());
-  }
   
-  public static boolean isRedundantConversionFunction(ASTNode expr, boolean isFunction, ArrayList<exprNodeDesc> children) {
-    if (!isFunction) return false;
-    // children is always one less than the expr.getChildCount(), since the latter contains function name.
-    assert(children.size() == expr.getChildCount() - 1);
-    // conversion functions take a single parameter
-    if (children.size() != 1) return false;
-    String funcText = conversionFunctionTextHashMap.get(((ASTNode)expr.getChild(0)).getType());
-    // not a conversion function 
-    if (funcText == null) return false;
-    // return true when the child type and the conversion target type is the same
-    return children.get(0).getTypeInfo().getPrimitiveClass().getName().equals(funcText);
-  }
-  
-  public static String getFunctionText(ASTNode expr, boolean isFunction) {
-    String funcText = null;
-    if (!isFunction) {
-      // For operator, the function name is the operator text, unless it's in our special dictionary
-      if (expr.getChildCount() == 1) {
-        funcText = specialUnaryOperatorTextHashMap.get(expr.getType());
-      }
-      if (funcText == null) {
-        funcText = expr.getText();
-      }
-    } else {
-      // For TOK_FUNCTION, the function name is stored in the first child, unless it's in our
-      // special dictionary.
-      assert(expr.getChildCount() >= 1);
-      int funcType = ((ASTNode)expr.getChild(0)).getType();
-      funcText = specialFunctionTextHashMap.get(funcType);
-      if (funcText == null) {
-        funcText = conversionFunctionTextHashMap.get(funcType);
-      }
-      if (funcText == null) {
-        funcText = ((ASTNode)expr.getChild(0)).getText();
-      }
-    }
-    return funcText;
-  }
-  
-  static exprNodeDesc getXpathOrFuncExprNodeDesc(ASTNode expr, boolean isFunction,
-      ArrayList<exprNodeDesc> children)
-      throws SemanticException {
-    // return the child directly if the conversion is redundant.
-    if (isRedundantConversionFunction(expr, isFunction, children)) {
-      assert(children.size() == 1);
-      assert(children.get(0) != null);
-      return children.get(0);
-    }
-    String funcText = getFunctionText(expr, isFunction);
-    exprNodeDesc desc;
-    if (funcText.equals(".")) {
-      // "." :  FIELD Expression
-      assert(children.size() == 2);
-      // Only allow constant field name for now
-      assert(children.get(1) instanceof exprNodeConstantDesc);
-      exprNodeDesc object = children.get(0);
-      exprNodeConstantDesc fieldName = (exprNodeConstantDesc)children.get(1);
-      assert(fieldName.getValue() instanceof String);
-      
-      // Calculate result TypeInfo
-      String fieldNameString = (String)fieldName.getValue();
-      TypeInfo objectTypeInfo = object.getTypeInfo();
-      
-      // Allow accessing a field of list element structs directly from a list  
-      boolean isList = (object.getTypeInfo().getCategory() == ObjectInspector.Category.LIST);
-      if (isList) {
-        objectTypeInfo = objectTypeInfo.getListElementTypeInfo();
-      }
-      if (objectTypeInfo.getCategory() != Category.STRUCT) {
-        throw new SemanticException(ErrorMsg.INVALID_DOT.getMsg(expr));
-      }
-      TypeInfo t = objectTypeInfo.getStructFieldTypeInfo(fieldNameString);
-      if (isList) {
-        t = TypeInfoFactory.getListTypeInfo(t);
-      }
-      
-      desc = new exprNodeFieldDesc(t, children.get(0), fieldNameString, isList);
-      
-    } else if (funcText.equals("[")){
-      // "[]" : LSQUARE/INDEX Expression
-      assert(children.size() == 2);
-      
-      // Check whether this is a list or a map
-      TypeInfo myt = children.get(0).getTypeInfo();
-
-      if (myt.getCategory() == Category.LIST) {
-        // Only allow constant integer index for now
-        if (!(children.get(1) instanceof exprNodeConstantDesc)
-            || !(((exprNodeConstantDesc)children.get(1)).getValue() instanceof Integer)) {
-          throw new SemanticException(ErrorMsg.INVALID_ARRAYINDEX_CONSTANT.getMsg(expr));
-        }
-      
-        // Calculate TypeInfo
-        TypeInfo t = myt.getListElementTypeInfo();
-        desc = new exprNodeIndexDesc(t, children.get(0), children.get(1));
-      }
-      else if (myt.getCategory() == Category.MAP) {
-        // Only allow only constant indexes for now
-        if (!(children.get(1) instanceof exprNodeConstantDesc)) {
-          throw new SemanticException(ErrorMsg.INVALID_MAPINDEX_CONSTANT.getMsg(expr));
-        }
-        if (!(((exprNodeConstantDesc)children.get(1)).getValue().getClass() == 
-              myt.getMapKeyTypeInfo().getPrimitiveClass())) {
-          throw new SemanticException(ErrorMsg.INVALID_MAPINDEX_TYPE.getMsg(expr));
-        }
-        // Calculate TypeInfo
-        TypeInfo t = myt.getMapValueTypeInfo();
-        
-        desc = new exprNodeIndexDesc(t, children.get(0), children.get(1));
-      }
-      else {
-        throw new SemanticException(ErrorMsg.NON_COLLECTION_TYPE.getMsg(expr, 
-            myt.getTypeName()));
-      }
-    } else {
-      // other operators or functions
-      Class<? extends UDF> udf = FunctionRegistry.getUDFClass(funcText);
-      if (udf == null) {
-      	if (isFunction)
-          throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg((ASTNode)expr.getChild(0)));
-      	else
-          throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg((ASTNode)expr));
-      }
-      
-      desc = getFuncExprNodeDesc(funcText, children);
-      if (desc == null) {
-        ArrayList<Class<?>> argumentClasses = new ArrayList<Class<?>>(children.size());
-        for(int i=0; i<children.size(); i++) {
-          argumentClasses.add(children.get(i).getTypeInfo().getPrimitiveClass());
-        }
-  
-        if (isFunction) {
-          String reason = "Looking for UDF \"" + expr.getChild(0).getText() + "\" with parameters " + argumentClasses;
-          throw new SemanticException(ErrorMsg.INVALID_FUNCTION_SIGNATURE.getMsg((ASTNode)expr.getChild(0), reason));
-        } else {
-          String reason = "Looking for Operator \"" + expr.getText() + "\" with parameters " + argumentClasses;
-          throw new SemanticException(ErrorMsg.INVALID_OPERATOR_SIGNATURE.getMsg(expr, reason));
-        }
-      }
-    }
-    // UDFOPPositive is a no-op.
-    // However, we still create it, and then remove it here, to make sure we only allow
-    // "+" for numeric types.
-    if (desc instanceof exprNodeFuncDesc) {
-      exprNodeFuncDesc funcDesc = (exprNodeFuncDesc)desc;
-      if (funcDesc.getUDFClass().equals(UDFOPPositive.class)) {
-        assert(funcDesc.getChildren().size() == 1);
-        desc = funcDesc.getChildren().get(0);
-      }
-    }
-    assert(desc != null);
-    return desc;
-  }
-
   static exprNodeDesc genSimpleExprNodeDesc(ASTNode expr) throws SemanticException {
     exprNodeDesc desc = null;
     switch(expr.getType()) {

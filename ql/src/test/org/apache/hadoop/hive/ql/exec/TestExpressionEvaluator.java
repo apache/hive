@@ -25,6 +25,7 @@ import java.util.*;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
@@ -111,7 +112,7 @@ public class TestExpressionEvaluator extends TestCase {
       exprNodeDesc coladesc = new exprNodeColumnDesc(colaType, "cola");
       exprNodeDesc col11desc = new exprNodeIndexDesc(col1desc, new exprNodeConstantDesc(new Integer(1)));
       exprNodeDesc cola0desc = new exprNodeIndexDesc(coladesc, new exprNodeConstantDesc(new Integer(0)));
-      exprNodeDesc func1 = SemanticAnalyzer.getFuncExprNodeDesc("concat", col11desc, cola0desc);
+      exprNodeDesc func1 = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("concat", col11desc, cola0desc);
       ExprNodeEvaluator eval = ExprNodeEvaluatorFactory.get(func1);
 
       // evaluate on row
@@ -130,7 +131,7 @@ public class TestExpressionEvaluator extends TestCase {
       // get a evaluator for a string concatenation expression
       exprNodeDesc col1desc = new exprNodeColumnDesc(col1Type, "col1");
       exprNodeDesc col11desc = new exprNodeIndexDesc(col1desc, new exprNodeConstantDesc(new Integer(1)));
-      exprNodeDesc func1 = SemanticAnalyzer.getFuncExprNodeDesc(Double.class.getName(), col11desc);
+      exprNodeDesc func1 = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc(Double.class.getName(), col11desc);
       ExprNodeEvaluator eval = ExprNodeEvaluatorFactory.get(func1);
 
       // evaluate on row
@@ -164,7 +165,7 @@ public class TestExpressionEvaluator extends TestCase {
       measureSpeed("1 + 2",
           basetimes * 100,
           ExprNodeEvaluatorFactory.get(
-              SemanticAnalyzer.getFuncExprNodeDesc("+", 
+              TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("+", 
                   new exprNodeConstantDesc(1), 
                   new exprNodeConstantDesc(2))),
           r,
@@ -172,8 +173,8 @@ public class TestExpressionEvaluator extends TestCase {
       measureSpeed("1 + 2 - 3",
           basetimes * 100,
           ExprNodeEvaluatorFactory.get(
-              SemanticAnalyzer.getFuncExprNodeDesc("-", 
-                  SemanticAnalyzer.getFuncExprNodeDesc("+",
+              TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("-", 
+                  TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("+",
                       new exprNodeConstantDesc(1), 
                       new exprNodeConstantDesc(2)),
                   new exprNodeConstantDesc(3))),
@@ -182,9 +183,9 @@ public class TestExpressionEvaluator extends TestCase {
       measureSpeed("1 + 2 - 3 + 4",
           basetimes * 100,
           ExprNodeEvaluatorFactory.get(
-              SemanticAnalyzer.getFuncExprNodeDesc("+",
-                  SemanticAnalyzer.getFuncExprNodeDesc("-", 
-                      SemanticAnalyzer.getFuncExprNodeDesc("+",
+              TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("+",
+                  TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("-", 
+                      TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("+",
                           new exprNodeConstantDesc(1), 
                           new exprNodeConstantDesc(2)),
                       new exprNodeConstantDesc(3)),
@@ -194,7 +195,7 @@ public class TestExpressionEvaluator extends TestCase {
       measureSpeed("concat(\"1\", \"2\")",
           basetimes * 100,
           ExprNodeEvaluatorFactory.get(
-              SemanticAnalyzer.getFuncExprNodeDesc("concat", 
+              TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("concat", 
                   new exprNodeConstantDesc("1"), 
                   new exprNodeConstantDesc("2"))),
           r,
@@ -202,8 +203,8 @@ public class TestExpressionEvaluator extends TestCase {
       measureSpeed("concat(concat(\"1\", \"2\"), \"3\")",
           basetimes * 100,
           ExprNodeEvaluatorFactory.get(
-              SemanticAnalyzer.getFuncExprNodeDesc("concat", 
-                  SemanticAnalyzer.getFuncExprNodeDesc("concat",
+              TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("concat", 
+                  TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("concat",
                       new exprNodeConstantDesc("1"), 
                       new exprNodeConstantDesc("2")),
                   new exprNodeConstantDesc("3"))),
@@ -212,9 +213,9 @@ public class TestExpressionEvaluator extends TestCase {
       measureSpeed("concat(concat(concat(\"1\", \"2\"), \"3\"), \"4\")",
           basetimes * 100,
           ExprNodeEvaluatorFactory.get(
-              SemanticAnalyzer.getFuncExprNodeDesc("concat", 
-                SemanticAnalyzer.getFuncExprNodeDesc("concat", 
-                    SemanticAnalyzer.getFuncExprNodeDesc("concat",
+              TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("concat", 
+                TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("concat", 
+                    TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("concat",
                         new exprNodeConstantDesc("1"), 
                         new exprNodeConstantDesc("2")),
                     new exprNodeConstantDesc("3")),
@@ -226,7 +227,7 @@ public class TestExpressionEvaluator extends TestCase {
       measureSpeed("concat(col1[1], cola[1])", 
           basetimes * 10,
           ExprNodeEvaluatorFactory.get(
-              SemanticAnalyzer.getFuncExprNodeDesc("concat",
+              TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("concat",
                   new exprNodeIndexDesc(new exprNodeColumnDesc(col1Type, "col1"), constant1), 
                   new exprNodeIndexDesc(new exprNodeColumnDesc(colaType, "cola"), constant1))),
           r,
@@ -234,8 +235,8 @@ public class TestExpressionEvaluator extends TestCase {
       measureSpeed("concat(concat(col1[1], cola[1]), col1[2])", 
           basetimes * 10,
           ExprNodeEvaluatorFactory.get(
-              SemanticAnalyzer.getFuncExprNodeDesc("concat", 
-                  SemanticAnalyzer.getFuncExprNodeDesc("concat", 
+              TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("concat", 
+                  TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("concat", 
                       new exprNodeIndexDesc(new exprNodeColumnDesc(col1Type, "col1"), constant1), 
                       new exprNodeIndexDesc(new exprNodeColumnDesc(colaType, "cola"), constant1)),
                   new exprNodeIndexDesc(new exprNodeColumnDesc(col1Type, "col1"), constant2))),
@@ -244,9 +245,9 @@ public class TestExpressionEvaluator extends TestCase {
       measureSpeed("concat(concat(concat(col1[1], cola[1]), col1[2]), cola[2])", 
           basetimes * 10,
           ExprNodeEvaluatorFactory.get(
-              SemanticAnalyzer.getFuncExprNodeDesc("concat", 
-                  SemanticAnalyzer.getFuncExprNodeDesc("concat", 
-                      SemanticAnalyzer.getFuncExprNodeDesc("concat", 
+              TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("concat", 
+                  TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("concat", 
+                      TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("concat", 
                           new exprNodeIndexDesc(new exprNodeColumnDesc(col1Type, "col1"), constant1), 
                           new exprNodeIndexDesc(new exprNodeColumnDesc(colaType, "cola"), constant1)),
                       new exprNodeIndexDesc(new exprNodeColumnDesc(col1Type, "col1"), constant2)),

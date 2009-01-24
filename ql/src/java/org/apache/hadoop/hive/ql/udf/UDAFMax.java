@@ -18,47 +18,286 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
+import java.sql.Date;
+
 import org.apache.hadoop.hive.ql.exec.UDAF;
+import org.apache.hadoop.hive.ql.exec.UDAFEvaluator;
 
 
 
 public class UDAFMax extends UDAF {
 
-  private double mMax;
-  private boolean mEmpty;
-  
-  public UDAFMax() {
-    super();
-    init();
-  }
+  static public class MaxShortEvaluator implements UDAFEvaluator {
+    private short mMax;
+    private boolean mEmpty;
 
-  public void init() {
-    mMax = 0;
-    mEmpty = true;
-  }
-
-  public boolean aggregate(Double o) {
-    if (o != null) {
-      if (mEmpty) {
-        mMax = o;
-        mEmpty = false;
-      } else {
-        mMax = Math.max(mMax, o);
-      }
+    public MaxShortEvaluator() {
+      super();
+      init();
     }
-    return true;
-  }
-  
-  public Double evaluatePartial() {
-    return mEmpty ? null : Double.valueOf(mMax);
+
+    public void init() {
+      mMax = 0;
+      mEmpty = true;
+    }
+
+    public boolean iterate(Short o) {
+      if (o != null) {
+        if (mEmpty) {
+          mMax = o;
+          mEmpty = false;
+        } else {
+          mMax = (short) Math.max(mMax, o);
+        }
+      }
+      return true;
+    }
+
+    public Short terminatePartial() {
+      return mEmpty ? null : Short.valueOf(mMax);
+    }
+
+    public boolean merge(Short o) {
+      return iterate(o);
+    }
+
+    public Short terminate() {
+      return mEmpty ? null : Short.valueOf(mMax);
+    }
   }
 
-  public boolean aggregatePartial(Double o) {
-    return aggregate(o);
+  static public class MaxIntEvaluator implements UDAFEvaluator {
+    private int mMax;
+    private boolean mEmpty;
+
+    public MaxIntEvaluator() {
+      super();
+      init();
+    }
+
+    public void init() {
+      mMax = 0;
+      mEmpty = true;
+    }
+
+    public boolean iterate(Integer o) {
+      if (o != null) {
+        if (mEmpty) {
+          mMax = o;
+          mEmpty = false;
+        } else {
+          mMax = Math.max(mMax, o);
+        }
+      }
+      return true;
+    }
+
+    public Integer terminatePartial() {
+      return mEmpty ? null : Integer.valueOf(mMax);
+    }
+
+    public boolean merge(Integer o) {
+      return iterate(o);
+    }
+
+    public Integer terminate() {
+      return mEmpty ? null : Integer.valueOf(mMax);
+    }
   }
 
-  public Double evaluate() {
-    return mEmpty ? null : Double.valueOf(mMax);
+  static public class MaxLongEvaluator implements UDAFEvaluator {
+    private long mMax;
+    private boolean mEmpty;
+
+    public MaxLongEvaluator() {
+      super();
+      init();
+    }
+
+    public void init() {
+      mMax = 0;
+      mEmpty = true;
+    }
+
+    public boolean iterate(Long o) {
+      if (o != null) {
+        if (mEmpty) {
+          mMax = o;
+          mEmpty = false;
+        } else {
+          mMax = Math.max(mMax, o);
+        }
+      }
+      return true;
+    }
+
+    public Long terminatePartial() {
+      return mEmpty ? null : Long.valueOf(mMax);
+    }
+
+    public boolean merge(Long o) {
+      return iterate(o);
+    }
+
+    public Long terminate() {
+      return mEmpty ? null : Long.valueOf(mMax);
+    }
+  }
+
+  static public class MaxFloatEvaluator implements UDAFEvaluator {
+    private float mMax;
+    private boolean mEmpty;
+
+    public MaxFloatEvaluator() {
+      super();
+      init();
+    }
+
+    public void init() {
+      mMax = 0;
+      mEmpty = true;
+    }
+
+    public boolean iterate(Float o) {
+      if (o != null) {
+        if (mEmpty) {
+          mMax = o;
+          mEmpty = false;
+        } else {
+          mMax = Math.max(mMax, o);
+        }
+      }
+      return true;
+    }
+
+    public Float terminatePartial() {
+      return mEmpty ? null : Float.valueOf(mMax);
+    }
+
+    public boolean merge(Float o) {
+      return iterate(o);
+    }
+
+    public Float terminate() {
+      return mEmpty ? null : Float.valueOf(mMax);
+    }
+  }
+
+  static public class MaxDoubleEvaluator implements UDAFEvaluator {
+    private double mMax;
+    private boolean mEmpty;
+
+    public MaxDoubleEvaluator() {
+      super();
+      init();
+    }
+
+    public void init() {
+      mMax = 0;
+      mEmpty = true;
+    }
+
+    public boolean iterate(Double o) {
+      if (o != null) {
+        if (mEmpty) {
+          mMax = o;
+          mEmpty = false;
+        } else {
+          mMax = Math.max(mMax, o);
+        }
+      }
+      return true;
+    }
+
+    public Double terminatePartial() {
+      return mEmpty ? null : Double.valueOf(mMax);
+    }
+
+    public boolean merge(Double o) {
+      return iterate(o);
+    }
+
+    public Double terminate() {
+      return mEmpty ? null : Double.valueOf(mMax);
+    }
+  }
+
+  static public class MaxStringEvaluator implements UDAFEvaluator {
+    private String mMax;
+    private boolean mEmpty;
+
+    public MaxStringEvaluator() {
+      super();
+      init();
+    }
+
+    public void init() {
+      mMax = null;
+      mEmpty = true;
+    }
+
+    public boolean iterate(String o) {
+      if (o != null) {
+        if (mEmpty) {
+          mMax = o;
+          mEmpty = false;
+        } else if (mMax.compareTo(o) < 0) {
+          mMax = o;
+        }
+      }
+      return true;
+    }
+
+    public String terminatePartial() {
+      return mEmpty ? null : mMax;
+    }
+
+    public boolean merge(String o) {
+      return iterate(o);
+    }
+
+    public String terminate() {
+      return mEmpty ? null : mMax;
+    }
+  }
+
+  static public class MaxDateEvaluator implements UDAFEvaluator {
+    private Date mMax;
+    private boolean mEmpty;
+
+    public MaxDateEvaluator() {
+      super();
+      init();
+    }
+
+    public void init() {
+      mMax = null;
+      mEmpty = true;
+    }
+
+    public boolean iterate(Date o) {
+      if (o != null) {
+        if (mEmpty) {
+          mMax = o;
+          mEmpty = false;
+        } else if (mMax.compareTo(o) < 0){
+          mMax = o;
+        }
+      }
+      return true;
+    }
+
+    public Date terminatePartial() {
+      return mEmpty ? null : mMax;
+    }
+
+    public boolean merge(Date o) {
+      return iterate(o);
+    }
+
+    public Date terminate() {
+      return mEmpty ? null : mMax;
+    }
   }
 
 }

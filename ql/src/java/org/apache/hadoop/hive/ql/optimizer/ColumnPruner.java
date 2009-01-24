@@ -171,7 +171,7 @@ public class ColumnPruner implements Transform {
     // Create a list of topop nodes
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pGraphContext.getTopOps().values());
-    ogw.startWalking(topNodes);
+    ogw.startWalking(topNodes, null);
 
     // create a new select operator if any of input tables' columns can be pruned
     for (String alias_id : pGraphContext.getTopOps().keySet()) {

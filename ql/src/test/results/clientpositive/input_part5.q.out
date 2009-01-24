@@ -12,7 +12,7 @@ STAGE PLANS:
         x 
             Filter Operator
               predicate:
-                  expr: ((ds = '2008-04-08') and (key < 100))
+                  expr: ((ds = '2008-04-08') and (UDFToDouble(key) < UDFToDouble(100)))
                   type: boolean
               Select Operator
                 expressions:

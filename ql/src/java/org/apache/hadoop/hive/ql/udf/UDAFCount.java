@@ -19,9 +19,10 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDAF;
+import org.apache.hadoop.hive.ql.exec.UDAFEvaluator;
 
 
-public class UDAFCount extends UDAF {
+public class UDAFCount extends UDAF implements UDAFEvaluator {
 
   private long mCount;
   
@@ -34,7 +35,7 @@ public class UDAFCount extends UDAF {
     mCount = 0;
   }
   
-  public boolean aggregate(Object o) {
+  public boolean iterate(Object o) {
     // Our SerDe between map/reduce boundary may convert MetadataTypedSerDe to 
     if (o != null && !o.equals("")) {
       mCount ++;
@@ -42,18 +43,17 @@ public class UDAFCount extends UDAF {
     return true;
   }
 
-  public Long evaluatePartial() {
+  public Long terminatePartial() {
     return Long.valueOf(mCount);
   }
 
-  public boolean aggregatePartial(Long count) {
+  public boolean merge(Long count) {
     mCount += count;
     return true;
   }
 
-  public Long evaluate() {
+  public Long terminate() {
     return Long.valueOf(mCount);
   }
 
-  
 }

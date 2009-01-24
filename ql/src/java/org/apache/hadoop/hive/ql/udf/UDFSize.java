@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 import java.util.Map;
 import java.util.List;
 
-public class UDFSize implements UDF {
+public class UDFSize extends UDF {
 
   public UDFSize() {
   }

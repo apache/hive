@@ -12,7 +12,7 @@ STAGE PLANS:
         srcpart 
             Filter Operator
               predicate:
-                  expr: (((key < 100) and (ds = '2008-04-08')) and (hr = '12'))
+                  expr: (((UDFToDouble(key) < UDFToDouble(100)) and (ds = '2008-04-08')) and (hr = '12'))
                   type: boolean
               Select Operator
                 expressions:
@@ -36,7 +36,7 @@ STAGE PLANS:
                         type: string
                   File Output Operator
                     compressed: false
-                    directory: /tmp/hive-zshao/591856793/204210378.10000.insclause-0
+                    directory: /data/users/athusoo/apacheprojects/hive_local_ws3/ql/../build/ql/tmp/108623150/305040120.10000.insclause-0
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
@@ -49,12 +49,12 @@ STAGE PLANS:
                           serialization.lib org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
                           file.inputformat org.apache.hadoop.mapred.TextInputFormat
                           file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                          location file:/data/users/zshao/sync/apache-trunk-HIVE-104/build/ql/test/data/warehouse/dest1
+                          location file:/data/users/athusoo/apacheprojects/hive_local_ws3/build/ql/test/data/warehouse/dest1
                         serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
                         name: dest1
             Filter Operator
               predicate:
-                  expr: (((key < 100) and (ds = '2008-04-09')) and (hr = '12'))
+                  expr: (((UDFToDouble(key) < UDFToDouble(100)) and (ds = '2008-04-09')) and (hr = '12'))
                   type: boolean
               Select Operator
                 expressions:
@@ -78,7 +78,7 @@ STAGE PLANS:
                         type: string
                   File Output Operator
                     compressed: false
-                    directory: /tmp/hive-zshao/591856793/204210378.10001.insclause-1
+                    directory: /data/users/athusoo/apacheprojects/hive_local_ws3/ql/../build/ql/tmp/108623150/305040120.10001.insclause-1
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
@@ -91,15 +91,15 @@ STAGE PLANS:
                           serialization.lib org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
                           file.inputformat org.apache.hadoop.mapred.TextInputFormat
                           file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                          location file:/data/users/zshao/sync/apache-trunk-HIVE-104/build/ql/test/data/warehouse/dest2
+                          location file:/data/users/athusoo/apacheprojects/hive_local_ws3/build/ql/test/data/warehouse/dest2
                         serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
                         name: dest2
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/zshao/sync/apache-trunk-HIVE-104/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
-        file:/data/users/zshao/sync/apache-trunk-HIVE-104/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
+        file:/data/users/athusoo/apacheprojects/hive_local_ws3/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/athusoo/apacheprojects/hive_local_ws3/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
       Path -> Partition:
-        file:/data/users/zshao/sync/apache-trunk-HIVE-104/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/athusoo/apacheprojects/hive_local_ws3/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
             partition values:
               ds 2008-04-08
@@ -117,10 +117,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/sync/apache-trunk-HIVE-104/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/athusoo/apacheprojects/hive_local_ws3/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
               name: srcpart
-        file:/data/users/zshao/sync/apache-trunk-HIVE-104/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
+        file:/data/users/athusoo/apacheprojects/hive_local_ws3/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
           Partition
             partition values:
               ds 2008-04-09
@@ -138,7 +138,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/sync/apache-trunk-HIVE-104/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/athusoo/apacheprojects/hive_local_ws3/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
               name: srcpart
 
@@ -146,7 +146,7 @@ STAGE PLANS:
     Move Operator
       tables:
             replace: true
-            source: /tmp/hive-zshao/591856793/204210378.10000.insclause-0
+            source: /data/users/athusoo/apacheprojects/hive_local_ws3/ql/../build/ql/tmp/108623150/305040120.10000.insclause-0
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
@@ -159,11 +159,11 @@ STAGE PLANS:
                   serialization.lib org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
                   file.inputformat org.apache.hadoop.mapred.TextInputFormat
                   file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                  location file:/data/users/zshao/sync/apache-trunk-HIVE-104/build/ql/test/data/warehouse/dest1
+                  location file:/data/users/athusoo/apacheprojects/hive_local_ws3/build/ql/test/data/warehouse/dest1
                 serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
                 name: dest1
             replace: true
-            source: /tmp/hive-zshao/591856793/204210378.10001.insclause-1
+            source: /data/users/athusoo/apacheprojects/hive_local_ws3/ql/../build/ql/tmp/108623150/305040120.10001.insclause-1
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
@@ -176,7 +176,7 @@ STAGE PLANS:
                   serialization.lib org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
                   file.inputformat org.apache.hadoop.mapred.TextInputFormat
                   file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                  location file:/data/users/zshao/sync/apache-trunk-HIVE-104/build/ql/test/data/warehouse/dest2
+                  location file:/data/users/athusoo/apacheprojects/hive_local_ws3/build/ql/test/data/warehouse/dest2
                 serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
                 name: dest2
 

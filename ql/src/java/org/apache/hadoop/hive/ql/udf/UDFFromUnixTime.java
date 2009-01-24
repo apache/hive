@@ -26,7 +26,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
 
 
-public class UDFFromUnixTime implements UDF {
+public class UDFFromUnixTime extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFFromUnixTime.class.getName());
 

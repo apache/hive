@@ -12,7 +12,7 @@ STAGE PLANS:
         unioninput:src 
             Filter Operator
               predicate:
-                  expr: (key < 100)
+                  expr: (UDFToDouble(key) < UDFToDouble(100))
                   type: boolean
               Select Operator
                 expressions:

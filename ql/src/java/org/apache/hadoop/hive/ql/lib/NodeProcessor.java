@@ -30,8 +30,10 @@ public interface NodeProcessor {
    * generic process for all ops that don't have specific implementations
    * @param nd operator to process
    * @param procCtx operator processor context
+   * @param nodeOutputs A variable argument list of outputs from other nodes in the walk
+   * @return Object to be returned by the process call
    * @throws SemanticException
    */
-  public void process(Node nd, NodeProcessorCtx procCtx) 
+  public Object process(Node nd, NodeProcessorCtx procCtx, Object... nodeOutputs) 
     throws SemanticException;
 }

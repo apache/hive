@@ -22,7 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
 
-public class UDFCeil implements UDF {
+public class UDFCeil extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFCeil.class.getName());
 

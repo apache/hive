@@ -23,11 +23,21 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
 
 
-public class UDFToFloat implements UDF {
+public class UDFToFloat extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFToFloat.class.getName());
 
   public UDFToFloat() {
+  }
+
+  /**
+   * Convert from void to a float. This is called for CAST(... AS FLOAT)
+   *
+   * @param i The void value to convert
+   * @return Float
+   */
+  public Float evaluate(Void i)  {
+    return null;
   }
 
   /**
@@ -131,4 +141,17 @@ public class UDFToFloat implements UDF {
     }
   }
   
+  /**
+   * Convert from date to a float. This is called for CAST(... AS FLOAT)
+   *
+   * @param i The date value to convert
+   * @return Float
+   */
+  public Float evaluate(java.sql.Date i)  {
+    if (i == null) {
+      return null;
+    } else {
+        return Float.valueOf(i.getTime());
+    }
+  }  
 }

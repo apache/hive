@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
@@ -222,7 +223,7 @@ public class PlanUtils {
     } else {
       // numPartitionFields = -1 means random partitioning
       partitionCols = new ArrayList<exprNodeDesc>(1);
-      partitionCols.add(SemanticAnalyzer.getFuncExprNodeDesc("rand"));
+      partitionCols.add(TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("rand"));
     }
     
     StringBuilder order = new StringBuilder();

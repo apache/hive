@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
-public class UDFLike implements UDF {
+public class UDFLike extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFLike.class.getName());
   private String lastLikePattern = null;

@@ -43,7 +43,7 @@ public class GenMRRedSink2 implements NodeProcessor {
    * @param nd the reduce sink operator encountered
    * @param opProcCtx context
    */
-  public void process(Node nd, NodeProcessorCtx opProcCtx) throws SemanticException {
+  public Object process(Node nd, NodeProcessorCtx opProcCtx, Object... nodeOutputs) throws SemanticException {
     ReduceSinkOperator op = (ReduceSinkOperator)nd;
     GenMRProcContext ctx = (GenMRProcContext)opProcCtx;
 
@@ -69,6 +69,7 @@ public class GenMRRedSink2 implements NodeProcessor {
     }
 
     mapCurrCtx.put(op, new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrTopOp(), ctx.getCurrAliasId()));
+    return null;
   }
 
 }

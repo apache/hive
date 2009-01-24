@@ -30,8 +30,8 @@ import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
-import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
+import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -76,7 +76,7 @@ public class LineageInfo  implements NodeProcessor {
   /**
    * Implements the process method for the NodeProcessor interface.
    */
-  public void process(Node nd, NodeProcessorCtx procCtx)
+  public Object process(Node nd, NodeProcessorCtx procCtx, Object... nodeOutputs)
   throws SemanticException {
     ASTNode pt = (ASTNode)nd;
 
@@ -91,7 +91,7 @@ public class LineageInfo  implements NodeProcessor {
       inputTableList.add(table_name);
       break;
     }
-
+    return null;
   }
 
   /**
@@ -128,7 +128,7 @@ public class LineageInfo  implements NodeProcessor {
     // Create a list of topop nodes
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.add(tree);
-    ogw.startWalking(topNodes);
+    ogw.startWalking(topNodes, null);
   }
 
   public static void main(String[] args) throws IOException, ParseException,

@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +36,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.ql.typeinfo.PrimitiveTypeInfo;
@@ -62,7 +60,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
   // so aggregationIsDistinct is a boolean array instead of a single number. 
   transient protected boolean[] aggregationIsDistinct;
 
-  transient Class<? extends UDAF>[] aggregationClasses; 
+  transient Class<? extends UDAFEvaluator>[] aggregationClasses; 
   transient protected Method[] aggregationsAggregateMethods;
   transient protected Method[] aggregationsEvaluateMethods;
 
@@ -71,11 +69,11 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
 
   // Used by sort-based GroupBy: Mode = COMPLETE, PARTIAL1, PARTIAL2
   transient protected ArrayList<Object> currentKeys;
-  transient protected UDAF[] aggregations;
+  transient protected UDAFEvaluator[] aggregations;
   transient protected Object[][] aggregationsParametersLastInvoke;
 
   // Used by hash-based GroupBy: Mode = HASH
-  transient protected HashMap<ArrayList<Object>, UDAF[]> hashAggregations;
+  transient protected HashMap<ArrayList<Object>, UDAFEvaluator[]> hashAggregations;
   
   transient boolean firstRow;
   transient long    totalMemory;
@@ -139,7 +137,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     }
 
     // init aggregationClasses  
-    aggregationClasses = (Class<? extends UDAF>[]) new Class[conf.getAggregators().size()];
+    aggregationClasses = (Class<? extends UDAFEvaluator>[]) new Class[conf.getAggregators().size()];
     for (int i = 0; i < conf.getAggregators().size(); i++) {
       aggregationDesc agg = conf.getAggregators().get(i);
       aggregationClasses[i] = agg.getAggregationClass();
@@ -151,13 +149,13 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     aggregationsEvaluateMethods = new Method[aggregationClasses.length];
     String evaluateMethodName = ((conf.getMode() == groupByDesc.Mode.PARTIAL1 || conf.getMode() == groupByDesc.Mode.HASH ||
                                   conf.getMode() == groupByDesc.Mode.PARTIAL2)
-                                 ? "evaluatePartial" : "evaluate");
+                                 ? "terminatePartial" : "terminate");
 
     for(int i=0; i<aggregationClasses.length; i++) {
-      String aggregateMethodName = (((conf.getMode() == groupByDesc.Mode.PARTIAL1) || (conf.getMode() == groupByDesc.Mode.HASH)) ? "aggregate" : "aggregatePartial");
+      String aggregateMethodName = (((conf.getMode() == groupByDesc.Mode.PARTIAL1) || (conf.getMode() == groupByDesc.Mode.HASH)) ? "iterate" : "merge");
 
       if (aggregationIsDistinct[i] && (conf.getMode() != groupByDesc.Mode.FINAL))
-        aggregateMethodName = "aggregate";
+        aggregateMethodName = "iterate";
       // aggregationsAggregateMethods
       for( Method m : aggregationClasses[i].getMethods() ){
         if( m.getName().equals( aggregateMethodName ) 
@@ -191,7 +189,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
       aggregations = newAggregations();
       hashAggr = false;
     } else {
-      hashAggregations = new HashMap<ArrayList<Object>, UDAF[]>();
+      hashAggregations = new HashMap<ArrayList<Object>, UDAFEvaluator[]>();
       hashAggr = true;
       keyPositionsSize = new ArrayList<Integer>();
     }
@@ -329,19 +327,20 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     // fields in these aggregation classes.
     for(int i=0; i < aggregationClasses.length; i++) {
       fixedRowSize += javaObjectOverHead;
-      Class<? extends UDAF> agg = aggregationClasses[i];
+      Class<? extends UDAFEvaluator> agg = aggregationClasses[i];
       Field[] fArr = agg.getFields();
       for (Field f : fArr) 
         fixedRowSize += getSize(i, agg, f);
     }
   }
 
-  protected UDAF[] newAggregations() throws HiveException {      
-    UDAF[] aggs = new UDAF[aggregationClasses.length];
+  protected UDAFEvaluator[] newAggregations() throws HiveException {      
+    UDAFEvaluator[] aggs = new UDAFEvaluator[aggregationClasses.length];
     for(int i=0; i<aggregationClasses.length; i++) {
       try {
         aggs[i] = aggregationClasses[i].newInstance();
       } catch (Exception e) {
+        e.printStackTrace();
         throw new HiveException("Unable to create an instance of class " + aggregationClasses[i] + ": " + e.getMessage());
       }
       aggs[i].init();
@@ -351,7 +350,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
 
   InspectableObject tempInspectableObject = new InspectableObject();
   
-  protected void updateAggregations(UDAF[] aggs, Object row, ObjectInspector rowInspector, boolean hashAggr, boolean newEntry,
+  protected void updateAggregations(UDAFEvaluator[] aggs, Object row, ObjectInspector rowInspector, boolean hashAggr, boolean newEntry,
                                     Object[][] lastInvoke) throws HiveException {
     for(int ai=0; ai<aggs.length; ai++) {
 
@@ -429,7 +428,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
 
   private void processHashAggr(Object row, ObjectInspector rowInspector, ArrayList<Object> newKeys) throws HiveException {
     // Prepare aggs for updating
-    UDAF[] aggs = null;
+    UDAFEvaluator[] aggs = null;
     boolean newEntry = false;
 
     // hash-based aggregations
@@ -451,7 +450,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
 
   private void processAggr(Object row, ObjectInspector rowInspector, ArrayList<Object> newKeys) throws HiveException {
     // Prepare aggs for updating
-    UDAF[] aggs = null;
+    UDAFEvaluator[] aggs = null;
     Object[][] lastInvoke = null;
     boolean keysAreEqual = newKeys.equals(currentKeys);
     
@@ -464,7 +463,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
       currentKeys = newKeys;
       
       // init aggregations
-      for(UDAF aggregation: aggregations)
+      for(UDAFEvaluator aggregation: aggregations)
         aggregation.init();
       
       // clear parameters in last-invoke
@@ -493,14 +492,14 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
         totalVariableSize += ((String)key).length();
       }
 
-      UDAF[] aggs = null;
+      UDAFEvaluator[] aggs = null;
       if (aggrPositions.size() > 0)
         aggs = hashAggregations.get(newKeys);
 
       for (varLenFields v : aggrPositions) {
         int     aggrPos          = v.getAggrPos();
         List<Field> fieldsVarLen = v.getFields();
-        UDAF    agg              = aggs[aggrPos];
+        UDAFEvaluator    agg              = aggs[aggrPos];
 
         try 
         {
@@ -532,7 +531,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     Iterator iter = hashAggregations.entrySet().iterator();
     int numDel = 0;
     while (iter.hasNext()) {
-      Map.Entry<ArrayList<Object>, UDAF[]> m = (Map.Entry)iter.next();
+      Map.Entry<ArrayList<Object>, UDAFEvaluator[]> m = (Map.Entry)iter.next();
       forward(m.getKey(), m.getValue());
       iter.remove();
       numDel++;
@@ -548,7 +547,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
    *          The keys in the record
    * @throws HiveException
    */
-  protected void forward(ArrayList<Object> keys, UDAF[] aggs) throws HiveException {
+  protected void forward(ArrayList<Object> keys, UDAFEvaluator[] aggs) throws HiveException {
     int totalFields = keys.size() + aggs.length;
     List<Object> a = new ArrayList<Object>(totalFields);
     for(int i=0; i<keys.size(); i++) {

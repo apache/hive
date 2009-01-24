@@ -154,7 +154,7 @@ public class PartitionPruner {
         }
 
         // Create function desc
-        desc = SemanticAnalyzer.getXpathOrFuncExprNodeDesc(expr, isFunction, children);
+        desc = TypeCheckProcFactory.DefaultExprProcessor.getXpathOrFuncExprNodeDesc(expr, isFunction, children);
         
         if (desc instanceof exprNodeFuncDesc && (
             ((exprNodeFuncDesc)desc).getUDFMethod().getDeclaringClass().equals(UDFOPAnd.class) 
@@ -245,7 +245,7 @@ public class PartitionPruner {
       if (this.prunerExpr == null)
         this.prunerExpr = desc;
       else
-        this.prunerExpr = SemanticAnalyzer.getFuncExprNodeDesc("OR", this.prunerExpr, desc);
+        this.prunerExpr = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("OR", this.prunerExpr, desc);
     }
   }
 
@@ -264,7 +264,7 @@ public class PartitionPruner {
       if (this.prunerExpr == null)
         this.prunerExpr = desc;
       else
-        this.prunerExpr = SemanticAnalyzer.getFuncExprNodeDesc("AND", this.prunerExpr, desc);
+        this.prunerExpr = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("AND", this.prunerExpr, desc);
     }
   }
 

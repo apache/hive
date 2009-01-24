@@ -23,11 +23,21 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
 
 
-public class UDFToDouble implements UDF {
+public class UDFToDouble extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFToDouble.class.getName());
 
   public UDFToDouble() {
+  }
+
+  /**
+   * Convert from void to a double. This is called for CAST(... AS DOUBLE)
+   *
+   * @param i The void value to convert
+   * @return Double
+   */
+  public Double evaluate(Void i)  {
+    return null;
   }
 
   /**
@@ -132,6 +142,20 @@ public class UDFToDouble implements UDF {
         // But we decided to return NULL instead, which is more conservative.
         return null;
       }
+    }
+  }
+  
+  /**
+   * Convert from date to a double. This is called for CAST(... AS DOUBLE)
+   *
+   * @param i The date value to convert
+   * @return Double
+   */
+  public Double evaluate(java.sql.Date i)  {
+    if (i == null) {
+      return null;
+    } else {
+        return Double.valueOf(i.getTime());
     }
   }
   

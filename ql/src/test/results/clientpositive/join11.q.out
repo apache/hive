@@ -39,7 +39,7 @@ STAGE PLANS:
                     type: string
               Filter Operator
                 predicate:
-                    expr: (0 < 100)
+                    expr: (UDFToDouble(0) < UDFToDouble(100))
                     type: boolean
                 Reduce Output Operator
                   key expressions:

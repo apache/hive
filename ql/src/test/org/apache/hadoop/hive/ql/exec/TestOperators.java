@@ -29,6 +29,7 @@ import org.apache.hadoop.io.Writable;
 
 
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.*;
 import org.apache.hadoop.hive.ql.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -74,10 +75,10 @@ public class TestOperators extends TestCase {
       exprNodeDesc col0 = new exprNodeColumnDesc(String.class, "col0");
       exprNodeDesc col1 = new exprNodeColumnDesc(String.class, "col1");
       exprNodeDesc col2 = new exprNodeColumnDesc(String.class, "col2");
-      exprNodeDesc zero = new exprNodeConstantDesc(Number.class, Long.valueOf(0));
-      exprNodeDesc func1 = SemanticAnalyzer.getFuncExprNodeDesc(">", col2, col1);
-      exprNodeDesc func2 = SemanticAnalyzer.getFuncExprNodeDesc("==", col0, zero);
-      exprNodeDesc func3 = SemanticAnalyzer.getFuncExprNodeDesc("&&", func1, func2); 
+      exprNodeDesc zero = new exprNodeConstantDesc(String.class, "0");
+      exprNodeDesc func1 = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc(">", col2, col1);
+      exprNodeDesc func2 = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("==", col0, zero);
+      exprNodeDesc func3 = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("&&", func1, func2); 
       assert(func3 != null);
       filterDesc filterCtx = new filterDesc(func3);
 
@@ -122,7 +123,7 @@ public class TestOperators extends TestCase {
       ArrayList<exprNodeDesc> exprDesc2children = new ArrayList<exprNodeDesc>();
       exprNodeDesc expr1 = new exprNodeColumnDesc(String.class, "col0");
       exprNodeDesc expr2 = new exprNodeConstantDesc("1");
-      exprNodeDesc exprDesc2 = SemanticAnalyzer.getFuncExprNodeDesc("concat", expr1, expr2);
+      exprNodeDesc exprDesc2 = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("concat", expr1, expr2);
 
       // select operator to project these two columns
       ArrayList<exprNodeDesc> earr = new ArrayList<exprNodeDesc> ();
@@ -167,7 +168,7 @@ public class TestOperators extends TestCase {
       // col2
       exprNodeDesc expr1 = new exprNodeColumnDesc(String.class, "col0");
       exprNodeDesc expr2 = new exprNodeConstantDesc("1");
-      exprNodeDesc exprDesc2 = SemanticAnalyzer.getFuncExprNodeDesc("concat", expr1, expr2);
+      exprNodeDesc exprDesc2 = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("concat", expr1, expr2);
 
       // select operator to project these two columns
       ArrayList<exprNodeDesc> earr = new ArrayList<exprNodeDesc> ();

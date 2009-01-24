@@ -23,7 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
 
 
-public class UDFOPNegative implements UDF {
+public class UDFOPNegative extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFOPNegative.class.getName());
 

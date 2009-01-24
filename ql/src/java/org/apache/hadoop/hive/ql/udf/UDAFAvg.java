@@ -18,11 +18,12 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.hadoop.hive.ql.exec.UDAF;
+import org.apache.hadoop.hive.ql.exec.NumericUDAF;
+import org.apache.hadoop.hive.ql.exec.UDAFEvaluator;
 
 
 
-public class UDAFAvg extends UDAF {
+public class UDAFAvg extends NumericUDAF implements UDAFEvaluator {
 
   private long mCount;
   private double mSum;
@@ -37,7 +38,7 @@ public class UDAFAvg extends UDAF {
     mCount = 0;
   }
 
-  public boolean aggregate(Double o) {
+  public boolean iterate(Double o) {
     if (o != null) {
       mSum += o;
       mCount ++;
@@ -45,12 +46,12 @@ public class UDAFAvg extends UDAF {
     return true;
   }
   
-  public String evaluatePartial() {
+  public String terminatePartial() {
     // This is SQL standard - average of zero items should be null.
     return mCount == 0 ? null : String.valueOf(mSum) + '/' + String.valueOf(mCount);
   }
 
-  public boolean aggregatePartial(String o) {
+  public boolean merge(String o) {
     if (o != null && !o.isEmpty()) {
       int pos = o.indexOf('/');
       assert(pos != -1);
@@ -60,7 +61,7 @@ public class UDAFAvg extends UDAF {
     return true;
   }
 
-  public Double evaluate() {
+  public Double terminate() {
     // This is SQL standard - average of zero items should be null.
     return mCount == 0 ? null : Double.valueOf(mSum / mCount);
   }

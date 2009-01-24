@@ -23,12 +23,22 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
 
 
-public class UDFToByte implements UDF {
+public class UDFToByte extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFToByte.class.getName());
 
   public UDFToByte() {
   }
+
+  /**
+   * Convert from void to a byte. This is called for CAST(... AS TINYINT)
+   *
+   * @param i The void value to convert
+   * @return Byte
+   */
+  public Byte evaluate(Void i)  {
+    return null;
+  }  
 
   /**
    * Convert from boolean to a byte. This is called for CAST(... AS TINYINT)
@@ -135,4 +145,17 @@ public class UDFToByte implements UDF {
     }
   }
   
+  /**
+   * Convert from date to a Byte. This is called for CAST(... AS TINYINT)
+   *
+   * @param i The date value to convert
+   * @return Byte
+   */
+  public Byte evaluate(java.sql.Date i)  {
+    if (i == null) {
+      return null;
+    } else {
+        return Long.valueOf(i.getTime()).byteValue();
+    }
+  }  
 }

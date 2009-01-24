@@ -16,20 +16,18 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.udf;
+package org.apache.hadoop.hive.ql.exec;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.UDF;
+/**
+ * Interface that encapsulates the evaluation logic of a UDAF. One evaluator is needed
+ * for every overloaded form of a UDAF .e.g max and min UDAFs would have evaluators for
+ * integer, string and other types. On the other hand avg would have an evaluator only
+ * for the double type.
+ */
+public interface UDAFEvaluator {
 
-
-public class UDFStrGe implements UDF {
-
-  public UDFStrGe() {
-  }
-
-  public boolean evaluate(String a, String b)  {
-    int code = a.compareTo(b);
-    return (code >= 0);
-  }
+  /**
+   * Initializer. Initializes the state for the evaluator.
+   */
+  public void init();
 }

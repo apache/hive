@@ -21,25 +21,26 @@ package org.apache.hadoop.hive.ql.plan;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDAF;
+import org.apache.hadoop.hive.ql.exec.UDAFEvaluator;
 
 public class aggregationDesc implements java.io.Serializable {
   private static final long serialVersionUID = 1L;
-  private Class<? extends UDAF> aggregationClass;
+  private Class<? extends UDAFEvaluator> aggregationClass;
   private java.util.ArrayList<exprNodeDesc> parameters;
   private boolean distinct;
   public aggregationDesc() {}
   public aggregationDesc(
-    final Class<? extends UDAF> aggregationClass,
+    final Class<? extends UDAFEvaluator> aggregationClass,
     final java.util.ArrayList<exprNodeDesc> parameters,
     final boolean distinct) {
     this.aggregationClass = aggregationClass;
     this.parameters = parameters;
     this.distinct = distinct;
   }
-  public Class<? extends UDAF> getAggregationClass() {
+  public Class<? extends UDAFEvaluator> getAggregationClass() {
     return this.aggregationClass;
   }
-  public void setAggregationClass(final Class<? extends UDAF> aggregationClass) {
+  public void setAggregationClass(final Class<? extends UDAFEvaluator> aggregationClass) {
     this.aggregationClass = aggregationClass;
   }
   public java.util.ArrayList<exprNodeDesc> getParameters() {

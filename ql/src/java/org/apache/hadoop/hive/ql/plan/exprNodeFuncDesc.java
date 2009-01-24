@@ -23,13 +23,11 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.parse.RowResolver;
 
 /**
  * The reason that we have to store UDFClass as well as UDFMethod is because
@@ -39,12 +37,13 @@ import org.apache.hadoop.hive.ql.parse.RowResolver;
 public class exprNodeFuncDesc extends exprNodeDesc implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  private Class UDFClass;
+  private Class<? extends UDF> UDFClass;
   private Method UDFMethod;
   private ArrayList<exprNodeDesc> children; 
   
   public exprNodeFuncDesc() {}
-  public exprNodeFuncDesc(TypeInfo typeInfo, Class UDFClass, Method UDFMethod, ArrayList<exprNodeDesc> children) {
+  public exprNodeFuncDesc(TypeInfo typeInfo, Class<? extends UDF> UDFClass, 
+                          Method UDFMethod, ArrayList<exprNodeDesc> children) {
     super(typeInfo);
     assert(UDFClass != null);
     this.UDFClass = UDFClass;
@@ -53,10 +52,11 @@ public class exprNodeFuncDesc extends exprNodeDesc implements Serializable {
     this.children = children;
   }
   
-  public Class getUDFClass() {
+  public Class<? extends UDF> getUDFClass() {
     return UDFClass;
   }
-  public void setUDFClass(Class UDFClass) {
+  
+  public void setUDFClass(Class<? extends UDF> UDFClass) {
     this.UDFClass = UDFClass;
   }
   public Method getUDFMethod() {

@@ -28,7 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
 
 
-public class UDFDate implements UDF {
+public class UDFDate extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFDate.class.getName());
 

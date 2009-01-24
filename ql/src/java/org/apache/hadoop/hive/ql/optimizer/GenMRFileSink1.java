@@ -44,7 +44,7 @@ public class GenMRFileSink1 implements NodeProcessor {
    * @param nd the file sink operator encountered
    * @param opProcCtx context
    */
-  public void process(Node nd, NodeProcessorCtx opProcCtx) throws SemanticException {
+  public Object process(Node nd, NodeProcessorCtx opProcCtx, Object... nodeOutputs) throws SemanticException {
     FileSinkOperator op = (FileSinkOperator)nd;
     GenMRProcContext ctx = (GenMRProcContext)opProcCtx;
     boolean ret = false;
@@ -82,5 +82,6 @@ public class GenMRFileSink1 implements NodeProcessor {
           currTask.removeDependentTask(mvTask);
       }
     }
+    return null;
   }
 }

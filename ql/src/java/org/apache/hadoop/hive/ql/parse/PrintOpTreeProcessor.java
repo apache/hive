@@ -70,14 +70,15 @@ public class PrintOpTreeProcessor implements NodeProcessor {
     return ret.toString();
   }
   
-  public void process(Node nd, NodeProcessorCtx ctx) throws SemanticException {
+  public Object process(Node nd, NodeProcessorCtx ctx, Object... nodeOutputs) throws SemanticException {
     Operator<? extends Serializable> op = (Operator<? extends Serializable>)nd;
     if (opMap.get(op) == null) {
       opMap.put(op, curNum++);
     }
     out.println("[" + opMap.get(op) + "] " + op.getClass().getName() + " =p=> " + getParents(op) + " =c=> " + getChildren(op));
     if(op.getConf() == null) {
-      return;
+      return null;
     }
+    return null;
   }
 }

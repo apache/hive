@@ -23,11 +23,21 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
 
 
-public class UDFToInteger implements UDF {
+public class UDFToInteger extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFToInteger.class.getName());
 
   public UDFToInteger() {
+  }
+
+  /**
+   * Convert from void to an integer. This is called for CAST(... AS INT)
+   *
+   * @param i The void value to convert
+   * @return Integer
+   */
+  public Integer evaluate(Void i)  {
+    return null;
   }
 
   /**
@@ -135,4 +145,17 @@ public class UDFToInteger implements UDF {
     }
   }
   
+  /**
+   * Convert from date to an integer. This is called for CAST(... AS INT)
+   *
+   * @param i The date value to convert
+   * @return Integer
+   */
+  public Integer evaluate(java.sql.Date i)  {
+    if (i == null) {
+      return null;
+    } else {
+        return Long.valueOf(i.getTime()).intValue();
+    }
+  }  
 }

@@ -146,16 +146,32 @@ public class TestExecDriver extends TestCase {
 
 
   private filterDesc getTestFilterDesc(String column) {
-    ArrayList<exprNodeDesc> children = new ArrayList<exprNodeDesc>();
-    children.add(new exprNodeColumnDesc(TypeInfoFactory.getPrimitiveTypeInfo(String.class), column));
-    children.add(new exprNodeConstantDesc(TypeInfoFactory.getPrimitiveTypeInfo(Number.class), Long.valueOf(100)));
-
+    ArrayList<exprNodeDesc> children1 = new ArrayList<exprNodeDesc>();
+    children1.add(new exprNodeColumnDesc(TypeInfoFactory.getPrimitiveTypeInfo(String.class), column));
+    exprNodeDesc lhs = new exprNodeFuncDesc(
+        TypeInfoFactory.getPrimitiveTypeInfo(Double.class),
+        FunctionRegistry.getUDFClass(Double.class.getName()),
+        FunctionRegistry.getUDFMethod(Double.class.getName(), String.class),
+        children1);
+    
+    ArrayList<exprNodeDesc> children2 = new ArrayList<exprNodeDesc>();
+    children2.add(new exprNodeConstantDesc(TypeInfoFactory.getPrimitiveTypeInfo(Long.class), Long.valueOf(100)));
+    exprNodeDesc rhs = new exprNodeFuncDesc(
+        TypeInfoFactory.getPrimitiveTypeInfo(Double.class),
+        FunctionRegistry.getUDFClass(Double.class.getName()),
+        FunctionRegistry.getUDFMethod(Double.class.getName(), Long.class),
+        children2);
+    
+    ArrayList<exprNodeDesc> children3 = new ArrayList<exprNodeDesc>();
+    children3.add(lhs);
+    children3.add(rhs);
+    
     exprNodeDesc desc = new exprNodeFuncDesc(
         TypeInfoFactory.getPrimitiveTypeInfo(Boolean.class),
         FunctionRegistry.getUDFClass("<"),
-        FunctionRegistry.getUDFMethod("<", true, String.class, Number.class),
-        children
-    );
+        FunctionRegistry.getUDFMethod("<", Double.class, Double.class),
+        children3);
+    
     return new filterDesc(desc);
   }
 

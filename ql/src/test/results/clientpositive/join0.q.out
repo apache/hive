@@ -13,7 +13,7 @@ STAGE PLANS:
         src2:src 
             Filter Operator
               predicate:
-                  expr: (key < 10)
+                  expr: (UDFToDouble(key) < UDFToDouble(10))
                   type: boolean
               Select Operator
                 expressions:
@@ -32,7 +32,7 @@ STAGE PLANS:
         src1:src 
             Filter Operator
               predicate:
-                  expr: (key < 10)
+                  expr: (UDFToDouble(key) < UDFToDouble(10))
                   type: boolean
               Select Operator
                 expressions:
@@ -75,7 +75,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/pchakka/workspace/oshive/build/ql/tmp/1608930740/15144587.10002 
+        /data/users/athusoo/apacheprojects/hive_local_ws3/build/ql/tmp/143976251/534107059.10002 
           Reduce Output Operator
             key expressions:
                   expr: 0

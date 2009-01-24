@@ -23,11 +23,15 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
 
 
-public class UDFToString implements UDF {
+public class UDFToString extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFToString.class.getName());
 
   public UDFToString() {
+  }
+
+  public String evaluate(Void i)  {
+    return null;
   }
 
   public String evaluate(Boolean i)  {
@@ -86,4 +90,17 @@ public class UDFToString implements UDF {
     }
   }
   
+  /**
+   * Convert from date to a string. This is called for CAST(... AS STRING)
+   *
+   * @param i The date value to convert
+   * @return String
+   */
+  public String evaluate(java.sql.Date i)  {
+    if (i == null) {
+      return null;
+    } else {
+        return i.toString();
+    }
+  }  
 }

@@ -16,19 +16,19 @@ STAGE PLANS:
                     type: string
               Select Operator
                 expressions:
-                      expr: (4 + null)
-                      type: int
+                      expr: (UDFToDouble(4) + null)
+                      type: double
                       expr: (UDFToDouble(0) - null)
                       type: double
                       expr: (null + null)
-                      type: tinyint
+                      type: double
                 Select Operator
                   expressions:
                         expr: UDFToString(0)
                         type: string
                         expr: UDFToInteger(1)
                         type: int
-                        expr: UDFToDouble(2)
+                        expr: 2
                         type: double
                   File Output Operator
                     compressed: false

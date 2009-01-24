@@ -33,6 +33,33 @@ package org.apache.hadoop.hive.ql.exec;
  * 
  *    "evaluate" should never be a void method.  However it can return "null" if needed.
  */
-public interface UDF {
+public class UDF {
+  
+  /**
+   * The resolver to use for method resolution.
+   */
+  private UDFMethodResolver rslv;
 
+  /**
+   * The constructor
+   */
+  public UDF() {
+    rslv = new DefaultUDFMethodResolver(this.getClass());
+  }
+  
+  /**
+   * Sets the resolver
+   * 
+   * @param The method resolver to use for method resolution.
+   */
+  public void setResolver(UDFMethodResolver rslv) {
+    this.rslv = rslv;
+  }
+  
+  /**
+   * Get the method resolver.
+   */
+  public UDFMethodResolver getResolver() {
+    return rslv;
+  }
 }

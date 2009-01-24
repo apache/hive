@@ -23,11 +23,21 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
 
 
-public class UDFToBoolean implements UDF {
+public class UDFToBoolean extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFToBoolean.class.getName());
 
   public UDFToBoolean() {
+  }
+
+  /**
+   * Convert a void to boolean. This is called for CAST(... AS BOOLEAN)
+   *
+   * @param i The value of a void type
+   * @return Boolean
+   */
+  public Boolean evaluate(Void i)  {
+      return null;
   }
 
   /**
@@ -111,6 +121,20 @@ public class UDFToBoolean implements UDF {
       return null;
     } else {
       return Boolean.valueOf(i.doubleValue() != 0);
+    }
+  }
+
+  /**
+   * Convert from a string to boolean. This is called for CAST(... AS BOOLEAN)
+   *
+   * @param i The string value to convert
+   * @return Boolean
+   */
+  public Boolean evaluate(String i)  {
+    if (i == null) {
+      return null;
+    } else {
+      return Boolean.valueOf(i.length() != 0);
     }
   }
 

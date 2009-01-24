@@ -12,7 +12,7 @@ STAGE PLANS:
         src 
             Filter Operator
               predicate:
-                  expr: ((key >= 200) and (key < 300))
+                  expr: ((UDFToDouble(key) >= UDFToDouble(200)) and (UDFToDouble(key) < UDFToDouble(300)))
                   type: boolean
               Select Operator
                 expressions:

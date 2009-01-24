@@ -54,7 +54,7 @@ public class ColumnPrunerProcFactory {
    * Node Processor for Column Pruning on Filter Operators.
    */
   public static class ColumnPrunerFilterProc implements NodeProcessor {  
-    public void process(Node nd, NodeProcessorCtx ctx) throws SemanticException {
+    public Object process(Node nd, NodeProcessorCtx ctx, Object... nodeOutputs) throws SemanticException {
       FilterOperator op = (FilterOperator)nd;
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx)ctx;
       exprNodeDesc condn = op.getConf().getPredicate();
@@ -62,6 +62,7 @@ public class ColumnPrunerProcFactory {
       List<String> cl = condn.getCols();
       // merge it with the downstream col list
       cppCtx.getPrunedColLists().put(op, Utilities.mergeUniqElems(cppCtx.genColLists(op), cl));
+      return null;
     }
   }
   
@@ -77,7 +78,7 @@ public class ColumnPrunerProcFactory {
    * Node Processor for Column Pruning on Group By Operators.
    */
   public static class ColumnPrunerGroupByProc implements NodeProcessor {
-    public void process(Node nd, NodeProcessorCtx ctx) throws SemanticException {
+    public Object process(Node nd, NodeProcessorCtx ctx, Object... nodeOutputs) throws SemanticException {
       GroupByOperator op = (GroupByOperator)nd;
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx)ctx;
       List<String> colLists = new ArrayList<String>();
@@ -94,6 +95,7 @@ public class ColumnPrunerProcFactory {
       }
 
       cppCtx.getPrunedColLists().put(op, colLists);
+      return null;
     }
   }
 
@@ -109,10 +111,12 @@ public class ColumnPrunerProcFactory {
    * The Default Node Processor for Column Pruning.
    */
   public static class ColumnPrunerDefaultProc implements NodeProcessor {
-    public void process(Node nd, NodeProcessorCtx ctx) throws SemanticException {
+    public Object process(Node nd, NodeProcessorCtx ctx, Object... nodeOutputs) throws SemanticException {
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx)ctx;
       cppCtx.getPrunedColLists().put((Operator<? extends Serializable>)nd, 
           cppCtx.genColLists((Operator<? extends Serializable>)nd));
+      
+      return null;
     }
   }
 
@@ -128,7 +132,7 @@ public class ColumnPrunerProcFactory {
    * The Node Processor for Column Pruning on Reduce Sink Operators.
    */
   public static class ColumnPrunerReduceSinkProc implements NodeProcessor {
-    public void process(Node nd, NodeProcessorCtx ctx) throws SemanticException {
+    public Object process(Node nd, NodeProcessorCtx ctx, Object... nodeOutputs) throws SemanticException {
       ReduceSinkOperator op = (ReduceSinkOperator)nd;
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx)ctx;
       HashMap<Operator<? extends Serializable>, OpParseContext> opToParseCtxMap = 
@@ -171,6 +175,7 @@ public class ColumnPrunerProcFactory {
       }
 
       cppCtx.getPrunedColLists().put(op, colLists);
+      return null;
     }
   }
 
@@ -186,7 +191,7 @@ public class ColumnPrunerProcFactory {
    * The Node Processor for Column Pruning on Select Operators.
    */
   public static class ColumnPrunerSelectProc implements NodeProcessor {
-    public void process(Node nd, NodeProcessorCtx ctx) throws SemanticException {
+    public Object process(Node nd, NodeProcessorCtx ctx, Object... nodeOutputs) throws SemanticException {
       SelectOperator op = (SelectOperator)nd;
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx)ctx;
       List<String> cols = new ArrayList<String>();
@@ -198,7 +203,7 @@ public class ColumnPrunerProcFactory {
           // which should be fixed before remove this
           if ((child instanceof FileSinkOperator) || (child instanceof ScriptOperator)) {
             cppCtx.getPrunedColLists().put(op, cppCtx.getColsFromSelectExpr(op));
-            return;
+            return null;
           }
           cols = Utilities.mergeUniqElems(cols, cppCtx.getPrunedColLists().get(child));
         }
@@ -209,9 +214,10 @@ public class ColumnPrunerProcFactory {
         // The input to the select does not matter. Go over the expressions 
         // and return the ones which have a marked column
         cppCtx.getPrunedColLists().put(op, cppCtx.getSelectColsFromChildren(op, cols));
-        return;
+        return null;
       }
       cppCtx.getPrunedColLists().put(op, cppCtx.getColsFromSelectExpr(op));
+      return null;
     }
   }
 

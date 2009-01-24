@@ -18,11 +18,12 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.hadoop.hive.ql.exec.UDAF;
+import org.apache.hadoop.hive.ql.exec.NumericUDAF;
+import org.apache.hadoop.hive.ql.exec.UDAFEvaluator;
 
 
 
-public class UDAFSum extends UDAF {
+public class UDAFSum extends NumericUDAF implements UDAFEvaluator {
 
   private double mSum;
   private boolean mEmpty;
@@ -37,7 +38,7 @@ public class UDAFSum extends UDAF {
     mEmpty = true;
   }
 
-  public boolean aggregate(Double o) {
+  public boolean iterate(Double o) {
     if (o != null) {
       mSum += o;
       mEmpty = false;
@@ -45,12 +46,12 @@ public class UDAFSum extends UDAF {
     return true;
   }
   
-  public Double evaluatePartial() {
+  public Double terminatePartial() {
     // This is SQL standard - sum of zero items should be null.
     return mEmpty ? null : new Double(mSum);
   }
 
-  public boolean aggregatePartial(Double o) {
+  public boolean merge(Double o) {
     if (o != null) {
       mSum += o;
       mEmpty = false;
@@ -58,7 +59,7 @@ public class UDAFSum extends UDAF {
     return true;
   }
 
-  public Double evaluate() {
+  public Double terminate() {
     // This is SQL standard - sum of zero items should be null.
     return mEmpty ? null : new Double(mSum);
   }

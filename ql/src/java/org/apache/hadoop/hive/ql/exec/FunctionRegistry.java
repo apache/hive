@@ -49,12 +49,6 @@ public class FunctionRegistry {
                 OperatorType.PREFIX, false);
     registerUDF("concat", UDFConcat.class, OperatorType.PREFIX, false);
     registerUDF("substr", UDFSubstr.class, OperatorType.PREFIX, false);
-    registerUDF("str_eq", UDFStrEq.class, OperatorType.PREFIX, false);
-    registerUDF("str_ne", UDFStrNe.class, OperatorType.PREFIX, false);
-    registerUDF("str_gt", UDFStrGt.class, OperatorType.PREFIX, false);
-    registerUDF("str_lt", UDFStrLt.class, OperatorType.PREFIX, false);
-    registerUDF("str_ge", UDFStrGe.class, OperatorType.PREFIX, false);
-    registerUDF("str_le", UDFStrLe.class, OperatorType.PREFIX, false);
     
     registerUDF("size", UDFSize.class, OperatorType.PREFIX, false);
 
@@ -150,15 +144,26 @@ public class FunctionRegistry {
   public static FunctionInfo getInfo(Class<?> fClass) {
     for(Map.Entry<String, FunctionInfo> ent: mFunctions.entrySet()) {
       FunctionInfo val = ent.getValue();
-      if (val.getUDFClass() == fClass ||
-          val.getUDAFClass() == fClass) {
+      if (val.getUDFClass() == fClass) {
         return val;
       }
+      // Otherwise this is potentially an aggregate evaluator
+      if (val.getUDAFClass() == fClass) {
+        return val;
+      }
+      // Otherwise check if the aggregator is one of the classes within the UDAF
+      if (val.getUDAFClass() != null) {
+        for(Class<?> c: val.getUDAFClass().getClasses()) {
+          if (c == fClass) {
+            return val;
+          }
+        }
+      }
     }
-    
+
     return null;
   }
-  
+
   public static void registerUDF(String functionName, Class<? extends UDF> UDFClass,
                                  FunctionInfo.OperatorType opt, boolean isOperator) {
     if (UDF.class.isAssignableFrom(UDFClass)) { 
@@ -254,14 +259,44 @@ public class FunctionRegistry {
   /**
    * Get the UDF method for the name and argumentClasses. 
    * @param name the name of the UDF
-   * @param argumentClasses 
-   * @param exact  if true, we don't allow implicit type conversions. 
+   * @param argumentClasses
    * @return
    */
-  public static Method getUDFMethod(String name, boolean exact, List<Class<?>> argumentClasses) {
+  public static Method getUDFMethod(String name, List<Class<?>> argumentClasses) {
     Class<? extends UDF> udf = getUDFClass(name);
     if (udf == null) return null;
-    return getMethodInternal(udf, "evaluate", exact, argumentClasses);    
+    Method udfMethod = null;
+    try {
+      udfMethod = udf.newInstance().getResolver().getEvalMethod(argumentClasses);
+    }
+    catch (AmbiguousMethodException e) {
+    }
+    catch (Exception e) {
+      throw new RuntimeException("getUDFMethod exception: " + e.getMessage());
+    }
+    return udfMethod;    
+  }
+
+  /**
+   * Get the UDAF evaluator for the name and argumentClasses. 
+   * @param name the name of the UDAF
+   * @param argumentClasses
+   * @return
+   */
+  public static Class<? extends UDAFEvaluator> getUDAFEvaluator(String name, List<Class<?>> argumentClasses) {
+    Class<? extends UDAF> udf = getUDAF(name);
+    if (udf == null) return null;
+    
+    Class<? extends UDAFEvaluator> evalClass = null;
+    try {
+      evalClass = udf.newInstance().getResolver().getEvaluatorClass(argumentClasses);
+    }
+    catch (AmbiguousMethodException e) {
+    }
+    catch (Exception e) {
+      throw new RuntimeException("getUADFEvaluator exception: " + e.getMessage());
+    }
+    return evalClass;    
   }
 
   /**
@@ -269,50 +304,20 @@ public class FunctionRegistry {
    * methodName will be "evaluate" for UDFRegistry, and "aggregate"/"evaluate"/"evaluatePartial" for UDAFRegistry. 
    */
   public static <T> Method getMethodInternal(Class<? extends T> udfClass, String methodName, boolean exact, List<Class<?>> argumentClasses) {
-    int leastImplicitConversions = Integer.MAX_VALUE;
-    Method udfMethod = null;
 
+    ArrayList<Method> mlist = new ArrayList<Method>();
+    
     for(Method m: Arrays.asList(udfClass.getMethods())) {
       if (m.getName().equals(methodName)) {
-
-        Class<?>[] argumentTypeInfos = m.getParameterTypes();
-
-        boolean match = (argumentTypeInfos.length == argumentClasses.size());
-        int implicitConversions = 0;
-
-        for(int i=0; i<argumentClasses.size() && match; i++) {
-          if (argumentClasses.get(i) == Void.class) continue;
-          Class<?> accepted = ObjectInspectorUtils.generalizePrimitive(argumentTypeInfos[i]);
-          if (accepted.isAssignableFrom(argumentClasses.get(i))) {
-            // do nothing if match
-          } else if (!exact && implicitConvertable(argumentClasses.get(i), accepted)) {
-            implicitConversions ++;
-          } else {
-            match = false;
-          }
-        }
-
-        if (match) {
-          // Always choose the function with least implicit conversions.
-          if (implicitConversions < leastImplicitConversions) {
-            udfMethod = m;
-            leastImplicitConversions = implicitConversions;
-            // Found an exact match
-            if (leastImplicitConversions == 0) break;
-          } else if (implicitConversions == leastImplicitConversions){
-            // Ambiguous call: two methods with the same number of implicit conversions 
-            udfMethod = null;
-          } else {
-            // do nothing if implicitConversions > leastImplicitConversions
-          }
-        }
+        mlist.add(m);
       }
     }
-    return udfMethod;
+    
+    return getMethodInternal(mlist, exact, argumentClasses);
   }
 
-  public static Method getUDFMethod(String name, boolean exact, Class<?> ... argumentClasses) {
-    return getUDFMethod(name, exact, Arrays.asList(argumentClasses));
+  public static Method getUDFMethod(String name, Class<?> ... argumentClasses) {
+    return getUDFMethod(name, Arrays.asList(argumentClasses));
   }
 
   public static void registerUDAF(String functionName, Class<? extends UDAF> UDAFClass) {
@@ -345,7 +350,7 @@ public class FunctionRegistry {
     Class<? extends UDAF> udaf = getUDAF(name);
     if (udaf == null)
       return null;
-    return FunctionRegistry.getMethodInternal(udaf, "aggregate", false,
+    return FunctionRegistry.getMethodInternal(udaf, "iterate", false,
                                          argumentClasses);
   }
 
@@ -363,7 +368,7 @@ public class FunctionRegistry {
       return null;
     return FunctionRegistry.getMethodInternal(udaf, 
         (mode == groupByDesc.Mode.COMPLETE || mode == groupByDesc.Mode.FINAL) 
-        ? "evaluate" : "evaluatePartial", true,
+        ? "terminate" : "terminatePartial", true,
         new ArrayList<Class<?>>() );
   }
 
@@ -406,5 +411,54 @@ public class FunctionRegistry {
           + ":" + e.getMessage());
     }
     return o;
+  }
+
+  /**
+   * Gets the closest matching method corresponding to the argument list from a list of methods.
+   * 
+   * @param mlist The list of methods to inspect.
+   * @param exact Boolean to indicate whether this is an exact match or not.
+   * @param argumentClasses The classes for the argument.
+   * @return The matching method.
+   */
+  public static Method getMethodInternal(ArrayList<Method> mlist, boolean exact,
+      List<Class<?>> argumentClasses) {
+    int leastImplicitConversions = Integer.MAX_VALUE;
+    Method udfMethod = null;
+
+    for(Method m: mlist) {
+      Class<?>[] argumentTypeInfos = m.getParameterTypes();
+
+      boolean match = (argumentTypeInfos.length == argumentClasses.size());
+      int implicitConversions = 0;
+
+      for(int i=0; i<argumentClasses.size() && match; i++) {
+        if (argumentClasses.get(i) == Void.class) continue;
+        Class<?> accepted = ObjectInspectorUtils.generalizePrimitive(argumentTypeInfos[i]);
+        if (accepted.isAssignableFrom(argumentClasses.get(i))) {
+          // do nothing if match
+        } else if (!exact && implicitConvertable(argumentClasses.get(i), accepted)) {
+          implicitConversions ++;
+        } else {
+          match = false;
+        }
+      }
+
+      if (match) {
+        // Always choose the function with least implicit conversions.
+        if (implicitConversions < leastImplicitConversions) {
+          udfMethod = m;
+          leastImplicitConversions = implicitConversions;
+          // Found an exact match
+          if (leastImplicitConversions == 0) break;
+        } else if (implicitConversions == leastImplicitConversions){
+          // Ambiguous call: two methods with the same number of implicit conversions 
+          udfMethod = null;
+        } else {
+          // do nothing if implicitConversions > leastImplicitConversions
+        }
+      }
+    }
+    return udfMethod;
   }
 }

@@ -30,8 +30,8 @@ STAGE PLANS:
                 expr: avg(DISTINCT UDFToDouble(KEY.0))
                 expr: sum(UDFToDouble(KEY.0))
                 expr: avg(UDFToDouble(KEY.0))
-                expr: min(UDFToDouble(KEY.0))
-                expr: max(UDFToDouble(KEY.0))
+                expr: min(KEY.0)
+                expr: max(KEY.0)
           mode: partial1
           File Output Operator
             compressed: false
@@ -43,7 +43,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /tmp/hive-zshao/695280947/659390410.10001 
+        /data/users/athusoo/apacheprojects/hive_local_ws3/build/ql/tmp/191882138/597396542.10001 
           Reduce Output Operator
             sort order: 
             tag: -1
@@ -55,15 +55,15 @@ STAGE PLANS:
                   expr: 2
                   type: string
                   expr: 3
-                  type: double
+                  type: string
                   expr: 4
-                  type: double
+                  type: string
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: avg(VALUE.0)
+                expr: avg(UDFToDouble(VALUE.0))
                 expr: sum(VALUE.1)
-                expr: avg(VALUE.2)
+                expr: avg(UDFToDouble(VALUE.2))
                 expr: min(VALUE.3)
                 expr: max(VALUE.4)
           mode: final
@@ -76,16 +76,28 @@ STAGE PLANS:
                   expr: 0
                   type: double
                   expr: 4
-                  type: double
+                  type: string
                   expr: 3
-                  type: double
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
-                  name: dest1
+                  type: string
+            Select Operator
+              expressions:
+                    expr: 0
+                    type: double
+                    expr: 1
+                    type: double
+                    expr: 2
+                    type: double
+                    expr: UDFToDouble(3)
+                    type: double
+                    expr: UDFToDouble(4)
+                    type: double
+              File Output Operator
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
+                    name: dest1
 
   Stage: Stage-0
     Move Operator
@@ -98,4 +110,4 @@ STAGE PLANS:
                 name: dest1
 
 
-130091.0	260.182	256.10355987055016	498.0	0.0
+130091.0	NULL	NULL	98.0	98.0

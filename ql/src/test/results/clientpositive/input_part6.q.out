@@ -12,7 +12,7 @@ STAGE PLANS:
         x 
             Filter Operator
               predicate:
-                  expr: (ds = ((2008 - 4) - 8))
+                  expr: (UDFToDouble(ds) = UDFToDouble(((2008 - 4) - 8)))
                   type: boolean
               Select Operator
                 expressions:

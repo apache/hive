@@ -24,7 +24,7 @@ import java.math.RoundingMode;
 import org.apache.hadoop.hive.ql.exec.UDF;
 
 
-public class UDFRound implements UDF {
+public class UDFRound extends UDF {
 
   public UDFRound() {
   }

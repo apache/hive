@@ -20,14 +20,12 @@ package org.apache.hadoop.hive.ql.lib;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
-import org.apache.hadoop.hive.ql.exec.ScriptOperator;
-import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
@@ -39,7 +37,7 @@ public class DefaultGraphWalker implements GraphWalker {
 
   protected Stack<Node> opStack;
   private List<Node> toWalk = new ArrayList<Node>();
-  private Set<Node> dispatchedList = new HashSet<Node>();
+  private HashMap<Node, Object> retMap = new HashMap<Node, Object>();
   private Dispatcher dispatcher;
 
   /**
@@ -63,7 +61,7 @@ public class DefaultGraphWalker implements GraphWalker {
    * @return the doneList
    */
   public Set<Node> getDispatchedList() {
-    return dispatchedList;
+    return retMap.keySet();
   }
 
   /**
@@ -73,18 +71,32 @@ public class DefaultGraphWalker implements GraphWalker {
    * @throws SemanticException
    */
   public void dispatch(Node nd, Stack<Node> ndStack) throws SemanticException {
-    this.dispatcher.dispatch(nd, ndStack);
-    this.dispatchedList.add(nd);
+    Object[] nodeOutputs = null;
+    if (nd.getChildren() != null) {
+      nodeOutputs = new Object[nd.getChildren().size()];
+      int i = 0;
+      for(Node child: nd.getChildren()) {
+        nodeOutputs[i++] = retMap.get(child);
+      }
+    }
+    
+    Object retVal = dispatcher.dispatch(nd, ndStack, nodeOutputs);
+    retMap.put(nd, retVal);
   }
 
   /**
    * starting point for walking
    * @throws SemanticException
    */
-  public void startWalking(Collection<Node> startNodes) throws SemanticException {
+  public void startWalking(Collection<Node> startNodes, HashMap<Node, Object> nodeOutput) throws SemanticException {
     toWalk.addAll(startNodes);
-    while(toWalk.size() > 0)
-      walk(toWalk.remove(0));
+    while(toWalk.size() > 0) {
+      Node nd = toWalk.remove(0);
+      walk(nd);
+      if (nodeOutput != null) {
+        nodeOutput.put(nd, retMap.get(nd));
+      }
+    }
   }
 
   /**

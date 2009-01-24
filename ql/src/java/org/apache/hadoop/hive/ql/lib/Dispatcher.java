@@ -29,11 +29,14 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 public interface Dispatcher {
 
   /**
-   * dispatcher function
-   * @param nd operator to process
-   * @param Stack operator stack to process
+   * Dispatcher function.
+   * @param nd operator to process.
+   * @param Stack operator stack to process.
+   * @param nodeOutputs The argument list of outputs from processing other nodes that are
+   * passed to this dispatcher from the walker.
+   * @return Object The return object from the processing call.
    * @throws SemanticException
    */
-  public abstract void dispatch(Node nd, Stack<Node> stack) 
+  public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs) 
     throws SemanticException;
 }

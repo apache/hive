@@ -41,10 +41,11 @@ public class GenMROperator implements NodeProcessor {
    * @param nd the reduce sink operator encountered
    * @param procCtx context
    */
-  public void process(Node nd, NodeProcessorCtx procCtx) throws SemanticException {
+  public Object process(Node nd, NodeProcessorCtx procCtx, Object... nodeOutputs) throws SemanticException {
     GenMRProcContext ctx = (GenMRProcContext)procCtx;
 
     Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx.getMapCurrCtx();
     mapCurrCtx.put((Operator<? extends Serializable>)nd, new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrTopOp(), ctx.getCurrAliasId()));
+    return null;
   }
 }

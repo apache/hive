@@ -22,8 +22,6 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.ql.parse.RowResolver;
 
 public class exprNodeDesc implements Serializable {  
   private static final long serialVersionUID = 1L;

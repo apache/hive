@@ -52,7 +52,7 @@ public class DefaultRuleDispatcher implements Dispatcher {
    * @param ndStack the operators encountered so far
    * @throws SemanticException
    */
-  public void dispatch(Node nd, Stack<Node> ndStack) 
+  public Object dispatch(Node nd, Stack<Node> ndStack, Object... nodeOutputs) 
     throws SemanticException {
 
     // find the firing rule
@@ -75,8 +75,11 @@ public class DefaultRuleDispatcher implements Dispatcher {
       proc = procRules.get(rule);
 
     // Do nothing in case proc is null
-    if (proc != null)
+    if (proc != null) {
       // Call the process function
-      proc.process(nd, procCtx);
+      return proc.process(nd, procCtx, nodeOutputs);
+    }
+    else
+      return null;
   }
 }

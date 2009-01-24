@@ -23,11 +23,21 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
 
 
-public class UDFToLong implements UDF {
+public class UDFToLong extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFToLong.class.getName());
 
   public UDFToLong() {
+  }
+
+  /**
+   * Convert from void to a long. This is called for CAST(... AS BIGINT)
+   *
+   * @param i The void value to convert
+   * @return Long
+   */
+  public Long evaluate(Void i)  {
+    return null;
   }
 
   /**
@@ -145,4 +155,17 @@ public class UDFToLong implements UDF {
     }
   }
   
+  /**
+   * Convert from date to a long. This is called for CAST(... AS BIGINT)
+   *
+   * @param i The date value to convert
+   * @return Long
+   */
+  public Long evaluate(java.sql.Date i)  {
+    if (i == null) {
+      return null;
+    } else {
+        return Long.valueOf(i.getTime());
+    }
+  }  
 }

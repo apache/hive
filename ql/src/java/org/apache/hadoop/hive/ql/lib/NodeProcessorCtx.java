@@ -21,5 +21,5 @@ package org.apache.hadoop.hive.ql.lib;
 /**
  * Operator Processor Context
  */
-public abstract class NodeProcessorCtx {
+public interface NodeProcessorCtx {
 }

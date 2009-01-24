@@ -12,7 +12,7 @@ STAGE PLANS:
         src 
             Filter Operator
               predicate:
-                  expr: (key < 100)
+                  expr: (UDFToDouble(key) < UDFToDouble(100))
                   type: boolean
               Select Operator
                 expressions:
@@ -35,7 +35,7 @@ STAGE PLANS:
                         name: dest1
             Filter Operator
               predicate:
-                  expr: ((key >= 100) and (key < 200))
+                  expr: ((UDFToDouble(key) >= UDFToDouble(100)) and (UDFToDouble(key) < UDFToDouble(200)))
                   type: boolean
               Select Operator
                 expressions:
@@ -58,7 +58,7 @@ STAGE PLANS:
                         name: dest2
             Filter Operator
               predicate:
-                  expr: (key >= 200)
+                  expr: (UDFToDouble(key) >= UDFToDouble(200))
                   type: boolean
               Select Operator
                 expressions:

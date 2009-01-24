@@ -39,7 +39,7 @@ STAGE PLANS:
         Extract
           Filter Operator
             predicate:
-                expr: (0 < 100)
+                expr: (UDFToDouble(0) < UDFToDouble(100))
                 type: boolean
             Select Operator
               expressions:

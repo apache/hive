@@ -44,7 +44,7 @@ public class GenMRTableScan1 implements NodeProcessor {
    * @param nd the table sink operator encountered
    * @param opProcCtx context
    */
-  public void process(Node nd, NodeProcessorCtx opProcCtx) throws SemanticException {
+  public Object process(Node nd, NodeProcessorCtx opProcCtx, Object... nodeOutputs) throws SemanticException {
     TableScanOperator op = (TableScanOperator)nd;
     GenMRProcContext ctx = (GenMRProcContext)opProcCtx;
     ParseContext parseCtx = ctx.getParseCtx();
@@ -62,10 +62,11 @@ public class GenMRTableScan1 implements NodeProcessor {
         String currAliasId = alias;
         ctx.setCurrAliasId(currAliasId);
         mapCurrCtx.put(op, new GenMapRedCtx(currTask, currTopOp, currAliasId));
-        return;
+        return null;
       }
     }
     assert false;
+    return null;
   }
 
 }

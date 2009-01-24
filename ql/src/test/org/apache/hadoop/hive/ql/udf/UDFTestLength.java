@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 /**
  * A UDF for testing, which evaluates the length of a string.
  */
-public class UDFTestLength implements UDF {
+public class UDFTestLength extends UDF {
   public Integer evaluate(String s) {
     return s == null ? null : s.length();
   }

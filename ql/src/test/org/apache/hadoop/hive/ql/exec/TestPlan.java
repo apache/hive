@@ -26,6 +26,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.TextInputFormat;
 
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.*;
 import org.apache.hadoop.hive.ql.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -44,7 +45,7 @@ public class TestPlan extends TestCase {
       // initialize a complete map reduce configuration
       exprNodeDesc expr1 = new exprNodeColumnDesc(TypeInfoFactory.getPrimitiveTypeInfo(String.class), F1);
       exprNodeDesc expr2 = new exprNodeColumnDesc(TypeInfoFactory.getPrimitiveTypeInfo(String.class), F2);
-      exprNodeDesc filterExpr = SemanticAnalyzer.getFuncExprNodeDesc("==", expr1, expr2);
+      exprNodeDesc filterExpr = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("==", expr1, expr2);
 
       filterDesc filterCtx = new filterDesc(filterExpr);
       Operator<filterDesc> op = OperatorFactory.get(filterDesc.class);

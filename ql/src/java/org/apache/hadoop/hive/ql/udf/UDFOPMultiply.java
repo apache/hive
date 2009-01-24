@@ -23,7 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
 
 
-public class UDFOPMultiply implements UDF {
+public class UDFOPMultiply extends UDFBaseNumericOp {
 
   private static Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.udf.UDFOPMultiply");
 

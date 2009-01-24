@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.ql.plan.selectDesc;
 /**
  * This class implements the processor context for Column Pruner.
  */
-public class ColumnPrunerProcCtx extends NodeProcessorCtx {
+public class ColumnPrunerProcCtx implements NodeProcessorCtx {
   
   private  Map<Operator<? extends Serializable>,List<String>> prunedColLists;
   

@@ -23,7 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import java.util.Random;
 
-public class UDFRand implements UDF {
+public class UDFRand extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFRand.class.getName());
 

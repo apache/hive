@@ -12,7 +12,7 @@ STAGE PLANS:
         x 
             Filter Operator
               predicate:
-                  expr: (key = 10)
+                  expr: (UDFToDouble(key) = UDFToDouble(10))
                   type: boolean
               Select Operator
                 expressions:
@@ -62,7 +62,7 @@ STAGE PLANS:
         x 
             Filter Operator
               predicate:
-                  expr: (key = 20)
+                  expr: (UDFToDouble(key) = UDFToDouble(20))
                   type: boolean
               Select Operator
                 expressions:
@@ -112,7 +112,7 @@ STAGE PLANS:
         x 
             Filter Operator
               predicate:
-                  expr: (key = 20)
+                  expr: (UDFToDouble(key) = UDFToDouble(20))
                   type: boolean
               Select Operator
                 expressions:
@@ -162,7 +162,7 @@ STAGE PLANS:
         x 
             Filter Operator
               predicate:
-                  expr: (key = 20)
+                  expr: (UDFToDouble(key) = UDFToDouble(20))
                   type: boolean
               Select Operator
                 expressions:
@@ -212,7 +212,7 @@ STAGE PLANS:
         x 
             Filter Operator
               predicate:
-                  expr: (key = 20)
+                  expr: (UDFToDouble(key) = UDFToDouble(20))
                   type: boolean
               Select Operator
                 expressions:
@@ -262,7 +262,7 @@ STAGE PLANS:
         x 
             Filter Operator
               predicate:
-                  expr: (key = 20)
+                  expr: (UDFToDouble(key) = UDFToDouble(20))
                   type: boolean
               Select Operator
                 expressions:
@@ -312,7 +312,7 @@ STAGE PLANS:
         x 
             Filter Operator
               predicate:
-                  expr: (key = 20)
+                  expr: (UDFToDouble(key) = UDFToDouble(20))
                   type: boolean
               Select Operator
                 expressions:
@@ -384,7 +384,7 @@ STAGE PLANS:
         Extract
           Filter Operator
             predicate:
-                expr: (0 = 20)
+                expr: (UDFToDouble(0) = UDFToDouble(20))
                 type: boolean
             Select Operator
               expressions:
@@ -457,7 +457,7 @@ STAGE PLANS:
             1 {VALUE.0}
           Filter Operator
             predicate:
-                expr: (0 = 20)
+                expr: (UDFToDouble(0) = UDFToDouble(20))
                 type: boolean
             Select Operator
               expressions:
@@ -477,7 +477,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/pchakka/workspace/oshive/build/ql/tmp/4095681/630596716.10002 
+        /data/users/athusoo/commits/hive_trunk_ws2/build/ql/tmp/268129150/10750666.10002 
           Reduce Output Operator
             key expressions:
                   expr: 1
@@ -559,7 +559,7 @@ STAGE PLANS:
             1 {VALUE.0} {VALUE.1}
           Filter Operator
             predicate:
-                expr: (0 = 20)
+                expr: (UDFToDouble(0) = UDFToDouble(20))
                 type: boolean
             Select Operator
               expressions:
@@ -581,7 +581,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/pchakka/workspace/oshive/build/ql/tmp/462292647/163669153.10002 
+        /data/users/athusoo/commits/hive_trunk_ws2/build/ql/tmp/223878920/107499083.10002 
           Reduce Output Operator
             key expressions:
                   expr: 1
@@ -665,7 +665,7 @@ STAGE PLANS:
             1 {VALUE.0} {VALUE.1}
           Filter Operator
             predicate:
-                expr: (0 = 20)
+                expr: (UDFToDouble(0) = UDFToDouble(20))
                 type: boolean
             Select Operator
               expressions:
@@ -687,7 +687,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/pchakka/workspace/oshive/build/ql/tmp/72781939/1364102870.10002 
+        /data/users/athusoo/commits/hive_trunk_ws2/build/ql/tmp/273045729/75938714.10002 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -773,7 +773,7 @@ STAGE PLANS:
             1 {VALUE.0}
           Filter Operator
             predicate:
-                expr: (0 = 20)
+                expr: (UDFToDouble(0) = UDFToDouble(20))
                 type: boolean
             Select Operator
               expressions:
@@ -793,7 +793,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/pchakka/workspace/oshive/build/ql/tmp/808635/840293573.10002 
+        /data/users/athusoo/commits/hive_trunk_ws2/build/ql/tmp/294539045/192652633.10002 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -838,7 +838,7 @@ STAGE PLANS:
         null-subquery1:unioninput-subquery1:src 
             Filter Operator
               predicate:
-                  expr: (key < 100)
+                  expr: (UDFToDouble(key) < UDFToDouble(100))
                   type: boolean
               Select Operator
                 expressions:
@@ -869,7 +869,7 @@ STAGE PLANS:
         null-subquery2:unioninput-subquery2:src 
             Filter Operator
               predicate:
-                  expr: (key > 100)
+                  expr: (UDFToDouble(key) > UDFToDouble(100))
                   type: boolean
               Select Operator
                 expressions:

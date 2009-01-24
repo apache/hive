@@ -24,11 +24,11 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: max(UDFToDouble(VALUE.0))
+                expr: max(VALUE.0)
                 expr: avg(UDFToDouble(VALUE.0))
                 expr: count(VALUE.0)
                 expr: sum(UDFToDouble(VALUE.0))
-                expr: min(UDFToDouble(VALUE.0))
+                expr: min(VALUE.0)
           mode: partial1
           File Output Operator
             compressed: false
@@ -40,13 +40,13 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /tmp/hive-zshao/546652046/1647731334.10001 
+        /data/users/athusoo/apacheprojects/hive_local_ws3/build/ql/tmp/68854306/763012378.10001 
           Reduce Output Operator
             sort order: 
             tag: -1
             value expressions:
                   expr: 0
-                  type: double
+                  type: int
                   expr: 1
                   type: string
                   expr: 2
@@ -54,12 +54,12 @@ STAGE PLANS:
                   expr: 3
                   type: double
                   expr: 4
-                  type: double
+                  type: int
       Reduce Operator Tree:
         Group By Operator
           aggregations:
                 expr: max(VALUE.0)
-                expr: avg(VALUE.1)
+                expr: avg(UDFToDouble(VALUE.1))
                 expr: count(VALUE.2)
                 expr: sum(VALUE.3)
                 expr: min(VALUE.4)
@@ -73,9 +73,9 @@ STAGE PLANS:
                   expr: 1
                   type: double
                   expr: 4
-                  type: double
+                  type: int
                   expr: 0
-                  type: double
+                  type: int
             File Output Operator
               compressed: false
               table:

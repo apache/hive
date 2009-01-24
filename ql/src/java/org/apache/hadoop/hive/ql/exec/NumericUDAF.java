@@ -16,20 +16,17 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.udf;
+package org.apache.hadoop.hive.ql.exec;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.UDF;
+/**
+ * Base class of numeric UDAFs like sum and avg which need a NumericUDAFEvaluatorResolver.
+ */
+public class NumericUDAF extends UDAF {
 
-
-public class UDFStrLt implements UDF {
-
-  public UDFStrLt() {
-  }
-
-  public boolean evaluate(String a, String b)  {
-    int code = a.compareTo(b);
-    return (code < 0);
+  /**
+   * Constructor.
+   */
+  public NumericUDAF() {
+    setResolver(new NumericUDAFEvaluatorResolver(this.getClass()));
   }
 }

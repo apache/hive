@@ -12,7 +12,7 @@ STAGE PLANS:
         x 
             Filter Operator
               predicate:
-                  expr: (key < 300)
+                  expr: (UDFToDouble(key) < UDFToDouble(300))
                   type: boolean
               Select Operator
                 expressions:

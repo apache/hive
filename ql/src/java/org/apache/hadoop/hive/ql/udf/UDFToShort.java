@@ -23,11 +23,21 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
 
 
-public class UDFToShort implements UDF {
+public class UDFToShort extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFToByte.class.getName());
 
   public UDFToShort() {
+  }
+
+  /**
+   * Convert from void to a short. This is called for CAST(... AS SMALLINT)
+   *
+   * @param i The void value to convert
+   * @return Short
+   */
+  public Short evaluate(Void i)  {
+    return null;
   }
 
   /**
@@ -135,4 +145,17 @@ public class UDFToShort implements UDF {
     }
   }
   
+  /**
+   * Convert from date to a short. This is called for CAST(... AS SMALLINT)
+   *
+   * @param i The date value to convert
+   * @return Short
+   */
+  public Short evaluate(java.sql.Date i)  {
+    if (i == null) {
+      return null;
+    } else {
+        return Long.valueOf(i.getTime()).shortValue();
+    }
+  }  
 }

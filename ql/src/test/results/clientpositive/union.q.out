@@ -12,7 +12,7 @@ STAGE PLANS:
         null-subquery1:unioninput-subquery1:src 
             Filter Operator
               predicate:
-                  expr: (key < 100)
+                  expr: (UDFToDouble(key) < UDFToDouble(100))
                   type: boolean
               Select Operator
                 expressions:
@@ -34,7 +34,7 @@ STAGE PLANS:
         null-subquery2:unioninput-subquery2:src 
             Filter Operator
               predicate:
-                  expr: (key > 100)
+                  expr: (UDFToDouble(key) > UDFToDouble(100))
                   type: boolean
               Select Operator
                 expressions:

@@ -55,7 +55,7 @@ import org.apache.hadoop.fs.Path;
  * Processor Context for creating map reduce task. Walk the tree in a DFS manner and process the nodes. Some state is 
  * maintained about the current nodes visited so far.
  */
-public class GenMRProcContext extends NodeProcessorCtx {
+public class GenMRProcContext implements NodeProcessorCtx {
 
   /** 
    * GenMapRedCtx is used to keep track of the current state. 

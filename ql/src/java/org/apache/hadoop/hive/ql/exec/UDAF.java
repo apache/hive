@@ -17,9 +17,6 @@
  */
 
 package org.apache.hadoop.hive.ql.exec;
-
-
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 //import org.apache.hadoop.hive.serde.ReflectionSerDe;
 
 /**
@@ -60,12 +57,40 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
  *    public boolean aggregatePartial(String partial);
  *
  */
-public abstract class UDAF {
+public class UDAF {
 
-  public UDAF() { }
-
-  /** Initialize the aggregation object.
-   *  The class should reset the status of the aggregation if aggregate() was called before.
+  /**
+   * The resolver used for method resolution.
    */
-  public abstract void init();
+  UDAFEvaluatorResolver rslv;
+  
+  /**
+   * The default constructor.
+   */
+  public UDAF() { 
+    rslv = new DefaultUDAFEvaluatorResolver(this.getClass());
+  }
+
+  /**
+   * The constructor with a particular type of resolver.
+   */
+  public UDAF(UDAFEvaluatorResolver rslv) {
+    this.rslv = rslv;
+  }
+  
+  /**
+   * Sets the resolver
+   * 
+   * @param The method resolver to use for method resolution.
+   */
+  public void setResolver(UDAFEvaluatorResolver rslv) {
+    this.rslv = rslv;
+  }
+  
+  /**
+   * Gets the resolver.
+   */
+  public UDAFEvaluatorResolver getResolver() {
+    return rslv;
+  }
 }

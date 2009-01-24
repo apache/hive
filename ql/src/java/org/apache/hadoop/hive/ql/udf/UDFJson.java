@@ -33,7 +33,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
 
 
-public class UDFJson implements UDF {
+public class UDFJson extends UDF {
   private static Log LOG = LogFactory.getLog(UDFJson.class.getName());
   private Pattern pattern_key = Pattern.compile("^([a-zA-Z0-9_\\-]+).*");
   private Pattern pattern_index = Pattern.compile("\\[([0-9]+|\\*)\\]");

@@ -24,8 +24,6 @@ import java.util.List;
 
 import org.apache.hadoop.hive.ql.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.ql.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.hive.ql.parse.RowResolver;
-import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 
 public class exprNodeColumnDesc extends exprNodeDesc implements Serializable {
   private static final long serialVersionUID = 1L;

@@ -12,7 +12,7 @@ STAGE PLANS:
         subq:a 
             Filter Operator
               predicate:
-                  expr: (key > 10)
+                  expr: (UDFToDouble(key) > UDFToDouble(10))
                   type: boolean
               Select Operator
                 expressions:
@@ -22,7 +22,7 @@ STAGE PLANS:
                       type: string
                 Filter Operator
                   predicate:
-                      expr: (0 > 20)
+                      expr: (UDFToDouble(0) > UDFToDouble(20))
                       type: boolean
                   Reduce Output Operator
                     key expressions:
@@ -70,7 +70,7 @@ STAGE PLANS:
             1 {VALUE.0} {VALUE.1}
           Filter Operator
             predicate:
-                expr: (3 < 200)
+                expr: (UDFToDouble(3) < UDFToDouble(200))
                 type: boolean
             Select Operator
               expressions:

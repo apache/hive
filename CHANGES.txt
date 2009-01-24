@@ -228,3 +228,7 @@ Trunk (unreleased changes)
 
     HIVE-242. Fix to allow CLI to interpret line breaks in any CLI
     command (Prasad Chakka via athusoo)
+
+    HIVE-65. Rewrite typechecking to use the walker interface and add
+    Resolvers to UDF and UDAF to support proper implicit casting
+    in a manner similar to other RDBMSs (athusoo)

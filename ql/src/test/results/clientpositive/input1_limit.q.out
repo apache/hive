@@ -14,7 +14,7 @@ STAGE PLANS:
         src 
             Filter Operator
               predicate:
-                  expr: (key < 100)
+                  expr: (UDFToDouble(key) < UDFToDouble(100))
                   type: boolean
               Select Operator
                 expressions:
@@ -33,7 +33,7 @@ STAGE PLANS:
                           type: string
             Filter Operator
               predicate:
-                  expr: (key < 100)
+                  expr: (UDFToDouble(key) < UDFToDouble(100))
                   type: boolean
               Select Operator
                 expressions:
@@ -85,7 +85,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /tmp/hive-zshao/196681773/625336699.10002 
+        /data/users/athusoo/apacheprojects/hive_local_ws3/build/ql/tmp/2110365113/704872924.10002 
           Reduce Output Operator
             sort order: 
             tag: -1

@@ -18,19 +18,28 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.NumericOpMethodResolver;
 import org.apache.hadoop.hive.ql.exec.UDF;
 
+/**
+ * Base class for numeric operators like +, -, / etc. All these operators
+ * share a common method resolver (NumericOpMethodResolver).
+ */
+public abstract class UDFBaseNumericOp extends UDF {
 
-public class UDFStrEq implements UDF {
-
-  private static Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.udf.UDFStrEq");
-
-  public UDFStrEq() {
+  /**
+   * Constructor.
+   * This constructor sets the resolver to be used for comparison operators.
+   * See {@link UDFMethodResolver}
+   */
+  public UDFBaseNumericOp() {
+    setResolver(new NumericOpMethodResolver(this.getClass()));
   }
 
-  public boolean evaluate(String a, String b)  {
-    return a.equals(b);
-  }
+  public abstract Byte evaluate(Byte a, Byte b);  
+  public abstract Integer evaluate(Integer a, Integer b);  
+  public abstract Long evaluate(Long a, Long b);  
+  public abstract Float evaluate(Float a, Float b);  
+  public abstract Double evaluate(Double a, Double b);  
+
 }

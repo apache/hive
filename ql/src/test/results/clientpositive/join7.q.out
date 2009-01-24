@@ -12,7 +12,7 @@ STAGE PLANS:
         c:b:src2 
             Filter Operator
               predicate:
-                  expr: ((key > 15) and (key < 25))
+                  expr: ((UDFToDouble(key) > UDFToDouble(15)) and (UDFToDouble(key) < UDFToDouble(25)))
                   type: boolean
               Select Operator
                 expressions:
@@ -37,7 +37,7 @@ STAGE PLANS:
         c:a:src1 
             Filter Operator
               predicate:
-                  expr: ((key > 10) and (key < 20))
+                  expr: ((UDFToDouble(key) > UDFToDouble(10)) and (UDFToDouble(key) < UDFToDouble(20)))
                   type: boolean
               Select Operator
                 expressions:
@@ -62,7 +62,7 @@ STAGE PLANS:
         c:c:src3 
             Filter Operator
               predicate:
-                  expr: ((key > 20) and (key < 25))
+                  expr: ((UDFToDouble(key) > UDFToDouble(20)) and (UDFToDouble(key) < UDFToDouble(25)))
                   type: boolean
               Select Operator
                 expressions:
