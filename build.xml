@@ -180,6 +180,9 @@
     <copy todir="${target.example.dir}/queries" preservelastmodified="true" flatten="true">
       <fileset dir="${ql.test.query.dir}/positive" includes="*.q" excludes="**/.svn"/>
     </copy>
+    <chmod perm="ugo+x" type="file" parallel="false">
+      <fileset dir="${target.bin.dir}"/>
+    </chmod>
   </target>
 
   <target name="eclipse-files" depends="init"

@@ -232,3 +232,6 @@ Trunk (unreleased changes)
     HIVE-65. Rewrite typechecking to use the walker interface and add
     Resolvers to UDF and UDAF to support proper implicit casting
     in a manner similar to other RDBMSs (athusoo)
+
+    HIVE-249. Give execute permissions to the hive binary 
+    (Jeff Hammerbacher via athusoo)
