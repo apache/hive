@@ -240,3 +240,6 @@ Trunk (unreleased changes)
 
     HIVE-246. Fix to make msck command to look for tables in hdfs
     that are in the metastore. (Johan Oskarsson via athusoo)
+
+    HIVE-248. Create file path names properly during the load command
+    in case relative path names were specified. (Prasad Chakka via athusoo)

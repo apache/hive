@@ -45,7 +45,6 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   boolean isLocal;
   boolean isOverWrite;
-  FileSystem fs;
 
   public LoadSemanticAnalyzer(HiveConf conf) throws SemanticException {
     super(conf);
@@ -61,50 +60,43 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     return (srcs);
   }
 
-  private URI initializeFromURI(String fromPath) throws IOException {
-    Path p = new Path(fromPath);
-    URI fromURI = p.toUri();
+  private URI initializeFromURI(String fromPath) throws IOException, URISyntaxException {
+    URI fromURI = new Path(fromPath).toUri();
 
     String fromScheme = fromURI.getScheme();
-
-    // initialize scheme for 'local' mode
-    if(StringUtils.isEmpty(fromScheme)) {
+    String fromAuthority = fromURI.getAuthority();
+    String path = fromURI.getPath();
+    
+    // generate absolute path relative to current directory or hdfs home directory
+    if(!path.startsWith("/")) {
       if(isLocal) {
-        if(!fromPath.startsWith("/")) {
-          // generate absolute path relative to current directory
-          p = new Path(System.getProperty("user.dir"), fromPath);
-        }
-        fromScheme = "file";
+        path = new Path(System.getProperty("user.dir"), path).toString();
       } else {
-        if(!fromPath.startsWith("/") && StringUtils.isEmpty(fromURI.getAuthority()) ) {
-          // generate absolute path relative to current directory
-          p = new Path(new Path("/user/"+System.getProperty("user.name")), fromPath);
-        }
+        path = new Path(new Path("/user/"+System.getProperty("user.name")), path).toString();
       }
     }
-
-    fs = FileSystem.get(fromURI, conf);
-    String fromAuthority = null;
-
-    // fall back to configuration based scheme if necessary
+    
+    // set correct scheme and authority
     if(StringUtils.isEmpty(fromScheme)) {
-      fromScheme = fs.getUri().getScheme();
-      fromAuthority = fs.getUri().getAuthority();
-    }
-
-    // if using hdfs - authority must be specified. fall back using configuration if none specified.
-    if(fromScheme.equals("hdfs")) {
-      fromAuthority = StringUtils.isEmpty(fromURI.getAuthority()) ?
-        fs.getUri().getAuthority() : fromURI.getAuthority();
-    }
-
-    try {
-      fromURI = new URI(fromScheme, fromAuthority, p.toString(), null, null);
-    } catch (URISyntaxException e) {
-      throw new RuntimeException (e);
+      if(isLocal) {
+        // file for local
+        fromScheme = "file";
+      } else {
+        // use default values from fs.default.name
+        URI defaultURI = FileSystem.get(conf).getUri();
+        fromScheme = defaultURI.getScheme();
+        fromAuthority = defaultURI.getAuthority();
+      }
     }
     
-    return fromURI;
+    // if scheme is specified but not authority then use the default authority
+    if(fromScheme.equals("hdfs") && StringUtils.isEmpty(fromAuthority)) {
+      URI defaultURI = FileSystem.get(conf).getUri();
+      fromAuthority = defaultURI.getAuthority();
+    }
+    
+    LOG.debug(fromScheme + "@" + fromAuthority + "@" + path);
+    return new URI(fromScheme, fromAuthority, path, null, null);
   }
 
 
@@ -117,16 +109,17 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     // local mode implies that scheme should be "file"
     // we can change this going forward
     if(isLocal && !fromURI.getScheme().equals("file")) {
-      throw new SemanticException (ErrorMsg.ILLEGAL_PATH.getMsg(ast));
+      throw new SemanticException (ErrorMsg.ILLEGAL_PATH.getMsg(ast, "Source file system should be \"file\" if \"local\" is specified"));
     }
 
     try {
-      FileStatus [] srcs = matchFilesOrDir(fs, new Path(fromURI.getScheme(),
-                                                        fromURI.getAuthority(),
-                                                        fromURI.getPath()));
+      FileStatus [] srcs = matchFilesOrDir(FileSystem.get(fromURI, conf),
+                                           new Path(fromURI.getScheme(),
+                                                    fromURI.getAuthority(),
+                                                    fromURI.getPath()));
 
       if(srcs == null || srcs.length == 0) {
-        throw new SemanticException (ErrorMsg.INVALID_PATH.getMsg(ast, "No files matching path"));
+        throw new SemanticException (ErrorMsg.INVALID_PATH.getMsg(ast, "No files matching path " + fromURI));
       }
 
 
@@ -139,8 +132,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     } catch (IOException e) {
       // Has to use full name to make sure it does not conflict with org.apache.commons.lang.StringUtils
-      LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
-      throw new SemanticException (ErrorMsg.INVALID_PATH.getMsg(ast));
+      throw new SemanticException (ErrorMsg.INVALID_PATH.getMsg(ast), e);
     }
 
 
@@ -148,8 +140,10 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     // reject different scheme/authority in other cases.
     if(!isLocal && (!StringUtils.equals(fromURI.getScheme(), toURI.getScheme()) ||
                     !StringUtils.equals(fromURI.getAuthority(), toURI.getAuthority()))) {
-      LOG.error("Move from: " + fromURI.toString() + " to: " + toURI.toString() + " is not valid");
-      throw new SemanticException(ErrorMsg.ILLEGAL_PATH.getMsg(ast, "Cannot load data across filesystems, use load data local")) ;
+      String reason = "Move from: " + fromURI.toString() + " to: " + toURI.toString() + " is not valid. " +
+      		"Please check that values for params \"default.fs.name\" and " +
+      		"\"hive.metastore.warehouse.dir\" do not conflict.";
+      throw new SemanticException(ErrorMsg.ILLEGAL_PATH.getMsg(ast, reason)) ;
     }
   }
 
@@ -177,9 +171,9 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       String fromPath = stripQuotes(from_t.getText());
       fromURI = initializeFromURI(fromPath);
     } catch (IOException e) {
-      throw new SemanticException (ErrorMsg.INVALID_PATH.getMsg(from_t, e.getMessage()));
-    } catch (RuntimeException e) {
-      throw new SemanticException (ErrorMsg.INVALID_PATH.getMsg(from_t, e.getMessage()));
+      throw new SemanticException (ErrorMsg.INVALID_PATH.getMsg(from_t, e.getMessage()), e);
+    } catch (URISyntaxException e) {
+      throw new SemanticException (ErrorMsg.INVALID_PATH.getMsg(from_t, e.getMessage()), e);
     }
 
     // initialize destination table/partition
