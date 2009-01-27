@@ -54,6 +54,7 @@ public class FunctionRegistry {
 
     registerUDF("round", UDFRound.class, OperatorType.PREFIX, false);
     registerUDF("floor", UDFFloor.class, OperatorType.PREFIX, false);
+    registerUDF("sqrt", UDFSqrt.class, OperatorType.PREFIX, false);
     registerUDF("ceil", UDFCeil.class, OperatorType.PREFIX, false);
     registerUDF("ceiling", UDFCeil.class, OperatorType.PREFIX, false);
     registerUDF("rand", UDFRand.class, OperatorType.PREFIX, false);

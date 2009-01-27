@@ -9,6 +9,8 @@ Trunk (unreleased changes)
 
   NEW FEATURES
 
+    HIVE-244. Add SQRT() UDF. (Jeff Hammerbacher via zshao)
+
     HIVE-216. Generate ruby bindings for service. (Raghotham Murthy via zshao)
 
     HIVE-163. JSON udf function added. (Hao Liu via zshao)
