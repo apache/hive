@@ -139,6 +139,19 @@ public class TestHiveMetaStoreChecker extends TestCase {
     assertTrue(result.getTablesNotOnFs().isEmpty());
     assertTrue(result.getPartitionsNotOnFs().isEmpty());
     assertTrue(result.getPartitionsNotInMs().isEmpty());
+    
+    //create a new external table
+    hive.dropTable(dbName, tableName);
+    table.setProperty("EXTERNAL", "TRUE");
+    hive.createTable(table);
+    
+    //should return all ok
+    result = new CheckResult();
+    checker.checkMetastore(dbName, null, null, result);
+    assertTrue(result.getTablesNotInMs().isEmpty());
+    assertTrue(result.getTablesNotOnFs().isEmpty());
+    assertTrue(result.getPartitionsNotOnFs().isEmpty());
+    assertTrue(result.getPartitionsNotInMs().isEmpty());
   }
 
   public void testPartitionsCheck() throws HiveException, MetaException,

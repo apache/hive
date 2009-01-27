@@ -110,7 +110,7 @@ public class HiveMetaStoreChecker {
       Table table = hive.getTable(dbName, tableName);
       // hack, instead figure out a way to get the db paths
       String isExternal = table.getParameters().get("EXTERNAL");
-      if (isExternal == null || "TRUE".equalsIgnoreCase(isExternal)) {
+      if (isExternal == null || !"TRUE".equalsIgnoreCase(isExternal)) {
         dbPaths.add(table.getPath().getParent());
       }
     }
