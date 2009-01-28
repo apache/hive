@@ -18,16 +18,20 @@
 
 package org.apache.hadoop.hive.conf;
 
+import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.security.auth.login.LoginException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.security.UserGroupInformation;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -106,7 +110,7 @@ public class HiveConf extends Configuration {
     public final String defaultVal;
     public final int defaultIntVal;
     public final float defaultFloatVal;
-    public final Class valClass;
+    public final Class<?> valClass;
     public final boolean defaultBoolVal;
 
     ConfVars(String varname, String defaultVal) {
@@ -154,7 +158,7 @@ public class HiveConf extends Configuration {
     assert(var.valClass == Integer.class);
     return conf.getInt(var.varname, var.defaultIntVal);
   }
-
+  
   public int getIntVar(ConfVars var) {
     return getIntVar(this, var);
   }
@@ -202,12 +206,12 @@ public class HiveConf extends Configuration {
   }
 
 
-  public HiveConf(Class cls) {
+  public HiveConf(Class<?> cls) {
     super();
     initialize(cls);
   }
 
-  public HiveConf(Configuration other, Class cls) {
+  public HiveConf(Configuration other, Class<?> cls) {
     super(other);
     initialize(cls);
   }
@@ -223,7 +227,7 @@ public class HiveConf extends Configuration {
   }
 
 
-  private void initialize(Class cls) {
+  private void initialize(Class<?> cls) {
     hiveJar = (new JobConf(cls)).getJar();
     
     // preserve the original configuration
@@ -311,4 +315,18 @@ public class HiveConf extends Configuration {
   public void setAuxJars(String auxJars) {
     this.auxJars = auxJars;
   }
+  
+  /**
+   * @return the user name set in hadoop.job.ugi param or the current user from System
+   * @throws IOException
+   */
+  public String getUser() throws IOException {
+    try {
+      return UserGroupInformation.login(this).getUserName();
+    } catch (LoginException e) {
+      throw (IOException)new IOException().initCause(e);
+    }
+  }
+
+
 }

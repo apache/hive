@@ -84,6 +84,8 @@ Trunk (unreleased changes)
 
   BUG FIXES
 
+    HIVE-255. Propagate user name to Hive metastore. (Prasad Chakka via zshao)
+
     HIVE-235. Fixed DynamicSerDe to work with null values with Thrift
     Protocols that can have missing fields for null values. (zshao)
 

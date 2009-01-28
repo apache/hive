@@ -549,7 +549,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     // set last modified by properties
-    tbl.setProperty("last_modified_by", System.getProperty("user.name"));
+    try {
+      tbl.setProperty("last_modified_by", conf.getUser());
+    } catch (IOException e) {
+      console.printError("Unable to get current user: " + e.getMessage(), StringUtils.stringifyException(e));
+    }
     tbl.setProperty("last_modified_time", Long.toString(System
         .currentTimeMillis() / 1000));
 
@@ -634,7 +638,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         Iterator<Map.Entry<String, String>> iter = crtTbl.getMapProp()
             .entrySet().iterator();
         while (iter.hasNext()) {
-          Map.Entry<String, String> m = (Map.Entry) iter.next();
+          Map.Entry<String, String> m = (Map.Entry<String, String>) iter.next();
           tbl.setSerdeParam(m.getKey(), m.getValue());
         }
       }
