@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.history.HiveHistory;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -58,6 +59,10 @@ public class SessionState {
    */
   protected Hive db;
 
+  /*
+   *  HiveHistory Object 
+   */
+  protected HiveHistory hiveHist;
   /**
    * Streams to read/write from
    */
@@ -121,10 +126,15 @@ public class SessionState {
   }
 
   public void setCmd(String cmdString) {
-    conf.setVar(HiveConf.ConfVars.HIVEQUERYID, cmdString);
+    conf.setVar(HiveConf.ConfVars.HIVEQUERYSTRING, cmdString);
   }
 
   public String getCmd() {
+    return (conf.getVar(HiveConf.ConfVars.HIVEQUERYSTRING));
+  }
+  
+  
+  public String getQueryId() {
     return (conf.getVar(HiveConf.ConfVars.HIVEQUERYID));
   }
 
@@ -144,6 +154,7 @@ public class SessionState {
   public static SessionState start(HiveConf conf) {
     SessionState ss = new SessionState (conf);
     ss.getConf().setVar(HiveConf.ConfVars.HIVESESSIONID, makeSessionId());
+    ss.hiveHist = new HiveHistory(ss);
     tss.set(ss);
     return (ss);
   }
@@ -154,9 +165,14 @@ public class SessionState {
    * session object when switching from one session to another
    */
   public static SessionState start(SessionState startSs) {
+   
     tss.set(startSs);
     if(StringUtils.isEmpty(startSs.getConf().getVar(HiveConf.ConfVars.HIVESESSIONID))) {
       startSs.getConf().setVar(HiveConf.ConfVars.HIVESESSIONID, makeSessionId());
+    }
+    
+    if (startSs.hiveHist == null){
+      startSs.hiveHist = new HiveHistory(startSs);
     }
     return startSs;
   }
@@ -168,7 +184,16 @@ public class SessionState {
     return tss.get();
   }
 
-
+ 
+  /**
+   * get hiveHitsory object which does structured logging
+   * @return 
+   */
+  public HiveHistory getHiveHistory(){
+    return hiveHist;
+  }
+  
+  
   private static String makeSessionId() {
     GregorianCalendar gc = new GregorianCalendar();
     String userid = System.getProperty("user.name");

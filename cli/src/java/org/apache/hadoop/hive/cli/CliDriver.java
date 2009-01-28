@@ -250,7 +250,6 @@ public class CliDriver {
       System.exit(3);
     }
 
-    SessionState.start(ss);
 
     if(! oproc.process_stage2(ss)) {
       System.exit(2);
@@ -261,6 +260,8 @@ public class CliDriver {
     for(Map.Entry<Object, Object> item: ss.cmdProperties.entrySet()) {
       conf.set((String) item.getKey(), (String) item.getValue());
     }
+    
+    SessionState.start(ss);
 
     CliDriver cli = new CliDriver ();
 

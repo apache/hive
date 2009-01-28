@@ -22,6 +22,7 @@ import java.io.DataInput;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
+
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 
 import org.apache.commons.lang.StringUtils;
@@ -39,6 +40,8 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.history.HiveHistory;
+import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.serde.ByteStream;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -49,21 +52,21 @@ import org.apache.commons.logging.LogFactory;
 public class Driver implements CommandProcessor {
 
   static final private Log LOG = LogFactory.getLog("hive.ql.Driver");
-  private int maxRows   = 100;
+  private int maxRows = 100;
   ByteStream.Output bos = new ByteStream.Output();
-  
-  private ParseDriver  pd;
-  private HiveConf     conf;
-  private DataInput    resStream;
-  private LogHelper    console;
-  private Context      ctx;
+
+  private ParseDriver pd;
+  private HiveConf conf;
+  private DataInput resStream;
+  private LogHelper console;
+  private Context ctx;
   private BaseSemanticAnalyzer sem;
-  
+
   public int countJobs(List<Task<? extends Serializable>> tasks) {
     if (tasks == null)
       return 0;
     int jobs = 0;
-    for (Task<? extends Serializable> task: tasks) {
+    for (Task<? extends Serializable> task : tasks) {
       if (task.isMapRedTask()) {
         jobs++;
       }
@@ -81,11 +84,12 @@ public class Driver implements CommandProcessor {
         sem.setFetchTaskInit(true);
         sem.getFetchTask().initialize(conf);
       }
-      FetchTask ft = (FetchTask)sem.getFetchTask();
+      FetchTask ft = (FetchTask) sem.getFetchTask();
 
       tableDesc td = ft.getTblDesc();
       String tableName = "result";
-      List<FieldSchema> lst = MetaStoreUtils.getFieldsFromDeserializer(tableName, td.getDeserializer());
+      List<FieldSchema> lst = MetaStoreUtils.getFieldsFromDeserializer(
+          tableName, td.getDeserializer());
       String schema = MetaStoreUtils.getDDLFromFieldSchema(tableName, lst);
       return schema;
     }
@@ -111,7 +115,7 @@ public class Driver implements CommandProcessor {
       return false;
 
     boolean hasReduce = false;
-    for (Task<? extends Serializable> task: tasks) {
+    for (Task<? extends Serializable> task : tasks) {
       if (task.hasReduce()) {
         return true;
       }
@@ -121,10 +125,9 @@ public class Driver implements CommandProcessor {
     return hasReduce;
   }
 
-
   /**
    * for backwards compatibility with current tests
-   */ 
+   */
   public Driver(HiveConf conf) {
     console = new LogHelper(LOG);
     this.conf = conf;
@@ -133,34 +136,55 @@ public class Driver implements CommandProcessor {
 
   public Driver() {
     console = new LogHelper(LOG);
-    if(SessionState.get() != null) {
+    if (SessionState.get() != null) {
       conf = SessionState.get().getConf();
       ctx = new Context(conf);
     }
   }
 
+  private  String makeQueryId() {
+    GregorianCalendar gc = new GregorianCalendar();
+    String userid = System.getProperty("user.name");
+
+    return userid + "_" +
+      String.format("%1$4d%2$02d%3$02d%4$02d%5$02d%5$02d", gc.get(Calendar.YEAR),
+                    gc.get(Calendar.MONTH) + 1,
+                    gc.get(Calendar.DAY_OF_MONTH),
+                    gc.get(Calendar.HOUR_OF_DAY),
+                    gc.get(Calendar.MINUTE), gc.get(Calendar.SECOND));
+  }
+
+  
   public int run(String command) {
 
-    boolean noName = StringUtils.isEmpty(conf.getVar(HiveConf.ConfVars.HADOOPJOBNAME));
+    boolean noName = StringUtils.isEmpty(conf
+        .getVar(HiveConf.ConfVars.HADOOPJOBNAME));
     int maxlen = conf.getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
     int jobs = 0;
 
-    conf.setVar(HiveConf.ConfVars.HIVEQUERYID, command);
+    conf.setVar(HiveConf.ConfVars.HIVEQUERYSTRING, command);
+    
+    String queryId = makeQueryId();
+    conf.setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
 
     try {
-      
+
       TaskFactory.resetId();
       LOG.info("Starting command: " + command);
 
       ctx.clear();
       ctx.makeScratchDir();
+
+      if (SessionState.get() != null)
+        SessionState.get().getHiveHistory().startQuery(command, conf.getVar(HiveConf.ConfVars.HIVEQUERYID) );
+
       resStream = null;
-      
+
       pd = new ParseDriver();
       ASTNode tree = pd.parse(command);
 
-      while((tree.getToken() == null) && (tree.getChildCount() > 0)) {
-        tree = (ASTNode)tree.getChild(0);
+      while ((tree.getToken() == null) && (tree.getChildCount() > 0)) {
+        tree = (ASTNode) tree.getChild(0);
       }
 
       sem = SemanticAnalyzerFactory.get(conf, tree);
@@ -173,55 +197,71 @@ public class Driver implements CommandProcessor {
       if (jobs > 0) {
         console.printInfo("Total MapReduce jobs = " + jobs);
       }
-      
+      if (SessionState.get() != null)
+        SessionState.get().getHiveHistory().setQueryProperty(queryId,
+            Keys.QUERY_NUM_TASKS, String.valueOf(jobs));
+
       boolean hasReduce = hasReduceTasks(sem.getRootTasks());
+
       if (hasReduce) {
-        console.printInfo("Number of reducers = " + conf.getIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS));
+        console.printInfo("Number of reducers = "
+            + conf.getIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS));
         console.printInfo("In order to change numer of reducers use:");
         console.printInfo("  set mapred.reduce.tasks = <number>");
       }
 
       String jobname = Utilities.abbreviate(command, maxlen - 6);
       int curJob = 0;
-      for(Task<? extends Serializable> rootTask: sem.getRootTasks()) {
+      for (Task<? extends Serializable> rootTask : sem.getRootTasks()) {
         // assumption that only top level tasks are map-reduce tasks
         if (rootTask.isMapRedTask()) {
-          curJob ++;
-          if(noName) {
-            conf.setVar(HiveConf.ConfVars.HADOOPJOBNAME, jobname + "(" + curJob + "/" + jobs + ")");
+          curJob++;
+          if (noName) {
+            conf.setVar(HiveConf.ConfVars.HADOOPJOBNAME, jobname + "(" + curJob
+                + "/" + jobs + ")");
           }
         }
         rootTask.initialize(conf);
       }
 
       // A very simple runtime that keeps putting runnable takss
-      // on a list and when a job completes, it puts the children at the back of the list
+      // on a list and when a job completes, it puts the children at the back of
+      // the list
       // while taking the job to run from the front of the list
       Queue<Task<? extends Serializable>> runnable = new LinkedList<Task<? extends Serializable>>();
 
-      for(Task<? extends Serializable> rootTask:sem.getRootTasks()) {
+      for (Task<? extends Serializable> rootTask : sem.getRootTasks()) {
         if (runnable.offer(rootTask) == false) {
           LOG.error("Could not insert the first task into the queue");
           return (1);
         }
       }
 
-      while(runnable.peek() != null) {
+      while (runnable.peek() != null) {
         Task<? extends Serializable> tsk = runnable.remove();
 
+        if (SessionState.get() != null)
+          SessionState.get().getHiveHistory().startTask(queryId, tsk,
+              tsk.getClass().getName());
+
         int exitVal = tsk.execute();
+        if (SessionState.get() != null) {
+          SessionState.get().getHiveHistory().setTaskProperty(queryId,
+              tsk.getId(), Keys.TASK_RET_CODE, String.valueOf(exitVal));
+          SessionState.get().getHiveHistory().endTask(queryId, tsk);
+        }
         if (exitVal != 0) {
-          console.printError("FAILED: Execution Error, return code " + exitVal + " from " + tsk.getClass().getName());
+          console.printError("FAILED: Execution Error, return code " + exitVal
+              + " from " + tsk.getClass().getName());
           return 9;
         }
-
         tsk.setDone();
 
         if (tsk.getChildTasks() == null) {
           continue;
         }
 
-        for(Task<? extends Serializable> child: tsk.getChildTasks()) {
+        for (Task<? extends Serializable> child : tsk.getChildTasks()) {
           // Check if the child is runnable
           if (!child.isRunnable()) {
             continue;
@@ -232,51 +272,66 @@ public class Driver implements CommandProcessor {
           }
         }
       }
+      if (SessionState.get() != null)
+        SessionState.get().getHiveHistory().setQueryProperty(queryId,
+            Keys.QUERY_RET_CODE, String.valueOf(0));
     } catch (SemanticException e) {
-      console.printError("FAILED: Error in semantic analysis: " + e.getMessage(), "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      if (SessionState.get() != null)
+        SessionState.get().getHiveHistory().setQueryProperty(queryId,
+            Keys.QUERY_RET_CODE, String.valueOf(10));
+      console.printError("FAILED: Error in semantic analysis: "
+          + e.getMessage(), "\n"
+          + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return (10);
     } catch (ParseException e) {
-      console.printError("FAILED: Parse Error: " + e.getMessage(), "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      if (SessionState.get() != null)
+        SessionState.get().getHiveHistory().setQueryProperty(queryId,
+            Keys.QUERY_RET_CODE, String.valueOf(11));
+      console.printError("FAILED: Parse Error: " + e.getMessage(), "\n"
+          + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return (11);
     } catch (Exception e) {
-      // Has to use full name to make sure it does not conflict with org.apache.commons.lang.StringUtils
-      console.printError("FAILED: Unknown exception : " + e.getMessage(),
-                         "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      if (SessionState.get() != null)
+        SessionState.get().getHiveHistory().setQueryProperty(queryId,
+            Keys.QUERY_RET_CODE, String.valueOf(12));
+      // Has to use full name to make sure it does not conflict with
+      // org.apache.commons.lang.StringUtils
+      console.printError("FAILED: Unknown exception : " + e.getMessage(), "\n"
+          + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return (12);
     } finally {
-      if(noName) {
+      if (SessionState.get() != null)
+        SessionState.get().getHiveHistory().endQuery(queryId);
+      if (noName) {
         conf.setVar(HiveConf.ConfVars.HADOOPJOBNAME, "");
-      } 
+      }
     }
 
     console.printInfo("OK");
     return (0);
   }
-  
-  
-  public boolean getResults(Vector<String> res) 
-  {
+
+  public boolean getResults(Vector<String> res) {
     if (sem != null && sem.getFetchTask() != null) {
       if (!sem.getFetchTaskInit()) {
         sem.setFetchTaskInit(true);
         sem.getFetchTask().initialize(conf);
       }
-      FetchTask ft = (FetchTask)sem.getFetchTask();
+      FetchTask ft = (FetchTask) sem.getFetchTask();
       ft.setMaxRows(maxRows);
       return ft.fetch(res);
     }
 
     if (resStream == null)
       resStream = ctx.getStream();
-    if (resStream == null) return false;
-    
+    if (resStream == null)
+      return false;
+
     int numRows = 0;
     String row = null;
 
-    while (numRows < maxRows)
-    {
-      if (resStream == null) 
-      {
+    while (numRows < maxRows) {
+      if (resStream == null) {
         if (numRows > 0)
           return true;
         else
@@ -285,8 +340,7 @@ public class Driver implements CommandProcessor {
 
       bos.reset();
       Utilities.streamStatus ss;
-      try
-      {
+      try {
         ss = Utilities.readColumn(resStream, bos);
         if (bos.getCount() > 0)
           row = new String(bos.getData(), 0, bos.getCount(), "UTF-8");
@@ -298,12 +352,13 @@ public class Driver implements CommandProcessor {
           res.add(row);
         }
       } catch (IOException e) {
-        console.printError("FAILED: Unexpected IO exception : " + e.getMessage());
+        console.printError("FAILED: Unexpected IO exception : "
+            + e.getMessage());
         res = null;
         return false;
       }
 
-      if (ss == Utilities.streamStatus.EOF) 
+      if (ss == Utilities.streamStatus.EOF)
         resStream = ctx.getStream();
     }
     return true;
@@ -314,14 +369,12 @@ public class Driver implements CommandProcessor {
       // Delete the scratch directory from the context
       ctx.removeScratchDir();
       ctx.clear();
+    } catch (Exception e) {
+      console.printError("FAILED: Unknown exception : " + e.getMessage(), "\n"
+          + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      return (13);
     }
-    catch (Exception e) {
-      console.printError("FAILED: Unknown exception : " + e.getMessage(),
-                         "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
-      return(13);
-    }
-    
-    return(0);
+
+    return (0);
   }
 }
-

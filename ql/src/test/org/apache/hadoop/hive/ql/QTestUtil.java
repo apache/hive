@@ -159,6 +159,8 @@ public class QTestUtil {
     this.logDir = logDir;
     conf = new HiveConf(Driver.class);
 
+    CliSessionState ss = new CliSessionState(conf);
+    SessionState.start(ss);
     // System.out.println(conf.toString());
     testFiles = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
 
@@ -371,8 +373,8 @@ public class QTestUtil {
       createSources();
     }
 
-    CliSessionState ss = new CliSessionState(conf);
-
+    //CliSessionState ss = new CliSessionState(conf);
+    SessionState ss = SessionState.get();
     ss.in = System.in;
 
     File qf = new File(outDir, tname);

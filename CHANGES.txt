@@ -9,6 +9,8 @@ Trunk (unreleased changes)
 
   NEW FEATURES
 
+    HIVE-176. Added a history log for Hive. (Suresh Anthony via athusoo)
+
     HIVE-244. Add SQRT() UDF. (Jeff Hammerbacher via zshao)
 
     HIVE-216. Generate ruby bindings for service. (Raghotham Murthy via zshao)

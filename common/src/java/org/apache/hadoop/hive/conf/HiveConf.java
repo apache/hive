@@ -82,8 +82,13 @@ public class HiveConf extends Configuration {
 
     // session identifier
     HIVESESSIONID("hive.session.id", ""),
+    
     // query being executed (multiple per session)
-    HIVEQUERYID("hive.query.string", ""),
+    HIVEQUERYSTRING("hive.query.string", ""),
+    
+    // id of query being executed (multiple per session)
+    HIVEQUERYID("hive.query.id", ""),
+    
     // id of the mapred plan being executed (multiple per query)
     HIVEPLANID("hive.query.planid", ""),
     // max jobname length
@@ -104,7 +109,11 @@ public class HiveConf extends Configuration {
     
     // Default file format for CREATE TABLE statement
     // Options: TextFile, SequenceFile
-    HIVEDEFAULTFILEFORMAT("hive.default.fileformat", "TextFile");
+    HIVEDEFAULTFILEFORMAT("hive.default.fileformat", "TextFile"),
+    
+    //Location of Hive run time structured log file
+    HIVEHISTORYFILELOC("hive.querylog.location",  "/tmp/"+System.getProperty("user.name"));
+    
     
     public final String varname;
     public final String defaultVal;
