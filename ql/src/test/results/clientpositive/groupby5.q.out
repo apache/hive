@@ -1,5 +1,5 @@
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_COLREF src key)) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION substr (TOK_COLREF src value) 4)))) (TOK_GROUPBY (TOK_COLREF src key))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_COLREF src key)) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION substr (TOK_COLREF src value) 5)))) (TOK_GROUPBY (TOK_COLREF src key))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -21,7 +21,7 @@ STAGE PLANS:
                     type: double
               tag: -1
               value expressions:
-                    expr: substr(value, 4)
+                    expr: substr(value, 5)
                     type: string
       Reduce Operator Tree:
         Group By Operator

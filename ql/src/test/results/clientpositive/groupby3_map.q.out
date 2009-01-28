@@ -1,5 +1,5 @@
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION substr (TOK_COLREF src value) 4))) (TOK_SELEXPR (TOK_FUNCTION avg (TOK_FUNCTION substr (TOK_COLREF src value) 4))) (TOK_SELEXPR (TOK_FUNCTIONDI avg (TOK_FUNCTION substr (TOK_COLREF src value) 4))) (TOK_SELEXPR (TOK_FUNCTION max (TOK_FUNCTION substr (TOK_COLREF src value) 4))) (TOK_SELEXPR (TOK_FUNCTION min (TOK_FUNCTION substr (TOK_COLREF src value) 4))))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION substr (TOK_COLREF src value) 5))) (TOK_SELEXPR (TOK_FUNCTION avg (TOK_FUNCTION substr (TOK_COLREF src value) 5))) (TOK_SELEXPR (TOK_FUNCTIONDI avg (TOK_FUNCTION substr (TOK_COLREF src value) 5))) (TOK_SELEXPR (TOK_FUNCTION max (TOK_FUNCTION substr (TOK_COLREF src value) 5))) (TOK_SELEXPR (TOK_FUNCTION min (TOK_FUNCTION substr (TOK_COLREF src value) 5))))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -17,13 +17,13 @@ STAGE PLANS:
                     type: string
               Group By Operator
                 aggregations:
-                      expr: avg(DISTINCT UDFToDouble(substr(0, 4)))
-                      expr: sum(UDFToDouble(substr(0, 4)))
-                      expr: avg(UDFToDouble(substr(0, 4)))
-                      expr: min(substr(0, 4))
-                      expr: max(substr(0, 4))
+                      expr: sum(UDFToDouble(substr(0, 5)))
+                      expr: max(substr(0, 5))
+                      expr: avg(DISTINCT UDFToDouble(substr(0, 5)))
+                      expr: min(substr(0, 5))
+                      expr: avg(UDFToDouble(substr(0, 5)))
                 keys:
-                      expr: substr(0, 4)
+                      expr: substr(0, 5)
                       type: string
                 mode: hash
                 Reduce Output Operator
@@ -37,9 +37,9 @@ STAGE PLANS:
                   tag: -1
                   value expressions:
                         expr: 1
-                        type: string
-                        expr: 2
                         type: double
+                        expr: 2
+                        type: string
                         expr: 3
                         type: string
                         expr: 4
@@ -49,11 +49,11 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           aggregations:
+                expr: sum(VALUE.0)
+                expr: max(VALUE.1)
                 expr: avg(DISTINCT UDFToDouble(KEY.0))
-                expr: sum(VALUE.1)
-                expr: avg(UDFToDouble(VALUE.2))
                 expr: min(VALUE.3)
-                expr: max(VALUE.4)
+                expr: avg(UDFToDouble(VALUE.4))
           mode: partial2
           File Output Operator
             compressed: false
@@ -65,15 +65,15 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/athusoo/apacheprojects/hive_local_ws3/build/ql/tmp/885399493/544614010.10001 
+        /data/users/athusoo/commits/hive_trunk_ws3/build/ql/tmp/1389629365/204290894.10001 
           Reduce Output Operator
             sort order: 
             tag: -1
             value expressions:
                   expr: 0
-                  type: string
-                  expr: 1
                   type: double
+                  expr: 1
+                  type: string
                   expr: 2
                   type: string
                   expr: 3
@@ -83,21 +83,21 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: avg(UDFToDouble(VALUE.0))
-                expr: sum(VALUE.1)
+                expr: sum(VALUE.0)
+                expr: max(VALUE.1)
                 expr: avg(UDFToDouble(VALUE.2))
                 expr: min(VALUE.3)
-                expr: max(VALUE.4)
+                expr: avg(UDFToDouble(VALUE.4))
           mode: final
           Select Operator
             expressions:
-                  expr: 1
-                  type: double
-                  expr: 2
-                  type: double
                   expr: 0
                   type: double
                   expr: 4
+                  type: double
+                  expr: 2
+                  type: double
+                  expr: 1
                   type: string
                   expr: 3
                   type: string

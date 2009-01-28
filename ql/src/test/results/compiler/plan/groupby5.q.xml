@@ -388,7 +388,7 @@
                               <class>java.lang.String</class> 
                              </void> 
                              <void index="1"> 
-                              <class>int</class> 
+                              <class>java.lang.Integer</class> 
                              </void> 
                             </array> 
                            </object> 
@@ -415,7 +415,7 @@
                                </object> 
                               </void> 
                               <void property="value"> 
-                               <int>4</int> 
+                               <int>5</int> 
                               </void> 
                              </object> 
                             </void> 

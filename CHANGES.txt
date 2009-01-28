@@ -243,3 +243,6 @@ Trunk (unreleased changes)
 
     HIVE-248. Create file path names properly during the load command
     in case relative path names were specified. (Prasad Chakka via athusoo)
+
+    HIVE-179. Make substr behavior similar to other RDBMS.
+    (David Phillips via athusoo)

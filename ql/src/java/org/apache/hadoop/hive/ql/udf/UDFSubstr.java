@@ -26,15 +26,31 @@ public class UDFSubstr extends UDF {
   public UDFSubstr() {
   }
 
-  public String evaluate(String a, int start, int len)  {
-    if (start >= a.length()) return "";
-    if (start + len > a.length()) len = a.length() - start;
-    return a.substring(start, start + len);
+  public String evaluate(String s, Integer pos, Integer len)  {
+    int start, end;
+
+    if ((s == null) || (pos == null) || (len == null))
+      return null;
+    if ((len <= 0) || (Math.abs(pos) > s.length()))
+      return "";
+
+    if (pos > 0)
+      start = pos - 1;
+    else if (pos < 0)
+      start = s.length() + pos;
+    else
+      start = 0;
+
+    if ((s.length() - start) < len)
+      end = s.length();
+    else
+      end = start + len;
+
+    return s.substring(start, end);
   }
-  
-  public String evaluate(String a, int start)  {
-    if (start >= a.length()) return "";
-    return a.substring(start);
+
+  public String evaluate(String s, Integer pos)  {
+    return evaluate(s, pos, Integer.MAX_VALUE);
   }
 
 }
