@@ -35,7 +35,7 @@
                  <boolean>true</boolean> 
                 </void> 
                 <void property="sourceDir"> 
-                 <string>/tmp/hive-njain/441145354.10000.insclause-0</string> 
+                 <string>/data/users/zshao/sync/apache-trunk-HIVE-105/ql/../build/ql/tmp/281327083.10000.insclause-0</string> 
                 </void> 
                 <void property="table"> 
                  <object id="tableDesc0" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -84,7 +84,7 @@
                     </void> 
                     <void method="put"> 
                      <string>location</string> 
-                     <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/dest1</string> 
+                     <string>file:/data/users/zshao/sync/apache-trunk-HIVE-105/build/ql/test/data/warehouse/dest1</string> 
                     </void> 
                    </object> 
                   </void> 
@@ -547,7 +547,7 @@
                     <void property="conf"> 
                      <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                       <void property="dirName"> 
-                       <string>/tmp/hive-njain/709768097/233295454.10001</string> 
+                       <string>/data/users/zshao/sync/apache-trunk-HIVE-105/build/ql/tmp/803620680/67460703.10001</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object id="tableDesc4" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -1152,10 +1152,13 @@
         <void property="needsTagging"> 
          <boolean>true</boolean> 
         </void> 
+        <void property="numReduceTasks"> 
+         <int>-1</int> 
+        </void> 
         <void property="pathToAliases"> 
          <object class="java.util.LinkedHashMap"> 
           <void method="put"> 
-           <string>/tmp/hive-njain/709768097/233295454.10001</string> 
+           <string>/data/users/zshao/sync/apache-trunk-HIVE-105/build/ql/tmp/803620680/67460703.10001</string> 
            <object class="java.util.ArrayList"> 
             <void method="add"> 
              <string>$INTNAME</string> 
@@ -1163,7 +1166,7 @@
            </object> 
           </void> 
           <void method="put"> 
-           <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/src</string> 
+           <string>file:/data/users/zshao/sync/apache-trunk-HIVE-105/build/ql/test/data/warehouse/src</string> 
            <object class="java.util.ArrayList"> 
             <void method="add"> 
              <string>src3</string> 
@@ -1175,7 +1178,7 @@
         <void property="pathToPartitionInfo"> 
          <object class="java.util.LinkedHashMap"> 
           <void method="put"> 
-           <string>/tmp/hive-njain/709768097/233295454.10001</string> 
+           <string>/data/users/zshao/sync/apache-trunk-HIVE-105/build/ql/tmp/803620680/67460703.10001</string> 
            <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
             <void property="tableDesc"> 
              <object idref="tableDesc4"/> 
@@ -1183,7 +1186,7 @@
            </object> 
           </void> 
           <void method="put"> 
-           <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/src</string> 
+           <string>file:/data/users/zshao/sync/apache-trunk-HIVE-105/build/ql/test/data/warehouse/src</string> 
            <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
             <void property="partSpec"> 
              <object class="java.util.LinkedHashMap"/> 
@@ -1235,7 +1238,7 @@
                 </void> 
                 <void method="put"> 
                  <string>location</string> 
-                 <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/src</string> 
+                 <string>file:/data/users/zshao/sync/apache-trunk-HIVE-105/build/ql/test/data/warehouse/src</string> 
                 </void> 
                </object> 
               </void> 
@@ -1261,7 +1264,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>/tmp/hive-njain/441145354.10000.insclause-0</string> 
+                     <string>/data/users/zshao/sync/apache-trunk-HIVE-105/ql/../build/ql/tmp/281327083.10000.insclause-0</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object idref="tableDesc0"/> 
@@ -1521,10 +1524,13 @@
     <void property="needsTagging"> 
      <boolean>true</boolean> 
     </void> 
+    <void property="numReduceTasks"> 
+     <int>-1</int> 
+    </void> 
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-105/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src2</string> 
@@ -1539,7 +1545,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-105/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"/> 
@@ -1591,7 +1597,7 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/src</string> 
+             <string>file:/data/users/zshao/sync/apache-trunk-HIVE-105/build/ql/test/data/warehouse/src</string> 
             </void> 
            </object> 
           </void> 

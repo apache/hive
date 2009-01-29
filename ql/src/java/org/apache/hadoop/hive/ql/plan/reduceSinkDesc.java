@@ -52,7 +52,6 @@ public class reduceSinkDesc implements Serializable {
    */
   private java.util.ArrayList<exprNodeDesc> partitionCols;
   
-  private boolean inferNumReducers;
   private int numReducers;
 
   public reduceSinkDesc() { }
@@ -63,14 +62,12 @@ public class reduceSinkDesc implements Serializable {
      int tag,
      java.util.ArrayList<exprNodeDesc> partitionCols,
      int numReducers,
-     boolean inferNumReducers,
      final tableDesc keySerializeInfo,
      final tableDesc valueSerializeInfo) {
     this.keyCols = keyCols;
     this.valueCols = valueCols;
     this.tag = tag;
     this.numReducers = numReducers;
-    this.inferNumReducers = inferNumReducers;
     this.partitionCols = partitionCols;
     this.keySerializeInfo = keySerializeInfo;
     this.valueSerializeInfo = valueSerializeInfo;
@@ -110,13 +107,12 @@ public class reduceSinkDesc implements Serializable {
     this.tag = tag;
   }
 
-  public boolean getInferNumReducers() {
-    return this.inferNumReducers;
-  }
-  public void setInferNumReducers(boolean inferNumReducers) {
-    this.inferNumReducers = inferNumReducers;
-  }
-
+  /**
+   * Returns the number of reducers for the map-reduce job.
+   * -1 means to decide the number of reducers at runtime. This enables Hive to estimate 
+   * the number of reducers based on the map-reduce input data size, which is only 
+   * available right before we start the map-reduce job.    
+   */
   public int getNumReducers() {
     return this.numReducers;
   }

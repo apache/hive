@@ -27,7 +27,6 @@ STAGE PLANS:
                   value expressions:
                         expr: 0
                         type: double
-      # Reducers: 1
       Reduce Operator Tree:
         Group By Operator
           aggregations:

@@ -29,7 +29,6 @@ STAGE PLANS:
                           type: string
                           expr: 1
                           type: string
-      # Reducers: 1
       Reduce Operator Tree:
         Extract
           Limit

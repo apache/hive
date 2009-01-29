@@ -29,6 +29,7 @@ import java.net.URLClassLoader;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.lang.StringUtils;
 
+import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.io.*;
@@ -48,7 +49,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 public class ExecDriver extends Task<mapredWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  public static final long LOAD_PER_REDUCER = 1024 * 1024 * 1024;
 
   transient protected JobConf job;
 
@@ -107,24 +107,6 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
     this.job = job;
     LOG = LogFactory.getLog(this.getClass().getName());
     console = new LogHelper(LOG, isSilent);
-  }
-
-  protected void fillInDefaults() {
-    // this is a temporary hack to fix things that are not fixed in the compiler
-    if (work.getNumReduceTasks() == null) {
-      if (work.getReducer() == null) {
-        LOG
-            .warn("Number of reduce tasks not specified. Defaulting to 0 since there's no reduce operator");
-        work.setNumReduceTasks(Integer.valueOf(0));
-      } else {
-        LOG
-            .warn("Number of reduce tasks not specified. Defaulting to jobconf value of: "
-                + job.getNumReduceTasks());
-        work.setNumReduceTasks(job.getNumReduceTasks());
-      }
-    } else
-      LOG.info("Number of reduce tasks determined at compile : "
-          + work.getNumReduceTasks());
   }
 
   /**
@@ -223,33 +205,60 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
     return rj;
   }
 
-  private void inferNumReducers() throws Exception {
-    FileSystem fs = FileSystem.get(job);
+  /**
+   * Estimate the number of reducers needed for this job, based on job input,
+   * and configuration parameters.
+   * @return the number of reducers.
+   */
+  public int estimateNumberOfReducers(HiveConf hive, JobConf job, mapredWork work) throws IOException {
+    if (hive == null) {
+      hive = new HiveConf();
+    }
+    long bytesPerReducer = hive.getLongVar(HiveConf.ConfVars.BYTESPERREDUCER);
+    int maxReducers = hive.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
+    long totalInputFileSize = getTotalInputFileSize(job, work);
 
-    if ((work.getReducer() != null) && (work.getInferNumReducers() == true)) {
-      long inpSz = 0;
+    LOG.info("BytesPerReducer=" + bytesPerReducer + " maxReducers=" + maxReducers 
+        + " totalInputFileSize=" + totalInputFileSize);
 
-      // based on the input size - estimate the number of reducers
-      Path[] inputPaths = FileInputFormat.getInputPaths(job);
+    int reducers = (int)((totalInputFileSize + bytesPerReducer - 1) / bytesPerReducer);
+    reducers = Math.max(1, reducers);
+    reducers = Math.min(maxReducers, reducers);
+    return reducers;    
+  }
 
-      for (Path inputP : inputPaths) {
-        if (fs.exists(inputP)) {
-          FileStatus[] fStats = fs.listStatus(inputP);
-          for (FileStatus fStat : fStats)
-            inpSz += fStat.getLen();
-        }
+  /**
+   * Set the number of reducers for the mapred work.
+   */
+  protected void setNumberOfReducers() throws IOException {
+    // this is a temporary hack to fix things that are not fixed in the compiler
+    Integer numReducersFromWork = work.getNumReduceTasks();
+    
+    if(work.getReducer() == null) {
+      console.printInfo("Number of reduce tasks is set to 0 since there's no reduce operator");
+      work.setNumReduceTasks(Integer.valueOf(0));
+    } else {
+      if (numReducersFromWork >= 0) {
+        console.printInfo("Number of reduce tasks determined at compile time: " + work.getNumReduceTasks()); 
+      } else if (job.getNumReduceTasks() > 0) {
+        int reducers = job.getNumReduceTasks();
+        work.setNumReduceTasks(reducers);
+        console.printInfo("Number of reduce tasks not specified. Defaulting to jobconf value of: " + reducers);
+      } else {
+        int reducers = estimateNumberOfReducers(conf, job, work);
+        work.setNumReduceTasks(reducers);
+        console.printInfo("Number of reduce tasks not specified. Estimated from input data size: " + reducers);
+
       }
-
-      int newRed = (int) (inpSz / LOAD_PER_REDUCER) + 1;
-      if (newRed < work.getNumReduceTasks().intValue()) {
-
-        LOG.warn("Number of reduce tasks inferred based on input size to : "
-            + newRed);
-        work.setNumReduceTasks(Integer.valueOf(newRed));
-
-      }
+      console.printInfo("In order to change the average load for a reducer (in bytes):");
+      console.printInfo("  set " + HiveConf.ConfVars.BYTESPERREDUCER.varname + "=<number>");
+      console.printInfo("In order to limit the maximum number of reducers:");
+      console.printInfo("  set " + HiveConf.ConfVars.MAXREDUCERS.varname + "=<number>");
+      console.printInfo("In order to set a constant number of reducers:");
+      console.printInfo("  set " + HiveConf.ConfVars.HADOOPNUMREDUCERS + "=<number>");
     }
   }
+
 
   /**
    * Add new elements to the classpath
@@ -275,11 +284,39 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
   }
 
   /**
+   * Calculate the total size of input files.
+   * @param job the hadoop job conf.
+   * @return the total size in bytes.
+   * @throws IOException 
+   */
+  public long getTotalInputFileSize(JobConf job, mapredWork work) throws IOException {
+    long r = 0;
+    FileSystem fs = FileSystem.get(job);
+    // For each input path, calculate the total size.
+    for (String path: work.getPathToAliases().keySet()) {
+      try {
+        ContentSummary cs = fs.getContentSummary(new Path(path));
+        r += cs.getLength();
+      } catch (IOException e) {
+        LOG.info("Cannot get size of " + path + ". Safely ignored.");
+      }
+    }
+    return r;
+  }
+  
+
+  /**
    * Execute a query plan using Hadoop
    */
   public int execute() {
 
-    fillInDefaults();
+    try {
+      setNumberOfReducers();
+    } catch(IOException e) {
+      String statusMesg = "IOException occurred while acceesing HDFS to estimate the number of reducers.";
+      console.printError(statusMesg);
+      return 1;
+    }
 
     String invalidReason = work.isInvalid();
     if (invalidReason != null) {
@@ -344,20 +381,6 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
         return 0;
       }
 
-      inferNumReducers();
-
-      
-      if (SessionState.get() != null) {
-        if (work.getReducer() != null) {
-          SessionState.get().getHiveHistory().setTaskProperty(
-              SessionState.get().getQueryId(), getId(),
-              Keys.TASK_NUM_REDUCERS, String.valueOf(work.getNumReduceTasks()));
-        } else {
-          SessionState.get().getHiveHistory().setTaskProperty(
-              SessionState.get().getQueryId(), getId(),
-              Keys.TASK_NUM_REDUCERS, String.valueOf(0));
-        }
-      }
       JobClient jc = new JobClient(job);
 
       // make this client wait if job trcker is not behaving well.

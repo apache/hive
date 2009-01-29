@@ -201,15 +201,6 @@ public class Driver implements CommandProcessor {
         SessionState.get().getHiveHistory().setQueryProperty(queryId,
             Keys.QUERY_NUM_TASKS, String.valueOf(jobs));
 
-      boolean hasReduce = hasReduceTasks(sem.getRootTasks());
-
-      if (hasReduce) {
-        console.printInfo("Number of reducers = "
-            + conf.getIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS));
-        console.printInfo("In order to change numer of reducers use:");
-        console.printInfo("  set mapred.reduce.tasks = <number>");
-      }
-
       String jobname = Utilities.abbreviate(command, maxlen - 6);
       int curJob = 0;
       for (Task<? extends Serializable> rootTask : sem.getRootTasks()) {

@@ -49,7 +49,6 @@ public class mapredWork implements Serializable {
   private Integer numReduceTasks;
   
   private boolean needsTagging;
-  private boolean inferNumReducers;
 
   public mapredWork() { }
   public mapredWork(
@@ -122,7 +121,15 @@ public class mapredWork implements Serializable {
     this.reducer = reducer;
   }
 
-  @explain(displayName="# Reducers")
+  /**
+   * If the number of reducers is -1, the runtime will automatically 
+   * figure it out by input data size.
+   * 
+   * The number of reducers will be a positive number only in case the
+   * target table is bucketed into N buckets (through CREATE TABLE).
+   * This feature is not supported yet, so the number of reducers will 
+   * always be -1 for now.
+   */
   public Integer getNumReduceTasks() {
     return this.numReduceTasks;
   }
@@ -197,14 +204,6 @@ public class mapredWork implements Serializable {
   
   public void setNeedsTagging(boolean needsTagging) {
     this.needsTagging = needsTagging;
-  }
-
-  public boolean getInferNumReducers() {
-    return this.inferNumReducers;
-  }
-  
-  public void setInferNumReducers(boolean inferNumReducers) {
-    this.inferNumReducers = inferNumReducers;
   }
 
 }

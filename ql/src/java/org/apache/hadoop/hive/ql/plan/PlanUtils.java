@@ -179,8 +179,8 @@ public class PlanUtils {
    * @param valueCols The columns to be stored in the value
    * @param tag       The tag for this reducesink
    * @param partitionCols The columns for partitioning.
-   * @param numReducers  The number of reducers.
-   * @param inferNumReducers  whether we should try to infer the number of reducers.
+   * @param numReducers  The number of reducers, set to -1 for automatic inference 
+   *                     based on input data size.
    * @return The reduceSinkDesc object.
    */
   public static reduceSinkDesc getReduceSinkDesc(ArrayList<exprNodeDesc> keyCols, 
@@ -188,9 +188,9 @@ public class PlanUtils {
                                                  int tag, 
                                                  ArrayList<exprNodeDesc> partitionCols,
                                                  String order,
-                                                 int numReducers, boolean inferNumReducers) {
+                                                 int numReducers) {
     
-    return new reduceSinkDesc(keyCols, valueCols, tag, partitionCols, numReducers, inferNumReducers,
+    return new reduceSinkDesc(keyCols, valueCols, tag, partitionCols, numReducers, 
         getBinarySortableTableDesc(getFieldSchemasFromColumnList(keyCols, "reducesinkkey"), order),
         getBinaryTableDesc(getFieldSchemasFromColumnList(valueCols, "reducesinkvalue")));
   }
@@ -202,15 +202,15 @@ public class PlanUtils {
    * @param tag       The tag for this reducesink
    * @param numPartitionFields  The first numPartitionFields of keyCols will be partition columns.
    *                  If numPartitionFields=-1, then partition randomly.
-   * @param numReducers  The number of reducers.
-   * @param inferNumReducers  whether we should try to infer the number of reducers.
+   * @param numReducers  The number of reducers, set to -1 for automatic inference 
+   *                     based on input data size.
    * @return The reduceSinkDesc object.
    */
   public static reduceSinkDesc getReduceSinkDesc(ArrayList<exprNodeDesc> keyCols, 
                                                  ArrayList<exprNodeDesc> valueCols, 
                                                  int tag, 
                                                  int numPartitionFields, 
-                                                 int numReducers, boolean inferNumReducers) {
+                                                 int numReducers) {
     ArrayList<exprNodeDesc> partitionCols = null;
 
     if (numPartitionFields >= keyCols.size()) {
@@ -231,7 +231,7 @@ public class PlanUtils {
       order.append("+");
     }
     return getReduceSinkDesc(keyCols, valueCols, tag, partitionCols, order.toString(),
-        numReducers, inferNumReducers);
+        numReducers);
   }
   
   

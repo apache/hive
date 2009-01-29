@@ -1552,12 +1552,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String dest, Operator inputOperatorInfo)
       throws SemanticException {
 
-    return genGroupByPlanReduceSinkOperator(parseInfo, dest, inputOperatorInfo, -1, false);
+    return genGroupByPlanReduceSinkOperator(parseInfo, dest, inputOperatorInfo, -1);
   }
 
   @SuppressWarnings("nls")
   private Operator genGroupByPlanReduceSinkOperator(QBParseInfo parseInfo,
-    String dest, Operator inputOperatorInfo, int numReducers, boolean inferNumReducers)
+    String dest, Operator inputOperatorInfo, int numReducers)
     throws SemanticException {
     RowResolver reduceSinkInputRowResolver = opParseCtx.get(inputOperatorInfo).getRR();
     RowResolver reduceSinkOutputRowResolver = new RowResolver();
@@ -1616,7 +1616,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return putOpInsertMap(
       OperatorFactory.getAndMakeChild(
         PlanUtils.getReduceSinkDesc(reduceKeys, reduceValues, -1,
-                                    (parseInfo.getDistinctFuncExprForClause(dest) == null ? -1 : Integer.MAX_VALUE), numReducers, inferNumReducers),
+                                    (parseInfo.getDistinctFuncExprForClause(dest) == null ? -1 : Integer.MAX_VALUE), numReducers),
         new RowSchema(reduceSinkOutputRowResolver.getColumnInfos()),
         inputOperatorInfo),
       reduceSinkOutputRowResolver);
@@ -1695,7 +1695,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     return putOpInsertMap(
       OperatorFactory.getAndMakeChild(PlanUtils.getReduceSinkDesc(reduceKeys, reduceValues, -1, numPartitionFields,
-                                                                  -1, false),
+                                                                  -1),
                                         new RowSchema(reduceSinkOutputRowResolver.getColumnInfos()),
                                         inputOperatorInfo),
         reduceSinkOutputRowResolver
@@ -1752,7 +1752,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     return putOpInsertMap(
       OperatorFactory.getAndMakeChild(PlanUtils.getReduceSinkDesc(reduceKeys, reduceValues, -1, 
-                                                                  numPartitionFields, -1, true),
+                                                                  numPartitionFields, -1),
                                         new RowSchema(reduceSinkOutputRowResolver2.getColumnInfos()),
                                         groupByOperatorInfo),
         reduceSinkOutputRowResolver2
@@ -1959,7 +1959,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     else {
       // ////// Generate ReduceSink Operator
       Operator reduceSinkOperatorInfo = 
-        genGroupByPlanReduceSinkOperator(parseInfo, dest, groupByOperatorInfo, 1, false);
+        genGroupByPlanReduceSinkOperator(parseInfo, dest, groupByOperatorInfo, 1);
       
       return genGroupByPlanGroupByOperator2MR(parseInfo, dest, reduceSinkOperatorInfo, groupByDesc.Mode.FINAL);
     }
@@ -2243,7 +2243,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Operator interim = putOpInsertMap(
       OperatorFactory.getAndMakeChild(
         PlanUtils.getReduceSinkDesc(sortCols, valueCols, -1, partitionCols, order.toString(),
-            numReducers, false),
+            numReducers),
         new RowSchema(inputRR.getColumnInfos()),
         input), inputRR);
 
@@ -2353,7 +2353,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     return putOpInsertMap(
       OperatorFactory.getAndMakeChild(
-        PlanUtils.getReduceSinkDesc(reduceKeys, reduceValues, joinTree.getNextTag(), reduceKeys.size(), -1, false), 
+        PlanUtils.getReduceSinkDesc(reduceKeys, reduceValues, joinTree.getNextTag(), reduceKeys.size(), -1), 
         new RowSchema(outputRS.getColumnInfos()),
         child), outputRS);
   }

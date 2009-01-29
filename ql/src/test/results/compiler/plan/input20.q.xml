@@ -600,10 +600,13 @@
     <void property="keyDesc"> 
      <object idref="tableDesc0"/> 
     </void> 
+    <void property="numReduceTasks"> 
+     <int>-1</int> 
+    </void> 
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/home/njain/workspace/fbhadoop/VENDOR/hadoop-0.17/build/contrib/hive/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-105/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>tmap:src</string> 
@@ -615,7 +618,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/home/njain/workspace/fbhadoop/VENDOR/hadoop-0.17/build/contrib/hive/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-105/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"/> 
@@ -667,7 +670,7 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/home/njain/workspace/fbhadoop/VENDOR/hadoop-0.17/build/contrib/hive/ql/test/data/warehouse/src</string> 
+             <string>file:/data/users/zshao/sync/apache-trunk-HIVE-105/build/ql/test/data/warehouse/src</string> 
             </void> 
            </object> 
           </void> 
@@ -697,7 +700,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>/tmp/hive-njain/307350069.10001.insclause-0</string> 
+                     <string>/data/users/zshao/sync/apache-trunk-HIVE-105/ql/../build/ql/tmp/388201960.10001.insclause-0</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 

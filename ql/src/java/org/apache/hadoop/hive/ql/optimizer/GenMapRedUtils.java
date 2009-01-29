@@ -82,13 +82,7 @@ public class GenMapRedUtils {
     plan.setReducer(reducer);
     reduceSinkDesc desc = (reduceSinkDesc)op.getConf();
     
-    // The number of reducers may be specified in the plan in some cases, or may need to be inferred
-    if (desc != null) {
-      if (desc.getNumReducers() != -1)
-        plan.setNumReduceTasks(new Integer(desc.getNumReducers()));
-      else if (desc.getInferNumReducers() == true)
-        plan.setInferNumReducers(true);
-    }
+    plan.setNumReduceTasks(desc.getNumReducers());
 
     List<Task<? extends Serializable>> rootTasks = opProcCtx.getRootTasks();
 
@@ -161,10 +155,7 @@ public class GenMapRedUtils {
     cplan.setReducer(reducer);
     reduceSinkDesc desc = (reduceSinkDesc)op.getConf();
     
-    if (desc.getNumReducers() != -1)
-      cplan.setNumReduceTasks(new Integer(desc.getNumReducers()));
-    else
-      cplan.setInferNumReducers(desc.getInferNumReducers());
+    cplan.setNumReduceTasks(new Integer(desc.getNumReducers()));
 
     HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = opProcCtx.getOpTaskMap();
     opTaskMap.put(reducer, redTask);

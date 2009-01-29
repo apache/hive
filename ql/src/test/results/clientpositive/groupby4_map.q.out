@@ -24,7 +24,6 @@ STAGE PLANS:
                   value expressions:
                         expr: 0
                         type: bigint
-      # Reducers: 1
       Reduce Operator Tree:
         Group By Operator
           aggregations:

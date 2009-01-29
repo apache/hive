@@ -63,6 +63,8 @@ public class HiveConf extends Configuration {
     SCRIPTERRORLIMIT("hive.exec.script.maxerrsize", 100000),
     COMPRESSRESULT("hive.exec.compress.output", false),
     COMPRESSINTERMEDIATE("hive.exec.compress.intermediate", false),
+    BYTESPERREDUCER("hive.exec.reducers.bytes.per.reducer", (long)(1000*1000*1000)),
+    MAXREDUCERS("hive.exec.reducers.max", 999),
 
     // hadoop stuff
     HADOOPBIN("hadoop.bin.path", System.getenv("HADOOP_HOME") + "/bin/hadoop"),
@@ -105,7 +107,7 @@ public class HiveConf extends Configuration {
     HIVEALIAS("hive.alias", ""),
     HIVEMAPSIDEAGGREGATE("hive.map.aggr", "false"),
     HIVEJOINEMITINTERVAL("hive.join.emit.interval", 1000),
-      HIVEMAPAGGRHASHMEMORY("hive.map.aggr.hash.percentmemory", (float)0.5),
+    HIVEMAPAGGRHASHMEMORY("hive.map.aggr.hash.percentmemory", (float)0.5),
     
     // Default file format for CREATE TABLE statement
     // Options: TextFile, SequenceFile
@@ -118,43 +120,58 @@ public class HiveConf extends Configuration {
     public final String varname;
     public final String defaultVal;
     public final int defaultIntVal;
+    public final long defaultLongVal;
     public final float defaultFloatVal;
     public final Class<?> valClass;
     public final boolean defaultBoolVal;
 
     ConfVars(String varname, String defaultVal) {
       this.varname = varname;
-      this.defaultVal = defaultVal;
       this.valClass = String.class;
+      this.defaultVal = defaultVal;
       this.defaultIntVal = -1;
+      this.defaultLongVal = -1;
       this.defaultFloatVal = -1;
       this.defaultBoolVal = false;
     }
 
     ConfVars(String varname, int defaultIntVal) {
       this.varname = varname;
+      this.valClass = Integer.class;
       this.defaultVal = null;
       this.defaultIntVal = defaultIntVal;
+      this.defaultLongVal = -1;
       this.defaultFloatVal = -1;
-      this.valClass = Integer.class;
+      this.defaultBoolVal = false;
+    }
+
+    ConfVars(String varname, long defaultLongVal) {
+      this.varname = varname;
+      this.valClass = Long.class;
+      this.defaultVal = null;
+      this.defaultIntVal = -1;
+      this.defaultLongVal = defaultLongVal;
+      this.defaultFloatVal = -1;
       this.defaultBoolVal = false;
     }
 
     ConfVars(String varname, float defaultFloatVal) {
       this.varname = varname;
+      this.valClass = Float.class;
       this.defaultVal = null;
       this.defaultIntVal = -1;
+      this.defaultLongVal = -1;
       this.defaultFloatVal = defaultFloatVal;
-      this.valClass = Float.class;
       this.defaultBoolVal = false;
     }
 
     ConfVars(String varname, boolean defaultBoolVal) {
       this.varname = varname;
+      this.valClass = Boolean.class;
       this.defaultVal = null;
       this.defaultIntVal = -1;
+      this.defaultLongVal = -1;
       this.defaultFloatVal = -1;
-      this.valClass = Boolean.class;
       this.defaultBoolVal = defaultBoolVal;
     }
 
@@ -170,6 +187,15 @@ public class HiveConf extends Configuration {
   
   public int getIntVar(ConfVars var) {
     return getIntVar(this, var);
+  }
+
+  public static long getLongVar(Configuration conf, ConfVars var) {
+    assert(var.valClass == Long.class);
+    return conf.getLong(var.varname, var.defaultLongVal);
+  }
+
+  public long getLongVar(ConfVars var) {
+    return getLongVar(this, var);
   }
 
   public static float getFloatVar(Configuration conf, ConfVars var) {
@@ -214,7 +240,10 @@ public class HiveConf extends Configuration {
     }
   }
 
-
+  public HiveConf() {
+    super();
+  }
+  
   public HiveConf(Class<?> cls) {
     super();
     initialize(cls);

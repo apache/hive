@@ -48,7 +48,6 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.mapred.SequenceFileOutputFormat
                         name: binary_table
-      # Reducers: 1
       Reduce Operator Tree:
         Extract
           Limit
@@ -85,7 +84,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/athusoo/apacheprojects/hive_local_ws3/build/ql/tmp/2110365113/704872924.10002 
+        /data/users/zshao/sync/apache-trunk-HIVE-105/build/ql/tmp/1425158066/374907939.10002 
           Reduce Output Operator
             sort order: 
             tag: -1
@@ -94,7 +93,6 @@ STAGE PLANS:
                   type: string
                   expr: 1
                   type: string
-      # Reducers: 1
       Reduce Operator Tree:
         Extract
           Limit

@@ -49,7 +49,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/athusoo/apacheprojects/hive_local_ws3/build/ql/tmp/456652865/144848153.10001 
+        /data/users/zshao/sync/apache-trunk-HIVE-105/build/ql/tmp/360702650/134814302.10001 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -64,7 +64,6 @@ STAGE PLANS:
                   type: string
                   expr: 1
                   type: string
-      # Reducers: 1
       Reduce Operator Tree:
         Extract
           Limit
