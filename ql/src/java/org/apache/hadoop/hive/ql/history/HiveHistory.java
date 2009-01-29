@@ -28,6 +28,7 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -187,8 +188,9 @@ public class HiveHistory {
           return;
         }
       }
+      Random randGen = new Random();
       histFileName = conf_file_loc + "/hive_job_log_" + ss.getSessionId()
-          + ".txt";
+         +"_" + randGen.nextInt() + ".txt";
       console.printInfo("Hive history file=" + histFileName);
       histStream = new PrintWriter(histFileName);
 

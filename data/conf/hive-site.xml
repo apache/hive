@@ -106,4 +106,10 @@
   <description>Name of the class that implements org.apache.hadoop.hive.metastore.rawstore interface. This class is used to store and retrieval of raw metadata objects such as table, database</description>
 </property>
 
+<property>
+  <name>hive.querylog.location</name>
+  <value>${user.dir}/../build/ql/tmp</value>
+  <description>Location of the structured hive logs</description>
+</property>
+
 </configuration>
