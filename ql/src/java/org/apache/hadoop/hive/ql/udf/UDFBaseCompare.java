@@ -28,6 +28,7 @@ public abstract class UDFBaseCompare extends UDF {
    * See {@link UDFMethodResolver}
    */
   public UDFBaseCompare() {
+    super(null);
     setResolver(new ComparisonOpMethodResolver(this.getClass()));
   }
 

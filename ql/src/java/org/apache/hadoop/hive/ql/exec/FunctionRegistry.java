@@ -113,6 +113,8 @@ public class FunctionRegistry {
     registerUDF("isnull", UDFOPNull.class, OperatorType.POSTFIX, true, "is null");
     registerUDF("isnotnull", UDFOPNotNull.class, OperatorType.POSTFIX, true, "is not null");
 
+    registerUDF("if", UDFIf.class, OperatorType.PREFIX, true);
+    
     // Aliases for Java Class Names
     // These are used in getImplicitConvertUDFMethod
     registerUDF(Boolean.class.getName(), UDFToBoolean.class, OperatorType.PREFIX, false,
@@ -204,11 +206,12 @@ public class FunctionRegistry {
   static {
     numericTypes = new HashMap<Class<?>, Integer>();
     numericTypes.put(Byte.class, 1);
-    numericTypes.put(Integer.class, 2);
-    numericTypes.put(Long.class, 3);
-    numericTypes.put(Float.class, 4);
-    numericTypes.put(Double.class, 5);
-    numericTypes.put(String.class, 6);
+    numericTypes.put(Short.class, 2);
+    numericTypes.put(Integer.class, 3);
+    numericTypes.put(Long.class, 4);
+    numericTypes.put(Float.class, 5);
+    numericTypes.put(Double.class, 6);
+    numericTypes.put(String.class, 7);
   } 
 
   /**

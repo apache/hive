@@ -48,6 +48,13 @@ public class UDF {
   }
   
   /**
+   * The constructor with user-provided UDFMethodResolver.
+   */
+  protected UDF(UDFMethodResolver rslv) {
+    this.rslv = rslv;
+  }
+  
+  /**
    * Sets the resolver
    * 
    * @param The method resolver to use for method resolution.

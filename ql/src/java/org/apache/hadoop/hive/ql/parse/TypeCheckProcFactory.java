@@ -172,9 +172,6 @@ public class TypeCheckProcFactory {
       String str = null;
       
       switch (expr.getToken().getType()) {
-      case HiveParser.Identifier:
-        str = BaseSemanticAnalyzer.unescapeIdentifier(expr.getText());
-        break;
       case HiveParser.StringLiteral:
         str = BaseSemanticAnalyzer.unescapeSQLString(expr.getText());
         break;
@@ -182,7 +179,9 @@ public class TypeCheckProcFactory {
         str = BaseSemanticAnalyzer.charSetString(expr.getChild(0).getText(), expr.getChild(1).getText());
         break;
       default:
-        assert false;
+        // HiveParser.identifier | HiveParse.KW_IF | HiveParse.KW_LEFT | HiveParse.KW_RIGHT 
+        str = BaseSemanticAnalyzer.unescapeIdentifier(expr.getText());
+        break;
       }
       return new exprNodeConstantDesc(String.class, str);
     }
@@ -441,7 +440,10 @@ public class TypeCheckProcFactory {
           // must be implicit type conversion
           Class<?> from = argumentClasses.get(i);
           Class<?> to = pType;
-          assert(FunctionRegistry.implicitConvertable(from, to));
+          if(!FunctionRegistry.implicitConvertable(from, to)) {
+            System.err.println("cannot implicitly convert from " + from + " to " + to);
+            throw new RuntimeException("cannot implicitly convert from " + from + " to " + to);
+          }
           Method m = FunctionRegistry.getUDFMethod(to.getName(), from);
           assert(m != null);
           Class<? extends UDF> c = FunctionRegistry.getUDFClass(to.getName());

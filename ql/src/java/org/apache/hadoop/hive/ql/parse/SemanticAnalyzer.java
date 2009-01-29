@@ -3293,11 +3293,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     opRules.put(new RuleRegExp("R2", HiveParser.Number + "%"), TypeCheckProcFactory.getNumExprProcessor());
     opRules.put(new RuleRegExp("R3", HiveParser.Identifier + "%|" + 
                                      HiveParser.StringLiteral + "%|" + 
+                                     HiveParser.KW_IF + "%|" + 
                                      HiveParser.TOK_CHARSETLITERAL + "%"), 
                                TypeCheckProcFactory.getStrExprProcessor());
     opRules.put(new RuleRegExp("R4", HiveParser.KW_TRUE + "%|" + HiveParser.KW_FALSE + "%"), 
                                TypeCheckProcFactory.getBoolExprProcessor());
-    opRules.put(new RuleRegExp("R4", HiveParser.TOK_COLREF + "%"), TypeCheckProcFactory.getColumnExprProcessor());
+    opRules.put(new RuleRegExp("R5", HiveParser.TOK_COLREF + "%"), TypeCheckProcFactory.getColumnExprProcessor());
 
     // The dispatcher fires the processor corresponding to the closest matching rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(TypeCheckProcFactory.getDefaultExprProcessor(), opRules, tcCtx);

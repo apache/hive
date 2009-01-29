@@ -33,6 +33,7 @@ public abstract class UDFBaseNumericOp extends UDF {
    * See {@link UDFMethodResolver}
    */
   public UDFBaseNumericOp() {
+    super(null);
     setResolver(new NumericOpMethodResolver(this.getClass()));
   }
 

@@ -47,7 +47,7 @@ public class AmbiguousMethodException extends Exception {
    * @param funcClass The UDF or UDAF class.
    * @param argClasses The list of argument types that lead to an ambiguity.
    */
-  AmbiguousMethodException(Class<?> funcClass, List<Class<?>> argClasses) {
+  public AmbiguousMethodException(Class<?> funcClass, List<Class<?>> argClasses) {
     this.funcClass = funcClass;
     this.argClasses = argClasses;
   }

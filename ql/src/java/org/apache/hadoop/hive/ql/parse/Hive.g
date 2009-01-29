@@ -662,16 +662,21 @@ sortByClause:
 
 // fun(par1, par2, par3)
 function
-    : // LEFT and RIGHT keywords are also function names
-    Identifier
+    :
+    functionName
     LPAREN (
           ((dist=KW_DISTINCT)?
            expression
            (COMMA expression)*)?
         )?
-    RPAREN -> {$dist == null}? ^(TOK_FUNCTION Identifier (expression+)?)
-                          -> ^(TOK_FUNCTIONDI Identifier (expression+)?)
+    RPAREN -> {$dist == null}? ^(TOK_FUNCTION functionName (expression+)?)
+                          -> ^(TOK_FUNCTIONDI functionName (expression+)?)
 
+    ;
+
+functionName
+    : // Keyword IF is also a function name
+    Identifier | KW_IF
     ;
 
 castExpression

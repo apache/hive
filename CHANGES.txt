@@ -9,6 +9,8 @@ Trunk (unreleased changes)
 
   NEW FEATURES
 
+    HIVE-258. New UDF IF(test, valueTrue, valueFalseOrNull). (zshao)
+
     HIVE-105. Automatically estimate number of required reducers. (zshao)
 
     HIVE-176. Added a history log for Hive. (Suresh Anthony via athusoo)

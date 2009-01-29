@@ -1,0 +1,72 @@
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF dest1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION IF TRUE 1 2)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        dest1 
+            Select Operator
+              Select Operator
+                expressions:
+                      expr: if true, 1, 2
+                      type: int
+                File Output Operator
+                  compressed: false
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+1
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF dest1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION IF TRUE 1 2)) (TOK_SELEXPR (TOK_FUNCTION IF FALSE 1 2)) (TOK_SELEXPR (TOK_FUNCTION IF TOK_NULL 1 2)) (TOK_SELEXPR (TOK_FUNCTION IF TRUE "a" "b")) (TOK_SELEXPR (TOK_FUNCTION IF TRUE 0.1 0.2)) (TOK_SELEXPR (TOK_FUNCTION IF FALSE (TOK_FUNCTION TOK_BIGINT 1) 2)) (TOK_SELEXPR (TOK_FUNCTION IF FALSE (TOK_FUNCTION TOK_TINYINT 127) 128)) (TOK_SELEXPR (TOK_FUNCTION IF FALSE (TOK_FUNCTION TOK_TINYINT 127) (TOK_FUNCTION TOK_SMALLINT 128))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        dest1 
+            Select Operator
+              Select Operator
+                expressions:
+                      expr: if true, 1, 2
+                      type: int
+                      expr: if false, 1, 2
+                      type: int
+                      expr: if null, 1, 2
+                      type: int
+                      expr: if true, 'a', 'b'
+                      type: string
+                      expr: if true, 0.1, 0.2
+                      type: double
+                      expr: if false, UDFToLong(1), UDFToLong(2)
+                      type: bigint
+                      expr: if false, UDFToInteger(UDFToByte(127)), 128
+                      type: int
+                      expr: if false, UDFToShort(UDFToByte(127)), UDFToShort(128)
+                      type: smallint
+                File Output Operator
+                  compressed: false
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+1	2	2	a	0.1	2	128	128
