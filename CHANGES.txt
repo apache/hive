@@ -265,3 +265,4 @@ Trunk (unreleased changes)
 
     HIVE-231. Create junit reports for tests. (Johan Oskarsson via athusoo)
 
+    HIVE-119. Make error messages more informative. (Pete Wyckoff via athusoo)

@@ -63,13 +63,89 @@ public class ParseDriver {
     xlateMap.put("KW_FULL", "FULL");
     xlateMap.put("KW_ON", "ON");
     xlateMap.put("KW_PARTITION", "PARTITION");
+    xlateMap.put("KW_PARTITIONS", "PARTITIONS");
     xlateMap.put("KW_TABLE", "TABLE");
+    xlateMap.put("KW_TABLES", "TABLES");
+    xlateMap.put("KW_SHOW", "SHOW");
+    xlateMap.put("KW_MSCK", "MSCK");
     xlateMap.put("KW_DIRECTORY", "DIRECTORY");
     xlateMap.put("KW_LOCAL", "LOCAL");
     xlateMap.put("KW_TRANSFORM", "TRANSFORM");
     xlateMap.put("KW_USING", "USING");
     xlateMap.put("KW_CLUSTER", "CLUSTER");
+    xlateMap.put("KW_DISTRIBUTE", "DISTRIBUTE");
+    xlateMap.put("KW_SORT", "SORT");
     xlateMap.put("KW_UNION", "UNION");
+    xlateMap.put("KW_LOAD", "LOAD");
+    xlateMap.put("KW_DATA", "DATA");
+    xlateMap.put("KW_INPATH", "INPATH");
+    xlateMap.put("KW_IS", "IS");
+    xlateMap.put("KW_NULL", "NULL");
+    xlateMap.put("KW_CREATE", "CREATE");
+    xlateMap.put("KW_EXTERNAL", "EXTERNAL");
+    xlateMap.put("KW_ALTER", "ALTER");
+    xlateMap.put("KW_DESCRIBE", "DESCRIBE");
+    xlateMap.put("KW_DROP", "DROP");
+    xlateMap.put("KW_REANME", "REANME");
+    xlateMap.put("KW_TO", "TO");
+    xlateMap.put("KW_COMMENT", "COMMENT");
+    xlateMap.put("KW_BOOLEAN", "BOOLEAN");
+    xlateMap.put("KW_TINYINT", "TINYINT");
+    xlateMap.put("KW_SMALLINT", "SMALLINT");
+    xlateMap.put("KW_INT", "INT");
+    xlateMap.put("KW_BIGINT", "BIGINT");
+    xlateMap.put("KW_FLOAT", "FLOAT");
+    xlateMap.put("KW_DOUBLE", "DOUBLE");
+    xlateMap.put("KW_DATE", "DATE");
+    xlateMap.put("KW_DATETIME", "DATETIME");
+    xlateMap.put("KW_TIMESTAMP", "TIMESTAMP");
+    xlateMap.put("KW_STRING", "STRING");
+    xlateMap.put("KW_ARRAY", "ARRAY");
+    xlateMap.put("KW_MAP", "MAP");
+    xlateMap.put("KW_REDUCE", "REDUCE");
+    xlateMap.put("KW_PARTITIONED", "PARTITIONED");
+    xlateMap.put("KW_CLUSTERED", "CLUSTERED");
+    xlateMap.put("KW_SORTED", "SORTED");
+    xlateMap.put("KW_INTO", "INTO");
+    xlateMap.put("KW_BUCKETS", "BUCKETS");
+    xlateMap.put("KW_ROW", "ROW");
+    xlateMap.put("KW_FORMAT", "FORMAT");
+    xlateMap.put("KW_DELIMITED", "DELIMITED");
+    xlateMap.put("KW_FIELDS", "FIELDS");
+    xlateMap.put("KW_TERMINATED", "TERMINATED");
+    xlateMap.put("KW_COLLECTION", "COLLECTION");
+    xlateMap.put("KW_ITEMS", "ITEMS");
+    xlateMap.put("KW_KEYS", "KEYS");
+    xlateMap.put("KW_KEY_TYPE", "$KEY$");
+    xlateMap.put("KW_LINES", "LINES");
+    xlateMap.put("KW_STORED", "STORED");
+    xlateMap.put("KW_SEQUENCEFILE", "SEQUENCEFILE");
+    xlateMap.put("KW_TEXTFILE", "TEXTFILE");
+    xlateMap.put("KW_INPUTFORMAT", "INPUTFORMAT");
+    xlateMap.put("KW_OUTPUTFORMAT", "OUTPUTFORMAT");
+    xlateMap.put("KW_LOCATION", "LOCATION");
+    xlateMap.put("KW_TABLESAMPLE", "TABLESAMPLE");
+    xlateMap.put("KW_BUCKET", "BUCKET");
+    xlateMap.put("KW_OUT", "OUT");
+    xlateMap.put("KW_OF", "OF");
+    xlateMap.put("KW_CAST", "CAST");
+    xlateMap.put("KW_ADD", "ADD");
+    xlateMap.put("KW_REPLACE", "REPLACE");
+    xlateMap.put("KW_COLUMNS", "COLUMNS");
+    xlateMap.put("KW_RLIKE", "RLIKE");
+    xlateMap.put("KW_REGEXP", "REGEXP");
+    xlateMap.put("KW_TEMPORARY", "TEMPORARY");
+    xlateMap.put("KW_FUNCTION", "FUNCTION");
+    xlateMap.put("KW_EXPLAIN", "EXPLAIN");
+    xlateMap.put("KW_EXTENDED", "EXTENDED");
+    xlateMap.put("KW_SERDE", "SERDE");
+    xlateMap.put("KW_WITH", "WITH");
+    xlateMap.put("KW_SERDEPROPERTIES", "SERDEPROPERTIES");
+    xlateMap.put("KW_LIMIT", "LIMIT");
+    xlateMap.put("KW_SET", "SET");
+    xlateMap.put("KW_PROPERTIES", "TBLPROPERTIES");
+    xlateMap.put("KW_VALUE_TYPE", "$VALUE$");
+    xlateMap.put("KW_ELEM_TYPE", "$ELEM$");
     
     // Operators
     xlateMap.put("DOT", ".");
@@ -236,6 +312,9 @@ public class ParseDriver {
         msg = super.getErrorMessage(e, xlateNames);
       }
 
+        if(msgs.size() > 0) {
+          msg = msg + " in " + msgs.peek();
+        }
       return msg;
     }
 
