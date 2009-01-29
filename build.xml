@@ -29,6 +29,7 @@
   <property name="target.example.dir" location="${target.dir}/examples"/>
   <property name="ql.test.query.dir" location="${basedir}/ql/src/test/queries"/>
   <property name="test.data.dir" location="${basedir}/data"/>
+  <property name="test.build.dir" value="${build.dir.hive}/test"/>
 
   <!-- ====================================================== -->
   <!-- Initialize for running junit tests                     -->
@@ -110,6 +111,16 @@
     <subant target="test">
       <fileset dir="." includes="*/build.xml" excludes="ant/build.xml"/>
     </subant>
+  </target>
+	
+  <!-- create an html report from junit output files -->
+  <target name="testreport">
+    <junitreport todir="${test.build.dir}">
+      <fileset dir="${build.dir.hive}">
+        <include name="**/TEST-*.xml"/>
+      </fileset>
+      <report format="noframes" todir="${test.build.dir}"/>
+    </junitreport>
   </target>
 
   <target name="clean-test">

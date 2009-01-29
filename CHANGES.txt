@@ -211,7 +211,7 @@ Trunk (unreleased changes)
     HIVE-84.  Make MetaStore Client thread safe.  (Prasad Chakka via dhruba)
 
     HIVE-203. Fix eclipse templates to get junit tests to run.
-    (iRaghotham Murthy via dhruba)
+    (Raghotham Murthy via dhruba)
 
     HIVE-220. Incorrect log directory in TestMTQueries causing null pointer
     exception.  (Prasad Chakka via dhruba)
@@ -260,3 +260,6 @@ Trunk (unreleased changes)
     private members of the records in calculating the avg size of the
     rows and we were also not estimating variable length columns 
     properly. (Namit Jain via athusoo)
+
+    HIVE-231. Create junit reports for tests. (Johan Oskarsson via athusoo)
+
