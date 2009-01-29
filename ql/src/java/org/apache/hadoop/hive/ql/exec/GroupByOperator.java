@@ -192,6 +192,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
       hashAggregations = new HashMap<ArrayList<Object>, UDAFEvaluator[]>();
       hashAggr = true;
       keyPositionsSize = new ArrayList<Integer>();
+      aggrPositions = new ArrayList<varLenFields>();
     }
 
     // init objectInspectors
@@ -326,11 +327,13 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     // Go over all the aggregation classes and and get the size of the fields of fixed length. Keep track of the variable length
     // fields in these aggregation classes.
     for(int i=0; i < aggregationClasses.length; i++) {
+
       fixedRowSize += javaObjectOverHead;
       Class<? extends UDAFEvaluator> agg = aggregationClasses[i];
-      Field[] fArr = agg.getFields();
-      for (Field f : fArr) 
-        fixedRowSize += getSize(i, agg, f);
+      Field[] fArr = agg.getDeclaredFields();
+      for (Field f : fArr) {
+        fixedRowSize += getSize(i, f.getType(), f);
+      }
     }
   }
 
@@ -486,7 +489,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     int numEntries = hashAggregations.size();
 
     // The fixed size for the aggregation class is already known. Get the variable portion of the size every NUMROWSESTIMATESIZE rows.
-    if ((numEntries % NUMROWSESTIMATESIZE) == 0) {
+    if ((numEntriesHashTable == 0) || ((numEntries % NUMROWSESTIMATESIZE) == 0)) {
       for (Integer pos : keyPositionsSize) {
         Object key = newKeys.get(pos.intValue());
         totalVariableSize += ((String)key).length();
@@ -511,6 +514,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
       }
 
       numEntriesVarSize++;
+
       // Update the number of entries that can fit in the hash table
       numEntriesHashTable = (int)(maxHashTblMemory / (fixedRowSize + ((int)totalVariableSize/numEntriesVarSize)));
       LOG.trace("Hash Aggr: #hash table = " + numEntries + " #max in hash table = " + numEntriesHashTable);

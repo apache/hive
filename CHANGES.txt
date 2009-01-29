@@ -255,3 +255,8 @@ Trunk (unreleased changes)
 
     HIVE-257. Set hive history log location to build for tests.
     (Suresh Anthony via athusoo)
+
+    HIVE-256. Fix in map side aggregation wherein we were not including
+    private members of the records in calculating the avg size of the
+    rows and we were also not estimating variable length columns 
+    properly. (Namit Jain via athusoo)
