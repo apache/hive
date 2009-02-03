@@ -22,6 +22,8 @@ package org.apache.hadoop.hive.serde2.thrift;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.io.Text;
+
 import com.facebook.thrift.TException;
 import com.facebook.thrift.transport.*;
 import com.facebook.thrift.*;
@@ -30,6 +32,9 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+
 import org.apache.hadoop.conf.Configuration;
 import java.util.Properties;
 
@@ -178,9 +183,9 @@ public class TCTLSeparatedProtocol extends TProtocol
   protected String nullString;
 
   /**
-   * The nullString in bytes
+   * The nullString in UTF-8 bytes
    */ 
-  protected byte nullBuf[];
+  protected Text nullText;
 
 
   /**
@@ -210,7 +215,12 @@ public class TCTLSeparatedProtocol extends TProtocol
             tokenizer = new StringTokenizer("", separator, true);
             return false;
           }
-          String row = new String(buf, 0, length);
+          String row;
+          try {
+            row = Text.decode(buf, 0, length);
+          } catch (CharacterCodingException e) {
+            throw new RuntimeException(e);
+          }
           tokenizer = new StringTokenizer(row, separator, true);
         } catch(TTransportException e) {
           e.printStackTrace();
@@ -322,7 +332,7 @@ public class TCTLSeparatedProtocol extends TProtocol
     primaryPattern = Pattern.compile(primaryPatternString);
     secondaryPattern = Pattern.compile(secondarySeparator);
     mapPattern = Pattern.compile(secondarySeparator + "|" + mapSeparator);
-    nullBuf = nullString.getBytes();
+    nullText = new Text(nullString);
     transportTokenizer = new SimpleTransportTokenizer(innerTransport, rowSeparator, bufferSize);
   }
 
@@ -519,12 +529,13 @@ public class TCTLSeparatedProtocol extends TProtocol
     writeString(String.valueOf(dub));
   }
 
-  public void internalWriteString(String str) throws TException {
+  Text tmpText = new Text();
+  public void internalWriteString(String str) throws TException  {
     if(str != null) {
-      final byte buf[] = str.getBytes();
-      trans_.write(buf, 0, buf.length);
+      tmpText.set(str);
+      trans_.write(tmpText.getBytes(), 0, tmpText.getLength());
     } else {
-      trans_.write(nullBuf, 0, nullBuf.length);
+      trans_.write(nullText.getBytes(), 0, nullText.getLength());
     }
   }
 
@@ -541,12 +552,7 @@ public class TCTLSeparatedProtocol extends TProtocol
         firstInnerField = false;
       }
     }
-    if(str != null) {
-      final byte buf[] = str.getBytes();
-      trans_.write(buf, 0, buf.length);
-    } else {
-      trans_.write(nullBuf, 0, nullBuf.length);
-    }
+    internalWriteString(str);
   }
 
   public void writeBinary(byte[] bin) throws TException {
