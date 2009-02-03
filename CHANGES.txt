@@ -115,6 +115,9 @@ Release 0.2.0 - Unreleased
 
   BUG FIXES
 
+    HIVE-263. TCTLSeparatedProtocol should use UTF-8 to encode/decode
+    the data. (zshao)
+
     HIVE-255. Propagate user name to Hive metastore. (Prasad Chakka via zshao)
 
     HIVE-235. Fixed DynamicSerDe to work with null values with Thrift
