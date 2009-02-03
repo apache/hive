@@ -74,6 +74,9 @@
     <subant target="compile">
       <fileset dir="." includes="jdbc/build.xml"/>
     </subant>
+    <subant target="compile">
+      <fileset dir="." includes="hwi/build.xml"/>
+    </subant>
   </target>
 
   <!-- ====================================================== -->
@@ -101,6 +104,9 @@
     </subant>
     <subant target="deploy">
       <fileset dir="." includes="jdbc/build.xml"/>
+    </subant>
+    <subant target="deploy">
+      <fileset dir="." includes="hwi/build.xml"/>
     </subant>
   </target>
 
@@ -183,6 +189,7 @@
       <fileset file="${build.dir.hive}/common/hive_common.jar"/>
       <fileset file="${build.dir.hive}/ql/hive_exec.jar"/>
       <fileset file="${build.dir.hive}/metastore/hive_metastore.jar"/>
+      <fileset file="${build.dir.hive}/hive_hwi.war"/>
     </copy>
     <copy todir="${target.example.dir}/files" preservelastmodified="true" flatten="true">
       <fileset dir="${test.data.dir}/files" includes="*.*" excludes="**/.svn"/>

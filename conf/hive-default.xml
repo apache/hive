@@ -100,5 +100,22 @@
   <description> This controls whether intermediate files produced by hive between multiple map-reduce jobs are compressed. The compression codec and other options are determined from hadoop config variables mapred.output.compress* </description>
 </property>
 
+<property>
+  <name>hive.hwi.listen.host</name>
+  <value>0.0.0.0</value>
+  <description>This is the host address the Hive Web Interface will listen on</description>
+</property>
+ 
+<property>
+  <name>hive.hwi.listen.port</name>
+  <value>9999</value>
+  <description>This is the port the Hive Web Interface will listen on</description>
+</property>
+
+<property>
+  <name>hive.hwi.war.file</name>
+  <value>${HIVE_HOME}/lib/hive.war</value>
+  <description>This is the WAR file with the jsp content for Hive Web Interface</description>
+</property>
 
 </configuration>

@@ -1,0 +1,41 @@
+<project name="hwi" default="jar">
+
+  <property name="web.dir"  location="${basedir}/web"/>
+  <property name="src.dir" value="${basedir}/src"/>
+  
+  <import file="../build-common.xml"/>
+
+  <target name="hwi-init">
+    <mkdir dir="${build.dir}/classes"/>
+    <mkdir dir="${build.dir}/test/classes"/>
+    <mkdir dir="${build.dir}/test/src"/>
+  </target> 
+
+  <target name="compile" depends="hwi-init">
+    <echo message="Compiling: ${name}"/>
+    <javac
+     encoding="${build.encoding}"
+     destdir="${build.classes}"
+     includes="**/*.java"
+     srcdir="${src.dir}"
+     debug="${javac.debug}"
+     deprecation="${javac.deprecation}">
+      <compilerarg line="${javac.args} ${javac.args.warnings}" />
+      <classpath refid="classpath-hwi"/> 
+    </javac>
+    <jar jarfile="../build/hive_hwi.war" basedir="${basedir}/web"/>
+  </target>
+
+ <path id="classpath-hwi">
+    <pathelement location="${classpath}"/>
+     <fileset dir="${hadoop.root}/lib">
+       <include name="**/*.jar" />
+       <exclude name="**/excluded/" />
+     </fileset>
+     <fileset dir="../build">
+       <include name="**/*.jar" />
+       <exclude name="**/excluded/" />
+     </fileset>
+  </path>
+
+</project>

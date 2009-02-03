@@ -6,6 +6,8 @@ Trunk (unreleased changes)
 
   NEW FEATURES
 
+    HIVE-30. Hive Web User Interface. (Edward Capriolo via athusoo)
+
   IMPROVEMENTS
 
   OPTIMIZATIONS
