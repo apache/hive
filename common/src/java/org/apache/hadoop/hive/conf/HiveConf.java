@@ -360,7 +360,11 @@ public class HiveConf extends Configuration {
    */
   public String getUser() throws IOException {
     try {
-      return UserGroupInformation.login(this).getUserName();
+       UserGroupInformation ugi = UserGroupInformation.readFrom(this);
+       if(ugi == null) {
+         ugi = UserGroupInformation.login(this);
+       }
+       return ugi.getUserName();
     } catch (LoginException e) {
       throw (IOException)new IOException().initCause(e);
     }
