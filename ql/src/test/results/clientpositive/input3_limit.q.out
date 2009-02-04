@@ -1,30 +1,66 @@
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF T1 a)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB T2)) (TOK_SELECT (TOK_SELEXPR (TOK_COLREF a key)) (TOK_SELEXPR (TOK_COLREF a value))) (TOK_LIMIT 20)))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF T1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_DISTRIBUTEBY (TOK_COLREF key)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_COLREF key)) (TOK_TABSORTCOLNAMEASC (TOK_COLREF value))))) T)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB T2)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_LIMIT 20)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        a 
+        t:t1 
             Select Operator
               expressions:
                     expr: key
                     type: string
                     expr: value
                     type: string
-              Limit
-                Reduce Output Operator
-                  sort order: 
-                  tag: -1
-                  value expressions:
-                        expr: 0
-                        type: string
-                        expr: 1
-                        type: string
+              Reduce Output Operator
+                key expressions:
+                      expr: 0
+                      type: string
+                      expr: 1
+                      type: string
+                sort order: ++
+                Map-reduce partition columns:
+                      expr: 0
+                      type: string
+                tag: -1
+                value expressions:
+                      expr: 0
+                      type: string
+                      expr: 1
+                      type: string
+      Reduce Operator Tree:
+        Extract
+          Select Operator
+            expressions:
+                  expr: 0
+                  type: string
+                  expr: 1
+                  type: string
+            Limit
+              File Output Operator
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.mapred.SequenceFileOutputFormat
+                    name: binary_table
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        /data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/156027535/510873534.10001 
+          Reduce Output Operator
+            sort order: 
+            tag: -1
+            value expressions:
+                  expr: 0
+                  type: string
+                  expr: 1
+                  type: string
       Reduce Operator Tree:
         Extract
           Limit
@@ -47,23 +83,23 @@ STAGE PLANS:
                 name: t2
 
 
-128	val_128
-150	val_150
-165	val_165
-193	val_193
-213	val_213
-224	val_224
-238	val_238
-255	val_255
-265	val_265
-27	val_27
-273	val_273
-278	val_278
-311	val_311
-369	val_369
-401	val_401
-409	val_409
-484	val_484
-66	val_66
-86	val_86
-98	val_98
+0	val_0
+0	val_0
+0	val_0
+0	val_1
+0	val_1
+1	val_2
+10	val_10
+10	val_11
+100	val_100
+100	val_100
+100	val_101
+100	val_101
+101	val_102
+102	val_103
+103	val_103
+103	val_103
+104	val_104
+104	val_104
+104	val_105
+104	val_105
