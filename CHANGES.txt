@@ -286,3 +286,5 @@ Release 0.2.0 - Unreleased
 
     HIVE-262. Fix for joins wherein a merged join having and outer or
     right outer join gave spurious rows in join. (Namit Jain via athusoo)
+
+    HIVE-189. Make sampling tests deterministic by sorting output. (athusoo)
