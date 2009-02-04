@@ -305,10 +305,20 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
   private Vector<boolean[]> joinObjectsRightOuterJoin(
       Vector<boolean[]> resNulls, Vector<boolean[]> inputNulls,
       ArrayList<Object> newObj, IntermediateObject intObj, int left,
-      boolean newObjNull) {
+      boolean newObjNull, boolean firstRow) {
     if (newObjNull)
       return resNulls;
-    boolean allOldObjsNull = true;
+
+    if (inputNulls.isEmpty() && firstRow) {
+      boolean[] newNulls = new boolean[intObj.getCurSize()];
+      for (int i = 0; i < intObj.getCurSize() - 1; i++)
+        newNulls[i] = true;
+      newNulls[intObj.getCurSize()-1] = newObjNull;
+      resNulls.add(newNulls);
+      return resNulls;
+    }
+
+    boolean allOldObjsNull = firstRow;
 
     Iterator<boolean[]> nullsIter = inputNulls.iterator();
     while (nullsIter.hasNext()) {
@@ -334,6 +344,7 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
         for (int i = 0; i < intObj.getCurSize() - 1; i++)
           newNulls[i] = true;
         newNulls[oldNulls.length] = newObjNull;
+        resNulls.add(newNulls);
         return resNulls;
       }
     }
@@ -343,7 +354,7 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
   private Vector<boolean[]> joinObjectsFullOuterJoin(
       Vector<boolean[]> resNulls, Vector<boolean[]> inputNulls,
       ArrayList<Object> newObj, IntermediateObject intObj, int left,
-      boolean newObjNull) {
+      boolean newObjNull, boolean firstRow) {
     if (newObjNull) {
       Iterator<boolean[]> nullsIter = inputNulls.iterator();
       while (nullsIter.hasNext()) {
@@ -356,7 +367,16 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
       return resNulls;
     }
 
-    boolean allOldObjsNull = true;
+    if (inputNulls.isEmpty() && firstRow) {
+      boolean[] newNulls = new boolean[intObj.getCurSize()];
+      for (int i = 0; i < intObj.getCurSize() - 1; i++)
+        newNulls[i] = true;
+      newNulls[intObj.getCurSize()-1] = newObjNull;
+      resNulls.add(newNulls);
+      return resNulls;
+    }
+
+    boolean allOldObjsNull = firstRow;
 
     Iterator<boolean[]> nullsIter = inputNulls.iterator();
     while (nullsIter.hasNext()) {
@@ -405,7 +425,8 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
    * inner join. The outer joins are processed appropriately.
    */
   private Vector<boolean[]> joinObjects(Vector<boolean[]> inputNulls,
-      ArrayList<Object> newObj, IntermediateObject intObj, int joinPos) {
+                                        ArrayList<Object> newObj, IntermediateObject intObj, 
+                                        int joinPos, boolean firstRow) {
     Vector<boolean[]> resNulls = new Vector<boolean[]>();
     boolean newObjNull = newObj == dummyObj[joinPos] ? true : false;
     if (joinPos == 0) {
@@ -422,7 +443,7 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
 
     // process all nulls for RIGHT and FULL OUTER JOINS
     if (((type == joinDesc.RIGHT_OUTER_JOIN) || (type == joinDesc.FULL_OUTER_JOIN))
-        && !newObjNull && (inputNulls == null)) {
+        && !newObjNull && (inputNulls == null) && firstRow) {
       boolean[] newNulls = new boolean[intObj.getCurSize()];
       for (int i = 0; i < newNulls.length - 1; i++)
         newNulls[i] = true;
@@ -442,10 +463,10 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
           left, newObjNull);
     else if (type == joinDesc.RIGHT_OUTER_JOIN)
       return joinObjectsRightOuterJoin(resNulls, inputNulls, newObj, intObj,
-          left, newObjNull);
+                                       left, newObjNull, firstRow);
     assert (type == joinDesc.FULL_OUTER_JOIN);
     return joinObjectsFullOuterJoin(resNulls, inputNulls, newObj, intObj, left,
-        newObjNull);
+                                    newObjNull, firstRow);
   }
 
   /*
@@ -456,7 +477,8 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
    * are accounted for, the output is forwared appropriately.
    */
   private void genObject(Vector<boolean[]> inputNulls, int aliasNum,
-      IntermediateObject intObj) throws HiveException {
+                         IntermediateObject intObj, boolean firstRow) throws HiveException {
+    boolean childFirstRow = firstRow;
     if (aliasNum < numValues) {
       Iterator<ArrayList<Object>> aliasRes = storage.get(order[aliasNum])
           .iterator();
@@ -465,9 +487,10 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
         ArrayList<Object> newObj = aliasRes.next();
         intObj.pushObj(newObj);
         Vector<boolean[]> newNulls = joinObjects(inputNulls, newObj, intObj,
-            aliasNum);
-        genObject(newNulls, aliasNum + 1, intObj);
+                                                 aliasNum, childFirstRow);
+        genObject(newNulls, aliasNum + 1, intObj, firstRow);
         intObj.popObj();
+        firstRow = false;
       }
       iterators.pop();
     } else {
@@ -506,7 +529,7 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
     }
 
     LOG.trace("calling genObject");
-    genObject(null, 0, new IntermediateObject(new ArrayList[numValues], 0));
+    genObject(null, 0, new IntermediateObject(new ArrayList[numValues], 0), true);
     LOG.trace("called genObject");
   }
 

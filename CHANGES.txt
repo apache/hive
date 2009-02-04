@@ -280,3 +280,6 @@ Release 0.2.0 - Unreleased
     private members of the records in calculating the avg size of the
     rows and we were also not estimating variable length columns 
     properly. (Namit Jain via athusoo)
+
+    HIVE-262. Fix for joins wherein a merged join having and outer or
+    right outer join gave spurious rows in join. (Namit Jain via athusoo)
