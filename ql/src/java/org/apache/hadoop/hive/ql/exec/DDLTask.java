@@ -553,6 +553,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       tbl.setProperty("last_modified_by", conf.getUser());
     } catch (IOException e) {
       console.printError("Unable to get current user: " + e.getMessage(), StringUtils.stringifyException(e));
+      return 1;
     }
     tbl.setProperty("last_modified_time", Long.toString(System
         .currentTimeMillis() / 1000));
@@ -722,8 +723,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
     }
 
-    // set owner, create_time etc
-    tbl.setOwner(System.getProperty("user.name"));
+    try {
+      tbl.setOwner(conf.getUser());
+    } catch (IOException e) {
+      console.printError("Unable to get current user: " + e.getMessage(), StringUtils.stringifyException(e));
+      return 1;
+    }
     // set create time
     tbl.getTTable().setCreateTime((int) (System.currentTimeMillis() / 1000));
 
