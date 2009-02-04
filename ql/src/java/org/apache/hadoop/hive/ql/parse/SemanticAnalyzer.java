@@ -2618,8 +2618,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (nodeCondn.getLeft() == 0)
         nodeCondn.setLeft(pos);
       else
-        nodeCondn.setLeft(nodeCondn.getLeft() + targetCondnsSize - 1);
-      nodeCondn.setRight(nodeCondn.getRight() + targetCondnsSize - 1);
+        nodeCondn.setLeft(nodeCondn.getLeft() + targetCondnsSize);
+      nodeCondn.setRight(nodeCondn.getRight() + targetCondnsSize);
       newCondns[targetCondnsSize + i] = nodeCondn;
     }
 
