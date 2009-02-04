@@ -195,7 +195,12 @@
     </javac>
   </target>
 	
-  <target name="test-jar" depends="compile-test"/>
+  <target name="test-jar" depends="compile-test">
+    <delete file="${test.build.dir}/test-udfs.jar"/>
+    <jar jarfile="${test.build.dir}/test-udfs.jar">
+        <fileset dir="${test.build.classes}" includes="**/udf/*.class"/>
+    </jar>
+  </target>
 
   <target name="test-conditions">
     <condition property="qfile" value="">
@@ -246,7 +251,7 @@
       <sysproperty key="test.service.standalone.server" value="${standalone}"/>
       <sysproperty key="log4j.configuration" value="file://${test.data.dir}/conf/hive-log4j.properties"/>
       <sysproperty key="derby.stream.error.file" value="${test.build.dir}/derby.log"/>
-      <sysproperty key="hive.aux.jars.path" value="${build.dir.hive}/ql/test/test-udfs.jar,${test.src.data.dir}/files/TestSerDe.jar"/>
+      <sysproperty key="hive.aux.jars.path" value="${test.build.dir}/test-udfs.jar,${test.src.data.dir}/files/TestSerDe.jar"/>
       <sysproperty key="ql.test.query.clientpositive.dir" value="${ql.test.query.clientpositive.dir}"/>
       <sysproperty key="ql.test.results.clientpositive.dir" value="${ql.test.results.clientpositive.dir}"/>
       <sysproperty key="test.log.dir" value="${test.log.dir}"/>

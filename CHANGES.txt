@@ -14,6 +14,9 @@ Trunk (unreleased changes)
 
   BUG FIXES
 
+    HIVE-271. Move test-udfs creation to build-common in order to
+    fix broken 0.17 build. (athusoo)
+
 Release 0.2.0 - Unreleased
 
   INCOMPATIBLE CHANGES
