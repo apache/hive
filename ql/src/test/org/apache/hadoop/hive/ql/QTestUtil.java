@@ -642,12 +642,13 @@ public class QTestUtil {
   public int checkCliDriverResults(String tname) throws Exception {
     String [] cmdArray;
 
-    cmdArray = new String[5];
+    cmdArray = new String[6];
     cmdArray[0] = "diff";
-    cmdArray[1] = "-I";
-    cmdArray[2] = "\\(file:\\)\\|\\(/tmp/.*\\)";
-    cmdArray[3] = (new File(logDir, tname + ".out")).getPath();
-    cmdArray[4] = (new File(outDir, tname + ".out")).getPath();
+    cmdArray[1] = "-a";
+    cmdArray[2] = "-I";
+    cmdArray[3] = "\\(file:\\)\\|\\(/tmp/.*\\)";
+    cmdArray[4] = (new File(logDir, tname + ".out")).getPath();
+    cmdArray[5] = (new File(outDir, tname + ".out")).getPath();
     System.out.println(cmdArray[0] + " " + cmdArray[1] + " " + cmdArray[2] + " " +
                        cmdArray[3] + " " + cmdArray[4]);
 

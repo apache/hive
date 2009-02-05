@@ -45,7 +45,7 @@ import java.util.Properties;
  *   Int:     flip the sign-bit to make sure negative comes before positive
  *   Long:    flip the sign-bit to make sure negative comes before positive
  *   Double:  flip the sign-bit for positive double, and all bits for negative double values
- *   String:  NULL-terminated string
+ *   String:  NULL-terminated UTF-8 string, with NULL escaped to \1 \1, and \1 escaped to \1 \2
  * NON-NULL Complex Types:
  *   Struct:  first the single byte \1, and then one field by one field.
  *   List:    size stored as Int (see above), then one element by one element. 
@@ -283,6 +283,16 @@ public class TBinarySortableProtocol extends TProtocol implements ConfigurableTP
 
   final protected byte[] nullByte = new byte[] {0};
   final protected byte[] nonNullByte = new byte[] {1};
+  /**
+   * The escaped byte sequence for the null byte.
+   * This cannot be changed alone without changing the readString() code.
+   */
+  final protected byte[] escapedNull = new byte[] {1,1};
+  /**
+   * The escaped byte sequence for the "\1" byte.
+   * This cannot be changed alone without changing the readString() code.
+   */
+  final protected byte[] escapedOne = new byte[] {1,2};
   public void writeString(String str) throws TException {
     byte[] dat;
     try {
@@ -290,13 +300,31 @@ public class TBinarySortableProtocol extends TProtocol implements ConfigurableTP
     } catch (UnsupportedEncodingException uex) {
       throw new TException("JVM DOES NOT SUPPORT UTF-8: " + uex.getMessage());
     }
-    for(int i=0; i<str.length(); i++) {
-      if (str.charAt(i) == '\0') {
-        throw new TException( getClass().getName() + " does not support serializing strings with null bytes!");
+    writeRawBytes(nonNullByte, 0, 1);
+    int begin = 0;
+    int i = 0;
+    for (; i < dat.length; i++) {
+      if (dat[i] == 0 || dat[i] == 1) {
+        // Write the first part of the array
+        if (i > begin) {
+          writeRawBytes(dat, begin, i-begin);
+        }
+        // Write the escaped byte.
+        if (dat[i] == 0) {
+          writeRawBytes(escapedNull, 0, escapedNull.length);
+        } else {
+          writeRawBytes(escapedOne, 0, escapedOne.length);
+        }
+        // Move the pointer to the next byte, since we have written
+        // out the escaped byte in the block above already.
+        begin = i+1;
       }
     }
-    writeRawBytes(nonNullByte, 0, 1);
-    writeRawBytes(dat, 0, dat.length);
+    // Write the remaining part of the array
+    if (i > begin) {
+      writeRawBytes(dat, begin, i-begin);
+    }
+    // Write the terminating NULL byte
     writeRawBytes(nullByte, 0, 1);
   }
 
@@ -507,14 +535,20 @@ public class TBinarySortableProtocol extends TProtocol implements ConfigurableTP
     while (true) {
       readRawAll(bin, 0, 1);
       if (bin[0] == 0) {
+        // End of string.
         break;
-      } else {
-        if (i == stringBytes.length) {
-          stringBytes = Arrays.copyOf(stringBytes, stringBytes.length*2);
-        }
-        stringBytes[i] = bin[0];
-        i++;
       }
+      if (bin[0] == 1) {
+        // Escaped byte, unescape it.
+        readRawAll(bin, 0, 1);
+        assert(bin[0] == 1 || bin[0] == 2);
+        bin[0] = (byte)(bin[0] - 1);
+      }
+      if (i == stringBytes.length) {
+        stringBytes = Arrays.copyOf(stringBytes, stringBytes.length*2);
+      }
+      stringBytes[i] = bin[0];
+      i++;
     }
     try {
       String r = new String(stringBytes, 0, i, "UTF-8");
