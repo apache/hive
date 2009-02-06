@@ -1,0 +1,77 @@
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF dest1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION LN 3.0)) (TOK_SELEXPR (TOK_FUNCTION LN 0.0)) (TOK_SELEXPR (TOK_FUNCTION LN (- 1))) (TOK_SELEXPR (TOK_FUNCTION LOG 3.0)) (TOK_SELEXPR (TOK_FUNCTION LOG 0.0)) (TOK_SELEXPR (TOK_FUNCTION LOG (- 1))) (TOK_SELEXPR (TOK_FUNCTION LOG2 3.0)) (TOK_SELEXPR (TOK_FUNCTION LOG2 0.0)) (TOK_SELEXPR (TOK_FUNCTION LOG2 (- 1))) (TOK_SELEXPR (TOK_FUNCTION LOG10 3.0)) (TOK_SELEXPR (TOK_FUNCTION LOG10 0.0)) (TOK_SELEXPR (TOK_FUNCTION LOG10 (- 1))) (TOK_SELEXPR (TOK_FUNCTION LOG 2 3.0)) (TOK_SELEXPR (TOK_FUNCTION LOG 2 0.0)) (TOK_SELEXPR (TOK_FUNCTION LOG 2 (- 1))) (TOK_SELEXPR (TOK_FUNCTION LOG 0.5 2)) (TOK_SELEXPR (TOK_FUNCTION LOG 2 0.5)) (TOK_SELEXPR (TOK_FUNCTION EXP 2.0)) (TOK_SELEXPR (TOK_FUNCTION POW 2 3)) (TOK_SELEXPR (TOK_FUNCTION POWER 2 3)) (TOK_SELEXPR (TOK_FUNCTION POWER 2 (- 3))) (TOK_SELEXPR (TOK_FUNCTION POWER 0.5 (- 3))) (TOK_SELEXPR (TOK_FUNCTION POWER 4 0.5)) (TOK_SELEXPR (TOK_FUNCTION POWER (- 1) 0.5)) (TOK_SELEXPR (TOK_FUNCTION POWER (- 1) 2)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        dest1 
+            Select Operator
+              Select Operator
+                expressions:
+                      expr: ln(3.0)
+                      type: double
+                      expr: ln(0.0)
+                      type: double
+                      expr: ln(UDFToDouble(- 1))
+                      type: double
+                      expr: log(3.0)
+                      type: double
+                      expr: log(0.0)
+                      type: double
+                      expr: log(UDFToDouble(- 1))
+                      type: double
+                      expr: log2(3.0)
+                      type: double
+                      expr: log2(0.0)
+                      type: double
+                      expr: log2(UDFToDouble(- 1))
+                      type: double
+                      expr: log10(3.0)
+                      type: double
+                      expr: log10(0.0)
+                      type: double
+                      expr: log10(UDFToDouble(- 1))
+                      type: double
+                      expr: log(UDFToDouble(2), 3.0)
+                      type: double
+                      expr: log(UDFToDouble(2), 0.0)
+                      type: double
+                      expr: log(UDFToDouble(2), UDFToDouble(- 1))
+                      type: double
+                      expr: log(0.5, UDFToDouble(2))
+                      type: double
+                      expr: log(UDFToDouble(2), 0.5)
+                      type: double
+                      expr: exp(2.0)
+                      type: double
+                      expr: pow(UDFToDouble(2), UDFToDouble(3))
+                      type: double
+                      expr: pow(UDFToDouble(2), UDFToDouble(3))
+                      type: double
+                      expr: pow(UDFToDouble(2), UDFToDouble(- 3))
+                      type: double
+                      expr: pow(0.5, UDFToDouble(- 3))
+                      type: double
+                      expr: pow(UDFToDouble(4), 0.5)
+                      type: double
+                      expr: pow(UDFToDouble(- 1), 0.5)
+                      type: double
+                      expr: pow(UDFToDouble(- 1), UDFToDouble(2))
+                      type: double
+                File Output Operator
+                  compressed: false
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+1.0986122886681096	NULL	NULL	1.0986122886681096	NULL	NULL	1.584962500721156	NULL	NULL	0.4771212547196623	NULL	NULL	1.584962500721156	NULL	NULL	NULL	-1.0	7.38905609893065	8.0	8.0	0.125	8.0	2.0	NaN	1.0
