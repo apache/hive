@@ -240,7 +240,7 @@ public class UDAFMin extends UDAF {
         if (mEmpty) {
           mMin = o;
           mEmpty = false;
-        } else if (mMin.compareTo(o) < 0) {
+        } else if (mMin.compareTo(o) > 0) {
           mMin = o;
         }
       }
@@ -279,7 +279,7 @@ public class UDAFMin extends UDAF {
         if (mEmpty) {
           mMin = o;
           mEmpty = false;
-        } else if (mMin.compareTo(o) < 0){
+        } else if (mMin.compareTo(o) > 0){
           mMin = o;
         }
       }

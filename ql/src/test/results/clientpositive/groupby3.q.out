@@ -43,7 +43,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/athusoo/commits/hive_trunk_ws3/build/ql/tmp/1302296/900109453.10001 
+        /data/users/athusoo/commits/hive_trunk_ws2/build/ql/tmp/156149158/223155059.10001 
           Reduce Output Operator
             sort order: 
             tag: -1
@@ -63,9 +63,9 @@ STAGE PLANS:
           aggregations:
                 expr: sum(VALUE.0)
                 expr: max(VALUE.1)
-                expr: avg(UDFToDouble(VALUE.2))
+                expr: avg(VALUE.2)
                 expr: min(VALUE.3)
-                expr: avg(UDFToDouble(VALUE.4))
+                expr: avg(VALUE.4)
           mode: final
           Select Operator
             expressions:
@@ -110,4 +110,4 @@ STAGE PLANS:
                 name: dest1
 
 
-130091.0	NULL	NULL	98.0	98.0
+130091.0	260.182	256.10355987055016	98.0	0.0

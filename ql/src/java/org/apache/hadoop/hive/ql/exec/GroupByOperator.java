@@ -147,15 +147,11 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     // aggregationsEvaluateMethods
     aggregationsAggregateMethods = new Method[aggregationClasses.length];
     aggregationsEvaluateMethods = new Method[aggregationClasses.length];
-    String evaluateMethodName = ((conf.getMode() == groupByDesc.Mode.PARTIAL1 || conf.getMode() == groupByDesc.Mode.HASH ||
-                                  conf.getMode() == groupByDesc.Mode.PARTIAL2)
-                                 ? "terminatePartial" : "terminate");
 
     for(int i=0; i<aggregationClasses.length; i++) {
-      String aggregateMethodName = (((conf.getMode() == groupByDesc.Mode.PARTIAL1) || (conf.getMode() == groupByDesc.Mode.HASH)) ? "iterate" : "merge");
+      String evaluateMethodName = conf.getEvalMethods().get(i);
+      String aggregateMethodName = conf.getAggMethods().get(i);
 
-      if (aggregationIsDistinct[i] && (conf.getMode() != groupByDesc.Mode.FINAL))
-        aggregateMethodName = "iterate";
       // aggregationsAggregateMethods
       for( Method m : aggregationClasses[i].getMethods() ){
         if( m.getName().equals( aggregateMethodName ) 

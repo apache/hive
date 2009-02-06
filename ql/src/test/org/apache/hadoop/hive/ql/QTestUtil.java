@@ -650,7 +650,7 @@ public class QTestUtil {
     cmdArray[4] = (new File(logDir, tname + ".out")).getPath();
     cmdArray[5] = (new File(outDir, tname + ".out")).getPath();
     System.out.println(cmdArray[0] + " " + cmdArray[1] + " " + cmdArray[2] + " " +
-                       cmdArray[3] + " " + cmdArray[4]);
+                       cmdArray[3] + " " + cmdArray[4] + " " + cmdArray[5]);
 
     Process executor = Runtime.getRuntime().exec(cmdArray);
 
