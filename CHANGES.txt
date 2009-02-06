@@ -26,6 +26,8 @@ Release 0.2.0 - Unreleased
 
   NEW FEATURES
 
+    HIVE-269. Add log/exp/pow UDF functions to Hive. (zshao)
+
     HIVE-258. New UDF IF(test, valueTrue, valueFalseOrNull). (zshao)
 
     HIVE-105. Automatically estimate number of required reducers. (zshao)

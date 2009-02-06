@@ -58,6 +58,14 @@ public class FunctionRegistry {
     registerUDF("ceil", UDFCeil.class, OperatorType.PREFIX, false);
     registerUDF("ceiling", UDFCeil.class, OperatorType.PREFIX, false);
     registerUDF("rand", UDFRand.class, OperatorType.PREFIX, false);
+
+    registerUDF("ln", UDFLn.class, OperatorType.PREFIX, false);
+    registerUDF("log2", UDFLog2.class, OperatorType.PREFIX, false);
+    registerUDF("log10", UDFLog10.class, OperatorType.PREFIX, false);
+    registerUDF("log", UDFLog.class, OperatorType.PREFIX, false);
+    registerUDF("exp", UDFExp.class, OperatorType.PREFIX, false);
+    registerUDF("power", UDFPower.class, OperatorType.PREFIX, false);
+    registerUDF("pow", UDFPower.class, OperatorType.PREFIX, false);
     
     registerUDF("upper", UDFUpper.class, OperatorType.PREFIX, false);
     registerUDF("lower", UDFLower.class, OperatorType.PREFIX, false);
