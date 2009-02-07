@@ -416,7 +416,8 @@ public class FunctionRegistry {
         }
         argumentString.append("} of size " + arguments.length);
       }
-      
+     
+      e.printStackTrace();
       throw new HiveException("Unable to execute method " + m + " " 
           + " on object " + thisObjectString
           + " with arguments " + argumentString.toString() 

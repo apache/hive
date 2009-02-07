@@ -32,14 +32,20 @@ public class groupByDesc implements java.io.Serializable {
   private Mode mode;
   private java.util.ArrayList<exprNodeDesc> keys;
   private java.util.ArrayList<org.apache.hadoop.hive.ql.plan.aggregationDesc> aggregators;
+  private java.util.ArrayList<String> evalMethods;
+  private java.util.ArrayList<String> aggMethods;
   public groupByDesc() { }
   public groupByDesc(
     final Mode mode,
     final java.util.ArrayList<exprNodeDesc> keys,
-    final java.util.ArrayList<org.apache.hadoop.hive.ql.plan.aggregationDesc> aggregators) {
+    final java.util.ArrayList<org.apache.hadoop.hive.ql.plan.aggregationDesc> aggregators,
+    final java.util.ArrayList<String> evalMethods,
+    final java.util.ArrayList<String> aggMethods) {
     this.mode = mode;
     this.keys = keys;
     this.aggregators = aggregators;
+    this.evalMethods = evalMethods;
+    this.aggMethods = aggMethods;
   }
   public Mode getMode() {
     return this.mode;
@@ -78,5 +84,19 @@ public class groupByDesc implements java.io.Serializable {
   }
   public void setAggregators(final java.util.ArrayList<org.apache.hadoop.hive.ql.plan.aggregationDesc> aggregators) {
     this.aggregators = aggregators;
+  }
+  
+  public java.util.ArrayList<String> getEvalMethods() {
+    return this.evalMethods;
+  }
+  public void setEvalMethods(final java.util.ArrayList<String> evalMethods) {
+    this.evalMethods = evalMethods;
+  }
+  
+  public java.util.ArrayList<String> getAggMethods() {
+    return this.aggMethods;
+  }
+  public void setAggMethods(final java.util.ArrayList<String> aggMethods) {
+    this.aggMethods = aggMethods;
   }
 }

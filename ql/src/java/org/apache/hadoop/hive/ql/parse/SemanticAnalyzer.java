@@ -1205,6 +1205,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ArrayList<exprNodeDesc> convertedParameters;
     Class<?> retType;
     Class<? extends UDAFEvaluator> evalClass;
+    Method evalMethod;
+    Method aggMethod;
   }
 
   /**
@@ -1229,32 +1231,37 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(ErrorMsg.INVALID_FUNCTION_SIGNATURE.getMsg((ASTNode)aggTree.getChild(0), reason));
     }
     
-    Method aggregateMethod = null;
+    r.aggMethod = null;
+    String funcName = (((mode == groupByDesc.Mode.PARTIAL1) || (mode == groupByDesc.Mode.HASH)) ? "iterate" : "merge");
+    if (aggTree.getToken().getType() == HiveParser.TOK_FUNCTIONDI && (mode != groupByDesc.Mode.FINAL))
+        funcName = "iterate";
+
     for(Method m: r.evalClass.getMethods()) {
-      if (m.getName().equalsIgnoreCase("iterate")) {
-        aggregateMethod = m;
+      if (m.getName().equalsIgnoreCase(funcName)) {
+        r.aggMethod = m;
       }
     }
     
-    if (null == aggregateMethod) {
+    if (null == r.aggMethod) {
       String reason = "Looking for UDAF Evaluator Iterator\"" + aggName + "\" with parameters " + aggClasses;
       throw new SemanticException(ErrorMsg.INVALID_FUNCTION_SIGNATURE.getMsg((ASTNode)aggTree.getChild(0), reason));
     }
 
-    r.convertedParameters = convertParameters(aggregateMethod, aggParameters);
-    
-    Method evaluateMethod = FunctionRegistry.getUDAFEvaluateMethod(aggName, mode);
-    String funcName = (mode == groupByDesc.Mode.COMPLETE || mode == groupByDesc.Mode.FINAL) ? "terminate" : "terminatePartial";
+    r.convertedParameters = convertParameters(r.aggMethod, aggParameters);
+
+    funcName = ((mode == groupByDesc.Mode.PARTIAL1 || mode == groupByDesc.Mode.HASH ||
+                 mode == groupByDesc.Mode.PARTIAL2) ? "terminatePartial" : "terminate");
+    r.evalMethod = null;
     for(Method m: r.evalClass.getMethods()) {
       if (m.getName().equalsIgnoreCase(funcName)) {
-        evaluateMethod = m;
+        r.evalMethod = m;
       }
     }
-    if (evaluateMethod == null) {
+    if (r.evalMethod == null) {
       String reason = "UDAF \"" + aggName + "\" does not have terminate()/terminatePartial() methods.";
       throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg((ASTNode)aggTree.getChild(0), reason)); 
     }
-    r.retType = evaluateMethod.getReturnType();
+    r.retType = r.evalMethod.getReturnType();
     
     return r;
   }
@@ -1276,6 +1283,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     groupByOutputRowResolver.setIsExprResolver(true);
     ArrayList<exprNodeDesc> groupByKeys = new ArrayList<exprNodeDesc>();
     ArrayList<aggregationDesc> aggregations = new ArrayList<aggregationDesc>();
+    ArrayList<String> evalMethods = new ArrayList<String>();
+    ArrayList<String> aggMethods = new ArrayList<String>();
     List<ASTNode> grpByExprs = getGroupByForClause(parseInfo, dest);
     for (int i = 0; i < grpByExprs.size(); ++i) {
       ASTNode grpbyExpr = grpByExprs.get(i);
@@ -1319,13 +1328,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       
       aggregations.add(new aggregationDesc(udaf.evalClass, udaf.convertedParameters,
           value.getToken().getType() == HiveParser.TOK_FUNCTIONDI));
+      evalMethods.add(udaf.evalMethod.getName());
+      aggMethods.add(udaf.aggMethod.getName());
       groupByOutputRowResolver.put("",value.toStringTree(),
                                    new ColumnInfo(Integer.valueOf(groupByKeys.size() + aggregations.size() -1).toString(),
                                        udaf.retType));
     }
 
     return 
-      putOpInsertMap(OperatorFactory.getAndMakeChild(new groupByDesc(mode, groupByKeys, aggregations),
+      putOpInsertMap(OperatorFactory.getAndMakeChild(new groupByDesc(mode, groupByKeys, aggregations, evalMethods, aggMethods),
                                                      new RowSchema(groupByOutputRowResolver.getColumnInfos()),
                                                      reduceSinkOperatorInfo),
         groupByOutputRowResolver
@@ -1349,6 +1360,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     groupByOutputRowResolver.setIsExprResolver(true);
     ArrayList<exprNodeDesc> groupByKeys = new ArrayList<exprNodeDesc>();
     ArrayList<aggregationDesc> aggregations = new ArrayList<aggregationDesc>();
+    ArrayList<String> evalMethods = new ArrayList<String>();
+    ArrayList<String> aggMethods = new ArrayList<String>();
     List<ASTNode> grpByExprs = getGroupByForClause(parseInfo, dest);
     for (int i = 0; i < grpByExprs.size(); ++i) {
       ASTNode grpbyExpr = grpByExprs.get(i);
@@ -1404,13 +1417,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       UDAFInfo udaf = getUDAFInfo(aggName, mode, aggParameters, value);
       aggregations.add(new aggregationDesc(udaf.evalClass, udaf.convertedParameters, 
           ((mode == groupByDesc.Mode.FINAL) ? false : (value.getToken().getType() == HiveParser.TOK_FUNCTIONDI))));
+      evalMethods.add(udaf.evalMethod.getName());
+      aggMethods.add(udaf.aggMethod.getName());
       groupByOutputRowResolver.put("", value.toStringTree(),
                                     new ColumnInfo(Integer.valueOf(groupByKeys.size() + aggregations.size() - 1).toString(),
                                         udaf.retType));
     }
 
     return putOpInsertMap(
-        OperatorFactory.getAndMakeChild(new groupByDesc(mode, groupByKeys, aggregations),
+        OperatorFactory.getAndMakeChild(new groupByDesc(mode, groupByKeys, aggregations, evalMethods, aggMethods),
                                         new RowSchema(groupByOutputRowResolver.getColumnInfos()),
                                         reduceSinkOperatorInfo),
         groupByOutputRowResolver);
@@ -1433,6 +1448,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     groupByOutputRowResolver.setIsExprResolver(true);
     ArrayList<exprNodeDesc> groupByKeys = new ArrayList<exprNodeDesc>();
     ArrayList<aggregationDesc> aggregations = new ArrayList<aggregationDesc>();
+    ArrayList<String> evalMethods = new ArrayList<String>();
+    ArrayList<String> aggMethods = new ArrayList<String>();
     List<ASTNode> grpByExprs = getGroupByForClause(parseInfo, dest);
     for (int i = 0; i < grpByExprs.size(); ++i) {
       ASTNode grpbyExpr = grpByExprs.get(i);
@@ -1486,13 +1503,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       
       aggregations.add(new aggregationDesc(udaf.evalClass, udaf.convertedParameters,
                                            value.getToken().getType() == HiveParser.TOK_FUNCTIONDI));
+      evalMethods.add(udaf.evalMethod.getName());
+      aggMethods.add(udaf.aggMethod.getName());
       groupByOutputRowResolver.put("",value.toStringTree(),
                                    new ColumnInfo(Integer.valueOf(groupByKeys.size() + aggregations.size() -1).toString(),
                                        udaf.retType));
     }
 
     return putOpInsertMap(
-      OperatorFactory.getAndMakeChild(new groupByDesc(mode, groupByKeys, aggregations),
+      OperatorFactory.getAndMakeChild(new groupByDesc(mode, groupByKeys, aggregations, evalMethods, aggMethods),
                                       new RowSchema(groupByOutputRowResolver.getColumnInfos()),
                                       inputOperatorInfo),
       groupByOutputRowResolver);
@@ -1777,6 +1796,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     groupByOutputRowResolver2.setIsExprResolver(true);
     ArrayList<exprNodeDesc> groupByKeys = new ArrayList<exprNodeDesc>();
     ArrayList<aggregationDesc> aggregations = new ArrayList<aggregationDesc>();
+    ArrayList<String> evalMethods = new ArrayList<String>();
+    ArrayList<String> aggMethods = new ArrayList<String>();
     List<ASTNode> grpByExprs = getGroupByForClause(parseInfo, dest);
     for (int i = 0; i < grpByExprs.size(); ++i) {
       ASTNode grpbyExpr = grpByExprs.get(i);
@@ -1815,13 +1836,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       UDAFInfo udaf = getUDAFInfo(aggName, mode, aggParameters, value);      
       aggregations.add(new aggregationDesc(udaf.evalClass, udaf.convertedParameters, 
                                            ((mode == groupByDesc.Mode.FINAL) ? false : (value.getToken().getType() == HiveParser.TOK_FUNCTIONDI))));
+      evalMethods.add(udaf.evalMethod.getName());
+      aggMethods.add(udaf.aggMethod.getName());
       groupByOutputRowResolver2.put("", value.toStringTree(),
                                     new ColumnInfo(Integer.valueOf(groupByKeys.size() + aggregations.size() - 1).toString(),
                                         udaf.retType));
     }
 
     return putOpInsertMap(
-      OperatorFactory.getAndMakeChild(new groupByDesc(mode, groupByKeys, aggregations),
+      OperatorFactory.getAndMakeChild(new groupByDesc(mode, groupByKeys, aggregations, evalMethods, aggMethods),
                                       new RowSchema(groupByOutputRowResolver2.getColumnInfos()),
                                       reduceSinkOperatorInfo2),
         groupByOutputRowResolver2

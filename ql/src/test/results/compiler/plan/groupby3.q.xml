@@ -20,7 +20,7 @@
         <void property="aliasToWork"> 
          <object class="java.util.HashMap"> 
           <void method="put"> 
-           <string>/data/users/zshao/sync/apache-trunk-HIVE-105/build/ql/tmp/6568832/173702865.10002</string> 
+           <string>/data/users/athusoo/commits/hive_trunk_ws2/build/ql/tmp/362183700/102440280.10002</string> 
            <object id="ReduceSinkOperator0" class="org.apache.hadoop.hive.ql.exec.ReduceSinkOperator"> 
             <void property="conf"> 
              <object class="org.apache.hadoop.hive.ql.plan.reduceSinkDesc"> 
@@ -173,7 +173,7 @@
                     <void property="conf"> 
                      <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                       <void property="dirName"> 
-                       <string>/data/users/zshao/sync/apache-trunk-HIVE-105/build/ql/tmp/6568832/173702865.10002</string> 
+                       <string>/data/users/athusoo/commits/hive_trunk_ws2/build/ql/tmp/362183700/102440280.10002</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object id="tableDesc2" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -277,6 +277,25 @@
                 </void> 
                 <void property="conf"> 
                  <object class="org.apache.hadoop.hive.ql.plan.groupByDesc"> 
+                  <void property="aggMethods"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <string>iterate</string> 
+                    </void> 
+                    <void method="add"> 
+                     <string>iterate</string> 
+                    </void> 
+                    <void method="add"> 
+                     <string>iterate</string> 
+                    </void> 
+                    <void method="add"> 
+                     <string>iterate</string> 
+                    </void> 
+                    <void method="add"> 
+                     <string>iterate</string> 
+                    </void> 
+                   </object> 
+                  </void> 
                   <void property="aggregators"> 
                    <object class="java.util.ArrayList"> 
                     <void method="add"> 
@@ -458,6 +477,25 @@
                        </object> 
                       </void> 
                      </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="evalMethods"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <string>terminatePartial</string> 
+                    </void> 
+                    <void method="add"> 
+                     <string>terminatePartial</string> 
+                    </void> 
+                    <void method="add"> 
+                     <string>terminatePartial</string> 
+                    </void> 
+                    <void method="add"> 
+                     <string>terminatePartial</string> 
+                    </void> 
+                    <void method="add"> 
+                     <string>terminatePartial</string> 
                     </void> 
                    </object> 
                   </void> 
@@ -802,10 +840,10 @@
         <void property="pathToAliases"> 
          <object class="java.util.LinkedHashMap"> 
           <void method="put"> 
-           <string>/data/users/zshao/sync/apache-trunk-HIVE-105/build/ql/tmp/6568832/173702865.10002</string> 
+           <string>/data/users/athusoo/commits/hive_trunk_ws2/build/ql/tmp/362183700/102440280.10002</string> 
            <object class="java.util.ArrayList"> 
             <void method="add"> 
-             <string>/data/users/zshao/sync/apache-trunk-HIVE-105/build/ql/tmp/6568832/173702865.10002</string> 
+             <string>/data/users/athusoo/commits/hive_trunk_ws2/build/ql/tmp/362183700/102440280.10002</string> 
             </void> 
            </object> 
           </void> 
@@ -814,7 +852,7 @@
         <void property="pathToPartitionInfo"> 
          <object class="java.util.LinkedHashMap"> 
           <void method="put"> 
-           <string>/data/users/zshao/sync/apache-trunk-HIVE-105/build/ql/tmp/6568832/173702865.10002</string> 
+           <string>/data/users/athusoo/commits/hive_trunk_ws2/build/ql/tmp/362183700/102440280.10002</string> 
            <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
             <void property="tableDesc"> 
              <object idref="tableDesc2"/> 
@@ -836,7 +874,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>/data/users/zshao/sync/apache-trunk-HIVE-105/ql/../build/ql/tmp/1072875330.10001.insclause-0</string> 
+                     <string>/data/users/athusoo/commits/hive_trunk_ws2/ql/../build/ql/tmp/343125472.10001.insclause-0</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -1012,6 +1050,25 @@
           </void> 
           <void property="conf"> 
            <object class="org.apache.hadoop.hive.ql.plan.groupByDesc"> 
+            <void property="aggMethods"> 
+             <object class="java.util.ArrayList"> 
+              <void method="add"> 
+               <string>merge</string> 
+              </void> 
+              <void method="add"> 
+               <string>merge</string> 
+              </void> 
+              <void method="add"> 
+               <string>merge</string> 
+              </void> 
+              <void method="add"> 
+               <string>merge</string> 
+              </void> 
+              <void method="add"> 
+               <string>merge</string> 
+              </void> 
+             </object> 
+            </void> 
             <void property="aggregators"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
@@ -1064,36 +1121,12 @@
                 <void property="parameters"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc"> 
-                    <void property="UDFClass"> 
-                     <class>org.apache.hadoop.hive.ql.udf.UDFToDouble</class> 
-                    </void> 
-                    <void property="UDFMethod"> 
-                     <object class="org.apache.hadoop.hive.ql.udf.UDFToDouble" method="getMethod"> 
-                      <string>evaluate</string> 
-                      <array class="java.lang.Class" length="1"> 
-                       <void index="0"> 
-                        <class>java.lang.String</class> 
-                       </void> 
-                      </array> 
-                     </object> 
-                    </void> 
-                    <void property="children"> 
-                     <object class="java.util.ArrayList"> 
-                      <void method="add"> 
-                       <object class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
-                        <void property="column"> 
-                         <string>VALUE.2</string> 
-                        </void> 
-                        <void property="typeInfo"> 
-                         <object idref="PrimitiveTypeInfo1"/> 
-                        </void> 
-                       </object> 
-                      </void> 
-                     </object> 
+                   <object class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
+                    <void property="column"> 
+                     <string>VALUE.2</string> 
                     </void> 
                     <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo0"/> 
+                     <object idref="PrimitiveTypeInfo1"/> 
                     </void> 
                    </object> 
                   </void> 
@@ -1130,42 +1163,37 @@
                 <void property="parameters"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc"> 
-                    <void property="UDFClass"> 
-                     <class>org.apache.hadoop.hive.ql.udf.UDFToDouble</class> 
-                    </void> 
-                    <void property="UDFMethod"> 
-                     <object class="org.apache.hadoop.hive.ql.udf.UDFToDouble" method="getMethod"> 
-                      <string>evaluate</string> 
-                      <array class="java.lang.Class" length="1"> 
-                       <void index="0"> 
-                        <class>java.lang.String</class> 
-                       </void> 
-                      </array> 
-                     </object> 
-                    </void> 
-                    <void property="children"> 
-                     <object class="java.util.ArrayList"> 
-                      <void method="add"> 
-                       <object class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
-                        <void property="column"> 
-                         <string>VALUE.4</string> 
-                        </void> 
-                        <void property="typeInfo"> 
-                         <object idref="PrimitiveTypeInfo1"/> 
-                        </void> 
-                       </object> 
-                      </void> 
-                     </object> 
+                   <object class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
+                    <void property="column"> 
+                     <string>VALUE.4</string> 
                     </void> 
                     <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo0"/> 
+                     <object idref="PrimitiveTypeInfo1"/> 
                     </void> 
                    </object> 
                   </void> 
                  </object> 
                 </void> 
                </object> 
+              </void> 
+             </object> 
+            </void> 
+            <void property="evalMethods"> 
+             <object class="java.util.ArrayList"> 
+              <void method="add"> 
+               <string>terminate</string> 
+              </void> 
+              <void method="add"> 
+               <string>terminate</string> 
+              </void> 
+              <void method="add"> 
+               <string>terminate</string> 
+              </void> 
+              <void method="add"> 
+               <string>terminate</string> 
+              </void> 
+              <void method="add"> 
+               <string>terminate</string> 
               </void> 
              </object> 
             </void> 
@@ -1281,7 +1309,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-105/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/athusoo/commits/hive_trunk_ws2/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src</string> 
@@ -1293,7 +1321,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-105/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/athusoo/commits/hive_trunk_ws2/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"/> 
@@ -1345,7 +1373,7 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/data/users/zshao/sync/apache-trunk-HIVE-105/build/ql/test/data/warehouse/src</string> 
+             <string>file:/data/users/athusoo/commits/hive_trunk_ws2/build/ql/test/data/warehouse/src</string> 
             </void> 
            </object> 
           </void> 

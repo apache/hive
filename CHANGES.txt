@@ -277,3 +277,5 @@ Release 0.2.0 - Unreleased
     right outer join gave spurious rows in join. (Namit Jain via athusoo)
 
     HIVE-189. Make sampling tests deterministic by sorting output. (athusoo)
+
+    HIVE-273. Fix avg UDAF which got broken hive 65. (athusoo)
