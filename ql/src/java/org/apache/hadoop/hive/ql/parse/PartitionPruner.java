@@ -119,7 +119,7 @@ public class PartitionPruner {
         }
 
         // Set value to null if it's not partition column
-        if (tabAlias.equals(tableAlias) && tab.isPartitionKey(colName)) {
+        if (tabAlias.equalsIgnoreCase(tableAlias) && tab.isPartitionKey(colName)) {
           desc = new exprNodeColumnDesc(String.class, colName); 
         } else {
           try {
