@@ -279,3 +279,6 @@ Release 0.2.0 - Unreleased
     HIVE-189. Make sampling tests deterministic by sorting output. (athusoo)
 
     HIVE-273. Fix avg UDAF which got broken hive 65. (athusoo)
+
+    HIVE-283. Do case insensitive comparison of aliases in partition
+    pruning. (athusoo)

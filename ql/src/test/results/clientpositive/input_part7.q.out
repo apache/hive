@@ -1,0 +1,491 @@
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF SRCPART X)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF X))) (TOK_WHERE (and (= (TOK_COLREF X ds) '2008-04-08') (< (TOK_COLREF X key) 100))))) (TOK_QUERY (TOK_FROM (TOK_TABREF SRCPART Y)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF Y))) (TOK_WHERE (and (= (TOK_COLREF Y ds) '2008-04-08') (< (TOK_COLREF Y key) 100)))))) A)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_COLREF A key)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        null-subquery1:a-subquery1:x 
+            Filter Operator
+              predicate:
+                  expr: ((ds = '2008-04-08') and (UDFToDouble(key) < UDFToDouble(100)))
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                      expr: ds
+                      type: string
+                      expr: hr
+                      type: string
+                  Select Operator
+                    expressions:
+                          expr: 0
+                          type: string
+                          expr: 1
+                          type: string
+                          expr: 2
+                          type: string
+                          expr: 3
+                          type: string
+                    Reduce Output Operator
+                      key expressions:
+                            expr: 0
+                            type: string
+                      sort order: +
+                      tag: -1
+                      value expressions:
+                            expr: 0
+                            type: string
+                            expr: 1
+                            type: string
+                            expr: 2
+                            type: string
+                            expr: 3
+                            type: string
+        null-subquery2:a-subquery2:y 
+            Filter Operator
+              predicate:
+                  expr: ((ds = '2008-04-08') and (UDFToDouble(key) < UDFToDouble(100)))
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                      expr: ds
+                      type: string
+                      expr: hr
+                      type: string
+                  Select Operator
+                    expressions:
+                          expr: 0
+                          type: string
+                          expr: 1
+                          type: string
+                          expr: 2
+                          type: string
+                          expr: 3
+                          type: string
+                    Reduce Output Operator
+                      key expressions:
+                            expr: 0
+                            type: string
+                      sort order: +
+                      tag: -1
+                      value expressions:
+                            expr: 0
+                            type: string
+                            expr: 1
+                            type: string
+                            expr: 2
+                            type: string
+                            expr: 3
+                            type: string
+      Needs Tagging: false
+      Path -> Alias:
+        file:/data/users/athusoo/commits/hive_trunk_ws2/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
+        file:/data/users/athusoo/commits/hive_trunk_ws2/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
+      Path -> Partition:
+        file:/data/users/athusoo/commits/hive_trunk_ws2/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
+          Partition
+            partition values:
+              ds 2008-04-08
+              hr 11
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+              properties:
+                name srcpart
+                serialization.ddl struct srcpart { string key, string value}
+                serialization.format 1
+                columns key,value
+                partition_columns ds/hr
+                bucket_count -1
+                serialization.lib org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
+                file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                location file:/data/users/athusoo/commits/hive_trunk_ws2/build/ql/test/data/warehouse/srcpart
+              serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
+              name: srcpart
+        file:/data/users/athusoo/commits/hive_trunk_ws2/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
+          Partition
+            partition values:
+              ds 2008-04-08
+              hr 12
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+              properties:
+                name srcpart
+                serialization.ddl struct srcpart { string key, string value}
+                serialization.format 1
+                columns key,value
+                partition_columns ds/hr
+                bucket_count -1
+                serialization.lib org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
+                file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                location file:/data/users/athusoo/commits/hive_trunk_ws2/build/ql/test/data/warehouse/srcpart
+              serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
+              name: srcpart
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            directory: /data/users/athusoo/commits/hive_trunk_ws2/ql/../build/ql/tmp/23301151/89192947.10001.insclause-0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                properties:
+                  columns a.key,a.value,a.ds,a.hr
+                  serialization.format 1
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+0	val_0	2008-04-08	11
+0	val_0	2008-04-08	11
+0	val_0	2008-04-08	11
+0	val_0	2008-04-08	11
+0	val_0	2008-04-08	11
+0	val_0	2008-04-08	11
+0	val_0	2008-04-08	12
+0	val_0	2008-04-08	12
+0	val_0	2008-04-08	12
+0	val_0	2008-04-08	12
+0	val_0	2008-04-08	12
+0	val_0	2008-04-08	12
+10	val_10	2008-04-08	12
+10	val_10	2008-04-08	12
+10	val_10	2008-04-08	11
+10	val_10	2008-04-08	11
+11	val_11	2008-04-08	11
+11	val_11	2008-04-08	11
+11	val_11	2008-04-08	12
+11	val_11	2008-04-08	12
+12	val_12	2008-04-08	12
+12	val_12	2008-04-08	12
+12	val_12	2008-04-08	12
+12	val_12	2008-04-08	12
+12	val_12	2008-04-08	11
+12	val_12	2008-04-08	11
+12	val_12	2008-04-08	11
+12	val_12	2008-04-08	11
+15	val_15	2008-04-08	11
+15	val_15	2008-04-08	11
+15	val_15	2008-04-08	11
+15	val_15	2008-04-08	11
+15	val_15	2008-04-08	12
+15	val_15	2008-04-08	12
+15	val_15	2008-04-08	12
+15	val_15	2008-04-08	12
+17	val_17	2008-04-08	12
+17	val_17	2008-04-08	12
+17	val_17	2008-04-08	11
+17	val_17	2008-04-08	11
+18	val_18	2008-04-08	11
+18	val_18	2008-04-08	11
+18	val_18	2008-04-08	11
+18	val_18	2008-04-08	11
+18	val_18	2008-04-08	12
+18	val_18	2008-04-08	12
+18	val_18	2008-04-08	12
+18	val_18	2008-04-08	12
+19	val_19	2008-04-08	12
+19	val_19	2008-04-08	12
+19	val_19	2008-04-08	11
+19	val_19	2008-04-08	11
+2	val_2	2008-04-08	11
+2	val_2	2008-04-08	11
+2	val_2	2008-04-08	12
+2	val_2	2008-04-08	12
+20	val_20	2008-04-08	12
+20	val_20	2008-04-08	12
+20	val_20	2008-04-08	11
+20	val_20	2008-04-08	11
+24	val_24	2008-04-08	11
+24	val_24	2008-04-08	11
+24	val_24	2008-04-08	11
+24	val_24	2008-04-08	11
+24	val_24	2008-04-08	12
+24	val_24	2008-04-08	12
+24	val_24	2008-04-08	12
+24	val_24	2008-04-08	12
+26	val_26	2008-04-08	12
+26	val_26	2008-04-08	12
+26	val_26	2008-04-08	12
+26	val_26	2008-04-08	12
+26	val_26	2008-04-08	11
+26	val_26	2008-04-08	11
+26	val_26	2008-04-08	11
+26	val_26	2008-04-08	11
+27	val_27	2008-04-08	11
+27	val_27	2008-04-08	11
+27	val_27	2008-04-08	12
+27	val_27	2008-04-08	12
+28	val_28	2008-04-08	12
+28	val_28	2008-04-08	12
+28	val_28	2008-04-08	11
+28	val_28	2008-04-08	11
+30	val_30	2008-04-08	11
+30	val_30	2008-04-08	11
+30	val_30	2008-04-08	12
+30	val_30	2008-04-08	12
+33	val_33	2008-04-08	12
+33	val_33	2008-04-08	12
+33	val_33	2008-04-08	11
+33	val_33	2008-04-08	11
+34	val_34	2008-04-08	11
+34	val_34	2008-04-08	11
+34	val_34	2008-04-08	12
+34	val_34	2008-04-08	12
+35	val_35	2008-04-08	12
+35	val_35	2008-04-08	12
+35	val_35	2008-04-08	12
+35	val_35	2008-04-08	12
+35	val_35	2008-04-08	12
+35	val_35	2008-04-08	12
+35	val_35	2008-04-08	11
+35	val_35	2008-04-08	11
+35	val_35	2008-04-08	11
+35	val_35	2008-04-08	11
+35	val_35	2008-04-08	11
+35	val_35	2008-04-08	11
+37	val_37	2008-04-08	11
+37	val_37	2008-04-08	11
+37	val_37	2008-04-08	11
+37	val_37	2008-04-08	11
+37	val_37	2008-04-08	12
+37	val_37	2008-04-08	12
+37	val_37	2008-04-08	12
+37	val_37	2008-04-08	12
+4	val_4	2008-04-08	12
+4	val_4	2008-04-08	12
+4	val_4	2008-04-08	11
+4	val_4	2008-04-08	11
+41	val_41	2008-04-08	11
+41	val_41	2008-04-08	11
+41	val_41	2008-04-08	12
+41	val_41	2008-04-08	12
+42	val_42	2008-04-08	12
+42	val_42	2008-04-08	12
+42	val_42	2008-04-08	12
+42	val_42	2008-04-08	12
+42	val_42	2008-04-08	11
+42	val_42	2008-04-08	11
+42	val_42	2008-04-08	11
+42	val_42	2008-04-08	11
+43	val_43	2008-04-08	11
+43	val_43	2008-04-08	11
+43	val_43	2008-04-08	12
+43	val_43	2008-04-08	12
+44	val_44	2008-04-08	12
+44	val_44	2008-04-08	12
+44	val_44	2008-04-08	11
+44	val_44	2008-04-08	11
+47	val_47	2008-04-08	11
+47	val_47	2008-04-08	11
+47	val_47	2008-04-08	12
+47	val_47	2008-04-08	12
+5	val_5	2008-04-08	12
+5	val_5	2008-04-08	12
+5	val_5	2008-04-08	12
+5	val_5	2008-04-08	12
+5	val_5	2008-04-08	12
+5	val_5	2008-04-08	12
+5	val_5	2008-04-08	11
+5	val_5	2008-04-08	11
+5	val_5	2008-04-08	11
+5	val_5	2008-04-08	11
+5	val_5	2008-04-08	11
+5	val_5	2008-04-08	11
+51	val_51	2008-04-08	11
+51	val_51	2008-04-08	11
+51	val_51	2008-04-08	11
+51	val_51	2008-04-08	11
+51	val_51	2008-04-08	12
+51	val_51	2008-04-08	12
+51	val_51	2008-04-08	12
+51	val_51	2008-04-08	12
+53	val_53	2008-04-08	12
+53	val_53	2008-04-08	12
+53	val_53	2008-04-08	11
+53	val_53	2008-04-08	11
+54	val_54	2008-04-08	11
+54	val_54	2008-04-08	11
+54	val_54	2008-04-08	12
+54	val_54	2008-04-08	12
+57	val_57	2008-04-08	12
+57	val_57	2008-04-08	12
+57	val_57	2008-04-08	11
+57	val_57	2008-04-08	11
+58	val_58	2008-04-08	11
+58	val_58	2008-04-08	11
+58	val_58	2008-04-08	11
+58	val_58	2008-04-08	11
+58	val_58	2008-04-08	12
+58	val_58	2008-04-08	12
+58	val_58	2008-04-08	12
+58	val_58	2008-04-08	12
+64	val_64	2008-04-08	12
+64	val_64	2008-04-08	12
+64	val_64	2008-04-08	11
+64	val_64	2008-04-08	11
+65	val_65	2008-04-08	11
+65	val_65	2008-04-08	11
+65	val_65	2008-04-08	12
+65	val_65	2008-04-08	12
+66	val_66	2008-04-08	12
+66	val_66	2008-04-08	12
+66	val_66	2008-04-08	11
+66	val_66	2008-04-08	11
+67	val_67	2008-04-08	11
+67	val_67	2008-04-08	11
+67	val_67	2008-04-08	11
+67	val_67	2008-04-08	11
+67	val_67	2008-04-08	12
+67	val_67	2008-04-08	12
+67	val_67	2008-04-08	12
+67	val_67	2008-04-08	12
+69	val_69	2008-04-08	12
+69	val_69	2008-04-08	12
+69	val_69	2008-04-08	11
+69	val_69	2008-04-08	11
+70	val_70	2008-04-08	11
+70	val_70	2008-04-08	11
+70	val_70	2008-04-08	11
+70	val_70	2008-04-08	11
+70	val_70	2008-04-08	11
+70	val_70	2008-04-08	11
+70	val_70	2008-04-08	12
+70	val_70	2008-04-08	12
+70	val_70	2008-04-08	12
+70	val_70	2008-04-08	12
+70	val_70	2008-04-08	12
+70	val_70	2008-04-08	12
+72	val_72	2008-04-08	12
+72	val_72	2008-04-08	12
+72	val_72	2008-04-08	12
+72	val_72	2008-04-08	12
+72	val_72	2008-04-08	11
+72	val_72	2008-04-08	11
+72	val_72	2008-04-08	11
+72	val_72	2008-04-08	11
+74	val_74	2008-04-08	11
+74	val_74	2008-04-08	11
+74	val_74	2008-04-08	12
+74	val_74	2008-04-08	12
+76	val_76	2008-04-08	12
+76	val_76	2008-04-08	12
+76	val_76	2008-04-08	12
+76	val_76	2008-04-08	12
+76	val_76	2008-04-08	11
+76	val_76	2008-04-08	11
+76	val_76	2008-04-08	11
+76	val_76	2008-04-08	11
+77	val_77	2008-04-08	11
+77	val_77	2008-04-08	11
+77	val_77	2008-04-08	12
+77	val_77	2008-04-08	12
+78	val_78	2008-04-08	12
+78	val_78	2008-04-08	12
+78	val_78	2008-04-08	11
+78	val_78	2008-04-08	11
+8	val_8	2008-04-08	11
+8	val_8	2008-04-08	11
+8	val_8	2008-04-08	12
+8	val_8	2008-04-08	12
+80	val_80	2008-04-08	12
+80	val_80	2008-04-08	12
+80	val_80	2008-04-08	11
+80	val_80	2008-04-08	11
+82	val_82	2008-04-08	11
+82	val_82	2008-04-08	11
+82	val_82	2008-04-08	12
+82	val_82	2008-04-08	12
+83	val_83	2008-04-08	12
+83	val_83	2008-04-08	12
+83	val_83	2008-04-08	12
+83	val_83	2008-04-08	12
+83	val_83	2008-04-08	11
+83	val_83	2008-04-08	11
+83	val_83	2008-04-08	11
+83	val_83	2008-04-08	11
+84	val_84	2008-04-08	11
+84	val_84	2008-04-08	11
+84	val_84	2008-04-08	11
+84	val_84	2008-04-08	11
+84	val_84	2008-04-08	12
+84	val_84	2008-04-08	12
+84	val_84	2008-04-08	12
+84	val_84	2008-04-08	12
+85	val_85	2008-04-08	12
+85	val_85	2008-04-08	12
+85	val_85	2008-04-08	11
+85	val_85	2008-04-08	11
+86	val_86	2008-04-08	11
+86	val_86	2008-04-08	11
+86	val_86	2008-04-08	12
+86	val_86	2008-04-08	12
+87	val_87	2008-04-08	12
+87	val_87	2008-04-08	12
+87	val_87	2008-04-08	11
+87	val_87	2008-04-08	11
+9	val_9	2008-04-08	11
+9	val_9	2008-04-08	11
+9	val_9	2008-04-08	12
+9	val_9	2008-04-08	12
+90	val_90	2008-04-08	12
+90	val_90	2008-04-08	12
+90	val_90	2008-04-08	12
+90	val_90	2008-04-08	12
+90	val_90	2008-04-08	12
+90	val_90	2008-04-08	12
+90	val_90	2008-04-08	11
+90	val_90	2008-04-08	11
+90	val_90	2008-04-08	11
+90	val_90	2008-04-08	11
+90	val_90	2008-04-08	11
+90	val_90	2008-04-08	11
+92	val_92	2008-04-08	11
+92	val_92	2008-04-08	11
+92	val_92	2008-04-08	12
+92	val_92	2008-04-08	12
+95	val_95	2008-04-08	12
+95	val_95	2008-04-08	12
+95	val_95	2008-04-08	12
+95	val_95	2008-04-08	12
+95	val_95	2008-04-08	11
+95	val_95	2008-04-08	11
+95	val_95	2008-04-08	11
+95	val_95	2008-04-08	11
+96	val_96	2008-04-08	11
+96	val_96	2008-04-08	11
+96	val_96	2008-04-08	12
+96	val_96	2008-04-08	12
+97	val_97	2008-04-08	12
+97	val_97	2008-04-08	12
+97	val_97	2008-04-08	12
+97	val_97	2008-04-08	12
+97	val_97	2008-04-08	11
+97	val_97	2008-04-08	11
+97	val_97	2008-04-08	11
+97	val_97	2008-04-08	11
+98	val_98	2008-04-08	11
+98	val_98	2008-04-08	11
+98	val_98	2008-04-08	11
+98	val_98	2008-04-08	11
+98	val_98	2008-04-08	12
+98	val_98	2008-04-08	12
+98	val_98	2008-04-08	12
+98	val_98	2008-04-08	12
