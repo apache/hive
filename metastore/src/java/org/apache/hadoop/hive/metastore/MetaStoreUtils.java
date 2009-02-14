@@ -276,7 +276,7 @@ public class MetaStoreUtils {
       oldName = oldName.replace("com.facebook.thrift.hive.MetadataTypedColumnsetSerDe",org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.class.getName());
 
       // columnset serde
-      oldName = oldName.replace("com.facebook.thrift.hive.columnsetSerDe",org.apache.hadoop.hive.serde.thrift.columnsetSerDe.class.getName());
+      oldName = oldName.replace("com.facebook.thrift.hive.columnsetSerDe","org.apache.hadoop.hive.serde.thrift.columnsetSerDe");
       oldName = oldName.replace("org.apache.hadoop.hive.serde.simple_meta.MetadataTypedColumnsetSerDe",
       	  org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.class.getName());
       oldName = oldName.replace("com.facebook.thrift.hive.MetadataTypedColumnsetSerDe", org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.class.getName());
@@ -286,7 +286,7 @@ public class MetaStoreUtils {
 
       // replace any old short names in filebased metadata
       if(oldName.equals("columnset"))
-        oldName = org.apache.hadoop.hive.serde.thrift.columnsetSerDe.class.getName();
+        oldName = "org.apache.hadoop.hive.serde.thrift.columnsetSerDe";
       if(oldName.equals("simple_meta"))
         oldName = org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.class.getName();
       if(oldName.equals("thrift"))
