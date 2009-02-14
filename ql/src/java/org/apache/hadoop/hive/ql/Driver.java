@@ -43,7 +43,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.history.HiveHistory;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.plan.tableDesc;
-import org.apache.hadoop.hive.serde.ByteStream;
+import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 
 import org.apache.commons.logging.Log;

@@ -68,7 +68,8 @@ public class SerDeUtils {
   static {
     nativeSerDeNames.add(org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe.class.getName());
     nativeSerDeNames.add(org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.class.getName());
-    nativeSerDeNames.add(org.apache.hadoop.hive.serde.thrift.columnsetSerDe.class.getName());
+    // For backward compatibility
+    nativeSerDeNames.add("org.apache.hadoop.hive.serde.thrift.columnsetSerDe");
   }
 
   public static boolean isNativeSerDe(String serde) {

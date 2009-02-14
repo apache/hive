@@ -60,7 +60,6 @@ import org.apache.hadoop.hive.ql.plan.dropTableDesc;
 import org.apache.hadoop.hive.ql.plan.showPartitionsDesc;
 import org.apache.hadoop.hive.ql.plan.showTablesDesc;
 import org.apache.hadoop.hive.serde.Constants;
-import org.apache.hadoop.hive.serde.thrift.columnsetSerDe;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.util.StringUtils;
@@ -490,7 +489,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     else if (alterTbl.getOp() == alterTableDesc.alterTableTypes.ADDCOLS) {
       List<FieldSchema> newCols = alterTbl.getNewCols();
       List<FieldSchema> oldCols = tbl.getCols();
-      if (tbl.getSerializationLib().equals(columnsetSerDe.class.getName())) {
+      if (tbl.getSerializationLib().equals("org.apache.hadoop.hive.serde.thrift.columnsetSerDe")) {
         console
             .printInfo("Replacing columns for columnsetSerDe and changing to typed SerDe");
         tbl.setSerializationLib(MetadataTypedColumnsetSerDe.class.getName());
@@ -515,7 +514,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
     } else if (alterTbl.getOp() == alterTableDesc.alterTableTypes.REPLACECOLS) {
       // change SerDe to MetadataTypedColumnsetSerDe if it is columnsetSerDe
-      if (tbl.getSerializationLib().equals(columnsetSerDe.class.getName())) {
+      if (tbl.getSerializationLib().equals("org.apache.hadoop.hive.serde.thrift.columnsetSerDe")) {
         console
             .printInfo("Replacing columns for columnsetSerDe and changing to typed SerDe");
         tbl.setSerializationLib(MetadataTypedColumnsetSerDe.class.getName());

@@ -71,6 +71,8 @@ Release 0.2.0 - Unreleased
 
   IMPROVEMENTS
 
+    HIVE-288. Removed the old serde package. (zshao)
+
     HIVE-240. Support CREATE TABLE IF NOT EXISTS. (zshao)
 
     HIVE-126. Don't fetch information on Partitions from HDFS instead of
