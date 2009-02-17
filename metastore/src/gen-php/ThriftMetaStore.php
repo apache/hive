@@ -77,14 +77,14 @@ class ThriftMetaStoreClient extends FacebookServiceClient implements ThriftMetaS
     if ($result->success !== null) {
       return $result->success;
     }
-    if ($result->ouch1 !== null) {
-      throw $result->ouch1;
+    if ($result->o1 !== null) {
+      throw $result->o1;
     }
-    if ($result->ouch2 !== null) {
-      throw $result->ouch2;
+    if ($result->o2 !== null) {
+      throw $result->o2;
     }
-    if ($result->ouch3 !== null) {
-      throw $result->ouch3;
+    if ($result->o3 !== null) {
+      throw $result->o3;
     }
     throw new Exception("get_fields failed: unknown result");
   }
@@ -138,14 +138,14 @@ class ThriftMetaStoreClient extends FacebookServiceClient implements ThriftMetaS
     if ($result->success !== null) {
       return $result->success;
     }
-    if ($result->ouch1 !== null) {
-      throw $result->ouch1;
+    if ($result->o1 !== null) {
+      throw $result->o1;
     }
-    if ($result->ouch2 !== null) {
-      throw $result->ouch2;
+    if ($result->o2 !== null) {
+      throw $result->o2;
     }
-    if ($result->ouch3 !== null) {
-      throw $result->ouch3;
+    if ($result->o3 !== null) {
+      throw $result->o3;
     }
     throw new Exception("get_tables failed: unknown result");
   }
@@ -198,14 +198,14 @@ class ThriftMetaStoreClient extends FacebookServiceClient implements ThriftMetaS
     if ($result->success !== null) {
       return $result->success;
     }
-    if ($result->ouch1 !== null) {
-      throw $result->ouch1;
+    if ($result->o1 !== null) {
+      throw $result->o1;
     }
-    if ($result->ouch2 !== null) {
-      throw $result->ouch2;
+    if ($result->o2 !== null) {
+      throw $result->o2;
     }
-    if ($result->ouch3 !== null) {
-      throw $result->ouch3;
+    if ($result->o3 !== null) {
+      throw $result->o3;
     }
     throw new Exception("get_schema failed: unknown result");
   }
@@ -257,14 +257,14 @@ class ThriftMetaStoreClient extends FacebookServiceClient implements ThriftMetaS
       $result->read($this->input_);
       $this->input_->readMessageEnd();
     }
-    if ($result->ouch1 !== null) {
-      throw $result->ouch1;
+    if ($result->o1 !== null) {
+      throw $result->o1;
     }
-    if ($result->ouch2 !== null) {
-      throw $result->ouch2;
+    if ($result->o2 !== null) {
+      throw $result->o2;
     }
-    if ($result->ouch3 !== null) {
-      throw $result->ouch3;
+    if ($result->o3 !== null) {
+      throw $result->o3;
     }
     return;
   }
@@ -316,11 +316,11 @@ class ThriftMetaStoreClient extends FacebookServiceClient implements ThriftMetaS
       $result->read($this->input_);
       $this->input_->readMessageEnd();
     }
-    if ($result->ouch1 !== null) {
-      throw $result->ouch1;
+    if ($result->o1 !== null) {
+      throw $result->o1;
     }
-    if ($result->ouch2 !== null) {
-      throw $result->ouch2;
+    if ($result->o2 !== null) {
+      throw $result->o2;
     }
     return;
   }
@@ -371,14 +371,14 @@ class ThriftMetaStoreClient extends FacebookServiceClient implements ThriftMetaS
       $result->read($this->input_);
       $this->input_->readMessageEnd();
     }
-    if ($result->ouch1 !== null) {
-      throw $result->ouch1;
+    if ($result->o1 !== null) {
+      throw $result->o1;
     }
-    if ($result->ouch2 !== null) {
-      throw $result->ouch2;
+    if ($result->o2 !== null) {
+      throw $result->o2;
     }
-    if ($result->ouch3 !== null) {
-      throw $result->ouch3;
+    if ($result->o3 !== null) {
+      throw $result->o3;
     }
     return;
   }
@@ -430,14 +430,14 @@ class ThriftMetaStoreClient extends FacebookServiceClient implements ThriftMetaS
       $result->read($this->input_);
       $this->input_->readMessageEnd();
     }
-    if ($result->ouch1 !== null) {
-      throw $result->ouch1;
+    if ($result->o1 !== null) {
+      throw $result->o1;
     }
-    if ($result->ouch2 !== null) {
-      throw $result->ouch2;
+    if ($result->o2 !== null) {
+      throw $result->o2;
     }
-    if ($result->ouch3 !== null) {
-      throw $result->ouch3;
+    if ($result->o3 !== null) {
+      throw $result->o3;
     }
     return;
   }
@@ -491,11 +491,11 @@ class ThriftMetaStoreClient extends FacebookServiceClient implements ThriftMetaS
     if ($result->success !== null) {
       return $result->success;
     }
-    if ($result->ouch1 !== null) {
-      throw $result->ouch1;
+    if ($result->o1 !== null) {
+      throw $result->o1;
     }
-    if ($result->ouch2 !== null) {
-      throw $result->ouch2;
+    if ($result->o2 !== null) {
+      throw $result->o2;
     }
     throw new Exception("table_exists failed: unknown result");
   }
@@ -549,14 +549,14 @@ class ThriftMetaStoreClient extends FacebookServiceClient implements ThriftMetaS
     if ($result->success !== null) {
       return $result->success;
     }
-    if ($result->ouch1 !== null) {
-      throw $result->ouch1;
+    if ($result->o1 !== null) {
+      throw $result->o1;
     }
-    if ($result->ouch2 !== null) {
-      throw $result->ouch2;
+    if ($result->o2 !== null) {
+      throw $result->o2;
     }
-    if ($result->ouch3 !== null) {
-      throw $result->ouch3;
+    if ($result->o3 !== null) {
+      throw $result->o3;
     }
     throw new Exception("get_partitions failed: unknown result");
   }
@@ -608,8 +608,8 @@ class ThriftMetaStoreClient extends FacebookServiceClient implements ThriftMetaS
     if ($result->success !== null) {
       return $result->success;
     }
-    if ($result->ouch !== null) {
-      throw $result->ouch;
+    if ($result->o !== null) {
+      throw $result->o;
     }
     throw new Exception("get_dbs failed: unknown result");
   }
@@ -665,14 +665,14 @@ class ThriftMetaStoreClient extends FacebookServiceClient implements ThriftMetaS
     if ($result->success !== null) {
       return $result->success;
     }
-    if ($result->ouch1 !== null) {
-      throw $result->ouch1;
+    if ($result->o1 !== null) {
+      throw $result->o1;
     }
-    if ($result->ouch2 !== null) {
-      throw $result->ouch2;
+    if ($result->o2 !== null) {
+      throw $result->o2;
     }
-    if ($result->ouch3 !== null) {
-      throw $result->ouch3;
+    if ($result->o3 !== null) {
+      throw $result->o3;
     }
     throw new Exception("cat failed: unknown result");
   }
@@ -777,9 +777,9 @@ class metastore_ThriftMetaStore_get_fields_result {
   static $_TSPEC;
 
   public $success = null;
-  public $ouch1 = null;
-  public $ouch2 = null;
-  public $ouch3 = null;
+  public $o1 = null;
+  public $o2 = null;
+  public $o3 = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -794,17 +794,17 @@ class metastore_ThriftMetaStore_get_fields_result {
             ),
           ),
         -3 => array(
-          'var' => 'ouch1',
+          'var' => 'o1',
           'type' => TType::STRUCT,
           'class' => 'metastore_MetaException',
           ),
         -4 => array(
-          'var' => 'ouch2',
+          'var' => 'o2',
           'type' => TType::STRUCT,
           'class' => 'metastore_UnknownTableException',
           ),
         -5 => array(
-          'var' => 'ouch3',
+          'var' => 'o3',
           'type' => TType::STRUCT,
           'class' => 'metastore_UnknownDBException',
           ),
@@ -814,14 +814,14 @@ class metastore_ThriftMetaStore_get_fields_result {
       if (isset($vals['success'])) {
         $this->success = $vals['success'];
       }
-      if (isset($vals['ouch1'])) {
-        $this->ouch1 = $vals['ouch1'];
+      if (isset($vals['o1'])) {
+        $this->o1 = $vals['o1'];
       }
-      if (isset($vals['ouch2'])) {
-        $this->ouch2 = $vals['ouch2'];
+      if (isset($vals['o2'])) {
+        $this->o2 = $vals['o2'];
       }
-      if (isset($vals['ouch3'])) {
-        $this->ouch3 = $vals['ouch3'];
+      if (isset($vals['o3'])) {
+        $this->o3 = $vals['o3'];
       }
     }
   }
@@ -865,24 +865,24 @@ class metastore_ThriftMetaStore_get_fields_result {
           break;
         case -3:
           if ($ftype == TType::STRUCT) {
-            $this->ouch1 = new metastore_MetaException();
-            $xfer += $this->ouch1->read($input);
+            $this->o1 = new metastore_MetaException();
+            $xfer += $this->o1->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
         case -4:
           if ($ftype == TType::STRUCT) {
-            $this->ouch2 = new metastore_UnknownTableException();
-            $xfer += $this->ouch2->read($input);
+            $this->o2 = new metastore_UnknownTableException();
+            $xfer += $this->o2->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
         case -5:
           if ($ftype == TType::STRUCT) {
-            $this->ouch3 = new metastore_UnknownDBException();
-            $xfer += $this->ouch3->read($input);
+            $this->o3 = new metastore_UnknownDBException();
+            $xfer += $this->o3->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -914,19 +914,19 @@ class metastore_ThriftMetaStore_get_fields_result {
       }
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->ouch1 !== null) {
-      $xfer += $output->writeFieldBegin('ouch1', TType::STRUCT, -3);
-      $xfer += $this->ouch1->write($output);
+    if ($this->o1 !== null) {
+      $xfer += $output->writeFieldBegin('o1', TType::STRUCT, -3);
+      $xfer += $this->o1->write($output);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->ouch2 !== null) {
-      $xfer += $output->writeFieldBegin('ouch2', TType::STRUCT, -4);
-      $xfer += $this->ouch2->write($output);
+    if ($this->o2 !== null) {
+      $xfer += $output->writeFieldBegin('o2', TType::STRUCT, -4);
+      $xfer += $this->o2->write($output);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->ouch3 !== null) {
-      $xfer += $output->writeFieldBegin('ouch3', TType::STRUCT, -5);
-      $xfer += $this->ouch3->write($output);
+    if ($this->o3 !== null) {
+      $xfer += $output->writeFieldBegin('o3', TType::STRUCT, -5);
+      $xfer += $this->o3->write($output);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -1032,9 +1032,9 @@ class metastore_ThriftMetaStore_get_tables_result {
   static $_TSPEC;
 
   public $success = null;
-  public $ouch1 = null;
-  public $ouch2 = null;
-  public $ouch3 = null;
+  public $o1 = null;
+  public $o2 = null;
+  public $o3 = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -1048,17 +1048,17 @@ class metastore_ThriftMetaStore_get_tables_result {
             ),
           ),
         -3 => array(
-          'var' => 'ouch1',
+          'var' => 'o1',
           'type' => TType::STRUCT,
           'class' => 'metastore_MetaException',
           ),
         -4 => array(
-          'var' => 'ouch2',
+          'var' => 'o2',
           'type' => TType::STRUCT,
           'class' => 'metastore_UnknownTableException',
           ),
         -5 => array(
-          'var' => 'ouch3',
+          'var' => 'o3',
           'type' => TType::STRUCT,
           'class' => 'metastore_UnknownDBException',
           ),
@@ -1068,14 +1068,14 @@ class metastore_ThriftMetaStore_get_tables_result {
       if (isset($vals['success'])) {
         $this->success = $vals['success'];
       }
-      if (isset($vals['ouch1'])) {
-        $this->ouch1 = $vals['ouch1'];
+      if (isset($vals['o1'])) {
+        $this->o1 = $vals['o1'];
       }
-      if (isset($vals['ouch2'])) {
-        $this->ouch2 = $vals['ouch2'];
+      if (isset($vals['o2'])) {
+        $this->o2 = $vals['o2'];
       }
-      if (isset($vals['ouch3'])) {
-        $this->ouch3 = $vals['ouch3'];
+      if (isset($vals['o3'])) {
+        $this->o3 = $vals['o3'];
       }
     }
   }
@@ -1118,24 +1118,24 @@ class metastore_ThriftMetaStore_get_tables_result {
           break;
         case -3:
           if ($ftype == TType::STRUCT) {
-            $this->ouch1 = new metastore_MetaException();
-            $xfer += $this->ouch1->read($input);
+            $this->o1 = new metastore_MetaException();
+            $xfer += $this->o1->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
         case -4:
           if ($ftype == TType::STRUCT) {
-            $this->ouch2 = new metastore_UnknownTableException();
-            $xfer += $this->ouch2->read($input);
+            $this->o2 = new metastore_UnknownTableException();
+            $xfer += $this->o2->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
         case -5:
           if ($ftype == TType::STRUCT) {
-            $this->ouch3 = new metastore_UnknownDBException();
-            $xfer += $this->ouch3->read($input);
+            $this->o3 = new metastore_UnknownDBException();
+            $xfer += $this->o3->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -1167,19 +1167,19 @@ class metastore_ThriftMetaStore_get_tables_result {
       }
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->ouch1 !== null) {
-      $xfer += $output->writeFieldBegin('ouch1', TType::STRUCT, -3);
-      $xfer += $this->ouch1->write($output);
+    if ($this->o1 !== null) {
+      $xfer += $output->writeFieldBegin('o1', TType::STRUCT, -3);
+      $xfer += $this->o1->write($output);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->ouch2 !== null) {
-      $xfer += $output->writeFieldBegin('ouch2', TType::STRUCT, -4);
-      $xfer += $this->ouch2->write($output);
+    if ($this->o2 !== null) {
+      $xfer += $output->writeFieldBegin('o2', TType::STRUCT, -4);
+      $xfer += $this->o2->write($output);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->ouch3 !== null) {
-      $xfer += $output->writeFieldBegin('ouch3', TType::STRUCT, -5);
-      $xfer += $this->ouch3->write($output);
+    if ($this->o3 !== null) {
+      $xfer += $output->writeFieldBegin('o3', TType::STRUCT, -5);
+      $xfer += $this->o3->write($output);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -1265,9 +1265,9 @@ class metastore_ThriftMetaStore_get_schema_result {
   static $_TSPEC;
 
   public $success = null;
-  public $ouch1 = null;
-  public $ouch2 = null;
-  public $ouch3 = null;
+  public $o1 = null;
+  public $o2 = null;
+  public $o3 = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -1285,17 +1285,17 @@ class metastore_ThriftMetaStore_get_schema_result {
             ),
           ),
         -2 => array(
-          'var' => 'ouch1',
+          'var' => 'o1',
           'type' => TType::STRUCT,
           'class' => 'metastore_MetaException',
           ),
         -3 => array(
-          'var' => 'ouch2',
+          'var' => 'o2',
           'type' => TType::STRUCT,
           'class' => 'metastore_UnknownTableException',
           ),
         -4 => array(
-          'var' => 'ouch3',
+          'var' => 'o3',
           'type' => TType::STRUCT,
           'class' => 'metastore_UnknownDBException',
           ),
@@ -1305,14 +1305,14 @@ class metastore_ThriftMetaStore_get_schema_result {
       if (isset($vals['success'])) {
         $this->success = $vals['success'];
       }
-      if (isset($vals['ouch1'])) {
-        $this->ouch1 = $vals['ouch1'];
+      if (isset($vals['o1'])) {
+        $this->o1 = $vals['o1'];
       }
-      if (isset($vals['ouch2'])) {
-        $this->ouch2 = $vals['ouch2'];
+      if (isset($vals['o2'])) {
+        $this->o2 = $vals['o2'];
       }
-      if (isset($vals['ouch3'])) {
-        $this->ouch3 = $vals['ouch3'];
+      if (isset($vals['o3'])) {
+        $this->o3 = $vals['o3'];
       }
     }
   }
@@ -1358,24 +1358,24 @@ class metastore_ThriftMetaStore_get_schema_result {
           break;
         case -2:
           if ($ftype == TType::STRUCT) {
-            $this->ouch1 = new metastore_MetaException();
-            $xfer += $this->ouch1->read($input);
+            $this->o1 = new metastore_MetaException();
+            $xfer += $this->o1->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
         case -3:
           if ($ftype == TType::STRUCT) {
-            $this->ouch2 = new metastore_UnknownTableException();
-            $xfer += $this->ouch2->read($input);
+            $this->o2 = new metastore_UnknownTableException();
+            $xfer += $this->o2->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
         case -4:
           if ($ftype == TType::STRUCT) {
-            $this->ouch3 = new metastore_UnknownDBException();
-            $xfer += $this->ouch3->read($input);
+            $this->o3 = new metastore_UnknownDBException();
+            $xfer += $this->o3->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -1408,19 +1408,19 @@ class metastore_ThriftMetaStore_get_schema_result {
       }
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->ouch1 !== null) {
-      $xfer += $output->writeFieldBegin('ouch1', TType::STRUCT, -2);
-      $xfer += $this->ouch1->write($output);
+    if ($this->o1 !== null) {
+      $xfer += $output->writeFieldBegin('o1', TType::STRUCT, -2);
+      $xfer += $this->o1->write($output);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->ouch2 !== null) {
-      $xfer += $output->writeFieldBegin('ouch2', TType::STRUCT, -3);
-      $xfer += $this->ouch2->write($output);
+    if ($this->o2 !== null) {
+      $xfer += $output->writeFieldBegin('o2', TType::STRUCT, -3);
+      $xfer += $this->o2->write($output);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->ouch3 !== null) {
-      $xfer += $output->writeFieldBegin('ouch3', TType::STRUCT, -4);
-      $xfer += $this->ouch3->write($output);
+    if ($this->o3 !== null) {
+      $xfer += $output->writeFieldBegin('o3', TType::STRUCT, -4);
+      $xfer += $this->o3->write($output);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -1576,39 +1576,39 @@ class metastore_ThriftMetaStore_alter_table_args {
 class metastore_ThriftMetaStore_alter_table_result {
   static $_TSPEC;
 
-  public $ouch1 = null;
-  public $ouch2 = null;
-  public $ouch3 = null;
+  public $o1 = null;
+  public $o2 = null;
+  public $o3 = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
         -4 => array(
-          'var' => 'ouch1',
+          'var' => 'o1',
           'type' => TType::STRUCT,
           'class' => 'metastore_MetaException',
           ),
         -5 => array(
-          'var' => 'ouch2',
+          'var' => 'o2',
           'type' => TType::STRUCT,
           'class' => 'metastore_UnknownTableException',
           ),
         -6 => array(
-          'var' => 'ouch3',
+          'var' => 'o3',
           'type' => TType::STRUCT,
           'class' => 'metastore_UnknownDBException',
           ),
         );
     }
     if (is_array($vals)) {
-      if (isset($vals['ouch1'])) {
-        $this->ouch1 = $vals['ouch1'];
+      if (isset($vals['o1'])) {
+        $this->o1 = $vals['o1'];
       }
-      if (isset($vals['ouch2'])) {
-        $this->ouch2 = $vals['ouch2'];
+      if (isset($vals['o2'])) {
+        $this->o2 = $vals['o2'];
       }
-      if (isset($vals['ouch3'])) {
-        $this->ouch3 = $vals['ouch3'];
+      if (isset($vals['o3'])) {
+        $this->o3 = $vals['o3'];
       }
     }
   }
@@ -1634,24 +1634,24 @@ class metastore_ThriftMetaStore_alter_table_result {
       {
         case -4:
           if ($ftype == TType::STRUCT) {
-            $this->ouch1 = new metastore_MetaException();
-            $xfer += $this->ouch1->read($input);
+            $this->o1 = new metastore_MetaException();
+            $xfer += $this->o1->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
         case -5:
           if ($ftype == TType::STRUCT) {
-            $this->ouch2 = new metastore_UnknownTableException();
-            $xfer += $this->ouch2->read($input);
+            $this->o2 = new metastore_UnknownTableException();
+            $xfer += $this->o2->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
         case -6:
           if ($ftype == TType::STRUCT) {
-            $this->ouch3 = new metastore_UnknownDBException();
-            $xfer += $this->ouch3->read($input);
+            $this->o3 = new metastore_UnknownDBException();
+            $xfer += $this->o3->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -1669,19 +1669,19 @@ class metastore_ThriftMetaStore_alter_table_result {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ThriftMetaStore_alter_table_result');
-    if ($this->ouch1 !== null) {
-      $xfer += $output->writeFieldBegin('ouch1', TType::STRUCT, -4);
-      $xfer += $this->ouch1->write($output);
+    if ($this->o1 !== null) {
+      $xfer += $output->writeFieldBegin('o1', TType::STRUCT, -4);
+      $xfer += $this->o1->write($output);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->ouch2 !== null) {
-      $xfer += $output->writeFieldBegin('ouch2', TType::STRUCT, -5);
-      $xfer += $this->ouch2->write($output);
+    if ($this->o2 !== null) {
+      $xfer += $output->writeFieldBegin('o2', TType::STRUCT, -5);
+      $xfer += $this->o2->write($output);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->ouch3 !== null) {
-      $xfer += $output->writeFieldBegin('ouch3', TType::STRUCT, -6);
-      $xfer += $this->ouch3->write($output);
+    if ($this->o3 !== null) {
+      $xfer += $output->writeFieldBegin('o3', TType::STRUCT, -6);
+      $xfer += $this->o3->write($output);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -1837,30 +1837,30 @@ class metastore_ThriftMetaStore_create_table_args {
 class metastore_ThriftMetaStore_create_table_result {
   static $_TSPEC;
 
-  public $ouch1 = null;
-  public $ouch2 = null;
+  public $o1 = null;
+  public $o2 = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
         -4 => array(
-          'var' => 'ouch1',
+          'var' => 'o1',
           'type' => TType::STRUCT,
           'class' => 'metastore_MetaException',
           ),
         -5 => array(
-          'var' => 'ouch2',
+          'var' => 'o2',
           'type' => TType::STRUCT,
           'class' => 'metastore_UnknownDBException',
           ),
         );
     }
     if (is_array($vals)) {
-      if (isset($vals['ouch1'])) {
-        $this->ouch1 = $vals['ouch1'];
+      if (isset($vals['o1'])) {
+        $this->o1 = $vals['o1'];
       }
-      if (isset($vals['ouch2'])) {
-        $this->ouch2 = $vals['ouch2'];
+      if (isset($vals['o2'])) {
+        $this->o2 = $vals['o2'];
       }
     }
   }
@@ -1886,16 +1886,16 @@ class metastore_ThriftMetaStore_create_table_result {
       {
         case -4:
           if ($ftype == TType::STRUCT) {
-            $this->ouch1 = new metastore_MetaException();
-            $xfer += $this->ouch1->read($input);
+            $this->o1 = new metastore_MetaException();
+            $xfer += $this->o1->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
         case -5:
           if ($ftype == TType::STRUCT) {
-            $this->ouch2 = new metastore_UnknownDBException();
-            $xfer += $this->ouch2->read($input);
+            $this->o2 = new metastore_UnknownDBException();
+            $xfer += $this->o2->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -1913,14 +1913,14 @@ class metastore_ThriftMetaStore_create_table_result {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ThriftMetaStore_create_table_result');
-    if ($this->ouch1 !== null) {
-      $xfer += $output->writeFieldBegin('ouch1', TType::STRUCT, -4);
-      $xfer += $this->ouch1->write($output);
+    if ($this->o1 !== null) {
+      $xfer += $output->writeFieldBegin('o1', TType::STRUCT, -4);
+      $xfer += $this->o1->write($output);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->ouch2 !== null) {
-      $xfer += $output->writeFieldBegin('ouch2', TType::STRUCT, -5);
-      $xfer += $this->ouch2->write($output);
+    if ($this->o2 !== null) {
+      $xfer += $output->writeFieldBegin('o2', TType::STRUCT, -5);
+      $xfer += $this->o2->write($output);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -2025,39 +2025,39 @@ class metastore_ThriftMetaStore_drop_table_args {
 class metastore_ThriftMetaStore_drop_table_result {
   static $_TSPEC;
 
-  public $ouch1 = null;
-  public $ouch2 = null;
-  public $ouch3 = null;
+  public $o1 = null;
+  public $o2 = null;
+  public $o3 = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
         -3 => array(
-          'var' => 'ouch1',
+          'var' => 'o1',
           'type' => TType::STRUCT,
           'class' => 'metastore_MetaException',
           ),
         -4 => array(
-          'var' => 'ouch2',
+          'var' => 'o2',
           'type' => TType::STRUCT,
           'class' => 'metastore_UnknownTableException',
           ),
         -5 => array(
-          'var' => 'ouch3',
+          'var' => 'o3',
           'type' => TType::STRUCT,
           'class' => 'metastore_UnknownDBException',
           ),
         );
     }
     if (is_array($vals)) {
-      if (isset($vals['ouch1'])) {
-        $this->ouch1 = $vals['ouch1'];
+      if (isset($vals['o1'])) {
+        $this->o1 = $vals['o1'];
       }
-      if (isset($vals['ouch2'])) {
-        $this->ouch2 = $vals['ouch2'];
+      if (isset($vals['o2'])) {
+        $this->o2 = $vals['o2'];
       }
-      if (isset($vals['ouch3'])) {
-        $this->ouch3 = $vals['ouch3'];
+      if (isset($vals['o3'])) {
+        $this->o3 = $vals['o3'];
       }
     }
   }
@@ -2083,24 +2083,24 @@ class metastore_ThriftMetaStore_drop_table_result {
       {
         case -3:
           if ($ftype == TType::STRUCT) {
-            $this->ouch1 = new metastore_MetaException();
-            $xfer += $this->ouch1->read($input);
+            $this->o1 = new metastore_MetaException();
+            $xfer += $this->o1->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
         case -4:
           if ($ftype == TType::STRUCT) {
-            $this->ouch2 = new metastore_UnknownTableException();
-            $xfer += $this->ouch2->read($input);
+            $this->o2 = new metastore_UnknownTableException();
+            $xfer += $this->o2->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
         case -5:
           if ($ftype == TType::STRUCT) {
-            $this->ouch3 = new metastore_UnknownDBException();
-            $xfer += $this->ouch3->read($input);
+            $this->o3 = new metastore_UnknownDBException();
+            $xfer += $this->o3->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -2118,19 +2118,19 @@ class metastore_ThriftMetaStore_drop_table_result {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ThriftMetaStore_drop_table_result');
-    if ($this->ouch1 !== null) {
-      $xfer += $output->writeFieldBegin('ouch1', TType::STRUCT, -3);
-      $xfer += $this->ouch1->write($output);
+    if ($this->o1 !== null) {
+      $xfer += $output->writeFieldBegin('o1', TType::STRUCT, -3);
+      $xfer += $this->o1->write($output);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->ouch2 !== null) {
-      $xfer += $output->writeFieldBegin('ouch2', TType::STRUCT, -4);
-      $xfer += $this->ouch2->write($output);
+    if ($this->o2 !== null) {
+      $xfer += $output->writeFieldBegin('o2', TType::STRUCT, -4);
+      $xfer += $this->o2->write($output);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->ouch3 !== null) {
-      $xfer += $output->writeFieldBegin('ouch3', TType::STRUCT, -5);
-      $xfer += $this->ouch3->write($output);
+    if ($this->o3 !== null) {
+      $xfer += $output->writeFieldBegin('o3', TType::STRUCT, -5);
+      $xfer += $this->o3->write($output);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -2255,39 +2255,39 @@ class metastore_ThriftMetaStore_truncate_table_args {
 class metastore_ThriftMetaStore_truncate_table_result {
   static $_TSPEC;
 
-  public $ouch1 = null;
-  public $ouch2 = null;
-  public $ouch3 = null;
+  public $o1 = null;
+  public $o2 = null;
+  public $o3 = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
         -4 => array(
-          'var' => 'ouch1',
+          'var' => 'o1',
           'type' => TType::STRUCT,
           'class' => 'metastore_MetaException',
           ),
         -5 => array(
-          'var' => 'ouch2',
+          'var' => 'o2',
           'type' => TType::STRUCT,
           'class' => 'metastore_UnknownTableException',
           ),
         -6 => array(
-          'var' => 'ouch3',
+          'var' => 'o3',
           'type' => TType::STRUCT,
           'class' => 'metastore_UnknownDBException',
           ),
         );
     }
     if (is_array($vals)) {
-      if (isset($vals['ouch1'])) {
-        $this->ouch1 = $vals['ouch1'];
+      if (isset($vals['o1'])) {
+        $this->o1 = $vals['o1'];
       }
-      if (isset($vals['ouch2'])) {
-        $this->ouch2 = $vals['ouch2'];
+      if (isset($vals['o2'])) {
+        $this->o2 = $vals['o2'];
       }
-      if (isset($vals['ouch3'])) {
-        $this->ouch3 = $vals['ouch3'];
+      if (isset($vals['o3'])) {
+        $this->o3 = $vals['o3'];
       }
     }
   }
@@ -2313,24 +2313,24 @@ class metastore_ThriftMetaStore_truncate_table_result {
       {
         case -4:
           if ($ftype == TType::STRUCT) {
-            $this->ouch1 = new metastore_MetaException();
-            $xfer += $this->ouch1->read($input);
+            $this->o1 = new metastore_MetaException();
+            $xfer += $this->o1->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
         case -5:
           if ($ftype == TType::STRUCT) {
-            $this->ouch2 = new metastore_UnknownTableException();
-            $xfer += $this->ouch2->read($input);
+            $this->o2 = new metastore_UnknownTableException();
+            $xfer += $this->o2->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
         case -6:
           if ($ftype == TType::STRUCT) {
-            $this->ouch3 = new metastore_UnknownDBException();
-            $xfer += $this->ouch3->read($input);
+            $this->o3 = new metastore_UnknownDBException();
+            $xfer += $this->o3->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -2348,19 +2348,19 @@ class metastore_ThriftMetaStore_truncate_table_result {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ThriftMetaStore_truncate_table_result');
-    if ($this->ouch1 !== null) {
-      $xfer += $output->writeFieldBegin('ouch1', TType::STRUCT, -4);
-      $xfer += $this->ouch1->write($output);
+    if ($this->o1 !== null) {
+      $xfer += $output->writeFieldBegin('o1', TType::STRUCT, -4);
+      $xfer += $this->o1->write($output);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->ouch2 !== null) {
-      $xfer += $output->writeFieldBegin('ouch2', TType::STRUCT, -5);
-      $xfer += $this->ouch2->write($output);
+    if ($this->o2 !== null) {
+      $xfer += $output->writeFieldBegin('o2', TType::STRUCT, -5);
+      $xfer += $this->o2->write($output);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->ouch3 !== null) {
-      $xfer += $output->writeFieldBegin('ouch3', TType::STRUCT, -6);
-      $xfer += $this->ouch3->write($output);
+    if ($this->o3 !== null) {
+      $xfer += $output->writeFieldBegin('o3', TType::STRUCT, -6);
+      $xfer += $this->o3->write($output);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -2466,8 +2466,8 @@ class metastore_ThriftMetaStore_table_exists_result {
   static $_TSPEC;
 
   public $success = null;
-  public $ouch1 = null;
-  public $ouch2 = null;
+  public $o1 = null;
+  public $o2 = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -2477,12 +2477,12 @@ class metastore_ThriftMetaStore_table_exists_result {
           'type' => TType::BOOL,
           ),
         -3 => array(
-          'var' => 'ouch1',
+          'var' => 'o1',
           'type' => TType::STRUCT,
           'class' => 'metastore_MetaException',
           ),
         -4 => array(
-          'var' => 'ouch2',
+          'var' => 'o2',
           'type' => TType::STRUCT,
           'class' => 'metastore_UnknownDBException',
           ),
@@ -2492,11 +2492,11 @@ class metastore_ThriftMetaStore_table_exists_result {
       if (isset($vals['success'])) {
         $this->success = $vals['success'];
       }
-      if (isset($vals['ouch1'])) {
-        $this->ouch1 = $vals['ouch1'];
+      if (isset($vals['o1'])) {
+        $this->o1 = $vals['o1'];
       }
-      if (isset($vals['ouch2'])) {
-        $this->ouch2 = $vals['ouch2'];
+      if (isset($vals['o2'])) {
+        $this->o2 = $vals['o2'];
       }
     }
   }
@@ -2529,16 +2529,16 @@ class metastore_ThriftMetaStore_table_exists_result {
           break;
         case -3:
           if ($ftype == TType::STRUCT) {
-            $this->ouch1 = new metastore_MetaException();
-            $xfer += $this->ouch1->read($input);
+            $this->o1 = new metastore_MetaException();
+            $xfer += $this->o1->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
         case -4:
           if ($ftype == TType::STRUCT) {
-            $this->ouch2 = new metastore_UnknownDBException();
-            $xfer += $this->ouch2->read($input);
+            $this->o2 = new metastore_UnknownDBException();
+            $xfer += $this->o2->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -2561,14 +2561,14 @@ class metastore_ThriftMetaStore_table_exists_result {
       $xfer += $output->writeBool($this->success);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->ouch1 !== null) {
-      $xfer += $output->writeFieldBegin('ouch1', TType::STRUCT, -3);
-      $xfer += $this->ouch1->write($output);
+    if ($this->o1 !== null) {
+      $xfer += $output->writeFieldBegin('o1', TType::STRUCT, -3);
+      $xfer += $this->o1->write($output);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->ouch2 !== null) {
-      $xfer += $output->writeFieldBegin('ouch2', TType::STRUCT, -4);
-      $xfer += $this->ouch2->write($output);
+    if ($this->o2 !== null) {
+      $xfer += $output->writeFieldBegin('o2', TType::STRUCT, -4);
+      $xfer += $this->o2->write($output);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -2674,9 +2674,9 @@ class metastore_ThriftMetaStore_get_partitions_result {
   static $_TSPEC;
 
   public $success = null;
-  public $ouch1 = null;
-  public $ouch2 = null;
-  public $ouch3 = null;
+  public $o1 = null;
+  public $o2 = null;
+  public $o3 = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -2690,17 +2690,17 @@ class metastore_ThriftMetaStore_get_partitions_result {
             ),
           ),
         -3 => array(
-          'var' => 'ouch1',
+          'var' => 'o1',
           'type' => TType::STRUCT,
           'class' => 'metastore_MetaException',
           ),
         -4 => array(
-          'var' => 'ouch2',
+          'var' => 'o2',
           'type' => TType::STRUCT,
           'class' => 'metastore_UnknownTableException',
           ),
         -5 => array(
-          'var' => 'ouch3',
+          'var' => 'o3',
           'type' => TType::STRUCT,
           'class' => 'metastore_UnknownDBException',
           ),
@@ -2710,14 +2710,14 @@ class metastore_ThriftMetaStore_get_partitions_result {
       if (isset($vals['success'])) {
         $this->success = $vals['success'];
       }
-      if (isset($vals['ouch1'])) {
-        $this->ouch1 = $vals['ouch1'];
+      if (isset($vals['o1'])) {
+        $this->o1 = $vals['o1'];
       }
-      if (isset($vals['ouch2'])) {
-        $this->ouch2 = $vals['ouch2'];
+      if (isset($vals['o2'])) {
+        $this->o2 = $vals['o2'];
       }
-      if (isset($vals['ouch3'])) {
-        $this->ouch3 = $vals['ouch3'];
+      if (isset($vals['o3'])) {
+        $this->o3 = $vals['o3'];
       }
     }
   }
@@ -2760,24 +2760,24 @@ class metastore_ThriftMetaStore_get_partitions_result {
           break;
         case -3:
           if ($ftype == TType::STRUCT) {
-            $this->ouch1 = new metastore_MetaException();
-            $xfer += $this->ouch1->read($input);
+            $this->o1 = new metastore_MetaException();
+            $xfer += $this->o1->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
         case -4:
           if ($ftype == TType::STRUCT) {
-            $this->ouch2 = new metastore_UnknownTableException();
-            $xfer += $this->ouch2->read($input);
+            $this->o2 = new metastore_UnknownTableException();
+            $xfer += $this->o2->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
         case -5:
           if ($ftype == TType::STRUCT) {
-            $this->ouch3 = new metastore_UnknownDBException();
-            $xfer += $this->ouch3->read($input);
+            $this->o3 = new metastore_UnknownDBException();
+            $xfer += $this->o3->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -2809,19 +2809,19 @@ class metastore_ThriftMetaStore_get_partitions_result {
       }
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->ouch1 !== null) {
-      $xfer += $output->writeFieldBegin('ouch1', TType::STRUCT, -3);
-      $xfer += $this->ouch1->write($output);
+    if ($this->o1 !== null) {
+      $xfer += $output->writeFieldBegin('o1', TType::STRUCT, -3);
+      $xfer += $this->o1->write($output);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->ouch2 !== null) {
-      $xfer += $output->writeFieldBegin('ouch2', TType::STRUCT, -4);
-      $xfer += $this->ouch2->write($output);
+    if ($this->o2 !== null) {
+      $xfer += $output->writeFieldBegin('o2', TType::STRUCT, -4);
+      $xfer += $this->o2->write($output);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->ouch3 !== null) {
-      $xfer += $output->writeFieldBegin('ouch3', TType::STRUCT, -5);
-      $xfer += $this->ouch3->write($output);
+    if ($this->o3 !== null) {
+      $xfer += $output->writeFieldBegin('o3', TType::STRUCT, -5);
+      $xfer += $this->o3->write($output);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -2885,7 +2885,7 @@ class metastore_ThriftMetaStore_get_dbs_result {
   static $_TSPEC;
 
   public $success = null;
-  public $ouch = null;
+  public $o = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -2899,7 +2899,7 @@ class metastore_ThriftMetaStore_get_dbs_result {
             ),
           ),
         -1 => array(
-          'var' => 'ouch',
+          'var' => 'o',
           'type' => TType::STRUCT,
           'class' => 'metastore_MetaException',
           ),
@@ -2909,8 +2909,8 @@ class metastore_ThriftMetaStore_get_dbs_result {
       if (isset($vals['success'])) {
         $this->success = $vals['success'];
       }
-      if (isset($vals['ouch'])) {
-        $this->ouch = $vals['ouch'];
+      if (isset($vals['o'])) {
+        $this->o = $vals['o'];
       }
     }
   }
@@ -2953,8 +2953,8 @@ class metastore_ThriftMetaStore_get_dbs_result {
           break;
         case -1:
           if ($ftype == TType::STRUCT) {
-            $this->ouch = new metastore_MetaException();
-            $xfer += $this->ouch->read($input);
+            $this->o = new metastore_MetaException();
+            $xfer += $this->o->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -2986,9 +2986,9 @@ class metastore_ThriftMetaStore_get_dbs_result {
       }
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->ouch !== null) {
-      $xfer += $output->writeFieldBegin('ouch', TType::STRUCT, -1);
-      $xfer += $this->ouch->write($output);
+    if ($this->o !== null) {
+      $xfer += $output->writeFieldBegin('o', TType::STRUCT, -1);
+      $xfer += $this->o->write($output);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -3134,9 +3134,9 @@ class metastore_ThriftMetaStore_cat_result {
   static $_TSPEC;
 
   public $success = null;
-  public $ouch1 = null;
-  public $ouch2 = null;
-  public $ouch3 = null;
+  public $o1 = null;
+  public $o2 = null;
+  public $o3 = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -3150,17 +3150,17 @@ class metastore_ThriftMetaStore_cat_result {
             ),
           ),
         -5 => array(
-          'var' => 'ouch1',
+          'var' => 'o1',
           'type' => TType::STRUCT,
           'class' => 'metastore_MetaException',
           ),
         -6 => array(
-          'var' => 'ouch2',
+          'var' => 'o2',
           'type' => TType::STRUCT,
           'class' => 'metastore_UnknownDBException',
           ),
         -7 => array(
-          'var' => 'ouch3',
+          'var' => 'o3',
           'type' => TType::STRUCT,
           'class' => 'metastore_UnknownTableException',
           ),
@@ -3170,14 +3170,14 @@ class metastore_ThriftMetaStore_cat_result {
       if (isset($vals['success'])) {
         $this->success = $vals['success'];
       }
-      if (isset($vals['ouch1'])) {
-        $this->ouch1 = $vals['ouch1'];
+      if (isset($vals['o1'])) {
+        $this->o1 = $vals['o1'];
       }
-      if (isset($vals['ouch2'])) {
-        $this->ouch2 = $vals['ouch2'];
+      if (isset($vals['o2'])) {
+        $this->o2 = $vals['o2'];
       }
-      if (isset($vals['ouch3'])) {
-        $this->ouch3 = $vals['ouch3'];
+      if (isset($vals['o3'])) {
+        $this->o3 = $vals['o3'];
       }
     }
   }
@@ -3220,24 +3220,24 @@ class metastore_ThriftMetaStore_cat_result {
           break;
         case -5:
           if ($ftype == TType::STRUCT) {
-            $this->ouch1 = new metastore_MetaException();
-            $xfer += $this->ouch1->read($input);
+            $this->o1 = new metastore_MetaException();
+            $xfer += $this->o1->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
         case -6:
           if ($ftype == TType::STRUCT) {
-            $this->ouch2 = new metastore_UnknownDBException();
-            $xfer += $this->ouch2->read($input);
+            $this->o2 = new metastore_UnknownDBException();
+            $xfer += $this->o2->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
         case -7:
           if ($ftype == TType::STRUCT) {
-            $this->ouch3 = new metastore_UnknownTableException();
-            $xfer += $this->ouch3->read($input);
+            $this->o3 = new metastore_UnknownTableException();
+            $xfer += $this->o3->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -3269,19 +3269,19 @@ class metastore_ThriftMetaStore_cat_result {
       }
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->ouch1 !== null) {
-      $xfer += $output->writeFieldBegin('ouch1', TType::STRUCT, -5);
-      $xfer += $this->ouch1->write($output);
+    if ($this->o1 !== null) {
+      $xfer += $output->writeFieldBegin('o1', TType::STRUCT, -5);
+      $xfer += $this->o1->write($output);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->ouch2 !== null) {
-      $xfer += $output->writeFieldBegin('ouch2', TType::STRUCT, -6);
-      $xfer += $this->ouch2->write($output);
+    if ($this->o2 !== null) {
+      $xfer += $output->writeFieldBegin('o2', TType::STRUCT, -6);
+      $xfer += $this->o2->write($output);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->ouch3 !== null) {
-      $xfer += $output->writeFieldBegin('ouch3', TType::STRUCT, -7);
-      $xfer += $this->ouch3->write($output);
+    if ($this->o3 !== null) {
+      $xfer += $output->writeFieldBegin('o3', TType::STRUCT, -7);
+      $xfer += $this->o3->write($output);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -3324,12 +3324,12 @@ class ThriftMetaStoreProcessor extends FacebookServiceProcessor {
     $result = new metastore_ThriftMetaStore_get_fields_result();
     try {
       $result->success = $this->handler_->get_fields($args->db_name, $args->table_name);
-    } catch (metastore_MetaException $ouch1) {
-      $result->ouch1 = $ouch1;
-        } catch (metastore_UnknownTableException $ouch2) {
-      $result->ouch2 = $ouch2;
-        } catch (metastore_UnknownDBException $ouch3) {
-      $result->ouch3 = $ouch3;
+    } catch (metastore_MetaException $o1) {
+      $result->o1 = $o1;
+        } catch (metastore_UnknownTableException $o2) {
+      $result->o2 = $o2;
+        } catch (metastore_UnknownDBException $o3) {
+      $result->o3 = $o3;
     }
     $output->writeMessageBegin('get_fields', TMessageType::REPLY, $seqid);
     $result->write($output);
@@ -3342,12 +3342,12 @@ class ThriftMetaStoreProcessor extends FacebookServiceProcessor {
     $result = new metastore_ThriftMetaStore_get_tables_result();
     try {
       $result->success = $this->handler_->get_tables($args->db_name, $args->pattern);
-    } catch (metastore_MetaException $ouch1) {
-      $result->ouch1 = $ouch1;
-        } catch (metastore_UnknownTableException $ouch2) {
-      $result->ouch2 = $ouch2;
-        } catch (metastore_UnknownDBException $ouch3) {
-      $result->ouch3 = $ouch3;
+    } catch (metastore_MetaException $o1) {
+      $result->o1 = $o1;
+        } catch (metastore_UnknownTableException $o2) {
+      $result->o2 = $o2;
+        } catch (metastore_UnknownDBException $o3) {
+      $result->o3 = $o3;
     }
     $output->writeMessageBegin('get_tables', TMessageType::REPLY, $seqid);
     $result->write($output);
@@ -3360,12 +3360,12 @@ class ThriftMetaStoreProcessor extends FacebookServiceProcessor {
     $result = new metastore_ThriftMetaStore_get_schema_result();
     try {
       $result->success = $this->handler_->get_schema($args->table_name);
-    } catch (metastore_MetaException $ouch1) {
-      $result->ouch1 = $ouch1;
-        } catch (metastore_UnknownTableException $ouch2) {
-      $result->ouch2 = $ouch2;
-        } catch (metastore_UnknownDBException $ouch3) {
-      $result->ouch3 = $ouch3;
+    } catch (metastore_MetaException $o1) {
+      $result->o1 = $o1;
+        } catch (metastore_UnknownTableException $o2) {
+      $result->o2 = $o2;
+        } catch (metastore_UnknownDBException $o3) {
+      $result->o3 = $o3;
     }
     $output->writeMessageBegin('get_schema', TMessageType::REPLY, $seqid);
     $result->write($output);
@@ -3378,12 +3378,12 @@ class ThriftMetaStoreProcessor extends FacebookServiceProcessor {
     $result = new metastore_ThriftMetaStore_alter_table_result();
     try {
       $this->handler_->alter_table($args->db_name, $args->table_name, $args->schema);
-    } catch (metastore_MetaException $ouch1) {
-      $result->ouch1 = $ouch1;
-        } catch (metastore_UnknownTableException $ouch2) {
-      $result->ouch2 = $ouch2;
-        } catch (metastore_UnknownDBException $ouch3) {
-      $result->ouch3 = $ouch3;
+    } catch (metastore_MetaException $o1) {
+      $result->o1 = $o1;
+        } catch (metastore_UnknownTableException $o2) {
+      $result->o2 = $o2;
+        } catch (metastore_UnknownDBException $o3) {
+      $result->o3 = $o3;
     }
     $output->writeMessageBegin('alter_table', TMessageType::REPLY, $seqid);
     $result->write($output);
@@ -3396,10 +3396,10 @@ class ThriftMetaStoreProcessor extends FacebookServiceProcessor {
     $result = new metastore_ThriftMetaStore_create_table_result();
     try {
       $this->handler_->create_table($args->db_name, $args->table_name, $args->schema);
-    } catch (metastore_MetaException $ouch1) {
-      $result->ouch1 = $ouch1;
-        } catch (metastore_UnknownDBException $ouch2) {
-      $result->ouch2 = $ouch2;
+    } catch (metastore_MetaException $o1) {
+      $result->o1 = $o1;
+        } catch (metastore_UnknownDBException $o2) {
+      $result->o2 = $o2;
     }
     $output->writeMessageBegin('create_table', TMessageType::REPLY, $seqid);
     $result->write($output);
@@ -3412,12 +3412,12 @@ class ThriftMetaStoreProcessor extends FacebookServiceProcessor {
     $result = new metastore_ThriftMetaStore_drop_table_result();
     try {
       $this->handler_->drop_table($args->db_name, $args->table_name);
-    } catch (metastore_MetaException $ouch1) {
-      $result->ouch1 = $ouch1;
-        } catch (metastore_UnknownTableException $ouch2) {
-      $result->ouch2 = $ouch2;
-        } catch (metastore_UnknownDBException $ouch3) {
-      $result->ouch3 = $ouch3;
+    } catch (metastore_MetaException $o1) {
+      $result->o1 = $o1;
+        } catch (metastore_UnknownTableException $o2) {
+      $result->o2 = $o2;
+        } catch (metastore_UnknownDBException $o3) {
+      $result->o3 = $o3;
     }
     $output->writeMessageBegin('drop_table', TMessageType::REPLY, $seqid);
     $result->write($output);
@@ -3430,12 +3430,12 @@ class ThriftMetaStoreProcessor extends FacebookServiceProcessor {
     $result = new metastore_ThriftMetaStore_truncate_table_result();
     try {
       $this->handler_->truncate_table($args->db_name, $args->table_name, $args->partition);
-    } catch (metastore_MetaException $ouch1) {
-      $result->ouch1 = $ouch1;
-        } catch (metastore_UnknownTableException $ouch2) {
-      $result->ouch2 = $ouch2;
-        } catch (metastore_UnknownDBException $ouch3) {
-      $result->ouch3 = $ouch3;
+    } catch (metastore_MetaException $o1) {
+      $result->o1 = $o1;
+        } catch (metastore_UnknownTableException $o2) {
+      $result->o2 = $o2;
+        } catch (metastore_UnknownDBException $o3) {
+      $result->o3 = $o3;
     }
     $output->writeMessageBegin('truncate_table', TMessageType::REPLY, $seqid);
     $result->write($output);
@@ -3448,10 +3448,10 @@ class ThriftMetaStoreProcessor extends FacebookServiceProcessor {
     $result = new metastore_ThriftMetaStore_table_exists_result();
     try {
       $result->success = $this->handler_->table_exists($args->db_name, $args->table_name);
-    } catch (metastore_MetaException $ouch1) {
-      $result->ouch1 = $ouch1;
-        } catch (metastore_UnknownDBException $ouch2) {
-      $result->ouch2 = $ouch2;
+    } catch (metastore_MetaException $o1) {
+      $result->o1 = $o1;
+        } catch (metastore_UnknownDBException $o2) {
+      $result->o2 = $o2;
     }
     $output->writeMessageBegin('table_exists', TMessageType::REPLY, $seqid);
     $result->write($output);
@@ -3464,12 +3464,12 @@ class ThriftMetaStoreProcessor extends FacebookServiceProcessor {
     $result = new metastore_ThriftMetaStore_get_partitions_result();
     try {
       $result->success = $this->handler_->get_partitions($args->db_name, $args->table_name);
-    } catch (metastore_MetaException $ouch1) {
-      $result->ouch1 = $ouch1;
-        } catch (metastore_UnknownTableException $ouch2) {
-      $result->ouch2 = $ouch2;
-        } catch (metastore_UnknownDBException $ouch3) {
-      $result->ouch3 = $ouch3;
+    } catch (metastore_MetaException $o1) {
+      $result->o1 = $o1;
+        } catch (metastore_UnknownTableException $o2) {
+      $result->o2 = $o2;
+        } catch (metastore_UnknownDBException $o3) {
+      $result->o3 = $o3;
     }
     $output->writeMessageBegin('get_partitions', TMessageType::REPLY, $seqid);
     $result->write($output);
@@ -3482,8 +3482,8 @@ class ThriftMetaStoreProcessor extends FacebookServiceProcessor {
     $result = new metastore_ThriftMetaStore_get_dbs_result();
     try {
       $result->success = $this->handler_->get_dbs();
-    } catch (metastore_MetaException $ouch) {
-      $result->ouch = $ouch;
+    } catch (metastore_MetaException $o) {
+      $result->o = $o;
     }
     $output->writeMessageBegin('get_dbs', TMessageType::REPLY, $seqid);
     $result->write($output);
@@ -3496,12 +3496,12 @@ class ThriftMetaStoreProcessor extends FacebookServiceProcessor {
     $result = new metastore_ThriftMetaStore_cat_result();
     try {
       $result->success = $this->handler_->cat($args->db_name, $args->table_name, $args->partition, $args->high);
-    } catch (metastore_MetaException $ouch1) {
-      $result->ouch1 = $ouch1;
-        } catch (metastore_UnknownDBException $ouch2) {
-      $result->ouch2 = $ouch2;
-        } catch (metastore_UnknownTableException $ouch3) {
-      $result->ouch3 = $ouch3;
+    } catch (metastore_MetaException $o1) {
+      $result->o1 = $o1;
+        } catch (metastore_UnknownDBException $o2) {
+      $result->o2 = $o2;
+        } catch (metastore_UnknownTableException $o3) {
+      $result->o3 = $o3;
     }
     $output->writeMessageBegin('cat', TMessageType::REPLY, $seqid);
     $result->write($output);

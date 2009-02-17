@@ -20,7 +20,7 @@
         <void property="aliasToWork"> 
          <object class="java.util.HashMap"> 
           <void method="put"> 
-           <string>/data/users/athusoo/commits/hive_trunk_ws2/build/ql/tmp/362183700/102440280.10002</string> 
+           <string>/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/tmp/84899879/216101875.10002</string> 
            <object id="ReduceSinkOperator0" class="org.apache.hadoop.hive.ql.exec.ReduceSinkOperator"> 
             <void property="conf"> 
              <object class="org.apache.hadoop.hive.ql.plan.reduceSinkDesc"> 
@@ -173,7 +173,7 @@
                     <void property="conf"> 
                      <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                       <void property="dirName"> 
-                       <string>/data/users/athusoo/commits/hive_trunk_ws2/build/ql/tmp/362183700/102440280.10002</string> 
+                       <string>/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/tmp/84899879/216101875.10002</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object id="tableDesc2" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -840,10 +840,10 @@
         <void property="pathToAliases"> 
          <object class="java.util.LinkedHashMap"> 
           <void method="put"> 
-           <string>/data/users/athusoo/commits/hive_trunk_ws2/build/ql/tmp/362183700/102440280.10002</string> 
+           <string>/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/tmp/84899879/216101875.10002</string> 
            <object class="java.util.ArrayList"> 
             <void method="add"> 
-             <string>/data/users/athusoo/commits/hive_trunk_ws2/build/ql/tmp/362183700/102440280.10002</string> 
+             <string>/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/tmp/84899879/216101875.10002</string> 
             </void> 
            </object> 
           </void> 
@@ -852,7 +852,7 @@
         <void property="pathToPartitionInfo"> 
          <object class="java.util.LinkedHashMap"> 
           <void method="put"> 
-           <string>/data/users/athusoo/commits/hive_trunk_ws2/build/ql/tmp/362183700/102440280.10002</string> 
+           <string>/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/tmp/84899879/216101875.10002</string> 
            <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
             <void property="tableDesc"> 
              <object idref="tableDesc2"/> 
@@ -874,7 +874,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>/data/users/athusoo/commits/hive_trunk_ws2/ql/../build/ql/tmp/343125472.10001.insclause-0</string> 
+                     <string>/data/users/zshao/sync/apache-trunk-HIVE-270/ql/../build/ql/tmp/1547283573.10001.insclause-0</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -1309,7 +1309,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/athusoo/commits/hive_trunk_ws2/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src</string> 
@@ -1321,7 +1321,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/athusoo/commits/hive_trunk_ws2/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"/> 
@@ -1342,6 +1342,10 @@
             <void method="put"> 
              <string>name</string> 
              <string>src</string> 
+            </void> 
+            <void method="put"> 
+             <string>columns.types</string> 
+             <string>string:string</string> 
             </void> 
             <void method="put"> 
              <string>serialization.ddl</string> 
@@ -1373,7 +1377,7 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/data/users/athusoo/commits/hive_trunk_ws2/build/ql/test/data/warehouse/src</string> 
+             <string>file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/src</string> 
             </void> 
            </object> 
           </void> 

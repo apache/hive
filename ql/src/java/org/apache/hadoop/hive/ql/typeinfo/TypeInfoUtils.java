@@ -147,24 +147,6 @@ public class TypeInfoUtils {
     );
   }
 
-  /**
-   * The mapping from type name in DDL to the Java class. 
-   */
-  public static final Map<String, Class<?>> TypeNameToClass = new HashMap<String, Class<?>>();
-  static {
-    TypeNameToClass.put(Constants.BOOLEAN_TYPE_NAME, Boolean.class);
-    TypeNameToClass.put(Constants.TINYINT_TYPE_NAME, Byte.class);
-    TypeNameToClass.put(Constants.SMALLINT_TYPE_NAME, Short.class);
-    TypeNameToClass.put(Constants.INT_TYPE_NAME, Integer.class);
-    TypeNameToClass.put(Constants.BIGINT_TYPE_NAME, Long.class);
-    TypeNameToClass.put(Constants.FLOAT_TYPE_NAME, Float.class);
-    TypeNameToClass.put(Constants.DOUBLE_TYPE_NAME, Double.class);
-    TypeNameToClass.put(Constants.STRING_TYPE_NAME, String.class);
-    TypeNameToClass.put(Constants.DATE_TYPE_NAME, java.sql.Date.class);
-    // These types are not supported yet. 
-    // TypeNameToClass.put(Constants.DATETIME_TYPE_NAME);
-    // TypeNameToClass.put(Constants.TIMESTAMP_TYPE_NAME);
-  }
   
   /**
    * Return the primitive type corresponding to the field schema
@@ -174,7 +156,7 @@ public class TypeInfoUtils {
   public static TypeInfo getPrimitiveTypeInfoFromFieldSchema(FieldSchema field) {
     String type = field.getType();
     
-    Class<?> c = TypeNameToClass.get(type);
+    Class<?> c = ObjectInspectorUtils.typeNameToClass.get(type);
     return c == null ? null : TypeInfoFactory.getPrimitiveTypeInfo(c);
   }
 }

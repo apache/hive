@@ -180,6 +180,20 @@ public class ObjectInspectorFactory {
     }
     return result;
   }
+
+  static HashMap<ArrayList<List<?>>, LazySimpleStructObjectInspector> cachedLazySimpleStructObjectInspector =
+    new HashMap<ArrayList<List<?>>, LazySimpleStructObjectInspector>(); 
+  public static LazySimpleStructObjectInspector getLazySimpleStructObjectInspector(List<String> structFieldNames, List<ObjectInspector> structFieldObjectInspectors) {
+    ArrayList<List<?>> signature = new ArrayList<List<?>>();
+    signature.add(structFieldNames);
+    signature.add(structFieldObjectInspectors);
+    LazySimpleStructObjectInspector result = cachedLazySimpleStructObjectInspector.get(signature);
+    if (result == null) {
+      result = new LazySimpleStructObjectInspector(structFieldNames, structFieldObjectInspectors);
+      cachedLazySimpleStructObjectInspector.put(signature, result);
+    }
+    return result;
+  }
   
   static HashMap<List<StructObjectInspector>, UnionStructObjectInspector> cachedUnionStructObjectInspector =
     new HashMap<List<StructObjectInspector>, UnionStructObjectInspector>(); 

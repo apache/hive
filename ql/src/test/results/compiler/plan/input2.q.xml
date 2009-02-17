@@ -31,7 +31,7 @@
              <boolean>true</boolean> 
             </void> 
             <void property="sourceDir"> 
-             <string>/data/users/athusoo/apacheprojects/hive_local_ws3/ql/../build/ql/tmp/238674319/24398083.10000.insclause-0</string> 
+             <string>/data/users/zshao/sync/apache-trunk-HIVE-270/ql/../build/ql/tmp/776287010/278417811.10000.insclause-0</string> 
             </void> 
             <void property="table"> 
              <object id="tableDesc0" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -49,6 +49,10 @@
                 <void method="put"> 
                  <string>name</string> 
                  <string>dest1</string> 
+                </void> 
+                <void method="put"> 
+                 <string>columns.types</string> 
+                 <string>string:string</string> 
                 </void> 
                 <void method="put"> 
                  <string>serialization.ddl</string> 
@@ -80,7 +84,7 @@
                 </void> 
                 <void method="put"> 
                  <string>location</string> 
-                 <string>file:/data/users/athusoo/apacheprojects/hive_local_ws3/build/ql/test/data/warehouse/dest1</string> 
+                 <string>file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/dest1</string> 
                 </void> 
                </object> 
               </void> 
@@ -100,7 +104,7 @@
              <boolean>true</boolean> 
             </void> 
             <void property="sourceDir"> 
-             <string>/data/users/athusoo/apacheprojects/hive_local_ws3/ql/../build/ql/tmp/238674319/24398083.10001.insclause-1</string> 
+             <string>/data/users/zshao/sync/apache-trunk-HIVE-270/ql/../build/ql/tmp/776287010/278417811.10001.insclause-1</string> 
             </void> 
             <void property="table"> 
              <object id="tableDesc1" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -118,6 +122,10 @@
                 <void method="put"> 
                  <string>name</string> 
                  <string>dest2</string> 
+                </void> 
+                <void method="put"> 
+                 <string>columns.types</string> 
+                 <string>string:string</string> 
                 </void> 
                 <void method="put"> 
                  <string>serialization.ddl</string> 
@@ -149,7 +157,7 @@
                 </void> 
                 <void method="put"> 
                  <string>location</string> 
-                 <string>file:/data/users/athusoo/apacheprojects/hive_local_ws3/build/ql/test/data/warehouse/dest2</string> 
+                 <string>file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/dest2</string> 
                 </void> 
                </object> 
               </void> 
@@ -178,7 +186,7 @@
              <boolean>true</boolean> 
             </void> 
             <void property="sourceDir"> 
-             <string>/data/users/athusoo/apacheprojects/hive_local_ws3/ql/../build/ql/tmp/238674319/24398083.10002.insclause-2</string> 
+             <string>/data/users/zshao/sync/apache-trunk-HIVE-270/ql/../build/ql/tmp/776287010/278417811.10002.insclause-2</string> 
             </void> 
             <void property="table"> 
              <object id="tableDesc2" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -196,6 +204,10 @@
                 <void method="put"> 
                  <string>name</string> 
                  <string>dest3</string> 
+                </void> 
+                <void method="put"> 
+                 <string>columns.types</string> 
+                 <string>string:string</string> 
                 </void> 
                 <void method="put"> 
                  <string>serialization.ddl</string> 
@@ -231,7 +243,7 @@
                 </void> 
                 <void method="put"> 
                  <string>location</string> 
-                 <string>file:/data/users/athusoo/apacheprojects/hive_local_ws3/build/ql/test/data/warehouse/dest3</string> 
+                 <string>file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/dest3</string> 
                 </void> 
                </object> 
               </void> 
@@ -275,7 +287,7 @@
                     <void property="conf"> 
                      <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                       <void property="dirName"> 
-                       <string>/data/users/athusoo/apacheprojects/hive_local_ws3/ql/../build/ql/tmp/238674319/24398083.10000.insclause-0</string> 
+                       <string>/data/users/zshao/sync/apache-trunk-HIVE-270/ql/../build/ql/tmp/776287010/278417811.10000.insclause-0</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object idref="tableDesc0"/> 
@@ -535,7 +547,7 @@
                     <void property="conf"> 
                      <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                       <void property="dirName"> 
-                       <string>/data/users/athusoo/apacheprojects/hive_local_ws3/ql/../build/ql/tmp/238674319/24398083.10001.insclause-1</string> 
+                       <string>/data/users/zshao/sync/apache-trunk-HIVE-270/ql/../build/ql/tmp/776287010/278417811.10001.insclause-1</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object idref="tableDesc1"/> 
@@ -877,7 +889,7 @@
                     <void property="conf"> 
                      <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                       <void property="dirName"> 
-                       <string>/data/users/athusoo/apacheprojects/hive_local_ws3/ql/../build/ql/tmp/238674319/24398083.10002.insclause-2</string> 
+                       <string>/data/users/zshao/sync/apache-trunk-HIVE-270/ql/../build/ql/tmp/776287010/278417811.10002.insclause-2</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object idref="tableDesc2"/> 
@@ -1100,7 +1112,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/athusoo/apacheprojects/hive_local_ws3/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src</string> 
@@ -1112,7 +1124,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/athusoo/apacheprojects/hive_local_ws3/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"/> 
@@ -1133,6 +1145,10 @@
             <void method="put"> 
              <string>name</string> 
              <string>src</string> 
+            </void> 
+            <void method="put"> 
+             <string>columns.types</string> 
+             <string>string:string</string> 
             </void> 
             <void method="put"> 
              <string>serialization.ddl</string> 
@@ -1164,7 +1180,7 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/data/users/athusoo/apacheprojects/hive_local_ws3/build/ql/test/data/warehouse/src</string> 
+             <string>file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/src</string> 
             </void> 
            </object> 
           </void> 

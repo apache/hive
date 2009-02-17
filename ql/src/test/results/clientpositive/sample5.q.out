@@ -28,33 +28,35 @@ STAGE PLANS:
                         type: string
                   File Output Operator
                     compressed: false
-                    directory: /data/users/athusoo/commits/hive_trunk_ws1/ql/../build/ql/tmp/379123596/110097939.10000.insclause-0
+                    directory: /data/users/zshao/sync/apache-trunk-HIVE-270/ql/../build/ql/tmp/563028613/291559300.10000.insclause-0
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
                         properties:
                           name dest1
+                          columns.types int:string
                           serialization.ddl struct dest1 { i32 key, string value}
-                          serialization.format org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol
+                          serialization.format 1
                           columns key,value
                           bucket_count -1
-                          serialization.lib org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           file.inputformat org.apache.hadoop.mapred.TextInputFormat
                           file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                          location file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/dest1
-                        serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
+                          location file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/dest1
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: dest1
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcbucket 
+        file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/srcbucket 
       Path -> Partition:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcbucket 
+        file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/srcbucket 
           Partition
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
               properties:
                 name srcbucket
+                columns.types string:string
                 bucket_field_name key
                 serialization.ddl struct srcbucket { string key, string value}
                 columns key,value
@@ -63,7 +65,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                location file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcbucket
+                location file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/srcbucket
               serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
               name: srcbucket
 
@@ -71,21 +73,22 @@ STAGE PLANS:
     Move Operator
       tables:
             replace: true
-            source: /data/users/athusoo/commits/hive_trunk_ws1/ql/../build/ql/tmp/379123596/110097939.10000.insclause-0
+            source: /data/users/zshao/sync/apache-trunk-HIVE-270/ql/../build/ql/tmp/563028613/291559300.10000.insclause-0
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
                 properties:
                   name dest1
+                  columns.types int:string
                   serialization.ddl struct dest1 { i32 key, string value}
-                  serialization.format org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol
+                  serialization.format 1
                   columns key,value
                   bucket_count -1
-                  serialization.lib org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   file.inputformat org.apache.hadoop.mapred.TextInputFormat
                   file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                  location file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/dest1
-                serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
+                  location file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/dest1
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: dest1
 
 

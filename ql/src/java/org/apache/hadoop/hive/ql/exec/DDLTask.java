@@ -660,14 +660,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     /**
-     * If the user didn't specify a SerDe, and any of the columns are not of type String, 
+     * We use LazySimpleSerDe by default.
+     * 
+     * If the user didn't specify a SerDe, and any of the columns are not simple types, 
      * we will have to use DynamicSerDe instead.
      */
     if (crtTbl.getSerName() == null) {
       boolean useDynamicSerDe = false;
       if (crtTbl.getCols() != null) {
         for (FieldSchema field: crtTbl.getCols()) {
-          if (!Constants.STRING_TYPE_NAME.equalsIgnoreCase(field.getType())) {
+          if (field.getType().indexOf('<') >= 0 || field.getType().indexOf('>') >= 0) {
             useDynamicSerDe = true;
           }
         }
@@ -676,6 +678,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         LOG.info("Default to DynamicSerDe for table " + crtTbl.getTableName() );
         tbl.setSerializationLib(org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe.class.getName());
         tbl.setSerdeParam(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol.class.getName());
+      } else {
+        LOG.info("Default to LazySimpleSerDe for table " + crtTbl.getTableName() );
+        tbl.setSerializationLib(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
       }
     }
 

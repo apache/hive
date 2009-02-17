@@ -344,11 +344,13 @@ public class MetaStoreUtils {
     if(org.apache.commons.lang.StringUtils.isNotBlank(schema.getProperty(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_CLASS))) {
       setSerdeParam(t.getSd().getSerdeInfo(), schema, org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_SERDE);
     }
-    // needed for MetadataTypedColumnSetSerDe
+    // needed for MetadataTypedColumnSetSerDe and LazySimpleSerDe
     setSerdeParam(t.getSd().getSerdeInfo(), schema, org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_COLUMNS);
+    // needed for LazySimpleSerDe
+    setSerdeParam(t.getSd().getSerdeInfo(), schema, org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_COLUMN_TYPES);
     // needed for DynamicSerDe
     setSerdeParam(t.getSd().getSerdeInfo(), schema, org.apache.hadoop.hive.serde.Constants.SERIALIZATION_DDL);
-    
+      
     String colstr = schema.getProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_COLUMNS);
     List<FieldSchema>  fields = new ArrayList<FieldSchema>();
     if(colstr != null) {
@@ -385,6 +387,7 @@ public class MetaStoreUtils {
     schema.remove(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_LIB);
     schema.remove(Constants.META_TABLE_SERDE);
     schema.remove(Constants.META_TABLE_COLUMNS);
+    schema.remove(Constants.META_TABLE_COLUMN_TYPES);
     
     // add the remaining unknown parameters to the table's parameters
     t.setParameters(new HashMap<String, String>());
@@ -485,17 +488,22 @@ public class MetaStoreUtils {
     if(tbl.getSd().getSerdeInfo().getSerializationLib() != null) {
       schema.setProperty(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_LIB, tbl.getSd().getSerdeInfo().getSerializationLib());
     }
-    StringBuilder buf = new StringBuilder();
+    StringBuilder colNameBuf = new StringBuilder();
+    StringBuilder colTypeBuf = new StringBuilder();
     boolean first = true;
     for (FieldSchema col: tbl.getSd().getCols()) {
       if (!first) {
-        buf.append(",");
+        colNameBuf.append(",");
+        colTypeBuf.append(":");
       }
-      buf.append(col.getName());
+      colNameBuf.append(col.getName());
+      colTypeBuf.append(col.getType());
       first = false;
     }
-    String cols = buf.toString();
-    schema.setProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_COLUMNS, cols);
+    String colNames = colNameBuf.toString();
+    String colTypes = colTypeBuf.toString();
+    schema.setProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_COLUMNS, colNames);
+    schema.setProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_COLUMN_TYPES, colTypes);
     schema.setProperty(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_DDL, 
         getDDLFromFieldSchema(tbl.getTableName(), tbl.getSd().getCols()));
     

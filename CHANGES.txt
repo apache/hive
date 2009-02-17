@@ -71,6 +71,9 @@ Release 0.2.0 - Unreleased
 
   IMPROVEMENTS
 
+    HIVE-270. Add a lazy-deserialized SerDe for efficient deserialization of
+    rows with primitive types. (zshao)
+
     HIVE-288. Removed the old serde package. (zshao)
 
     HIVE-240. Support CREATE TABLE IF NOT EXISTS. (zshao)

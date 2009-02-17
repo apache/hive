@@ -1,2 +1,2 @@
-Invalid table columns : Partition column name ds conflicts with table columns.
+Replace columns is not supported for this table. SerDe may be incompatible.
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

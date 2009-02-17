@@ -31,7 +31,7 @@
              <boolean>true</boolean> 
             </void> 
             <void property="sourceDir"> 
-             <string>/data/users/zshao/sync/apache-trunk-HIVE-105/ql/../build/ql/tmp/768672036.10000.insclause-0</string> 
+             <string>/data/users/zshao/sync/apache-trunk-HIVE-270/ql/../build/ql/tmp/28333182.10000.insclause-0</string> 
             </void> 
             <void property="table"> 
              <object id="tableDesc0" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -49,6 +49,10 @@
                 <void method="put"> 
                  <string>name</string> 
                  <string>dest1</string> 
+                </void> 
+                <void method="put"> 
+                 <string>columns.types</string> 
+                 <string>string:string</string> 
                 </void> 
                 <void method="put"> 
                  <string>serialization.ddl</string> 
@@ -80,7 +84,7 @@
                 </void> 
                 <void method="put"> 
                  <string>location</string> 
-                 <string>file:/data/users/zshao/sync/apache-trunk-HIVE-105/build/ql/test/data/warehouse/dest1</string> 
+                 <string>file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/dest1</string> 
                 </void> 
                </object> 
               </void> 
@@ -605,7 +609,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-105/build/ql/test/data/warehouse/src_thrift</string> 
+       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/src_thrift</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>tmap:src_thrift</string> 
@@ -617,7 +621,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-105/build/ql/test/data/warehouse/src_thrift</string> 
+       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/src_thrift</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"/> 
@@ -638,6 +642,10 @@
             <void method="put"> 
              <string>name</string> 
              <string>src_thrift</string> 
+            </void> 
+            <void method="put"> 
+             <string>columns.types</string> 
+             <string></string> 
             </void> 
             <void method="put"> 
              <string>serialization.ddl</string> 
@@ -673,7 +681,7 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/data/users/zshao/sync/apache-trunk-HIVE-105/build/ql/test/data/warehouse/src_thrift</string> 
+             <string>file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/src_thrift</string> 
             </void> 
            </object> 
           </void> 
@@ -699,7 +707,7 @@
               <void property="conf"> 
                <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                 <void property="dirName"> 
-                 <string>/data/users/zshao/sync/apache-trunk-HIVE-105/ql/../build/ql/tmp/768672036.10000.insclause-0</string> 
+                 <string>/data/users/zshao/sync/apache-trunk-HIVE-270/ql/../build/ql/tmp/28333182.10000.insclause-0</string> 
                 </void> 
                 <void property="tableInfo"> 
                  <object idref="tableDesc0"/> 

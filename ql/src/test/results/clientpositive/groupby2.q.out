@@ -43,7 +43,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /tmp/hive-zshao/75837910/35360202.10001 
+        /data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/tmp/398752760/916418821.10001 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -88,7 +88,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: dest_g2
 
   Stage: Stage-0
@@ -98,7 +98,7 @@ STAGE PLANS:
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: dest_g2
 
 

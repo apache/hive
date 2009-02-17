@@ -89,14 +89,14 @@ iprot_.readMessageEnd();
 if (result.__isset.success) {
   return result.success;
 }
-if (result.__isset.ouch1) {
-  throw result.ouch1;
+if (result.__isset.o1) {
+  throw result.o1;
 }
-if (result.__isset.ouch2) {
-  throw result.ouch2;
+if (result.__isset.o2) {
+  throw result.o2;
 }
-if (result.__isset.ouch3) {
-  throw result.ouch3;
+if (result.__isset.o3) {
+  throw result.o3;
 }
 throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_fields failed: unknown result");
 }
@@ -132,14 +132,14 @@ iprot_.readMessageEnd();
 if (result.__isset.success) {
   return result.success;
 }
-if (result.__isset.ouch1) {
-  throw result.ouch1;
+if (result.__isset.o1) {
+  throw result.o1;
 }
-if (result.__isset.ouch2) {
-  throw result.ouch2;
+if (result.__isset.o2) {
+  throw result.o2;
 }
-if (result.__isset.ouch3) {
-  throw result.ouch3;
+if (result.__isset.o3) {
+  throw result.o3;
 }
 throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_tables failed: unknown result");
 }
@@ -174,14 +174,14 @@ iprot_.readMessageEnd();
 if (result.__isset.success) {
   return result.success;
 }
-if (result.__isset.ouch1) {
-  throw result.ouch1;
+if (result.__isset.o1) {
+  throw result.o1;
 }
-if (result.__isset.ouch2) {
-  throw result.ouch2;
+if (result.__isset.o2) {
+  throw result.o2;
 }
-if (result.__isset.ouch3) {
-  throw result.ouch3;
+if (result.__isset.o3) {
+  throw result.o3;
 }
 throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_schema failed: unknown result");
 }
@@ -215,14 +215,14 @@ if (msg.type == TMessageType.EXCEPTION) {
 alter_table_result result = new alter_table_result();
 result.read(iprot_);
 iprot_.readMessageEnd();
-if (result.__isset.ouch1) {
-  throw result.ouch1;
+if (result.__isset.o1) {
+  throw result.o1;
 }
-if (result.__isset.ouch2) {
-  throw result.ouch2;
+if (result.__isset.o2) {
+  throw result.o2;
 }
-if (result.__isset.ouch3) {
-  throw result.ouch3;
+if (result.__isset.o3) {
+  throw result.o3;
 }
 return;
 }
@@ -256,11 +256,11 @@ if (msg.type == TMessageType.EXCEPTION) {
 create_table_result result = new create_table_result();
 result.read(iprot_);
 iprot_.readMessageEnd();
-if (result.__isset.ouch1) {
-  throw result.ouch1;
+if (result.__isset.o1) {
+  throw result.o1;
 }
-if (result.__isset.ouch2) {
-  throw result.ouch2;
+if (result.__isset.o2) {
+  throw result.o2;
 }
 return;
 }
@@ -293,14 +293,14 @@ if (msg.type == TMessageType.EXCEPTION) {
 drop_table_result result = new drop_table_result();
 result.read(iprot_);
 iprot_.readMessageEnd();
-if (result.__isset.ouch1) {
-  throw result.ouch1;
+if (result.__isset.o1) {
+  throw result.o1;
 }
-if (result.__isset.ouch2) {
-  throw result.ouch2;
+if (result.__isset.o2) {
+  throw result.o2;
 }
-if (result.__isset.ouch3) {
-  throw result.ouch3;
+if (result.__isset.o3) {
+  throw result.o3;
 }
 return;
 }
@@ -334,14 +334,14 @@ if (msg.type == TMessageType.EXCEPTION) {
 truncate_table_result result = new truncate_table_result();
 result.read(iprot_);
 iprot_.readMessageEnd();
-if (result.__isset.ouch1) {
-  throw result.ouch1;
+if (result.__isset.o1) {
+  throw result.o1;
 }
-if (result.__isset.ouch2) {
-  throw result.ouch2;
+if (result.__isset.o2) {
+  throw result.o2;
 }
-if (result.__isset.ouch3) {
-  throw result.ouch3;
+if (result.__isset.o3) {
+  throw result.o3;
 }
 return;
 }
@@ -377,11 +377,11 @@ iprot_.readMessageEnd();
 if (result.__isset.success) {
   return result.success;
 }
-if (result.__isset.ouch1) {
-  throw result.ouch1;
+if (result.__isset.o1) {
+  throw result.o1;
 }
-if (result.__isset.ouch2) {
-  throw result.ouch2;
+if (result.__isset.o2) {
+  throw result.o2;
 }
 throw new TApplicationException(TApplicationException.MISSING_RESULT, "table_exists failed: unknown result");
 }
@@ -417,14 +417,14 @@ iprot_.readMessageEnd();
 if (result.__isset.success) {
   return result.success;
 }
-if (result.__isset.ouch1) {
-  throw result.ouch1;
+if (result.__isset.o1) {
+  throw result.o1;
 }
-if (result.__isset.ouch2) {
-  throw result.ouch2;
+if (result.__isset.o2) {
+  throw result.o2;
 }
-if (result.__isset.ouch3) {
-  throw result.ouch3;
+if (result.__isset.o3) {
+  throw result.o3;
 }
 throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_partitions failed: unknown result");
 }
@@ -458,8 +458,8 @@ iprot_.readMessageEnd();
 if (result.__isset.success) {
   return result.success;
 }
-if (result.__isset.ouch) {
-  throw result.ouch;
+if (result.__isset.o) {
+  throw result.o;
 }
 throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_dbs failed: unknown result");
 }
@@ -497,14 +497,14 @@ iprot_.readMessageEnd();
 if (result.__isset.success) {
   return result.success;
 }
-if (result.__isset.ouch1) {
-  throw result.ouch1;
+if (result.__isset.o1) {
+  throw result.o1;
 }
-if (result.__isset.ouch2) {
-  throw result.ouch2;
+if (result.__isset.o2) {
+  throw result.o2;
 }
-if (result.__isset.ouch3) {
-  throw result.ouch3;
+if (result.__isset.o3) {
+  throw result.o3;
 }
 throw new TApplicationException(TApplicationException.MISSING_RESULT, "cat failed: unknown result");
 }
@@ -558,15 +558,15 @@ public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TExcepti
   try {
     result.success = iface_.get_fields(args.db_name, args.table_name);
     result.__isset.success = true;
-  } catch (MetaException ouch1) {
-    result.ouch1 = ouch1;
-    result.__isset.ouch1 = true;
-  } catch (UnknownTableException ouch2) {
-    result.ouch2 = ouch2;
-    result.__isset.ouch2 = true;
-  } catch (UnknownDBException ouch3) {
-    result.ouch3 = ouch3;
-    result.__isset.ouch3 = true;
+  } catch (MetaException o1) {
+    result.o1 = o1;
+    result.__isset.o1 = true;
+  } catch (UnknownTableException o2) {
+    result.o2 = o2;
+    result.__isset.o2 = true;
+  } catch (UnknownDBException o3) {
+    result.o3 = o3;
+    result.__isset.o3 = true;
   }
   oprot.writeMessageBegin(new TMessage("get_fields", TMessageType.REPLY, seqid));
   result.write(oprot);
@@ -586,15 +586,15 @@ public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TExcepti
   try {
     result.success = iface_.get_tables(args.db_name, args.pattern);
     result.__isset.success = true;
-  } catch (MetaException ouch1) {
-    result.ouch1 = ouch1;
-    result.__isset.ouch1 = true;
-  } catch (UnknownTableException ouch2) {
-    result.ouch2 = ouch2;
-    result.__isset.ouch2 = true;
-  } catch (UnknownDBException ouch3) {
-    result.ouch3 = ouch3;
-    result.__isset.ouch3 = true;
+  } catch (MetaException o1) {
+    result.o1 = o1;
+    result.__isset.o1 = true;
+  } catch (UnknownTableException o2) {
+    result.o2 = o2;
+    result.__isset.o2 = true;
+  } catch (UnknownDBException o3) {
+    result.o3 = o3;
+    result.__isset.o3 = true;
   }
   oprot.writeMessageBegin(new TMessage("get_tables", TMessageType.REPLY, seqid));
   result.write(oprot);
@@ -614,15 +614,15 @@ public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TExcepti
   try {
     result.success = iface_.get_schema(args.table_name);
     result.__isset.success = true;
-  } catch (MetaException ouch1) {
-    result.ouch1 = ouch1;
-    result.__isset.ouch1 = true;
-  } catch (UnknownTableException ouch2) {
-    result.ouch2 = ouch2;
-    result.__isset.ouch2 = true;
-  } catch (UnknownDBException ouch3) {
-    result.ouch3 = ouch3;
-    result.__isset.ouch3 = true;
+  } catch (MetaException o1) {
+    result.o1 = o1;
+    result.__isset.o1 = true;
+  } catch (UnknownTableException o2) {
+    result.o2 = o2;
+    result.__isset.o2 = true;
+  } catch (UnknownDBException o3) {
+    result.o3 = o3;
+    result.__isset.o3 = true;
   }
   oprot.writeMessageBegin(new TMessage("get_schema", TMessageType.REPLY, seqid));
   result.write(oprot);
@@ -641,15 +641,15 @@ public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TExcepti
   alter_table_result result = new alter_table_result();
   try {
     iface_.alter_table(args.db_name, args.table_name, args.schema);
-  } catch (MetaException ouch1) {
-    result.ouch1 = ouch1;
-    result.__isset.ouch1 = true;
-  } catch (UnknownTableException ouch2) {
-    result.ouch2 = ouch2;
-    result.__isset.ouch2 = true;
-  } catch (UnknownDBException ouch3) {
-    result.ouch3 = ouch3;
-    result.__isset.ouch3 = true;
+  } catch (MetaException o1) {
+    result.o1 = o1;
+    result.__isset.o1 = true;
+  } catch (UnknownTableException o2) {
+    result.o2 = o2;
+    result.__isset.o2 = true;
+  } catch (UnknownDBException o3) {
+    result.o3 = o3;
+    result.__isset.o3 = true;
   }
   oprot.writeMessageBegin(new TMessage("alter_table", TMessageType.REPLY, seqid));
   result.write(oprot);
@@ -668,12 +668,12 @@ public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TExcepti
   create_table_result result = new create_table_result();
   try {
     iface_.create_table(args.db_name, args.table_name, args.schema);
-  } catch (MetaException ouch1) {
-    result.ouch1 = ouch1;
-    result.__isset.ouch1 = true;
-  } catch (UnknownDBException ouch2) {
-    result.ouch2 = ouch2;
-    result.__isset.ouch2 = true;
+  } catch (MetaException o1) {
+    result.o1 = o1;
+    result.__isset.o1 = true;
+  } catch (UnknownDBException o2) {
+    result.o2 = o2;
+    result.__isset.o2 = true;
   }
   oprot.writeMessageBegin(new TMessage("create_table", TMessageType.REPLY, seqid));
   result.write(oprot);
@@ -692,15 +692,15 @@ public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TExcepti
   drop_table_result result = new drop_table_result();
   try {
     iface_.drop_table(args.db_name, args.table_name);
-  } catch (MetaException ouch1) {
-    result.ouch1 = ouch1;
-    result.__isset.ouch1 = true;
-  } catch (UnknownTableException ouch2) {
-    result.ouch2 = ouch2;
-    result.__isset.ouch2 = true;
-  } catch (UnknownDBException ouch3) {
-    result.ouch3 = ouch3;
-    result.__isset.ouch3 = true;
+  } catch (MetaException o1) {
+    result.o1 = o1;
+    result.__isset.o1 = true;
+  } catch (UnknownTableException o2) {
+    result.o2 = o2;
+    result.__isset.o2 = true;
+  } catch (UnknownDBException o3) {
+    result.o3 = o3;
+    result.__isset.o3 = true;
   }
   oprot.writeMessageBegin(new TMessage("drop_table", TMessageType.REPLY, seqid));
   result.write(oprot);
@@ -719,15 +719,15 @@ public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TExcepti
   truncate_table_result result = new truncate_table_result();
   try {
     iface_.truncate_table(args.db_name, args.table_name, args.partition);
-  } catch (MetaException ouch1) {
-    result.ouch1 = ouch1;
-    result.__isset.ouch1 = true;
-  } catch (UnknownTableException ouch2) {
-    result.ouch2 = ouch2;
-    result.__isset.ouch2 = true;
-  } catch (UnknownDBException ouch3) {
-    result.ouch3 = ouch3;
-    result.__isset.ouch3 = true;
+  } catch (MetaException o1) {
+    result.o1 = o1;
+    result.__isset.o1 = true;
+  } catch (UnknownTableException o2) {
+    result.o2 = o2;
+    result.__isset.o2 = true;
+  } catch (UnknownDBException o3) {
+    result.o3 = o3;
+    result.__isset.o3 = true;
   }
   oprot.writeMessageBegin(new TMessage("truncate_table", TMessageType.REPLY, seqid));
   result.write(oprot);
@@ -747,12 +747,12 @@ public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TExcepti
   try {
     result.success = iface_.table_exists(args.db_name, args.table_name);
     result.__isset.success = true;
-  } catch (MetaException ouch1) {
-    result.ouch1 = ouch1;
-    result.__isset.ouch1 = true;
-  } catch (UnknownDBException ouch2) {
-    result.ouch2 = ouch2;
-    result.__isset.ouch2 = true;
+  } catch (MetaException o1) {
+    result.o1 = o1;
+    result.__isset.o1 = true;
+  } catch (UnknownDBException o2) {
+    result.o2 = o2;
+    result.__isset.o2 = true;
   }
   oprot.writeMessageBegin(new TMessage("table_exists", TMessageType.REPLY, seqid));
   result.write(oprot);
@@ -772,15 +772,15 @@ public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TExcepti
   try {
     result.success = iface_.get_partitions(args.db_name, args.table_name);
     result.__isset.success = true;
-  } catch (MetaException ouch1) {
-    result.ouch1 = ouch1;
-    result.__isset.ouch1 = true;
-  } catch (UnknownTableException ouch2) {
-    result.ouch2 = ouch2;
-    result.__isset.ouch2 = true;
-  } catch (UnknownDBException ouch3) {
-    result.ouch3 = ouch3;
-    result.__isset.ouch3 = true;
+  } catch (MetaException o1) {
+    result.o1 = o1;
+    result.__isset.o1 = true;
+  } catch (UnknownTableException o2) {
+    result.o2 = o2;
+    result.__isset.o2 = true;
+  } catch (UnknownDBException o3) {
+    result.o3 = o3;
+    result.__isset.o3 = true;
   }
   oprot.writeMessageBegin(new TMessage("get_partitions", TMessageType.REPLY, seqid));
   result.write(oprot);
@@ -800,9 +800,9 @@ public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TExcepti
   try {
     result.success = iface_.get_dbs();
     result.__isset.success = true;
-  } catch (MetaException ouch) {
-    result.ouch = ouch;
-    result.__isset.ouch = true;
+  } catch (MetaException o) {
+    result.o = o;
+    result.__isset.o = true;
   }
   oprot.writeMessageBegin(new TMessage("get_dbs", TMessageType.REPLY, seqid));
   result.write(oprot);
@@ -822,15 +822,15 @@ public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TExcepti
   try {
     result.success = iface_.cat(args.db_name, args.table_name, args.partition, args.high);
     result.__isset.success = true;
-  } catch (MetaException ouch1) {
-    result.ouch1 = ouch1;
-    result.__isset.ouch1 = true;
-  } catch (UnknownDBException ouch2) {
-    result.ouch2 = ouch2;
-    result.__isset.ouch2 = true;
-  } catch (UnknownTableException ouch3) {
-    result.ouch3 = ouch3;
-    result.__isset.ouch3 = true;
+  } catch (MetaException o1) {
+    result.o1 = o1;
+    result.__isset.o1 = true;
+  } catch (UnknownDBException o2) {
+    result.o2 = o2;
+    result.__isset.o2 = true;
+  } catch (UnknownTableException o3) {
+    result.o3 = o3;
+    result.__isset.o3 = true;
   }
   oprot.writeMessageBegin(new TMessage("cat", TMessageType.REPLY, seqid));
   result.write(oprot);
@@ -1003,16 +1003,16 @@ return sb.toString();
 
 public static class get_fields_result implements TBase, java.io.Serializable {
 private List<FieldSchema> success;
-private MetaException ouch1;
-private UnknownTableException ouch2;
-private UnknownDBException ouch3;
+private MetaException o1;
+private UnknownTableException o2;
+private UnknownDBException o3;
 
 public final Isset __isset = new Isset();
 public static final class Isset implements java.io.Serializable {
 public boolean success = false;
-public boolean ouch1 = false;
-public boolean ouch2 = false;
-public boolean ouch3 = false;
+public boolean o1 = false;
+public boolean o2 = false;
+public boolean o3 = false;
 }
 
 public get_fields_result() {
@@ -1020,19 +1020,19 @@ public get_fields_result() {
 
 public get_fields_result(
 List<FieldSchema> success,
-MetaException ouch1,
-UnknownTableException ouch2,
-UnknownDBException ouch3)
+MetaException o1,
+UnknownTableException o2,
+UnknownDBException o3)
 {
 this();
 this.success = success;
 this.__isset.success = true;
-this.ouch1 = ouch1;
-this.__isset.ouch1 = true;
-this.ouch2 = ouch2;
-this.__isset.ouch2 = true;
-this.ouch3 = ouch3;
-this.__isset.ouch3 = true;
+this.o1 = o1;
+this.__isset.o1 = true;
+this.o2 = o2;
+this.__isset.o2 = true;
+this.o3 = o3;
+this.__isset.o3 = true;
 }
 
 public int getSuccessSize() {
@@ -1065,46 +1065,46 @@ this.success = null;
 this.__isset.success = false;
 }
 
-public MetaException getOuch1() {
-return this.ouch1;
+public MetaException getO1() {
+return this.o1;
 }
 
-public void setOuch1(MetaException ouch1) {
-this.ouch1 = ouch1;
-this.__isset.ouch1 = true;
+public void setO1(MetaException o1) {
+this.o1 = o1;
+this.__isset.o1 = true;
 }
 
-public void unsetOuch1() {
-this.ouch1 = null;
-this.__isset.ouch1 = false;
+public void unsetO1() {
+this.o1 = null;
+this.__isset.o1 = false;
 }
 
-public UnknownTableException getOuch2() {
-return this.ouch2;
+public UnknownTableException getO2() {
+return this.o2;
 }
 
-public void setOuch2(UnknownTableException ouch2) {
-this.ouch2 = ouch2;
-this.__isset.ouch2 = true;
+public void setO2(UnknownTableException o2) {
+this.o2 = o2;
+this.__isset.o2 = true;
 }
 
-public void unsetOuch2() {
-this.ouch2 = null;
-this.__isset.ouch2 = false;
+public void unsetO2() {
+this.o2 = null;
+this.__isset.o2 = false;
 }
 
-public UnknownDBException getOuch3() {
-return this.ouch3;
+public UnknownDBException getO3() {
+return this.o3;
 }
 
-public void setOuch3(UnknownDBException ouch3) {
-this.ouch3 = ouch3;
-this.__isset.ouch3 = true;
+public void setO3(UnknownDBException o3) {
+this.o3 = o3;
+this.__isset.o3 = true;
 }
 
-public void unsetOuch3() {
-this.ouch3 = null;
-this.__isset.ouch3 = false;
+public void unsetO3() {
+this.o3 = null;
+this.__isset.o3 = false;
 }
 
 public boolean equals(Object that) {
@@ -1128,30 +1128,30 @@ if (this_present_success || that_present_success) {
     return false;
 }
 
-boolean this_present_ouch1 = true && (this.ouch1 != null);
-boolean that_present_ouch1 = true && (that.ouch1 != null);
-if (this_present_ouch1 || that_present_ouch1) {
-  if (!(this_present_ouch1 && that_present_ouch1))
+boolean this_present_o1 = true && (this.o1 != null);
+boolean that_present_o1 = true && (that.o1 != null);
+if (this_present_o1 || that_present_o1) {
+  if (!(this_present_o1 && that_present_o1))
     return false;
-  if (!this.ouch1.equals(that.ouch1))
-    return false;
-}
-
-boolean this_present_ouch2 = true && (this.ouch2 != null);
-boolean that_present_ouch2 = true && (that.ouch2 != null);
-if (this_present_ouch2 || that_present_ouch2) {
-  if (!(this_present_ouch2 && that_present_ouch2))
-    return false;
-  if (!this.ouch2.equals(that.ouch2))
+  if (!this.o1.equals(that.o1))
     return false;
 }
 
-boolean this_present_ouch3 = true && (this.ouch3 != null);
-boolean that_present_ouch3 = true && (that.ouch3 != null);
-if (this_present_ouch3 || that_present_ouch3) {
-  if (!(this_present_ouch3 && that_present_ouch3))
+boolean this_present_o2 = true && (this.o2 != null);
+boolean that_present_o2 = true && (that.o2 != null);
+if (this_present_o2 || that_present_o2) {
+  if (!(this_present_o2 && that_present_o2))
     return false;
-  if (!this.ouch3.equals(that.ouch3))
+  if (!this.o2.equals(that.o2))
+    return false;
+}
+
+boolean this_present_o3 = true && (this.o3 != null);
+boolean that_present_o3 = true && (that.o3 != null);
+if (this_present_o3 || that_present_o3) {
+  if (!(this_present_o3 && that_present_o3))
+    return false;
+  if (!this.o3.equals(that.o3))
     return false;
 }
 
@@ -1194,27 +1194,27 @@ while (true)
       break;
     case -3:
       if (field.type == TType.STRUCT) {
-        this.ouch1 = new MetaException();
-        this.ouch1.read(iprot);
-        this.__isset.ouch1 = true;
+        this.o1 = new MetaException();
+        this.o1.read(iprot);
+        this.__isset.o1 = true;
       } else { 
         TProtocolUtil.skip(iprot, field.type);
       }
       break;
     case -4:
       if (field.type == TType.STRUCT) {
-        this.ouch2 = new UnknownTableException();
-        this.ouch2.read(iprot);
-        this.__isset.ouch2 = true;
+        this.o2 = new UnknownTableException();
+        this.o2.read(iprot);
+        this.__isset.o2 = true;
       } else { 
         TProtocolUtil.skip(iprot, field.type);
       }
       break;
     case -5:
       if (field.type == TType.STRUCT) {
-        this.ouch3 = new UnknownDBException();
-        this.ouch3.read(iprot);
-        this.__isset.ouch3 = true;
+        this.o3 = new UnknownDBException();
+        this.o3.read(iprot);
+        this.__isset.o3 = true;
       } else { 
         TProtocolUtil.skip(iprot, field.type);
       }
@@ -1248,31 +1248,31 @@ if (this.__isset.success) {
     }
     oprot.writeFieldEnd();
   }
-} else if (this.__isset.ouch1) {
-  if (this.ouch1 != null) {
-    field.name = "ouch1";
+} else if (this.__isset.o1) {
+  if (this.o1 != null) {
+    field.name = "o1";
     field.type = TType.STRUCT;
     field.id = -3;
     oprot.writeFieldBegin(field);
-    this.ouch1.write(oprot);
+    this.o1.write(oprot);
     oprot.writeFieldEnd();
   }
-} else if (this.__isset.ouch2) {
-  if (this.ouch2 != null) {
-    field.name = "ouch2";
+} else if (this.__isset.o2) {
+  if (this.o2 != null) {
+    field.name = "o2";
     field.type = TType.STRUCT;
     field.id = -4;
     oprot.writeFieldBegin(field);
-    this.ouch2.write(oprot);
+    this.o2.write(oprot);
     oprot.writeFieldEnd();
   }
-} else if (this.__isset.ouch3) {
-  if (this.ouch3 != null) {
-    field.name = "ouch3";
+} else if (this.__isset.o3) {
+  if (this.o3 != null) {
+    field.name = "o3";
     field.type = TType.STRUCT;
     field.id = -5;
     oprot.writeFieldBegin(field);
-    this.ouch3.write(oprot);
+    this.o3.write(oprot);
     oprot.writeFieldEnd();
   }
 }
@@ -1284,12 +1284,12 @@ public String toString() {
 StringBuilder sb = new StringBuilder("get_fields_result(");
 sb.append("success:");
 sb.append(this.success);
-sb.append(",ouch1:");
-sb.append(this.ouch1.toString());
-sb.append(",ouch2:");
-sb.append(this.ouch2.toString());
-sb.append(",ouch3:");
-sb.append(this.ouch3.toString());
+sb.append(",o1:");
+sb.append(this.o1.toString());
+sb.append(",o2:");
+sb.append(this.o2.toString());
+sb.append(",o3:");
+sb.append(this.o3.toString());
 sb.append(")");
 return sb.toString();
 }
@@ -1457,16 +1457,16 @@ return sb.toString();
 
 public static class get_tables_result implements TBase, java.io.Serializable {
 private List<String> success;
-private MetaException ouch1;
-private UnknownTableException ouch2;
-private UnknownDBException ouch3;
+private MetaException o1;
+private UnknownTableException o2;
+private UnknownDBException o3;
 
 public final Isset __isset = new Isset();
 public static final class Isset implements java.io.Serializable {
 public boolean success = false;
-public boolean ouch1 = false;
-public boolean ouch2 = false;
-public boolean ouch3 = false;
+public boolean o1 = false;
+public boolean o2 = false;
+public boolean o3 = false;
 }
 
 public get_tables_result() {
@@ -1474,19 +1474,19 @@ public get_tables_result() {
 
 public get_tables_result(
 List<String> success,
-MetaException ouch1,
-UnknownTableException ouch2,
-UnknownDBException ouch3)
+MetaException o1,
+UnknownTableException o2,
+UnknownDBException o3)
 {
 this();
 this.success = success;
 this.__isset.success = true;
-this.ouch1 = ouch1;
-this.__isset.ouch1 = true;
-this.ouch2 = ouch2;
-this.__isset.ouch2 = true;
-this.ouch3 = ouch3;
-this.__isset.ouch3 = true;
+this.o1 = o1;
+this.__isset.o1 = true;
+this.o2 = o2;
+this.__isset.o2 = true;
+this.o3 = o3;
+this.__isset.o3 = true;
 }
 
 public int getSuccessSize() {
@@ -1519,46 +1519,46 @@ this.success = null;
 this.__isset.success = false;
 }
 
-public MetaException getOuch1() {
-return this.ouch1;
+public MetaException getO1() {
+return this.o1;
 }
 
-public void setOuch1(MetaException ouch1) {
-this.ouch1 = ouch1;
-this.__isset.ouch1 = true;
+public void setO1(MetaException o1) {
+this.o1 = o1;
+this.__isset.o1 = true;
 }
 
-public void unsetOuch1() {
-this.ouch1 = null;
-this.__isset.ouch1 = false;
+public void unsetO1() {
+this.o1 = null;
+this.__isset.o1 = false;
 }
 
-public UnknownTableException getOuch2() {
-return this.ouch2;
+public UnknownTableException getO2() {
+return this.o2;
 }
 
-public void setOuch2(UnknownTableException ouch2) {
-this.ouch2 = ouch2;
-this.__isset.ouch2 = true;
+public void setO2(UnknownTableException o2) {
+this.o2 = o2;
+this.__isset.o2 = true;
 }
 
-public void unsetOuch2() {
-this.ouch2 = null;
-this.__isset.ouch2 = false;
+public void unsetO2() {
+this.o2 = null;
+this.__isset.o2 = false;
 }
 
-public UnknownDBException getOuch3() {
-return this.ouch3;
+public UnknownDBException getO3() {
+return this.o3;
 }
 
-public void setOuch3(UnknownDBException ouch3) {
-this.ouch3 = ouch3;
-this.__isset.ouch3 = true;
+public void setO3(UnknownDBException o3) {
+this.o3 = o3;
+this.__isset.o3 = true;
 }
 
-public void unsetOuch3() {
-this.ouch3 = null;
-this.__isset.ouch3 = false;
+public void unsetO3() {
+this.o3 = null;
+this.__isset.o3 = false;
 }
 
 public boolean equals(Object that) {
@@ -1582,30 +1582,30 @@ if (this_present_success || that_present_success) {
     return false;
 }
 
-boolean this_present_ouch1 = true && (this.ouch1 != null);
-boolean that_present_ouch1 = true && (that.ouch1 != null);
-if (this_present_ouch1 || that_present_ouch1) {
-  if (!(this_present_ouch1 && that_present_ouch1))
+boolean this_present_o1 = true && (this.o1 != null);
+boolean that_present_o1 = true && (that.o1 != null);
+if (this_present_o1 || that_present_o1) {
+  if (!(this_present_o1 && that_present_o1))
     return false;
-  if (!this.ouch1.equals(that.ouch1))
-    return false;
-}
-
-boolean this_present_ouch2 = true && (this.ouch2 != null);
-boolean that_present_ouch2 = true && (that.ouch2 != null);
-if (this_present_ouch2 || that_present_ouch2) {
-  if (!(this_present_ouch2 && that_present_ouch2))
-    return false;
-  if (!this.ouch2.equals(that.ouch2))
+  if (!this.o1.equals(that.o1))
     return false;
 }
 
-boolean this_present_ouch3 = true && (this.ouch3 != null);
-boolean that_present_ouch3 = true && (that.ouch3 != null);
-if (this_present_ouch3 || that_present_ouch3) {
-  if (!(this_present_ouch3 && that_present_ouch3))
+boolean this_present_o2 = true && (this.o2 != null);
+boolean that_present_o2 = true && (that.o2 != null);
+if (this_present_o2 || that_present_o2) {
+  if (!(this_present_o2 && that_present_o2))
     return false;
-  if (!this.ouch3.equals(that.ouch3))
+  if (!this.o2.equals(that.o2))
+    return false;
+}
+
+boolean this_present_o3 = true && (this.o3 != null);
+boolean that_present_o3 = true && (that.o3 != null);
+if (this_present_o3 || that_present_o3) {
+  if (!(this_present_o3 && that_present_o3))
+    return false;
+  if (!this.o3.equals(that.o3))
     return false;
 }
 
@@ -1647,27 +1647,27 @@ while (true)
       break;
     case -3:
       if (field.type == TType.STRUCT) {
-        this.ouch1 = new MetaException();
-        this.ouch1.read(iprot);
-        this.__isset.ouch1 = true;
+        this.o1 = new MetaException();
+        this.o1.read(iprot);
+        this.__isset.o1 = true;
       } else { 
         TProtocolUtil.skip(iprot, field.type);
       }
       break;
     case -4:
       if (field.type == TType.STRUCT) {
-        this.ouch2 = new UnknownTableException();
-        this.ouch2.read(iprot);
-        this.__isset.ouch2 = true;
+        this.o2 = new UnknownTableException();
+        this.o2.read(iprot);
+        this.__isset.o2 = true;
       } else { 
         TProtocolUtil.skip(iprot, field.type);
       }
       break;
     case -5:
       if (field.type == TType.STRUCT) {
-        this.ouch3 = new UnknownDBException();
-        this.ouch3.read(iprot);
-        this.__isset.ouch3 = true;
+        this.o3 = new UnknownDBException();
+        this.o3.read(iprot);
+        this.__isset.o3 = true;
       } else { 
         TProtocolUtil.skip(iprot, field.type);
       }
@@ -1701,31 +1701,31 @@ if (this.__isset.success) {
     }
     oprot.writeFieldEnd();
   }
-} else if (this.__isset.ouch1) {
-  if (this.ouch1 != null) {
-    field.name = "ouch1";
+} else if (this.__isset.o1) {
+  if (this.o1 != null) {
+    field.name = "o1";
     field.type = TType.STRUCT;
     field.id = -3;
     oprot.writeFieldBegin(field);
-    this.ouch1.write(oprot);
+    this.o1.write(oprot);
     oprot.writeFieldEnd();
   }
-} else if (this.__isset.ouch2) {
-  if (this.ouch2 != null) {
-    field.name = "ouch2";
+} else if (this.__isset.o2) {
+  if (this.o2 != null) {
+    field.name = "o2";
     field.type = TType.STRUCT;
     field.id = -4;
     oprot.writeFieldBegin(field);
-    this.ouch2.write(oprot);
+    this.o2.write(oprot);
     oprot.writeFieldEnd();
   }
-} else if (this.__isset.ouch3) {
-  if (this.ouch3 != null) {
-    field.name = "ouch3";
+} else if (this.__isset.o3) {
+  if (this.o3 != null) {
+    field.name = "o3";
     field.type = TType.STRUCT;
     field.id = -5;
     oprot.writeFieldBegin(field);
-    this.ouch3.write(oprot);
+    this.o3.write(oprot);
     oprot.writeFieldEnd();
   }
 }
@@ -1737,12 +1737,12 @@ public String toString() {
 StringBuilder sb = new StringBuilder("get_tables_result(");
 sb.append("success:");
 sb.append(this.success);
-sb.append(",ouch1:");
-sb.append(this.ouch1.toString());
-sb.append(",ouch2:");
-sb.append(this.ouch2.toString());
-sb.append(",ouch3:");
-sb.append(this.ouch3.toString());
+sb.append(",o1:");
+sb.append(this.o1.toString());
+sb.append(",o2:");
+sb.append(this.o2.toString());
+sb.append(",o3:");
+sb.append(this.o3.toString());
 sb.append(")");
 return sb.toString();
 }
@@ -1865,16 +1865,16 @@ return sb.toString();
 
 public static class get_schema_result implements TBase, java.io.Serializable {
 private Map<String,String> success;
-private MetaException ouch1;
-private UnknownTableException ouch2;
-private UnknownDBException ouch3;
+private MetaException o1;
+private UnknownTableException o2;
+private UnknownDBException o3;
 
 public final Isset __isset = new Isset();
 public static final class Isset implements java.io.Serializable {
 public boolean success = false;
-public boolean ouch1 = false;
-public boolean ouch2 = false;
-public boolean ouch3 = false;
+public boolean o1 = false;
+public boolean o2 = false;
+public boolean o3 = false;
 }
 
 public get_schema_result() {
@@ -1882,19 +1882,19 @@ public get_schema_result() {
 
 public get_schema_result(
 Map<String,String> success,
-MetaException ouch1,
-UnknownTableException ouch2,
-UnknownDBException ouch3)
+MetaException o1,
+UnknownTableException o2,
+UnknownDBException o3)
 {
 this();
 this.success = success;
 this.__isset.success = true;
-this.ouch1 = ouch1;
-this.__isset.ouch1 = true;
-this.ouch2 = ouch2;
-this.__isset.ouch2 = true;
-this.ouch3 = ouch3;
-this.__isset.ouch3 = true;
+this.o1 = o1;
+this.__isset.o1 = true;
+this.o2 = o2;
+this.__isset.o2 = true;
+this.o3 = o3;
+this.__isset.o3 = true;
 }
 
 public int getSuccessSize() {
@@ -1923,46 +1923,46 @@ this.success = null;
 this.__isset.success = false;
 }
 
-public MetaException getOuch1() {
-return this.ouch1;
+public MetaException getO1() {
+return this.o1;
 }
 
-public void setOuch1(MetaException ouch1) {
-this.ouch1 = ouch1;
-this.__isset.ouch1 = true;
+public void setO1(MetaException o1) {
+this.o1 = o1;
+this.__isset.o1 = true;
 }
 
-public void unsetOuch1() {
-this.ouch1 = null;
-this.__isset.ouch1 = false;
+public void unsetO1() {
+this.o1 = null;
+this.__isset.o1 = false;
 }
 
-public UnknownTableException getOuch2() {
-return this.ouch2;
+public UnknownTableException getO2() {
+return this.o2;
 }
 
-public void setOuch2(UnknownTableException ouch2) {
-this.ouch2 = ouch2;
-this.__isset.ouch2 = true;
+public void setO2(UnknownTableException o2) {
+this.o2 = o2;
+this.__isset.o2 = true;
 }
 
-public void unsetOuch2() {
-this.ouch2 = null;
-this.__isset.ouch2 = false;
+public void unsetO2() {
+this.o2 = null;
+this.__isset.o2 = false;
 }
 
-public UnknownDBException getOuch3() {
-return this.ouch3;
+public UnknownDBException getO3() {
+return this.o3;
 }
 
-public void setOuch3(UnknownDBException ouch3) {
-this.ouch3 = ouch3;
-this.__isset.ouch3 = true;
+public void setO3(UnknownDBException o3) {
+this.o3 = o3;
+this.__isset.o3 = true;
 }
 
-public void unsetOuch3() {
-this.ouch3 = null;
-this.__isset.ouch3 = false;
+public void unsetO3() {
+this.o3 = null;
+this.__isset.o3 = false;
 }
 
 public boolean equals(Object that) {
@@ -1986,30 +1986,30 @@ if (this_present_success || that_present_success) {
     return false;
 }
 
-boolean this_present_ouch1 = true && (this.ouch1 != null);
-boolean that_present_ouch1 = true && (that.ouch1 != null);
-if (this_present_ouch1 || that_present_ouch1) {
-  if (!(this_present_ouch1 && that_present_ouch1))
+boolean this_present_o1 = true && (this.o1 != null);
+boolean that_present_o1 = true && (that.o1 != null);
+if (this_present_o1 || that_present_o1) {
+  if (!(this_present_o1 && that_present_o1))
     return false;
-  if (!this.ouch1.equals(that.ouch1))
-    return false;
-}
-
-boolean this_present_ouch2 = true && (this.ouch2 != null);
-boolean that_present_ouch2 = true && (that.ouch2 != null);
-if (this_present_ouch2 || that_present_ouch2) {
-  if (!(this_present_ouch2 && that_present_ouch2))
-    return false;
-  if (!this.ouch2.equals(that.ouch2))
+  if (!this.o1.equals(that.o1))
     return false;
 }
 
-boolean this_present_ouch3 = true && (this.ouch3 != null);
-boolean that_present_ouch3 = true && (that.ouch3 != null);
-if (this_present_ouch3 || that_present_ouch3) {
-  if (!(this_present_ouch3 && that_present_ouch3))
+boolean this_present_o2 = true && (this.o2 != null);
+boolean that_present_o2 = true && (that.o2 != null);
+if (this_present_o2 || that_present_o2) {
+  if (!(this_present_o2 && that_present_o2))
     return false;
-  if (!this.ouch3.equals(that.ouch3))
+  if (!this.o2.equals(that.o2))
+    return false;
+}
+
+boolean this_present_o3 = true && (this.o3 != null);
+boolean that_present_o3 = true && (that.o3 != null);
+if (this_present_o3 || that_present_o3) {
+  if (!(this_present_o3 && that_present_o3))
+    return false;
+  if (!this.o3.equals(that.o3))
     return false;
 }
 
@@ -2053,27 +2053,27 @@ while (true)
       break;
     case -2:
       if (field.type == TType.STRUCT) {
-        this.ouch1 = new MetaException();
-        this.ouch1.read(iprot);
-        this.__isset.ouch1 = true;
+        this.o1 = new MetaException();
+        this.o1.read(iprot);
+        this.__isset.o1 = true;
       } else { 
         TProtocolUtil.skip(iprot, field.type);
       }
       break;
     case -3:
       if (field.type == TType.STRUCT) {
-        this.ouch2 = new UnknownTableException();
-        this.ouch2.read(iprot);
-        this.__isset.ouch2 = true;
+        this.o2 = new UnknownTableException();
+        this.o2.read(iprot);
+        this.__isset.o2 = true;
       } else { 
         TProtocolUtil.skip(iprot, field.type);
       }
       break;
     case -4:
       if (field.type == TType.STRUCT) {
-        this.ouch3 = new UnknownDBException();
-        this.ouch3.read(iprot);
-        this.__isset.ouch3 = true;
+        this.o3 = new UnknownDBException();
+        this.o3.read(iprot);
+        this.__isset.o3 = true;
       } else { 
         TProtocolUtil.skip(iprot, field.type);
       }
@@ -2108,31 +2108,31 @@ if (this.__isset.success) {
     }
     oprot.writeFieldEnd();
   }
-} else if (this.__isset.ouch1) {
-  if (this.ouch1 != null) {
-    field.name = "ouch1";
+} else if (this.__isset.o1) {
+  if (this.o1 != null) {
+    field.name = "o1";
     field.type = TType.STRUCT;
     field.id = -2;
     oprot.writeFieldBegin(field);
-    this.ouch1.write(oprot);
+    this.o1.write(oprot);
     oprot.writeFieldEnd();
   }
-} else if (this.__isset.ouch2) {
-  if (this.ouch2 != null) {
-    field.name = "ouch2";
+} else if (this.__isset.o2) {
+  if (this.o2 != null) {
+    field.name = "o2";
     field.type = TType.STRUCT;
     field.id = -3;
     oprot.writeFieldBegin(field);
-    this.ouch2.write(oprot);
+    this.o2.write(oprot);
     oprot.writeFieldEnd();
   }
-} else if (this.__isset.ouch3) {
-  if (this.ouch3 != null) {
-    field.name = "ouch3";
+} else if (this.__isset.o3) {
+  if (this.o3 != null) {
+    field.name = "o3";
     field.type = TType.STRUCT;
     field.id = -4;
     oprot.writeFieldBegin(field);
-    this.ouch3.write(oprot);
+    this.o3.write(oprot);
     oprot.writeFieldEnd();
   }
 }
@@ -2144,12 +2144,12 @@ public String toString() {
 StringBuilder sb = new StringBuilder("get_schema_result(");
 sb.append("success:");
 sb.append(this.success);
-sb.append(",ouch1:");
-sb.append(this.ouch1.toString());
-sb.append(",ouch2:");
-sb.append(this.ouch2.toString());
-sb.append(",ouch3:");
-sb.append(this.ouch3.toString());
+sb.append(",o1:");
+sb.append(this.o1.toString());
+sb.append(",o2:");
+sb.append(this.o2.toString());
+sb.append(",o3:");
+sb.append(this.o3.toString());
 sb.append(")");
 return sb.toString();
 }
@@ -2393,74 +2393,74 @@ return sb.toString();
 }
 
 public static class alter_table_result implements TBase, java.io.Serializable {
-private MetaException ouch1;
-private UnknownTableException ouch2;
-private UnknownDBException ouch3;
+private MetaException o1;
+private UnknownTableException o2;
+private UnknownDBException o3;
 
 public final Isset __isset = new Isset();
 public static final class Isset implements java.io.Serializable {
-public boolean ouch1 = false;
-public boolean ouch2 = false;
-public boolean ouch3 = false;
+public boolean o1 = false;
+public boolean o2 = false;
+public boolean o3 = false;
 }
 
 public alter_table_result() {
 }
 
 public alter_table_result(
-MetaException ouch1,
-UnknownTableException ouch2,
-UnknownDBException ouch3)
+MetaException o1,
+UnknownTableException o2,
+UnknownDBException o3)
 {
 this();
-this.ouch1 = ouch1;
-this.__isset.ouch1 = true;
-this.ouch2 = ouch2;
-this.__isset.ouch2 = true;
-this.ouch3 = ouch3;
-this.__isset.ouch3 = true;
+this.o1 = o1;
+this.__isset.o1 = true;
+this.o2 = o2;
+this.__isset.o2 = true;
+this.o3 = o3;
+this.__isset.o3 = true;
 }
 
-public MetaException getOuch1() {
-return this.ouch1;
+public MetaException getO1() {
+return this.o1;
 }
 
-public void setOuch1(MetaException ouch1) {
-this.ouch1 = ouch1;
-this.__isset.ouch1 = true;
+public void setO1(MetaException o1) {
+this.o1 = o1;
+this.__isset.o1 = true;
 }
 
-public void unsetOuch1() {
-this.ouch1 = null;
-this.__isset.ouch1 = false;
+public void unsetO1() {
+this.o1 = null;
+this.__isset.o1 = false;
 }
 
-public UnknownTableException getOuch2() {
-return this.ouch2;
+public UnknownTableException getO2() {
+return this.o2;
 }
 
-public void setOuch2(UnknownTableException ouch2) {
-this.ouch2 = ouch2;
-this.__isset.ouch2 = true;
+public void setO2(UnknownTableException o2) {
+this.o2 = o2;
+this.__isset.o2 = true;
 }
 
-public void unsetOuch2() {
-this.ouch2 = null;
-this.__isset.ouch2 = false;
+public void unsetO2() {
+this.o2 = null;
+this.__isset.o2 = false;
 }
 
-public UnknownDBException getOuch3() {
-return this.ouch3;
+public UnknownDBException getO3() {
+return this.o3;
 }
 
-public void setOuch3(UnknownDBException ouch3) {
-this.ouch3 = ouch3;
-this.__isset.ouch3 = true;
+public void setO3(UnknownDBException o3) {
+this.o3 = o3;
+this.__isset.o3 = true;
 }
 
-public void unsetOuch3() {
-this.ouch3 = null;
-this.__isset.ouch3 = false;
+public void unsetO3() {
+this.o3 = null;
+this.__isset.o3 = false;
 }
 
 public boolean equals(Object that) {
@@ -2475,30 +2475,30 @@ public boolean equals(alter_table_result that) {
 if (that == null)
   return false;
 
-boolean this_present_ouch1 = true && (this.ouch1 != null);
-boolean that_present_ouch1 = true && (that.ouch1 != null);
-if (this_present_ouch1 || that_present_ouch1) {
-  if (!(this_present_ouch1 && that_present_ouch1))
+boolean this_present_o1 = true && (this.o1 != null);
+boolean that_present_o1 = true && (that.o1 != null);
+if (this_present_o1 || that_present_o1) {
+  if (!(this_present_o1 && that_present_o1))
     return false;
-  if (!this.ouch1.equals(that.ouch1))
-    return false;
-}
-
-boolean this_present_ouch2 = true && (this.ouch2 != null);
-boolean that_present_ouch2 = true && (that.ouch2 != null);
-if (this_present_ouch2 || that_present_ouch2) {
-  if (!(this_present_ouch2 && that_present_ouch2))
-    return false;
-  if (!this.ouch2.equals(that.ouch2))
+  if (!this.o1.equals(that.o1))
     return false;
 }
 
-boolean this_present_ouch3 = true && (this.ouch3 != null);
-boolean that_present_ouch3 = true && (that.ouch3 != null);
-if (this_present_ouch3 || that_present_ouch3) {
-  if (!(this_present_ouch3 && that_present_ouch3))
+boolean this_present_o2 = true && (this.o2 != null);
+boolean that_present_o2 = true && (that.o2 != null);
+if (this_present_o2 || that_present_o2) {
+  if (!(this_present_o2 && that_present_o2))
     return false;
-  if (!this.ouch3.equals(that.ouch3))
+  if (!this.o2.equals(that.o2))
+    return false;
+}
+
+boolean this_present_o3 = true && (this.o3 != null);
+boolean that_present_o3 = true && (that.o3 != null);
+if (this_present_o3 || that_present_o3) {
+  if (!(this_present_o3 && that_present_o3))
+    return false;
+  if (!this.o3.equals(that.o3))
     return false;
 }
 
@@ -2522,27 +2522,27 @@ while (true)
   {
     case -4:
       if (field.type == TType.STRUCT) {
-        this.ouch1 = new MetaException();
-        this.ouch1.read(iprot);
-        this.__isset.ouch1 = true;
+        this.o1 = new MetaException();
+        this.o1.read(iprot);
+        this.__isset.o1 = true;
       } else { 
         TProtocolUtil.skip(iprot, field.type);
       }
       break;
     case -5:
       if (field.type == TType.STRUCT) {
-        this.ouch2 = new UnknownTableException();
-        this.ouch2.read(iprot);
-        this.__isset.ouch2 = true;
+        this.o2 = new UnknownTableException();
+        this.o2.read(iprot);
+        this.__isset.o2 = true;
       } else { 
         TProtocolUtil.skip(iprot, field.type);
       }
       break;
     case -6:
       if (field.type == TType.STRUCT) {
-        this.ouch3 = new UnknownDBException();
-        this.ouch3.read(iprot);
-        this.__isset.ouch3 = true;
+        this.o3 = new UnknownDBException();
+        this.o3.read(iprot);
+        this.__isset.o3 = true;
       } else { 
         TProtocolUtil.skip(iprot, field.type);
       }
@@ -2561,31 +2561,31 @@ TStruct struct = new TStruct("alter_table_result");
 oprot.writeStructBegin(struct);
 TField field = new TField();
 
-if (this.__isset.ouch1) {
-  if (this.ouch1 != null) {
-    field.name = "ouch1";
+if (this.__isset.o1) {
+  if (this.o1 != null) {
+    field.name = "o1";
     field.type = TType.STRUCT;
     field.id = -4;
     oprot.writeFieldBegin(field);
-    this.ouch1.write(oprot);
+    this.o1.write(oprot);
     oprot.writeFieldEnd();
   }
-} else if (this.__isset.ouch2) {
-  if (this.ouch2 != null) {
-    field.name = "ouch2";
+} else if (this.__isset.o2) {
+  if (this.o2 != null) {
+    field.name = "o2";
     field.type = TType.STRUCT;
     field.id = -5;
     oprot.writeFieldBegin(field);
-    this.ouch2.write(oprot);
+    this.o2.write(oprot);
     oprot.writeFieldEnd();
   }
-} else if (this.__isset.ouch3) {
-  if (this.ouch3 != null) {
-    field.name = "ouch3";
+} else if (this.__isset.o3) {
+  if (this.o3 != null) {
+    field.name = "o3";
     field.type = TType.STRUCT;
     field.id = -6;
     oprot.writeFieldBegin(field);
-    this.ouch3.write(oprot);
+    this.o3.write(oprot);
     oprot.writeFieldEnd();
   }
 }
@@ -2595,12 +2595,12 @@ oprot.writeStructEnd();
 
 public String toString() {
 StringBuilder sb = new StringBuilder("alter_table_result(");
-sb.append("ouch1:");
-sb.append(this.ouch1.toString());
-sb.append(",ouch2:");
-sb.append(this.ouch2.toString());
-sb.append(",ouch3:");
-sb.append(this.ouch3.toString());
+sb.append("o1:");
+sb.append(this.o1.toString());
+sb.append(",o2:");
+sb.append(this.o2.toString());
+sb.append(",o3:");
+sb.append(this.o3.toString());
 sb.append(")");
 return sb.toString();
 }
@@ -2844,55 +2844,55 @@ return sb.toString();
 }
 
 public static class create_table_result implements TBase, java.io.Serializable {
-private MetaException ouch1;
-private UnknownDBException ouch2;
+private MetaException o1;
+private UnknownDBException o2;
 
 public final Isset __isset = new Isset();
 public static final class Isset implements java.io.Serializable {
-public boolean ouch1 = false;
-public boolean ouch2 = false;
+public boolean o1 = false;
+public boolean o2 = false;
 }
 
 public create_table_result() {
 }
 
 public create_table_result(
-MetaException ouch1,
-UnknownDBException ouch2)
+MetaException o1,
+UnknownDBException o2)
 {
 this();
-this.ouch1 = ouch1;
-this.__isset.ouch1 = true;
-this.ouch2 = ouch2;
-this.__isset.ouch2 = true;
+this.o1 = o1;
+this.__isset.o1 = true;
+this.o2 = o2;
+this.__isset.o2 = true;
 }
 
-public MetaException getOuch1() {
-return this.ouch1;
+public MetaException getO1() {
+return this.o1;
 }
 
-public void setOuch1(MetaException ouch1) {
-this.ouch1 = ouch1;
-this.__isset.ouch1 = true;
+public void setO1(MetaException o1) {
+this.o1 = o1;
+this.__isset.o1 = true;
 }
 
-public void unsetOuch1() {
-this.ouch1 = null;
-this.__isset.ouch1 = false;
+public void unsetO1() {
+this.o1 = null;
+this.__isset.o1 = false;
 }
 
-public UnknownDBException getOuch2() {
-return this.ouch2;
+public UnknownDBException getO2() {
+return this.o2;
 }
 
-public void setOuch2(UnknownDBException ouch2) {
-this.ouch2 = ouch2;
-this.__isset.ouch2 = true;
+public void setO2(UnknownDBException o2) {
+this.o2 = o2;
+this.__isset.o2 = true;
 }
 
-public void unsetOuch2() {
-this.ouch2 = null;
-this.__isset.ouch2 = false;
+public void unsetO2() {
+this.o2 = null;
+this.__isset.o2 = false;
 }
 
 public boolean equals(Object that) {
@@ -2907,21 +2907,21 @@ public boolean equals(create_table_result that) {
 if (that == null)
   return false;
 
-boolean this_present_ouch1 = true && (this.ouch1 != null);
-boolean that_present_ouch1 = true && (that.ouch1 != null);
-if (this_present_ouch1 || that_present_ouch1) {
-  if (!(this_present_ouch1 && that_present_ouch1))
+boolean this_present_o1 = true && (this.o1 != null);
+boolean that_present_o1 = true && (that.o1 != null);
+if (this_present_o1 || that_present_o1) {
+  if (!(this_present_o1 && that_present_o1))
     return false;
-  if (!this.ouch1.equals(that.ouch1))
+  if (!this.o1.equals(that.o1))
     return false;
 }
 
-boolean this_present_ouch2 = true && (this.ouch2 != null);
-boolean that_present_ouch2 = true && (that.ouch2 != null);
-if (this_present_ouch2 || that_present_ouch2) {
-  if (!(this_present_ouch2 && that_present_ouch2))
+boolean this_present_o2 = true && (this.o2 != null);
+boolean that_present_o2 = true && (that.o2 != null);
+if (this_present_o2 || that_present_o2) {
+  if (!(this_present_o2 && that_present_o2))
     return false;
-  if (!this.ouch2.equals(that.ouch2))
+  if (!this.o2.equals(that.o2))
     return false;
 }
 
@@ -2945,18 +2945,18 @@ while (true)
   {
     case -4:
       if (field.type == TType.STRUCT) {
-        this.ouch1 = new MetaException();
-        this.ouch1.read(iprot);
-        this.__isset.ouch1 = true;
+        this.o1 = new MetaException();
+        this.o1.read(iprot);
+        this.__isset.o1 = true;
       } else { 
         TProtocolUtil.skip(iprot, field.type);
       }
       break;
     case -5:
       if (field.type == TType.STRUCT) {
-        this.ouch2 = new UnknownDBException();
-        this.ouch2.read(iprot);
-        this.__isset.ouch2 = true;
+        this.o2 = new UnknownDBException();
+        this.o2.read(iprot);
+        this.__isset.o2 = true;
       } else { 
         TProtocolUtil.skip(iprot, field.type);
       }
@@ -2975,22 +2975,22 @@ TStruct struct = new TStruct("create_table_result");
 oprot.writeStructBegin(struct);
 TField field = new TField();
 
-if (this.__isset.ouch1) {
-  if (this.ouch1 != null) {
-    field.name = "ouch1";
+if (this.__isset.o1) {
+  if (this.o1 != null) {
+    field.name = "o1";
     field.type = TType.STRUCT;
     field.id = -4;
     oprot.writeFieldBegin(field);
-    this.ouch1.write(oprot);
+    this.o1.write(oprot);
     oprot.writeFieldEnd();
   }
-} else if (this.__isset.ouch2) {
-  if (this.ouch2 != null) {
-    field.name = "ouch2";
+} else if (this.__isset.o2) {
+  if (this.o2 != null) {
+    field.name = "o2";
     field.type = TType.STRUCT;
     field.id = -5;
     oprot.writeFieldBegin(field);
-    this.ouch2.write(oprot);
+    this.o2.write(oprot);
     oprot.writeFieldEnd();
   }
 }
@@ -3000,10 +3000,10 @@ oprot.writeStructEnd();
 
 public String toString() {
 StringBuilder sb = new StringBuilder("create_table_result(");
-sb.append("ouch1:");
-sb.append(this.ouch1.toString());
-sb.append(",ouch2:");
-sb.append(this.ouch2.toString());
+sb.append("o1:");
+sb.append(this.o1.toString());
+sb.append(",o2:");
+sb.append(this.o2.toString());
 sb.append(")");
 return sb.toString();
 }
@@ -3170,74 +3170,74 @@ return sb.toString();
 }
 
 public static class drop_table_result implements TBase, java.io.Serializable {
-private MetaException ouch1;
-private UnknownTableException ouch2;
-private UnknownDBException ouch3;
+private MetaException o1;
+private UnknownTableException o2;
+private UnknownDBException o3;
 
 public final Isset __isset = new Isset();
 public static final class Isset implements java.io.Serializable {
-public boolean ouch1 = false;
-public boolean ouch2 = false;
-public boolean ouch3 = false;
+public boolean o1 = false;
+public boolean o2 = false;
+public boolean o3 = false;
 }
 
 public drop_table_result() {
 }
 
 public drop_table_result(
-MetaException ouch1,
-UnknownTableException ouch2,
-UnknownDBException ouch3)
+MetaException o1,
+UnknownTableException o2,
+UnknownDBException o3)
 {
 this();
-this.ouch1 = ouch1;
-this.__isset.ouch1 = true;
-this.ouch2 = ouch2;
-this.__isset.ouch2 = true;
-this.ouch3 = ouch3;
-this.__isset.ouch3 = true;
+this.o1 = o1;
+this.__isset.o1 = true;
+this.o2 = o2;
+this.__isset.o2 = true;
+this.o3 = o3;
+this.__isset.o3 = true;
 }
 
-public MetaException getOuch1() {
-return this.ouch1;
+public MetaException getO1() {
+return this.o1;
 }
 
-public void setOuch1(MetaException ouch1) {
-this.ouch1 = ouch1;
-this.__isset.ouch1 = true;
+public void setO1(MetaException o1) {
+this.o1 = o1;
+this.__isset.o1 = true;
 }
 
-public void unsetOuch1() {
-this.ouch1 = null;
-this.__isset.ouch1 = false;
+public void unsetO1() {
+this.o1 = null;
+this.__isset.o1 = false;
 }
 
-public UnknownTableException getOuch2() {
-return this.ouch2;
+public UnknownTableException getO2() {
+return this.o2;
 }
 
-public void setOuch2(UnknownTableException ouch2) {
-this.ouch2 = ouch2;
-this.__isset.ouch2 = true;
+public void setO2(UnknownTableException o2) {
+this.o2 = o2;
+this.__isset.o2 = true;
 }
 
-public void unsetOuch2() {
-this.ouch2 = null;
-this.__isset.ouch2 = false;
+public void unsetO2() {
+this.o2 = null;
+this.__isset.o2 = false;
 }
 
-public UnknownDBException getOuch3() {
-return this.ouch3;
+public UnknownDBException getO3() {
+return this.o3;
 }
 
-public void setOuch3(UnknownDBException ouch3) {
-this.ouch3 = ouch3;
-this.__isset.ouch3 = true;
+public void setO3(UnknownDBException o3) {
+this.o3 = o3;
+this.__isset.o3 = true;
 }
 
-public void unsetOuch3() {
-this.ouch3 = null;
-this.__isset.ouch3 = false;
+public void unsetO3() {
+this.o3 = null;
+this.__isset.o3 = false;
 }
 
 public boolean equals(Object that) {
@@ -3252,30 +3252,30 @@ public boolean equals(drop_table_result that) {
 if (that == null)
   return false;
 
-boolean this_present_ouch1 = true && (this.ouch1 != null);
-boolean that_present_ouch1 = true && (that.ouch1 != null);
-if (this_present_ouch1 || that_present_ouch1) {
-  if (!(this_present_ouch1 && that_present_ouch1))
+boolean this_present_o1 = true && (this.o1 != null);
+boolean that_present_o1 = true && (that.o1 != null);
+if (this_present_o1 || that_present_o1) {
+  if (!(this_present_o1 && that_present_o1))
     return false;
-  if (!this.ouch1.equals(that.ouch1))
-    return false;
-}
-
-boolean this_present_ouch2 = true && (this.ouch2 != null);
-boolean that_present_ouch2 = true && (that.ouch2 != null);
-if (this_present_ouch2 || that_present_ouch2) {
-  if (!(this_present_ouch2 && that_present_ouch2))
-    return false;
-  if (!this.ouch2.equals(that.ouch2))
+  if (!this.o1.equals(that.o1))
     return false;
 }
 
-boolean this_present_ouch3 = true && (this.ouch3 != null);
-boolean that_present_ouch3 = true && (that.ouch3 != null);
-if (this_present_ouch3 || that_present_ouch3) {
-  if (!(this_present_ouch3 && that_present_ouch3))
+boolean this_present_o2 = true && (this.o2 != null);
+boolean that_present_o2 = true && (that.o2 != null);
+if (this_present_o2 || that_present_o2) {
+  if (!(this_present_o2 && that_present_o2))
     return false;
-  if (!this.ouch3.equals(that.ouch3))
+  if (!this.o2.equals(that.o2))
+    return false;
+}
+
+boolean this_present_o3 = true && (this.o3 != null);
+boolean that_present_o3 = true && (that.o3 != null);
+if (this_present_o3 || that_present_o3) {
+  if (!(this_present_o3 && that_present_o3))
+    return false;
+  if (!this.o3.equals(that.o3))
     return false;
 }
 
@@ -3299,27 +3299,27 @@ while (true)
   {
     case -3:
       if (field.type == TType.STRUCT) {
-        this.ouch1 = new MetaException();
-        this.ouch1.read(iprot);
-        this.__isset.ouch1 = true;
+        this.o1 = new MetaException();
+        this.o1.read(iprot);
+        this.__isset.o1 = true;
       } else { 
         TProtocolUtil.skip(iprot, field.type);
       }
       break;
     case -4:
       if (field.type == TType.STRUCT) {
-        this.ouch2 = new UnknownTableException();
-        this.ouch2.read(iprot);
-        this.__isset.ouch2 = true;
+        this.o2 = new UnknownTableException();
+        this.o2.read(iprot);
+        this.__isset.o2 = true;
       } else { 
         TProtocolUtil.skip(iprot, field.type);
       }
       break;
     case -5:
       if (field.type == TType.STRUCT) {
-        this.ouch3 = new UnknownDBException();
-        this.ouch3.read(iprot);
-        this.__isset.ouch3 = true;
+        this.o3 = new UnknownDBException();
+        this.o3.read(iprot);
+        this.__isset.o3 = true;
       } else { 
         TProtocolUtil.skip(iprot, field.type);
       }
@@ -3338,31 +3338,31 @@ TStruct struct = new TStruct("drop_table_result");
 oprot.writeStructBegin(struct);
 TField field = new TField();
 
-if (this.__isset.ouch1) {
-  if (this.ouch1 != null) {
-    field.name = "ouch1";
+if (this.__isset.o1) {
+  if (this.o1 != null) {
+    field.name = "o1";
     field.type = TType.STRUCT;
     field.id = -3;
     oprot.writeFieldBegin(field);
-    this.ouch1.write(oprot);
+    this.o1.write(oprot);
     oprot.writeFieldEnd();
   }
-} else if (this.__isset.ouch2) {
-  if (this.ouch2 != null) {
-    field.name = "ouch2";
+} else if (this.__isset.o2) {
+  if (this.o2 != null) {
+    field.name = "o2";
     field.type = TType.STRUCT;
     field.id = -4;
     oprot.writeFieldBegin(field);
-    this.ouch2.write(oprot);
+    this.o2.write(oprot);
     oprot.writeFieldEnd();
   }
-} else if (this.__isset.ouch3) {
-  if (this.ouch3 != null) {
-    field.name = "ouch3";
+} else if (this.__isset.o3) {
+  if (this.o3 != null) {
+    field.name = "o3";
     field.type = TType.STRUCT;
     field.id = -5;
     oprot.writeFieldBegin(field);
-    this.ouch3.write(oprot);
+    this.o3.write(oprot);
     oprot.writeFieldEnd();
   }
 }
@@ -3372,12 +3372,12 @@ oprot.writeStructEnd();
 
 public String toString() {
 StringBuilder sb = new StringBuilder("drop_table_result(");
-sb.append("ouch1:");
-sb.append(this.ouch1.toString());
-sb.append(",ouch2:");
-sb.append(this.ouch2.toString());
-sb.append(",ouch3:");
-sb.append(this.ouch3.toString());
+sb.append("o1:");
+sb.append(this.o1.toString());
+sb.append(",o2:");
+sb.append(this.o2.toString());
+sb.append(",o3:");
+sb.append(this.o3.toString());
 sb.append(")");
 return sb.toString();
 }
@@ -3589,74 +3589,74 @@ return sb.toString();
 }
 
 public static class truncate_table_result implements TBase, java.io.Serializable {
-private MetaException ouch1;
-private UnknownTableException ouch2;
-private UnknownDBException ouch3;
+private MetaException o1;
+private UnknownTableException o2;
+private UnknownDBException o3;
 
 public final Isset __isset = new Isset();
 public static final class Isset implements java.io.Serializable {
-public boolean ouch1 = false;
-public boolean ouch2 = false;
-public boolean ouch3 = false;
+public boolean o1 = false;
+public boolean o2 = false;
+public boolean o3 = false;
 }
 
 public truncate_table_result() {
 }
 
 public truncate_table_result(
-MetaException ouch1,
-UnknownTableException ouch2,
-UnknownDBException ouch3)
+MetaException o1,
+UnknownTableException o2,
+UnknownDBException o3)
 {
 this();
-this.ouch1 = ouch1;
-this.__isset.ouch1 = true;
-this.ouch2 = ouch2;
-this.__isset.ouch2 = true;
-this.ouch3 = ouch3;
-this.__isset.ouch3 = true;
+this.o1 = o1;
+this.__isset.o1 = true;
+this.o2 = o2;
+this.__isset.o2 = true;
+this.o3 = o3;
+this.__isset.o3 = true;
 }
 
-public MetaException getOuch1() {
-return this.ouch1;
+public MetaException getO1() {
+return this.o1;
 }
 
-public void setOuch1(MetaException ouch1) {
-this.ouch1 = ouch1;
-this.__isset.ouch1 = true;
+public void setO1(MetaException o1) {
+this.o1 = o1;
+this.__isset.o1 = true;
 }
 
-public void unsetOuch1() {
-this.ouch1 = null;
-this.__isset.ouch1 = false;
+public void unsetO1() {
+this.o1 = null;
+this.__isset.o1 = false;
 }
 
-public UnknownTableException getOuch2() {
-return this.ouch2;
+public UnknownTableException getO2() {
+return this.o2;
 }
 
-public void setOuch2(UnknownTableException ouch2) {
-this.ouch2 = ouch2;
-this.__isset.ouch2 = true;
+public void setO2(UnknownTableException o2) {
+this.o2 = o2;
+this.__isset.o2 = true;
 }
 
-public void unsetOuch2() {
-this.ouch2 = null;
-this.__isset.ouch2 = false;
+public void unsetO2() {
+this.o2 = null;
+this.__isset.o2 = false;
 }
 
-public UnknownDBException getOuch3() {
-return this.ouch3;
+public UnknownDBException getO3() {
+return this.o3;
 }
 
-public void setOuch3(UnknownDBException ouch3) {
-this.ouch3 = ouch3;
-this.__isset.ouch3 = true;
+public void setO3(UnknownDBException o3) {
+this.o3 = o3;
+this.__isset.o3 = true;
 }
 
-public void unsetOuch3() {
-this.ouch3 = null;
-this.__isset.ouch3 = false;
+public void unsetO3() {
+this.o3 = null;
+this.__isset.o3 = false;
 }
 
 public boolean equals(Object that) {
@@ -3671,30 +3671,30 @@ public boolean equals(truncate_table_result that) {
 if (that == null)
   return false;
 
-boolean this_present_ouch1 = true && (this.ouch1 != null);
-boolean that_present_ouch1 = true && (that.ouch1 != null);
-if (this_present_ouch1 || that_present_ouch1) {
-  if (!(this_present_ouch1 && that_present_ouch1))
+boolean this_present_o1 = true && (this.o1 != null);
+boolean that_present_o1 = true && (that.o1 != null);
+if (this_present_o1 || that_present_o1) {
+  if (!(this_present_o1 && that_present_o1))
     return false;
-  if (!this.ouch1.equals(that.ouch1))
-    return false;
-}
-
-boolean this_present_ouch2 = true && (this.ouch2 != null);
-boolean that_present_ouch2 = true && (that.ouch2 != null);
-if (this_present_ouch2 || that_present_ouch2) {
-  if (!(this_present_ouch2 && that_present_ouch2))
-    return false;
-  if (!this.ouch2.equals(that.ouch2))
+  if (!this.o1.equals(that.o1))
     return false;
 }
 
-boolean this_present_ouch3 = true && (this.ouch3 != null);
-boolean that_present_ouch3 = true && (that.ouch3 != null);
-if (this_present_ouch3 || that_present_ouch3) {
-  if (!(this_present_ouch3 && that_present_ouch3))
+boolean this_present_o2 = true && (this.o2 != null);
+boolean that_present_o2 = true && (that.o2 != null);
+if (this_present_o2 || that_present_o2) {
+  if (!(this_present_o2 && that_present_o2))
     return false;
-  if (!this.ouch3.equals(that.ouch3))
+  if (!this.o2.equals(that.o2))
+    return false;
+}
+
+boolean this_present_o3 = true && (this.o3 != null);
+boolean that_present_o3 = true && (that.o3 != null);
+if (this_present_o3 || that_present_o3) {
+  if (!(this_present_o3 && that_present_o3))
+    return false;
+  if (!this.o3.equals(that.o3))
     return false;
 }
 
@@ -3718,27 +3718,27 @@ while (true)
   {
     case -4:
       if (field.type == TType.STRUCT) {
-        this.ouch1 = new MetaException();
-        this.ouch1.read(iprot);
-        this.__isset.ouch1 = true;
+        this.o1 = new MetaException();
+        this.o1.read(iprot);
+        this.__isset.o1 = true;
       } else { 
         TProtocolUtil.skip(iprot, field.type);
       }
       break;
     case -5:
       if (field.type == TType.STRUCT) {
-        this.ouch2 = new UnknownTableException();
-        this.ouch2.read(iprot);
-        this.__isset.ouch2 = true;
+        this.o2 = new UnknownTableException();
+        this.o2.read(iprot);
+        this.__isset.o2 = true;
       } else { 
         TProtocolUtil.skip(iprot, field.type);
       }
       break;
     case -6:
       if (field.type == TType.STRUCT) {
-        this.ouch3 = new UnknownDBException();
-        this.ouch3.read(iprot);
-        this.__isset.ouch3 = true;
+        this.o3 = new UnknownDBException();
+        this.o3.read(iprot);
+        this.__isset.o3 = true;
       } else { 
         TProtocolUtil.skip(iprot, field.type);
       }
@@ -3757,31 +3757,31 @@ TStruct struct = new TStruct("truncate_table_result");
 oprot.writeStructBegin(struct);
 TField field = new TField();
 
-if (this.__isset.ouch1) {
-  if (this.ouch1 != null) {
-    field.name = "ouch1";
+if (this.__isset.o1) {
+  if (this.o1 != null) {
+    field.name = "o1";
     field.type = TType.STRUCT;
     field.id = -4;
     oprot.writeFieldBegin(field);
-    this.ouch1.write(oprot);
+    this.o1.write(oprot);
     oprot.writeFieldEnd();
   }
-} else if (this.__isset.ouch2) {
-  if (this.ouch2 != null) {
-    field.name = "ouch2";
+} else if (this.__isset.o2) {
+  if (this.o2 != null) {
+    field.name = "o2";
     field.type = TType.STRUCT;
     field.id = -5;
     oprot.writeFieldBegin(field);
-    this.ouch2.write(oprot);
+    this.o2.write(oprot);
     oprot.writeFieldEnd();
   }
-} else if (this.__isset.ouch3) {
-  if (this.ouch3 != null) {
-    field.name = "ouch3";
+} else if (this.__isset.o3) {
+  if (this.o3 != null) {
+    field.name = "o3";
     field.type = TType.STRUCT;
     field.id = -6;
     oprot.writeFieldBegin(field);
-    this.ouch3.write(oprot);
+    this.o3.write(oprot);
     oprot.writeFieldEnd();
   }
 }
@@ -3791,12 +3791,12 @@ oprot.writeStructEnd();
 
 public String toString() {
 StringBuilder sb = new StringBuilder("truncate_table_result(");
-sb.append("ouch1:");
-sb.append(this.ouch1.toString());
-sb.append(",ouch2:");
-sb.append(this.ouch2.toString());
-sb.append(",ouch3:");
-sb.append(this.ouch3.toString());
+sb.append("o1:");
+sb.append(this.o1.toString());
+sb.append(",o2:");
+sb.append(this.o2.toString());
+sb.append(",o3:");
+sb.append(this.o3.toString());
 sb.append(")");
 return sb.toString();
 }
@@ -3964,14 +3964,14 @@ return sb.toString();
 
 public static class table_exists_result implements TBase, java.io.Serializable {
 private boolean success;
-private MetaException ouch1;
-private UnknownDBException ouch2;
+private MetaException o1;
+private UnknownDBException o2;
 
 public final Isset __isset = new Isset();
 public static final class Isset implements java.io.Serializable {
 public boolean success = false;
-public boolean ouch1 = false;
-public boolean ouch2 = false;
+public boolean o1 = false;
+public boolean o2 = false;
 }
 
 public table_exists_result() {
@@ -3979,16 +3979,16 @@ public table_exists_result() {
 
 public table_exists_result(
 boolean success,
-MetaException ouch1,
-UnknownDBException ouch2)
+MetaException o1,
+UnknownDBException o2)
 {
 this();
 this.success = success;
 this.__isset.success = true;
-this.ouch1 = ouch1;
-this.__isset.ouch1 = true;
-this.ouch2 = ouch2;
-this.__isset.ouch2 = true;
+this.o1 = o1;
+this.__isset.o1 = true;
+this.o2 = o2;
+this.__isset.o2 = true;
 }
 
 public boolean isSuccess() {
@@ -4004,32 +4004,32 @@ public void unsetSuccess() {
 this.__isset.success = false;
 }
 
-public MetaException getOuch1() {
-return this.ouch1;
+public MetaException getO1() {
+return this.o1;
 }
 
-public void setOuch1(MetaException ouch1) {
-this.ouch1 = ouch1;
-this.__isset.ouch1 = true;
+public void setO1(MetaException o1) {
+this.o1 = o1;
+this.__isset.o1 = true;
 }
 
-public void unsetOuch1() {
-this.ouch1 = null;
-this.__isset.ouch1 = false;
+public void unsetO1() {
+this.o1 = null;
+this.__isset.o1 = false;
 }
 
-public UnknownDBException getOuch2() {
-return this.ouch2;
+public UnknownDBException getO2() {
+return this.o2;
 }
 
-public void setOuch2(UnknownDBException ouch2) {
-this.ouch2 = ouch2;
-this.__isset.ouch2 = true;
+public void setO2(UnknownDBException o2) {
+this.o2 = o2;
+this.__isset.o2 = true;
 }
 
-public void unsetOuch2() {
-this.ouch2 = null;
-this.__isset.ouch2 = false;
+public void unsetO2() {
+this.o2 = null;
+this.__isset.o2 = false;
 }
 
 public boolean equals(Object that) {
@@ -4053,21 +4053,21 @@ if (this_present_success || that_present_success) {
     return false;
 }
 
-boolean this_present_ouch1 = true && (this.ouch1 != null);
-boolean that_present_ouch1 = true && (that.ouch1 != null);
-if (this_present_ouch1 || that_present_ouch1) {
-  if (!(this_present_ouch1 && that_present_ouch1))
+boolean this_present_o1 = true && (this.o1 != null);
+boolean that_present_o1 = true && (that.o1 != null);
+if (this_present_o1 || that_present_o1) {
+  if (!(this_present_o1 && that_present_o1))
     return false;
-  if (!this.ouch1.equals(that.ouch1))
+  if (!this.o1.equals(that.o1))
     return false;
 }
 
-boolean this_present_ouch2 = true && (this.ouch2 != null);
-boolean that_present_ouch2 = true && (that.ouch2 != null);
-if (this_present_ouch2 || that_present_ouch2) {
-  if (!(this_present_ouch2 && that_present_ouch2))
+boolean this_present_o2 = true && (this.o2 != null);
+boolean that_present_o2 = true && (that.o2 != null);
+if (this_present_o2 || that_present_o2) {
+  if (!(this_present_o2 && that_present_o2))
     return false;
-  if (!this.ouch2.equals(that.ouch2))
+  if (!this.o2.equals(that.o2))
     return false;
 }
 
@@ -4099,18 +4099,18 @@ while (true)
       break;
     case -3:
       if (field.type == TType.STRUCT) {
-        this.ouch1 = new MetaException();
-        this.ouch1.read(iprot);
-        this.__isset.ouch1 = true;
+        this.o1 = new MetaException();
+        this.o1.read(iprot);
+        this.__isset.o1 = true;
       } else { 
         TProtocolUtil.skip(iprot, field.type);
       }
       break;
     case -4:
       if (field.type == TType.STRUCT) {
-        this.ouch2 = new UnknownDBException();
-        this.ouch2.read(iprot);
-        this.__isset.ouch2 = true;
+        this.o2 = new UnknownDBException();
+        this.o2.read(iprot);
+        this.__isset.o2 = true;
       } else { 
         TProtocolUtil.skip(iprot, field.type);
       }
@@ -4136,22 +4136,22 @@ if (this.__isset.success) {
   oprot.writeFieldBegin(field);
   oprot.writeBool(this.success);
   oprot.writeFieldEnd();
-} else if (this.__isset.ouch1) {
-  if (this.ouch1 != null) {
-    field.name = "ouch1";
+} else if (this.__isset.o1) {
+  if (this.o1 != null) {
+    field.name = "o1";
     field.type = TType.STRUCT;
     field.id = -3;
     oprot.writeFieldBegin(field);
-    this.ouch1.write(oprot);
+    this.o1.write(oprot);
     oprot.writeFieldEnd();
   }
-} else if (this.__isset.ouch2) {
-  if (this.ouch2 != null) {
-    field.name = "ouch2";
+} else if (this.__isset.o2) {
+  if (this.o2 != null) {
+    field.name = "o2";
     field.type = TType.STRUCT;
     field.id = -4;
     oprot.writeFieldBegin(field);
-    this.ouch2.write(oprot);
+    this.o2.write(oprot);
     oprot.writeFieldEnd();
   }
 }
@@ -4163,10 +4163,10 @@ public String toString() {
 StringBuilder sb = new StringBuilder("table_exists_result(");
 sb.append("success:");
 sb.append(this.success);
-sb.append(",ouch1:");
-sb.append(this.ouch1.toString());
-sb.append(",ouch2:");
-sb.append(this.ouch2.toString());
+sb.append(",o1:");
+sb.append(this.o1.toString());
+sb.append(",o2:");
+sb.append(this.o2.toString());
 sb.append(")");
 return sb.toString();
 }
@@ -4334,16 +4334,16 @@ return sb.toString();
 
 public static class get_partitions_result implements TBase, java.io.Serializable {
 private List<String> success;
-private MetaException ouch1;
-private UnknownTableException ouch2;
-private UnknownDBException ouch3;
+private MetaException o1;
+private UnknownTableException o2;
+private UnknownDBException o3;
 
 public final Isset __isset = new Isset();
 public static final class Isset implements java.io.Serializable {
 public boolean success = false;
-public boolean ouch1 = false;
-public boolean ouch2 = false;
-public boolean ouch3 = false;
+public boolean o1 = false;
+public boolean o2 = false;
+public boolean o3 = false;
 }
 
 public get_partitions_result() {
@@ -4351,19 +4351,19 @@ public get_partitions_result() {
 
 public get_partitions_result(
 List<String> success,
-MetaException ouch1,
-UnknownTableException ouch2,
-UnknownDBException ouch3)
+MetaException o1,
+UnknownTableException o2,
+UnknownDBException o3)
 {
 this();
 this.success = success;
 this.__isset.success = true;
-this.ouch1 = ouch1;
-this.__isset.ouch1 = true;
-this.ouch2 = ouch2;
-this.__isset.ouch2 = true;
-this.ouch3 = ouch3;
-this.__isset.ouch3 = true;
+this.o1 = o1;
+this.__isset.o1 = true;
+this.o2 = o2;
+this.__isset.o2 = true;
+this.o3 = o3;
+this.__isset.o3 = true;
 }
 
 public int getSuccessSize() {
@@ -4396,46 +4396,46 @@ this.success = null;
 this.__isset.success = false;
 }
 
-public MetaException getOuch1() {
-return this.ouch1;
+public MetaException getO1() {
+return this.o1;
 }
 
-public void setOuch1(MetaException ouch1) {
-this.ouch1 = ouch1;
-this.__isset.ouch1 = true;
+public void setO1(MetaException o1) {
+this.o1 = o1;
+this.__isset.o1 = true;
 }
 
-public void unsetOuch1() {
-this.ouch1 = null;
-this.__isset.ouch1 = false;
+public void unsetO1() {
+this.o1 = null;
+this.__isset.o1 = false;
 }
 
-public UnknownTableException getOuch2() {
-return this.ouch2;
+public UnknownTableException getO2() {
+return this.o2;
 }
 
-public void setOuch2(UnknownTableException ouch2) {
-this.ouch2 = ouch2;
-this.__isset.ouch2 = true;
+public void setO2(UnknownTableException o2) {
+this.o2 = o2;
+this.__isset.o2 = true;
 }
 
-public void unsetOuch2() {
-this.ouch2 = null;
-this.__isset.ouch2 = false;
+public void unsetO2() {
+this.o2 = null;
+this.__isset.o2 = false;
 }
 
-public UnknownDBException getOuch3() {
-return this.ouch3;
+public UnknownDBException getO3() {
+return this.o3;
 }
 
-public void setOuch3(UnknownDBException ouch3) {
-this.ouch3 = ouch3;
-this.__isset.ouch3 = true;
+public void setO3(UnknownDBException o3) {
+this.o3 = o3;
+this.__isset.o3 = true;
 }
 
-public void unsetOuch3() {
-this.ouch3 = null;
-this.__isset.ouch3 = false;
+public void unsetO3() {
+this.o3 = null;
+this.__isset.o3 = false;
 }
 
 public boolean equals(Object that) {
@@ -4459,30 +4459,30 @@ if (this_present_success || that_present_success) {
     return false;
 }
 
-boolean this_present_ouch1 = true && (this.ouch1 != null);
-boolean that_present_ouch1 = true && (that.ouch1 != null);
-if (this_present_ouch1 || that_present_ouch1) {
-  if (!(this_present_ouch1 && that_present_ouch1))
+boolean this_present_o1 = true && (this.o1 != null);
+boolean that_present_o1 = true && (that.o1 != null);
+if (this_present_o1 || that_present_o1) {
+  if (!(this_present_o1 && that_present_o1))
     return false;
-  if (!this.ouch1.equals(that.ouch1))
-    return false;
-}
-
-boolean this_present_ouch2 = true && (this.ouch2 != null);
-boolean that_present_ouch2 = true && (that.ouch2 != null);
-if (this_present_ouch2 || that_present_ouch2) {
-  if (!(this_present_ouch2 && that_present_ouch2))
-    return false;
-  if (!this.ouch2.equals(that.ouch2))
+  if (!this.o1.equals(that.o1))
     return false;
 }
 
-boolean this_present_ouch3 = true && (this.ouch3 != null);
-boolean that_present_ouch3 = true && (that.ouch3 != null);
-if (this_present_ouch3 || that_present_ouch3) {
-  if (!(this_present_ouch3 && that_present_ouch3))
+boolean this_present_o2 = true && (this.o2 != null);
+boolean that_present_o2 = true && (that.o2 != null);
+if (this_present_o2 || that_present_o2) {
+  if (!(this_present_o2 && that_present_o2))
     return false;
-  if (!this.ouch3.equals(that.ouch3))
+  if (!this.o2.equals(that.o2))
+    return false;
+}
+
+boolean this_present_o3 = true && (this.o3 != null);
+boolean that_present_o3 = true && (that.o3 != null);
+if (this_present_o3 || that_present_o3) {
+  if (!(this_present_o3 && that_present_o3))
+    return false;
+  if (!this.o3.equals(that.o3))
     return false;
 }
 
@@ -4524,27 +4524,27 @@ while (true)
       break;
     case -3:
       if (field.type == TType.STRUCT) {
-        this.ouch1 = new MetaException();
-        this.ouch1.read(iprot);
-        this.__isset.ouch1 = true;
+        this.o1 = new MetaException();
+        this.o1.read(iprot);
+        this.__isset.o1 = true;
       } else { 
         TProtocolUtil.skip(iprot, field.type);
       }
       break;
     case -4:
       if (field.type == TType.STRUCT) {
-        this.ouch2 = new UnknownTableException();
-        this.ouch2.read(iprot);
-        this.__isset.ouch2 = true;
+        this.o2 = new UnknownTableException();
+        this.o2.read(iprot);
+        this.__isset.o2 = true;
       } else { 
         TProtocolUtil.skip(iprot, field.type);
       }
       break;
     case -5:
       if (field.type == TType.STRUCT) {
-        this.ouch3 = new UnknownDBException();
-        this.ouch3.read(iprot);
-        this.__isset.ouch3 = true;
+        this.o3 = new UnknownDBException();
+        this.o3.read(iprot);
+        this.__isset.o3 = true;
       } else { 
         TProtocolUtil.skip(iprot, field.type);
       }
@@ -4578,31 +4578,31 @@ if (this.__isset.success) {
     }
     oprot.writeFieldEnd();
   }
-} else if (this.__isset.ouch1) {
-  if (this.ouch1 != null) {
-    field.name = "ouch1";
+} else if (this.__isset.o1) {
+  if (this.o1 != null) {
+    field.name = "o1";
     field.type = TType.STRUCT;
     field.id = -3;
     oprot.writeFieldBegin(field);
-    this.ouch1.write(oprot);
+    this.o1.write(oprot);
     oprot.writeFieldEnd();
   }
-} else if (this.__isset.ouch2) {
-  if (this.ouch2 != null) {
-    field.name = "ouch2";
+} else if (this.__isset.o2) {
+  if (this.o2 != null) {
+    field.name = "o2";
     field.type = TType.STRUCT;
     field.id = -4;
     oprot.writeFieldBegin(field);
-    this.ouch2.write(oprot);
+    this.o2.write(oprot);
     oprot.writeFieldEnd();
   }
-} else if (this.__isset.ouch3) {
-  if (this.ouch3 != null) {
-    field.name = "ouch3";
+} else if (this.__isset.o3) {
+  if (this.o3 != null) {
+    field.name = "o3";
     field.type = TType.STRUCT;
     field.id = -5;
     oprot.writeFieldBegin(field);
-    this.ouch3.write(oprot);
+    this.o3.write(oprot);
     oprot.writeFieldEnd();
   }
 }
@@ -4614,12 +4614,12 @@ public String toString() {
 StringBuilder sb = new StringBuilder("get_partitions_result(");
 sb.append("success:");
 sb.append(this.success);
-sb.append(",ouch1:");
-sb.append(this.ouch1.toString());
-sb.append(",ouch2:");
-sb.append(this.ouch2.toString());
-sb.append(",ouch3:");
-sb.append(this.ouch3.toString());
+sb.append(",o1:");
+sb.append(this.o1.toString());
+sb.append(",o2:");
+sb.append(this.o2.toString());
+sb.append(",o3:");
+sb.append(this.o3.toString());
 sb.append(")");
 return sb.toString();
 }
@@ -4686,12 +4686,12 @@ return sb.toString();
 
 public static class get_dbs_result implements TBase, java.io.Serializable {
 private List<String> success;
-private MetaException ouch;
+private MetaException o;
 
 public final Isset __isset = new Isset();
 public static final class Isset implements java.io.Serializable {
 public boolean success = false;
-public boolean ouch = false;
+public boolean o = false;
 }
 
 public get_dbs_result() {
@@ -4699,13 +4699,13 @@ public get_dbs_result() {
 
 public get_dbs_result(
 List<String> success,
-MetaException ouch)
+MetaException o)
 {
 this();
 this.success = success;
 this.__isset.success = true;
-this.ouch = ouch;
-this.__isset.ouch = true;
+this.o = o;
+this.__isset.o = true;
 }
 
 public int getSuccessSize() {
@@ -4738,18 +4738,18 @@ this.success = null;
 this.__isset.success = false;
 }
 
-public MetaException getOuch() {
-return this.ouch;
+public MetaException getO() {
+return this.o;
 }
 
-public void setOuch(MetaException ouch) {
-this.ouch = ouch;
-this.__isset.ouch = true;
+public void setO(MetaException o) {
+this.o = o;
+this.__isset.o = true;
 }
 
-public void unsetOuch() {
-this.ouch = null;
-this.__isset.ouch = false;
+public void unsetO() {
+this.o = null;
+this.__isset.o = false;
 }
 
 public boolean equals(Object that) {
@@ -4773,12 +4773,12 @@ if (this_present_success || that_present_success) {
     return false;
 }
 
-boolean this_present_ouch = true && (this.ouch != null);
-boolean that_present_ouch = true && (that.ouch != null);
-if (this_present_ouch || that_present_ouch) {
-  if (!(this_present_ouch && that_present_ouch))
+boolean this_present_o = true && (this.o != null);
+boolean that_present_o = true && (that.o != null);
+if (this_present_o || that_present_o) {
+  if (!(this_present_o && that_present_o))
     return false;
-  if (!this.ouch.equals(that.ouch))
+  if (!this.o.equals(that.o))
     return false;
 }
 
@@ -4820,9 +4820,9 @@ while (true)
       break;
     case -1:
       if (field.type == TType.STRUCT) {
-        this.ouch = new MetaException();
-        this.ouch.read(iprot);
-        this.__isset.ouch = true;
+        this.o = new MetaException();
+        this.o.read(iprot);
+        this.__isset.o = true;
       } else { 
         TProtocolUtil.skip(iprot, field.type);
       }
@@ -4856,13 +4856,13 @@ if (this.__isset.success) {
     }
     oprot.writeFieldEnd();
   }
-} else if (this.__isset.ouch) {
-  if (this.ouch != null) {
-    field.name = "ouch";
+} else if (this.__isset.o) {
+  if (this.o != null) {
+    field.name = "o";
     field.type = TType.STRUCT;
     field.id = -1;
     oprot.writeFieldBegin(field);
-    this.ouch.write(oprot);
+    this.o.write(oprot);
     oprot.writeFieldEnd();
   }
 }
@@ -4874,8 +4874,8 @@ public String toString() {
 StringBuilder sb = new StringBuilder("get_dbs_result(");
 sb.append("success:");
 sb.append(this.success);
-sb.append(",ouch:");
-sb.append(this.ouch.toString());
+sb.append(",o:");
+sb.append(this.o.toString());
 sb.append(")");
 return sb.toString();
 }
@@ -5131,16 +5131,16 @@ return sb.toString();
 
 public static class cat_result implements TBase, java.io.Serializable {
 private List<String> success;
-private MetaException ouch1;
-private UnknownDBException ouch2;
-private UnknownTableException ouch3;
+private MetaException o1;
+private UnknownDBException o2;
+private UnknownTableException o3;
 
 public final Isset __isset = new Isset();
 public static final class Isset implements java.io.Serializable {
 public boolean success = false;
-public boolean ouch1 = false;
-public boolean ouch2 = false;
-public boolean ouch3 = false;
+public boolean o1 = false;
+public boolean o2 = false;
+public boolean o3 = false;
 }
 
 public cat_result() {
@@ -5148,19 +5148,19 @@ public cat_result() {
 
 public cat_result(
 List<String> success,
-MetaException ouch1,
-UnknownDBException ouch2,
-UnknownTableException ouch3)
+MetaException o1,
+UnknownDBException o2,
+UnknownTableException o3)
 {
 this();
 this.success = success;
 this.__isset.success = true;
-this.ouch1 = ouch1;
-this.__isset.ouch1 = true;
-this.ouch2 = ouch2;
-this.__isset.ouch2 = true;
-this.ouch3 = ouch3;
-this.__isset.ouch3 = true;
+this.o1 = o1;
+this.__isset.o1 = true;
+this.o2 = o2;
+this.__isset.o2 = true;
+this.o3 = o3;
+this.__isset.o3 = true;
 }
 
 public int getSuccessSize() {
@@ -5193,46 +5193,46 @@ this.success = null;
 this.__isset.success = false;
 }
 
-public MetaException getOuch1() {
-return this.ouch1;
+public MetaException getO1() {
+return this.o1;
 }
 
-public void setOuch1(MetaException ouch1) {
-this.ouch1 = ouch1;
-this.__isset.ouch1 = true;
+public void setO1(MetaException o1) {
+this.o1 = o1;
+this.__isset.o1 = true;
 }
 
-public void unsetOuch1() {
-this.ouch1 = null;
-this.__isset.ouch1 = false;
+public void unsetO1() {
+this.o1 = null;
+this.__isset.o1 = false;
 }
 
-public UnknownDBException getOuch2() {
-return this.ouch2;
+public UnknownDBException getO2() {
+return this.o2;
 }
 
-public void setOuch2(UnknownDBException ouch2) {
-this.ouch2 = ouch2;
-this.__isset.ouch2 = true;
+public void setO2(UnknownDBException o2) {
+this.o2 = o2;
+this.__isset.o2 = true;
 }
 
-public void unsetOuch2() {
-this.ouch2 = null;
-this.__isset.ouch2 = false;
+public void unsetO2() {
+this.o2 = null;
+this.__isset.o2 = false;
 }
 
-public UnknownTableException getOuch3() {
-return this.ouch3;
+public UnknownTableException getO3() {
+return this.o3;
 }
 
-public void setOuch3(UnknownTableException ouch3) {
-this.ouch3 = ouch3;
-this.__isset.ouch3 = true;
+public void setO3(UnknownTableException o3) {
+this.o3 = o3;
+this.__isset.o3 = true;
 }
 
-public void unsetOuch3() {
-this.ouch3 = null;
-this.__isset.ouch3 = false;
+public void unsetO3() {
+this.o3 = null;
+this.__isset.o3 = false;
 }
 
 public boolean equals(Object that) {
@@ -5256,30 +5256,30 @@ if (this_present_success || that_present_success) {
     return false;
 }
 
-boolean this_present_ouch1 = true && (this.ouch1 != null);
-boolean that_present_ouch1 = true && (that.ouch1 != null);
-if (this_present_ouch1 || that_present_ouch1) {
-  if (!(this_present_ouch1 && that_present_ouch1))
+boolean this_present_o1 = true && (this.o1 != null);
+boolean that_present_o1 = true && (that.o1 != null);
+if (this_present_o1 || that_present_o1) {
+  if (!(this_present_o1 && that_present_o1))
     return false;
-  if (!this.ouch1.equals(that.ouch1))
-    return false;
-}
-
-boolean this_present_ouch2 = true && (this.ouch2 != null);
-boolean that_present_ouch2 = true && (that.ouch2 != null);
-if (this_present_ouch2 || that_present_ouch2) {
-  if (!(this_present_ouch2 && that_present_ouch2))
-    return false;
-  if (!this.ouch2.equals(that.ouch2))
+  if (!this.o1.equals(that.o1))
     return false;
 }
 
-boolean this_present_ouch3 = true && (this.ouch3 != null);
-boolean that_present_ouch3 = true && (that.ouch3 != null);
-if (this_present_ouch3 || that_present_ouch3) {
-  if (!(this_present_ouch3 && that_present_ouch3))
+boolean this_present_o2 = true && (this.o2 != null);
+boolean that_present_o2 = true && (that.o2 != null);
+if (this_present_o2 || that_present_o2) {
+  if (!(this_present_o2 && that_present_o2))
     return false;
-  if (!this.ouch3.equals(that.ouch3))
+  if (!this.o2.equals(that.o2))
+    return false;
+}
+
+boolean this_present_o3 = true && (this.o3 != null);
+boolean that_present_o3 = true && (that.o3 != null);
+if (this_present_o3 || that_present_o3) {
+  if (!(this_present_o3 && that_present_o3))
+    return false;
+  if (!this.o3.equals(that.o3))
     return false;
 }
 
@@ -5321,27 +5321,27 @@ while (true)
       break;
     case -5:
       if (field.type == TType.STRUCT) {
-        this.ouch1 = new MetaException();
-        this.ouch1.read(iprot);
-        this.__isset.ouch1 = true;
+        this.o1 = new MetaException();
+        this.o1.read(iprot);
+        this.__isset.o1 = true;
       } else { 
         TProtocolUtil.skip(iprot, field.type);
       }
       break;
     case -6:
       if (field.type == TType.STRUCT) {
-        this.ouch2 = new UnknownDBException();
-        this.ouch2.read(iprot);
-        this.__isset.ouch2 = true;
+        this.o2 = new UnknownDBException();
+        this.o2.read(iprot);
+        this.__isset.o2 = true;
       } else { 
         TProtocolUtil.skip(iprot, field.type);
       }
       break;
     case -7:
       if (field.type == TType.STRUCT) {
-        this.ouch3 = new UnknownTableException();
-        this.ouch3.read(iprot);
-        this.__isset.ouch3 = true;
+        this.o3 = new UnknownTableException();
+        this.o3.read(iprot);
+        this.__isset.o3 = true;
       } else { 
         TProtocolUtil.skip(iprot, field.type);
       }
@@ -5375,31 +5375,31 @@ if (this.__isset.success) {
     }
     oprot.writeFieldEnd();
   }
-} else if (this.__isset.ouch1) {
-  if (this.ouch1 != null) {
-    field.name = "ouch1";
+} else if (this.__isset.o1) {
+  if (this.o1 != null) {
+    field.name = "o1";
     field.type = TType.STRUCT;
     field.id = -5;
     oprot.writeFieldBegin(field);
-    this.ouch1.write(oprot);
+    this.o1.write(oprot);
     oprot.writeFieldEnd();
   }
-} else if (this.__isset.ouch2) {
-  if (this.ouch2 != null) {
-    field.name = "ouch2";
+} else if (this.__isset.o2) {
+  if (this.o2 != null) {
+    field.name = "o2";
     field.type = TType.STRUCT;
     field.id = -6;
     oprot.writeFieldBegin(field);
-    this.ouch2.write(oprot);
+    this.o2.write(oprot);
     oprot.writeFieldEnd();
   }
-} else if (this.__isset.ouch3) {
-  if (this.ouch3 != null) {
-    field.name = "ouch3";
+} else if (this.__isset.o3) {
+  if (this.o3 != null) {
+    field.name = "o3";
     field.type = TType.STRUCT;
     field.id = -7;
     oprot.writeFieldBegin(field);
-    this.ouch3.write(oprot);
+    this.o3.write(oprot);
     oprot.writeFieldEnd();
   }
 }
@@ -5411,12 +5411,12 @@ public String toString() {
 StringBuilder sb = new StringBuilder("cat_result(");
 sb.append("success:");
 sb.append(this.success);
-sb.append(",ouch1:");
-sb.append(this.ouch1.toString());
-sb.append(",ouch2:");
-sb.append(this.ouch2.toString());
-sb.append(",ouch3:");
-sb.append(this.ouch3.toString());
+sb.append(",o1:");
+sb.append(this.o1.toString());
+sb.append(",o2:");
+sb.append(this.o2.toString());
+sb.append(",o3:");
+sb.append(this.o3.toString());
 sb.append(")");
 return sb.toString();
 }

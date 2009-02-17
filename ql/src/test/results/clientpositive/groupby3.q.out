@@ -43,7 +43,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/athusoo/commits/hive_trunk_ws2/build/ql/tmp/156149158/223155059.10001 
+        /data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/tmp/72566128/1350457683.10001 
           Reduce Output Operator
             sort order: 
             tag: -1
@@ -96,7 +96,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: dest1
 
   Stage: Stage-0
@@ -106,7 +106,7 @@ STAGE PLANS:
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: dest1
 
 

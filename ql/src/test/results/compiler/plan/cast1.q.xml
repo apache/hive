@@ -30,7 +30,7 @@
                         <void property="conf"> 
                          <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                           <void property="dirName"> 
-                           <string>/data/users/athusoo/apacheprojects/hive_local_ws3/ql/../build/ql/tmp/1339188432.10001.insclause-0</string> 
+                           <string>/data/users/zshao/sync/apache-trunk-HIVE-270/ql/../build/ql/tmp/148058987.10001.insclause-0</string> 
                           </void> 
                           <void property="tableInfo"> 
                            <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -764,7 +764,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/athusoo/apacheprojects/hive_local_ws3/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src</string> 
@@ -776,7 +776,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/athusoo/apacheprojects/hive_local_ws3/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"/> 
@@ -797,6 +797,10 @@
             <void method="put"> 
              <string>name</string> 
              <string>src</string> 
+            </void> 
+            <void method="put"> 
+             <string>columns.types</string> 
+             <string>string:string</string> 
             </void> 
             <void method="put"> 
              <string>serialization.ddl</string> 
@@ -828,7 +832,7 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/data/users/athusoo/apacheprojects/hive_local_ws3/build/ql/test/data/warehouse/src</string> 
+             <string>file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/src</string> 
             </void> 
            </object> 
           </void> 

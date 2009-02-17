@@ -238,6 +238,7 @@ service ThriftMetaStore extends fb303.FacebookService
 
 // these should be needed only for backward compatibility with filestore
 const string META_TABLE_COLUMNS   = "columns",
+const string META_TABLE_COLUMN_TYPES   = "columns.types",
 const string BUCKET_FIELD_NAME    = "bucket_field_name",
 const string BUCKET_COUNT         = "bucket_count",
 const string FIELD_TO_DIMENSION   = "field_to_dimension",

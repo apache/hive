@@ -91,10 +91,10 @@ STAGE PLANS:
                             type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/athusoo/commits/hive_trunk_ws2/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
-        file:/data/users/athusoo/commits/hive_trunk_ws2/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
+        file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
+        file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
       Path -> Partition:
-        file:/data/users/athusoo/commits/hive_trunk_ws2/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
+        file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
           Partition
             partition values:
               ds 2008-04-08
@@ -104,6 +104,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
               properties:
                 name srcpart
+                columns.types string:string
                 serialization.ddl struct srcpart { string key, string value}
                 serialization.format 1
                 columns key,value
@@ -112,10 +113,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                location file:/data/users/athusoo/commits/hive_trunk_ws2/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
               name: srcpart
-        file:/data/users/athusoo/commits/hive_trunk_ws2/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
+        file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
           Partition
             partition values:
               ds 2008-04-08
@@ -125,6 +126,7 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
               properties:
                 name srcpart
+                columns.types string:string
                 serialization.ddl struct srcpart { string key, string value}
                 serialization.format 1
                 columns key,value
@@ -133,14 +135,14 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                location file:/data/users/athusoo/commits/hive_trunk_ws2/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
               name: srcpart
       Reduce Operator Tree:
         Extract
           File Output Operator
             compressed: false
-            directory: /data/users/athusoo/commits/hive_trunk_ws2/ql/../build/ql/tmp/23301151/89192947.10001.insclause-0
+            directory: /data/users/zshao/sync/apache-trunk-HIVE-270/ql/../build/ql/tmp/876958875/840024393.10001.insclause-0
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat

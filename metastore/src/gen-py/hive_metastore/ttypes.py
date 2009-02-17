@@ -523,7 +523,7 @@ class StorageDescriptor:
     self.inputFormat = None
     self.outputFormat = None
     self.compressed = None
-    self.numBuckets = 32
+    self.numBuckets = None
     self.serdeInfo = None
     self.bucketCols = None
     self.sortCols = None

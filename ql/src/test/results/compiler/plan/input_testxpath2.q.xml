@@ -30,7 +30,7 @@
                         <void property="conf"> 
                          <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                           <void property="dirName"> 
-                           <string>/tmp/hive-njain/610717789.10001.insclause-0</string> 
+                           <string>/data/users/zshao/sync/apache-trunk-HIVE-270/ql/../build/ql/tmp/1266646813.10001.insclause-0</string> 
                           </void> 
                           <void property="tableInfo"> 
                            <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -570,7 +570,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/src_thrift</string> 
+       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/src_thrift</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src_thrift</string> 
@@ -582,7 +582,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/src_thrift</string> 
+       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/src_thrift</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"/> 
@@ -603,6 +603,10 @@
             <void method="put"> 
              <string>name</string> 
              <string>src_thrift</string> 
+            </void> 
+            <void method="put"> 
+             <string>columns.types</string> 
+             <string></string> 
             </void> 
             <void method="put"> 
              <string>serialization.ddl</string> 
@@ -638,7 +642,7 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/home/njain/workspace/hadoophive/trunk/build/ql/test/data/warehouse/src_thrift</string> 
+             <string>file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/src_thrift</string> 
             </void> 
            </object> 
           </void> 

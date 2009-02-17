@@ -10,6 +10,8 @@ $GLOBALS['hive_metastore_CONSTANTS'] = array();
 
 $GLOBALS['hive_metastore_CONSTANTS']['META_TABLE_COLUMNS'] = 'columns';
 
+$GLOBALS['hive_metastore_CONSTANTS']['META_TABLE_COLUMN_TYPES'] = 'columns.types';
+
 $GLOBALS['hive_metastore_CONSTANTS']['BUCKET_FIELD_NAME'] = 'bucket_field_name';
 
 $GLOBALS['hive_metastore_CONSTANTS']['BUCKET_COUNT'] = 'bucket_count';

@@ -704,7 +704,7 @@ class metastore_StorageDescriptor {
   public $inputFormat = null;
   public $outputFormat = null;
   public $compressed = null;
-  public $numBuckets = 32;
+  public $numBuckets = null;
   public $serdeInfo = null;
   public $bucketCols = null;
   public $sortCols = null;

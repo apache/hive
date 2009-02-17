@@ -9,6 +9,8 @@ from ttypes import *
 
 META_TABLE_COLUMNS = 'columns'
 
+META_TABLE_COLUMN_TYPES = 'columns.types'
+
 BUCKET_FIELD_NAME = 'bucket_field_name'
 
 BUCKET_COUNT = 'bucket_count'

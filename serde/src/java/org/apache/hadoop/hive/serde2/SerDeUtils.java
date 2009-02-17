@@ -70,12 +70,12 @@ public class SerDeUtils {
     nativeSerDeNames.add(org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.class.getName());
     // For backward compatibility
     nativeSerDeNames.add("org.apache.hadoop.hive.serde.thrift.columnsetSerDe");
+    nativeSerDeNames.add(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
   }
 
   public static boolean isNativeSerDe(String serde) {
     return nativeSerDeNames.contains(serde);
   }
-  
 
   private static boolean initCoreSerDes = registerCoreSerDes();
   

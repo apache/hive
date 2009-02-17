@@ -8,8 +8,8 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Copy
-      source: file:/mnt/vol/devrs004.snc1/jssarma/projects/hive-trunk-compress/data/files/kv1.txt
-      destination: file:/tmp/hive-jssarma/412426324
+      source: file:/data/users/zshao/sync/apache-trunk-HIVE-270/data/files/kv1.txt
+      destination: file:/data/users/zshao/sync/apache-trunk-HIVE-270/ql/../build/ql/tmp/1898718160
 
   Stage: Stage-1
     Move Operator
@@ -18,7 +18,7 @@ STAGE PLANS:
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: input4
 
 

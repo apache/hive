@@ -43,8 +43,6 @@ public boolean parameters = false;
 }
 
 public StorageDescriptor() {
-this.numBuckets = 32;
-
 }
 
 public StorageDescriptor(

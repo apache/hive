@@ -345,12 +345,12 @@ class Client(fb303.FacebookService.Client, Iface):
     self._iprot.readMessageEnd()
     if result.success != None:
       return result.success
-    if result.ouch1 != None:
-      raise result.ouch1
-    if result.ouch2 != None:
-      raise result.ouch2
-    if result.ouch3 != None:
-      raise result.ouch3
+    if result.o1 != None:
+      raise result.o1
+    if result.o2 != None:
+      raise result.o2
+    if result.o3 != None:
+      raise result.o3
     raise TApplicationException(TApplicationException.MISSING_RESULT, "get_fields failed: unknown result");
 
   def create_table(self, tbl):
@@ -375,12 +375,12 @@ class Client(fb303.FacebookService.Client, Iface):
     result = create_table_result()
     result.read(self._iprot)
     self._iprot.readMessageEnd()
-    if result.ouch1 != None:
-      raise result.ouch1
-    if result.ouch2 != None:
-      raise result.ouch2
-    if result.ouch3 != None:
-      raise result.ouch3
+    if result.o1 != None:
+      raise result.o1
+    if result.o2 != None:
+      raise result.o2
+    if result.o3 != None:
+      raise result.o3
     if result.o4 != None:
       raise result.o4
     return
@@ -411,8 +411,8 @@ class Client(fb303.FacebookService.Client, Iface):
     self._iprot.readMessageEnd()
     if result.o1 != None:
       raise result.o1
-    if result.ouch3 != None:
-      raise result.ouch3
+    if result.o3 != None:
+      raise result.o3
     return
 
   def get_tables(self, db_name, pattern):
@@ -440,12 +440,8 @@ class Client(fb303.FacebookService.Client, Iface):
     self._iprot.readMessageEnd()
     if result.success != None:
       return result.success
-    if result.ouch1 != None:
-      raise result.ouch1
-    if result.ouch2 != None:
-      raise result.ouch2
-    if result.ouch3 != None:
-      raise result.ouch3
+    if result.o1 != None:
+      raise result.o1
     raise TApplicationException(TApplicationException.MISSING_RESULT, "get_tables failed: unknown result");
 
   def get_table(self, dbname, tbl_name):
@@ -930,12 +926,12 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     result = get_fields_result()
     try:
       result.success = self._handler.get_fields(args.db_name, args.table_name)
-    except MetaException, ouch1:
-      result.ouch1 = ouch1
-    except UnknownTableException, ouch2:
-      result.ouch2 = ouch2
-    except UnknownDBException, ouch3:
-      result.ouch3 = ouch3
+    except MetaException, o1:
+      result.o1 = o1
+    except UnknownTableException, o2:
+      result.o2 = o2
+    except UnknownDBException, o3:
+      result.o3 = o3
     oprot.writeMessageBegin("get_fields", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -948,12 +944,12 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     result = create_table_result()
     try:
       self._handler.create_table(args.tbl)
-    except AlreadyExistsException, ouch1:
-      result.ouch1 = ouch1
-    except InvalidObjectException, ouch2:
-      result.ouch2 = ouch2
-    except MetaException, ouch3:
-      result.ouch3 = ouch3
+    except AlreadyExistsException, o1:
+      result.o1 = o1
+    except InvalidObjectException, o2:
+      result.o2 = o2
+    except MetaException, o3:
+      result.o3 = o3
     except NoSuchObjectException, o4:
       result.o4 = o4
     oprot.writeMessageBegin("create_table", TMessageType.REPLY, seqid)
@@ -970,8 +966,8 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
       self._handler.drop_table(args.dbname, args.name, args.deleteData)
     except NoSuchObjectException, o1:
       result.o1 = o1
-    except MetaException, ouch3:
-      result.ouch3 = ouch3
+    except MetaException, o3:
+      result.o3 = o3
     oprot.writeMessageBegin("drop_table", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -984,12 +980,8 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     result = get_tables_result()
     try:
       result.success = self._handler.get_tables(args.db_name, args.pattern)
-    except MetaException, ouch1:
-      result.ouch1 = ouch1
-    except UnknownTableException, ouch2:
-      result.ouch2 = ouch2
-    except UnknownDBException, ouch3:
-      result.ouch3 = ouch3
+    except MetaException, o1:
+      result.o1 = o1
     oprot.writeMessageBegin("get_tables", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
@@ -2305,18 +2297,18 @@ class get_fields_result:
   thrift_spec = None
   def __init__(self, d=None):
     self.success = None
-    self.ouch1 = None
-    self.ouch2 = None
-    self.ouch3 = None
+    self.o1 = None
+    self.o2 = None
+    self.o3 = None
     if isinstance(d, dict):
       if 'success' in d:
         self.success = d['success']
-      if 'ouch1' in d:
-        self.ouch1 = d['ouch1']
-      if 'ouch2' in d:
-        self.ouch2 = d['ouch2']
-      if 'ouch3' in d:
-        self.ouch3 = d['ouch3']
+      if 'o1' in d:
+        self.o1 = d['o1']
+      if 'o2' in d:
+        self.o2 = d['o2']
+      if 'o3' in d:
+        self.o3 = d['o3']
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -2340,20 +2332,20 @@ class get_fields_result:
           iprot.skip(ftype)
       elif fid == -3:
         if ftype == TType.STRUCT:
-          self.ouch1 = MetaException()
-          self.ouch1.read(iprot)
+          self.o1 = MetaException()
+          self.o1.read(iprot)
         else:
           iprot.skip(ftype)
       elif fid == -4:
         if ftype == TType.STRUCT:
-          self.ouch2 = UnknownTableException()
-          self.ouch2.read(iprot)
+          self.o2 = UnknownTableException()
+          self.o2.read(iprot)
         else:
           iprot.skip(ftype)
       elif fid == -5:
         if ftype == TType.STRUCT:
-          self.ouch3 = UnknownDBException()
-          self.ouch3.read(iprot)
+          self.o3 = UnknownDBException()
+          self.o3.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -2373,17 +2365,17 @@ class get_fields_result:
         iter107.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
-    if self.ouch1 != None:
-      oprot.writeFieldBegin('ouch1', TType.STRUCT, -3)
-      self.ouch1.write(oprot)
+    if self.o1 != None:
+      oprot.writeFieldBegin('o1', TType.STRUCT, -3)
+      self.o1.write(oprot)
       oprot.writeFieldEnd()
-    if self.ouch2 != None:
-      oprot.writeFieldBegin('ouch2', TType.STRUCT, -4)
-      self.ouch2.write(oprot)
+    if self.o2 != None:
+      oprot.writeFieldBegin('o2', TType.STRUCT, -4)
+      self.o2.write(oprot)
       oprot.writeFieldEnd()
-    if self.ouch3 != None:
-      oprot.writeFieldBegin('ouch3', TType.STRUCT, -5)
-      self.ouch3.write(oprot)
+    if self.o3 != None:
+      oprot.writeFieldBegin('o3', TType.STRUCT, -5)
+      self.o3.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -2461,24 +2453,24 @@ class create_table_result:
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRUCT, 'ouch1', (AlreadyExistsException, AlreadyExistsException.thrift_spec), None, ), # 1
-    (2, TType.STRUCT, 'ouch2', (InvalidObjectException, InvalidObjectException.thrift_spec), None, ), # 2
-    (3, TType.STRUCT, 'ouch3', (MetaException, MetaException.thrift_spec), None, ), # 3
+    (1, TType.STRUCT, 'o1', (AlreadyExistsException, AlreadyExistsException.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'o2', (InvalidObjectException, InvalidObjectException.thrift_spec), None, ), # 2
+    (3, TType.STRUCT, 'o3', (MetaException, MetaException.thrift_spec), None, ), # 3
     (4, TType.STRUCT, 'o4', (NoSuchObjectException, NoSuchObjectException.thrift_spec), None, ), # 4
   )
 
   def __init__(self, d=None):
-    self.ouch1 = None
-    self.ouch2 = None
-    self.ouch3 = None
+    self.o1 = None
+    self.o2 = None
+    self.o3 = None
     self.o4 = None
     if isinstance(d, dict):
-      if 'ouch1' in d:
-        self.ouch1 = d['ouch1']
-      if 'ouch2' in d:
-        self.ouch2 = d['ouch2']
-      if 'ouch3' in d:
-        self.ouch3 = d['ouch3']
+      if 'o1' in d:
+        self.o1 = d['o1']
+      if 'o2' in d:
+        self.o2 = d['o2']
+      if 'o3' in d:
+        self.o3 = d['o3']
       if 'o4' in d:
         self.o4 = d['o4']
 
@@ -2493,20 +2485,20 @@ class create_table_result:
         break
       if fid == 1:
         if ftype == TType.STRUCT:
-          self.ouch1 = AlreadyExistsException()
-          self.ouch1.read(iprot)
+          self.o1 = AlreadyExistsException()
+          self.o1.read(iprot)
         else:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.STRUCT:
-          self.ouch2 = InvalidObjectException()
-          self.ouch2.read(iprot)
+          self.o2 = InvalidObjectException()
+          self.o2.read(iprot)
         else:
           iprot.skip(ftype)
       elif fid == 3:
         if ftype == TType.STRUCT:
-          self.ouch3 = MetaException()
-          self.ouch3.read(iprot)
+          self.o3 = MetaException()
+          self.o3.read(iprot)
         else:
           iprot.skip(ftype)
       elif fid == 4:
@@ -2525,17 +2517,17 @@ class create_table_result:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('create_table_result')
-    if self.ouch1 != None:
-      oprot.writeFieldBegin('ouch1', TType.STRUCT, 1)
-      self.ouch1.write(oprot)
+    if self.o1 != None:
+      oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+      self.o1.write(oprot)
       oprot.writeFieldEnd()
-    if self.ouch2 != None:
-      oprot.writeFieldBegin('ouch2', TType.STRUCT, 2)
-      self.ouch2.write(oprot)
+    if self.o2 != None:
+      oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+      self.o2.write(oprot)
       oprot.writeFieldEnd()
-    if self.ouch3 != None:
-      oprot.writeFieldBegin('ouch3', TType.STRUCT, 3)
-      self.ouch3.write(oprot)
+    if self.o3 != None:
+      oprot.writeFieldBegin('o3', TType.STRUCT, 3)
+      self.o3.write(oprot)
       oprot.writeFieldEnd()
     if self.o4 != None:
       oprot.writeFieldBegin('o4', TType.STRUCT, 4)
@@ -2643,17 +2635,17 @@ class drop_table_result:
   thrift_spec = (
     None, # 0
     (1, TType.STRUCT, 'o1', (NoSuchObjectException, NoSuchObjectException.thrift_spec), None, ), # 1
-    (2, TType.STRUCT, 'ouch3', (MetaException, MetaException.thrift_spec), None, ), # 2
+    (2, TType.STRUCT, 'o3', (MetaException, MetaException.thrift_spec), None, ), # 2
   )
 
   def __init__(self, d=None):
     self.o1 = None
-    self.ouch3 = None
+    self.o3 = None
     if isinstance(d, dict):
       if 'o1' in d:
         self.o1 = d['o1']
-      if 'ouch3' in d:
-        self.ouch3 = d['ouch3']
+      if 'o3' in d:
+        self.o3 = d['o3']
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -2672,8 +2664,8 @@ class drop_table_result:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.STRUCT:
-          self.ouch3 = MetaException()
-          self.ouch3.read(iprot)
+          self.o3 = MetaException()
+          self.o3.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -2690,9 +2682,9 @@ class drop_table_result:
       oprot.writeFieldBegin('o1', TType.STRUCT, 1)
       self.o1.write(oprot)
       oprot.writeFieldEnd()
-    if self.ouch3 != None:
-      oprot.writeFieldBegin('ouch3', TType.STRUCT, 2)
-      self.ouch3.write(oprot)
+    if self.o3 != None:
+      oprot.writeFieldBegin('o3', TType.STRUCT, 2)
+      self.o3.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -2778,18 +2770,12 @@ class get_tables_result:
   thrift_spec = None
   def __init__(self, d=None):
     self.success = None
-    self.ouch1 = None
-    self.ouch2 = None
-    self.ouch3 = None
+    self.o1 = None
     if isinstance(d, dict):
       if 'success' in d:
         self.success = d['success']
-      if 'ouch1' in d:
-        self.ouch1 = d['ouch1']
-      if 'ouch2' in d:
-        self.ouch2 = d['ouch2']
-      if 'ouch3' in d:
-        self.ouch3 = d['ouch3']
+      if 'o1' in d:
+        self.o1 = d['o1']
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -2812,20 +2798,8 @@ class get_tables_result:
           iprot.skip(ftype)
       elif fid == -3:
         if ftype == TType.STRUCT:
-          self.ouch1 = MetaException()
-          self.ouch1.read(iprot)
-        else:
-          iprot.skip(ftype)
-      elif fid == -4:
-        if ftype == TType.STRUCT:
-          self.ouch2 = UnknownTableException()
-          self.ouch2.read(iprot)
-        else:
-          iprot.skip(ftype)
-      elif fid == -5:
-        if ftype == TType.STRUCT:
-          self.ouch3 = UnknownDBException()
-          self.ouch3.read(iprot)
+          self.o1 = MetaException()
+          self.o1.read(iprot)
         else:
           iprot.skip(ftype)
       else:
@@ -2845,17 +2819,9 @@ class get_tables_result:
         oprot.writeString(iter114)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
-    if self.ouch1 != None:
-      oprot.writeFieldBegin('ouch1', TType.STRUCT, -3)
-      self.ouch1.write(oprot)
-      oprot.writeFieldEnd()
-    if self.ouch2 != None:
-      oprot.writeFieldBegin('ouch2', TType.STRUCT, -4)
-      self.ouch2.write(oprot)
-      oprot.writeFieldEnd()
-    if self.ouch3 != None:
-      oprot.writeFieldBegin('ouch3', TType.STRUCT, -5)
-      self.ouch3.write(oprot)
+    if self.o1 != None:
+      oprot.writeFieldBegin('o1', TType.STRUCT, -3)
+      self.o1.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()

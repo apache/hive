@@ -17,6 +17,8 @@ public class Constants {
 
   public static final String META_TABLE_COLUMNS = "columns";
 
+  public static final String META_TABLE_COLUMN_TYPES = "columns.types";
+
   public static final String BUCKET_FIELD_NAME = "bucket_field_name";
 
   public static final String BUCKET_COUNT = "bucket_count";

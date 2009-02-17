@@ -31,7 +31,7 @@ STAGE PLANS:
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: dest1
             Filter Operator
               predicate:
@@ -54,7 +54,7 @@ STAGE PLANS:
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: dest2
             Filter Operator
               predicate:
@@ -73,7 +73,7 @@ STAGE PLANS:
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: dest3
             Filter Operator
               predicate:
@@ -99,13 +99,13 @@ STAGE PLANS:
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: dest1
             replace: true
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: dest2
             partition:
               ds 2008-04-08
@@ -114,7 +114,7 @@ STAGE PLANS:
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: dest3
 
 
