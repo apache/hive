@@ -45,20 +45,6 @@ public class MoveTask extends Task<moveWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private void cleanseSource(FileSystem fs, Path sourcePath) throws IOException {
-    if(sourcePath == null)
-      return;
-
-    FileStatus [] srcs = fs.globStatus(sourcePath);
-    if(srcs != null) {
-      for(FileStatus one: srcs) {
-        if(Hive.needsDeletion(one)) {
-          fs.delete(one.getPath(), true);
-        }
-      }
-    }
-  }
-
   public int execute() {
 
     try {
@@ -70,7 +56,6 @@ public class MoveTask extends Task<moveWork> implements Serializable {
       for(loadFileDesc lfd: work.getLoadFileWork()) {
         Path targetPath = new Path(lfd.getTargetDir());
         Path sourcePath = new Path(lfd.getSourceDir());
-        cleanseSource(fs, sourcePath);
         if (lfd.getIsDfsDir()) {
           // Just do a rename on the URIs
           String mesg = "Moving data to: " + lfd.getTargetDir();
@@ -95,11 +80,11 @@ public class MoveTask extends Task<moveWork> implements Serializable {
 
           if(dstFs.delete(targetPath, true) || !dstFs.exists(targetPath)) {
             console.printInfo(mesg, mesg_detail);
-          // if source exists, rename. Otherwise, create a empty directory
-          if (fs.exists(sourcePath))
-            fs.copyToLocalFile(sourcePath, targetPath);
-          else
-            dstFs.mkdirs(targetPath);
+            // if source exists, rename. Otherwise, create a empty directory
+            if (fs.exists(sourcePath))
+              fs.copyToLocalFile(sourcePath, targetPath);
+            else
+              dstFs.mkdirs(targetPath);
           } else {
             console.printInfo("Unable to delete the existing destination directory: " + targetPath);
           }

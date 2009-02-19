@@ -53,6 +53,7 @@ import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 
 import com.facebook.thrift.TException;
 import com.facebook.thrift.protocol.TBinaryProtocol;
@@ -660,26 +661,15 @@ public class Hive {
     }
   }
 
-  public static boolean needsDeletion(FileStatus file) {
-    String name = file.getPath().getName();
-    // There is a race condition in hadoop as a result of which
-    // the _task files created in the output directory at the time
-    // of the mapper is reported in the output directory even though
-    // it is actually removed. The first check works around that
-    // NOTE: it's not clear that this still affects recent versions of hadoop
-
-    // the second check deals with uncommitted output files produced by hive tasks
-    // this would typically happen on task failures or due to speculation
-    return (name.startsWith("_task") || name.startsWith("_tmp."));
-  }
-
   private void checkPaths(FileSystem fs, FileStatus [] srcs, Path destf, boolean replace) throws HiveException {
     try {
         for(int i=0; i<srcs.length; i++) {
             FileStatus [] items = fs.listStatus(srcs[i].getPath());
             for(int j=0; j<items.length; j++) {
 
-                if (needsDeletion(items[j])) {
+                if (Utilities.isTempPath(items[j])) {
+                      // This check is redundant because temp files are removed by execution layer before
+                      // calling loadTable/Partition. But leaving it in just in case.
                       fs.delete(items[j].getPath(), true);
                       continue;
                 }
@@ -809,6 +799,4 @@ public class Hive {
       throw new HiveException("Error in getting fields from serde." + e.getMessage(), e);
     }
   }
-
-  
 };

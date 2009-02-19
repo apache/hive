@@ -266,6 +266,22 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     }
   }
 
+  /**
+   * Unlike other operator interfaces which are called from map or reduce task,
+   * jobClose is called from the jobclient side once the job has completed
+   *
+   * @param conf Configuration with with which job was submitted
+   * @param succes whether the job was completed successfully or not
+   */
+  public void jobClose(Configuration conf, boolean success) throws HiveException {
+    if(childOperators == null)
+      return;
+    
+    for(Operator<? extends Serializable> op: childOperators) {
+      op.jobClose(conf, success);
+    }
+  }
+
   protected void forward(Object row, ObjectInspector rowInspector) throws HiveException {
     
     if((childOperators == null) || (getDone())) {

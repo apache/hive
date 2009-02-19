@@ -107,6 +107,9 @@ Release 0.2.0 - Unreleased
 
   BUG FIXES
 
+    HIVE-131. Remove uncommitted files from failed tasks.
+    (Joydeep Sen Sarma via zshao)
+
     HIVE-264. TBinarySortable Protocol supports null characters. (zshao)
 
     HIVE-255. Propagate user name to Hive metastore. (Prasad Chakka via zshao)

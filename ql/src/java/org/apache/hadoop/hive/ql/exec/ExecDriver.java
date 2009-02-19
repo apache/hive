@@ -303,7 +303,6 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
     }
     return r;
   }
-  
 
   /**
    * Execute a query plan using Hadoop
@@ -313,8 +312,10 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
     try {
       setNumberOfReducers();
     } catch(IOException e) {
-      String statusMesg = "IOException occurred while acceesing HDFS to estimate the number of reducers.";
-      console.printError(statusMesg);
+      String statusMesg = "IOException while accessing HDFS to estimate the number of reducers: "
+        + e.getMessage();
+      console.printError(statusMesg, "\n"
+                         + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return 1;
     }
 
@@ -355,7 +356,8 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
 
     int returnVal = 0;
     FileSystem fs = null;
-    RunningJob rj = null;
+    RunningJob rj = null, orig_rj = null;
+    boolean success = false;
 
     try {
       fs = FileSystem.get(job);
@@ -386,7 +388,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
       // make this client wait if job trcker is not behaving well.
       Throttle.checkJobTracker(job, LOG);
 
-      rj = jc.submitJob(job);
+      orig_rj = rj = jc.submitJob(job);
 
       // add to list of running jobs so in case of abnormal shutdown can kill
       // it.
@@ -396,8 +398,17 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
       jobInfo(rj);
       rj = jobProgress(jc, rj);
 
+      if(rj == null) {
+        // in the corner case where the running job has disappeared from JT memory
+        // remember that we did actually submit the job.
+        rj = orig_rj;
+        success = false;
+      } else {
+        success = rj.isSuccessful();
+      }
+
       String statusMesg = "Ended Job = " + rj.getJobID();
-      if (!rj.isSuccessful()) {
+      if (!success) {
         statusMesg += " with errors";
         returnVal = 2;
         console.printError(statusMesg);
@@ -405,7 +416,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
         console.printInfo(statusMesg);
       }
     } catch (Exception e) {
-      String mesg = " with exception '" + e.getMessage() + "'";
+      String mesg = " with exception '" + Utilities.getNameMessage(e) + "'";
       if (rj != null) {
         mesg = "Ended Job = " + rj.getJobID() + mesg;
       } else {
@@ -416,6 +427,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
       console.printError(mesg, "\n"
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
 
+      success = false;
       returnVal = 1;
     } finally {
       Utilities.clearMapRedWork(job);
@@ -428,6 +440,30 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
       } catch (Exception e) {
       }
     }
+
+    try {
+      if (rj != null) {
+        if(work.getAliasToWork() != null) {
+          for(Operator<? extends Serializable> op:
+                work.getAliasToWork().values()) {
+            op.jobClose(job, success);
+          }
+        }
+        if(work.getReducer() != null) {
+          work.getReducer().jobClose(job, success);
+        }
+      }
+    } catch (Exception e) {
+      // jobClose needs to execute successfully otherwise fail task
+      if(success) {
+        success = false;
+        returnVal = 3;
+        String mesg = "Job Commit failed with exception '" + Utilities.getNameMessage(e) + "'";
+        console.printError(mesg, "\n"
+                           + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      }
+    }
+
     return (returnVal);
   }
 
