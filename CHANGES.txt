@@ -107,6 +107,8 @@ Release 0.2.0 - Unreleased
 
   BUG FIXES
 
+    HIVE-276. Fix input3_limit.q for hadoop 0.17. (zshao)
+
     HIVE-131. Remove uncommitted files from failed tasks.
     (Joydeep Sen Sarma via zshao)
 
