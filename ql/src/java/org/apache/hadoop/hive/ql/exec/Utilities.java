@@ -30,6 +30,7 @@ import org.apache.commons.lang.WordUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.io.compress.CompressionCodec;
@@ -540,4 +541,54 @@ public class Utilities {
 
     return src;
   }
+
+  private static final String tmpPrefix = "_tmp.";
+
+  public static Path toTempPath(Path orig) {
+    if(orig.getName().indexOf(tmpPrefix) == 0)
+      return orig;
+    return new Path(orig.getParent(), tmpPrefix + orig.getName());
+  }
+
+  /**
+   * Given a path, convert to a temporary path
+   */
+  public static Path toTempPath(String orig) {
+    return toTempPath(new Path(orig));
+  }
+  
+  /**
+   * Detect if the supplied file is a temporary path
+   */
+  public static boolean isTempPath(FileStatus file) {
+    String name = file.getPath().getName();
+    // in addition to detecting hive temporary files, we also check hadoop
+    // temporary folders that used to show up in older releases
+    return (name.startsWith("_task") || name.startsWith(tmpPrefix));
+  }
+
+  /**
+   * Remove all temporary files from a given directory
+   */
+  public static void removeTempFiles(FileSystem fs, Path path) throws IOException {
+    if(path == null)
+      return;
+
+    FileStatus items[] = fs.listStatus(path);
+    if(items == null)
+      return;
+
+    for(FileStatus one: items) {
+      if(isTempPath(one)) {
+        if(!fs.delete(one.getPath(), true)) {
+          throw new IOException ("Unable to delete tmp file: " + one.getPath());
+        }
+      }
+    }
+  }
+
+  public static String getNameMessage(Exception e) {
+    return e.getClass().getName() + "(" +  e.getMessage() + ")";
+  }
+
 }

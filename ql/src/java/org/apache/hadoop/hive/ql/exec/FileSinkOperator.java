@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.*;
+import java.lang.reflect.Method;
 
 import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapred.*;
@@ -50,9 +51,13 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
   transient protected Path finalPath;
   transient protected Serializer serializer;
   transient protected BytesWritable commonKey = new BytesWritable();
-  
+  transient protected boolean autoDelete = false;
+
   private void commit() throws IOException {
-    fs.rename(outPath, finalPath);
+    if(!fs.rename(outPath, finalPath)) {
+      throw new IOException ("Unable to rename output to: " + finalPath);
+    }
+    LOG.info("Committed to output file: " + finalPath);
   }
 
   public void close(boolean abort) throws HiveException {
@@ -68,7 +73,8 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
     } else {
       try {
         outWriter.close(abort);
-        fs.delete(outPath, true);
+        if(!autoDelete)
+          fs.delete(outPath, true);
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -91,8 +97,11 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
       }
 
       fs = FileSystem.get(hconf);
-      finalPath = new Path(conf.getDirName(), Utilities.getTaskId(hconf));
-      outPath = new Path(conf.getDirName(), "_tmp."+Utilities.getTaskId(hconf));
+      finalPath = new Path(Utilities.toTempPath(conf.getDirName()), Utilities.getTaskId(hconf));
+      outPath = new Path(Utilities.toTempPath(conf.getDirName()), Utilities.toTempPath(Utilities.getTaskId(hconf)));
+
+      LOG.info("Writing to temp file: " + outPath);
+
       OutputFormat<?, ?> outputFormat = conf.getTableInfo().getOutputFileFormatClass().newInstance();
       final Class<? extends Writable> outputClass = serializer.getSerializedClass();
       boolean isCompressed = conf.getCompressed();
@@ -100,7 +109,7 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
       // The reason to keep these instead of using OutputFormat.getRecordWriter() is that
       // getRecordWriter does not give us enough control over the file name that we create.
       if(outputFormat instanceof IgnoreKeyTextOutputFormat) {
-        finalPath = new Path(conf.getDirName(), Utilities.getTaskId(hconf) +
+        finalPath = new Path(Utilities.toTempPath(conf.getDirName()), Utilities.getTaskId(hconf) +
                              Utilities.getFileExtension(jc, isCompressed));
 
         String rowSeparatorString = conf.getTableInfo().getProperties().getProperty(Constants.LINE_DELIM, "\n");
@@ -145,6 +154,15 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
         // should never come here - we should be catching this in ddl command
         throw new HiveException ("Illegal outputformat: " + outputFormat.getClass().getName());
       }
+
+      // in recent hadoop versions, use deleteOnExit to clean tmp files.
+      try {
+        Method deleteOnExit = FileSystem.class.getDeclaredMethod("deleteOnExit", new Class [] {Path.class});
+        deleteOnExit.setAccessible(true);
+        deleteOnExit.invoke(fs, outPath);
+        autoDelete = true;
+      } catch (Exception e) {}
+
     } catch (HiveException e) {
       throw e;
     } catch (Exception e) {
@@ -172,5 +190,34 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
    */
   public String getName() {
     return new String("FS");
+  }
+
+  @Override
+  public void jobClose(Configuration hconf, boolean success) throws HiveException { 
+    try {
+      if(conf != null) {
+        fs = FileSystem.get(hconf);
+        Path tmpPath = Utilities.toTempPath(conf.getDirName());
+        Path finalPath = new Path(conf.getDirName());
+        if(success) {
+          if(fs.exists(tmpPath)) {
+            // Step1: rename tmp output folder to final path. After this point, 
+            // updates from speculative tasks still writing to tmpPath will not 
+            // appear in finalPath
+            LOG.info("Renaming tmp dir: " + tmpPath + " to: " + finalPath);
+            if(!fs.rename(tmpPath, finalPath)) {
+              throw new HiveException("Unable to commit result directory: " + finalPath);
+            }
+            // Step2: Clean any temp files from finalPath
+            Utilities.removeTempFiles(fs, finalPath);
+          }
+        } else {
+          fs.delete(tmpPath);
+        }
+      }
+    } catch (IOException e) {
+      throw new HiveException (e);
+    }
+    super.jobClose(hconf, success);
   }
 }
