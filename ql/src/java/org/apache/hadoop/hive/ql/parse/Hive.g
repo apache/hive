@@ -634,10 +634,10 @@ trfmClause
 @init { msgs.push("transform clause"); }
 @after { msgs.pop(); }
     :
-    ( LPAREN expressionList RPAREN | expressionList )
+    ( LPAREN selectExpressionList RPAREN | selectExpressionList )
     KW_USING StringLiteral
     (KW_AS (LPAREN aliasList RPAREN | aliasList) )?
-    -> ^(TOK_TRANSFORM expressionList StringLiteral aliasList?)
+    -> ^(TOK_TRANSFORM selectExpressionList StringLiteral aliasList?)
     ;
     
 selectExpression
@@ -646,6 +646,14 @@ selectExpression
     :
     expression | tableAllColumns
     ;
+
+selectExpressionList
+@init { msgs.push("select expression list"); }
+@after { msgs.pop(); }
+    :
+    selectExpression (COMMA selectExpression)* -> ^(TOK_EXPLIST selectExpression+)
+    ;
+
 
 //-----------------------------------------------------------------------------------
 
