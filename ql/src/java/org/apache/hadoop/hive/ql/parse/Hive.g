@@ -811,8 +811,7 @@ distributeByClause
 @after { msgs.pop(); }
     :
     KW_DISTRIBUTE KW_BY
-    tableColumn
-    ( COMMA tableColumn )* -> ^(TOK_DISTRIBUTEBY tableColumn+)
+    expression (COMMA expression)* -> ^(TOK_DISTRIBUTEBY expression+)
     ;
 
 sortByClause
