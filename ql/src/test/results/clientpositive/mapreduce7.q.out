@@ -52,27 +52,13 @@ STAGE PLANS:
                         type: string
       Reduce Operator Tree:
         Extract
-          Select Operator
-            expressions:
-                  expr: 0
-                  type: string
-                  expr: 1
-                  type: string
-                  expr: UDFToInteger(2)
-                  type: int
-                  expr: UDFToInteger(3)
-                  type: int
-                  expr: UDFToInteger(4)
-                  type: int
-                  expr: 5
-                  type: string
-            File Output Operator
-              compressed: false
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: dest1
+          File Output Operator
+            compressed: false
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: dest1
 
   Stage: Stage-0
     Move Operator

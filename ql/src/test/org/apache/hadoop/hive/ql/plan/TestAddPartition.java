@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 
 public class TestAddPartition extends TestCase {
 
@@ -66,7 +67,7 @@ public class TestAddPartition extends TestCase {
       StorageDescriptor sd = new StorageDescriptor();
       sd.setSerdeInfo(new SerDeInfo());
       sd.getSerdeInfo().setName(tbl.getTableName());
-      sd.getSerdeInfo().setSerializationLib(MetadataTypedColumnsetSerDe.class.getName());
+      sd.getSerdeInfo().setSerializationLib(LazySimpleSerDe.class.getName());
 
       List<FieldSchema> fss = new ArrayList<FieldSchema>();
       fss.add(new FieldSchema("name", Constants.STRING_TYPE_NAME, ""));

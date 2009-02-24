@@ -48,12 +48,12 @@ STAGE PLANS:
                       type: string
       Needs Tagging: true
       Path -> Alias:
-        file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
-        file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
-        file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-09 
-        file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-09 
+        file:/data/users/zshao/sync/apache-trunk-HIVE-292/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
+        file:/data/users/zshao/sync/apache-trunk-HIVE-292/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
+        file:/data/users/zshao/sync/apache-trunk-HIVE-292/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-09 
+        file:/data/users/zshao/sync/apache-trunk-HIVE-292/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-09 
       Path -> Partition:
-        file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
+        file:/data/users/zshao/sync/apache-trunk-HIVE-292/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
           Partition
             partition values:
               ds 2008-04-08
@@ -69,13 +69,13 @@ STAGE PLANS:
                 columns key,value
                 partition_columns ds/hr
                 bucket_count -1
-                serialization.lib org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/srcpart
-              serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
+                location file:/data/users/zshao/sync/apache-trunk-HIVE-292/build/ql/test/data/warehouse/srcpart
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
+        file:/data/users/zshao/sync/apache-trunk-HIVE-292/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
           Partition
             partition values:
               ds 2008-04-08
@@ -91,13 +91,13 @@ STAGE PLANS:
                 columns key,value
                 partition_columns ds/hr
                 bucket_count -1
-                serialization.lib org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/srcpart
-              serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
+                location file:/data/users/zshao/sync/apache-trunk-HIVE-292/build/ql/test/data/warehouse/srcpart
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-09 
+        file:/data/users/zshao/sync/apache-trunk-HIVE-292/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-09 
           Partition
             partition values:
               ds 2008-04-09
@@ -113,13 +113,13 @@ STAGE PLANS:
                 columns key,value
                 partition_columns ds/hr
                 bucket_count -1
-                serialization.lib org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/srcpart
-              serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
+                location file:/data/users/zshao/sync/apache-trunk-HIVE-292/build/ql/test/data/warehouse/srcpart
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-09 
+        file:/data/users/zshao/sync/apache-trunk-HIVE-292/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-09 
           Partition
             partition values:
               ds 2008-04-09
@@ -135,11 +135,11 @@ STAGE PLANS:
                 columns key,value
                 partition_columns ds/hr
                 bucket_count -1
-                serialization.lib org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/srcpart
-              serde: org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe
+                location file:/data/users/zshao/sync/apache-trunk-HIVE-292/build/ql/test/data/warehouse/srcpart
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
       Reduce Operator Tree:
         Join Operator
@@ -164,7 +164,7 @@ STAGE PLANS:
                     type: string
               File Output Operator
                 compressed: false
-                directory: /data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/tmp/1290171617/787720120.10002
+                directory: /data/users/zshao/sync/apache-trunk-HIVE-292/build/ql/tmp/28272118/25170648.10002
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.mapred.SequenceFileOutputFormat
@@ -177,7 +177,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/tmp/1290171617/787720120.10002 
+        /data/users/zshao/sync/apache-trunk-HIVE-292/build/ql/tmp/28272118/25170648.10002 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -202,9 +202,9 @@ STAGE PLANS:
                   type: string
       Needs Tagging: false
       Path -> Alias:
-        /data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/tmp/1290171617/787720120.10002 
+        /data/users/zshao/sync/apache-trunk-HIVE-292/build/ql/tmp/28272118/25170648.10002 
       Path -> Partition:
-        /data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/tmp/1290171617/787720120.10002 
+        /data/users/zshao/sync/apache-trunk-HIVE-292/build/ql/tmp/28272118/25170648.10002 
           Partition
           
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -218,7 +218,7 @@ STAGE PLANS:
         Extract
           File Output Operator
             compressed: false
-            directory: /data/users/zshao/sync/apache-trunk-HIVE-270/ql/../build/ql/tmp/330987961.10001.insclause-0
+            directory: /data/users/zshao/sync/apache-trunk-HIVE-292/ql/../build/ql/tmp/42160138.10001.insclause-0
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat

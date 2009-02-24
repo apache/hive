@@ -255,7 +255,6 @@ public class MetaStoreClient implements IMetaStoreClient {
           String val = (String)e.getValue();
           p.setProperty(key,val);
         }
-        p = MetaStoreUtils.hive1Tohive3ClassNames(p);
         this.close();
         return p;
       } catch(TException e) {

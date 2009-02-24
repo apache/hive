@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.Writable;
@@ -107,6 +108,8 @@ public class Table {
     initEmpty();
     getTTable().setTableName(name);
     getTTable().setDbName(MetaStoreUtils.DEFAULT_DATABASE_NAME);
+    // We have to use MetadataTypedColumnsetSerDe because LazySimpleSerDe does not 
+    // support a table with no columns.
     getSerdeInfo().setSerializationLib(MetadataTypedColumnsetSerDe.class.getName());
     getSerdeInfo().getParameters().put(Constants.SERIALIZATION_FORMAT, "1");
   }

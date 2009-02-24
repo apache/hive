@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
@@ -204,7 +205,7 @@ public class Hive {
         tbl.getPartCols().add(part);
       }
     }
-    tbl.setSerializationLib(org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.class.getName());
+    tbl.setSerializationLib(LazySimpleSerDe.class.getName());
     tbl.setNumBuckets(bucketCount);
     tbl.setBucketCols(bucketCols);
     createTable(tbl);
@@ -401,10 +402,21 @@ public class Hive {
     // just a sanity check
     assert(tTable != null);
     try {
+      
+      // Use LazySimpleSerDe for MetadataTypedColumnsetSerDe.
+      // NOTE: LazySimpleSerDe does not support tables with a single column of col
+      // of type "array<string>".  This happens when the table is created using an
+      // earlier version of Hive.
+      if (tTable.getSd().getSerdeInfo().getSerializationLib().equals(
+          org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.class.getName())
+          && tTable.getSd().getColsSize() > 0 
+          && tTable.getSd().getCols().get(0).getType().indexOf('<') == -1 ) {
+        tTable.getSd().getSerdeInfo().setSerializationLib(
+            org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
+      }
+
       // first get a schema (in key / vals)
       Properties p = MetaStoreUtils.getSchema(tTable);
-      // Map hive1 to hive3 class names, can be removed when migration is done.
-      p = MetaStoreUtils.hive1Tohive3ClassNames(p);
       table.setSchema(p);
       table.setTTable(tTable);
       table.setInputFormatClass((Class<? extends InputFormat<WritableComparable, Writable>>)

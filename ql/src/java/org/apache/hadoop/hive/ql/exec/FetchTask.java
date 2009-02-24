@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.plan.partitionDesc;
 import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
@@ -73,7 +74,7 @@ public class FetchTask extends Task<fetchWork> implements Serializable {
        fs = FileSystem.get(conf);   
        job = new JobConf(conf, ExecDriver.class);
        
-	 	   mSerde = new MetadataTypedColumnsetSerDe();
+	 	   mSerde = new LazySimpleSerDe();
        Properties mSerdeProp = new Properties();
        mSerdeProp.put(Constants.SERIALIZATION_FORMAT, "" + Utilities.tabCode);
        mSerdeProp.put(Constants.SERIALIZATION_NULL_FORMAT, "NULL");
@@ -135,7 +136,7 @@ public class FetchTask extends Task<fetchWork> implements Serializable {
 	private WritableComparable key; 
 	private Writable value;
 	private Deserializer  serde;
-	private MetadataTypedColumnsetSerDe mSerde;
+	private LazySimpleSerDe mSerde;
 	private int totalRows;
   private Iterator<Path> iterPath;
   private Iterator<partitionDesc> iterPartDesc; 

@@ -28,10 +28,10 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
-import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -82,14 +82,16 @@ public class PlanUtils {
           "true");
     }
     return new tableDesc(
-        MetadataTypedColumnsetSerDe.class,
+        LazySimpleSerDe.class,
         TextInputFormat.class,
         IgnoreKeyTextOutputFormat.class,
         properties);    
   }
 
   /** 
-   * Generate the table descriptor of MetadataTypedColumnsetSerDe with the separatorCode
+   * Generate the table descriptor of MetadataTypedColumnsetSerDe with the separatorCode.
+   * MetaDataTypedColumnsetSerDe is used because LazySimpleSerDe does not support a table
+   * with a single column "col" with type "array<string>".
    */
   public static tableDesc getDefaultTableDesc(String separatorCode) {
     return new tableDesc(

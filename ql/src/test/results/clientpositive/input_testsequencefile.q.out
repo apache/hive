@@ -16,19 +16,13 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
-              Select Operator
-                expressions:
-                      expr: UDFToInteger(0)
-                      type: int
-                      expr: 1
-                      type: string
-                File Output Operator
-                  compressed: false
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.mapred.SequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: dest4_sequencefile
+              File Output Operator
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.mapred.SequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: dest4_sequencefile
 
   Stage: Stage-0
     Move Operator

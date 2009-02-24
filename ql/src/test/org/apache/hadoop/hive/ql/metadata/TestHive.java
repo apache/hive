@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.DB;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.thrift.test.Complex;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.ThriftDeserializer;
@@ -118,7 +119,7 @@ public class TestHive extends TestCase {
       tbl.setSerdeParam(Constants.COLLECTION_DELIM, "2");
 
       tbl.setSerdeParam(Constants.FIELD_DELIM, "1");
-      tbl.setSerializationLib(MetadataTypedColumnsetSerDe.class.getName());
+      tbl.setSerializationLib(LazySimpleSerDe.class.getName());
 
       // create table
       try {
@@ -139,9 +140,9 @@ public class TestHive extends TestCase {
         assertEquals("Data location is not set correctly", DB.getDefaultTablePath(tableName, this.hiveConf).toString(), ft.getDataLocation().toString());
         // now that URI is set correctly, set the original table's uri and then compare the two tables
         tbl.setDataLocation(ft.getDataLocation());
-        assertTrue("Tables  doesn't match: " + tableName, ft.getTTable().equals(tbl.getTTable()));
+        assertTrue("Tables doesn't match: " + tableName, ft.getTTable().equals(tbl.getTTable()));
         assertEquals("Serde is not set correctly", tbl.getDeserializer().getClass().getName(), ft.getDeserializer().getClass().getName());
-        assertEquals("SerializationLib is not set correctly", tbl.getSerializationLib(), MetadataTypedColumnsetSerDe.class.getName());
+        assertEquals("SerializationLib is not set correctly", tbl.getSerializationLib(), LazySimpleSerDe.class.getName());
       } catch (HiveException e) {
         e.printStackTrace();
         assertTrue("Unable to fetch table correctly: " + tableName, false);

@@ -27,6 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -98,11 +99,8 @@ public class LazySimpleSerDe implements SerDe {
 
     // Read the configuration parameters
     String columnNameProperty = tbl.getProperty("columns");
+    // NOTE: if "columns.types" is missing, all columns will be of String type
     String columnTypeProperty = tbl.getProperty("columns.types");
-    if (columnNameProperty == null || columnTypeProperty == null) {
-      throw new SerDeException(getClass().toString() 
-          + ": columns or columns.types property not set!");
-    }
     
     nullString = tbl.getProperty(Constants.SERIALIZATION_NULL_FORMAT);
     if (nullString == null) {
@@ -111,11 +109,22 @@ public class LazySimpleSerDe implements SerDe {
     
     String lastColumnTakesRestString = tbl.getProperty(Constants.SERIALIZATION_LAST_COLUMN_TAKES_REST);
     lastColumnTakesRest = (lastColumnTakesRestString != null && lastColumnTakesRestString.equalsIgnoreCase("true"));
-
     
     // Parse the configuration parameters
-    columnNames = Arrays.asList(columnNameProperty.split(","));
-    columnTypes = Arrays.asList(columnTypeProperty.split(":"));
+    if (columnNameProperty != null) {
+      columnNames = Arrays.asList(columnNameProperty.split(","));
+    } else {
+      columnNames = new ArrayList<String>();
+    }
+    if (columnTypeProperty != null) {
+      columnTypes = Arrays.asList(columnTypeProperty.split(":"));
+    } else {
+      // Default type: all string
+      columnTypes = new ArrayList<String>();
+      for (int i = 0; i < columnNames.size(); i++) {
+        columnTypes.add(Constants.STRING_TYPE_NAME);
+      }
+    }
     if (columnNames.size() != columnTypes.size()) {
       throw new SerDeException(getClass().toString() 
           + ": columns has " + columnNames.size() 
@@ -144,6 +153,10 @@ public class LazySimpleSerDe implements SerDe {
     
     cachedLazyStruct = new LazyStruct(lazyPrimitives, separator, 
         new Text(nullString), lastColumnTakesRest);
+    
+    LOG.debug("LazySimpleSerDe initialized with: columnNames=" + columnNames + " columnTypes=" 
+        + columnTypes + " separator=" + separator + " nullstring=" + nullString 
+        + " lastColumnTakesRest=" + lastColumnTakesRest);
   }
   
   // The object for storing row data

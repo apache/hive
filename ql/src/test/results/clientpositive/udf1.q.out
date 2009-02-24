@@ -54,49 +54,13 @@ STAGE PLANS:
                         type: string
                         expr: regexp_replace('hadoop', '(.)[a-z]*', '$1ive')
                         type: string
-                  Select Operator
-                    expressions:
-                          expr: UDFToString(0)
-                          type: string
-                          expr: UDFToString(1)
-                          type: string
-                          expr: UDFToString(2)
-                          type: string
-                          expr: UDFToString(3)
-                          type: string
-                          expr: UDFToString(4)
-                          type: string
-                          expr: UDFToString(5)
-                          type: string
-                          expr: UDFToString(6)
-                          type: string
-                          expr: UDFToString(7)
-                          type: string
-                          expr: UDFToString(8)
-                          type: string
-                          expr: UDFToString(9)
-                          type: string
-                          expr: UDFToString(10)
-                          type: string
-                          expr: UDFToString(11)
-                          type: string
-                          expr: UDFToString(12)
-                          type: string
-                          expr: 13
-                          type: string
-                          expr: 14
-                          type: string
-                          expr: 15
-                          type: string
-                          expr: 16
-                          type: string
-                    File Output Operator
-                      compressed: false
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: dest1
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: dest1
 
   Stage: Stage-0
     Move Operator
@@ -109,4 +73,4 @@ STAGE PLANS:
                 name: dest1
 
 
-TRUE	FALSE	TRUE	TRUE	TRUE	FALSE	FALSE	FALSE	TRUE	TRUE	FALSE	TRUE	FALSE	acc	abc	abb	hive
+true	false	true	true	true	false	false	false	true	true	false	true	false	acc	abc	abb	hive

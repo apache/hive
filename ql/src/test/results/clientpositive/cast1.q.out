@@ -34,29 +34,13 @@ STAGE PLANS:
                         type: boolean
                         expr: UDFToInteger(true)
                         type: int
-                  Select Operator
-                    expressions:
-                          expr: 0
-                          type: int
-                          expr: 1
-                          type: double
-                          expr: 2
-                          type: double
-                          expr: 3
-                          type: double
-                          expr: 4
-                          type: int
-                          expr: UDFToString(5)
-                          type: string
-                          expr: 6
-                          type: int
-                    File Output Operator
-                      compressed: false
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: dest1
+                  File Output Operator
+                    compressed: false
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: dest1
 
   Stage: Stage-0
     Move Operator
@@ -69,4 +53,4 @@ STAGE PLANS:
                 name: dest1
 
 
-5	5.0	5.0	5.0	5	TRUE	1
+5	5.0	5.0	5.0	5	true	1

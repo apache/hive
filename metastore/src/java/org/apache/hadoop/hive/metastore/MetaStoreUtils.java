@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -85,7 +86,7 @@ public class MetaStoreUtils {
     StorageDescriptor sd = tTable.getSd();
     sd.setSerdeInfo(new SerDeInfo());
     SerDeInfo serdeInfo = sd.getSerdeInfo();
-    serdeInfo.setSerializationLib(MetadataTypedColumnsetSerDe.class.getName());
+    serdeInfo.setSerializationLib(LazySimpleSerDe.class.getName());
     serdeInfo.setParameters(new HashMap<String, String>());
     serdeInfo.getParameters().put(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, "1");
     
@@ -103,8 +104,6 @@ public class MetaStoreUtils {
       part.setType(org.apache.hadoop.hive.serde.Constants.STRING_TYPE_NAME); // default partition key
       tTable.getPartitionKeys().add(part);
     }
-    // not sure why these are needed
-    serdeInfo.setSerializationLib(MetadataTypedColumnsetSerDe.class.getName());
     sd.setNumBuckets(-1);
     return tTable;
   }
@@ -255,46 +254,6 @@ public class MetaStoreUtils {
         return false;
     }
     return true;
-  }
-
-  /**
-   * Change from old to new format properties of a schema file
-   *
-   * @param p - a schema
-   * @return the modified schema
-   *
-   */
-  public static Properties hive1Tohive3ClassNames(Properties p) {
-    for(Enumeration<?> e = p.propertyNames(); e.hasMoreElements() ; ) {
-      String key = (String)e.nextElement();
-      String oldName = p.getProperty(key);
-      oldName = oldName.replace("com.facebook.infrastructure.tprofiles","com.facebook.serde.tprofiles");
-      
-      oldName = oldName.replace("com.facebook.infrastructure.hive_context","com.facebook.serde.hive_context");
-      oldName = oldName.replace("com.facebook.serde.hive_context","com.facebook.serde2.hive_context");
-
-      oldName = oldName.replace("com.facebook.thrift.hive.MetadataTypedColumnsetSerDe",org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.class.getName());
-
-      // columnset serde
-      oldName = oldName.replace("com.facebook.thrift.hive.columnsetSerDe","org.apache.hadoop.hive.serde.thrift.columnsetSerDe");
-      oldName = oldName.replace("org.apache.hadoop.hive.serde.simple_meta.MetadataTypedColumnsetSerDe",
-      	  org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.class.getName());
-      oldName = oldName.replace("com.facebook.thrift.hive.MetadataTypedColumnsetSerDe", org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.class.getName());
-      // thrift serde
-      oldName = oldName.replace("com.facebook.thrift.hive.ThriftHiveSerDe", org.apache.hadoop.hive.serde2.ThriftDeserializer.class.getName());
-      oldName = oldName.replace("org.apache.hadoop.hive.serde.thrift.ThriftSerDe", org.apache.hadoop.hive.serde2.ThriftDeserializer.class.getName());
-
-      // replace any old short names in filebased metadata
-      if(oldName.equals("columnset"))
-        oldName = "org.apache.hadoop.hive.serde.thrift.columnsetSerDe";
-      if(oldName.equals("simple_meta"))
-        oldName = org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.class.getName();
-      if(oldName.equals("thrift"))
-        oldName = org.apache.hadoop.hive.serde2.ThriftDeserializer.class.getName();
-
-      p.setProperty(key,oldName);
-    }
-    return p;
   }
 
   public static String getListType(String t) {

@@ -51,19 +51,13 @@ STAGE PLANS:
       Reduce Operator Tree:
         Extract
           Limit
-            Select Operator
-              expressions:
-                    expr: UDFToInteger(0)
-                    type: int
-                    expr: 1
-                    type: string
-              File Output Operator
-                compressed: false
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: dest1
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: dest1
 
   Stage: Stage-0
     Move Operator
@@ -84,7 +78,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/tmp/332566619/774394260.10002 
+        /data/users/zshao/sync/apache-trunk-HIVE-292/build/ql/tmp/15356141/513972389.10002 
           Reduce Output Operator
             sort order: 
             tag: -1
@@ -96,20 +90,13 @@ STAGE PLANS:
       Reduce Operator Tree:
         Extract
           Limit
-            Select Operator
-              expressions:
-                    expr: UDFToInteger(0)
-                    type: int
-                    expr: 1
-                    type: string
-              File Output Operator
-                compressed: false
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: dest2
-
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: dest2
 
 86	val_86
 27	val_27

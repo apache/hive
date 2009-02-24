@@ -71,6 +71,8 @@ Release 0.2.0 - Unreleased
 
   IMPROVEMENTS
 
+    HIVE-292. Replace MetadataTypedColumnsetSerde with LazySimpleSerDe. (zshao)
+
     HIVE-294. Support MAP(a.*), REDUCE(a.*) and TRANSFORM(a.*). (zshao)
 
     HIVE-270. Add a lazy-deserialized SerDe for efficient deserialization of

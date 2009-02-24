@@ -51,19 +51,13 @@ STAGE PLANS:
                     type: string
                     expr: regexp_replace(1, '	', '+')
                     type: string
-              Select Operator
-                expressions:
-                      expr: UDFToInteger(0)
-                      type: int
-                      expr: 1
-                      type: string
-                File Output Operator
-                  compressed: false
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: dest1
+              File Output Operator
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: dest1
 
   Stage: Stage-0
     Move Operator

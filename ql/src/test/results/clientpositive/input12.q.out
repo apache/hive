@@ -20,19 +20,13 @@ STAGE PLANS:
                       type: string
                       expr: value
                       type: string
-                Select Operator
-                  expressions:
-                        expr: UDFToInteger(0)
-                        type: int
-                        expr: 1
-                        type: string
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: dest1
+                File Output Operator
+                  compressed: false
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: dest1
             Filter Operator
               predicate:
                   expr: ((UDFToDouble(key) >= UDFToDouble(100)) and (UDFToDouble(key) < UDFToDouble(200)))
@@ -43,19 +37,13 @@ STAGE PLANS:
                       type: string
                       expr: value
                       type: string
-                Select Operator
-                  expressions:
-                        expr: UDFToInteger(0)
-                        type: int
-                        expr: 1
-                        type: string
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: dest2
+                File Output Operator
+                  compressed: false
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: dest2
             Filter Operator
               predicate:
                   expr: (UDFToDouble(key) >= UDFToDouble(200))
@@ -64,17 +52,13 @@ STAGE PLANS:
                 expressions:
                       expr: key
                       type: string
-                Select Operator
-                  expressions:
-                        expr: UDFToInteger(0)
-                        type: int
-                  File Output Operator
-                    compressed: false
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: dest3
+                File Output Operator
+                  compressed: false
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: dest3
 
   Stage: Stage-0
     Move Operator

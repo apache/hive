@@ -30,12 +30,12 @@
                         <void property="conf"> 
                          <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                           <void property="dirName"> 
-                           <string>/data/users/zshao/sync/apache-trunk-HIVE-270/ql/../build/ql/tmp/1266646813.10001.insclause-0</string> 
+                           <string>/data/users/zshao/sync/apache-trunk-HIVE-292/ql/../build/ql/tmp/513871881.10001.insclause-0</string> 
                           </void> 
                           <void property="tableInfo"> 
                            <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
                             <void property="deserializerClass"> 
-                             <class>org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe</class> 
+                             <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
                             </void> 
                             <void property="inputFileFormatClass"> 
                              <class>org.apache.hadoop.mapred.TextInputFormat</class> 
@@ -570,7 +570,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/src_thrift</string> 
+       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-292/build/ql/test/data/warehouse/src_thrift</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src_thrift</string> 
@@ -582,7 +582,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/src_thrift</string> 
+       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-292/build/ql/test/data/warehouse/src_thrift</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"/> 
@@ -642,7 +642,7 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/src_thrift</string> 
+             <string>file:/data/users/zshao/sync/apache-trunk-HIVE-292/build/ql/test/data/warehouse/src_thrift</string> 
             </void> 
            </object> 
           </void> 

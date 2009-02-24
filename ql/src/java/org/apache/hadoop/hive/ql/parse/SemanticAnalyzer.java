@@ -26,6 +26,7 @@ import java.lang.reflect.Method;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -2124,9 +2125,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean converted = false;
     int columnNumber = tableFields.size();
     ArrayList<exprNodeDesc> expressions = new ArrayList<exprNodeDesc>(columnNumber);
-    // MetadataTypedColumnsetSerDe does not need type conversions because it does
+    // MetadataTypedColumnsetSerDe/LazySimpleSerDe does not need type conversions because it does
     // the conversion to String by itself.
-    if (! table_desc.getDeserializerClass().equals(MetadataTypedColumnsetSerDe.class)) { 
+    if (! table_desc.getDeserializerClass().equals(MetadataTypedColumnsetSerDe.class)
+        && ! table_desc.getDeserializerClass().equals(LazySimpleSerDe.class)) {
       for (int i=0; i<columnNumber; i++) {
         ObjectInspector tableFieldOI = tableFields.get(i).getFieldObjectInspector();
         TypeInfo tableFieldTypeInfo = TypeInfoUtils.getTypeInfoFromObjectInspector(tableFieldOI);
@@ -3160,7 +3162,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String cols = loadFileWork.get(0).getColumns();
     
       fetch = new fetchWork(new Path(loadFileWork.get(0).getSourceDir()),
-      			                new tableDesc(MetadataTypedColumnsetSerDe.class, TextInputFormat.class,
+      			                new tableDesc(LazySimpleSerDe.class, TextInputFormat.class,
                  			                		IgnoreKeyTextOutputFormat.class,
       			                           		Utilities.makeProperties(
       			                                org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, "" + Utilities.ctrlaCode,

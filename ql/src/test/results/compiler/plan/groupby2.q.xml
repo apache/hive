@@ -20,7 +20,7 @@
         <void property="aliasToWork"> 
          <object class="java.util.HashMap"> 
           <void method="put"> 
-           <string>/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/tmp/776290492/63015527.10002</string> 
+           <string>/data/users/zshao/sync/apache-trunk-HIVE-292/build/ql/tmp/27427164/760269758.10002</string> 
            <object id="ReduceSinkOperator0" class="org.apache.hadoop.hive.ql.exec.ReduceSinkOperator"> 
             <void property="conf"> 
              <object class="org.apache.hadoop.hive.ql.plan.reduceSinkDesc"> 
@@ -158,7 +158,7 @@
                     <void property="conf"> 
                      <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                       <void property="dirName"> 
-                       <string>/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/tmp/776290492/63015527.10002</string> 
+                       <string>/data/users/zshao/sync/apache-trunk-HIVE-292/build/ql/tmp/27427164/760269758.10002</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object id="tableDesc2" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -686,10 +686,10 @@
         <void property="pathToAliases"> 
          <object class="java.util.LinkedHashMap"> 
           <void method="put"> 
-           <string>/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/tmp/776290492/63015527.10002</string> 
+           <string>/data/users/zshao/sync/apache-trunk-HIVE-292/build/ql/tmp/27427164/760269758.10002</string> 
            <object class="java.util.ArrayList"> 
             <void method="add"> 
-             <string>/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/tmp/776290492/63015527.10002</string> 
+             <string>/data/users/zshao/sync/apache-trunk-HIVE-292/build/ql/tmp/27427164/760269758.10002</string> 
             </void> 
            </object> 
           </void> 
@@ -698,7 +698,7 @@
         <void property="pathToPartitionInfo"> 
          <object class="java.util.LinkedHashMap"> 
           <void method="put"> 
-           <string>/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/tmp/776290492/63015527.10002</string> 
+           <string>/data/users/zshao/sync/apache-trunk-HIVE-292/build/ql/tmp/27427164/760269758.10002</string> 
            <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
             <void property="tableDesc"> 
              <object idref="tableDesc2"/> 
@@ -720,12 +720,12 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>/data/users/zshao/sync/apache-trunk-HIVE-270/ql/../build/ql/tmp/776290492/63015527.10001.insclause-0</string> 
+                     <string>/data/users/zshao/sync/apache-trunk-HIVE-292/ql/../build/ql/tmp/27427164/760269758.10001.insclause-0</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
                       <void property="deserializerClass"> 
-                       <class>org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe</class> 
+                       <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
                       </void> 
                       <void property="inputFileFormatClass"> 
                        <class>org.apache.hadoop.mapred.TextInputFormat</class> 
@@ -1086,7 +1086,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-292/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src</string> 
@@ -1098,7 +1098,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-292/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"/> 
@@ -1106,7 +1106,7 @@
         <void property="tableDesc"> 
          <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
           <void property="deserializerClass"> 
-           <class>org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe</class> 
+           <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
           </void> 
           <void property="inputFileFormatClass"> 
            <class>org.apache.hadoop.mapred.TextInputFormat</class> 
@@ -1142,7 +1142,7 @@
             </void> 
             <void method="put"> 
              <string>serialization.lib</string> 
-             <string>org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe</string> 
+             <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
             </void> 
             <void method="put"> 
              <string>file.inputformat</string> 
@@ -1154,12 +1154,12 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/data/users/zshao/sync/apache-trunk-HIVE-270/build/ql/test/data/warehouse/src</string> 
+             <string>file:/data/users/zshao/sync/apache-trunk-HIVE-292/build/ql/test/data/warehouse/src</string> 
             </void> 
            </object> 
           </void> 
           <void property="serdeClassName"> 
-           <string>org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe</string> 
+           <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
           </void> 
          </object> 
         </void> 
