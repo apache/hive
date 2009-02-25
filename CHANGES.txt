@@ -54,6 +54,8 @@ Release 0.2.0 - Unreleased
 
   IMPROVEMENTS
 
+    HIVE-300. DISTRIBUTE BY now supports expressions. (zshao)
+
     HIVE-294. Support MAP(a.*), REDUCE(a.*) and TRANSFORM(a.*). (zshao)
 
     HIVE-288. Removed the old serde package. (zshao)
