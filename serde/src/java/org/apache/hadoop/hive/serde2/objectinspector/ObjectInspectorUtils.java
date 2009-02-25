@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.serde.Constants;
 
 /**
  * ObjectInspectorFactory is the primary way to create new ObjectInspector instances.
@@ -75,6 +76,26 @@ public class ObjectInspectorUtils {
     classToTypeName.put(String.class, org.apache.hadoop.hive.serde.Constants.STRING_TYPE_NAME);
     classToTypeName.put(java.sql.Date.class, org.apache.hadoop.hive.serde.Constants.DATE_TYPE_NAME);
   }
+  
+  /**
+   * The mapping from type name in DDL to the Java class. 
+   */
+  public static final Map<String, Class<?>> typeNameToClass = new HashMap<String, Class<?>>();
+  static {
+    typeNameToClass.put(Constants.BOOLEAN_TYPE_NAME, Boolean.class);
+    typeNameToClass.put(Constants.TINYINT_TYPE_NAME, Byte.class);
+    typeNameToClass.put(Constants.SMALLINT_TYPE_NAME, Short.class);
+    typeNameToClass.put(Constants.INT_TYPE_NAME, Integer.class);
+    typeNameToClass.put(Constants.BIGINT_TYPE_NAME, Long.class);
+    typeNameToClass.put(Constants.FLOAT_TYPE_NAME, Float.class);
+    typeNameToClass.put(Constants.DOUBLE_TYPE_NAME, Double.class);
+    typeNameToClass.put(Constants.STRING_TYPE_NAME, String.class);
+    typeNameToClass.put(Constants.DATE_TYPE_NAME, java.sql.Date.class);
+    // These types are not supported yet. 
+    // TypeNameToClass.put(Constants.DATETIME_TYPE_NAME);
+    // TypeNameToClass.put(Constants.TIMESTAMP_TYPE_NAME);
+  }
+  
   /**
    * Get the short name for the types
    */
