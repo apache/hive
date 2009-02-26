@@ -50,6 +50,8 @@ public class ParseContext {
   private List<loadFileDesc> loadFileWork;
   private Context ctx;
   private HiveConf conf;
+  private HashMap<String, String> idToTableNameMap;
+  private int destTableId;
 
   /**
    * @param qb
@@ -79,7 +81,7 @@ public class ParseContext {
       HashMap<String, Operator<? extends Serializable>> topSelOps,
       HashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx,
       List<loadTableDesc> loadTableWork, List<loadFileDesc> loadFileWork,
-      Context ctx) {
+      Context ctx, HashMap<String, String> idToTableNameMap, int destTableId) {
     this.conf = conf;
     this.qb = qb;
     this.ast = ast;
@@ -91,6 +93,8 @@ public class ParseContext {
     this.topOps = topOps;
     this.topSelOps = topSelOps;
     this.ctx = ctx;
+    this.idToTableNameMap = idToTableNameMap;
+    this.destTableId = destTableId;
   }
 
   /**
@@ -260,4 +264,22 @@ public class ParseContext {
   public void setLoadFileWork(List<loadFileDesc> loadFileWork) {
     this.loadFileWork = loadFileWork;
   }
+
+  public HashMap<String, String> getIdToTableNameMap() {
+    return idToTableNameMap;
+  }
+
+  public void setIdToTableNameMap(HashMap<String, String> idToTableNameMap) {
+    this.idToTableNameMap = idToTableNameMap;
+  }
+
+  public int getDestTableId() {
+    return destTableId;
+  }
+
+  public void setDestTableId(int destTableId) {
+    this.destTableId = destTableId;
+  }
+  
+  
 }

@@ -197,10 +197,11 @@ public class Driver implements CommandProcessor {
       if (jobs > 0) {
         console.printInfo("Total MapReduce jobs = " + jobs);
       }
-      if (SessionState.get() != null)
+      if (SessionState.get() != null){
         SessionState.get().getHiveHistory().setQueryProperty(queryId,
             Keys.QUERY_NUM_TASKS, String.valueOf(jobs));
-
+        SessionState.get().getHiveHistory().setIdToTableMap(sem.getIdToTableNameMap());
+      }
       String jobname = Utilities.abbreviate(command, maxlen - 6);
       int curJob = 0;
       for (Task<? extends Serializable> rootTask : sem.getRootTasks()) {
@@ -263,9 +264,11 @@ public class Driver implements CommandProcessor {
           }
         }
       }
-      if (SessionState.get() != null)
+      if (SessionState.get() != null){
         SessionState.get().getHiveHistory().setQueryProperty(queryId,
             Keys.QUERY_RET_CODE, String.valueOf(0));
+        SessionState.get().getHiveHistory().printRowCount();
+      }
     } catch (SemanticException e) {
       if (SessionState.get() != null)
         SessionState.get().getHiveHistory().setQueryProperty(queryId,

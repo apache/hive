@@ -26,17 +26,31 @@ public class fileSinkDesc implements Serializable {
   private String dirName;
   private tableDesc tableInfo;
   private boolean compressed;
+  private int destTableId;
+
 
   public fileSinkDesc() { }
   public fileSinkDesc(
     final String dirName,
     final tableDesc tableInfo,
-    final boolean compressed) {
+    final boolean compressed, int destTableId) {
 
     this.dirName = dirName;
     this.tableInfo = tableInfo;
     this.compressed = compressed;
+    this.destTableId = destTableId;
   }
+  
+  public fileSinkDesc(
+      final String dirName,
+      final tableDesc tableInfo,
+      final boolean compressed) {
+
+      this.dirName = dirName;
+      this.tableInfo = tableInfo;
+      this.compressed = compressed;
+      this.destTableId = 0;
+    }
   
   @explain(displayName="directory", normalExplain=false)
   public String getDirName() {
@@ -61,5 +75,14 @@ public class fileSinkDesc implements Serializable {
 
   public void setCompressed(boolean compressed) {
     this.compressed = compressed;
+  }
+  
+  @explain(displayName="GlobalTableId")
+  public int getDestTableId() {
+    return destTableId;
+  }
+  
+  public void setDestTableId(int destTableId) {
+    this.destTableId = destTableId;
   }
 }

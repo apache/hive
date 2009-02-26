@@ -54,6 +54,7 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
               File Output Operator
                 compressed: false
+                GlobalTableId: 1
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat

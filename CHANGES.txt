@@ -6,6 +6,9 @@ Trunk (unreleased changes)
 
   NEW FEATURES
 
+    HIVE-79. Print number of rows inserted to table(s).
+    (Suresh Antony via zshao)
+
     HIVE-30. Hive Web User Interface. (Edward Capriolo via athusoo)
 
   IMPROVEMENTS

@@ -81,6 +81,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private List<loadFileDesc> loadFileWork;
   private QB qb;
   private ASTNode ast;
+  private int destTableId;
 
   private static class Phase1Ctx {
     String dest;
@@ -98,7 +99,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     this.loadTableWork = new ArrayList<loadTableDesc>();
     this.loadFileWork = new ArrayList<loadFileDesc>();
     opParseCtx = new HashMap<Operator<? extends Serializable>, OpParseContext>();
+    this.destTableId = 1;
+ 
+    
   }
+  
 
   @Override
   protected void reset() {
@@ -108,6 +113,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     this.loadFileWork.clear();
     this.topOps.clear();
     this.topSelOps.clear();
+    this.destTableId = 1;
+    this.idToTableNameMap.clear();
     qb = null;
     ast = null;
   }
@@ -121,11 +128,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     loadTableWork = pctx.getLoadTableWork();
     loadFileWork = pctx.getLoadFileWork();
     ctx = pctx.getContext();
+    destTableId = pctx.getDestTableId();
+    idToTableNameMap = pctx.getIdToTableNameMap();
   }
 
   public ParseContext getParseContext() {
     return new ParseContext(conf, qb, ast, aliasToPruner, aliasToSamplePruner, topOps, 
-                            topSelOps, opParseCtx, loadTableWork, loadFileWork, ctx);
+                            topSelOps, opParseCtx, loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId);
   }
   
   @SuppressWarnings("nls")
@@ -2028,14 +2037,22 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // create a temporary directory name and chain it to the plan
     String dest_path = null;
     tableDesc table_desc = null;
+    
+    int currentTableId = 0;
 
     Integer dest_type = qb.getMetaData().getDestTypeForAlias(dest);
 
     switch (dest_type.intValue()) {
     case QBMetaData.DEST_TABLE:
       {
+        
+       
         Table dest_tab = qb.getMetaData().getDestTableForAlias(dest);
         table_desc = Utilities.getTableDesc(dest_tab);
+        
+        this.idToTableNameMap.put( String.valueOf(this.destTableId), dest_tab.getName());
+        currentTableId = this.destTableId;
+        this.destTableId ++;
 
         dest_path = dest_tab.getPath().toString();
         // Create the work for moving the table
@@ -2050,6 +2067,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         Table dest_tab = dest_part.getTable();
         table_desc = Utilities.getTableDesc(dest_tab);
         dest_path = dest_part.getPath()[0].toString();
+        this.idToTableNameMap.put( String.valueOf(this.destTableId), dest_tab.getName());
+        currentTableId = this.destTableId;
+        this.destTableId ++;
+        
         this.loadTableWork.add(new loadTableDesc(queryTmpdir, table_desc, dest_part.getSpec()));
         break;
       }
@@ -2071,7 +2092,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           else
           	cols = cols.concat(nm[0] + "." + nm[1]);
         }
-        
+        if (!dest_path.startsWith(this.scratchDir+File.separator))
+        {
+          this.idToTableNameMap.put( String.valueOf(this.destTableId), dest_path);
+          currentTableId = this.destTableId;
+          this.destTableId ++;
+        }
         this.loadFileWork.add(new loadFileDesc(queryTmpdir, dest_path,
                                           (dest_type.intValue() == QBMetaData.DEST_DFS_FILE), cols));
         table_desc = PlanUtils.getDefaultTableDesc(Integer.toString(Utilities.ctrlaCode),
@@ -2087,7 +2113,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Operator output = putOpInsertMap(
       OperatorFactory.getAndMakeChild(
         new fileSinkDesc(queryTmpdir, table_desc,
-                         conf.getBoolVar(HiveConf.ConfVars.COMPRESSRESULT)),
+                         conf.getBoolVar(HiveConf.ConfVars.COMPRESSRESULT), currentTableId),
         new RowSchema(inputRR.getColumnInfos()), input), inputRR);
 
     LOG.debug("Created FileSink Plan for clause: " + dest + "dest_path: "
@@ -3252,9 +3278,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     LOG.info("Completed getting MetaData in Semantic Analysis");
 
     genPlan(qb);
+    
 
     ParseContext pCtx = new ParseContext(conf, qb, ast, aliasToPruner, aliasToSamplePruner, topOps, 
-    		                                 topSelOps, opParseCtx, loadTableWork, loadFileWork, ctx);
+    		                                 topSelOps, opParseCtx, loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId);
   
     Optimizer optm = new Optimizer();
     optm.setPctx(pCtx);

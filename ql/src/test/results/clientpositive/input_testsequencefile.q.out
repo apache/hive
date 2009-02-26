@@ -18,6 +18,7 @@ STAGE PLANS:
                     type: string
               File Output Operator
                 compressed: false
+                GlobalTableId: 1
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.mapred.SequenceFileOutputFormat

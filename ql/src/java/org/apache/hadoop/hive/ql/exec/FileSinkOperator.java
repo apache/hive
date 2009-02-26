@@ -28,6 +28,7 @@ import org.apache.hadoop.conf.Configuration;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.fileSinkDesc;
+import org.apache.hadoop.hive.ql.exec.FilterOperator.Counter;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -51,6 +52,13 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
   transient protected Path finalPath;
   transient protected Serializer serializer;
   transient protected BytesWritable commonKey = new BytesWritable();
+  transient protected TableIdEnum tabIdEnum = null;
+  transient private  LongWritable row_count;
+  public static enum TableIdEnum {
+
+    TABLE_ID_1_ROWCOUNT, TABLE_ID_2_ROWCOUNT, TABLE_ID_3_ROWCOUNT, TABLE_ID_4_ROWCOUNT, TABLE_ID_5_ROWCOUNT, TABLE_ID_6_ROWCOUNT, TABLE_ID_7_ROWCOUNT, TABLE_ID_8_ROWCOUNT, TABLE_ID_9_ROWCOUNT, TABLE_ID_10_ROWCOUNT, TABLE_ID_11_ROWCOUNT, TABLE_ID_12_ROWCOUNT, TABLE_ID_13_ROWCOUNT, TABLE_ID_14_ROWCOUNT, TABLE_ID_15_ROWCOUNT;
+
+  }
   transient protected boolean autoDelete = false;
 
   private void commit() throws IOException {
@@ -88,6 +96,7 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
       serializer = (Serializer)conf.getTableInfo().getDeserializerClass().newInstance();
       serializer.initialize(null, conf.getTableInfo().getProperties());
       
+  
       JobConf jc;
       if(hconf instanceof JobConf) {
         jc = (JobConf)hconf;
@@ -96,6 +105,14 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
         jc = new JobConf(hconf, ExecDriver.class);
       }
 
+      int id = conf.getDestTableId();
+      if ((id != 0) && (id <= TableIdEnum.values().length)){
+        String enumName = "TABLE_ID_"+String.valueOf(id)+"_ROWCOUNT";
+        tabIdEnum = TableIdEnum.valueOf(enumName);
+        row_count = new LongWritable();
+        statsMap.put(tabIdEnum, row_count);
+        
+      }
       fs = FileSystem.get(hconf);
       finalPath = new Path(Utilities.toTempPath(conf.getDirName()), Utilities.getTaskId(hconf));
       outPath = new Path(Utilities.toTempPath(conf.getDirName()), Utilities.toTempPath(Utilities.getTaskId(hconf)));
@@ -177,6 +194,10 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
       reporter.progress();
       // user SerDe to serialize r, and write it out
       recordValue = serializer.serialize(row, rowInspector);
+      if (row_count != null){
+        row_count.set(row_count.get()+ 1);
+      }
+        
       outWriter.write(recordValue);
     } catch (IOException e) {
       throw new HiveException (e);

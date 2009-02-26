@@ -17,6 +17,7 @@ STAGE PLANS:
                       type: int
                 File Output Operator
                   compressed: false
+                  GlobalTableId: 0
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
@@ -60,6 +61,7 @@ STAGE PLANS:
                       type: smallint
                 File Output Operator
                   compressed: false
+                  GlobalTableId: 0
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat

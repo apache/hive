@@ -53,11 +53,15 @@ public class HiveHistory {
 
   private LogHelper console;
 
+  private Map<String,String> idToTableMap = null;
+  
   // Job Hash Map
   private HashMap<String, QueryInfo> queryInfoMap = new HashMap<String, QueryInfo>();
 
   // Task Hash Map
   private HashMap<String, TaskInfo> taskInfoMap = new HashMap<String, TaskInfo>();
+  
+  private HashMap<String, Long> rowCountMap = new HashMap<String, Long>();
 
   private static final String DELIMITER = " ";
 
@@ -67,14 +71,18 @@ public class HiveHistory {
 
   public static enum Keys {
     SESSION_ID, QUERY_ID, TASK_ID, QUERY_RET_CODE, QUERY_NUM_TASKS, QUERY_STRING, TIME,
-    TASK_RET_CODE, TASK_NAME, TASK_HADOOP_ID, TASK_HADOOP_PROGRESS, TASK_COUNTERS, TASK_NUM_REDUCERS
+    TASK_RET_CODE, TASK_NAME, TASK_HADOOP_ID, TASK_HADOOP_PROGRESS, TASK_COUNTERS, TASK_NUM_REDUCERS, ROWS_INSERTED
   };
 
   private static final String KEY = "(\\w+)";
   private static final String VALUE = "[[^\"]?]+"; // anything but a " in ""
+  private static final String ROW_COUNT_PATTERN = "TABLE_ID_(\\d+)_ROWCOUNT";
 
   private static final Pattern pattern = Pattern.compile(KEY + "=" + "\""
       + VALUE + "\"");
+  
+  private static final Pattern rowCountPattern = Pattern.compile(ROW_COUNT_PATTERN);
+  
 
   // temp buffer for parsed dataa
   private static Map<String, String> parseBuffer = new HashMap<String, String>();
@@ -190,7 +198,7 @@ public class HiveHistory {
       }
       Random randGen = new Random();
       histFileName = conf_file_loc + "/hive_job_log_" + ss.getSessionId()
-         +"_" + randGen.nextInt() + ".txt";
+         +"_" + Math.abs(randGen.nextInt()) + ".txt";
       console.printInfo("Hive history file=" + histFileName);
       histStream = new PrintWriter(histFileName);
 
@@ -299,6 +307,7 @@ public class HiveHistory {
    */
   public void setTaskCounters(String queryId, String taskId, RunningJob rj) {
     String id = queryId + ":" + taskId;
+    StringBuilder sb1 = new StringBuilder("");
     TaskInfo ti = taskInfoMap.get(id);
     if (ti == null)
       return;
@@ -318,15 +327,39 @@ public class HiveHistory {
           sb.append(counter.getDisplayName());
           sb.append(':');
           sb.append(counter.getCounter());
+          String tab = getRowCountTableName(counter.getDisplayName());
+          if (tab != null){
+            if (sb1.length() > 0)
+              sb1.append(",");
+            sb1.append(tab);
+            sb1.append('~');
+            sb1.append(counter.getCounter());
+            rowCountMap.put(tab, counter.getCounter());
+            
+            
+          }
         }
       }
+     
+     
 
     } catch (Exception e) {
       e.printStackTrace();
     }
-    taskInfoMap.get(id).hm.put(Keys.TASK_COUNTERS.name(), sb.toString());
+    if (sb1.length()>0)
+    {
+      taskInfoMap.get(id).hm.put(Keys.ROWS_INSERTED.name(), sb1.toString());
+      queryInfoMap.get(queryId).hm.put(Keys.ROWS_INSERTED.name(), sb1.toString());
+    }
+    if (sb.length() > 0)
+      taskInfoMap.get(id).hm.put(Keys.TASK_COUNTERS.name(), sb.toString());
   }
 
+  public void printRowCount(){
+    for (String tab: rowCountMap.keySet()){
+      console.printInfo(rowCountMap.get(tab)+" Rows loaded to "+ tab);
+    }
+  }
   /**
    * Called at the end of Job. A Job is sql query.
    * 
@@ -391,5 +424,31 @@ public class HiveHistory {
     log(RecordTypes.TaskProgress, ti.hm);
 
   }
+  
+  /**
+   * Set the table to id map
+   * @param map
+   */
+  public void setIdToTableMap(Map<String, String> map){
+    idToTableMap = map;
+  }
+
+  /**
+   *  Returns table name for the counter name
+   * @param name
+   * @return tableName
+   */
+  String getRowCountTableName(String name){
+    if (idToTableMap == null) return null;
+    Matcher m = rowCountPattern.matcher(name);
+
+    if (m.find()){
+      String tuple = m.group(1);
+      return idToTableMap.get(tuple);
+    }
+    return null;
+
+  }
+
 
 }

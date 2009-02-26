@@ -46,7 +46,9 @@ public abstract class BaseSemanticAnalyzer {
   protected final LogHelper console;
 
   protected Context ctx;
-  
+  protected HashMap<String, String> idToTableNameMap;
+
+
   public BaseSemanticAnalyzer(HiveConf conf) throws SemanticException {
     try {
       this.conf = conf;
@@ -59,11 +61,18 @@ public abstract class BaseSemanticAnalyzer {
       Random rand = new Random();
       this.randomid = Math.abs(rand.nextInt()%rand.nextInt());
       this.pathid = 10000;
+      this.idToTableNameMap = new  HashMap<String, String>();
     } catch (Exception e) {
       throw new SemanticException (e);
     }
   }
 
+  
+  public HashMap<String, String> getIdToTableNameMap() {
+    return idToTableNameMap;
+  }
+
+  
   public abstract void analyzeInternal(ASTNode ast, Context ctx) throws SemanticException;
 
   public void analyze(ASTNode ast, Context ctx) throws SemanticException {

@@ -140,6 +140,8 @@ public class ColumnPruner implements Transform {
       if ((!pctx.getTopOps().containsValue(op)) && (!pctx.getTopSelOps().containsValue(op)))
         iter.remove();
     }
+    pctx.setDestTableId(1);
+    pctx.getIdToTableNameMap().clear();
   }
 	
   /**

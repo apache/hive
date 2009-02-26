@@ -29,6 +29,7 @@ STAGE PLANS:
           mode: partial1
           File Output Operator
             compressed: false
+            GlobalTableId: 0
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.mapred.SequenceFileOutputFormat
@@ -37,7 +38,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/athusoo/commits/hive_trunk_ws2/build/ql/tmp/181599227/280831237.10002 
+        /data/users/suresh/hive_external/build/ql/tmp/70974864/316512048.10002 
           Reduce Output Operator
             sort order: 
             tag: -1
@@ -65,6 +66,7 @@ STAGE PLANS:
                   type: bigint
             File Output Operator
               compressed: false
+              GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
