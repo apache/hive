@@ -1,3 +1,6 @@
+set hive.map.aggr=false;
+set hive.groupby.skewindata=true;
+
 CREATE TABLE dest1(c1 DOUBLE, c2 DOUBLE, c3 DOUBLE, c4 DOUBLE, c5 DOUBLE) STORED AS TEXTFILE;
 
 EXPLAIN

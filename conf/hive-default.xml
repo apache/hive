@@ -72,7 +72,7 @@
 
 <property>
   <name>hive.map.aggr</name>
-  <value>false</value>
+  <value>true</value>
   <description>Whether to use map-side aggregation in Hive Group By queries</description>
 </property>
 

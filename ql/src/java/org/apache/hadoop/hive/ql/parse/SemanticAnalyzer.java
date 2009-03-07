@@ -1242,7 +1242,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     
     r.aggMethod = null;
-    String funcName = (((mode == groupByDesc.Mode.PARTIAL1) || (mode == groupByDesc.Mode.HASH)) ? "iterate" : "merge");
+    String funcName = (((mode == groupByDesc.Mode.PARTIAL1) || (mode == groupByDesc.Mode.HASH) ||
+                        (mode == groupByDesc.Mode.COMPLETE)) ? "iterate" : "merge");
     if (aggTree.getToken().getType() == HiveParser.TOK_FUNCTIONDI && (mode != groupByDesc.Mode.FINAL))
         funcName = "iterate";
 
@@ -1564,94 +1565,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
-   * Generate the ReduceSinkOperator for the Group By Query Block (parseInfo.getXXX(dest)).
-   * The new ReduceSinkOperator will be a child of inputOperatorInfo.
-   * 
-   * It will put all Group By keys and the distinct field (if any) in the map-reduce sort key,
-   * and all other fields in the map-reduce value.
-   * 
-   * The map-reduce partition key will be random() if there is no distinct, or the same as
-   * the map-reduce sort key otherwise.  
-   * 
-   * @return the new ReduceSinkOperator.
-   * @throws SemanticException
-   */
-  @SuppressWarnings("nls")
-  private Operator genGroupByPlanReduceSinkOperator(QBParseInfo parseInfo,
-      String dest, Operator inputOperatorInfo)
-      throws SemanticException {
-
-    return genGroupByPlanReduceSinkOperator(parseInfo, dest, inputOperatorInfo, -1);
-  }
-
-  @SuppressWarnings("nls")
-  private Operator genGroupByPlanReduceSinkOperator(QBParseInfo parseInfo,
-    String dest, Operator inputOperatorInfo, int numReducers)
-    throws SemanticException {
-    RowResolver reduceSinkInputRowResolver = opParseCtx.get(inputOperatorInfo).getRR();
-    RowResolver reduceSinkOutputRowResolver = new RowResolver();
-    reduceSinkOutputRowResolver.setIsExprResolver(true);
-    ArrayList<exprNodeDesc> reduceKeys = new ArrayList<exprNodeDesc>();
-
-    // Pre-compute group-by keys and store in reduceKeys
-    List<ASTNode> grpByExprs = getGroupByForClause(parseInfo, dest);
-    for (int i = 0; i < grpByExprs.size(); ++i) {
-      ASTNode grpbyExpr = grpByExprs.get(i);
-      String text = grpbyExpr.toStringTree();
-
-      if (reduceSinkOutputRowResolver.get("", text) == null) {
-        ColumnInfo exprInfo = reduceSinkInputRowResolver.get("", text);
-        reduceKeys.add(new exprNodeColumnDesc(exprInfo.getType(), exprInfo.getInternalName()));
-        reduceSinkOutputRowResolver.put("", text,
-                                        new ColumnInfo(Utilities.ReduceField.KEY.toString() + "." + Integer.valueOf(reduceKeys.size() - 1).toString(),
-                                                       exprInfo.getType()));
-      }
-    }
-
-    // If there is a distinctFuncExp, add all parameters to the reduceKeys.
-    if (parseInfo.getDistinctFuncExprForClause(dest) != null) {
-      ASTNode value = parseInfo.getDistinctFuncExprForClause(dest);
-      // 0 is function name
-      for (int i = 1; i < value.getChildCount(); i++) {
-        ASTNode parameter = (ASTNode) value.getChild(i);
-        String text = parameter.toStringTree();
-        if (reduceSinkOutputRowResolver.get("",text) == null) {
-          ColumnInfo exprInfo = reduceSinkInputRowResolver.get("", text);
-          reduceKeys.add(new exprNodeColumnDesc(exprInfo.getType(), exprInfo.getInternalName()));
-          reduceSinkOutputRowResolver.put("", text,
-                                          new ColumnInfo(Utilities.ReduceField.KEY.toString() + "." + Integer.valueOf(reduceKeys.size() - 1).toString(),
-                                                         exprInfo.getType()));
-        }
-      }
-    }
-
-    // Put partial aggregation results in reduceValues
-    ArrayList<exprNodeDesc> reduceValues = new ArrayList<exprNodeDesc>();
-    HashMap<String, ASTNode> aggregationTrees = parseInfo
-        .getAggregationExprsForClause(dest);
-    int inputField = reduceKeys.size();
-
-    for (Map.Entry<String, ASTNode> entry : aggregationTrees.entrySet()) {
-
-      TypeInfo type = reduceSinkInputRowResolver.getColumnInfos().get(inputField).getType(); 
-      reduceValues.add(new exprNodeColumnDesc(
-          type, (Integer.valueOf(inputField)).toString()));
-      inputField++;
-      reduceSinkOutputRowResolver.put("", ((ASTNode)entry.getValue()).toStringTree(),
-                                      new ColumnInfo(Utilities.ReduceField.VALUE.toString() + "." + (Integer.valueOf(reduceValues.size()-1)).toString(),
-                                                     type));
-    }
-
-    return putOpInsertMap(
-      OperatorFactory.getAndMakeChild(
-        PlanUtils.getReduceSinkDesc(reduceKeys, reduceValues, -1,
-                                    (parseInfo.getDistinctFuncExprForClause(dest) == null ? -1 : Integer.MAX_VALUE), numReducers),
-        new RowSchema(reduceSinkOutputRowResolver.getColumnInfos()),
-        inputOperatorInfo),
-      reduceSinkOutputRowResolver);
-  }
-
-  /**
    * Generate the ReduceSinkOperator for the Group By Query Block (qb.getPartInfo().getXXX(dest)).
    * The new ReduceSinkOperator will be a child of inputOperatorInfo.
    * 
@@ -1665,7 +1578,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   @SuppressWarnings("nls")
   private Operator genGroupByPlanReduceSinkOperator(QB qb,
-      String dest, Operator inputOperatorInfo, int numPartitionFields) throws SemanticException {
+    String dest, Operator inputOperatorInfo, int numPartitionFields, int numReducers, boolean mapAggrDone) throws SemanticException {
+
     RowResolver reduceSinkInputRowResolver = opParseCtx.get(inputOperatorInfo).getRR();
     QBParseInfo parseInfo = qb.getParseInfo();
     RowResolver reduceSinkOutputRowResolver = new RowResolver();
@@ -1703,28 +1617,44 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    // Put parameters to aggregations in reduceValues
     ArrayList<exprNodeDesc> reduceValues = new ArrayList<exprNodeDesc>();
-    HashMap<String, ASTNode> aggregationTrees = parseInfo
-        .getAggregationExprsForClause(dest);
-    for (Map.Entry<String, ASTNode> entry : aggregationTrees.entrySet()) {
+    HashMap<String, ASTNode> aggregationTrees = parseInfo.getAggregationExprsForClause(dest);
+
+    if (!mapAggrDone) {
+      // Put parameters to aggregations in reduceValues
+      for (Map.Entry<String, ASTNode> entry : aggregationTrees.entrySet()) {
         ASTNode value = entry.getValue();
-      // 0 is function name
-      for (int i = 1; i < value.getChildCount(); i++) {
-        ASTNode parameter = (ASTNode) value.getChild(i);
-        String text = parameter.toStringTree();
-        if (reduceSinkOutputRowResolver.get("",text) == null) {
-          reduceValues.add(genExprNodeDesc(parameter, reduceSinkInputRowResolver));
-          reduceSinkOutputRowResolver.put("", text,
-                                          new ColumnInfo(Utilities.ReduceField.VALUE.toString() + "." + Integer.valueOf(reduceValues.size() - 1).toString(),
-                                              reduceValues.get(reduceValues.size()-1).getTypeInfo()));
+        // 0 is function name
+        for (int i = 1; i < value.getChildCount(); i++) {
+          ASTNode parameter = (ASTNode) value.getChild(i);
+          String text = parameter.toStringTree();
+          if (reduceSinkOutputRowResolver.get("",text) == null) {
+            reduceValues.add(genExprNodeDesc(parameter, reduceSinkInputRowResolver));
+            reduceSinkOutputRowResolver.put("", text,
+                                            new ColumnInfo(Utilities.ReduceField.VALUE.toString() + "." + Integer.valueOf(reduceValues.size() - 1).toString(),
+                                                           reduceValues.get(reduceValues.size()-1).getTypeInfo()));
+          }
         }
+      }
+    }
+    else
+    {
+      // Put partial aggregation results in reduceValues
+      int inputField = reduceKeys.size();
+      
+      for (Map.Entry<String, ASTNode> entry : aggregationTrees.entrySet()) {
+        
+        TypeInfo type = reduceSinkInputRowResolver.getColumnInfos().get(inputField).getType(); 
+        reduceValues.add(new exprNodeColumnDesc(type, (Integer.valueOf(inputField)).toString()));
+        inputField++;
+        reduceSinkOutputRowResolver.put("", ((ASTNode)entry.getValue()).toStringTree(),
+                                        new ColumnInfo(Utilities.ReduceField.VALUE.toString() + "." + (Integer.valueOf(reduceValues.size()-1)).toString(),
+                                                       type));
       }
     }
 
     return putOpInsertMap(
-      OperatorFactory.getAndMakeChild(PlanUtils.getReduceSinkDesc(reduceKeys, reduceValues, -1, numPartitionFields,
-                                                                  -1),
+      OperatorFactory.getAndMakeChild(PlanUtils.getReduceSinkDesc(reduceKeys, reduceValues, -1, numPartitionFields, numReducers),
                                         new RowSchema(reduceSinkOutputRowResolver.getColumnInfos()),
                                         inputOperatorInfo),
         reduceSinkOutputRowResolver
@@ -1884,8 +1814,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // ////// 1. Generate ReduceSinkOperator
     Operator reduceSinkOperatorInfo = genGroupByPlanReduceSinkOperator(
-        qb, dest, input, getGroupByForClause(parseInfo, dest).size());
-
+      qb, dest, input, getGroupByForClause(parseInfo, dest).size(), -1, false);
 
     // ////// 2. Generate GroupbyOperator
     Operator groupByOperatorInfo = genGroupByPlanGroupByOperator(parseInfo,
@@ -1924,7 +1853,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // captured by WritableComparableHiveObject.hashCode() function. 
     Operator reduceSinkOperatorInfo = genGroupByPlanReduceSinkOperator(
       qb, dest, input, (parseInfo.getDistinctFuncExprForClause(dest) == null ? -1
-            : Integer.MAX_VALUE));
+                        : Integer.MAX_VALUE), -1, false);
 
     // ////// 2. Generate GroupbyOperator
     Operator groupByOperatorInfo = genGroupByPlanGroupByOperator(parseInfo,
@@ -1961,7 +1890,38 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * Evaluate partial aggregates first, followed by actual aggregates.
    */
   @SuppressWarnings("nls")
-  private Operator genGroupByPlan4MR(String dest, QB qb, 
+  private Operator genGroupByPlanMapAggr1MR(String dest, QB qb, 
+    Operator inputOperatorInfo) throws SemanticException {
+
+    QBParseInfo parseInfo = qb.getParseInfo();
+
+    // ////// Generate GroupbyOperator for a map-side partial aggregation
+    Operator groupByOperatorInfo = genGroupByPlanMapGroupByOperator(qb,
+      dest, inputOperatorInfo, groupByDesc.Mode.HASH);
+
+    int numReducers = -1;
+
+    // Optimize the scenario when there are no grouping keys and no distinct - only 1 reducer is needed
+    // For eg: select count(1) from T where t.ds = ....
+    if (optimizeMapAggrGroupBy(dest, qb)) 
+      numReducers = 1;
+    
+    // ////// Generate ReduceSink Operator
+    Operator reduceSinkOperatorInfo = 
+      genGroupByPlanReduceSinkOperator(qb, dest, groupByOperatorInfo, getGroupByForClause(parseInfo, dest).size(), numReducers, true);
+    
+    return genGroupByPlanGroupByOperator2MR(parseInfo, dest, reduceSinkOperatorInfo, groupByDesc.Mode.FINAL);
+  }
+
+  /**
+   * Generate a Group-By plan using a 2 map-reduce jobs. First perform a map
+   * side partial aggregation (to reduce the amount of data). Then spray by
+   * the distinct key (or a random number) in hope of getting a uniform 
+   * distribution, and compute partial aggregates grouped by that distinct key.
+   * Evaluate partial aggregates first, followed by actual aggregates.
+   */
+  @SuppressWarnings("nls")
+  private Operator genGroupByPlanMapAggr2MR(String dest, QB qb, 
     Operator inputOperatorInfo) throws SemanticException {
 
     QBParseInfo parseInfo = qb.getParseInfo();
@@ -1976,7 +1936,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // ////// Generate ReduceSink Operator
       Operator reduceSinkOperatorInfo = 
-        genGroupByPlanReduceSinkOperator(parseInfo, dest, groupByOperatorInfo);
+        genGroupByPlanReduceSinkOperator(qb, dest, groupByOperatorInfo, 
+                                         (parseInfo.getDistinctFuncExprForClause(dest) == null ? -1
+                                          : Integer.MAX_VALUE), -1, true);
       
       // ////// Generate GroupbyOperator for a partial aggregation
       Operator groupByOperatorInfo2 = genGroupByPlanGroupByOperator1(parseInfo, dest, reduceSinkOperatorInfo, 
@@ -1992,7 +1954,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     else {
       // ////// Generate ReduceSink Operator
       Operator reduceSinkOperatorInfo = 
-        genGroupByPlanReduceSinkOperator(parseInfo, dest, groupByOperatorInfo, 1);
+        genGroupByPlanReduceSinkOperator(qb, dest, groupByOperatorInfo, getGroupByForClause(parseInfo, dest).size(), 1, true);
       
       return genGroupByPlanGroupByOperator2MR(parseInfo, dest, reduceSinkOperatorInfo, groupByDesc.Mode.FINAL);
     }
@@ -2766,10 +2728,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (qbp.getAggregationExprsForClause(dest).size() != 0
           || getGroupByForClause(qbp, dest).size() > 0)
       {
-        if (conf.getVar(HiveConf.ConfVars.HIVEMAPSIDEAGGREGATE).equalsIgnoreCase("true"))
-          curr = genGroupByPlan4MR(dest, qb, curr);
-        else
+        if (conf.getVar(HiveConf.ConfVars.HIVEMAPSIDEAGGREGATE).equalsIgnoreCase("true")) {
+          if (conf.getVar(HiveConf.ConfVars.HIVEGROUPBYSKEW).equalsIgnoreCase("false"))
+            curr = genGroupByPlanMapAggr1MR(dest, qb, curr);
+          else
+            curr = genGroupByPlanMapAggr2MR(dest, qb, curr);
+        }
+        else if (conf.getVar(HiveConf.ConfVars.HIVEGROUPBYSKEW).equalsIgnoreCase("true"))
           curr = genGroupByPlan2MR(dest, qb, curr);
+        else
+          curr = genGroupByPlan1MR(dest, qb, curr);
       }
 
       curr = genSelectPlan(dest, qb, curr);
@@ -2859,6 +2827,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     parent.add(leftOp);
     parent.add(rightOp);
     unionforward.setParentOperators(parent);
+
     // create operator info list to return
     return putOpInsertMap(unionforward, unionoutRR);
   }

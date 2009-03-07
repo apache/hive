@@ -3,8 +3,7 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
 
 STAGE PLANS:
   Stage: Stage-1
@@ -19,50 +18,25 @@ STAGE PLANS:
                 predicate:
                     expr: (UDFToDouble(0) < UDFToDouble(100))
                     type: boolean
-                Reduce Output Operator
-                  key expressions:
+                Group By Operator
+                  aggregations:
+                        expr: count(1)
+                  keys:
                         expr: 0
                         type: string
-                  sort order: +
-                  Map-reduce partition columns:
-                        expr: rand()
-                        type: double
-                  tag: -1
-                  value expressions:
-                        expr: 1
-                        type: int
-      Reduce Operator Tree:
-        Group By Operator
-          aggregations:
-                expr: count(VALUE.0)
-          keys:
-                expr: KEY.0
-                type: string
-          mode: partial1
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.mapred.SequenceFileOutputFormat
-                name: binary_table
-
-  Stage: Stage-2
-    Map Reduce
-      Alias -> Map Operator Tree:
-        /data/users/suresh/hive_external/build/ql/tmp/288823547/126799840.10001 
-          Reduce Output Operator
-            key expressions:
-                  expr: 0
-                  type: string
-            sort order: +
-            Map-reduce partition columns:
-                  expr: 0
-                  type: string
-            tag: -1
-            value expressions:
-                  expr: 1
-                  type: bigint
+                  mode: hash
+                  Reduce Output Operator
+                    key expressions:
+                          expr: 0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: 0
+                          type: string
+                    tag: -1
+                    value expressions:
+                          expr: 1
+                          type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -97,6 +71,7 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: dest1
+
 
 1234	0	3.0
 1234	10	1.0

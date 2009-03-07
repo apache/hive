@@ -1,3 +1,6 @@
+set hive.map.aggr=false;
+set hive.groupby.skewindata=true;
+
 CREATE TABLE dest_g2(key STRING, c1 INT, c2 STRING) STORED AS TEXTFILE;
 
 EXPLAIN

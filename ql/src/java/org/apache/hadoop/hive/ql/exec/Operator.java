@@ -47,8 +47,15 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   
   protected List<Operator<? extends Serializable>> childOperators;
   protected List<Operator<? extends Serializable>> parentOperators;
+  private static int seqId;
 
-  public Operator() {}
+  static {
+    seqId = 0;
+  }
+  
+  public Operator() {
+    id = String.valueOf(seqId++);
+  }
   
   /**
    * Create an operator with a reporter.
@@ -56,6 +63,7 @@ public abstract class Operator <T extends Serializable> implements Serializable,
    */
   public Operator(Reporter reporter) {
     this.reporter = reporter;
+    id = String.valueOf(seqId++);
   }
 
   public void setChildOperators(List<Operator<? extends Serializable>> childOperators) {
@@ -262,6 +270,7 @@ public abstract class Operator <T extends Serializable> implements Serializable,
       for(Operator<? extends Serializable> op: childOperators) {
         op.close(abort);
       }
+
     } catch (HiveException e) {
     }
   }
@@ -341,4 +350,27 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     return new String("OP");
   }
 
+  public String dump() {
+    StringBuilder s = new StringBuilder();
+    s.append("<" + getName() + ">");
+    s.append("Id =" + getId());
+    if (childOperators != null) {
+      s.append("<Children>");
+      for (Operator<? extends Serializable> o : childOperators) {
+        s.append(o.dump());
+      }
+      s.append("<\\Children>");
+    }
+
+    if (parentOperators != null) {
+      s.append("<Parent>");
+      for (Operator<? extends Serializable> o : parentOperators) {
+        s.append("Id = " + o.getId() + " ");
+      }
+      s.append("<\\Parent>");
+    }
+
+    s.append("<\\" + getName() + ">");
+    return s.toString();
+  }
 }

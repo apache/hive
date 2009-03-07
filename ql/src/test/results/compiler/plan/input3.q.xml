@@ -28,7 +28,7 @@
              <boolean>true</boolean> 
             </void> 
             <void property="sourceDir"> 
-             <string>/data/users/suresh/hive_external/ql/../build/ql/tmp/109967648/395369916.10003.insclause-3</string> 
+             <string>/data/users/njain/hive1/hive/ql/../build/ql/tmp/398532315/183057132.10003.insclause-3</string> 
             </void> 
             <void property="targetDir"> 
              <string>../../../../build/contrib/hive/ql/test/data/warehouse/dest4.out</string> 
@@ -48,7 +48,7 @@
              <boolean>true</boolean> 
             </void> 
             <void property="sourceDir"> 
-             <string>/data/users/suresh/hive_external/ql/../build/ql/tmp/109967648/395369916.10000.insclause-0</string> 
+             <string>/data/users/njain/hive1/hive/ql/../build/ql/tmp/398532315/183057132.10000.insclause-0</string> 
             </void> 
             <void property="table"> 
              <object id="tableDesc0" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -101,7 +101,7 @@
                 </void> 
                 <void method="put"> 
                  <string>location</string> 
-                 <string>file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/dest1</string> 
+                 <string>file:/data/users/njain/hive1/hive/build/ql/test/data/warehouse/dest1</string> 
                 </void> 
                </object> 
               </void> 
@@ -121,7 +121,7 @@
              <boolean>true</boolean> 
             </void> 
             <void property="sourceDir"> 
-             <string>/data/users/suresh/hive_external/ql/../build/ql/tmp/109967648/395369916.10001.insclause-1</string> 
+             <string>/data/users/njain/hive1/hive/ql/../build/ql/tmp/398532315/183057132.10001.insclause-1</string> 
             </void> 
             <void property="table"> 
              <object id="tableDesc1" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -174,7 +174,7 @@
                 </void> 
                 <void method="put"> 
                  <string>location</string> 
-                 <string>file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/dest2</string> 
+                 <string>file:/data/users/njain/hive1/hive/build/ql/test/data/warehouse/dest2</string> 
                 </void> 
                </object> 
               </void> 
@@ -203,7 +203,7 @@
              <boolean>true</boolean> 
             </void> 
             <void property="sourceDir"> 
-             <string>/data/users/suresh/hive_external/ql/../build/ql/tmp/109967648/395369916.10002.insclause-2</string> 
+             <string>/data/users/njain/hive1/hive/ql/../build/ql/tmp/398532315/183057132.10002.insclause-2</string> 
             </void> 
             <void property="table"> 
              <object id="tableDesc2" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -260,7 +260,7 @@
                 </void> 
                 <void method="put"> 
                  <string>location</string> 
-                 <string>file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/dest3</string> 
+                 <string>file:/data/users/njain/hive1/hive/build/ql/test/data/warehouse/dest3</string> 
                 </void> 
                </object> 
               </void> 
@@ -307,12 +307,15 @@
                        <int>1</int> 
                       </void> 
                       <void property="dirName"> 
-                       <string>/data/users/suresh/hive_external/ql/../build/ql/tmp/109967648/395369916.10000.insclause-0</string> 
+                       <string>/data/users/njain/hive1/hive/ql/../build/ql/tmp/398532315/183057132.10000.insclause-0</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object idref="tableDesc0"/> 
                       </void> 
                      </object> 
+                    </void> 
+                    <void property="id"> 
+                     <string>175</string> 
                     </void> 
                     <void property="parentOperators"> 
                      <object class="java.util.ArrayList"> 
@@ -387,6 +390,9 @@
                    <boolean>true</boolean> 
                   </void> 
                  </object> 
+                </void> 
+                <void property="id"> 
+                 <string>174</string> 
                 </void> 
                 <void property="parentOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -517,6 +523,9 @@
               </void> 
              </object> 
             </void> 
+            <void property="id"> 
+             <string>173</string> 
+            </void> 
             <void property="parentOperators"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
@@ -570,12 +579,15 @@
                        <int>2</int> 
                       </void> 
                       <void property="dirName"> 
-                       <string>/data/users/suresh/hive_external/ql/../build/ql/tmp/109967648/395369916.10001.insclause-1</string> 
+                       <string>/data/users/njain/hive1/hive/ql/../build/ql/tmp/398532315/183057132.10001.insclause-1</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object idref="tableDesc1"/> 
                       </void> 
                      </object> 
+                    </void> 
+                    <void property="id"> 
+                     <string>178</string> 
                     </void> 
                     <void property="parentOperators"> 
                      <object class="java.util.ArrayList"> 
@@ -643,6 +655,9 @@
                    </object> 
                   </void> 
                  </object> 
+                </void> 
+                <void property="id"> 
+                 <string>177</string> 
                 </void> 
                 <void property="parentOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -883,6 +898,9 @@
               </void> 
              </object> 
             </void> 
+            <void property="id"> 
+             <string>176</string> 
+            </void> 
             <void property="parentOperators"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
@@ -915,12 +933,15 @@
                        <int>3</int> 
                       </void> 
                       <void property="dirName"> 
-                       <string>/data/users/suresh/hive_external/ql/../build/ql/tmp/109967648/395369916.10002.insclause-2</string> 
+                       <string>/data/users/njain/hive1/hive/ql/../build/ql/tmp/398532315/183057132.10002.insclause-2</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object idref="tableDesc2"/> 
                       </void> 
                      </object> 
+                    </void> 
+                    <void property="id"> 
+                     <string>181</string> 
                     </void> 
                     <void property="parentOperators"> 
                      <object class="java.util.ArrayList"> 
@@ -988,6 +1009,9 @@
                    </object> 
                   </void> 
                  </object> 
+                </void> 
+                <void property="id"> 
+                 <string>180</string> 
                 </void> 
                 <void property="parentOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -1228,6 +1252,9 @@
               </void> 
              </object> 
             </void> 
+            <void property="id"> 
+             <string>179</string> 
+            </void> 
             <void property="parentOperators"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
@@ -1260,7 +1287,7 @@
                        <int>4</int> 
                       </void> 
                       <void property="dirName"> 
-                       <string>/data/users/suresh/hive_external/ql/../build/ql/tmp/109967648/395369916.10003.insclause-3</string> 
+                       <string>/data/users/njain/hive1/hive/ql/../build/ql/tmp/398532315/183057132.10003.insclause-3</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -1288,6 +1315,9 @@
                        </object> 
                       </void> 
                      </object> 
+                    </void> 
+                    <void property="id"> 
+                     <string>184</string> 
                     </void> 
                     <void property="parentOperators"> 
                      <object class="java.util.ArrayList"> 
@@ -1335,6 +1365,9 @@
                    </object> 
                   </void> 
                  </object> 
+                </void> 
+                <void property="id"> 
+                 <string>183</string> 
                 </void> 
                 <void property="parentOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -1453,6 +1486,9 @@
               </void> 
              </object> 
             </void> 
+            <void property="id"> 
+             <string>182</string> 
+            </void> 
             <void property="parentOperators"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
@@ -1471,6 +1507,9 @@
           </void> 
          </object> 
         </void> 
+        <void property="id"> 
+         <string>172</string> 
+        </void> 
         <void property="schema"> 
          <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
           <void property="signature"> 
@@ -1485,7 +1524,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/njain/hive1/hive/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src</string> 
@@ -1497,7 +1536,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/njain/hive1/hive/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"/> 
@@ -1553,7 +1592,7 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/src</string> 
+             <string>file:/data/users/njain/hive1/hive/build/ql/test/data/warehouse/src</string> 
             </void> 
            </object> 
           </void> 

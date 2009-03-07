@@ -49,7 +49,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class GroupByOperator extends Operator <groupByDesc> implements Serializable {
 
-  static final private Log LOG = LogFactory.getLog(JoinOperator.class.getName());
+  static final private Log LOG = LogFactory.getLog(GroupByOperator.class.getName());
 
   private static final long serialVersionUID = 1L;
   private static final int  NUMROWSESTIMATESIZE = 1000;
@@ -78,6 +78,10 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
   transient boolean firstRow;
   transient long    totalMemory;
   transient boolean hashAggr;
+  transient long    numRowsInput;
+  transient long    numRowsHashTbl;
+  transient int     groupbyMapAggrInterval;
+  transient long    numRowsCompareHashAggr;
 
   /**
    * This is used to store the position and field names for variable length fields.
@@ -114,13 +118,15 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
   public void initialize(Configuration hconf, Reporter reporter) throws HiveException {
     super.initialize(hconf, reporter);
     totalMemory = Runtime.getRuntime().totalMemory();
+    numRowsInput = 0;
+    numRowsHashTbl = 0;
 
     // init keyFields
     keyFields = new ExprNodeEvaluator[conf.getKeys().size()];
     for (int i = 0; i < keyFields.length; i++) {
       keyFields[i] = ExprNodeEvaluatorFactory.get(conf.getKeys().get(i));
     }
-  
+
     // init aggregationParameterFields
     aggregationParameterFields = new ExprNodeEvaluator[conf.getAggregators().size()][];
     for (int i = 0; i < aggregationParameterFields.length; i++) {
@@ -186,9 +192,14 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
       hashAggr = false;
     } else {
       hashAggregations = new HashMap<ArrayList<Object>, UDAFEvaluator[]>();
+      aggregations = newAggregations();
       hashAggr = true;
       keyPositionsSize = new ArrayList<Integer>();
       aggrPositions = new ArrayList<varLenFields>();
+      groupbyMapAggrInterval = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEGROUPBYMAPINTERVAL);
+
+      // compare every groupbyMapAggrInterval rows
+      numRowsCompareHashAggr = groupbyMapAggrInterval;
     }
 
     // init objectInspectors
@@ -393,7 +404,23 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
   }
   
   public void process(Object row, ObjectInspector rowInspector) throws HiveException {
-    
+    // Total number of input rows is needed for hash aggregation only
+    if (hashAggr) {
+      numRowsInput++;
+      // if hash aggregation is not behvaing properly, disable it
+      if (numRowsInput == numRowsCompareHashAggr) {
+        numRowsCompareHashAggr += groupbyMapAggrInterval;
+        // map-side aggregation should reduce the entries by atleast half
+        if ((numRowsHashTbl * 2) > numRowsInput) {
+          LOG.warn("Disable Hash Aggr: #hash table = " + numRowsHashTbl + " #total = " + numRowsInput);
+          flush(true);
+          hashAggr = false;
+        }
+        else
+          LOG.trace("Hash Aggr Enabled: #hash table = " + numRowsHashTbl + " #total = " + numRowsInput);
+      }
+    }
+
     try {
       // Compute the keys
       ArrayList<Object> newKeys = new ArrayList<Object>(keyFields.length);
@@ -436,6 +463,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
       aggs = newAggregations();
       hashAggregations.put(newKeys, aggs);
       newEntry = true;
+      numRowsHashTbl++;      // new entry in the hash table
     }
 
     // Update the aggs
@@ -443,7 +471,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     
     // based on used-specified pramaters, check if the hash table needs to be flushed
     if (shouldBeFlushed(newKeys)) {
-      flush();
+      flush(false);
     }
   }
 
@@ -522,12 +550,24 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     return false;
   }
 
-  private void flush() throws HiveException {
+  private void flush(boolean complete) throws HiveException {
     
     // Currently, the algorithm flushes 10% of the entries - this can be
     // changed in the future
 
+    if (complete) {
+      Iterator iter = hashAggregations.entrySet().iterator();
+      while (iter.hasNext()) {
+        Map.Entry<ArrayList<Object>, UDAFEvaluator[]> m = (Map.Entry)iter.next();
+        forward(m.getKey(), m.getValue());
+      }
+      hashAggregations.clear();
+      hashAggregations = null;
+      return;
+    }
+
     int oldSize = hashAggregations.size();
+    LOG.trace("Hash Tbl flush: #hash table = " + oldSize);
     Iterator iter = hashAggregations.entrySet().iterator();
     int numDel = 0;
     while (iter.hasNext()) {
@@ -571,16 +611,19 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
   public void close(boolean abort) throws HiveException {
     if (!abort) {
       try {
-        if (aggregations != null) {
-          // sort-based aggregations
-          if (currentKeys != null) {
-            forward(currentKeys, aggregations);
-          }
-        } else if (hashAggregations != null) {
+        if (hashAggregations != null) {
           // hash-based aggregations
           for (ArrayList<Object> key: hashAggregations.keySet()) {
             forward(key, hashAggregations.get(key));
           }
+          hashAggregations.clear();
+        }
+        else if (aggregations != null) {
+          // sort-based aggregations
+          if (currentKeys != null) {
+            forward(currentKeys, aggregations);
+          }
+          currentKeys = null;
         } else {
           // The GroupByOperator is not initialized, which means there is no data
           // (since we initialize the operators when we see the first record).

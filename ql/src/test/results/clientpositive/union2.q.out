@@ -3,7 +3,6 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -17,15 +16,16 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
-                Reduce Output Operator
-                  sort order: 
-                  Map-reduce partition columns:
-                        expr: rand()
-                        type: double
-                  tag: -1
-                  value expressions:
-                        expr: 1
-                        type: int
+                Group By Operator
+                  aggregations:
+                        expr: count(1)
+                  mode: hash
+                  Reduce Output Operator
+                    sort order: 
+                    tag: -1
+                    value expressions:
+                          expr: 0
+                          type: bigint
         null-subquery2:unionsrc-subquery2:s2 
             Select Operator
               expressions:
@@ -33,38 +33,16 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
-                Reduce Output Operator
-                  sort order: 
-                  Map-reduce partition columns:
-                        expr: rand()
-                        type: double
-                  tag: -1
-                  value expressions:
-                        expr: 1
-                        type: int
-      Reduce Operator Tree:
-        Group By Operator
-          aggregations:
-                expr: count(VALUE.0)
-          mode: partial1
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.mapred.SequenceFileOutputFormat
-                name: binary_table
-
-  Stage: Stage-2
-    Map Reduce
-      Alias -> Map Operator Tree:
-        /data/users/suresh/hive_external/build/ql/tmp/739806449/232428810.10002 
-          Reduce Output Operator
-            sort order: 
-            tag: -1
-            value expressions:
-                  expr: 0
-                  type: bigint
+                Group By Operator
+                  aggregations:
+                        expr: count(1)
+                  mode: hash
+                  Reduce Output Operator
+                    sort order: 
+                    tag: -1
+                    value expressions:
+                          expr: 0
+                          type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:

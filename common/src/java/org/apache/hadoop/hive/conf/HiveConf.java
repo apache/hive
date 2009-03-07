@@ -105,8 +105,10 @@ public class HiveConf extends Configuration {
     HIVEPARTITIONNAME("hive.partition.name", ""),
     HIVEPARTITIONPRUNER("hive.partition.pruning", "nonstrict"),
     HIVEALIAS("hive.alias", ""),
-    HIVEMAPSIDEAGGREGATE("hive.map.aggr", "false"),
+    HIVEMAPSIDEAGGREGATE("hive.map.aggr", "true"),
+    HIVEGROUPBYSKEW("hive.groupby.skewindata", "false"),
     HIVEJOINEMITINTERVAL("hive.join.emit.interval", 1000),
+    HIVEGROUPBYMAPINTERVAL("hive.groupby.mapaggr.checkinterval", 100000),
     HIVEMAPAGGRHASHMEMORY("hive.map.aggr.hash.percentmemory", (float)0.5),
     
     // Default file format for CREATE TABLE statement
