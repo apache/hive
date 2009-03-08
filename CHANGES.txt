@@ -19,6 +19,9 @@ Trunk (unreleased changes)
 
     HIVE-271. Move test-udfs creation to build-common in order to
     fix broken 0.17 build. (athusoo)
+    
+    HIVE-286. Use round(xxx,12) to make sure there is no precision
+    matching problem in testCliDriver_udf7. (zshao via johan)    
 
 Release 0.2.0 - Unreleased
 
