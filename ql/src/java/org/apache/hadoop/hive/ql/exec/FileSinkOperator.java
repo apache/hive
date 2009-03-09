@@ -225,10 +225,8 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
             // Step1: rename tmp output folder to final path. After this point, 
             // updates from speculative tasks still writing to tmpPath will not 
             // appear in finalPath
-            LOG.info("Renaming tmp dir: " + tmpPath + " to: " + finalPath);
-            if(!fs.rename(tmpPath, finalPath)) {
-              throw new HiveException("Unable to commit result directory: " + finalPath);
-            }
+            LOG.info("Moving tmp dir: " + tmpPath + " to: " + finalPath);
+            renameOrMoveFiles(fs, tmpPath, finalPath);
             // Step2: Clean any temp files from finalPath
             Utilities.removeTempFiles(fs, finalPath);
           }
@@ -240,5 +238,36 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
       throw new HiveException (e);
     }
     super.jobClose(hconf, success);
+  }
+  
+  /**
+   * Rename src to dst, or in the case dst already exists, move files in src 
+   * to dst.  If there is an existing file with the same name, the new file's 
+   * name will be appended with "_1", "_2", etc.
+   * @param fs the FileSystem where src and dst are on.  
+   * @param src the src directory
+   * @param dst the target directory
+   * @throws IOException 
+   */
+  static public void renameOrMoveFiles(FileSystem fs, Path src, Path dst) throws IOException {
+    if (!fs.exists(dst)) {
+      fs.rename(src, dst);
+    } else {
+      // move file by file
+      FileStatus[] files = fs.listStatus(src);
+      for (int i=0; i<files.length; i++) {
+        Path srcFilePath = files[i].getPath();
+        String fileName = srcFilePath.getName();
+        Path dstFilePath = new Path(dst, fileName);
+        if (fs.exists(dstFilePath)) {
+          int suffix = 0;
+          do {
+            suffix++;
+            dstFilePath = new Path(dst, fileName + "_" + suffix);
+          } while (fs.exists(dstFilePath));
+        }
+        fs.rename(srcFilePath, dstFilePath);
+      }
+    }
   }
 }

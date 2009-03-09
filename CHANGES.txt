@@ -142,6 +142,9 @@ Release 0.2.0 - Unreleased
 
   BUG FIXES
 
+    HIVE-308. UNION ALL: FileSinkOperator now adds files in case the target
+    exists. (zshao)
+
     HIVE-276. Fix input3_limit.q for hadoop 0.17. (zshao)
 
     HIVE-131. Remove uncommitted files from failed tasks.
