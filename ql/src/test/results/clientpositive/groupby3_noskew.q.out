@@ -1,0 +1,64 @@
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION substr (TOK_COLREF src value) 5))) (TOK_SELEXPR (TOK_FUNCTION avg (TOK_FUNCTION substr (TOK_COLREF src value) 5))) (TOK_SELEXPR (TOK_FUNCTIONDI avg (TOK_FUNCTION substr (TOK_COLREF src value) 5))) (TOK_SELEXPR (TOK_FUNCTION max (TOK_FUNCTION substr (TOK_COLREF src value) 5))) (TOK_SELEXPR (TOK_FUNCTION min (TOK_FUNCTION substr (TOK_COLREF src value) 5))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src 
+            Select Operator
+              expressions:
+                    expr: value
+                    type: string
+              Reduce Output Operator
+                key expressions:
+                      expr: substr(0, 5)
+                      type: string
+                sort order: +
+                tag: -1
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: sum(UDFToDouble(KEY.0))
+                expr: max(KEY.0)
+                expr: avg(DISTINCT UDFToDouble(KEY.0))
+                expr: min(KEY.0)
+                expr: avg(UDFToDouble(KEY.0))
+          mode: complete
+          Select Operator
+            expressions:
+                  expr: 0
+                  type: double
+                  expr: 4
+                  type: double
+                  expr: 2
+                  type: double
+                  expr: 1
+                  type: string
+                  expr: 3
+                  type: string
+            File Output Operator
+              compressed: false
+              GlobalTableId: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: dest1
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+            replace: true
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: dest1
+
+
+130091.0	260.182	256.10355987055016	98.0	0.0

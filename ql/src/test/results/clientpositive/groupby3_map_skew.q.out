@@ -1,0 +1,125 @@
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION substr (TOK_COLREF src value) 5))) (TOK_SELEXPR (TOK_FUNCTION avg (TOK_FUNCTION substr (TOK_COLREF src value) 5))) (TOK_SELEXPR (TOK_FUNCTIONDI avg (TOK_FUNCTION substr (TOK_COLREF src value) 5))) (TOK_SELEXPR (TOK_FUNCTION max (TOK_FUNCTION substr (TOK_COLREF src value) 5))) (TOK_SELEXPR (TOK_FUNCTION min (TOK_FUNCTION substr (TOK_COLREF src value) 5))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src 
+            Select Operator
+              expressions:
+                    expr: value
+                    type: string
+              Group By Operator
+                aggregations:
+                      expr: sum(UDFToDouble(substr(0, 5)))
+                      expr: max(substr(0, 5))
+                      expr: avg(DISTINCT UDFToDouble(substr(0, 5)))
+                      expr: min(substr(0, 5))
+                      expr: avg(UDFToDouble(substr(0, 5)))
+                keys:
+                      expr: substr(0, 5)
+                      type: string
+                mode: hash
+                Reduce Output Operator
+                  key expressions:
+                        expr: 0
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: 0
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: 1
+                        type: double
+                        expr: 2
+                        type: string
+                        expr: 3
+                        type: string
+                        expr: 4
+                        type: string
+                        expr: 5
+                        type: string
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: sum(VALUE.0)
+                expr: max(VALUE.1)
+                expr: avg(DISTINCT UDFToDouble(KEY.0))
+                expr: min(VALUE.3)
+                expr: avg(VALUE.4)
+          mode: partial2
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.mapred.SequenceFileOutputFormat
+                name: binary_table
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        /data/users/njain/hive1/hive/build/ql/tmp/60912787/134510876.10001 
+          Reduce Output Operator
+            sort order: 
+            tag: -1
+            value expressions:
+                  expr: 0
+                  type: double
+                  expr: 1
+                  type: string
+                  expr: 2
+                  type: string
+                  expr: 3
+                  type: string
+                  expr: 4
+                  type: string
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: sum(VALUE.0)
+                expr: max(VALUE.1)
+                expr: avg(VALUE.2)
+                expr: min(VALUE.3)
+                expr: avg(VALUE.4)
+          mode: final
+          Select Operator
+            expressions:
+                  expr: 0
+                  type: double
+                  expr: 4
+                  type: double
+                  expr: 2
+                  type: double
+                  expr: 1
+                  type: string
+                  expr: 3
+                  type: string
+            File Output Operator
+              compressed: false
+              GlobalTableId: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: dest1
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+            replace: true
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: dest1
+
+
+130091.0	260.182	256.10355987055016	98.0	0.0
