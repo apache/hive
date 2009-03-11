@@ -516,7 +516,9 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     if ((numEntriesHashTable == 0) || ((numEntries % NUMROWSESTIMATESIZE) == 0)) {
       for (Integer pos : keyPositionsSize) {
         Object key = newKeys.get(pos.intValue());
-        totalVariableSize += ((String)key).length();
+        // Ignore nulls
+        if (key != null)
+          totalVariableSize += ((String)key).length();
       }
 
       UDAFEvaluator[] aggs = null;

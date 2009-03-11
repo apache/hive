@@ -142,6 +142,9 @@ Release 0.2.0 - Unreleased
 
   BUG FIXES
 
+    HIVE-340. Fixed null pointer exception with nulls in map-side aggregation.
+    (Namit Jain via zshao)
+
     HIVE-308. UNION ALL: FileSinkOperator now adds files in case the target
     exists. (zshao)
 
