@@ -23,6 +23,9 @@ Trunk (unreleased changes)
     HIVE-286. Use round(xxx,12) to make sure there is no precision
     matching problem in testCliDriver_udf7. (zshao via johan)    
 
+    HIVE-327. Fix row counts printed in hive history to reflect the
+    count of rows from the query in the session. (Suresh Anthony via athusoo)
+
 Release 0.2.0 - Unreleased
 
   INCOMPATIBLE CHANGES

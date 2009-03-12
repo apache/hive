@@ -267,7 +267,7 @@ public class Driver implements CommandProcessor {
       if (SessionState.get() != null){
         SessionState.get().getHiveHistory().setQueryProperty(queryId,
             Keys.QUERY_RET_CODE, String.valueOf(0));
-        SessionState.get().getHiveHistory().printRowCount();
+        SessionState.get().getHiveHistory().printRowCount(queryId);
       }
     } catch (SemanticException e) {
       if (SessionState.get() != null)

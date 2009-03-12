@@ -61,7 +61,6 @@ public class HiveHistory {
   // Task Hash Map
   private HashMap<String, TaskInfo> taskInfoMap = new HashMap<String, TaskInfo>();
   
-  private HashMap<String, Long> rowCountMap = new HashMap<String, Long>();
 
   private static final String DELIMITER = " ";
 
@@ -164,6 +163,7 @@ public class HiveHistory {
 
   public static class QueryInfo extends Info {
     public Map<String, String> hm = new HashMap<String, String>();
+    public Map<String, Long> rowCountMap = new HashMap<String, Long>();
   };
 
   public static class TaskInfo extends Info {
@@ -307,6 +307,7 @@ public class HiveHistory {
    */
   public void setTaskCounters(String queryId, String taskId, RunningJob rj) {
     String id = queryId + ":" + taskId;
+    QueryInfo ji = queryInfoMap.get(queryId);
     StringBuilder sb1 = new StringBuilder("");
     TaskInfo ti = taskInfoMap.get(id);
     if (ti == null)
@@ -334,7 +335,7 @@ public class HiveHistory {
             sb1.append(tab);
             sb1.append('~');
             sb1.append(counter.getCounter());
-            rowCountMap.put(tab, counter.getCounter());
+            ji.rowCountMap.put(tab, counter.getCounter());
             
             
           }
@@ -355,9 +356,10 @@ public class HiveHistory {
       taskInfoMap.get(id).hm.put(Keys.TASK_COUNTERS.name(), sb.toString());
   }
 
-  public void printRowCount(){
-    for (String tab: rowCountMap.keySet()){
-      console.printInfo(rowCountMap.get(tab)+" Rows loaded to "+ tab);
+  public void printRowCount(String queryId){
+    QueryInfo ji = queryInfoMap.get(queryId);
+    for (String tab: ji.rowCountMap.keySet()){
+      console.printInfo(ji.rowCountMap.get(tab)+" Rows loaded to "+ tab);
     }
   }
   /**
