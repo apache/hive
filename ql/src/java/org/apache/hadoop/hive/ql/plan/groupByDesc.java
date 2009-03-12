@@ -28,7 +28,7 @@ public class groupByDesc implements java.io.Serializable {
    *  HASH: the same as PARTIAL1 but use hash-table-based aggregation  
    */
   private static final long serialVersionUID = 1L;
-  public static enum Mode { COMPLETE, PARTIAL1, PARTIAL2, FINAL, HASH };
+  public static enum Mode { COMPLETE, PARTIAL1, PARTIAL2, FINAL, HASH, MERGEPARTIAL };
   private Mode mode;
   private java.util.ArrayList<exprNodeDesc> keys;
   private java.util.ArrayList<org.apache.hadoop.hive.ql.plan.aggregationDesc> aggregators;
@@ -63,6 +63,8 @@ public class groupByDesc implements java.io.Serializable {
       return "hash";
     case FINAL:
       return "final";
+    case MERGEPARTIAL:
+      return "mergepartial";
     }
   
     return "unknown";

@@ -47,7 +47,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE.0)
-          mode: final
+          mode: mergepartial
           Select Operator
             expressions:
                   expr: 0

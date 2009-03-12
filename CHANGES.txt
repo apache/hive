@@ -19,6 +19,9 @@ Trunk (unreleased changes)
 
   BUG FIXES
 
+    HIVE-339. Fix count distinct in 1 map-reduce job with map side
+    aggregation. (Namit Jain via zshao)
+
     HIVE-271. Move test-udfs creation to build-common in order to
     fix broken 0.17 build. (athusoo)
     

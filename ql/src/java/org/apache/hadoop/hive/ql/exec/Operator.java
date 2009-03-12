@@ -99,7 +99,7 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     return parentOperators;
   }
 
-  protected String id;
+  transient protected String id;
   protected T conf;
   protected boolean done;
 

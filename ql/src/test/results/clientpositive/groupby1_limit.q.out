@@ -37,7 +37,7 @@ STAGE PLANS:
           keys:
                 expr: KEY.0
                 type: string
-          mode: final
+          mode: mergepartial
           Select Operator
             expressions:
                   expr: 0
@@ -56,7 +56,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive1/hive/build/ql/tmp/262628633/486992722.10001 
+        /data/users/njain/hive1/hive/build/ql/tmp/746802126/1233171241.10001 
           Reduce Output Operator
             sort order: 
             tag: -1

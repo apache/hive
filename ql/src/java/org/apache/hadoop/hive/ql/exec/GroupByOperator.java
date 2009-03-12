@@ -407,10 +407,10 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     // Total number of input rows is needed for hash aggregation only
     if (hashAggr) {
       numRowsInput++;
-      // if hash aggregation is not behvaing properly, disable it
+      // if hash aggregation is not behaving properly, disable it
       if (numRowsInput == numRowsCompareHashAggr) {
         numRowsCompareHashAggr += groupbyMapAggrInterval;
-        // map-side aggregation should reduce the entries by atleast half
+        // map-side aggregation should reduce the entries by at-least half
         if ((numRowsHashTbl * 2) > numRowsInput) {
           LOG.warn("Disable Hash Aggr: #hash table = " + numRowsHashTbl + " #total = " + numRowsInput);
           flush(true);

@@ -41,7 +41,7 @@ STAGE PLANS:
                 expr: count(VALUE.2)
                 expr: sum(VALUE.3)
                 expr: min(VALUE.4)
-          mode: final
+          mode: mergepartial
           Select Operator
             expressions:
                   expr: 2

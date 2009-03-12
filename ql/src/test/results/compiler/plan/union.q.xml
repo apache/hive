@@ -28,7 +28,7 @@
              <boolean>true</boolean> 
             </void> 
             <void property="sourceDir"> 
-             <string>/data/users/njain/hive1/hive/ql/../build/ql/tmp/752613561/196516335.10000.insclause-0</string> 
+             <string>/data/users/njain/hive1/hive/ql/../build/ql/tmp/672033374/77772175.10000.insclause-0</string> 
             </void> 
             <void property="targetDir"> 
              <string>../build/ql/test/data/warehouse/union.out</string> 
@@ -82,7 +82,7 @@
                                <int>1</int> 
                               </void> 
                               <void property="dirName"> 
-                               <string>/data/users/njain/hive1/hive/ql/../build/ql/tmp/752613561/196516335.10000.insclause-0</string> 
+                               <string>/data/users/njain/hive1/hive/ql/../build/ql/tmp/672033374/77772175.10000.insclause-0</string> 
                               </void> 
                               <void property="tableInfo"> 
                                <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 

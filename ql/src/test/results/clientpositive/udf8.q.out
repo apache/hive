@@ -32,7 +32,7 @@ STAGE PLANS:
                 expr: sum(VALUE.0)
                 expr: count(VALUE.1)
                 expr: avg(VALUE.2)
-          mode: final
+          mode: mergepartial
           Select Operator
             expressions:
                   expr: 2

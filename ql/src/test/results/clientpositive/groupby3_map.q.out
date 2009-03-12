@@ -47,10 +47,10 @@ STAGE PLANS:
           aggregations:
                 expr: sum(VALUE.0)
                 expr: max(VALUE.1)
-                expr: avg(VALUE.2)
+                expr: avg(DISTINCT UDFToDouble(KEY.0))
                 expr: min(VALUE.3)
                 expr: avg(VALUE.4)
-          mode: final
+          mode: mergepartial
           Select Operator
             expressions:
                   expr: 0

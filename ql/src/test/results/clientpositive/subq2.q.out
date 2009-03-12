@@ -40,7 +40,7 @@ STAGE PLANS:
           keys:
                 expr: KEY.0
                 type: string
-          mode: final
+          mode: mergepartial
           Select Operator
             expressions:
                   expr: 0

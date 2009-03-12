@@ -457,7 +457,7 @@
               <void property="conf"> 
                <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                 <void property="dirName"> 
-                 <string>/data/users/njain/hive1/hive/ql/../build/ql/tmp/889541974.10001.insclause-0</string> 
+                 <string>/data/users/njain/hive1/hive/ql/../build/ql/tmp/272705795.10001.insclause-0</string> 
                 </void> 
                 <void property="tableInfo"> 
                  <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -584,7 +584,7 @@
         </void> 
         <void property="mode"> 
          <object class="org.apache.hadoop.hive.ql.plan.groupByDesc$Mode" method="valueOf"> 
-          <string>FINAL</string> 
+          <string>MERGEPARTIAL</string> 
          </object> 
         </void> 
        </object> 

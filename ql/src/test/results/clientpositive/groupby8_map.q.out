@@ -54,11 +54,11 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
+                expr: count(DISTINCT KEY.1)
           keys:
                 expr: KEY.0
                 type: string
-          mode: final
+          mode: mergepartial
           Select Operator
             expressions:
                   expr: 0
@@ -93,7 +93,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive1/hive/build/ql/tmp/1475395360/1425775.10002 
+        /data/users/njain/hive1/hive/build/ql/tmp/1165802094/307152394.10002 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -111,11 +111,11 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
+                expr: count(DISTINCT KEY.1)
           keys:
                 expr: KEY.0
                 type: string
-          mode: final
+          mode: mergepartial
           Select Operator
             expressions:
                   expr: 0
