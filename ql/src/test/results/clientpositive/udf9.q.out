@@ -1,0 +1,67 @@
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION DATEDIFF '2008-12-31' '2009-01-01')) (TOK_SELEXPR (TOK_FUNCTION DATEDIFF '2008-03-01' '2008-02-28')) (TOK_SELEXPR (TOK_FUNCTION DATEDIFF '2007-03-01' '2007-01-28')) (TOK_SELEXPR (TOK_FUNCTION DATEDIFF '2008-03-01 23:59:59' '2008-03-02 00:00:00')) (TOK_SELEXPR (TOK_FUNCTION DATE_ADD '2008-12-31' 1)) (TOK_SELEXPR (TOK_FUNCTION DATE_ADD '2008-12-31' 365)) (TOK_SELEXPR (TOK_FUNCTION DATE_ADD '2008-02-28' 2)) (TOK_SELEXPR (TOK_FUNCTION DATE_ADD '2009-02-28' 2)) (TOK_SELEXPR (TOK_FUNCTION DATE_ADD '2007-02-28' 365)) (TOK_SELEXPR (TOK_FUNCTION DATE_ADD '2007-02-28 23:59:59' 730)) (TOK_SELEXPR (TOK_FUNCTION DATE_SUB '2009-01-01' 1)) (TOK_SELEXPR (TOK_FUNCTION DATE_SUB '2009-01-01' 365)) (TOK_SELEXPR (TOK_FUNCTION DATE_SUB '2008-02-28' 2)) (TOK_SELEXPR (TOK_FUNCTION DATE_SUB '2009-02-28' 2)) (TOK_SELEXPR (TOK_FUNCTION DATE_SUB '2007-02-28' 365)) (TOK_SELEXPR (TOK_FUNCTION DATE_SUB '2007-02-28 01:12:34' 730))) (TOK_WHERE (= (TOK_COLREF src key) 86))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src 
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(0) = UDFToDouble(86))
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: datediff('2008-12-31', '2009-01-01')
+                        type: int
+                        expr: datediff('2008-03-01', '2008-02-28')
+                        type: int
+                        expr: datediff('2007-03-01', '2007-01-28')
+                        type: int
+                        expr: datediff('2008-03-01 23:59:59', '2008-03-02 00:00:00')
+                        type: int
+                        expr: date_add('2008-12-31', 1)
+                        type: string
+                        expr: date_add('2008-12-31', 365)
+                        type: string
+                        expr: date_add('2008-02-28', 2)
+                        type: string
+                        expr: date_add('2009-02-28', 2)
+                        type: string
+                        expr: date_add('2007-02-28', 365)
+                        type: string
+                        expr: date_add('2007-02-28 23:59:59', 730)
+                        type: string
+                        expr: date_sub('2009-01-01', 1)
+                        type: string
+                        expr: date_sub('2009-01-01', 365)
+                        type: string
+                        expr: date_sub('2008-02-28', 2)
+                        type: string
+                        expr: date_sub('2009-02-28', 2)
+                        type: string
+                        expr: date_sub('2007-02-28', 365)
+                        type: string
+                        expr: date_sub('2007-02-28 01:12:34', 730)
+                        type: string
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+-1	2	32	-1	2009-01-01	2009-12-31	2008-03-01	2009-03-02	2008-02-28	2009-02-27	2008-12-31	2008-01-02	2008-02-28	2009-02-27	2006-02-28	2005-02-28
