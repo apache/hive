@@ -16,7 +16,9 @@ FROM (
   FROM (SELECT * FROM src LIMIT 1) s2
 ) a;
 
+CREATE TABLE union_out (id int);
 
+insert overwrite table union_out 
 SELECT *
 FROM (
   SELECT 1 AS id
@@ -33,3 +35,5 @@ FROM (
   SELECT 4 AS id
   FROM (SELECT * FROM src LIMIT 1) s2
 ) a;
+
+select * from union_out cluster by id;

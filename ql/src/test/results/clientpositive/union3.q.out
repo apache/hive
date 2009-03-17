@@ -48,7 +48,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/zshao/sync/apache-trunk-HIVE-308/build/ql/tmp/249317218/968169738.10002 
+        /mnt/vol/devrs004.snc1/jssarma/projects/hive_patches/build/ql/tmp/1045942737/136575081.10002 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -148,7 +148,7 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/zshao/sync/apache-trunk-HIVE-308/build/ql/tmp/249317218/968169738.10003 
+        /mnt/vol/devrs004.snc1/jssarma/projects/hive_patches/build/ql/tmp/1045942737/136575081.10003 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -216,7 +216,7 @@ STAGE PLANS:
       limit: -1
 
 
+1
+2
 3
 4
-2
-1
