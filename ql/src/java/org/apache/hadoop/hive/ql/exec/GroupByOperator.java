@@ -66,6 +66,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
 
   transient protected ArrayList<ObjectInspector> objectInspectors;
   transient protected ObjectInspector outputObjectInspector;
+  transient ArrayList<String> fieldNames;
 
   // Used by sort-based GroupBy: Mode = COMPLETE, PARTIAL1, PARTIAL2
   transient protected ArrayList<Object> currentKeys;
@@ -212,6 +213,13 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
       objectInspectors.add(ObjectInspectorFactory.getStandardPrimitiveObjectInspector(
           aggregationsEvaluateMethods[i].getReturnType()));
     }
+
+    fieldNames = new ArrayList<String>(objectInspectors.size());
+    for(int i=0; i<objectInspectors.size(); i++) {
+      fieldNames.add(Integer.valueOf(i).toString());
+    }
+    outputObjectInspector = 
+      ObjectInspectorFactory.getStandardStructObjectInspector(fieldNames, objectInspectors);
     
     firstRow = true;
     // estimate the number of hash table entries based on the size of each entry. Since the size of a entry
@@ -437,12 +445,9 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
           objectInspectors.set(i, tempInspectableObject.oi);
         }
       }
+
       if (firstRow) {
         firstRow = false;
-        ArrayList<String> fieldNames = new ArrayList<String>(objectInspectors.size());
-        for(int i=0; i<objectInspectors.size(); i++) {
-          fieldNames.add(Integer.valueOf(i).toString());
-        }
         outputObjectInspector = 
           ObjectInspectorFactory.getStandardStructObjectInspector(fieldNames, objectInspectors);
       }
@@ -619,23 +624,42 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
   public void close(boolean abort) throws HiveException {
     if (!abort) {
       try {
-        if (hashAggregations != null) {
-          // hash-based aggregations
-          for (ArrayList<Object> key: hashAggregations.keySet()) {
-            forward(key, hashAggregations.get(key));
+        // If there is no grouping key and no row came to this operator
+        if (firstRow && (keyFields.length == 0)) {
+          firstRow = false;
+
+          // There is no grouping key - simulate a null row
+          // This is based on the assumption that a null row is ignored by aggregation functions
+          for(int ai=0; ai<aggregations.length; ai++) {
+            // Calculate the parameters 
+            Object[] o = new Object[aggregationParameterFields[ai].length];
+            for(int pi=0; pi<aggregationParameterFields[ai].length; pi++) 
+              o[pi] = null;
+            FunctionRegistry.invoke(aggregationsAggregateMethods[ai], aggregations[ai], o);
           }
-          hashAggregations.clear();
+          
+          // create dummy keys - size 0
+          forward(new ArrayList<Object>(0), aggregations);
         }
-        else if (aggregations != null) {
-          // sort-based aggregations
-          if (currentKeys != null) {
-            forward(currentKeys, aggregations);
+        else {
+          if (hashAggregations != null) {
+            // hash-based aggregations
+            for (ArrayList<Object> key: hashAggregations.keySet()) {
+              forward(key, hashAggregations.get(key));
+            }
+            hashAggregations.clear();
           }
-          currentKeys = null;
-        } else {
-          // The GroupByOperator is not initialized, which means there is no data
-          // (since we initialize the operators when we see the first record).
-          // Just do nothing here.
+          else if (aggregations != null) {
+            // sort-based aggregations
+            if (currentKeys != null) {
+              forward(currentKeys, aggregations);
+            }
+            currentKeys = null;
+          } else {
+            // The GroupByOperator is not initialized, which means there is no data
+            // (since we initialize the operators when we see the first record).
+            // Just do nothing here.
+          }
         }
       } catch (Exception e) {
         e.printStackTrace();

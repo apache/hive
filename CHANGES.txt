@@ -37,6 +37,9 @@ Trunk (unreleased changes)
     HIVE-320. Fix intermittent nullpointer exception in count(DISTINCT).
     (Namit Jain via athusoo)
 
+    HIVE-124. Fix empty aggregations to return 1 row instead of
+    nothing. (namit)
+
 Release 0.2.0 - Unreleased
 
   INCOMPATIBLE CHANGES

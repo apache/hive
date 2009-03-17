@@ -1,0 +1,312 @@
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_COLREF x key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (> (TOK_COLREF x key) 9999)) (TOK_GROUPBY (TOK_COLREF x key))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        x 
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(0) > UDFToDouble(9999))
+                    type: boolean
+                Group By Operator
+                  aggregations:
+                        expr: count(1)
+                  keys:
+                        expr: 0
+                        type: string
+                  mode: hash
+                  Reduce Output Operator
+                    key expressions:
+                          expr: 0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: rand()
+                          type: double
+                    tag: -1
+                    value expressions:
+                          expr: 1
+                          type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE.0)
+          keys:
+                expr: KEY.0
+                type: string
+          mode: partial2
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.mapred.SequenceFileOutputFormat
+                name: binary_table
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        /data/users/njain/hive3/hive3/build/ql/tmp/171534224/359487335.10002 
+          Reduce Output Operator
+            key expressions:
+                  expr: 0
+                  type: string
+            sort order: +
+            Map-reduce partition columns:
+                  expr: 0
+                  type: string
+            tag: -1
+            value expressions:
+                  expr: 1
+                  type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE.0)
+          keys:
+                expr: KEY.0
+                type: string
+          mode: final
+          Select Operator
+            expressions:
+                  expr: 0
+                  type: string
+                  expr: 1
+                  type: bigint
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_COLREF x key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (> (TOK_COLREF x key) 9999)) (TOK_GROUPBY (TOK_COLREF x key))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        x 
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(0) > UDFToDouble(9999))
+                    type: boolean
+                Group By Operator
+                  aggregations:
+                        expr: count(1)
+                  keys:
+                        expr: 0
+                        type: string
+                  mode: hash
+                  Reduce Output Operator
+                    key expressions:
+                          expr: 0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: 0
+                          type: string
+                    tag: -1
+                    value expressions:
+                          expr: 1
+                          type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE.0)
+          keys:
+                expr: KEY.0
+                type: string
+          mode: mergepartial
+          Select Operator
+            expressions:
+                  expr: 0
+                  type: string
+                  expr: 1
+                  type: bigint
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_COLREF x key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (> (TOK_COLREF x key) 9999)) (TOK_GROUPBY (TOK_COLREF x key))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        x 
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(0) > UDFToDouble(9999))
+                    type: boolean
+                Reduce Output Operator
+                  key expressions:
+                        expr: 0
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: rand()
+                        type: double
+                  tag: -1
+                  value expressions:
+                        expr: 1
+                        type: int
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE.0)
+          keys:
+                expr: KEY.0
+                type: string
+          mode: partial1
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.mapred.SequenceFileOutputFormat
+                name: binary_table
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        /data/users/njain/hive3/hive3/build/ql/tmp/661842291/455881958.10002 
+          Reduce Output Operator
+            key expressions:
+                  expr: 0
+                  type: string
+            sort order: +
+            Map-reduce partition columns:
+                  expr: 0
+                  type: string
+            tag: -1
+            value expressions:
+                  expr: 1
+                  type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE.0)
+          keys:
+                expr: KEY.0
+                type: string
+          mode: final
+          Select Operator
+            expressions:
+                  expr: 0
+                  type: string
+                  expr: 1
+                  type: bigint
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_COLREF x key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (> (TOK_COLREF x key) 9999)) (TOK_GROUPBY (TOK_COLREF x key))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        x 
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(0) > UDFToDouble(9999))
+                    type: boolean
+                Reduce Output Operator
+                  key expressions:
+                        expr: 0
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: 0
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: 1
+                        type: int
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE.0)
+          keys:
+                expr: KEY.0
+                type: string
+          mode: complete
+          Select Operator
+            expressions:
+                  expr: 0
+                  type: string
+                  expr: 1
+                  type: bigint
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
