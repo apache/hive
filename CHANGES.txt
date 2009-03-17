@@ -40,6 +40,9 @@ Trunk (unreleased changes)
     HIVE-124. Fix empty aggregations to return 1 row instead of
     nothing. (namit)
 
+    HIVE-347. Fix lot of partition scans in strict mode in case of error in 
+    partition specification error. (namit)
+
 Release 0.2.0 - Unreleased
 
   INCOMPATIBLE CHANGES
