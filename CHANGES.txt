@@ -34,6 +34,9 @@ Trunk (unreleased changes)
     HIVE-334. Make union3 test output deterministic.
     (Joydeep Sen Sarma via athusoo)
 
+    HIVE-320. Fix intermittent nullpointer exception in count(DISTINCT).
+    (Namit Jain via athusoo)
+
 Release 0.2.0 - Unreleased
 
   INCOMPATIBLE CHANGES

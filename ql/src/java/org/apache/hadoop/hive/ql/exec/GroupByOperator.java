@@ -384,7 +384,13 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
             differentParameters = true;
           else {
             for(int pi=0; pi<o.length; pi++) {
-              if (!o[pi].equals(lastInvoke[ai][pi])) {
+              if (o[pi] == null) {
+                if (lastInvoke[ai][pi] != null) {
+                  differentParameters = true;
+                  break;
+                }
+              }
+              else if (!o[pi].equals(lastInvoke[ai][pi])) {
                 differentParameters = true;
                 break;
               }
