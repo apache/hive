@@ -64,7 +64,7 @@ public class $className extends TestCase {
 
       ecode = qt.checkCliDriverResults("$fname");
       if (ecode != 0) {
-        fail("Client execution results dailed with error code = " + ecode);
+        fail("Client execution results failed with error code = " + ecode);
       }
     }
     catch (Throwable e) {

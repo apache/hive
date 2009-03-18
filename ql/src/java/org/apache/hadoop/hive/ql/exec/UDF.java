@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import org.apache.hadoop.hive.ql.udf.UDFType;
+
 /**
  * A User-defined function (UDF) for the use with Hive.
  * 
@@ -33,6 +35,7 @@ package org.apache.hadoop.hive.ql.exec;
  * 
  *    "evaluate" should never be a void method.  However it can return "null" if needed.
  */
+@UDFType(deterministic=true)
 public class UDF {
   
   /**

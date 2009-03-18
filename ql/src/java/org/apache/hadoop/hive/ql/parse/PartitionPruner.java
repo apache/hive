@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.ql.udf.UDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.UDFOPNot;
 import org.apache.hadoop.hive.ql.udf.UDFOPOr;
+import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -164,13 +165,14 @@ public class PartitionPruner {
           // NOTE: In the future all UDFs that treats null value as UNKNOWN (both in parameters and return 
           // values) should derive from a common base class UDFNullAsUnknown, so instead of listing the classes
           // here we would test whether a class is derived from that base class. 
-        } else {
-          // If any child is null, set this node to null
-          if (mightBeUnknown(desc)) {
-            LOG.trace("Pruner function might be unknown: " + expr.toStringTree());
-            desc = new exprNodeConstantDesc(desc.getTypeInfo(), null);
-          }
-        }      
+        } else if ((desc instanceof exprNodeFuncDesc && 
+            ((exprNodeFuncDesc)desc).getUDFClass().getAnnotation(UDFType.class) != null && 
+            ((exprNodeFuncDesc)desc).getUDFClass().getAnnotation(UDFType.class).deterministic() == false) ||
+            mightBeUnknown(desc)) {
+           // If its a non-deterministic UDF or if any child is null, set this node to null
+          LOG.trace("Pruner function might be unknown: " + expr.toStringTree());
+          desc = new exprNodeConstantDesc(desc.getTypeInfo(), null);    
+        }
         break;
       }
     }

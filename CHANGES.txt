@@ -52,6 +52,9 @@ Trunk (unreleased changes)
     HIVE-285. Fix to disallow union of different schemas.
     (Raghotham Murthy via namit)
 
+    HIVE-253. Fix to disallow computation of rand() at compilation stage.
+    (Raghotham Murthy via namit)
+
 Release 0.2.0 - Unreleased
 
   INCOMPATIBLE CHANGES
