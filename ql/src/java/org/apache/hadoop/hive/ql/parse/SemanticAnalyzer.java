@@ -2902,6 +2902,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException("Schema of both sides of union should match: "
             + field + ":" + lInfo.getInternalName() + " " + rInfo.getInternalName());
       }
+      if (!lInfo.getType().getTypeName().equals(rInfo.getType().getTypeName())) {
+        throw new SemanticException("Schema of both sides of union should match: Column "
+            + field + " is of type " + lInfo.getType().getTypeName() + 
+            " on first table and type " + rInfo.getType().getTypeName() + " on second table");
+      }
     }
 
     // construct the forward operator
