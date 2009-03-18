@@ -46,6 +46,9 @@ Trunk (unreleased changes)
     HIVE-251. Throw an error to the CLI if a user defined script fails in
     TRANSFORM, MAP or REDUCE commands. (athusoo) 
 
+    HIVE-317. Fix HiveServer to accept 1 argument for port.
+    (Min Zhou via athusoo)
+
 Release 0.2.0 - Unreleased
 
   INCOMPATIBLE CHANGES

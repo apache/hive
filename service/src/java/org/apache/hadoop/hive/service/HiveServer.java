@@ -200,8 +200,8 @@ public class HiveServer extends ThriftHive {
   public static void main(String[] args) {
     try {
       int port = 10000;
-      if (args.length > 1) {
-        port = Integer.getInteger(args[0]);
+      if (args.length >= 1) {
+        port = Integer.parseInt(args[0]);
       }
       TServerTransport serverTransport = new TServerSocket(port);
       Iface handler = new HiveServerHandler();
