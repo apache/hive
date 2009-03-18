@@ -55,6 +55,9 @@ Trunk (unreleased changes)
     HIVE-253. Fix to disallow computation of rand() at compilation stage.
     (Raghotham Murthy via namit)
 
+    HIVE-350. Fix wrong order of aggregations in explain plan.
+    (namit)
+
 Release 0.2.0 - Unreleased
 
   INCOMPATIBLE CHANGES

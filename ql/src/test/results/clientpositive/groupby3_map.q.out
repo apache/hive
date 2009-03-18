@@ -17,10 +17,10 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: sum(UDFToDouble(substr(0, 5)))
-                      expr: max(substr(0, 5))
-                      expr: avg(DISTINCT UDFToDouble(substr(0, 5)))
-                      expr: min(substr(0, 5))
                       expr: avg(UDFToDouble(substr(0, 5)))
+                      expr: avg(DISTINCT UDFToDouble(substr(0, 5)))
+                      expr: max(substr(0, 5))
+                      expr: min(substr(0, 5))
                 keys:
                       expr: substr(0, 5)
                       type: string
@@ -46,22 +46,22 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: sum(VALUE.0)
-                expr: max(VALUE.1)
+                expr: avg(VALUE.1)
                 expr: avg(DISTINCT UDFToDouble(KEY.0))
-                expr: min(VALUE.3)
-                expr: avg(VALUE.4)
+                expr: max(VALUE.3)
+                expr: min(VALUE.4)
           mode: mergepartial
           Select Operator
             expressions:
                   expr: 0
                   type: double
-                  expr: 4
+                  expr: 1
                   type: double
                   expr: 2
                   type: double
-                  expr: 1
-                  type: string
                   expr: 3
+                  type: string
+                  expr: 4
                   type: string
             File Output Operator
               compressed: false

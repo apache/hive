@@ -13,46 +13,46 @@ STAGE PLANS:
             Select Operator
               Group By Operator
                 aggregations:
-                      expr: max(UDFToInteger(''))
-                      expr: avg(UDFToDouble(UDFToInteger('')))
                       expr: count(UDFToInteger(''))
                       expr: sum(UDFToDouble(UDFToInteger('')))
+                      expr: avg(UDFToDouble(UDFToInteger('')))
                       expr: min(UDFToInteger(''))
+                      expr: max(UDFToInteger(''))
                 mode: hash
                 Reduce Output Operator
                   sort order: 
                   tag: -1
                   value expressions:
                         expr: 0
-                        type: int
-                        expr: 1
-                        type: string
-                        expr: 2
                         type: bigint
-                        expr: 3
+                        expr: 1
                         type: double
+                        expr: 2
+                        type: string
+                        expr: 3
+                        type: int
                         expr: 4
                         type: int
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: max(VALUE.0)
-                expr: avg(VALUE.1)
-                expr: count(VALUE.2)
-                expr: sum(VALUE.3)
-                expr: min(VALUE.4)
+                expr: count(VALUE.0)
+                expr: sum(VALUE.1)
+                expr: avg(VALUE.2)
+                expr: min(VALUE.3)
+                expr: max(VALUE.4)
           mode: mergepartial
           Select Operator
             expressions:
-                  expr: 2
+                  expr: 0
                   type: bigint
-                  expr: 3
-                  type: double
                   expr: 1
                   type: double
-                  expr: 4
+                  expr: 2
+                  type: double
+                  expr: 3
                   type: int
-                  expr: 0
+                  expr: 4
                   type: int
             File Output Operator
               compressed: false

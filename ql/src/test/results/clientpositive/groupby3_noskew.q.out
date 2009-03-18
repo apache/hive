@@ -24,22 +24,22 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: sum(UDFToDouble(KEY.0))
-                expr: max(KEY.0)
-                expr: avg(DISTINCT UDFToDouble(KEY.0))
-                expr: min(KEY.0)
                 expr: avg(UDFToDouble(KEY.0))
+                expr: avg(DISTINCT UDFToDouble(KEY.0))
+                expr: max(KEY.0)
+                expr: min(KEY.0)
           mode: complete
           Select Operator
             expressions:
                   expr: 0
                   type: double
-                  expr: 4
+                  expr: 1
                   type: double
                   expr: 2
                   type: double
-                  expr: 1
-                  type: string
                   expr: 3
+                  type: string
+                  expr: 4
                   type: string
             File Output Operator
               compressed: false

@@ -12,34 +12,34 @@ STAGE PLANS:
         dest1 
             Group By Operator
               aggregations:
+                    expr: avg(UDFToDouble(c1))
                     expr: sum(UDFToDouble(c1))
                     expr: count(c1)
-                    expr: avg(UDFToDouble(c1))
               mode: hash
               Reduce Output Operator
                 sort order: 
                 tag: -1
                 value expressions:
                       expr: 0
-                      type: double
-                      expr: 1
-                      type: bigint
-                      expr: 2
                       type: string
+                      expr: 1
+                      type: double
+                      expr: 2
+                      type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: sum(VALUE.0)
-                expr: count(VALUE.1)
-                expr: avg(VALUE.2)
+                expr: avg(VALUE.0)
+                expr: sum(VALUE.1)
+                expr: count(VALUE.2)
           mode: mergepartial
           Select Operator
             expressions:
-                  expr: 2
-                  type: double
                   expr: 0
                   type: double
                   expr: 1
+                  type: double
+                  expr: 2
                   type: bigint
             File Output Operator
               compressed: false

@@ -24,8 +24,8 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: sum(UDFToDouble(KEY.1))
                 expr: count(DISTINCT KEY.1)
+                expr: sum(UDFToDouble(KEY.1))
           keys:
                 expr: KEY.0
                 type: string
@@ -34,9 +34,9 @@ STAGE PLANS:
             expressions:
                   expr: 0
                   type: string
-                  expr: 2
+                  expr: 1
                   type: bigint
-                  expr: concat(0, UDFToString(1))
+                  expr: concat(0, UDFToString(2))
                   type: string
             File Output Operator
               compressed: false
