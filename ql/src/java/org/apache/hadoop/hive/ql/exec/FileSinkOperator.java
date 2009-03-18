@@ -75,7 +75,8 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
           outWriter.close(abort);
           commit();
         } catch (IOException e) {
-          throw new HiveException("Error in committing output in file: "+ outPath.toString());
+          // Don't throw an exception, just ignore and return
+          return;
         }
       }
     } else {

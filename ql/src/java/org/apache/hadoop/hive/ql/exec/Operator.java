@@ -262,17 +262,18 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   }
 
   public void close(boolean abort) throws HiveException {
-    try {
-      logStats();
-      if(childOperators == null)
-        return;
+      try {
+        logStats();
+        if(childOperators == null)
+          return;
 
-      for(Operator<? extends Serializable> op: childOperators) {
-        op.close(abort);
+        for(Operator<? extends Serializable> op: childOperators) {
+          op.close(abort);
+        }
+      } catch (HiveException e) {
+        e.printStackTrace();
+        throw e;
       }
-
-    } catch (HiveException e) {
-    }
   }
 
   /**

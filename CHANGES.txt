@@ -43,6 +43,9 @@ Trunk (unreleased changes)
     HIVE-347. Fix lot of partition scans in strict mode in case of error in 
     partition specification error. (namit)
 
+    HIVE-251. Throw an error to the CLI if a user defined script fails in
+    TRANSFORM, MAP or REDUCE commands. (athusoo) 
+
 Release 0.2.0 - Unreleased
 
   INCOMPATIBLE CHANGES

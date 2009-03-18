@@ -3,22 +3,26 @@ CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE;
 EXPLAIN
 FROM (
   FROM src
-  MAP src.key % 2, src.key % 5
+  MAP src.key, src.key 
   USING 'cat'
-  CLUSTER BY key
+  DISTRIBUTE BY key
+  SORT BY key, value
 ) tmap
 INSERT OVERWRITE TABLE dest1
 REDUCE tmap.key, tmap.value
-USING 'uniq -c | sed "s@^ *@@" | sed "s@\t@_@" | sed "s@ @\t@"'
+USING '../data/scripts/input20_script'
 AS key, value;
 
 FROM (
   FROM src
-  MAP src.key % 2, src.key % 5
-  USING 'cat'
-  CLUSTER BY key
+  MAP src.key, src.key
+  USING 'cat' 
+  DISTRIBUTE BY key
+  SORT BY key, value
 ) tmap
 INSERT OVERWRITE TABLE dest1
 REDUCE tmap.key, tmap.value
-USING 'uniq -c | sed "s@^ *@@" | sed "s@\t@_@" | sed "s@ @\t@"'
+USING '../data/scripts/input20_script'
 AS key, value;
+
+SELECT * FROM dest1 SORT BY key, value;
