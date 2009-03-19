@@ -185,19 +185,9 @@ public class GenMapRedUtils {
         // pass both confirmed and unknown partitions through the map-reduce framework
         PartitionPruner.PrunedPartitionList partsList = pruner.prune();
 
-        // If all partitions are unknown, throw an error. 
-        if ((opProcCtx.getParseCtx().getConf().getVar(HiveConf.ConfVars.HIVEPARTITIONPRUNER).equalsIgnoreCase("strict")) &&
-            (partsList.getConfirmedPartns().size() == 0) &&
-            (partsList.getUnknownPartns().size() != 0))
-          throw new SemanticException(ErrorMsg.INCORRECT_PARTITION_PREDICATE.getMsg(" for Alias " + alias_id));
-
         parts = partsList.getConfirmedPartns();
         parts.addAll(partsList.getUnknownPartns());
-        
-      } catch (SemanticException e) {
-        throw e;
-      }
-      catch (HiveException e) {
+      } catch (HiveException e) {
         // Has to use full name to make sure it does not conflict with org.apache.commons.lang.StringUtils
         LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
         throw new SemanticException(e.getMessage(), e);

@@ -58,6 +58,9 @@ Trunk (unreleased changes)
     HIVE-350. Fix wrong order of aggregations in explain plan.
     (namit)
 
+    HIVE-347. undo for Fix lot of partition scans in strict mode in case of error in 
+    partition specification error. (namit)
+
 Release 0.2.0 - Unreleased
 
   INCOMPATIBLE CHANGES

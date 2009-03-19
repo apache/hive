@@ -60,7 +60,6 @@ public enum ErrorMsg {
   SAMPLE_RESTRICTION("Cannot Sample on More Than Two Columns"),
   SAMPLE_COLUMN_NOT_FOUND("Sample Column Not Found"),
   NO_PARTITION_PREDICATE("No Partition Predicate Found"),
-  INCORRECT_PARTITION_PREDICATE("Incorrect Partition Predicate Found, probably wrong type,"),
   INVALID_DOT(". operator is only supported on struct or list of struct types"),
   INVALID_TBL_DDL_SERDE("Either list of columns or a custom serializer should be specified"),
   TARGET_TABLE_COLUMN_MISMATCH("Cannot insert into target table because column number/types are different"),
@@ -120,10 +119,6 @@ public enum ErrorMsg {
 
   String getMsg() {
     return mesg;
-  }
-
-  public String getMsg(String reason) {
-    return mesg + " " + reason;
   }
 
 }
