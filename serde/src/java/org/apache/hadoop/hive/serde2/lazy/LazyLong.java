@@ -33,17 +33,16 @@ package org.apache.hadoop.hive.serde2.lazy;
 public class LazyLong extends LazyPrimitive<Long> {
 
   public LazyLong() {
-    super(Long.class);
   }
 
   @Override
-  public Long getPrimitiveObject() {
+  public void init(ByteArrayRef bytes, int start, int length) {
     try {
       // Slower method: convert to String and then convert to Long
       // return Long.valueOf(LazyUtils.convertToString(bytes, start, length));
-      return Long.valueOf(parseLong(bytes, start, length));
+      data = Long.valueOf(parseLong(bytes.getData(), start, length));
     } catch (NumberFormatException e) {
-      return null;
+      data = null;
     }
   }
 
@@ -76,7 +75,7 @@ public class LazyLong extends LazyPrimitive<Long> {
    *            a UTF-8 encoded string representation of a long quantity.
    * @param radix
    *            the base to use for conversion.
-   * @return long the value represented by the argument
+   * @return the value represented by the argument
    * @exception NumberFormatException
    *                if the argument could not be parsed as an long quantity.
    */
@@ -104,6 +103,27 @@ public class LazyLong extends LazyPrimitive<Long> {
     return parse(bytes, start, length, offset, radix, negative);
   }
 
+  /**
+  /**
+   * Parses the string argument as if it was an long value and returns the
+   * result. Throws NumberFormatException if the string does not represent an
+   * long quantity. The second argument specifies the radix to use when
+   * parsing the value.
+   * 
+   * @param bytes
+   * @param start
+   * @param length
+   *            a UTF-8 encoded string representation of a long quantity.
+   * @param offset
+   *            the starting position after the sign (if exists)
+   * @param radix
+   *            the base to use for conversion.
+   * @param negative
+   *            whether the number is negative.
+   * @return the value represented by the argument
+   * @exception NumberFormatException
+   *                if the argument could not be parsed as an long quantity.
+   */
   private static long parse(byte[] bytes, int start, int length, int offset, int radix,
       boolean negative) {
     long max = Long.MIN_VALUE / radix;

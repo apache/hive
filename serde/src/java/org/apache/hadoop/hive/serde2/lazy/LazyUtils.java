@@ -18,31 +18,9 @@
 package org.apache.hadoop.hive.serde2.lazy;
 
 import java.nio.charset.CharacterCodingException;
-
 import org.apache.hadoop.io.Text;
 
 public class LazyUtils {
-
-  /**
-   * Create a lazy primitive class given the java class. 
-   */
-  public static LazyPrimitive<?> createLazyPrimitiveClass(Class<?> c) {
-    if (String.class.equals(c)) {
-      return new LazyString();
-    } else if (Integer.class.equals(c)) {
-      return new LazyInteger();
-    } else if (Double.class.equals(c)) {
-      return new LazyDouble();
-    } else if (Byte.class.equals(c)) {
-      return new LazyByte();
-    } else if (Short.class.equals(c)) {
-      return new LazyShort();
-    } else if (Long.class.equals(c)) {
-      return new LazyLong();
-    } else {
-      return null;
-    }
-  }
 
   /**
    * Returns the digit represented by character b.
@@ -90,6 +68,10 @@ public class LazyUtils {
   
   /**
    * Convert a UTF-8 byte array to String.
+   * @param bytes  The byte[] containing the UTF-8 String.
+   * @param start  The start position inside the bytes.
+   * @param length The length of the data, starting from "start"
+   * @return The unicode String
    */
   public static String convertToString(byte[] bytes, int start, int length) {
     try {

@@ -51,10 +51,10 @@ STAGE PLANS:
                       type: string
       Needs Tagging: true
       Path -> Alias:
-        file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/src 
-        file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
+        file:/data/users/zshao/sync/apache-trunk-HIVE-337-trunk/build/ql/test/data/warehouse/src 
+        file:/data/users/zshao/sync/apache-trunk-HIVE-337-trunk/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
       Path -> Partition:
-        file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/src 
+        file:/data/users/zshao/sync/apache-trunk-HIVE-337-trunk/build/ql/test/data/warehouse/src 
           Partition
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -69,10 +69,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                location file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/src
+                location file:/data/users/zshao/sync/apache-trunk-HIVE-337-trunk/build/ql/test/data/warehouse/src
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
-        file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
+        file:/data/users/zshao/sync/apache-trunk-HIVE-337-trunk/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
           Partition
             partition values:
               ds 2008-04-08
@@ -91,7 +91,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                location file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/zshao/sync/apache-trunk-HIVE-337-trunk/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
       Reduce Operator Tree:
@@ -111,32 +111,38 @@ STAGE PLANS:
                     type: string
                     expr: 4
                     type: string
-              File Output Operator
-                compressed: false
-                GlobalTableId: 1
-                directory: /data/users/suresh/hive_external/ql/../build/ql/tmp/1684503332.10000.insclause-0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                    properties:
-                      name dest1
-                      columns.types int:string
-                      serialization.ddl struct dest1 { i32 key, string value}
-                      serialization.format 1
-                      columns key,value
-                      bucket_count -1
-                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                      file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                      location file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/dest1
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: dest1
+              Select Operator
+                expressions:
+                      expr: UDFToInteger(0)
+                      type: int
+                      expr: 1
+                      type: string
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 1
+                  directory: /data/users/zshao/sync/apache-trunk-HIVE-337-trunk/ql/../build/ql/tmp/692832157.10000.insclause-0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                      properties:
+                        name dest1
+                        columns.types int:string
+                        serialization.ddl struct dest1 { i32 key, string value}
+                        serialization.format 1
+                        columns key,value
+                        bucket_count -1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                        file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                        location file:/data/users/zshao/sync/apache-trunk-HIVE-337-trunk/build/ql/test/data/warehouse/dest1
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: dest1
 
   Stage: Stage-0
     Move Operator
       tables:
             replace: true
-            source: /data/users/suresh/hive_external/ql/../build/ql/tmp/1684503332.10000.insclause-0
+            source: /data/users/zshao/sync/apache-trunk-HIVE-337-trunk/ql/../build/ql/tmp/692832157.10000.insclause-0
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
@@ -150,7 +156,7 @@ STAGE PLANS:
                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   file.inputformat org.apache.hadoop.mapred.TextInputFormat
                   file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                  location file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/dest1
+                  location file:/data/users/zshao/sync/apache-trunk-HIVE-337-trunk/build/ql/test/data/warehouse/dest1
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: dest1
 

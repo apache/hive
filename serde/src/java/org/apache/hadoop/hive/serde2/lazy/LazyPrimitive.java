@@ -21,17 +21,15 @@ package org.apache.hadoop.hive.serde2.lazy;
 /**
  * LazyPrimitive stores a primitive Object in a LazyObject.
  */
-public abstract class LazyPrimitive<T> extends LazyObject {
+public abstract class LazyPrimitive<T> implements LazyObject {
 
-  Class<T> primitiveClass;
-  
-  protected LazyPrimitive(Class<T> primitiveClass) {
-    this.primitiveClass = primitiveClass;
-  }
-  
+  T data;
+
   /**
    * Returns the actual primitive object represented by this LazyObject.
    */
-  public abstract T getPrimitiveObject();
-  
+  public T getObject() {
+    return data;
+  }
+
 }

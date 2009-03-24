@@ -16,55 +16,49 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.typeinfo;
+package org.apache.hadoop.hive.serde2.typeinfo;
 
 import java.io.Serializable;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 
-
-/** There are limited number of Primitive Types.
- *  All Primitive Types are defined by TypeInfoFactory.isPrimitiveClass().
+/** A List Type has homogeneous elements.  All elements of the List has
+ *  the same TypeInfo which is returned by getListElementTypeInfo.
  *  
  *  Always use the TypeInfoFactory to create new TypeInfo objects, instead
  *  of directly creating an instance of this class. 
  */
-public class PrimitiveTypeInfo extends TypeInfo implements Serializable {
+public class ListTypeInfo extends TypeInfo implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  
-  Class primitiveClass;
+  TypeInfo listElementTypeInfo;
   
   /** For java serialization use only.
    */
-  public PrimitiveTypeInfo() {}
-
+  public ListTypeInfo() {}
+  
   public String getTypeName() {
-    return ObjectInspectorUtils.getClassShortName(primitiveClass);
+    return org.apache.hadoop.hive.serde.Constants.LIST_TYPE_NAME 
+    + "<" + listElementTypeInfo.getTypeName() + ">";
   }
   
-  
   /** For java serialization use only.
    */
-  public void setPrimitiveClass(Class primitiveClass) {
-    this.primitiveClass = primitiveClass;
+  public void setListElementTypeInfo(TypeInfo listElementTypeInfo) {
+    this.listElementTypeInfo = listElementTypeInfo;
   }
   
   /** For TypeInfoFactory use only.
    */
-  PrimitiveTypeInfo(Class primitiveClass) {
-    this.primitiveClass = primitiveClass;
-  }
-  
-  public Category getCategory() {
-    return Category.PRIMITIVE;
+  ListTypeInfo(TypeInfo elementTypeInfo) {
+    this.listElementTypeInfo = elementTypeInfo;
   }
 
-  public Class getPrimitiveClass() {
-    return primitiveClass;
+  public Category getCategory() {
+    return Category.LIST;
+  }  
+
+  public TypeInfo getListElementTypeInfo() {
+    return listElementTypeInfo;
   }
 
   public boolean equals(Object other) {
@@ -74,11 +68,11 @@ public class PrimitiveTypeInfo extends TypeInfo implements Serializable {
     }
     TypeInfo o = (TypeInfo) other;
     return o.getCategory().equals(getCategory())
-        && o.getPrimitiveClass().equals(getPrimitiveClass());
+        && o.getListElementTypeInfo().equals(getListElementTypeInfo());
   }
   
   public int hashCode() {
-    return primitiveClass.hashCode();
+    return listElementTypeInfo.hashCode();
   }
   
 }

@@ -33,21 +33,18 @@ package org.apache.hadoop.hive.serde2.lazy;
 public class LazyByte extends LazyPrimitive<Byte> {
 
   public LazyByte() {
-    super(Byte.class);
   }
-  
+
   @Override
-  public Byte getPrimitiveObject() {
-    if (bytes == null) return null;
+  public void init(ByteArrayRef bytes, int start, int length) {
     try {
       // Slower method: convert to String and then convert to Integer
       // return Byte.valueOf(LazyUtils.convertToString(bytes, start, length));
-      return Byte.valueOf(parseByte(bytes, start, length));
+      data = Byte.valueOf(parseByte(bytes.getData(), start, length));
     } catch (NumberFormatException e) {
-      return null;
+      data = null;
     }
   }
-
   
   /**
    * Parses the string argument as if it was a byte value and returns the
@@ -91,5 +88,6 @@ public class LazyByte extends LazyPrimitive<Byte> {
       }
       throw new NumberFormatException();
   }
-  
+
+
 }

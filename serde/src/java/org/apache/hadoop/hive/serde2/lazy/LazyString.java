@@ -27,18 +27,16 @@ import org.apache.hadoop.io.Text;
 public class LazyString extends LazyPrimitive<String> {
 
   public LazyString() {
-    super(String.class);
   }
 
   @Override
-  public String getPrimitiveObject() {
+  public void init(ByteArrayRef bytes, int start, int length) {
     // In the future, we should allow returning a Text Object to save the UTF-8
     // decoding/encoding, and the creation of new String object.
-    if (bytes == null) return null;
     try {
-      return Text.decode(bytes, start, length);
+      data = Text.decode(bytes.getData(), start, length);
     } catch (CharacterCodingException e) {
-      return null;
+      data = null;
     }
   }
 

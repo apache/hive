@@ -27,22 +27,14 @@ import org.apache.hadoop.io.Text;
  */
 public class LazyDouble extends LazyPrimitive<Double> {
 
-  public LazyDouble() {
-    super(Double.class);
-  }
-  
-  Text text = new Text();
-  
   @Override
-  public Double getPrimitiveObject() {
-    // TODO: replace this by directly parsing the bytes buffer for better performance.
-    if (bytes == null) return null;
+  public void init(ByteArrayRef bytes, int start, int length) {
     try {
-      return Double.valueOf(Text.decode(bytes, start, length));
+      data = Double.valueOf(Text.decode(bytes.getData(), start, length));
     } catch (NumberFormatException e) {
-      return null;
+      data = null;
     } catch (CharacterCodingException e) {
-      return null;
+      data = null;
     }
   }
 

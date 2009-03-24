@@ -39,4 +39,8 @@ public interface MapObjectInspector extends ObjectInspector {
    */
   public Map<?,?> getMap(Object data);
 
+  /**
+   * returns -1 for NULL map.
+   */
+  public int getMapSize(Object data);
 }

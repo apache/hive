@@ -16,15 +16,12 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.typeinfo;
+package org.apache.hadoop.hive.serde2.typeinfo;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 
 /** StructTypeInfo represents the TypeInfo of a struct.
@@ -48,14 +45,14 @@ public class StructTypeInfo extends TypeInfo implements Serializable{
 
   public String getTypeName() {
     StringBuilder sb = new StringBuilder();
-    sb.append("struct{");
+    sb.append("struct<");
     for(int i=0; i<allStructFieldNames.size(); i++) {
       if (i>0) sb.append(",");
       sb.append(allStructFieldNames.get(i));
       sb.append(":");
       sb.append(allStructFieldTypeInfos.get(i).getTypeName());
     }
-    sb.append("}");
+    sb.append(">");
     return sb.toString();
   }
   

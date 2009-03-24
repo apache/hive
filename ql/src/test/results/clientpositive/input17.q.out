@@ -17,13 +17,13 @@ STAGE PLANS:
                     expr: lint
                     type: array<int>
                     expr: lintstring
-                    type: array<struct{myint:int,mystring:string}>
+                    type: array<struct<myint:int,mystring:string>>
               Select Operator
                 expressions:
                       expr: (0 + 1[0])
                       type: int
                       expr: 2[0]
-                      type: struct{myint:int,mystring:string}
+                      type: struct<myint:int,mystring:string>
                 Transform Operator
                   command: /bin/cat
                   output info:
@@ -51,14 +51,20 @@ STAGE PLANS:
                   type: string
                   expr: 1
                   type: string
-            File Output Operator
-              compressed: false
-              GlobalTableId: 1
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: dest1
+            Select Operator
+              expressions:
+                    expr: UDFToInteger(0)
+                    type: int
+                    expr: 1
+                    type: string
+              File Output Operator
+                compressed: false
+                GlobalTableId: 1
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: dest1
 
   Stage: Stage-0
     Move Operator

@@ -16,13 +16,17 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.typeinfo;
+package org.apache.hadoop.hive.serde2.typeinfo;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Stack;
 
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.io.IntWritable;
+
+
 
 /**
  * TypeInfoFactory can be used to create the TypeInfo object for any types.
@@ -79,7 +83,6 @@ public class TypeInfoFactory {
       cachedMapTypeInfo.put(signature, result);
     }
     return result;
-  }
-  
-  
+  };
+
 }

@@ -33,7 +33,7 @@
                            <string>0</string> 
                           </void> 
                           <void property="typeInfo"> 
-                           <object id="PrimitiveTypeInfo0" class="org.apache.hadoop.hive.ql.typeinfo.PrimitiveTypeInfo"> 
+                           <object id="PrimitiveTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
                             <void property="primitiveClass"> 
                              <class>java.lang.String</class> 
                             </void> 
@@ -112,7 +112,7 @@
                       <void property="valueSerializeInfo"> 
                        <object id="tableDesc1" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
                         <void property="deserializerClass"> 
-                         <class>org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe</class> 
+                         <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
                         </void> 
                         <void property="inputFileFormatClass"> 
                          <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
@@ -123,16 +123,12 @@
                         <void property="properties"> 
                          <object class="java.util.Properties"> 
                           <void method="put"> 
-                           <string>name</string> 
-                           <string>binary_table</string> 
+                           <string>columns</string> 
+                           <string>reducesinkvalue0,reducesinkvalue1</string> 
                           </void> 
                           <void method="put"> 
-                           <string>serialization.ddl</string> 
-                           <string>struct binary_table { string reducesinkvalue0, string reducesinkvalue1}</string> 
-                          </void> 
-                          <void method="put"> 
-                           <string>serialization.format</string> 
-                           <string>com.facebook.thrift.protocol.TBinaryProtocol</string> 
+                           <string>columns.types</string> 
+                           <string>string,string</string> 
                           </void> 
                          </object> 
                         </void> 
@@ -324,7 +320,7 @@
                          </object> 
                         </void> 
                         <void property="typeInfo"> 
-                         <object id="PrimitiveTypeInfo1" class="org.apache.hadoop.hive.ql.typeinfo.PrimitiveTypeInfo"> 
+                         <object id="PrimitiveTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
                           <void property="primitiveClass"> 
                            <class>java.lang.Double</class> 
                           </void> 
@@ -352,7 +348,7 @@
                           <void method="add"> 
                            <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
                             <void property="typeInfo"> 
-                             <object id="PrimitiveTypeInfo2" class="org.apache.hadoop.hive.ql.typeinfo.PrimitiveTypeInfo"> 
+                             <object id="PrimitiveTypeInfo2" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
                               <void property="primitiveClass"> 
                                <class>java.lang.Integer</class> 
                               </void> 
@@ -373,7 +369,7 @@
                      </object> 
                     </void> 
                     <void property="typeInfo"> 
-                     <object id="PrimitiveTypeInfo3" class="org.apache.hadoop.hive.ql.typeinfo.PrimitiveTypeInfo"> 
+                     <object id="PrimitiveTypeInfo3" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
                       <void property="primitiveClass"> 
                        <class>java.lang.Boolean</class> 
                       </void> 
@@ -636,7 +632,7 @@
                       <void property="valueSerializeInfo"> 
                        <object id="tableDesc2" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
                         <void property="deserializerClass"> 
-                         <class>org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe</class> 
+                         <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
                         </void> 
                         <void property="inputFileFormatClass"> 
                          <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
@@ -647,16 +643,12 @@
                         <void property="properties"> 
                          <object class="java.util.Properties"> 
                           <void method="put"> 
-                           <string>name</string> 
-                           <string>binary_table</string> 
+                           <string>columns</string> 
+                           <string>reducesinkvalue0,reducesinkvalue1</string> 
                           </void> 
                           <void method="put"> 
-                           <string>serialization.ddl</string> 
-                           <string>struct binary_table { string reducesinkvalue0, string reducesinkvalue1}</string> 
-                          </void> 
-                          <void method="put"> 
-                           <string>serialization.format</string> 
-                           <string>com.facebook.thrift.protocol.TBinaryProtocol</string> 
+                           <string>columns.types</string> 
+                           <string>string,string</string> 
                           </void> 
                          </object> 
                         </void> 
@@ -1065,7 +1057,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive1/hive/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-337-trunk/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>c:a:src1</string> 
@@ -1080,7 +1072,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive1/hive/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-337-trunk/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"/> 
@@ -1136,7 +1128,7 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/data/users/njain/hive1/hive/build/ql/test/data/warehouse/src</string> 
+             <string>file:/data/users/zshao/sync/apache-trunk-HIVE-337-trunk/build/ql/test/data/warehouse/src</string> 
             </void> 
            </object> 
           </void> 
@@ -1166,7 +1158,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>/data/users/njain/hive1/hive/ql/../build/ql/tmp/155967095/309101621.10001.insclause-0</string> 
+                     <string>/data/users/zshao/sync/apache-trunk-HIVE-337-trunk/ql/../build/ql/tmp/8270598/757172805.10001.insclause-0</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 

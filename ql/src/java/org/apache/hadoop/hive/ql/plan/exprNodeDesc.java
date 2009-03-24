@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.List;
 
-import org.apache.hadoop.hive.ql.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 public class exprNodeDesc implements Serializable {  
   private static final long serialVersionUID = 1L;

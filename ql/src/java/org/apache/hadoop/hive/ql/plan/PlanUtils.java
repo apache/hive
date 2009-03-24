@@ -29,12 +29,10 @@ import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
-import org.apache.hadoop.hive.ql.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.thrift.TBinarySortableProtocol;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
@@ -138,7 +136,21 @@ public class PlanUtils {
               MetaStoreUtils.getDDLFromFieldSchema(structName, fieldSchemas)
         ));    
   }
-  
+
+  /** 
+   * Generate the table descriptor of LazySimpleSerDe.
+   */
+  public static tableDesc getLazySimpleSerDeTableDesc(List<FieldSchema> fieldSchemas) {
+    return new tableDesc(
+        LazySimpleSerDe.class,
+        SequenceFileInputFormat.class,
+        SequenceFileOutputFormat.class,
+        Utilities.makeProperties(
+            "columns", MetaStoreUtils.getColumnNamesFromFieldSchema(fieldSchemas),
+            "columns.types", MetaStoreUtils.getColumnTypesFromFieldSchema(fieldSchemas)
+        ));
+  }
+
   
   /** 
    * Convert the ColumnList to FieldSchema list.
@@ -147,7 +159,7 @@ public class PlanUtils {
       String fieldPrefix) {
     List<FieldSchema> schemas = new ArrayList<FieldSchema>(cols.size());
     for (int i=0; i<cols.size(); i++) {
-      schemas.add(TypeInfoUtils.getFieldSchemaFromTypeInfo(fieldPrefix + i, cols.get(i).getTypeInfo()));
+      schemas.add(MetaStoreUtils.getFieldSchemaFromTypeInfo(fieldPrefix + i, cols.get(i).getTypeInfo()));
     }
     return schemas;
   }
@@ -170,7 +182,7 @@ public class PlanUtils {
       if (name.equals(Integer.valueOf(i).toString())) {
         name = fieldPrefix + name; 
       }
-      schemas.add(TypeInfoUtils.getFieldSchemaFromTypeInfo(name, cols.get(i).getType()));
+      schemas.add(MetaStoreUtils.getFieldSchemaFromTypeInfo(name, cols.get(i).getType()));
     }
     return schemas;
   }
@@ -194,7 +206,8 @@ public class PlanUtils {
     
     return new reduceSinkDesc(keyCols, valueCols, tag, partitionCols, numReducers, 
         getBinarySortableTableDesc(getFieldSchemasFromColumnList(keyCols, "reducesinkkey"), order),
-        getBinaryTableDesc(getFieldSchemasFromColumnList(valueCols, "reducesinkvalue")));
+        // Revert to DynamicSerDe: getBinaryTableDesc(getFieldSchemasFromColumnList(valueCols, "reducesinkvalue")));
+        getLazySimpleSerDeTableDesc(getFieldSchemasFromColumnList(valueCols, "reducesinkvalue")));
   }
 
   /**

@@ -26,8 +26,11 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
+import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.util.ReflectionUtils;
 
 public class ExprNodeFuncEvaluator extends ExprNodeEvaluator {
@@ -70,7 +73,21 @@ public class ExprNodeFuncEvaluator extends ExprNodeEvaluator {
     // Evaluate all children first
     for(int i=0; i<paramEvaluators.length; i++) {
       paramEvaluators[i].evaluate(row, rowInspector, paramInspectableObjects[i]);
-      paramValues[i] = paramInspectableObjects[i].o;
+      Category c = paramInspectableObjects[i].oi.getCategory();
+      // TODO: Both getList and getMap are not very efficient.
+      // We should convert them to UDFTemplate - UDFs that accepts Object with 
+      // ObjectInspectors when needed.
+      if (c.equals(Category.LIST)) {
+        // Need to pass a Java List for List type
+        paramValues[i] = ((ListObjectInspector)paramInspectableObjects[i].oi)
+        .getList(paramInspectableObjects[i].o);
+      } else if (c.equals(Category.MAP)) {
+        // Need to pass a Java Map for Map type
+        paramValues[i] = ((MapObjectInspector)paramInspectableObjects[i].oi)
+        .getMap(paramInspectableObjects[i].o);
+      } else {
+        paramValues[i] = paramInspectableObjects[i].o;
+      }
     }
     result.o = FunctionRegistry.invoke(udfMethod, udf, paramValues);
     result.oi = outputObjectInspector;

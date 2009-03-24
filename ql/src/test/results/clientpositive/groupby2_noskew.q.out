@@ -38,14 +38,22 @@ STAGE PLANS:
                   type: bigint
                   expr: concat(0, UDFToString(2))
                   type: string
-            File Output Operator
-              compressed: false
-              GlobalTableId: 1
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: dest_g2
+            Select Operator
+              expressions:
+                    expr: 0
+                    type: string
+                    expr: UDFToInteger(1)
+                    type: int
+                    expr: 2
+                    type: string
+              File Output Operator
+                compressed: false
+                GlobalTableId: 1
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: dest_g2
 
   Stage: Stage-0
     Move Operator

@@ -42,7 +42,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/suresh/hive_external/build/ql/tmp/173094765/312984077.10001 
+        /data/users/zshao/sync/apache-trunk-HIVE-337-trunk/build/ql/tmp/383864989/212664797.10001 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -69,14 +69,20 @@ STAGE PLANS:
                   type: string
                   expr: 1
                   type: double
-            File Output Operator
-              compressed: false
-              GlobalTableId: 1
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: dest_g1
+            Select Operator
+              expressions:
+                    expr: UDFToInteger(0)
+                    type: int
+                    expr: 1
+                    type: double
+              File Output Operator
+                compressed: false
+                GlobalTableId: 1
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: dest_g1
 
   Stage: Stage-0
     Move Operator

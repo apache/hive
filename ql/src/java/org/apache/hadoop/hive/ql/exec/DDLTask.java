@@ -514,7 +514,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         tbl.getTTable().getSd().setCols(oldCols);
       }
     } else if (alterTbl.getOp() == alterTableDesc.alterTableTypes.REPLACECOLS) {
-      // change SerDe to MetadataTypedColumnsetSerDe if it is columnsetSerDe
+      // change SerDe to LazySimpleSerDe if it is columnsetSerDe
       if (tbl.getSerializationLib().equals("org.apache.hadoop.hive.serde.thrift.columnsetSerDe")) {
         console
             .printInfo("Replacing columns for columnsetSerDe and changing to LazySimpleSerDe");
@@ -669,22 +669,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
      * we will have to use DynamicSerDe instead.
      */
     if (crtTbl.getSerName() == null) {
-      boolean useDynamicSerDe = false;
-      if (crtTbl.getCols() != null) {
-        for (FieldSchema field: crtTbl.getCols()) {
-          if (field.getType().indexOf('<') >= 0 || field.getType().indexOf('>') >= 0) {
-            useDynamicSerDe = true;
-          }
-        }
-      }
-      if (useDynamicSerDe) {
-        LOG.info("Default to DynamicSerDe for table " + crtTbl.getTableName() );
-        tbl.setSerializationLib(org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe.class.getName());
-        tbl.setSerdeParam(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol.class.getName());
-      } else {
-        LOG.info("Default to LazySimpleSerDe for table " + crtTbl.getTableName() );
-        tbl.setSerializationLib(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
-      }
+      LOG.info("Default to LazySimpleSerDe for table " + crtTbl.getTableName() );
+      tbl.setSerializationLib(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
     }
 
     if (crtTbl.getComment() != null)

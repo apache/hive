@@ -66,7 +66,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive1/hive/build/ql/tmp/394039040/604571971.10002 
+        /data/users/zshao/sync/apache-trunk-HIVE-337-trunk/build/ql/tmp/588492101/148869634.10002 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -93,14 +93,20 @@ STAGE PLANS:
                   type: string
                   expr: 1
                   type: double
-            File Output Operator
-              compressed: true
-              GlobalTableId: 1
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: dest1
+            Select Operator
+              expressions:
+                    expr: UDFToInteger(0)
+                    type: int
+                    expr: 1
+                    type: double
+              File Output Operator
+                compressed: true
+                GlobalTableId: 1
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: dest1
 
   Stage: Stage-0
     Move Operator
@@ -121,7 +127,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive1/hive/build/ql/tmp/394039040/604571971.10003 
+        /data/users/zshao/sync/apache-trunk-HIVE-337-trunk/build/ql/tmp/588492101/148869634.10003 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -153,7 +159,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive1/hive/build/ql/tmp/394039040/604571971.10004 
+        /data/users/zshao/sync/apache-trunk-HIVE-337-trunk/build/ql/tmp/588492101/148869634.10004 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -180,14 +186,20 @@ STAGE PLANS:
                   type: string
                   expr: 1
                   type: double
-            File Output Operator
-              compressed: true
-              GlobalTableId: 2
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: dest2
+            Select Operator
+              expressions:
+                    expr: UDFToInteger(0)
+                    type: int
+                    expr: 1
+                    type: double
+              File Output Operator
+                compressed: true
+                GlobalTableId: 2
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: dest2
 
 
 0	0.0

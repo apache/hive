@@ -33,17 +33,16 @@ package org.apache.hadoop.hive.serde2.lazy;
 public class LazyShort extends LazyPrimitive<Short> {
 
   public LazyShort() {
-    super(Short.class);
   }
   
   @Override
-  public Short getPrimitiveObject() {
+  public void init(ByteArrayRef bytes, int start, int length) {
     try {
       // Slower method: convert to String and then convert to Integer
       // return Short.valueOf(LazyUtils.convertToString(bytes, start, length));
-      return Short.valueOf(parseShort(bytes, start, length));
+      data = Short.valueOf(parseShort(bytes.getData(), start, length));
     } catch (NumberFormatException e) {
-      return null;
+      data = null;
     }
   }
 
@@ -90,5 +89,5 @@ public class LazyShort extends LazyPrimitive<Short> {
     }
     throw new NumberFormatException();
   }
-  
+
 }

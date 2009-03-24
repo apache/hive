@@ -15,7 +15,7 @@ STAGE PLANS:
                     expr: lint
                     type: array<int>
                     expr: lintstring
-                    type: array<struct{myint:int,mystring:string}>
+                    type: array<struct<myint:int,mystring:string>>
                     expr: mstringstring
                     type: map<string,string>
               Filter Operator

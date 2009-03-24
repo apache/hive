@@ -21,8 +21,8 @@ package org.apache.hadoop.hive.ql.exec;
 import java.lang.Class;
 import java.io.*;
 
-import org.apache.hadoop.hive.ql.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.ql.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 /**
  * Implementation for ColumnInfo which contains the internal name for the 

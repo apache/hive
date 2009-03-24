@@ -41,9 +41,9 @@ STAGE PLANS:
                     type: string
       Needs Tagging: true
       Path -> Alias:
-        file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/src 
+        file:/data/users/zshao/sync/apache-trunk-HIVE-337-trunk/build/ql/test/data/warehouse/src 
       Path -> Partition:
-        file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/src 
+        file:/data/users/zshao/sync/apache-trunk-HIVE-337-trunk/build/ql/test/data/warehouse/src 
           Partition
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -58,7 +58,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                location file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/src
+                location file:/data/users/zshao/sync/apache-trunk-HIVE-337-trunk/build/ql/test/data/warehouse/src
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
       Reduce Operator Tree:
@@ -78,32 +78,42 @@ STAGE PLANS:
                   type: string
                   expr: 3
                   type: string
-            File Output Operator
-              compressed: false
-              GlobalTableId: 1
-              directory: /data/users/suresh/hive_external/ql/../build/ql/tmp/1798908065/135704638.10000.insclause-0
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                  properties:
-                    name dest1
-                    columns.types int:string:int:string
-                    serialization.ddl struct dest1 { i32 key1, string value1, i32 key2, string value2}
-                    serialization.format 1
-                    columns key1,value1,key2,value2
-                    bucket_count -1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                    file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                    location file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/dest1
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  name: dest1
+            Select Operator
+              expressions:
+                    expr: UDFToInteger(0)
+                    type: int
+                    expr: 1
+                    type: string
+                    expr: UDFToInteger(2)
+                    type: int
+                    expr: 3
+                    type: string
+              File Output Operator
+                compressed: false
+                GlobalTableId: 1
+                directory: /data/users/zshao/sync/apache-trunk-HIVE-337-trunk/ql/../build/ql/tmp/178622185/60647075.10000.insclause-0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                    properties:
+                      name dest1
+                      columns.types int:string:int:string
+                      serialization.ddl struct dest1 { i32 key1, string value1, i32 key2, string value2}
+                      serialization.format 1
+                      columns key1,value1,key2,value2
+                      bucket_count -1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                      file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                      location file:/data/users/zshao/sync/apache-trunk-HIVE-337-trunk/build/ql/test/data/warehouse/dest1
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: dest1
 
   Stage: Stage-0
     Move Operator
       tables:
             replace: true
-            source: /data/users/suresh/hive_external/ql/../build/ql/tmp/1798908065/135704638.10000.insclause-0
+            source: /data/users/zshao/sync/apache-trunk-HIVE-337-trunk/ql/../build/ql/tmp/178622185/60647075.10000.insclause-0
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
@@ -117,7 +127,7 @@ STAGE PLANS:
                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   file.inputformat org.apache.hadoop.mapred.TextInputFormat
                   file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                  location file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/dest1
+                  location file:/data/users/zshao/sync/apache-trunk-HIVE-337-trunk/build/ql/test/data/warehouse/dest1
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: dest1
 

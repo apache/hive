@@ -23,6 +23,9 @@ import java.io.File;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -52,9 +55,6 @@ import org.apache.hadoop.hive.ql.optimizer.GenMRFileSink1;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink1;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink2;
 import org.apache.hadoop.hive.ql.plan.*;
-import org.apache.hadoop.hive.ql.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.ql.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.hive.ql.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.ql.udf.UDFOPPositive;
 import org.apache.hadoop.hive.ql.exec.*;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -2208,16 +2208,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean converted = false;
     int columnNumber = tableFields.size();
     ArrayList<exprNodeDesc> expressions = new ArrayList<exprNodeDesc>(columnNumber);
-    // MetadataTypedColumnsetSerDe/LazySimpleSerDe does not need type conversions because it does
+    // MetadataTypedColumnsetSerDe does not need type conversions because it does
     // the conversion to String by itself.
-    if (! table_desc.getDeserializerClass().equals(MetadataTypedColumnsetSerDe.class)
-        && ! table_desc.getDeserializerClass().equals(LazySimpleSerDe.class)) {
+    boolean isMetaDataSerDe = table_desc.getDeserializerClass().equals(MetadataTypedColumnsetSerDe.class);
+    boolean isLazySimpleSerDe = table_desc.getDeserializerClass().equals(LazySimpleSerDe.class);
+    if (!isMetaDataSerDe) {
       for (int i=0; i<columnNumber; i++) {
         ObjectInspector tableFieldOI = tableFields.get(i).getFieldObjectInspector();
         TypeInfo tableFieldTypeInfo = TypeInfoUtils.getTypeInfoFromObjectInspector(tableFieldOI);
         TypeInfo rowFieldTypeInfo = rowFields.get(i).getType();
         exprNodeDesc column = new exprNodeColumnDesc(rowFieldTypeInfo, Integer.valueOf(i).toString());
-        if (! tableFieldTypeInfo.equals(rowFieldTypeInfo)) {
+        // LazySimpleSerDe can convert any types to String type using JSON-format.
+        if (!tableFieldTypeInfo.equals(rowFieldTypeInfo)
+            && !(isLazySimpleSerDe && tableFieldTypeInfo.getCategory().equals(Category.PRIMITIVE)
+              && tableFieldTypeInfo.getPrimitiveClass().equals(String.class))) { 
           // need to do some conversions here
           converted = true;
           if (tableFieldTypeInfo.getCategory() != Category.PRIMITIVE) {

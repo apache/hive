@@ -15,13 +15,13 @@ STAGE PLANS:
                     expr: lint
                     type: array<int>
                     expr: lintstring
-                    type: array<struct{myint:int,mystring:string}>
+                    type: array<struct<myint:int,mystring:string>>
               Select Operator
                 expressions:
                       expr: 0
                       type: array<int>
                       expr: 1
-                      type: array<struct{myint:int,mystring:string}>
+                      type: array<struct<myint:int,mystring:string>>
                 Transform Operator
                   command: /bin/cat
                   output info:

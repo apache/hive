@@ -21,22 +21,25 @@ package org.apache.hadoop.hive.serde2.lazy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.Constants;
-import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -53,28 +56,35 @@ import org.apache.hadoop.io.Writable;
  */
 public class LazySimpleSerDe implements SerDe {
 
-  public static final Log LOG = LogFactory.getLog(LazySimpleSerDe.class.getName());
+  public static final Log LOG = LogFactory.getLog(
+      LazySimpleSerDe.class.getName());
 
-  final public static byte DefaultSeparator = 1;
-  private byte separator;
-
-
-  private List<String> columnNames;
-  private List<String> columnTypes;
-  private ObjectInspector cachedObjectInspector;
+  final public static byte[] DefaultSeparators = {(byte)1, (byte)2, (byte)3};
+  // We need some initial values in case user don't call initialize()
+  private byte[] separators = DefaultSeparators;
 
   private String nullString;
+  private Text nullSequence;
   private boolean lastColumnTakesRest;
   
+  private TypeInfo rowTypeInfo;
+  private ObjectInspector cachedObjectInspector;
+
   public String toString() {
-    return getClass().toString() + "[" + separator + ":" 
-        + columnNames + ":" + columnTypes + "]";
+    return getClass().toString() + "[" + Arrays.asList(separators) + ":" 
+        + rowTypeInfo.getAllStructFieldNames()
+        + ":" + rowTypeInfo.getAllStructFieldTypeInfos() + "]";
   }
 
   public LazySimpleSerDe() throws SerDeException {
-    separator = DefaultSeparator;
   }
 
+  /**
+   * Return the byte value of the number string.
+   * @param altValue   The string containing a number.
+   * @param defaultVal If the altValue does not represent a number, 
+   *                   return the defaultVal.
+   */
   private byte getByte(String altValue, byte defaultVal) {
     if (altValue != null && altValue.length() > 0) {
       try {
@@ -88,91 +98,111 @@ public class LazySimpleSerDe implements SerDe {
 
   /**
    * Initialize the SerDe given the parameters.
-   * serialization.format: separator char or byte code (only supports byte-value up to 127)
-   * columns:  ,-separated column naems 
-   * columns.types:  :-separated column types 
+   * serialization.format: separator char or byte code (only supports 
+   * byte-value up to 127)
+   * columns:  ","-separated column names 
+   * columns.types:  ",", ":", or ";"-separated column types
+   * @see SerDe#initialize(Configuration, Properties) 
    */
-  public void initialize(Configuration job, Properties tbl) throws SerDeException {
-    // Read the separator
-    String alt_sep = tbl.getProperty(Constants.SERIALIZATION_FORMAT);
-    separator = getByte(alt_sep, DefaultSeparator);
+  public void initialize(Configuration job, Properties tbl) 
+  throws SerDeException {
+
+    // Read the separators: We use 10 levels of separators by default, but we 
+    // should change this when we allow users to specify more than 10 levels 
+    // of separators through DDL.
+    separators = new byte[10];
+    separators[0] = getByte(tbl.getProperty(Constants.FIELD_DELIM, 
+                              tbl.getProperty(Constants.SERIALIZATION_FORMAT)),
+                              DefaultSeparators[0]);
+    separators[1] = getByte(tbl.getProperty(Constants.COLLECTION_DELIM),
+        DefaultSeparators[1]);
+    separators[2] = getByte(tbl.getProperty(Constants.MAPKEY_DELIM),
+        DefaultSeparators[2]);
+    for (int i=3; i<separators.length; i++) {
+      separators[i] = (byte)(i+1);
+    }
+    
+    nullString = tbl.getProperty(Constants.SERIALIZATION_NULL_FORMAT, "\\N");
+    nullSequence = new Text(nullString);
+    
+    String lastColumnTakesRestString = tbl.getProperty(
+        Constants.SERIALIZATION_LAST_COLUMN_TAKES_REST);
+    lastColumnTakesRest = (lastColumnTakesRestString != null 
+        && lastColumnTakesRestString.equalsIgnoreCase("true"));
+
 
     // Read the configuration parameters
     String columnNameProperty = tbl.getProperty("columns");
     // NOTE: if "columns.types" is missing, all columns will be of String type
     String columnTypeProperty = tbl.getProperty("columns.types");
     
-    nullString = tbl.getProperty(Constants.SERIALIZATION_NULL_FORMAT);
-    if (nullString == null) {
-      nullString = "\\N";
-    }
-    
-    String lastColumnTakesRestString = tbl.getProperty(Constants.SERIALIZATION_LAST_COLUMN_TAKES_REST);
-    lastColumnTakesRest = (lastColumnTakesRestString != null && lastColumnTakesRestString.equalsIgnoreCase("true"));
-    
     // Parse the configuration parameters
-    if (columnNameProperty != null) {
+    List<String> columnNames;
+    if (columnNameProperty != null && columnNameProperty.length()>0) {
       columnNames = Arrays.asList(columnNameProperty.split(","));
     } else {
       columnNames = new ArrayList<String>();
     }
-    if (columnTypeProperty != null) {
-      columnTypes = Arrays.asList(columnTypeProperty.split(":"));
-    } else {
+    if (columnTypeProperty == null) {
       // Default type: all string
-      columnTypes = new ArrayList<String>();
+      StringBuilder sb = new StringBuilder();
       for (int i = 0; i < columnNames.size(); i++) {
-        columnTypes.add(Constants.STRING_TYPE_NAME);
+        if (i>0) sb.append(":");
+        sb.append(Constants.STRING_TYPE_NAME);
       }
+      columnTypeProperty = sb.toString();
     }
+    
+    List<TypeInfo> columnTypes = 
+      TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
+    
     if (columnNames.size() != columnTypes.size()) {
       throw new SerDeException(getClass().toString() 
           + ": columns has " + columnNames.size() 
-          + " elements while columns.types has " + columnTypes.size() + " elements!");
+          + " elements while columns.types has " + columnTypes.size()
+          + " elements!");
     }
     
     // Create the LazyObject for storing the rows
-    LazyObject[] lazyPrimitives = new LazyObject[columnNames.size()];
+    rowTypeInfo = TypeInfoFactory.getStructTypeInfo(columnNames, columnTypes);
+    cachedLazyStruct = (LazyStruct)LazyFactory.createLazyObject(rowTypeInfo);
+
     // Create the ObjectInspectors for the fields
-    ArrayList<ObjectInspector> columnObjectInspectors
-        = new ArrayList<ObjectInspector>(columnNames.size());  
-    for (int i=0; i<columnTypes.size(); i++) {
-      Class<?> primitiveClass = ObjectInspectorUtils.typeNameToClass.get( columnTypes.get(i) );
-      if (primitiveClass == null) {
-        throw new SerDeException(getClass().toString() 
-            + ": type " + columnTypes.get(i) + " not supported!");
-      }
-      columnObjectInspectors.add(ObjectInspectorFactory.
-          getStandardPrimitiveObjectInspector(primitiveClass));
-      lazyPrimitives[i] = LazyUtils.createLazyPrimitiveClass(primitiveClass);
-    }
+    cachedObjectInspector = LazyFactory.createLazyStructInspector(columnNames,
+            columnTypes, separators, nullSequence, lastColumnTakesRest);
     
-    cachedObjectInspector = 
-        ObjectInspectorFactory.getLazySimpleStructObjectInspector(columnNames,
-            columnObjectInspectors);
     
-    cachedLazyStruct = new LazyStruct(lazyPrimitives, separator, 
-        new Text(nullString), lastColumnTakesRest);
-    
-    LOG.debug("LazySimpleSerDe initialized with: columnNames=" + columnNames + " columnTypes=" 
-        + columnTypes + " separator=" + separator + " nullstring=" + nullString 
+    LOG.debug("LazySimpleSerDe initialized with: columnNames=" + columnNames
+        + " columnTypes=" + columnTypes + " separator=" 
+        + Arrays.asList(separators) + " nullstring=" + nullString 
         + " lastColumnTakesRest=" + lastColumnTakesRest);
   }
   
   // The object for storing row data
   LazyStruct cachedLazyStruct;
   
+  // The wrapper for byte array
+  ByteArrayRef byteArrayRef;
+  
   /**
    * Deserialize a row from the Writable to a LazyObject.
+   * @param field the Writable that contains the data
+   * @return  The deserialized row Object.
+   * @see SerDe#deserialize(Writable)
    */
   public Object deserialize(Writable field) throws SerDeException {
+    if (byteArrayRef == null) {
+      byteArrayRef = new ByteArrayRef();
+    }
     if (field instanceof BytesWritable) {
       BytesWritable b = (BytesWritable)field;
       // For backward-compatibility with hadoop 0.17
-      cachedLazyStruct.setAll(b.get(), 0, b.getSize());
+      byteArrayRef.setData(b.get());
+      cachedLazyStruct.init(byteArrayRef, 0, b.getSize());
     } else if (field instanceof Text) {
       Text t = (Text)field;
-      cachedLazyStruct.setAll(t.getBytes(), 0, t.getLength());
+      byteArrayRef.setData(t.getBytes());
+      cachedLazyStruct.init(byteArrayRef, 0, t.getLength());
     } else {
       throw new SerDeException(getClass().toString()  
           + ": expects either BytesWritable or Text object!");
@@ -190,6 +220,7 @@ public class LazySimpleSerDe implements SerDe {
 
   /**
    * Returns the Writable Class after serialization.
+   * @see SerDe#getSerializedClass()
    */
   public Class<? extends Writable> getSerializedClass() {
     return Text.class;
@@ -198,34 +229,159 @@ public class LazySimpleSerDe implements SerDe {
   Text serializeCache = new Text();
   /**
    * Serialize a row of data.
+   * @param obj          The row object
+   * @param objInspector The ObjectInspector for the row object
+   * @return             The serialized Writable object
+   * @see SerDe#serialize(Object, ObjectInspector)  
    */
-  public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException {
+  public Writable serialize(Object obj, ObjectInspector objInspector) 
+      throws SerDeException {
 
-    // TODO: We can switch the serialization to be directly based on 
     if (objInspector.getCategory() != Category.STRUCT) {
       throw new SerDeException(getClass().toString() 
-          + " can only serialize struct types, but we got: " + objInspector.getTypeName());
+          + " can only serialize struct types, but we got: " 
+          + objInspector.getTypeName());
     }
-    StructObjectInspector soi = (StructObjectInspector) objInspector;
-    List<? extends StructField> fields = soi.getAllStructFieldRefs();
-    
+
     StringBuilder sb = new StringBuilder();
-    for(int i=0; i<fields.size(); i++) {
+
+    StructObjectInspector soi = (StructObjectInspector)objInspector;
+    List<? extends StructField> fields = soi.getAllStructFieldRefs();
+    List<Object> list = soi.getStructFieldsDataAsList(obj);
+    List<? extends StructField> declaredFields = 
+        (rowTypeInfo != null && rowTypeInfo.getAllStructFieldNames().size()>0)
+        ? ((StructObjectInspector)getObjectInspector()).getAllStructFieldRefs()
+        : null;
+        
+    for (int i=0; i<fields.size(); i++) {
+      // Append the separator if needed.
       if (i>0) {
-        sb.append((char)separator);
+        sb.append((char)separators[0]);
       }
-      StructField field = fields.get(i);
-      Object fieldData = soi.getStructFieldData(obj, field);
-      if (field.getFieldObjectInspector().getCategory() == Category.PRIMITIVE) {
-        // For primitive object, serialize to plain string
-        sb.append(fieldData == null ? nullString : fieldData.toString());
+      // Get the field objectInspector and the field object.
+      ObjectInspector foi = fields.get(i).getFieldObjectInspector();
+      Object f = (list == null ? null : list.get(i));
+
+      if (declaredFields != null && i >= declaredFields.size()) {
+        throw new SerDeException(
+            "Error: expecting " + declaredFields.size() 
+            + " but asking for field " + i + "\n" + "data=" + obj + "\n"
+            + "tableType=" + rowTypeInfo.toString() + "\n"
+            + "dataType=" 
+            + TypeInfoUtils.getTypeInfoFromObjectInspector(objInspector));
+      }
+      
+      // If the field that is passed in is a primitive, then we serialize the
+      // primitive object.
+      if (foi.getCategory().equals(Category.PRIMITIVE)) {
+        sb.append(f == null ? nullString : f.toString());
       } else {
-        // For complex object, serialize to JSON format
-        sb.append(SerDeUtils.getJSONString(fieldData, field.getFieldObjectInspector()));
+        // If the field is not declared (no schema was given at 
+        // initialization), or the field is declared as a primitive in 
+        // initialization, serialize the data to JSON string.
+        // Otherwise serialize the data in the delimited way.
+        if (declaredFields == null || 
+            declaredFields.get(i).getFieldObjectInspector().getCategory()
+            .equals(Category.PRIMITIVE)) {
+          sb.append(SerDeUtils.getJSONString(f, foi));
+        } else {
+          serialize(sb, f, foi, separators, 1, nullString);
+        }
       }
     }
     serializeCache.set(sb.toString());
     return serializeCache;
   }
 
+  
+  /**
+   * Serialize the row into the StringBuilder.
+   * @param sb  The StringBuilder to store the serialized data.
+   * @param obj The object for the current field.
+   * @param objInspector  The ObjectInspector for the current Object.
+   * @param separators    The separators array.
+   * @param level         The current level of separator.
+   * @param nullString    The byte sequence representing the NULL value.
+   */
+  private void serialize(StringBuilder sb, Object obj, 
+      ObjectInspector objInspector, byte[] separators, int level,
+      String nullString) {
+    
+    if (obj == null) {
+      sb.append(nullString);
+      return;
+    }
+    
+    switch (objInspector.getCategory()) {
+      case PRIMITIVE: {
+        sb.append(obj.toString());
+        return;
+      }
+      case LIST: {
+        char separator = (char)separators[level];
+        ListObjectInspector loi = (ListObjectInspector)objInspector;
+        List<?> list = loi.getList(obj);
+        ObjectInspector eoi = loi.getListElementObjectInspector();
+        if (list == null) {
+          sb.append(nullString);
+        } else {
+          for (int i=0; i<list.size(); i++) {
+            if (i>0) {
+              sb.append((char)separator);
+            }
+            serialize(sb, list.get(i), eoi, separators, level+1, nullString);
+          }
+        }
+        return;
+      }
+      case MAP: {
+        char separator = (char)separators[level];
+        char keyValueSeparator = (char)separators[level+1];
+        MapObjectInspector moi = (MapObjectInspector)objInspector;
+        ObjectInspector koi = moi.getMapKeyObjectInspector();
+        ObjectInspector voi = moi.getMapValueObjectInspector();
+        
+        Map<?, ?> map = moi.getMap(obj);
+        if (map == null) {
+          sb.append(nullString);
+        } else {
+          boolean first = true;
+          for (Map.Entry<?, ?> entry: map.entrySet()) {
+            if (first) {
+              first = false;
+            } else {
+              sb.append((char)separator);
+            }
+            serialize(sb, entry.getKey(), koi, separators, level+2, 
+                nullString);
+            sb.append((char)keyValueSeparator);
+            serialize(sb, entry.getValue(), voi, separators, level+2, 
+                nullString);
+          }
+        }
+        return;
+      }
+      case STRUCT: {
+        char separator = (char)separators[level];
+        StructObjectInspector soi = (StructObjectInspector)objInspector;
+        List<? extends StructField> fields = soi.getAllStructFieldRefs();
+        List<Object> list = soi.getStructFieldsDataAsList(obj);
+        if (list == null) {
+          sb.append(nullString);
+        } else {
+          for (int i=0; i<list.size(); i++) {
+            if (i>0) {
+              sb.append((char)separator);
+            }
+            serialize(sb, list.get(i), fields.get(i).getFieldObjectInspector(),
+                separators, level+1, nullString);
+          }
+        }
+        return;
+      }
+    }
+    
+    throw new RuntimeException("Unknown category type: "
+        + objInspector.getCategory());
+  }
 }

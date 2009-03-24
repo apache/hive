@@ -183,5 +183,4 @@ public class TestLazySimpleSerDe extends TestCase {
     }
   }
   
-  
 }

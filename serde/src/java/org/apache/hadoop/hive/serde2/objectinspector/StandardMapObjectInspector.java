@@ -59,7 +59,8 @@ class StandardMapObjectInspector implements MapObjectInspector {
     Map<?,?> map = (Map<?,?>)data;
     return map.get(key);
   }
-  int getMapSize(Object data) {
+  
+  public int getMapSize(Object data) {
     if (data == null) return -1;
     Map<?,?> map = (Map<?,?>)data;
     return map.size();

@@ -6,6 +6,9 @@ Trunk (unreleased changes)
 
   NEW FEATURES
 
+    HIVE-337. LazySimpleSerDe to support multi-level nested array, map, struct
+    types. (zshao)
+
     HIVE-313. Add UDF date_add, date_sub, datediff. (zshao)
 
     HIVE-79. Print number of rows inserted to table(s).

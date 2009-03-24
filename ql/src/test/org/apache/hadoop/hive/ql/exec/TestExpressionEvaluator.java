@@ -31,9 +31,9 @@ import org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeIndexDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
-import org.apache.hadoop.hive.ql.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.ql.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.hive.ql.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 
 public class TestExpressionEvaluator extends TestCase {

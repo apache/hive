@@ -24,10 +24,10 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde2.lazy.LazyStruct;
+import org.apache.hadoop.io.Text;
 
 /**
  * LazySimpleStructObjectInspector works on struct data that is stored in LazyStruct.
- * It only supports primitive types as its fields for simplicity and efficiency. 
  * 
  * The names of the struct fields and the internal structure of the struct fields
  * are specified in the ctor of the LazySimpleStructObjectInspector.
@@ -67,17 +67,29 @@ public class LazySimpleStructObjectInspector implements StructObjectInspector {
   
   protected List<MyField> fields;
   
+  @Override
   public String getTypeName() {
     return ObjectInspectorUtils.getStandardStructTypeName(this);
   }
   
+  
+  byte separator;
+  Text nullSequence;  
+  boolean lastColumnTakesRest;
+  
   /** Call ObjectInspectorFactory.getLazySimpleStructObjectInspector instead.
    */
-  protected LazySimpleStructObjectInspector(List<String> structFieldNames, List<ObjectInspector> structFieldObjectInspectors) {
-    init(structFieldNames, structFieldObjectInspectors);
+  protected LazySimpleStructObjectInspector(List<String> structFieldNames, List<ObjectInspector> structFieldObjectInspectors,
+      byte separator, Text nullSequence, boolean lastColumnTakesRest) {
+    init(structFieldNames, structFieldObjectInspectors, separator, nullSequence, lastColumnTakesRest);
   }
-  protected void init(List<String> structFieldNames, List<ObjectInspector> structFieldObjectInspectors) {
+  protected void init(List<String> structFieldNames, List<ObjectInspector> structFieldObjectInspectors,
+      byte separator, Text nullSequence, boolean lastColumnTakesRest) {
     assert(structFieldNames.size() == structFieldObjectInspectors.size());
+    
+    this.separator = separator;
+    this.nullSequence = nullSequence;
+    this.lastColumnTakesRest = lastColumnTakesRest;
     
     fields = new ArrayList<MyField>(structFieldNames.size()); 
     for(int i=0; i<structFieldNames.size(); i++) {
@@ -85,10 +97,13 @@ public class LazySimpleStructObjectInspector implements StructObjectInspector {
     }
   }
   
-  protected LazySimpleStructObjectInspector(List<StructField> fields) {
-    init(fields);
+  protected LazySimpleStructObjectInspector(List<StructField> fields, byte separator, Text nullSequence) {
+    init(fields, separator, nullSequence);
   }
-  protected void init(List<StructField> fields) {
+  protected void init(List<StructField> fields, byte separator, Text nullSequence) {
+    this.separator = separator;
+    this.nullSequence = nullSequence;
+    
     this.fields = new ArrayList<MyField>(fields.size()); 
     for(int i=0; i<fields.size(); i++) {
       this.fields.add(new MyField(i, fields.get(i).getFieldName(), fields.get(i).getFieldObjectInspector()));
@@ -96,20 +111,23 @@ public class LazySimpleStructObjectInspector implements StructObjectInspector {
   }
 
   
+  @Override
   public final Category getCategory() {
     return Category.STRUCT;
   }
 
   // Without Data
+  @Override
   public StructField getStructFieldRef(String fieldName) {
     return ObjectInspectorUtils.getStandardStructFieldRef(fieldName, fields);
   }
+  @Override
   public List<? extends StructField> getAllStructFieldRefs() {
     return fields;
   }
 
   // With Data
-  @SuppressWarnings("unchecked")
+  @Override
   public Object getStructFieldData(Object data, StructField fieldRef) {
     if (data == null) {
       return null;
@@ -120,7 +138,7 @@ public class LazySimpleStructObjectInspector implements StructObjectInspector {
     int fieldID = f.getFieldID();
     assert(fieldID >= 0 && fieldID < fields.size());
     
-    return struct.getField(fieldID);
+    return struct.getField(fieldID, separator, nullSequence, lastColumnTakesRest);
   }
 
   @Override
@@ -128,12 +146,8 @@ public class LazySimpleStructObjectInspector implements StructObjectInspector {
     if (data == null) {
       return null;
     }
-    List<Object> fieldsData = new ArrayList<Object>(fields.size());
     LazyStruct struct = (LazyStruct)data;
-    for (int i=0; i<fields.size(); i++) {
-      fieldsData.add(struct.getField(i));
-    }
-    return fieldsData;
+    return struct.getFieldsAsList(separator, nullSequence, lastColumnTakesRest);
   }
 
 }

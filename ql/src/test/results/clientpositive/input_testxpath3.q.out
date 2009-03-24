@@ -15,7 +15,7 @@ STAGE PLANS:
                     expr: mstringstring
                     type: map<string,string>
                     expr: lintstring
-                    type: array<struct{myint:int,mystring:string}>
+                    type: array<struct<myint:int,mystring:string>>
               Select Operator
                 expressions:
                       expr: 0['key_9']

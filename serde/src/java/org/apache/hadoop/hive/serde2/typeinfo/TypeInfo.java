@@ -16,9 +16,10 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.typeinfo;
+package org.apache.hadoop.hive.serde2.typeinfo;
 
-import java.io.Serializable;import java.util.List;
+import java.io.Serializable;
+import java.util.List;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 
 /**
