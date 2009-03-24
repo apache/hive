@@ -45,11 +45,11 @@ public class FunctionRegistry {
   static HashMap<String, FunctionInfo> mFunctions;
   static {
     mFunctions = new HashMap<String, FunctionInfo>();
-    registerUDF("default_sample_hashfn", UDFDefaultSampleHashFn.class, 
+    registerUDF("default_sample_hashfn", UDFDefaultSampleHashFn.class,
                 OperatorType.PREFIX, false);
     registerUDF("concat", UDFConcat.class, OperatorType.PREFIX, false);
     registerUDF("substr", UDFSubstr.class, OperatorType.PREFIX, false);
-    
+
     registerUDF("size", UDFSize.class, OperatorType.PREFIX, false);
 
     registerUDF("round", UDFRound.class, OperatorType.PREFIX, false);
@@ -66,7 +66,7 @@ public class FunctionRegistry {
     registerUDF("exp", UDFExp.class, OperatorType.PREFIX, false);
     registerUDF("power", UDFPower.class, OperatorType.PREFIX, false);
     registerUDF("pow", UDFPower.class, OperatorType.PREFIX, false);
-    
+
     registerUDF("upper", UDFUpper.class, OperatorType.PREFIX, false);
     registerUDF("lower", UDFLower.class, OperatorType.PREFIX, false);
     registerUDF("ucase", UDFUpper.class, OperatorType.PREFIX, false);
@@ -88,12 +88,13 @@ public class FunctionRegistry {
     registerUDF("month", UDFMonth.class, OperatorType.PREFIX, false);
     registerUDF("year", UDFYear.class, OperatorType.PREFIX, false);
     registerUDF("from_unixtime", UDFFromUnixTime.class, OperatorType.PREFIX, false);
+    registerUDF("unix_timestamp", UDFUnixTimeStamp.class, OperatorType.PREFIX, false);
     registerUDF("to_date", UDFDate.class, OperatorType.PREFIX, false);
 
     registerUDF("date_add", UDFDateAdd.class, OperatorType.PREFIX, false);
     registerUDF("date_sub", UDFDateSub.class, OperatorType.PREFIX, false);
     registerUDF("datediff", UDFDateDiff.class, OperatorType.PREFIX, false);
-    
+
     registerUDF("get_json_object", UDFJson.class, OperatorType.PREFIX, false);
 
     registerUDF("+", UDFOPPlus.class, OperatorType.INFIX, true);
@@ -126,7 +127,7 @@ public class FunctionRegistry {
     registerUDF("isnotnull", UDFOPNotNull.class, OperatorType.POSTFIX, true, "is not null");
 
     registerUDF("if", UDFIf.class, OperatorType.PREFIX, true);
-    
+
     // Aliases for Java Class Names
     // These are used in getImplicitConvertUDFMethod
     registerUDF(Boolean.class.getName(), UDFToBoolean.class, OperatorType.PREFIX, false,
@@ -153,7 +154,7 @@ public class FunctionRegistry {
     registerUDAF("count", UDAFCount.class);
     registerUDAF("max", UDAFMax.class);
     registerUDAF("min", UDAFMin.class);
-    registerUDAF("avg", UDAFAvg.class);    
+    registerUDAF("avg", UDAFAvg.class);
   }
 
   public static FunctionInfo getInfo(Class<?> fClass) {
@@ -181,7 +182,7 @@ public class FunctionRegistry {
 
   public static void registerUDF(String functionName, Class<? extends UDF> UDFClass,
                                  FunctionInfo.OperatorType opt, boolean isOperator) {
-    if (UDF.class.isAssignableFrom(UDFClass)) { 
+    if (UDF.class.isAssignableFrom(UDFClass)) {
       FunctionInfo fI = new FunctionInfo(functionName.toLowerCase(), UDFClass, null);
       fI.setIsOperator(isOperator);
       fI.setOpType(opt);
@@ -190,11 +191,11 @@ public class FunctionRegistry {
       throw new RuntimeException("Registering UDF Class " + UDFClass + " which does not extends " + UDF.class);
     }
   }
-  
+
   public static void registerUDF(String functionName, Class<? extends UDF> UDFClass,
                                  FunctionInfo.OperatorType opt, boolean isOperator,
                                  String displayName) {
-    if (UDF.class.isAssignableFrom(UDFClass)) { 
+    if (UDF.class.isAssignableFrom(UDFClass)) {
       FunctionInfo fI = new FunctionInfo(displayName, UDFClass, null);
       fI.setIsOperator(isOperator);
       fI.setOpType(opt);
@@ -224,7 +225,7 @@ public class FunctionRegistry {
     numericTypes.put(Float.class, 5);
     numericTypes.put(Double.class, 6);
     numericTypes.put(String.class, 7);
-  } 
+  }
 
   /**
    * Find a common class that objects of both Class a and Class b can convert to.
@@ -263,7 +264,7 @@ public class FunctionRegistry {
     if (from.equals(Void.class)) {
       return true;
     }
-    
+
     // Allow implicit conversion from Byte -> Integer -> Long -> Float -> Double -> String
     Integer f = numericTypes.get(from);
     Integer t = numericTypes.get(to);
@@ -273,7 +274,7 @@ public class FunctionRegistry {
   }
 
   /**
-   * Get the UDF method for the name and argumentClasses. 
+   * Get the UDF method for the name and argumentClasses.
    * @param name the name of the UDF
    * @param argumentClasses
    * @return
@@ -290,11 +291,11 @@ public class FunctionRegistry {
     catch (Exception e) {
       throw new RuntimeException("getUDFMethod exception: " + e.getMessage());
     }
-    return udfMethod;    
+    return udfMethod;
   }
 
   /**
-   * Get the UDAF evaluator for the name and argumentClasses. 
+   * Get the UDAF evaluator for the name and argumentClasses.
    * @param name the name of the UDAF
    * @param argumentClasses
    * @return
@@ -302,7 +303,7 @@ public class FunctionRegistry {
   public static Class<? extends UDAFEvaluator> getUDAFEvaluator(String name, List<Class<?>> argumentClasses) {
     Class<? extends UDAF> udf = getUDAF(name);
     if (udf == null) return null;
-    
+
     Class<? extends UDAFEvaluator> evalClass = null;
     try {
       evalClass = udf.newInstance().getResolver().getEvaluatorClass(argumentClasses);
@@ -312,23 +313,23 @@ public class FunctionRegistry {
     catch (Exception e) {
       throw new RuntimeException("getUADFEvaluator exception: " + e.getMessage());
     }
-    return evalClass;    
+    return evalClass;
   }
 
   /**
    * This method is shared between UDFRegistry and UDAFRegistry.
-   * methodName will be "evaluate" for UDFRegistry, and "aggregate"/"evaluate"/"evaluatePartial" for UDAFRegistry. 
+   * methodName will be "evaluate" for UDFRegistry, and "aggregate"/"evaluate"/"evaluatePartial" for UDAFRegistry.
    */
   public static <T> Method getMethodInternal(Class<? extends T> udfClass, String methodName, boolean exact, List<Class<?>> argumentClasses) {
 
     ArrayList<Method> mlist = new ArrayList<Method>();
-    
+
     for(Method m: Arrays.asList(udfClass.getMethods())) {
       if (m.getName().equals(methodName)) {
         mlist.add(m);
       }
     }
-    
+
     return getMethodInternal(mlist, exact, argumentClasses);
   }
 
@@ -373,7 +374,7 @@ public class FunctionRegistry {
   /**
    * Returns the evaluate method for the UDAF based on the aggregation mode.
    * See groupByDesc.Mode for details.
-   * 
+   *
    * @param name  name of the UDAF
    * @param mode  the mode of the aggregation
    * @return      null if no such UDAF is found
@@ -382,8 +383,8 @@ public class FunctionRegistry {
     Class<? extends UDAF> udaf = getUDAF(name);
     if (udaf == null)
       return null;
-    return FunctionRegistry.getMethodInternal(udaf, 
-        (mode == groupByDesc.Mode.COMPLETE || mode == groupByDesc.Mode.FINAL) 
+    return FunctionRegistry.getMethodInternal(udaf,
+        (mode == groupByDesc.Mode.COMPLETE || mode == groupByDesc.Mode.FINAL)
         ? "terminate" : "terminatePartial", true,
         new ArrayList<Class<?>>() );
   }
@@ -394,13 +395,13 @@ public class FunctionRegistry {
   public static Method getUDAFMethod(String name, Class<?>... argumentClasses) {
     return getUDAFMethod(name, Arrays.asList(argumentClasses));
   }
-  
+
   public static Object invoke(Method m, Object thisObject, Object[] arguments) throws HiveException {
     Object o;
     try {
       o = m.invoke(thisObject, arguments);
     } catch (Exception e) {
-      String thisObjectString = "" + thisObject + " of class " + 
+      String thisObjectString = "" + thisObject + " of class " +
         (thisObject == null? "null" : thisObject.getClass().getName());
 
       StringBuilder argumentString = new StringBuilder();
@@ -420,11 +421,11 @@ public class FunctionRegistry {
         }
         argumentString.append("} of size " + arguments.length);
       }
-     
+
       e.printStackTrace();
-      throw new HiveException("Unable to execute method " + m + " " 
+      throw new HiveException("Unable to execute method " + m + " "
           + " on object " + thisObjectString
-          + " with arguments " + argumentString.toString() 
+          + " with arguments " + argumentString.toString()
           + ":" + e.getMessage());
     }
     return o;
@@ -432,7 +433,7 @@ public class FunctionRegistry {
 
   /**
    * Gets the closest matching method corresponding to the argument list from a list of methods.
-   * 
+   *
    * @param mlist The list of methods to inspect.
    * @param exact Boolean to indicate whether this is an exact match or not.
    * @param argumentClasses The classes for the argument.
@@ -469,7 +470,7 @@ public class FunctionRegistry {
           // Found an exact match
           if (leastImplicitConversions == 0) break;
         } else if (implicitConversions == leastImplicitConversions){
-          // Ambiguous call: two methods with the same number of implicit conversions 
+          // Ambiguous call: two methods with the same number of implicit conversions
           udfMethod = null;
         } else {
           // do nothing if implicitConversions > leastImplicitConversions

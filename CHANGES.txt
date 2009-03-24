@@ -61,6 +61,9 @@ Trunk (unreleased changes)
     HIVE-347. undo for Fix lot of partition scans in strict mode in case of error in 
     partition specification error. (namit)
 
+    HIVE-319. Add UDF for unix timestamp. 
+    (Hao Liu via namit)
+
 Release 0.2.0 - Unreleased
 
   INCOMPATIBLE CHANGES
