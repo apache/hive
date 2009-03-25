@@ -22,6 +22,9 @@ Trunk (unreleased changes)
 
   BUG FIXES
 
+    HIVE-349. Fix TestCliDriver when there are test cases with no tasks.
+    (Suresh Antony via zshao)
+
     HIVE-339. Fix count distinct in 1 map-reduce job with map side
     aggregation. (Namit Jain via zshao)
 
