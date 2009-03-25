@@ -70,6 +70,9 @@ Trunk (unreleased changes)
     HIVE-319. Add UDF for unix timestamp. 
     (Hao Liu via namit)
 
+    HIVE-363. Use 1 reducer in case of aggregations with no grouping keys. 
+    (namit)
+
 Release 0.2.0 - Unreleased
 
   INCOMPATIBLE CHANGES

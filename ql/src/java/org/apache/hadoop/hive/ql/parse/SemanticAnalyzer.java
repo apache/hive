@@ -1960,14 +1960,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     int numReducers = -1;
 
-    // Optimize the scenario when there are no grouping keys and no distinct - only 1 reducer is needed
-    // For eg: select count(1) from T where t.ds = ....
-    if (optimizeMapAggrGroupBy(dest, qb)) 
+    // Optimize the scenario when there are no grouping keys - only 1 reducer is needed
+    List<ASTNode> grpByExprs = getGroupByForClause(parseInfo, dest);
+    if (grpByExprs.isEmpty())
       numReducers = 1;
     
     // ////// Generate ReduceSink Operator
     Operator reduceSinkOperatorInfo = 
-      genGroupByPlanReduceSinkOperator(qb, dest, groupByOperatorInfo, getGroupByForClause(parseInfo, dest).size(), numReducers, true);
+      genGroupByPlanReduceSinkOperator(qb, dest, groupByOperatorInfo, grpByExprs.size(), numReducers, true);
     
     // This is a 1-stage map-reduce processing of the groupby. Tha map-side aggregates was just used to
     // reduce output data. In case of distincts, partial results are not used, and so iterate is again
