@@ -99,7 +99,6 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     return parentOperators;
   }
 
-  transient protected String id;
   protected T conf;
   protected boolean done;
 
@@ -110,14 +109,6 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   @explain
   public T getConf() {
     return conf;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  public String getId() {
-    return id;
   }
 
   public boolean getDone() {
@@ -148,6 +139,11 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   transient protected String alias;
   transient protected String joinAlias;
   transient protected Reporter reporter;
+  transient protected String id;
+
+  public void setId(String id) {
+    this.id = id;
+  }
 
   public void setOutputCollector(OutputCollector out) {
     this.out = out;
@@ -354,7 +350,7 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   public String dump() {
     StringBuilder s = new StringBuilder();
     s.append("<" + getName() + ">");
-    s.append("Id =" + getId());
+    s.append("Id =" + id);
     if (childOperators != null) {
       s.append("<Children>");
       for (Operator<? extends Serializable> o : childOperators) {
@@ -366,7 +362,7 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     if (parentOperators != null) {
       s.append("<Parent>");
       for (Operator<? extends Serializable> o : parentOperators) {
-        s.append("Id = " + o.getId() + " ");
+        s.append("Id = " + o.id + " ");
       }
       s.append("<\\Parent>");
     }

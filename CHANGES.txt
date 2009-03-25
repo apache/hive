@@ -73,6 +73,9 @@ Trunk (unreleased changes)
     HIVE-363. Use 1 reducer in case of aggregations with no grouping keys. 
     (namit)
 
+    HIVE-366. Make id a non-bean attribute so that TestParse does not depend on that.
+    (namit)
+
 Release 0.2.0 - Unreleased
 
   INCOMPATIBLE CHANGES
