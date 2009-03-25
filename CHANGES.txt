@@ -76,6 +76,9 @@ Trunk (unreleased changes)
     HIVE-366. Make id a non-bean attribute so that TestParse does not depend on that.
     (namit)
 
+    HIVE-342. Fix TestMTQueries
+    (Prasad Chakka via namit)
+
 Release 0.2.0 - Unreleased
 
   INCOMPATIBLE CHANGES
