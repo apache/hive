@@ -16,6 +16,7 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              Union
                 Group By Operator
                   aggregations:
                         expr: count(1)
@@ -33,6 +34,7 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              Union
                 Group By Operator
                   aggregations:
                         expr: count(1)

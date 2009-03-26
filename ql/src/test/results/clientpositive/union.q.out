@@ -20,6 +20,7 @@ STAGE PLANS:
                       type: string
                       expr: value
                       type: string
+                Union
                   Select Operator
                     expressions:
                           expr: 0
@@ -43,6 +44,7 @@ STAGE PLANS:
                       type: string
                       expr: value
                       type: string
+                Union
                   Select Operator
                     expressions:
                           expr: 0

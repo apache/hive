@@ -24,6 +24,7 @@ STAGE PLANS:
                       type: string
                       expr: hr
                       type: string
+                Union
                   Select Operator
                     expressions:
                           expr: 0
@@ -64,6 +65,7 @@ STAGE PLANS:
                       type: string
                       expr: hr
                       type: string
+                Union
                   Select Operator
                     expressions:
                           expr: 0
@@ -91,10 +93,10 @@ STAGE PLANS:
                             type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
-        file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
+        file:/data/users/njain/hive2/hive/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
+        file:/data/users/njain/hive2/hive/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
       Path -> Partition:
-        file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
+        file:/data/users/njain/hive2/hive/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
           Partition
             partition values:
               ds 2008-04-08
@@ -113,10 +115,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                location file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/njain/hive2/hive/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
+        file:/data/users/njain/hive2/hive/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
           Partition
             partition values:
               ds 2008-04-08
@@ -135,7 +137,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                location file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/njain/hive2/hive/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
       Reduce Operator Tree:
@@ -143,7 +145,7 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: /data/users/suresh/hive_external/ql/../build/ql/tmp/1565954774/21907520.10001.insclause-0
+            directory: /data/users/njain/hive2/hive/ql/../build/ql/tmp/193440808/125134681.10001.insclause-0
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat

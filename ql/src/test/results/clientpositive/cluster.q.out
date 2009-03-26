@@ -486,7 +486,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/suresh/hive_external/build/ql/tmp/567040252/108440248.10002 
+        /data/users/njain/hive2/hive/build/ql/tmp/596968299/28368921.10002 
           Reduce Output Operator
             key expressions:
                   expr: 1
@@ -592,7 +592,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/suresh/hive_external/build/ql/tmp/124737534/554653212.10002 
+        /data/users/njain/hive2/hive/build/ql/tmp/12416576/480017656.10002 
           Reduce Output Operator
             key expressions:
                   expr: 1
@@ -700,7 +700,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/suresh/hive_external/build/ql/tmp/247667797/531125383.10002 
+        /data/users/njain/hive2/hive/build/ql/tmp/15199144/1962713711.10002 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -808,7 +808,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/suresh/hive_external/build/ql/tmp/94432770/53306218.10002 
+        /data/users/njain/hive2/hive/build/ql/tmp/103416384/41425981.10002 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -862,6 +862,7 @@ STAGE PLANS:
                       type: string
                       expr: value
                       type: string
+                Union
                   Select Operator
                     expressions:
                           expr: 0
@@ -893,6 +894,7 @@ STAGE PLANS:
                       type: string
                       expr: value
                       type: string
+                Union
                   Select Operator
                     expressions:
                           expr: 0

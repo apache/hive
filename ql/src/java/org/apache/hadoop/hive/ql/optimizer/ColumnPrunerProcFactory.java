@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -54,7 +55,7 @@ public class ColumnPrunerProcFactory {
    * Node Processor for Column Pruning on Filter Operators.
    */
   public static class ColumnPrunerFilterProc implements NodeProcessor {  
-    public Object process(Node nd, NodeProcessorCtx ctx, Object... nodeOutputs) throws SemanticException {
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs) throws SemanticException {
       FilterOperator op = (FilterOperator)nd;
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx)ctx;
       exprNodeDesc condn = op.getConf().getPredicate();
@@ -78,7 +79,7 @@ public class ColumnPrunerProcFactory {
    * Node Processor for Column Pruning on Group By Operators.
    */
   public static class ColumnPrunerGroupByProc implements NodeProcessor {
-    public Object process(Node nd, NodeProcessorCtx ctx, Object... nodeOutputs) throws SemanticException {
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs) throws SemanticException {
       GroupByOperator op = (GroupByOperator)nd;
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx)ctx;
       List<String> colLists = new ArrayList<String>();
@@ -111,7 +112,7 @@ public class ColumnPrunerProcFactory {
    * The Default Node Processor for Column Pruning.
    */
   public static class ColumnPrunerDefaultProc implements NodeProcessor {
-    public Object process(Node nd, NodeProcessorCtx ctx, Object... nodeOutputs) throws SemanticException {
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs) throws SemanticException {
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx)ctx;
       cppCtx.getPrunedColLists().put((Operator<? extends Serializable>)nd, 
           cppCtx.genColLists((Operator<? extends Serializable>)nd));
@@ -132,7 +133,7 @@ public class ColumnPrunerProcFactory {
    * The Node Processor for Column Pruning on Reduce Sink Operators.
    */
   public static class ColumnPrunerReduceSinkProc implements NodeProcessor {
-    public Object process(Node nd, NodeProcessorCtx ctx, Object... nodeOutputs) throws SemanticException {
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs) throws SemanticException {
       ReduceSinkOperator op = (ReduceSinkOperator)nd;
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx)ctx;
       HashMap<Operator<? extends Serializable>, OpParseContext> opToParseCtxMap = 
@@ -191,7 +192,7 @@ public class ColumnPrunerProcFactory {
    * The Node Processor for Column Pruning on Select Operators.
    */
   public static class ColumnPrunerSelectProc implements NodeProcessor {
-    public Object process(Node nd, NodeProcessorCtx ctx, Object... nodeOutputs) throws SemanticException {
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs) throws SemanticException {
       SelectOperator op = (SelectOperator)nd;
       ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx)ctx;
       List<String> cols = new ArrayList<String>();

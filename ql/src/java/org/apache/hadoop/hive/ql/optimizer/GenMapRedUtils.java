@@ -233,7 +233,7 @@ public class GenMapRedUtils {
    * @param plan     current plan
    * @param topOp    current top operator in the path
    */
-  private static void setKeyAndValueDesc(mapredWork plan, Operator<? extends Serializable> topOp) {
+  public static void setKeyAndValueDesc(mapredWork plan, Operator<? extends Serializable> topOp) {
     if (topOp instanceof ReduceSinkOperator) {
       ReduceSinkOperator rs = (ReduceSinkOperator)topOp;
       plan.setKeyDesc(rs.getConf().getKeySerializeInfo());

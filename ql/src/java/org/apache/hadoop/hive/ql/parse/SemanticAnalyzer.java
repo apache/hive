@@ -49,9 +49,11 @@ import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.ql.optimizer.Optimizer;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
+import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.optimizer.GenMROperator;
 import org.apache.hadoop.hive.ql.optimizer.GenMRTableScan1;
 import org.apache.hadoop.hive.ql.optimizer.GenMRFileSink1;
+import org.apache.hadoop.hive.ql.optimizer.GenMRUnion1;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink1;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink2;
 import org.apache.hadoop.hive.ql.plan.*;
@@ -82,6 +84,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private QB qb;
   private ASTNode ast;
   private int destTableId;
+  private UnionProcContext uCtx;
 
   private static class Phase1Ctx {
     String dest;
@@ -100,8 +103,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     this.loadFileWork = new ArrayList<loadFileDesc>();
     opParseCtx = new HashMap<Operator<? extends Serializable>, OpParseContext>();
     this.destTableId = 1;
- 
-    
+    this.uCtx = null;
   }
   
 
@@ -117,6 +119,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     this.idToTableNameMap.clear();
     qb = null;
     ast = null;
+    uCtx = null;
   }
 
   public void init(ParseContext pctx) {
@@ -130,11 +133,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ctx = pctx.getContext();
     destTableId = pctx.getDestTableId();
     idToTableNameMap = pctx.getIdToTableNameMap();
+    this.uCtx = pctx.getUCtx();
   }
 
   public ParseContext getParseContext() {
     return new ParseContext(conf, qb, ast, aliasToPruner, aliasToSamplePruner, topOps, 
-                            topSelOps, opParseCtx, loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId);
+                            topSelOps, opParseCtx, loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx);
   }
   
   @SuppressWarnings("nls")
@@ -2885,6 +2889,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       Operator leftOp, String rightalias, Operator rightOp)
       throws SemanticException {
 
+    // Currently, the unions are not merged - each union has only 2 parents. So, a n-way union will lead to (n-1) union operators.
+    // This can be easily merged into 1 union
     RowResolver leftRR = opParseCtx.get(leftOp).getRR();
     RowResolver rightRR = opParseCtx.get(rightOp).getRR();
     HashMap<String, ColumnInfo> leftmap = leftRR.getFieldMap(leftalias);
@@ -2920,18 +2926,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ColumnInfo lInfo = lEntry.getValue();
       unionoutRR.put(unionalias, field, lInfo);
     }
-    Operator<? extends Serializable> unionforward = OperatorFactory.get(forwardDesc.class,
-        new RowSchema(unionoutRR.getColumnInfos()));
+    Operator<? extends Serializable> unionforward = 
+      OperatorFactory.getAndMakeChild(new unionDesc(), new RowSchema(unionoutRR.getColumnInfos()));
+
     // set forward operator as child of each of leftOp and rightOp
     List<Operator<? extends Serializable>> child = new ArrayList<Operator<? extends Serializable>>();
     child.add(unionforward);
     rightOp.setChildOperators(child);
+
+    child = new ArrayList<Operator<? extends Serializable>>();
+    child.add(unionforward);
     leftOp.setChildOperators(child);
+
     List<Operator<? extends Serializable>> parent = new ArrayList<Operator<? extends Serializable>>();
     parent.add(leftOp);
     parent.add(rightOp);
     unionforward.setParentOperators(parent);
-
+    
     // create operator info list to return
     return putOpInsertMap(unionforward, unionoutRR);
   }
@@ -3286,13 +3297,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         getParseContext(), mvTask, this.rootTasks, this.scratchDir, this.randomid, this.pathid,
         new HashMap<Operator<? extends Serializable>, GenMapRedCtx>());
 
-    // create a walker which walks the tree in a DFS manner while maintaining the operator stack. The dispatcher
-    // generates the plan from the operator tree
+    // create a walker which walks the tree in a DFS manner while maintaining the operator stack. 
+    // The dispatcher generates the plan from the operator tree
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp(new String("R1"), "TS%"), new GenMRTableScan1());
     opRules.put(new RuleRegExp(new String("R2"), "TS%.*RS%"), new GenMRRedSink1());
     opRules.put(new RuleRegExp(new String("R3"), "RS%.*RS%"), new GenMRRedSink2());
     opRules.put(new RuleRegExp(new String("R4"), "FS%"), new GenMRFileSink1());
+    opRules.put(new RuleRegExp(new String("R4"), "UNION%"), new GenMRUnion1());
 
     // The dispatcher fires the processor corresponding to the closest matching rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(new GenMROperator(), opRules, procCtx);
@@ -3354,7 +3366,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     
 
     ParseContext pCtx = new ParseContext(conf, qb, ast, aliasToPruner, aliasToSamplePruner, topOps, 
-    		                                 topSelOps, opParseCtx, loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId);
+    		                                 topSelOps, opParseCtx, loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx);
   
     Optimizer optm = new Optimizer();
     optm.setPctx(pCtx);
@@ -3370,9 +3382,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Do any sample pruning
     genSamplePruners(qb);
     LOG.info("Completed sample pruning");
-    
-    // TODO - this can be extended to create multiple
-    // map reduce plans later
 
     // At this point we have the complete operator tree
     // from which we want to find the reduce operator

@@ -50,6 +50,7 @@ public class OperatorFactory {
     opvec.add(new opTuple<joinDesc> (joinDesc.class, JoinOperator.class));
     opvec.add(new opTuple<limitDesc> (limitDesc.class, LimitOperator.class));
     opvec.add(new opTuple<tableScanDesc> (tableScanDesc.class, TableScanOperator.class));
+    opvec.add(new opTuple<unionDesc> (unionDesc.class, UnionOperator.class));
   }
               
 

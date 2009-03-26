@@ -1,3 +1,5 @@
+-- union case: both subqueries are map jobs on same input, followed by filesink
+
 EXPLAIN
 FROM (
   FROM src select src.key, src.value WHERE src.key < 100

@@ -15,27 +15,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.lib;
 
+package org.apache.hadoop.hive.ql.exec;
 
-import java.util.Stack;
+import java.io.*;
 
-import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.unionDesc;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.conf.Configuration;
 
 /**
- * Base class for processing operators which is no-op. The specific processors can register their own context with
- * the dispatcher.
- */
-public interface NodeProcessor {
-  
+ * Union Operator
+ * Just forwards. Doesn't do anything itself.
+ **/
+public class UnionOperator extends  Operator<unionDesc>  implements Serializable {
+  private static final long serialVersionUID = 1L;
+
+  @Override
+  public void process(Object row, ObjectInspector rowInspector)
+      throws HiveException {
+    forward(row, rowInspector);    
+  }
+
   /**
-   * generic process for all ops that don't have specific implementations
-   * @param nd operator to process
-   * @param procCtx operator processor context
-   * @param nodeOutputs A variable argument list of outputs from other nodes in the walk
-   * @return Object to be returned by the process call
-   * @throws SemanticException
+   * @return the name of the operator
    */
-  public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs) 
-    throws SemanticException;
+  @Override
+  public String getName() {
+    return new String("UNION");
+  }
 }

@@ -22,34 +22,13 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Set;
-import java.util.Stack;
 import java.io.Serializable;
-import java.io.File;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
-import org.apache.hadoop.hive.ql.exec.TableScanOperator;
-import org.apache.hadoop.hive.ql.exec.JoinOperator;
+import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.exec.OperatorFactory;
-import org.apache.hadoop.hive.ql.plan.mapredWork;
-import org.apache.hadoop.hive.ql.plan.reduceSinkDesc;
-import org.apache.hadoop.hive.ql.plan.tableDesc;
-import org.apache.hadoop.hive.ql.plan.partitionDesc;
-import org.apache.hadoop.hive.ql.plan.fileSinkDesc;
-import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
-import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.fs.Path;
 
 /**
  * Processor Context for creating map reduce task. Walk the tree in a DFS manner and process the nodes. Some state is 
@@ -99,8 +78,9 @@ public class GenMRProcContext implements NodeProcessorCtx {
       return currAliasId;
     }
   }
-  
+
   private HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap;
+  private HashMap<UnionOperator, Task<? extends Serializable>>   unionTaskMap;
   private List<Operator<? extends Serializable>> seenOps;
 
   private ParseContext                          parseCtx;
@@ -151,6 +131,7 @@ public class GenMRProcContext implements NodeProcessorCtx {
     currAliasId     = null;
     rootOps         = new ArrayList<Operator<? extends Serializable>>();
     rootOps.addAll(parseCtx.getTopOps().values());
+    unionTaskMap = new HashMap<UnionOperator, Task<? extends Serializable>>();
   }
 
   /**
@@ -333,5 +314,13 @@ public class GenMRProcContext implements NodeProcessorCtx {
    */
   public void setCurrAliasId(String currAliasId) {
     this.currAliasId = currAliasId;
+  }
+
+  public Task<? extends Serializable> getUnionTask(UnionOperator op) {
+    return unionTaskMap.get(op);
+  }
+
+  public void setUnionTask(UnionOperator op, Task<? extends Serializable> uTask) {
+    unionTaskMap.put(op, uTask);
   }
 }

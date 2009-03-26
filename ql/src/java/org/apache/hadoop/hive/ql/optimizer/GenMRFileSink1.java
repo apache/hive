@@ -20,10 +20,10 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.List;
 import java.util.HashMap;
+import java.util.Stack;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.plan.mapredWork;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -44,8 +44,7 @@ public class GenMRFileSink1 implements NodeProcessor {
    * @param nd the file sink operator encountered
    * @param opProcCtx context
    */
-  public Object process(Node nd, NodeProcessorCtx opProcCtx, Object... nodeOutputs) throws SemanticException {
-    FileSinkOperator op = (FileSinkOperator)nd;
+  public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx opProcCtx, Object... nodeOutputs) throws SemanticException {
     GenMRProcContext ctx = (GenMRProcContext)opProcCtx;
     boolean ret = false;
 

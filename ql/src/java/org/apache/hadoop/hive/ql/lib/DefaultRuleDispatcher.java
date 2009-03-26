@@ -77,7 +77,7 @@ public class DefaultRuleDispatcher implements Dispatcher {
     // Do nothing in case proc is null
     if (proc != null) {
       // Call the process function
-      return proc.process(nd, procCtx, nodeOutputs);
+      return proc.process(nd, ndStack, procCtx, nodeOutputs);
     }
     else
       return null;

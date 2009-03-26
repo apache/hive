@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.parse;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Stack;
+
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
@@ -70,7 +72,7 @@ public class PrintOpTreeProcessor implements NodeProcessor {
     return ret.toString();
   }
   
-  public Object process(Node nd, NodeProcessorCtx ctx, Object... nodeOutputs) throws SemanticException {
+  public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs) throws SemanticException {
     Operator<? extends Serializable> op = (Operator<? extends Serializable>)nd;
     if (opMap.get(op) == null) {
       opMap.put(op, curNum++);

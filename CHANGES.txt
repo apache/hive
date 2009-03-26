@@ -22,8 +22,6 @@ Trunk (unreleased changes)
 
   BUG FIXES
 
-    HIVE-342. Fix TestMTQueries. (Prasad Chakka via zshao)
-
     HIVE-349. Fix TestCliDriver when there are test cases with no tasks.
     (Suresh Antony via zshao)
 
@@ -80,6 +78,8 @@ Trunk (unreleased changes)
 
     HIVE-342. Fix TestMTQueries
     (Prasad Chakka via namit)
+
+    HIVE-318. Fix union all queries. (Namit Jain via zshao)
 
 Release 0.2.0 - Unreleased
 

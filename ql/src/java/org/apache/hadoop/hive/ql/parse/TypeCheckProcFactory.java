@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -91,7 +92,7 @@ public class TypeCheckProcFactory {
   public static class NullExprProcessor implements NodeProcessor {
 
     @Override
-    public Object process(Node nd, NodeProcessorCtx procCtx,
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       exprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
@@ -118,7 +119,7 @@ public class TypeCheckProcFactory {
   public static class NumExprProcessor implements NodeProcessor {
 
     @Override
-    public Object process(Node nd, NodeProcessorCtx procCtx,
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       exprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
@@ -160,7 +161,7 @@ public class TypeCheckProcFactory {
   public static class StrExprProcessor implements NodeProcessor {
 
     @Override
-    public Object process(Node nd, NodeProcessorCtx procCtx,
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       exprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
@@ -202,7 +203,7 @@ public class TypeCheckProcFactory {
   public static class BoolExprProcessor implements NodeProcessor {
 
     @Override
-    public Object process(Node nd, NodeProcessorCtx procCtx,
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       exprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
@@ -242,7 +243,7 @@ public class TypeCheckProcFactory {
   public static class ColumnExprProcessor implements NodeProcessor {
 
     @Override
-    public Object process(Node nd, NodeProcessorCtx procCtx,
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       exprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
@@ -581,7 +582,7 @@ public class TypeCheckProcFactory {
     }
 
     @Override
-    public Object process(Node nd, NodeProcessorCtx procCtx,
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
       ASTNode expr = (ASTNode)nd;

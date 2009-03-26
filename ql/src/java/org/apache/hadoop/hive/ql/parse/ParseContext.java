@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.plan.loadFileDesc;
 import org.apache.hadoop.hive.ql.plan.loadTableDesc;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 
 /**
  * Parse Context: The current parse context. This is passed to the optimizer
@@ -52,7 +53,8 @@ public class ParseContext {
   private HiveConf conf;
   private HashMap<String, String> idToTableNameMap;
   private int destTableId;
-
+  private UnionProcContext uCtx;
+  
   /**
    * @param qb
    *          current QB
@@ -81,7 +83,7 @@ public class ParseContext {
       HashMap<String, Operator<? extends Serializable>> topSelOps,
       HashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx,
       List<loadTableDesc> loadTableWork, List<loadFileDesc> loadFileWork,
-      Context ctx, HashMap<String, String> idToTableNameMap, int destTableId) {
+      Context ctx, HashMap<String, String> idToTableNameMap, int destTableId, UnionProcContext uCtx) {
     this.conf = conf;
     this.qb = qb;
     this.ast = ast;
@@ -95,6 +97,7 @@ public class ParseContext {
     this.ctx = ctx;
     this.idToTableNameMap = idToTableNameMap;
     this.destTableId = destTableId;
+    this.uCtx = uCtx;
   }
 
   /**
@@ -281,5 +284,12 @@ public class ParseContext {
     this.destTableId = destTableId;
   }
   
-  
+  public UnionProcContext getUCtx() {
+    return uCtx;
+  }
+
+  public void setUCtx(UnionProcContext uCtx) {
+    this.uCtx = uCtx;
+  }
+
 }

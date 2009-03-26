@@ -49,6 +49,13 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   protected List<Operator<? extends Serializable>> parentOperators;
   private static int seqId;
 
+  // It can be opimized later so that an operator operator (init/close) is performed
+  // only after that operation has been performed on all the parents. This will require
+  // initializing the whole tree in all the mappers (which might be required for mappers
+  // spanning multiple files anyway, in future)
+  public static enum State { UNINIT, INIT, CLOSE };
+  transient private State state = State.UNINIT;
+
   static {
     seqId = 0;
   }
@@ -213,6 +220,11 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   }
 
   public void initialize (Configuration hconf, Reporter reporter) throws HiveException {
+    if (state == state.INIT) {
+      LOG.info("Already Initialized");
+      return;
+    }
+
     LOG.info("Initializing Self");
     this.reporter = reporter;
     
@@ -223,6 +235,9 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     for(Operator<? extends Serializable> op: childOperators) {
       op.initialize(hconf, reporter);
     }    
+
+    state = State.INIT;
+
     LOG.info("Initialization Done");
   }
 
@@ -258,18 +273,23 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   }
 
   public void close(boolean abort) throws HiveException {
-      try {
-        logStats();
-        if(childOperators == null)
-          return;
+    if (state == state.CLOSE) 
+      return;
 
-        for(Operator<? extends Serializable> op: childOperators) {
-          op.close(abort);
-        }
-      } catch (HiveException e) {
-        e.printStackTrace();
-        throw e;
+    try {
+      logStats();
+      if(childOperators == null)
+        return;
+
+      for(Operator<? extends Serializable> op: childOperators) {
+        op.close(abort);
       }
+
+      state = State.CLOSE;
+    } catch (HiveException e) {
+      e.printStackTrace();
+      throw e;
+    }
   }
 
   /**
@@ -318,7 +338,6 @@ public abstract class Operator <T extends Serializable> implements Serializable,
       statsMap.get(e).set(0L);
     }
   }
-
 
   public static interface OperatorFunc {
     public void func(Operator<? extends Serializable> op);

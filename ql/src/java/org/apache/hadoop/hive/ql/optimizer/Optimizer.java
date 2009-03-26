@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcessor;
 
 /**
  * Implementation of the optimizer
@@ -43,6 +44,7 @@ public class Optimizer {
 	public void initialize() {
 		transformations = new ArrayList<Transform>();
 		transformations.add(new ColumnPruner());
+		transformations.add(new UnionProcessor());
 	}
 	
 	/**

@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Stack;
 import java.util.TreeSet;
 
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
@@ -76,7 +77,7 @@ public class LineageInfo  implements NodeProcessor {
   /**
    * Implements the process method for the NodeProcessor interface.
    */
-  public Object process(Node nd, NodeProcessorCtx procCtx, Object... nodeOutputs)
+  public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
   throws SemanticException {
     ASTNode pt = (ASTNode)nd;
 

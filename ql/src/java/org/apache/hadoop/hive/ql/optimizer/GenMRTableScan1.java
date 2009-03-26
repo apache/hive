@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -44,7 +45,7 @@ public class GenMRTableScan1 implements NodeProcessor {
    * @param nd the table sink operator encountered
    * @param opProcCtx context
    */
-  public Object process(Node nd, NodeProcessorCtx opProcCtx, Object... nodeOutputs) throws SemanticException {
+  public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx opProcCtx, Object... nodeOutputs) throws SemanticException {
     TableScanOperator op = (TableScanOperator)nd;
     GenMRProcContext ctx = (GenMRProcContext)opProcCtx;
     ParseContext parseCtx = ctx.getParseCtx();

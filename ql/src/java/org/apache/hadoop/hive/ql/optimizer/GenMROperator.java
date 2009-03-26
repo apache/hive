@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -41,7 +42,7 @@ public class GenMROperator implements NodeProcessor {
    * @param nd the reduce sink operator encountered
    * @param procCtx context
    */
-  public Object process(Node nd, NodeProcessorCtx procCtx, Object... nodeOutputs) throws SemanticException {
+  public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs) throws SemanticException {
     GenMRProcContext ctx = (GenMRProcContext)procCtx;
 
     Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx.getMapCurrCtx();
