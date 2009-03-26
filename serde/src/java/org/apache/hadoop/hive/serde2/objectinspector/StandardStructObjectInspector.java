@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.serde2.objectinspector;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -111,28 +112,42 @@ public class StandardStructObjectInspector implements StructObjectInspector {
   // With Data
   @SuppressWarnings("unchecked")
   public Object getStructFieldData(Object data, StructField fieldRef) {
-    List<Object> list = getStructFieldsDataAsList(data);
-    if (list == null) {
+    if (data == null) {
       return null;
     }
+    // We support both List<Object> and Object[]
+    // so we have to do differently.
+    boolean isArray = data.getClass().isArray();
+    int listSize = (isArray
+        ? ((Object[])data).length
+        : ((List<Object>)data).size());
     MyField f = (MyField) fieldRef;
-    if (fields.size() != list.size() && !warned) {
+    if (fields.size() != listSize && !warned) {
       // TODO: remove this
       warned = true;
-      LOG.warn("Trying to access " + fields.size() + " fields inside a list of " + list.size()
-          + " elements: " + list);
+      LOG.warn("Trying to access " + fields.size() + " fields inside a list of "
+          + listSize + " elements: "
+          + (isArray ? Arrays.asList((Object[])data) : (List<Object>)data));
       LOG.warn("ignoring similar errors.");
     }
     int fieldID = f.getFieldID();
     assert(fieldID >= 0 && fieldID < fields.size());
-    
-    return fieldID >= list.size() ? null : list.get(fieldID);
+
+    if (fieldID >= listSize) {
+      return null;
+    } else if (isArray) {
+      return ((Object[])data)[fieldID];
+    } else {
+      return ((List<Object>)data).get(fieldID);
+    }
   }
   @SuppressWarnings("unchecked")
   public List<Object> getStructFieldsDataAsList(Object data) {
     if (data == null) {
       return null;
     }
+    // We support both List<Object> and Object[]
+    // so we have to do differently.
     if (data.getClass().isArray()) {
       data = java.util.Arrays.asList((Object[])data);
     }

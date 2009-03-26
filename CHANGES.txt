@@ -93,6 +93,9 @@ Trunk (unreleased changes)
     HIVE-278. Add support for Hive History to 
     Hive Web UI. (Edward Capriolo via athusoo)
 
+    HIVE-356. Treat Object[] and List<Object> differently.
+    (Zheng Shao via namit)
+
 Release 0.2.0 - Unreleased
 
   INCOMPATIBLE CHANGES

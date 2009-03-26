@@ -48,21 +48,47 @@ class StandardListObjectInspector implements ListObjectInspector {
   
   // with data
   public Object getListElement(Object data, int index) {
-    List<?> list = getList(data);
-    if (list == null || index < 0 || index >= list.size()) {
+    if (data == null) {
       return null;
     }
-    return list.get(index);
+    // We support both List<Object> and Object[]
+    // so we have to do differently.
+    boolean isArray = data.getClass().isArray();
+    if (isArray) {
+      Object[] list = (Object[]) data;
+      if (index < 0 || index >= list.length) {
+        return null;
+      }
+      return list[index];
+    } else {
+      List<?> list = (List<?>) data;
+      if (index < 0 || index >= list.size()) {
+        return null;
+      }
+      return list.get(index);
+    }
   }
   
   public int getListLength(Object data) {
-    List<?> list = getList(data);
-    if (list == null) return -1;
-    return list.size();
+    if (data == null) {
+      return -1;
+    }
+    // We support both List<Object> and Object[]
+    // so we have to do differently.
+    boolean isArray = data.getClass().isArray();
+    if (isArray) {
+      Object[] list = (Object[]) data;
+      return list.length;
+    } else {
+      List<?> list = (List<?>) data;
+      return list.size();
+    }
   }
   
   public List<?> getList(Object data) {
     if (data == null) return null;
+    // We support both List<Object> and Object[]
+    // so we have to do differently.
     if (data.getClass().isArray()) {
       data = java.util.Arrays.asList((Object[])data);
     }

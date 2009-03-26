@@ -95,19 +95,28 @@ public class UnionStructObjectInspector implements StructObjectInspector {
     if (data == null) {
       return null;
     }
-    if (data.getClass().isArray()) {
-      data = java.util.Arrays.asList((Object[])data);
-    }
     MyField f = (MyField) fieldRef;
-    List<Object> list = (List<Object>) data;
-    assert(list.size() == unionObjectInspectors.size());
-    return unionObjectInspectors.get(f.structID).getStructFieldData(list.get(f.structID), f.structField);
+    Object fieldData;
+    // We support both List<Object> and Object[]
+    // so we have to do differently.
+    if (data.getClass().isArray()) {
+      Object[] list = (Object[]) data;
+      assert(list.length == unionObjectInspectors.size());
+      fieldData = list[f.structID];
+    } else {
+      List<Object> list = (List<Object>) data;
+      assert(list.size() == unionObjectInspectors.size());
+      fieldData = list.get(f.structID);
+    }
+    return unionObjectInspectors.get(f.structID).getStructFieldData(fieldData, f.structField);
   }
   @SuppressWarnings("unchecked")
   public List<Object> getStructFieldsDataAsList(Object data) {
     if (data == null) {
       return null;
     }
+    // We support both List<Object> and Object[]
+    // so we have to do differently.
     if (data.getClass().isArray()) {
       data = java.util.Arrays.asList((Object[])data);
     }
