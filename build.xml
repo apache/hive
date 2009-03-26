@@ -179,9 +179,18 @@
       <fileset dir="${hive.root}/serde/src/gen-php" excludes="**/.svn"/>
       <fileset dir="${hive.root}/metastore/src/gen-php" excludes="**/.svn"/>
     </copy>
+    <!-- Create the python thrift package -->
     <copy todir="${target.lib.dir}/py">
-      <fileset dir="${hive.root}/serde/src/gen-py" excludes="**/.svn"/>
-      <fileset dir="${hive.root}/metastore/src/gen-py" excludes="**/.svn"/>
+      <fileset dir="${hive.root}/service/lib/py" excludes="**/.svn"/>
+    </copy>
+    <copy todir="${target.lib.dir}/py/hive_serde">
+      <fileset dir="${hive.root}/serde/src/gen-py/org_apache_hadoop_hive_serde" excludes="**/.svn"/>
+    </copy>
+    <copy todir="${target.lib.dir}/py/hive_metastore">
+      <fileset dir="${hive.root}/metastore/src/gen-py/hive_metastore" excludes="**/.svn"/>
+    </copy>
+    <copy todir="${target.lib.dir}/py/hive_service">
+      <fileset dir="${hive.root}/service/src/gen-py/hive_service" excludes="**/.svn"/>
     </copy>
     <copy todir="${target.lib.dir}" preservelastmodified="true" flatten="true">
       <fileset dir="${hive.root}" includes="*/*.jar, */*/*.jar" excludes="**/antlr-2*,**/antlr-3*"/>

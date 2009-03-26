@@ -314,10 +314,10 @@ class execute_args:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self):
+  def __str__(self): 
     return str(self.__dict__)
 
-  def __repr__(self):
+  def __repr__(self): 
     return repr(self.__dict__)
 
   def __eq__(self, other):
@@ -371,10 +371,10 @@ class execute_result:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self):
+  def __str__(self): 
     return str(self.__dict__)
 
-  def __repr__(self):
+  def __repr__(self): 
     return repr(self.__dict__)
 
   def __eq__(self, other):
@@ -413,10 +413,10 @@ class fetchOne_args:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self):
+  def __str__(self): 
     return str(self.__dict__)
 
-  def __repr__(self):
+  def __repr__(self): 
     return repr(self.__dict__)
 
   def __eq__(self, other):
@@ -482,10 +482,10 @@ class fetchOne_result:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self):
+  def __str__(self): 
     return str(self.__dict__)
 
-  def __repr__(self):
+  def __repr__(self): 
     return repr(self.__dict__)
 
   def __eq__(self, other):
@@ -538,10 +538,10 @@ class fetchN_args:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self):
+  def __str__(self): 
     return str(self.__dict__)
 
-  def __repr__(self):
+  def __repr__(self): 
     return repr(self.__dict__)
 
   def __eq__(self, other):
@@ -615,10 +615,10 @@ class fetchN_result:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self):
+  def __str__(self): 
     return str(self.__dict__)
 
-  def __repr__(self):
+  def __repr__(self): 
     return repr(self.__dict__)
 
   def __eq__(self, other):
@@ -657,10 +657,10 @@ class fetchAll_args:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self):
+  def __str__(self): 
     return str(self.__dict__)
 
-  def __repr__(self):
+  def __repr__(self): 
     return repr(self.__dict__)
 
   def __eq__(self, other):
@@ -734,10 +734,10 @@ class fetchAll_result:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self):
+  def __str__(self): 
     return str(self.__dict__)
 
-  def __repr__(self):
+  def __repr__(self): 
     return repr(self.__dict__)
 
   def __eq__(self, other):
@@ -776,10 +776,10 @@ class getSchema_args:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self):
+  def __str__(self): 
     return str(self.__dict__)
 
-  def __repr__(self):
+  def __repr__(self): 
     return repr(self.__dict__)
 
   def __eq__(self, other):
@@ -845,10 +845,10 @@ class getSchema_result:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self):
+  def __str__(self): 
     return str(self.__dict__)
 
-  def __repr__(self):
+  def __repr__(self): 
     return repr(self.__dict__)
 
   def __eq__(self, other):

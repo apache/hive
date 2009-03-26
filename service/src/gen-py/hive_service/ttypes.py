@@ -57,10 +57,10 @@ class HiveServerException(Exception):
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self):
+  def __str__(self): 
     return str(self.__dict__)
 
-  def __repr__(self):
+  def __repr__(self): 
     return repr(self.__dict__)
 
   def __eq__(self, other):

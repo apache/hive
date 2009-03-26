@@ -16,6 +16,9 @@ Trunk (unreleased changes)
 
     HIVE-30. Hive Web User Interface. (Edward Capriolo via athusoo)
 
+    HIVE-343. Include py packages for thrift service.
+    (Raghotham Murthy via zshao)
+
   IMPROVEMENTS
 
   OPTIMIZATIONS
