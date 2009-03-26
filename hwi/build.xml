@@ -27,15 +27,11 @@
   </target>
 
  <path id="classpath-hwi">
-    <pathelement location="${classpath}"/>
      <fileset dir="${hadoop.root}/lib">
        <include name="**/*.jar" />
        <exclude name="**/excluded/" />
      </fileset>
-     <fileset dir="../build">
-       <include name="**/*.jar" />
-       <exclude name="**/excluded/" />
-     </fileset>
+    <path refid="classpath" />
   </path>
 
 </project>

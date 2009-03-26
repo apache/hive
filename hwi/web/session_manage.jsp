@@ -70,7 +70,7 @@
           	--%>
           <% } %>
           
-         
+          Session History:  <a href="/hwi/session_history.jsp?sessionName=<%=sessionName%>"><%=sessionName%></a><br> 
           Session Diagnostics: <a href="/hwi/session_diagnostics.jsp?sessionName=<%=sessionName%>"><%=sessionName%></a><br>
 		  Set Processor: <a href="/hwi/set_processor.jsp?sessionName=<%=sessionName%>"><%=sessionName%></a><br> 
           Session Remove: <a href="/hwi/session_remove.jsp?sessionName=<%=sessionName%>"><%=sessionName%></a><br> 

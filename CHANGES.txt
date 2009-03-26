@@ -84,6 +84,9 @@ Trunk (unreleased changes)
     HIVE-367. Null Pointer when some of the files in the table are
     empty. (Namit Jain via athusoo) 
 
+    HIVE-278. Add support for Hive History to 
+    Hive Web UI. (Edward Capriolo via athusoo)
+
 Release 0.2.0 - Unreleased
 
   INCOMPATIBLE CHANGES
