@@ -555,6 +555,9 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
       // Update the number of entries that can fit in the hash table
       numEntriesHashTable = (int)(maxHashTblMemory / (fixedRowSize + ((int)totalVariableSize/numEntriesVarSize)));
       LOG.trace("Hash Aggr: #hash table = " + numEntries + " #max in hash table = " + numEntriesHashTable);
+
+      if ((numEntries % (100 * NUMROWSESTIMATESIZE)) == 0)
+        LOG.warn("Hash Aggr: #hash table = " + numEntries + " #max in hash table = " + numEntriesHashTable);
     }
 
     // flush if necessary

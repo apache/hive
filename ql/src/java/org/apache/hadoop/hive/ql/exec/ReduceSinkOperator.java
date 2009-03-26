@@ -192,7 +192,8 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
     }
     
     try {
-      out.collect(keyWritable, value);
+      if (out != null)
+        out.collect(keyWritable, value);
     } catch (IOException e) {
       throw new HiveException (e);
     }

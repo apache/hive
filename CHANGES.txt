@@ -81,6 +81,9 @@ Trunk (unreleased changes)
 
     HIVE-318. Fix union all queries. (Namit Jain via zshao)
 
+    HIVE-367. Null Pointer when some of the files in the table are
+    empty. (Namit Jain via athusoo) 
+
 Release 0.2.0 - Unreleased
 
   INCOMPATIBLE CHANGES
