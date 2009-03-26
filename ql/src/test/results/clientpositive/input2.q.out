@@ -1,19 +1,39 @@
-a	int
-b	double
-a	array<int>
-b	double
-c	map<double,int>
-src	src1	src_json	src_sequencefile	src_thrift	srcbucket	srcpart	test2a	test2b
-src	src1	src_json	src_sequencefile	src_thrift	srcbucket	srcpart	test2b
+a	int	
+b	double	
+a	array<int>	
+b	double	
+c	map<double,int>	
+src
+src1
+src_json
+src_sequencefile
+src_thrift
+srcbucket
+srcpart
+test2a
+test2b
+src
+src1
+src_json
+src_sequencefile
+src_thrift
+srcbucket
+srcpart
+test2b
 ABSTRACT SYNTAX TREE:
   TOK_SHOWTABLES
 
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
+  Stage-1 is a root stage
 
 STAGE PLANS:
   Stage: Stage-0
       Show Table Operator:
         Show Tables
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
 
 

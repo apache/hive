@@ -32,7 +32,23 @@ public class descTableDesc extends ddlDesc implements Serializable
   HashMap<String, String> partSpec;
   Path              resFile;
   boolean           isExt;
-  
+  /**
+   * table name for the result of describe table
+   */
+  private final String table = "describe";
+  /**
+   * thrift ddl for the result of describe table
+   */
+  private final String schema = "col_name,data_type,comment#string:string:string";
+
+  public String getTable() {
+    return table;
+  }
+
+  public String getSchema() {
+    return schema;
+  }
+ 
   /**
    * @param isExt
    * @param partSpec

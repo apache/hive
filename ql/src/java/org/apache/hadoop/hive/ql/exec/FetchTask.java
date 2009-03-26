@@ -77,7 +77,7 @@ public class FetchTask extends Task<fetchWork> implements Serializable {
 	 	   mSerde = new LazySimpleSerDe();
        Properties mSerdeProp = new Properties();
        mSerdeProp.put(Constants.SERIALIZATION_FORMAT, "" + Utilities.tabCode);
-       mSerdeProp.put(Constants.SERIALIZATION_NULL_FORMAT, "NULL");
+       mSerdeProp.put(Constants.SERIALIZATION_NULL_FORMAT, ((fetchWork)work).getSerializationNullFormat());
        mSerde.initialize(job, mSerdeProp);
        
        currPath = null;

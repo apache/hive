@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
@@ -33,11 +34,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
@@ -53,9 +51,15 @@ import org.apache.hadoop.hive.ql.plan.showTablesDesc;
 import org.apache.hadoop.hive.ql.plan.alterTableDesc.alterTableTypes;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.ql.plan.fetchWork;
+import org.apache.hadoop.hive.ql.plan.tableDesc;
+import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.hadoop.hive.ql.exec.Task;
+import java.io.Serializable;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
-import org.apache.hadoop.mapred.TextInputFormat;
 
 public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private static final Log LOG = LogFactory.getLog("hive.ql.parse.DDLSemanticAnalyzer");
@@ -452,7 +456,30 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
            getFullyQualifiedName((ASTNode)ast.getChild(1));
   }
 
-  private void analyzeDescribeTable(ASTNode ast) 
+  /**
+   * Create a FetchTask for a given table and thrift ddl schema
+   * @param tablename tablename
+   * @param schema thrift ddl
+   */
+  private Task<? extends Serializable> createFetchTask(String schema) {
+    Properties prop = new Properties();
+    
+    prop.setProperty(Constants.SERIALIZATION_FORMAT, "9");
+    prop.setProperty(Constants.SERIALIZATION_NULL_FORMAT, " ");
+    String[] colTypes = schema.split("#");
+    prop.setProperty("columns", colTypes[0]);
+    prop.setProperty("columns.types", colTypes[1]);
+
+    fetchWork fetch = new fetchWork(
+      ctx.getResFile(),
+      new tableDesc(LazySimpleSerDe.class, TextInputFormat.class, IgnoreKeyTextOutputFormat.class, prop),
+      -1
+    );    
+    fetch.setSerializationNullFormat(" ");
+    return TaskFactory.get(fetch, this.conf);
+  }
+
+  private void analyzeDescribeTable(ASTNode ast)
   throws SemanticException {
     ASTNode tableTypeExpr = (ASTNode)ast.getChild(0);
     String tableName = getFullyQualifiedName((ASTNode)tableTypeExpr.getChild(0));
@@ -472,6 +499,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean isExt = ast.getChildCount() > 1;
     descTableDesc descTblDesc = new descTableDesc(ctx.getResFile(), tableName, partSpec, isExt);
     rootTasks.add(TaskFactory.get(new DDLWork(descTblDesc), conf));
+    setFetchTask(createFetchTask(descTblDesc.getSchema()));
     LOG.info("analyzeDescribeTable done");
   }
   
@@ -481,6 +509,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String tableName = unescapeIdentifier(ast.getChild(0).getText());
     showPartsDesc = new showPartitionsDesc(tableName, ctx.getResFile());
     rootTasks.add(TaskFactory.get(new DDLWork(showPartsDesc), conf));
+    setFetchTask(createFetchTask(showPartsDesc.getSchema()));
   }
   
   private void analyzeShowTables(ASTNode ast) 
@@ -491,9 +520,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       String tableNames = unescapeSQLString(ast.getChild(0).getText());    
       showTblsDesc = new showTablesDesc(ctx.getResFile(), tableNames);
     }
-    else
+    else {
       showTblsDesc = new showTablesDesc(ctx.getResFile());
+    }
     rootTasks.add(TaskFactory.get(new DDLWork(showTblsDesc), conf));
+    setFetchTask(createFetchTask(showTblsDesc.getSchema()));
   }
 
   private void analyzeAlterTableRename(ASTNode ast) 

@@ -18,7 +18,7 @@ STAGE PLANS:
           isExternal: false
 
 
-key	int
-value	string
-ds	datetime
-country	string
+key	int	
+value	string	
+ds	datetime	
+country	string	

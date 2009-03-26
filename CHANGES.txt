@@ -24,6 +24,9 @@ Trunk (unreleased changes)
 
   IMPROVEMENTS
 
+    HIVE-132. Show table and describe results to be read via FetchTask.
+    (Raghotham Murthy via zshao)
+
   OPTIMIZATIONS
 
   BUG FIXES

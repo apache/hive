@@ -17,7 +17,7 @@ STAGE PLANS:
           isExternal: false
 
 
-key	int
-value	string
-Detailed Table Information:
-Table(tableName:dest1,dbName:default,owner:zshao,createTime:1232520076,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:key,type:int,comment:null), FieldSchema(name:value,type:string,comment:null)],location:file:/data/users/zshao/sync/apache-trunk-HIVE-240/build/ql/test/data/warehouse/dest1,inputFormat:java.lang.Void,outputFormat:java.lang.Void,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe,parameters:{serialization.format=org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[],parameters:{})
+key	int	
+value	string	
+	 	 
+Detailed Table Information	Table(tableName:dest1,dbName:default,owner:rmurthy,createTime:1238029996,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:key,type:int,comment:null), FieldSchema(name:value,type:string,comment:null)],location:file:/mnt/vol/devrs005.snc1/rmurthy/hive/build/ql/test/data/warehouse/dest1,inputFormat:java.lang.Void,outputFormat:java.lang.Void,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[],parameters:{})	

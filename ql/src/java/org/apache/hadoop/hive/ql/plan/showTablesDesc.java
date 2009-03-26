@@ -27,6 +27,22 @@ public class showTablesDesc extends ddlDesc implements Serializable
   private static final long serialVersionUID = 1L;
   String     pattern;
   Path       resFile;
+  /**
+   * table name for the result of show tables
+   */
+  private final String table = "show";
+  /**
+   * thrift ddl for the result of show tables
+   */
+  private final String schema = "tab_name#string";
+
+  public String getTable() {
+    return table;
+  }
+
+  public String getSchema() {
+    return schema;
+  }
   
   /**
    * @param resFile

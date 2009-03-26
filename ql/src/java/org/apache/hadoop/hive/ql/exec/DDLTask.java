@@ -75,7 +75,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   transient HiveConf conf;
   static final private int separator  = Utilities.tabCode;
-  static final private int singleQuote  = '\'';
   static final private int terminator = Utilities.newLineCode;
   
   public void initialize(HiveConf conf) {
@@ -291,21 +290,23 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     try {
       DataOutput outStream = (DataOutput) fs.create(showParts.getResFile());
       Iterator<String> iterParts = parts.iterator();
-      boolean firstCol = true;
+
       while (iterParts.hasNext()) {
-        if (!firstCol)
-          outStream.write(terminator);
-        outStream.write(iterParts.next().getBytes("UTF-8"));
-        firstCol = false;
+        // create a row per partition name
+        outStream.writeBytes(iterParts.next());
+        outStream.write(terminator);
       }
-      ((FSDataOutputStream) outStream).close();
+      ((FSDataOutputStream)outStream).close();
     } catch (FileNotFoundException e) {
       LOG.info("show partitions: " + StringUtils.stringifyException(e));
-      return 1;
+      throw new HiveException(e.toString());
     } catch (IOException e) {
       LOG.info("show partitions: " + StringUtils.stringifyException(e));
-      return 1;
+      throw new HiveException(e.toString());
+    } catch (Exception e) {
+      throw new HiveException(e.toString());
     }
+
     return 0;
   }
 
@@ -331,23 +332,24 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     // write the results in the file
     try {
-      DataOutput outStream = (DataOutput) fs.create(showTbls.getResFile());
+      DataOutput outStream = (DataOutput)fs.create(showTbls.getResFile());
       SortedSet<String> sortedTbls = new TreeSet<String>(tbls);
       Iterator<String> iterTbls = sortedTbls.iterator();
-      boolean firstCol = true;
+
       while (iterTbls.hasNext()) {
-        if (!firstCol)
-          outStream.write(separator);
-        outStream.write(iterTbls.next().getBytes("UTF-8"));
-        firstCol = false;
+        // create a row per table name
+        outStream.writeBytes(iterTbls.next());
+        outStream.write(terminator);
       }
-      ((FSDataOutputStream) outStream).close();
+      ((FSDataOutputStream)outStream).close();
     } catch (FileNotFoundException e) {
       LOG.info("show table: " + StringUtils.stringifyException(e));
       return 1;
     } catch (IOException e) {
       LOG.info("show table: " + StringUtils.stringifyException(e));
       return 1;
+    } catch (Exception e) {
+      throw new HiveException(e.toString());
     }
     return 0;
   }
@@ -402,8 +404,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       LOG.info("DDLTask: got data for " + tbl.getName());
 
-      // write the results in the file
-      DataOutput os = (DataOutput) fs.create(descTbl.getResFile());
       List<FieldSchema> cols = null;
       if (colPath.equals(tableName)) {
         cols = tbl.getCols();
@@ -413,23 +413,17 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       } else {
         cols = Hive.getFieldsFromDeserializer(colPath, tbl.getDeserializer());
       }
-
+      DataOutput outStream = (DataOutput)fs.create(descTbl.getResFile());
       Iterator<FieldSchema> iterCols = cols.iterator();
-      boolean firstCol = true;
       while (iterCols.hasNext()) {
-        if (!firstCol)
-          os.write(terminator);
+        // create a row per column
         FieldSchema col = iterCols.next();
-        os.write(col.getName().getBytes("UTF-8"));
-        os.write(separator);
-        os.write(col.getType().getBytes("UTF-8"));
-        if (col.getComment() != null) {
-          os.write(separator);
-          os.write(singleQuote);
-          os.write(col.getComment().getBytes("UTF-8"));
-          os.write(singleQuote);
-        }
-        firstCol = false;
+        outStream.writeBytes(col.getName());
+        outStream.write(separator);
+        outStream.writeBytes(col.getType());
+        outStream.write(separator);
+        outStream.writeBytes(col.getComment() == null ? "" : col.getComment());
+        outStream.write(terminator);
       }
 
       if (tableName.equals(colPath)) {
@@ -437,32 +431,41 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         List<FieldSchema> partCols = tbl.getPartCols();
         Iterator<FieldSchema> iterPartCols = partCols.iterator();
         while (iterPartCols.hasNext()) {
-          os.write(terminator);
           FieldSchema col = iterPartCols.next();
-          os.write(col.getName().getBytes("UTF-8"));
-          os.write(separator);
-          os.write(col.getType().getBytes("UTF-8"));
-          if (col.getComment() != null) {
-            os.write(separator);
-            os.write(col.getComment().getBytes("UTF-8"));
-          }
+          outStream.writeBytes(col.getName());
+          outStream.write(separator);
+          outStream.writeBytes(col.getType());
+          outStream.write(separator);
+          outStream.writeBytes(col.getComment() == null ? "" : col.getComment());
+          outStream.write(terminator);
         }
 
         // if extended desc table then show the complete details of the table
         if (descTbl.isExt()) {
+          // add empty line
+          outStream.write(terminator);
           if (part != null) {
-            // show partition informatio
-            os.write("\n\nDetailed Partition Information:\n".getBytes("UTF-8"));
-            os.write(part.getTPartition().toString().getBytes("UTF-8"));
+            // show partition information
+            outStream.writeBytes("Detailed Partition Information");
+            outStream.write(separator);
+            outStream.writeBytes(part.getTPartition().toString());
+            outStream.write(separator);
+            // comment column is empty
+            outStream.write(terminator);
           } else {
-            os.write("\nDetailed Table Information:\n".getBytes("UTF-8"));
-            os.write(tbl.getTTable().toString().getBytes("UTF-8"));
+            // show table information
+            outStream.writeBytes("Detailed Table Information");
+            outStream.write(separator);
+            outStream.writeBytes(tbl.getTTable().toString());
+            outStream.write(separator);
+            // comment column is empty
+            outStream.write(terminator);
           }
         }
       }
 
       LOG.info("DDLTask: written data for " + tbl.getName());
-      ((FSDataOutputStream) os).close();
+      ((FSDataOutputStream) outStream).close();
 
     } catch (FileNotFoundException e) {
       LOG.info("describe table: " + StringUtils.stringifyException(e));
@@ -470,7 +473,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } catch (IOException e) {
       LOG.info("describe table: " + StringUtils.stringifyException(e));
       return 1;
+    } catch (Exception e) {
+      throw new HiveException(e.toString());
     }
+
     return 0;
   }
 

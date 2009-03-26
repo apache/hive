@@ -27,6 +27,22 @@ public class showPartitionsDesc extends ddlDesc implements Serializable
   private static final long serialVersionUID = 1L;
   String     tabName;
   Path       resFile;
+  /**
+   * table name for the result of show tables
+   */
+  private final String table = "showpartitions";
+  /**
+   * thrift ddl for the result of show tables
+   */
+  private final String schema = "partition#string";
+
+  public String getTable() {
+    return table;
+  }
+
+  public String getSchema() {
+    return schema;
+  }
   
   /**
    * @param tabName Name of the table whose partitions need to be listed

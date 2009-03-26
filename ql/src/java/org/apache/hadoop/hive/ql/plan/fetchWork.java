@@ -36,6 +36,11 @@ public class fetchWork implements Serializable {
 
   private int limit;
 
+  /**
+   * Serialization Null Format for the serde used to fetch data
+   */
+  private String serializationNullFormat = "NULL";
+
   public fetchWork() { }
 
 	public fetchWork(Path tblDir, tableDesc tblDesc, int limit) {
@@ -49,6 +54,14 @@ public class fetchWork implements Serializable {
 		this.partDesc = partDesc;
 		this.limit = limit;
 	}
+
+  public String getSerializationNullFormat() {
+    return serializationNullFormat;
+  }
+
+  public void setSerializationNullFormat(String format) {
+    serializationNullFormat = format;
+  }
 	
 	/**
 	 * @return the tblDir

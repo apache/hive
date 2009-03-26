@@ -3,6 +3,7 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
+  Stage-1 is a root stage
 
 STAGE PLANS:
   Stage: Stage-0
@@ -10,8 +11,12 @@ STAGE PLANS:
         Describe Table
           table: TEST10
 
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
 
-key	int
-value	string
-ds	string
-hr	string
+
+key	int	
+value	string	
+ds	string	
+hr	string	
