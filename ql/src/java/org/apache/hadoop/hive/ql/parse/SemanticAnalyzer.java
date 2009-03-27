@@ -1680,7 +1680,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   @SuppressWarnings("nls")
   private Operator genGroupByPlanReduceSinkOperator2MR(
-      QBParseInfo parseInfo, String dest, Operator groupByOperatorInfo, int numPartitionFields)
+    QBParseInfo parseInfo, String dest, Operator groupByOperatorInfo, int numPartitionFields, int numReducers)
     throws SemanticException {
     RowResolver reduceSinkInputRowResolver2 = opParseCtx.get(groupByOperatorInfo).getRR();
     RowResolver reduceSinkOutputRowResolver2 = new RowResolver();
@@ -1715,7 +1715,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     return putOpInsertMap(
       OperatorFactory.getAndMakeChild(PlanUtils.getReduceSinkDesc(reduceKeys, reduceValues, -1, 
-                                                                  numPartitionFields, -1),
+                                                                  numPartitionFields, numReducers),
                                         new RowSchema(reduceSinkOutputRowResolver2.getColumnInfos()),
                                         groupByOperatorInfo),
         reduceSinkOutputRowResolver2
@@ -1830,9 +1830,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     QBParseInfo parseInfo = qb.getParseInfo();
 
+    int numReducers = -1;
+    List<ASTNode> grpByExprs = getGroupByForClause(parseInfo, dest);
+    if (grpByExprs.isEmpty())
+      numReducers = 1;
+
     // ////// 1. Generate ReduceSinkOperator
     Operator reduceSinkOperatorInfo = genGroupByPlanReduceSinkOperator(
-      qb, dest, input, getGroupByForClause(parseInfo, dest).size(), -1, false);
+      qb, dest, input, grpByExprs.size(), numReducers, false);
 
     // ////// 2. Generate GroupbyOperator
     Operator groupByOperatorInfo = genGroupByPlanGroupByOperator(parseInfo,
@@ -1907,10 +1912,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Operator groupByOperatorInfo = genGroupByPlanGroupByOperator(parseInfo,
         dest, reduceSinkOperatorInfo, groupByDesc.Mode.PARTIAL1);
 
+    int numReducers = -1;
+    List<ASTNode> grpByExprs = getGroupByForClause(parseInfo, dest);
+    if (grpByExprs.isEmpty())
+      numReducers = 1;
+
     // ////// 3. Generate ReduceSinkOperator2
     Operator reduceSinkOperatorInfo2 = genGroupByPlanReduceSinkOperator2MR(
-        parseInfo, dest, groupByOperatorInfo,
-        getGroupByForClause(parseInfo, dest).size());
+      parseInfo, dest, groupByOperatorInfo, grpByExprs.size(), numReducers);
 
     // ////// 4. Generate GroupbyOperator2
     Operator groupByOperatorInfo2 = 
@@ -2042,10 +2051,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // ////// Generate GroupbyOperator for a partial aggregation
       Operator groupByOperatorInfo2 = genGroupByPlanGroupByOperator1(parseInfo, dest, reduceSinkOperatorInfo, 
                                                                          groupByDesc.Mode.PARTIAL2);
+
+      int numReducers = -1;
+      List<ASTNode> grpByExprs = getGroupByForClause(parseInfo, dest);
+      if (grpByExprs.isEmpty())
+        numReducers = 1;
       
       // //////  Generate ReduceSinkOperator2
       Operator reduceSinkOperatorInfo2 = genGroupByPlanReduceSinkOperator2MR(parseInfo, dest, groupByOperatorInfo2,
-                                                                                 getGroupByForClause(parseInfo, dest).size());
+                                                                             grpByExprs.size(), numReducers);
 
       // ////// Generate GroupbyOperator3
       return genGroupByPlanGroupByOperator2MR(parseInfo, dest, reduceSinkOperatorInfo2, groupByDesc.Mode.FINAL);

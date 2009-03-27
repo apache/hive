@@ -99,6 +99,9 @@ Trunk (unreleased changes)
     HIVE-356. Treat Object[] and List<Object> differently.
     (Zheng Shao via namit)
 
+    HIVE-373. 1 reducer should be used if no grouping key is present in all 
+    scenarios. (Namit Jain via zshao)
+
 Release 0.2.0 - Unreleased
 
   INCOMPATIBLE CHANGES
