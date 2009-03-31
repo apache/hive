@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.serde2.lazy;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -28,12 +29,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -227,11 +231,15 @@ public class LazySimpleSerDe implements SerDe {
   }
   
   Text serializeCache = new Text();
+  ByteStream.Output serializeStream = new ByteStream.Output();
+  ObjectInspector stringObjectInspector = 
+      ObjectInspectorFactory.getStandardPrimitiveObjectInspector(String.class);
   /**
    * Serialize a row of data.
    * @param obj          The row object
    * @param objInspector The ObjectInspector for the row object
    * @return             The serialized Writable object
+   * @throws IOException 
    * @see SerDe#serialize(Object, ObjectInspector)  
    */
   public Writable serialize(Object obj, ObjectInspector objInspector) 
@@ -243,8 +251,7 @@ public class LazySimpleSerDe implements SerDe {
           + objInspector.getTypeName());
     }
 
-    StringBuilder sb = new StringBuilder();
-
+    // Prepare the field ObjectInspectors
     StructObjectInspector soi = (StructObjectInspector)objInspector;
     List<? extends StructField> fields = soi.getAllStructFieldRefs();
     List<Object> list = soi.getStructFieldsDataAsList(obj);
@@ -253,68 +260,75 @@ public class LazySimpleSerDe implements SerDe {
         ? ((StructObjectInspector)getObjectInspector()).getAllStructFieldRefs()
         : null;
         
-    for (int i=0; i<fields.size(); i++) {
-      // Append the separator if needed.
-      if (i>0) {
-        sb.append((char)separators[0]);
-      }
-      // Get the field objectInspector and the field object.
-      ObjectInspector foi = fields.get(i).getFieldObjectInspector();
-      Object f = (list == null ? null : list.get(i));
+    serializeStream.reset();
 
-      if (declaredFields != null && i >= declaredFields.size()) {
-        throw new SerDeException(
-            "Error: expecting " + declaredFields.size() 
-            + " but asking for field " + i + "\n" + "data=" + obj + "\n"
-            + "tableType=" + rowTypeInfo.toString() + "\n"
-            + "dataType=" 
-            + TypeInfoUtils.getTypeInfoFromObjectInspector(objInspector));
-      }
-      
-      // If the field that is passed in is a primitive, then we serialize the
-      // primitive object.
-      if (foi.getCategory().equals(Category.PRIMITIVE)) {
-        sb.append(f == null ? nullString : f.toString());
-      } else {
-        // If the field is not declared (no schema was given at 
-        // initialization), or the field is declared as a primitive in 
-        // initialization, serialize the data to JSON string.
-        // Otherwise serialize the data in the delimited way.
-        if (declaredFields == null || 
-            declaredFields.get(i).getFieldObjectInspector().getCategory()
-            .equals(Category.PRIMITIVE)) {
-          sb.append(SerDeUtils.getJSONString(f, foi));
+    try {
+      // Serialize each field
+      for (int i=0; i<fields.size(); i++) {
+        // Append the separator if needed.
+        if (i>0) {
+          serializeStream.write(separators[0]);
+        }
+        // Get the field objectInspector and the field object.
+        ObjectInspector foi = fields.get(i).getFieldObjectInspector();
+        Object f = (list == null ? null : list.get(i));
+  
+        if (declaredFields != null && i >= declaredFields.size()) {
+          throw new SerDeException(
+              "Error: expecting " + declaredFields.size() 
+              + " but asking for field " + i + "\n" + "data=" + obj + "\n"
+              + "tableType=" + rowTypeInfo.toString() + "\n"
+              + "dataType=" 
+              + TypeInfoUtils.getTypeInfoFromObjectInspector(objInspector));
+        }
+        
+        // If the field that is passed in is NOT a primitive, and either the 
+        // field is not declared (no schema was given at initialization), or 
+        // the field is declared as a primitive in initialization, serialize 
+        // the data to JSON string.  Otherwise serialize the data in the 
+        // delimited way.
+        if (!foi.getCategory().equals(Category.PRIMITIVE)
+            && (declaredFields == null || 
+                declaredFields.get(i).getFieldObjectInspector().getCategory()
+                .equals(Category.PRIMITIVE))) {
+          serialize(serializeStream, SerDeUtils.getJSONString(f, foi), 
+              stringObjectInspector, separators, 1, nullSequence);
         } else {
-          serialize(sb, f, foi, separators, 1, nullString);
+          serialize(serializeStream, f, foi, separators, 1, nullSequence);
         }
       }
+    } catch (IOException e) {
+      throw new SerDeException(e);
     }
-    serializeCache.set(sb.toString());
+    // TODO: The copy of data is unnecessary, but there is no work-around
+    // since we cannot directly set the private byte[] field inside Text.
+    serializeCache.set(serializeStream.getData(), 0,
+        serializeStream.getCount());
     return serializeCache;
   }
 
-  
   /**
    * Serialize the row into the StringBuilder.
-   * @param sb  The StringBuilder to store the serialized data.
+   * @param out  The StringBuilder to store the serialized data.
    * @param obj The object for the current field.
    * @param objInspector  The ObjectInspector for the current Object.
    * @param separators    The separators array.
    * @param level         The current level of separator.
-   * @param nullString    The byte sequence representing the NULL value.
+   * @param nullSequence    The byte sequence representing the NULL value.
+   * @throws IOException 
    */
-  private void serialize(StringBuilder sb, Object obj, 
+  private void serialize(ByteStream.Output out, Object obj, 
       ObjectInspector objInspector, byte[] separators, int level,
-      String nullString) {
+      Text nullSequence) throws IOException {
     
     if (obj == null) {
-      sb.append(nullString);
+      out.write(nullSequence.getBytes(), 0, nullSequence.getLength());
       return;
     }
     
     switch (objInspector.getCategory()) {
       case PRIMITIVE: {
-        sb.append(obj.toString());
+        LazyUtils.writePrimitiveUTF8(out, obj);
         return;
       }
       case LIST: {
@@ -323,13 +337,14 @@ public class LazySimpleSerDe implements SerDe {
         List<?> list = loi.getList(obj);
         ObjectInspector eoi = loi.getListElementObjectInspector();
         if (list == null) {
-          sb.append(nullString);
+          out.write(nullSequence.getBytes(), 0, nullSequence.getLength());
         } else {
           for (int i=0; i<list.size(); i++) {
             if (i>0) {
-              sb.append((char)separator);
+              out.write(separator);
             }
-            serialize(sb, list.get(i), eoi, separators, level+1, nullString);
+            serialize(out, list.get(i), eoi, separators, level+1,
+                nullSequence);
           }
         }
         return;
@@ -343,20 +358,20 @@ public class LazySimpleSerDe implements SerDe {
         
         Map<?, ?> map = moi.getMap(obj);
         if (map == null) {
-          sb.append(nullString);
+          out.write(nullSequence.getBytes(), 0, nullSequence.getLength());
         } else {
           boolean first = true;
           for (Map.Entry<?, ?> entry: map.entrySet()) {
             if (first) {
               first = false;
             } else {
-              sb.append((char)separator);
+              out.write(separator);
             }
-            serialize(sb, entry.getKey(), koi, separators, level+2, 
-                nullString);
-            sb.append((char)keyValueSeparator);
-            serialize(sb, entry.getValue(), voi, separators, level+2, 
-                nullString);
+            serialize(out, entry.getKey(), koi, separators, level+2, 
+                nullSequence);
+            out.write(keyValueSeparator);
+            serialize(out, entry.getValue(), voi, separators, level+2, 
+                nullSequence);
           }
         }
         return;
@@ -367,14 +382,15 @@ public class LazySimpleSerDe implements SerDe {
         List<? extends StructField> fields = soi.getAllStructFieldRefs();
         List<Object> list = soi.getStructFieldsDataAsList(obj);
         if (list == null) {
-          sb.append(nullString);
+          out.write(nullSequence.getBytes(), 0, nullSequence.getLength());
         } else {
           for (int i=0; i<list.size(); i++) {
             if (i>0) {
-              sb.append((char)separator);
+              out.write(separator);
             }
-            serialize(sb, list.get(i), fields.get(i).getFieldObjectInspector(),
-                separators, level+1, nullString);
+            serialize(out, list.get(i),
+                fields.get(i).getFieldObjectInspector(), separators, level+1,
+                nullSequence);
           }
         }
         return;

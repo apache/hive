@@ -18,6 +18,11 @@
 package org.apache.hadoop.hive.serde2.lazy;
 
 
+import java.util.Arrays;
+
+import org.apache.hadoop.hive.serde2.ByteStream;
+import org.apache.hadoop.io.Text;
+
 import junit.framework.TestCase;
 
 public class TestLazyPrimitive extends TestCase {
@@ -333,4 +338,49 @@ public class TestLazyPrimitive extends TestCase {
       throw e;
     }
   }
+  
+  public void testLazyIntegerWrite() throws Throwable {
+    try {
+      ByteStream.Output out = new ByteStream.Output();
+      
+      int[] tests = {0, -1, 1, -10, 10, -123, 123, 
+          Integer.MIN_VALUE, Integer.MIN_VALUE + 1,
+          Integer.MAX_VALUE, Integer.MAX_VALUE - 1};
+      for (int i=0; i<tests.length; i++) {
+        int v = tests[i];
+        out.reset();
+        LazyInteger.writeUTF8(out, v);
+        Text t = new Text();
+        t.set(out.getData(), 0, out.getCount());
+        assertEquals(String.valueOf(v), t.toString());
+      }
+      
+    } catch (Throwable e) {
+      e.printStackTrace();
+      throw e;
+    }
+  }  
+
+  public void testLazyLongWrite() throws Throwable {
+    try {
+      ByteStream.Output out = new ByteStream.Output();
+      
+      long[] tests = {0L, -1, 1, -10, 10, -123, 123,
+          Long.MIN_VALUE, Long.MIN_VALUE + 1, 
+          Long.MAX_VALUE, Long.MAX_VALUE - 1};
+      for (int i=0; i<tests.length; i++) {
+        long v = tests[i];
+        out.reset();
+        LazyLong.writeUTF8(out, v);
+        Text t = new Text();
+        t.set(out.getData(), 0, out.getCount());
+        assertEquals(String.valueOf(v), t.toString());
+      }
+      
+    } catch (Throwable e) {
+      e.printStackTrace();
+      throw e;
+    }
+  }  
+
 }

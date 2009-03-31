@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.serde2.lazy;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import org.apache.hadoop.io.Text;
 
@@ -80,6 +83,26 @@ public class LazyUtils {
       return null;
     }
   }
-  
+
+  /**
+   * Write out the text representation of a Primitive Object to a UTF8 byte stream. 
+   * @param out  The UTF8 byte OutputStream
+   * @param o    The primitive Object
+   * @throws IOException
+   */
+  public static void writePrimitiveUTF8(OutputStream out, Object o) throws IOException {
+    if (o.getClass() == Integer.class || o.getClass() == Short.class 
+        || o.getClass() == Byte.class) {
+      LazyInteger.writeUTF8(out, ((Number)o).intValue());
+    } else if (o.getClass() == Long.class) {
+      LazyLong.writeUTF8(out, ((Long)o).longValue());
+    } else if (o.getClass() == Text.class) {
+      Text t = (Text)o;
+      out.write(t.getBytes(), 0, t.getLength());
+    } else {
+      ByteBuffer b = Text.encode(o.toString());
+      out.write(b.array(), 0, b.limit());
+    }
+  }
   
 }

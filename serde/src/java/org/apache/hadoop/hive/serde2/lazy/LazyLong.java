@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.serde2.lazy;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 /**
  * LazyObject for storing a value of Long.
  * 
@@ -148,4 +151,42 @@ public class LazyLong extends LazyPrimitive<Long> {
     return result;
   }
 
+  /**
+   * Writes out the text representation of an integer using base 10 to an 
+   * OutputStream in UTF-8 encoding.
+   *
+   * Note: division by a constant (like 10) is much faster than division by
+   * a variable.  That's one of the reasons that we don't make radix a 
+   * parameter here.
+   *  
+   * @param i   an int to write out
+   * @return String the representation of the argument
+   * @throws IOException 
+   */
+  public static void writeUTF8(OutputStream out, long i) throws IOException {
+    if (i == 0) {
+      out.write('0');
+      return;
+    }
+
+    boolean negative = i < 0;
+    if (negative) {
+      out.write('-');
+    } else {
+      // negative range is bigger than positive range, so there is no risk
+      // of overflow here.
+      i = -i;
+    }
+    
+    long start = 1000000000000000000L;
+    while (i/start == 0) {
+      start /= 10;
+    }
+    
+    while (start > 0) {
+      out.write('0' - (int)((i / start) % 10));
+      start /= 10;
+    }
+  }
+  
 }
