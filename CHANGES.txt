@@ -117,6 +117,9 @@ Release 0.3.0 - Unreleased
     HIVE-375. LazySimpleSerDe directly creates a UTF8 buffer for primitive types.
     (Zheng Shao via namit)
 
+    HIVE-382 Fix for hash aggr, remove elements from hash table in the loop
+    during close, rather than waiting till the end. (Namit Jain via rmurthy)
+
 Release 0.2.0 - Unreleased
 
   INCOMPATIBLE CHANGES

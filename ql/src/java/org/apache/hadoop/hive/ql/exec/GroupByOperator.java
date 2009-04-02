@@ -240,7 +240,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     estimateRowSize();
   }
 
-  private static final int javaObjectOverHead    = 16;
+  private static final int javaObjectOverHead    = 64;
   private static final int javaHashEntryOverHead = 64;
   private static final int javaSizePrimitiveType = 16;
   private static final int javaSizeUnknownType   = 256;
@@ -579,11 +579,12 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
       }
       hashAggregations.clear();
       hashAggregations = null;
+      LOG.warn("Hash Table completed flushed");
       return;
     }
 
     int oldSize = hashAggregations.size();
-    LOG.trace("Hash Tbl flush: #hash table = " + oldSize);
+    LOG.warn("Hash Tbl flush: #hash table = " + oldSize);
     Iterator iter = hashAggregations.entrySet().iterator();
     int numDel = 0;
     while (iter.hasNext()) {
@@ -591,8 +592,10 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
       forward(m.getKey(), m.getValue());
       iter.remove();
       numDel++;
-      if (numDel * 10 >= oldSize)
+      if (numDel * 10 >= oldSize) {
+        LOG.warn("Hash Table flushed: new size = " + hashAggregations.size());
         return;
+      }
     }
   }
 
@@ -646,9 +649,12 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
         }
         else {
           if (hashAggregations != null) {
-            // hash-based aggregations
-            for (ArrayList<Object> key: hashAggregations.keySet()) {
-              forward(key, hashAggregations.get(key));
+            LOG.warn("Begin Hash Table flush at close: size = " + hashAggregations.size());
+            Iterator iter = hashAggregations.entrySet().iterator();
+            while (iter.hasNext()) {
+              Map.Entry<ArrayList<Object>, UDAFEvaluator[]> m = (Map.Entry)iter.next();
+              forward(m.getKey(), m.getValue());
+              iter.remove();
             }
             hashAggregations.clear();
           }
