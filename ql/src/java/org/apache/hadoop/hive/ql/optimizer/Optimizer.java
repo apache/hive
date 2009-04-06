@@ -21,8 +21,10 @@ package org.apache.hadoop.hive.ql.optimizer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.ppd.PredicatePushDown;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcessor;
 
 /**
@@ -40,11 +42,14 @@ public class Optimizer {
 
 	/**
 	 * create the list of transformations
+	 * @param hiveConf 
 	 */
-	public void initialize() {
+	public void initialize(HiveConf hiveConf) {
 		transformations = new ArrayList<Transform>();
 		transformations.add(new ColumnPruner());
-		transformations.add(new UnionProcessor());
+    if (hiveConf.getBoolean("hive.optimize.ppd", false))
+      transformations.add(new PredicatePushDown());
+    transformations.add(new UnionProcessor());
 	}
 	
 	/**

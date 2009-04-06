@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -57,7 +56,7 @@ public class ExprNodeFuncEvaluator extends ExprNodeEvaluator {
     paramEvaluators = new ExprNodeEvaluator[paramNumber];
     paramInspectableObjects  = new InspectableObject[paramNumber];
     for(int i=0; i<paramNumber; i++) {
-      paramEvaluators[i] = ExprNodeEvaluatorFactory.get(expr.getChildren().get(i));
+      paramEvaluators[i] = ExprNodeEvaluatorFactory.get(expr.getChildExprs().get(i));
       paramInspectableObjects[i] = new InspectableObject();
     }
     paramValues = new Object[expr.getChildren().size()];

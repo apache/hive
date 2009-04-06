@@ -30,6 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.explain;
+import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.mapredWork;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.LongWritable;
@@ -148,10 +149,19 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   transient protected Reporter reporter;
   transient protected String id;
 
+  /**
+   * A map of output column name to input expression map. This is used by optimizer
+   * and built during semantic analysis
+   * contains only key elements for reduce sink and group by op
+   */
+  protected transient Map<String, exprNodeDesc> colExprMap;
+
   public void setId(String id) {
     this.id = id;
   }
-
+  
+  public String getid() { return id; }
+  
   public void setOutputCollector(OutputCollector out) {
     this.out = out;
 
@@ -366,6 +376,19 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     return new String("OP");
   }
 
+  /**
+   * Returns a map of output column name to input expression map
+   * Note that currently it returns only key columns for ReduceSink and GroupBy operators
+   * @return null if the operator doesn't change columns
+   */
+  public Map<String, exprNodeDesc> getColumnExprMap() {
+    return colExprMap;
+  }
+
+  public void setColumnExprMap(Map<String, exprNodeDesc> colExprMap) {
+    this.colExprMap = colExprMap;
+  }
+  
   public String dump() {
     StringBuilder s = new StringBuilder();
     s.append("<" + getName() + ">");

@@ -574,7 +574,7 @@ public class TypeCheckProcFactory {
         exprNodeFuncDesc funcDesc = (exprNodeFuncDesc)desc;
         if (funcDesc.getUDFClass().equals(UDFOPPositive.class)) {
           assert(funcDesc.getChildren().size() == 1);
-          desc = funcDesc.getChildren().get(0);
+          desc = funcDesc.getChildExprs().get(0);
         }
       }
       assert(desc != null);

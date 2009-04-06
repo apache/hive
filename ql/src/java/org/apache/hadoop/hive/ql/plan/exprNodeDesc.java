@@ -21,9 +21,10 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 import java.util.List;
 
+import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
-public class exprNodeDesc implements Serializable {  
+public abstract class exprNodeDesc implements Serializable, Node {  
   private static final long serialVersionUID = 1L;
   TypeInfo typeInfo;
   
@@ -34,6 +35,8 @@ public class exprNodeDesc implements Serializable {
       throw new RuntimeException("typeInfo cannot be null!");
     }
   }
+  
+  public abstract exprNodeDesc clone();
   
   public TypeInfo getTypeInfo() {
     return this.typeInfo;
@@ -54,6 +57,16 @@ public class exprNodeDesc implements Serializable {
 
   public List<String> getCols() {
     return null;
+  }
+  
+  @Override
+  public List<? extends Node> getChildren() {
+    return null;
+  }
+  
+  @Override
+  public String getName() {
+    return this.getClass().getName();
   }
 
 }

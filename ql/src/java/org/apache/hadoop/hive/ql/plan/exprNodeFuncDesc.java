@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.lib.Node;
 
 /**
  * The reason that we have to store UDFClass as well as UDFMethod is because
@@ -39,17 +40,17 @@ public class exprNodeFuncDesc extends exprNodeDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   private Class<? extends UDF> UDFClass;
   private Method UDFMethod;
-  private ArrayList<exprNodeDesc> children; 
+  private List<exprNodeDesc> childExprs; 
   
   public exprNodeFuncDesc() {}
   public exprNodeFuncDesc(TypeInfo typeInfo, Class<? extends UDF> UDFClass, 
-                          Method UDFMethod, ArrayList<exprNodeDesc> children) {
+                          Method UDFMethod, List<exprNodeDesc> children) {
     super(typeInfo);
     assert(UDFClass != null);
     this.UDFClass = UDFClass;
     assert(UDFMethod != null);
     this.UDFMethod = UDFMethod;
-    this.children = children;
+    this.childExprs = children;
   }
   
   public Class<? extends UDF> getUDFClass() {
@@ -65,11 +66,15 @@ public class exprNodeFuncDesc extends exprNodeDesc implements Serializable {
   public void setUDFMethod(Method method) {
     this.UDFMethod = method;
   }
-  public ArrayList<exprNodeDesc> getChildren() {
-    return this.children;
+  public List<exprNodeDesc> getChildExprs() {
+    return this.childExprs;
   }
-  public void setChildren(ArrayList<exprNodeDesc> children) {
-    this.children = children;
+  public void setChildExprs(List<exprNodeDesc> children) {
+    this.childExprs = children;
+  }
+  @Override
+  public List<? extends Node> getChildren() {
+    return (List<? extends Node>)this.childExprs;
   }
   public String toString() {
     StringBuilder sb = new StringBuilder();
@@ -77,9 +82,9 @@ public class exprNodeFuncDesc extends exprNodeDesc implements Serializable {
     sb.append(".");
     sb.append(UDFMethod.toString());
     sb.append("(");
-    for(int i=0; i<children.size(); i++) {
+    for(int i=0; i<childExprs.size(); i++) {
       if (i>0) sb.append(", ");
-      sb.append(children.get(i).toString());
+      sb.append(childExprs.get(i).toString());
     }
     sb.append("(");
     sb.append(")");
@@ -103,7 +108,7 @@ public class exprNodeFuncDesc extends exprNodeDesc implements Serializable {
       }
       
       boolean first = true;
-      for(exprNodeDesc chld: children) {
+      for(exprNodeDesc chld: childExprs) {
         if (!first) {
           sb.append(", ");
         }
@@ -118,19 +123,19 @@ public class exprNodeFuncDesc extends exprNodeDesc implements Serializable {
     }
     else if (fI.getOpType() == FunctionInfo.OperatorType.INFIX) {
       // assert that this has only 2 children
-      assert(children.size() == 2);
+      assert(childExprs.size() == 2);
       sb.append("(");
-      sb.append(children.get(0).getExprString());
+      sb.append(childExprs.get(0).getExprString());
       sb.append(" ");
       sb.append(fI.getDisplayName());
       sb.append(" ");
-      sb.append(children.get(1).getExprString());
+      sb.append(childExprs.get(1).getExprString());
       sb.append(")");
     }
     else if (fI.getOpType() == FunctionInfo.OperatorType.POSTFIX) {
       // assert for now as there should be no such case
-      assert(children.size() == 1);
-      sb.append(children.get(0).getExprString());
+      assert(childExprs.size() == 1);
+      sb.append(childExprs.get(0).getExprString());
       sb.append(" ");
       sb.append(fI.getDisplayName());
     }
@@ -140,15 +145,26 @@ public class exprNodeFuncDesc extends exprNodeDesc implements Serializable {
 
   public List<String> getCols() {
     List<String> colList = new ArrayList<String>();
-    if (children != null) {
+    if (childExprs != null) {
       int pos = 0;
-      while (pos < children.size()) {
-        List<String> colCh = children.get(pos).getCols();
+      while (pos < childExprs.size()) {
+        List<String> colCh = childExprs.get(pos).getCols();
         colList = Utilities.mergeUniqElems(colList, colCh);
         pos++;
       }
     }
 
     return colList;
+  }
+  
+  @Override
+  public exprNodeDesc clone() {
+    List<exprNodeDesc> cloneCh = new ArrayList<exprNodeDesc>(childExprs.size());
+    for(exprNodeDesc ch :  childExprs) {
+      cloneCh.add(ch.clone());
+    }
+    exprNodeFuncDesc clone = new exprNodeFuncDesc(this.typeInfo,
+        this.UDFClass, this.UDFMethod, cloneCh);
+    return clone;
   }
 }

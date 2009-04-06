@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import java.util.Stack;
-import java.util.Vector;
-import org.apache.hadoop.hive.ql.exec.*;
+import java.util.List;
+
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -44,7 +44,7 @@ public class GenMapRedWalker extends DefaultGraphWalker {
    */
   @Override
   public void walk(Node nd) throws SemanticException {
-    Vector<Node> children = nd.getChildren();
+    List<? extends Node> children = nd.getChildren();
     
     // maintain the stack of operators encountered
     opStack.push(nd);

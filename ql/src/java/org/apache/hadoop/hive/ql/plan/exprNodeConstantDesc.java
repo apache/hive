@@ -66,4 +66,8 @@ public class exprNodeConstantDesc extends exprNodeDesc implements Serializable {
       return value.toString();
     }
   }
+  @Override
+  public exprNodeDesc clone() {
+    return new exprNodeConstantDesc(this.typeInfo, this.value);
+  }
 }

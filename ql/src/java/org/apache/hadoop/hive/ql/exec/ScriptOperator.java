@@ -438,4 +438,9 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
     }
     return (String[]) argList.toArray(new String[0]);
   }
+
+  @Override
+  public String getName() {
+    return "SCR";
+  }
 }

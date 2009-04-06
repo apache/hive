@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import java.util.Vector;
 
@@ -103,6 +104,11 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
   transient private Stack<Iterator<ArrayList<Object>>> iterators;
   transient private int totalSz; // total size of the composite object
   transient ObjectInspector joinOutputObjectInspector;
+  
+  // keys are the column names. basically this maps the position of the column in 
+  // the output of the JoinOperator to the input columnInfo.
+  transient private Map<Integer, Set<String>> posToAliasMap;
+
 
   static {
     aliasField = ExprNodeEvaluatorFactory.get(new exprNodeColumnDesc(
@@ -542,4 +548,23 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
     super.close(abort);
   }
 
+  @Override
+  public String getName() {
+    return "JOIN";
+  }
+
+  /**
+   * @return the posToAliasMap
+   */
+  public Map<Integer, Set<String>> getPosToAliasMap() {
+    return posToAliasMap;
+  }
+
+  /**
+   * @param posToAliasMap the posToAliasMap to set
+   */
+  public void setPosToAliasMap(Map<Integer, Set<String>> posToAliasMap) {
+    this.posToAliasMap = posToAliasMap;
+  }
+  
 }

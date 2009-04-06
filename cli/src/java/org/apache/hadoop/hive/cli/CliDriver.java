@@ -204,13 +204,17 @@ public class CliDriver {
       if(oneCmd.equals(""))
         continue;
       
-      ret = processCmd(oneCmd);
+      ret = processCmd(removeComments(oneCmd));
       if(ret != 0) {
         // ignore anything after the first failed command
         return ret;
       }
     }
     return 0;
+  }
+
+  private String removeComments(String oneCmd) {
+    return oneCmd.replaceAll("(?m)--.*\n", "\n");
   }
 
   public int processReader(BufferedReader r) throws IOException {
@@ -278,9 +282,6 @@ public class CliDriver {
       System.exit(3);
     }
 
-    Character mask = null;
-    String trigger = null;
-
     ConsoleReader reader = new ConsoleReader();
     reader.setBellEnabled(false);
     //reader.setDebug(new PrintWriter(new FileWriter("writer.debug", true)));
@@ -292,7 +293,6 @@ public class CliDriver {
     reader.addCompletor(new ArgumentCompletor(completors));
     
     String line;
-    PrintWriter out = new PrintWriter(System.out);
     final String HISTORYFILE = ".hivehistory";
     String historyFile = System.getProperty("user.home") + File.separator  + HISTORYFILE;
     reader.setHistory(new History(new File(historyFile)));

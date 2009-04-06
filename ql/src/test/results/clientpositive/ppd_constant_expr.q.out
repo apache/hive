@@ -1,0 +1,77 @@
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src1)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB ppd_constant_expr)) (TOK_SELECT (TOK_SELEXPR (+ 4 TOK_NULL)) (TOK_SELEXPR (- (TOK_COLREF src1 key) TOK_NULL)) (TOK_SELEXPR (+ TOK_NULL TOK_NULL)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src1 
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              Select Operator
+                expressions:
+                      expr: (UDFToDouble(4) + null)
+                      type: double
+                      expr: (UDFToDouble(0) - null)
+                      type: double
+                      expr: (null + null)
+                      type: double
+                Select Operator
+                  expressions:
+                        expr: 0
+                        type: double
+                        expr: UDFToInteger(1)
+                        type: int
+                        expr: 2
+                        type: double
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 1
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: ppd_constant_expr
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+            replace: true
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: ppd_constant_expr
+
+
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL
+NULL	NULL	NULL

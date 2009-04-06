@@ -31,7 +31,7 @@
              <boolean>true</boolean> 
             </void> 
             <void property="sourceDir"> 
-             <string>/data/users/njain/hive_commit/trunk/ql/../build/ql/tmp/499919465.10000.insclause-0</string> 
+             <string>/data/users/pchakka/workspace/oshive/ql/../build/ql/tmp/312054191.10000.insclause-0</string> 
             </void> 
             <void property="table"> 
              <object id="tableDesc0" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -84,7 +84,7 @@
                 </void> 
                 <void method="put"> 
                  <string>location</string> 
-                 <string>file:/data/users/njain/hive_commit/trunk/build/ql/test/data/warehouse/dest1</string> 
+                 <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/dest1</string> 
                 </void> 
                </object> 
               </void> 
@@ -129,6 +129,36 @@
                      <object class="java.util.ArrayList"> 
                       <void method="add"> 
                        <object id="ReduceSinkOperator0" class="org.apache.hadoop.hive.ql.exec.ReduceSinkOperator"> 
+                        <void property="columnExprMap"> 
+                         <object class="java.util.HashMap"> 
+                          <void method="put"> 
+                           <string>tvalue</string> 
+                           <object id="exprNodeColumnDesc0" class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
+                            <void property="column"> 
+                             <string>tvalue</string> 
+                            </void> 
+                            <void property="typeInfo"> 
+                             <object id="PrimitiveTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
+                              <void property="primitiveClass"> 
+                               <class>java.lang.String</class> 
+                              </void> 
+                             </object> 
+                            </void> 
+                           </object> 
+                          </void> 
+                          <void method="put"> 
+                           <string>tkey</string> 
+                           <object id="exprNodeColumnDesc1" class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
+                            <void property="column"> 
+                             <string>tkey</string> 
+                            </void> 
+                            <void property="typeInfo"> 
+                             <object idref="PrimitiveTypeInfo0"/> 
+                            </void> 
+                           </object> 
+                          </void> 
+                         </object> 
+                        </void> 
                         <void property="conf"> 
                          <object class="org.apache.hadoop.hive.ql.plan.reduceSinkDesc"> 
                           <void property="keyCols"> 
@@ -139,11 +169,7 @@
                                <string>tkey</string> 
                               </void> 
                               <void property="typeInfo"> 
-                               <object id="PrimitiveTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
-                                <void property="primitiveClass"> 
-                                 <class>java.lang.String</class> 
-                                </void> 
-                               </object> 
+                               <object idref="PrimitiveTypeInfo0"/> 
                               </void> 
                              </object> 
                             </void> 
@@ -205,24 +231,10 @@
                           <void property="valueCols"> 
                            <object class="java.util.ArrayList"> 
                             <void method="add"> 
-                             <object class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
-                              <void property="column"> 
-                               <string>tkey</string> 
-                              </void> 
-                              <void property="typeInfo"> 
-                               <object idref="PrimitiveTypeInfo0"/> 
-                              </void> 
-                             </object> 
+                             <object idref="exprNodeColumnDesc1"/> 
                             </void> 
                             <void method="add"> 
-                             <object class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
-                              <void property="column"> 
-                               <string>tvalue</string> 
-                              </void> 
-                              <void property="typeInfo"> 
-                               <object idref="PrimitiveTypeInfo0"/> 
-                              </void> 
-                             </object> 
+                             <object idref="exprNodeColumnDesc0"/> 
                             </void> 
                            </object> 
                           </void> 
@@ -252,6 +264,9 @@
                            </object> 
                           </void> 
                          </object> 
+                        </void> 
+                        <void property="id"> 
+                         <string>224</string> 
                         </void> 
                         <void property="parentOperators"> 
                          <object class="java.util.ArrayList"> 
@@ -349,6 +364,9 @@
                       </void> 
                      </object> 
                     </void> 
+                    <void property="id"> 
+                     <string>223</string> 
+                    </void> 
                     <void property="parentOperators"> 
                      <object class="java.util.ArrayList"> 
                       <void method="add"> 
@@ -367,37 +385,35 @@
                   </void> 
                  </object> 
                 </void> 
-                <void property="conf"> 
-                 <object class="org.apache.hadoop.hive.ql.plan.selectDesc"> 
-                  <void property="colList"> 
-                   <object class="java.util.ArrayList"> 
-                    <void method="add"> 
-                     <object class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
-                      <void property="column"> 
-                       <string>0</string> 
-                      </void> 
-                      <void property="typeInfo"> 
-                       <object id="ListTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo"> 
-                        <void property="listElementTypeInfo"> 
-                         <object id="PrimitiveTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
-                          <void property="primitiveClass"> 
-                           <class>java.lang.Integer</class> 
-                          </void> 
-                         </object> 
-                        </void> 
-                       </object> 
+                <void property="columnExprMap"> 
+                 <object class="java.util.HashMap"> 
+                  <void method="put"> 
+                   <string>1</string> 
+                   <object id="exprNodeColumnDesc2" class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
+                    <void property="column"> 
+                     <string>1</string> 
+                    </void> 
+                    <void property="typeInfo"> 
+                     <object id="ListTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo"> 
+                      <void property="listElementTypeInfo"> 
+                       <object class="org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo"/> 
                       </void> 
                      </object> 
                     </void> 
-                    <void method="add"> 
-                     <object class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
-                      <void property="column"> 
-                       <string>1</string> 
-                      </void> 
-                      <void property="typeInfo"> 
-                       <object id="ListTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo"> 
-                        <void property="listElementTypeInfo"> 
-                         <object class="org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo"/> 
+                   </object> 
+                  </void> 
+                  <void method="put"> 
+                   <string>0</string> 
+                   <object id="exprNodeColumnDesc3" class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
+                    <void property="column"> 
+                     <string>0</string> 
+                    </void> 
+                    <void property="typeInfo"> 
+                     <object id="ListTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo"> 
+                      <void property="listElementTypeInfo"> 
+                       <object id="PrimitiveTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
+                        <void property="primitiveClass"> 
+                         <class>java.lang.Integer</class> 
                         </void> 
                        </object> 
                       </void> 
@@ -406,6 +422,23 @@
                    </object> 
                   </void> 
                  </object> 
+                </void> 
+                <void property="conf"> 
+                 <object class="org.apache.hadoop.hive.ql.plan.selectDesc"> 
+                  <void property="colList"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <object idref="exprNodeColumnDesc3"/> 
+                    </void> 
+                    <void method="add"> 
+                     <object idref="exprNodeColumnDesc2"/> 
+                    </void> 
+                   </object> 
+                  </void> 
+                 </object> 
+                </void> 
+                <void property="id"> 
+                 <string>222</string> 
                 </void> 
                 <void property="parentOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -424,7 +457,7 @@
                        <string>0</string> 
                       </void> 
                       <void property="type"> 
-                       <object idref="ListTypeInfo0"/> 
+                       <object idref="ListTypeInfo1"/> 
                       </void> 
                      </object> 
                     </void> 
@@ -434,7 +467,7 @@
                        <string>0</string> 
                       </void> 
                       <void property="type"> 
-                       <object idref="ListTypeInfo1"/> 
+                       <object idref="ListTypeInfo0"/> 
                       </void> 
                      </object> 
                     </void> 
@@ -456,7 +489,7 @@
                    <string>lint</string> 
                   </void> 
                   <void property="typeInfo"> 
-                   <object idref="ListTypeInfo0"/> 
+                   <object idref="ListTypeInfo1"/> 
                   </void> 
                  </object> 
                 </void> 
@@ -466,13 +499,16 @@
                    <string>lintstring</string> 
                   </void> 
                   <void property="typeInfo"> 
-                   <object idref="ListTypeInfo1"/> 
+                   <object idref="ListTypeInfo0"/> 
                   </void> 
                  </object> 
                 </void> 
                </object> 
               </void> 
              </object> 
+            </void> 
+            <void property="id"> 
+             <string>221</string> 
             </void> 
             <void property="parentOperators"> 
              <object class="java.util.ArrayList"> 
@@ -491,7 +527,7 @@
                    <string>0</string> 
                   </void> 
                   <void property="type"> 
-                   <object idref="ListTypeInfo0"/> 
+                   <object idref="ListTypeInfo1"/> 
                   </void> 
                  </object> 
                 </void> 
@@ -501,7 +537,7 @@
                    <string>1</string> 
                   </void> 
                   <void property="type"> 
-                   <object idref="ListTypeInfo1"/> 
+                   <object idref="ListTypeInfo0"/> 
                   </void> 
                  </object> 
                 </void> 
@@ -512,6 +548,9 @@
            </object> 
           </void> 
          </object> 
+        </void> 
+        <void property="id"> 
+         <string>214</string> 
         </void> 
         <void property="schema"> 
          <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
@@ -543,7 +582,7 @@
                <string>lint</string> 
               </void> 
               <void property="type"> 
-               <object idref="ListTypeInfo0"/> 
+               <object idref="ListTypeInfo1"/> 
               </void> 
              </object> 
             </void> 
@@ -567,7 +606,7 @@
                <string>lintstring</string> 
               </void> 
               <void property="type"> 
-               <object idref="ListTypeInfo1"/> 
+               <object idref="ListTypeInfo0"/> 
               </void> 
              </object> 
             </void> 
@@ -605,7 +644,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive_commit/trunk/build/ql/test/data/warehouse/src_thrift</string> 
+       <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src_thrift</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>tmap:src_thrift</string> 
@@ -617,7 +656,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive_commit/trunk/build/ql/test/data/warehouse/src_thrift</string> 
+       <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src_thrift</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"/> 
@@ -677,7 +716,7 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/data/users/njain/hive_commit/trunk/build/ql/test/data/warehouse/src_thrift</string> 
+             <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src_thrift</string> 
             </void> 
            </object> 
           </void> 
@@ -706,12 +745,15 @@
                  <int>1</int> 
                 </void> 
                 <void property="dirName"> 
-                 <string>/data/users/njain/hive_commit/trunk/ql/../build/ql/tmp/499919465.10000.insclause-0</string> 
+                 <string>/data/users/pchakka/workspace/oshive/ql/../build/ql/tmp/312054191.10000.insclause-0</string> 
                 </void> 
                 <void property="tableInfo"> 
                  <object idref="tableDesc0"/> 
                 </void> 
                </object> 
+              </void> 
+              <void property="id"> 
+               <string>227</string> 
               </void> 
               <void property="parentOperators"> 
                <object class="java.util.ArrayList"> 
@@ -752,33 +794,48 @@
             </void> 
            </object> 
           </void> 
+          <void property="columnExprMap"> 
+           <object class="java.util.HashMap"> 
+            <void method="put"> 
+             <string>1</string> 
+             <object id="exprNodeColumnDesc4" class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
+              <void property="column"> 
+               <string>1</string> 
+              </void> 
+              <void property="typeInfo"> 
+               <object idref="PrimitiveTypeInfo0"/> 
+              </void> 
+             </object> 
+            </void> 
+            <void method="put"> 
+             <string>0</string> 
+             <object id="exprNodeColumnDesc5" class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
+              <void property="column"> 
+               <string>0</string> 
+              </void> 
+              <void property="typeInfo"> 
+               <object idref="PrimitiveTypeInfo0"/> 
+              </void> 
+             </object> 
+            </void> 
+           </object> 
+          </void> 
           <void property="conf"> 
            <object class="org.apache.hadoop.hive.ql.plan.selectDesc"> 
             <void property="colList"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
-               <object class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
-                <void property="column"> 
-                 <string>0</string> 
-                </void> 
-                <void property="typeInfo"> 
-                 <object idref="PrimitiveTypeInfo0"/> 
-                </void> 
-               </object> 
+               <object idref="exprNodeColumnDesc5"/> 
               </void> 
               <void method="add"> 
-               <object class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
-                <void property="column"> 
-                 <string>1</string> 
-                </void> 
-                <void property="typeInfo"> 
-                 <object idref="PrimitiveTypeInfo0"/> 
-                </void> 
-               </object> 
+               <object idref="exprNodeColumnDesc4"/> 
               </void> 
              </object> 
             </void> 
            </object> 
+          </void> 
+          <void property="id"> 
+           <string>226</string> 
           </void> 
           <void property="parentOperators"> 
            <object class="java.util.ArrayList"> 
@@ -811,6 +868,9 @@
          </object> 
         </void> 
        </object> 
+      </void> 
+      <void property="id"> 
+       <string>225</string> 
       </void> 
       <void property="parentOperators"> 
        <object class="java.util.ArrayList"> 

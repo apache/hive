@@ -194,7 +194,7 @@ public class PartitionPruner {
     } else if (desc instanceof exprNodeFuncDesc) {
       exprNodeFuncDesc d = (exprNodeFuncDesc)desc;
       for(int i=0; i<d.getChildren().size(); i++) {
-        if (mightBeUnknown(d.getChildren().get(i))) {
+        if (mightBeUnknown(d.getChildExprs().get(i))) {
           return true;
         }
       }

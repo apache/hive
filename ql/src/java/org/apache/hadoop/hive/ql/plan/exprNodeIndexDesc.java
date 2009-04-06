@@ -24,7 +24,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.parse.RowResolver;
+import org.apache.hadoop.hive.ql.lib.Node;
 
 
 
@@ -43,6 +43,14 @@ public class exprNodeIndexDesc extends exprNodeDesc implements Serializable {
     super(desc.getTypeInfo().getListElementTypeInfo());
     this.desc = desc;
     this.index = index;    
+  }
+  
+  @Override
+  public List<? extends Node> getChildren() {
+    List<Node> children = new ArrayList<Node>(2);
+    children.add(desc);
+    children.add(index);
+    return children;
   }
   
   public exprNodeDesc getDesc() {
@@ -76,5 +84,9 @@ public class exprNodeIndexDesc extends exprNodeDesc implements Serializable {
     	colList = Utilities.mergeUniqElems(colList, index.getCols());
     
     return colList;
+  }
+  @Override
+  public exprNodeDesc clone() {
+    return new exprNodeIndexDesc(this.typeInfo, this.desc, this.index);
   }
 }

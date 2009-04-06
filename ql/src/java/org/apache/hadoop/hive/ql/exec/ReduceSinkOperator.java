@@ -118,7 +118,7 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
   transient ObjectInspector valueObjectInspector;
   transient ArrayList<ObjectInspector> keyFieldsObjectInspectors = new ArrayList<ObjectInspector>();
   transient ArrayList<ObjectInspector> valueFieldsObjectInspectors = new ArrayList<ObjectInspector>();
-  
+
   public void process(Object row, ObjectInspector rowInspector) throws HiveException {
     try {
       // Evaluate the keys

@@ -1,3 +1,4 @@
+
 explain
 SELECT *
 FROM (
@@ -15,6 +16,8 @@ FROM (
   SELECT 4 AS id
   FROM (SELECT * FROM src LIMIT 1) s2
 ) a;
+
+DROP TABLE union_out;
 
 CREATE TABLE union_out (id int);
 

@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.lib;
 
-import java.util.Vector;
+import java.util.List;
 
 /**
  * This interface defines the functions needed by the walkers and dispatchers.
@@ -31,7 +31,7 @@ public interface Node {
    * 
    * @return Vector<Node>
    */
-  public Vector<Node> getChildren();
+  public List<? extends Node> getChildren();
   
   /**
    * Gets the name of the node. This is used in the rule dispatchers.

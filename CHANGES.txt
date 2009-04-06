@@ -10,6 +10,8 @@ Trunk - unreleased changes
 
   OPTIMIZATIONS
 
+    HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).
+
   BUG FIXES
 
 Release 0.3.0 - Unreleased

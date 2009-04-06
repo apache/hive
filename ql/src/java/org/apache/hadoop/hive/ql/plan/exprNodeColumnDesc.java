@@ -60,5 +60,9 @@ public class exprNodeColumnDesc extends exprNodeDesc implements Serializable {
   	lst.add(column);
   	return lst;
   }
+  @Override
+  public exprNodeDesc clone() {
+    return new exprNodeColumnDesc(this.typeInfo, this.column);
+  }
 
 }

@@ -30,7 +30,7 @@
                         <void property="conf"> 
                          <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                           <void property="dirName"> 
-                           <string>/data/users/njain/hive_commit/trunk/ql/../build/ql/tmp/104464833.10001.insclause-0</string> 
+                           <string>/data/users/pchakka/workspace/oshive/ql/../build/ql/tmp/714200408.10001.insclause-0</string> 
                           </void> 
                           <void property="tableInfo"> 
                            <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -58,6 +58,9 @@
                            </object> 
                           </void> 
                          </object> 
+                        </void> 
+                        <void property="id"> 
+                         <string>20</string> 
                         </void> 
                         <void property="parentOperators"> 
                          <object class="java.util.ArrayList"> 
@@ -160,388 +163,423 @@
                       </void> 
                      </object> 
                     </void> 
+                    <void property="columnExprMap"> 
+                     <object class="java.util.HashMap"> 
+                      <void method="put"> 
+                       <string>3</string> 
+                       <object id="exprNodeFuncDesc0" class="org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc"> 
+                        <void property="UDFClass"> 
+                         <class>org.apache.hadoop.hive.ql.udf.UDFOPPlus</class> 
+                        </void> 
+                        <void property="UDFMethod"> 
+                         <object class="org.apache.hadoop.hive.ql.udf.UDFOPPlus" method="getMethod"> 
+                          <string>evaluate</string> 
+                          <array class="java.lang.Class" length="2"> 
+                           <void index="0"> 
+                            <class>java.lang.Double</class> 
+                           </void> 
+                           <void index="1"> 
+                            <class>java.lang.Double</class> 
+                           </void> 
+                          </array> 
+                         </object> 
+                        </void> 
+                        <void property="childExprs"> 
+                         <object class="java.util.ArrayList"> 
+                          <void method="add"> 
+                           <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                            <void property="typeInfo"> 
+                             <object idref="PrimitiveTypeInfo1"/> 
+                            </void> 
+                            <void property="value"> 
+                             <double>3.0</double> 
+                            </void> 
+                           </object> 
+                          </void> 
+                          <void method="add"> 
+                           <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                            <void property="typeInfo"> 
+                             <object idref="PrimitiveTypeInfo1"/> 
+                            </void> 
+                            <void property="value"> 
+                             <double>2.0</double> 
+                            </void> 
+                           </object> 
+                          </void> 
+                         </object> 
+                        </void> 
+                        <void property="typeInfo"> 
+                         <object idref="PrimitiveTypeInfo1"/> 
+                        </void> 
+                       </object> 
+                      </void> 
+                      <void method="put"> 
+                       <string>2</string> 
+                       <object id="exprNodeFuncDesc1" class="org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc"> 
+                        <void property="UDFClass"> 
+                         <class>org.apache.hadoop.hive.ql.udf.UDFOPPlus</class> 
+                        </void> 
+                        <void property="UDFMethod"> 
+                         <object class="org.apache.hadoop.hive.ql.udf.UDFOPPlus" method="getMethod"> 
+                          <string>evaluate</string> 
+                          <array class="java.lang.Class" length="2"> 
+                           <void index="0"> 
+                            <class>java.lang.Double</class> 
+                           </void> 
+                           <void index="1"> 
+                            <class>java.lang.Double</class> 
+                           </void> 
+                          </array> 
+                         </object> 
+                        </void> 
+                        <void property="childExprs"> 
+                         <object class="java.util.ArrayList"> 
+                          <void method="add"> 
+                           <object class="org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc"> 
+                            <void property="UDFClass"> 
+                             <class>org.apache.hadoop.hive.ql.udf.UDFToDouble</class> 
+                            </void> 
+                            <void property="UDFMethod"> 
+                             <object class="org.apache.hadoop.hive.ql.udf.UDFToDouble" method="getMethod"> 
+                              <string>evaluate</string> 
+                              <array class="java.lang.Class" length="1"> 
+                               <void index="0"> 
+                                <class>java.lang.Integer</class> 
+                               </void> 
+                              </array> 
+                             </object> 
+                            </void> 
+                            <void property="childExprs"> 
+                             <object class="java.util.ArrayList"> 
+                              <void method="add"> 
+                               <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                                <void property="typeInfo"> 
+                                 <object idref="PrimitiveTypeInfo0"/> 
+                                </void> 
+                                <void property="value"> 
+                                 <int>3</int> 
+                                </void> 
+                               </object> 
+                              </void> 
+                             </object> 
+                            </void> 
+                            <void property="typeInfo"> 
+                             <object idref="PrimitiveTypeInfo1"/> 
+                            </void> 
+                           </object> 
+                          </void> 
+                          <void method="add"> 
+                           <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                            <void property="typeInfo"> 
+                             <object idref="PrimitiveTypeInfo1"/> 
+                            </void> 
+                            <void property="value"> 
+                             <double>2.0</double> 
+                            </void> 
+                           </object> 
+                          </void> 
+                         </object> 
+                        </void> 
+                        <void property="typeInfo"> 
+                         <object idref="PrimitiveTypeInfo1"/> 
+                        </void> 
+                       </object> 
+                      </void> 
+                      <void method="put"> 
+                       <string>1</string> 
+                       <object id="exprNodeFuncDesc2" class="org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc"> 
+                        <void property="UDFClass"> 
+                         <class>org.apache.hadoop.hive.ql.udf.UDFOPPlus</class> 
+                        </void> 
+                        <void property="UDFMethod"> 
+                         <object class="org.apache.hadoop.hive.ql.udf.UDFOPPlus" method="getMethod"> 
+                          <string>evaluate</string> 
+                          <array class="java.lang.Class" length="2"> 
+                           <void index="0"> 
+                            <class>java.lang.Double</class> 
+                           </void> 
+                           <void index="1"> 
+                            <class>java.lang.Double</class> 
+                           </void> 
+                          </array> 
+                         </object> 
+                        </void> 
+                        <void property="childExprs"> 
+                         <object class="java.util.ArrayList"> 
+                          <void method="add"> 
+                           <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                            <void property="typeInfo"> 
+                             <object idref="PrimitiveTypeInfo1"/> 
+                            </void> 
+                            <void property="value"> 
+                             <double>3.0</double> 
+                            </void> 
+                           </object> 
+                          </void> 
+                          <void method="add"> 
+                           <object class="org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc"> 
+                            <void property="UDFClass"> 
+                             <class>org.apache.hadoop.hive.ql.udf.UDFToDouble</class> 
+                            </void> 
+                            <void property="UDFMethod"> 
+                             <object class="org.apache.hadoop.hive.ql.udf.UDFToDouble" method="getMethod"> 
+                              <string>evaluate</string> 
+                              <array class="java.lang.Class" length="1"> 
+                               <void index="0"> 
+                                <class>java.lang.Integer</class> 
+                               </void> 
+                              </array> 
+                             </object> 
+                            </void> 
+                            <void property="childExprs"> 
+                             <object class="java.util.ArrayList"> 
+                              <void method="add"> 
+                               <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                                <void property="typeInfo"> 
+                                 <object idref="PrimitiveTypeInfo0"/> 
+                                </void> 
+                                <void property="value"> 
+                                 <int>2</int> 
+                                </void> 
+                               </object> 
+                              </void> 
+                             </object> 
+                            </void> 
+                            <void property="typeInfo"> 
+                             <object idref="PrimitiveTypeInfo1"/> 
+                            </void> 
+                           </object> 
+                          </void> 
+                         </object> 
+                        </void> 
+                        <void property="typeInfo"> 
+                         <object idref="PrimitiveTypeInfo1"/> 
+                        </void> 
+                       </object> 
+                      </void> 
+                      <void method="put"> 
+                       <string>0</string> 
+                       <object id="exprNodeFuncDesc3" class="org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc"> 
+                        <void property="UDFClass"> 
+                         <class>org.apache.hadoop.hive.ql.udf.UDFOPPlus</class> 
+                        </void> 
+                        <void property="UDFMethod"> 
+                         <object class="org.apache.hadoop.hive.ql.udf.UDFOPPlus" method="getMethod"> 
+                          <string>evaluate</string> 
+                          <array class="java.lang.Class" length="2"> 
+                           <void index="0"> 
+                            <class>java.lang.Integer</class> 
+                           </void> 
+                           <void index="1"> 
+                            <class>java.lang.Integer</class> 
+                           </void> 
+                          </array> 
+                         </object> 
+                        </void> 
+                        <void property="childExprs"> 
+                         <object class="java.util.ArrayList"> 
+                          <void method="add"> 
+                           <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                            <void property="typeInfo"> 
+                             <object idref="PrimitiveTypeInfo0"/> 
+                            </void> 
+                            <void property="value"> 
+                             <int>3</int> 
+                            </void> 
+                           </object> 
+                          </void> 
+                          <void method="add"> 
+                           <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                            <void property="typeInfo"> 
+                             <object idref="PrimitiveTypeInfo0"/> 
+                            </void> 
+                            <void property="value"> 
+                             <int>2</int> 
+                            </void> 
+                           </object> 
+                          </void> 
+                         </object> 
+                        </void> 
+                        <void property="typeInfo"> 
+                         <object idref="PrimitiveTypeInfo0"/> 
+                        </void> 
+                       </object> 
+                      </void> 
+                      <void method="put"> 
+                       <string>6</string> 
+                       <object id="exprNodeFuncDesc4" class="org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc"> 
+                        <void property="UDFClass"> 
+                         <class>org.apache.hadoop.hive.ql.udf.UDFToInteger</class> 
+                        </void> 
+                        <void property="UDFMethod"> 
+                         <object class="org.apache.hadoop.hive.ql.udf.UDFToInteger" method="getMethod"> 
+                          <string>evaluate</string> 
+                          <array class="java.lang.Class" length="1"> 
+                           <void index="0"> 
+                            <class>java.lang.Boolean</class> 
+                           </void> 
+                          </array> 
+                         </object> 
+                        </void> 
+                        <void property="childExprs"> 
+                         <object class="java.util.ArrayList"> 
+                          <void method="add"> 
+                           <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                            <void property="typeInfo"> 
+                             <object idref="PrimitiveTypeInfo2"/> 
+                            </void> 
+                            <void property="value"> 
+                             <boolean>true</boolean> 
+                            </void> 
+                           </object> 
+                          </void> 
+                         </object> 
+                        </void> 
+                        <void property="typeInfo"> 
+                         <object idref="PrimitiveTypeInfo0"/> 
+                        </void> 
+                       </object> 
+                      </void> 
+                      <void method="put"> 
+                       <string>5</string> 
+                       <object id="exprNodeFuncDesc5" class="org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc"> 
+                        <void property="UDFClass"> 
+                         <class>org.apache.hadoop.hive.ql.udf.UDFToBoolean</class> 
+                        </void> 
+                        <void property="UDFMethod"> 
+                         <object class="org.apache.hadoop.hive.ql.udf.UDFToBoolean" method="getMethod"> 
+                          <string>evaluate</string> 
+                          <array class="java.lang.Class" length="1"> 
+                           <void index="0"> 
+                            <class>java.lang.Integer</class> 
+                           </void> 
+                          </array> 
+                         </object> 
+                        </void> 
+                        <void property="childExprs"> 
+                         <object class="java.util.ArrayList"> 
+                          <void method="add"> 
+                           <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                            <void property="typeInfo"> 
+                             <object idref="PrimitiveTypeInfo0"/> 
+                            </void> 
+                            <void property="value"> 
+                             <int>1</int> 
+                            </void> 
+                           </object> 
+                          </void> 
+                         </object> 
+                        </void> 
+                        <void property="typeInfo"> 
+                         <object idref="PrimitiveTypeInfo2"/> 
+                        </void> 
+                       </object> 
+                      </void> 
+                      <void method="put"> 
+                       <string>4</string> 
+                       <object id="exprNodeFuncDesc6" class="org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc"> 
+                        <void property="UDFClass"> 
+                         <class>org.apache.hadoop.hive.ql.udf.UDFOPPlus</class> 
+                        </void> 
+                        <void property="UDFMethod"> 
+                         <object class="org.apache.hadoop.hive.ql.udf.UDFOPPlus" method="getMethod"> 
+                          <string>evaluate</string> 
+                          <array class="java.lang.Class" length="2"> 
+                           <void index="0"> 
+                            <class>java.lang.Integer</class> 
+                           </void> 
+                           <void index="1"> 
+                            <class>java.lang.Integer</class> 
+                           </void> 
+                          </array> 
+                         </object> 
+                        </void> 
+                        <void property="childExprs"> 
+                         <object class="java.util.ArrayList"> 
+                          <void method="add"> 
+                           <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                            <void property="typeInfo"> 
+                             <object idref="PrimitiveTypeInfo0"/> 
+                            </void> 
+                            <void property="value"> 
+                             <int>3</int> 
+                            </void> 
+                           </object> 
+                          </void> 
+                          <void method="add"> 
+                           <object class="org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc"> 
+                            <void property="UDFClass"> 
+                             <class>org.apache.hadoop.hive.ql.udf.UDFToInteger</class> 
+                            </void> 
+                            <void property="UDFMethod"> 
+                             <object class="org.apache.hadoop.hive.ql.udf.UDFToInteger" method="getMethod"> 
+                              <string>evaluate</string> 
+                              <array class="java.lang.Class" length="1"> 
+                               <void index="0"> 
+                                <class>java.lang.Double</class> 
+                               </void> 
+                              </array> 
+                             </object> 
+                            </void> 
+                            <void property="childExprs"> 
+                             <object class="java.util.ArrayList"> 
+                              <void method="add"> 
+                               <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
+                                <void property="typeInfo"> 
+                                 <object idref="PrimitiveTypeInfo1"/> 
+                                </void> 
+                                <void property="value"> 
+                                 <double>2.0</double> 
+                                </void> 
+                               </object> 
+                              </void> 
+                             </object> 
+                            </void> 
+                            <void property="typeInfo"> 
+                             <object idref="PrimitiveTypeInfo0"/> 
+                            </void> 
+                           </object> 
+                          </void> 
+                         </object> 
+                        </void> 
+                        <void property="typeInfo"> 
+                         <object idref="PrimitiveTypeInfo0"/> 
+                        </void> 
+                       </object> 
+                      </void> 
+                     </object> 
+                    </void> 
                     <void property="conf"> 
                      <object class="org.apache.hadoop.hive.ql.plan.selectDesc"> 
                       <void property="colList"> 
                        <object class="java.util.ArrayList"> 
                         <void method="add"> 
-                         <object class="org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc"> 
-                          <void property="UDFClass"> 
-                           <class>org.apache.hadoop.hive.ql.udf.UDFOPPlus</class> 
-                          </void> 
-                          <void property="UDFMethod"> 
-                           <object class="org.apache.hadoop.hive.ql.udf.UDFOPPlus" method="getMethod"> 
-                            <string>evaluate</string> 
-                            <array class="java.lang.Class" length="2"> 
-                             <void index="0"> 
-                              <class>java.lang.Integer</class> 
-                             </void> 
-                             <void index="1"> 
-                              <class>java.lang.Integer</class> 
-                             </void> 
-                            </array> 
-                           </object> 
-                          </void> 
-                          <void property="children"> 
-                           <object class="java.util.ArrayList"> 
-                            <void method="add"> 
-                             <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
-                              <void property="typeInfo"> 
-                               <object idref="PrimitiveTypeInfo0"/> 
-                              </void> 
-                              <void property="value"> 
-                               <int>3</int> 
-                              </void> 
-                             </object> 
-                            </void> 
-                            <void method="add"> 
-                             <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
-                              <void property="typeInfo"> 
-                               <object idref="PrimitiveTypeInfo0"/> 
-                              </void> 
-                              <void property="value"> 
-                               <int>2</int> 
-                              </void> 
-                             </object> 
-                            </void> 
-                           </object> 
-                          </void> 
-                          <void property="typeInfo"> 
-                           <object idref="PrimitiveTypeInfo0"/> 
-                          </void> 
-                         </object> 
+                         <object idref="exprNodeFuncDesc3"/> 
                         </void> 
                         <void method="add"> 
-                         <object class="org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc"> 
-                          <void property="UDFClass"> 
-                           <class>org.apache.hadoop.hive.ql.udf.UDFOPPlus</class> 
-                          </void> 
-                          <void property="UDFMethod"> 
-                           <object class="org.apache.hadoop.hive.ql.udf.UDFOPPlus" method="getMethod"> 
-                            <string>evaluate</string> 
-                            <array class="java.lang.Class" length="2"> 
-                             <void index="0"> 
-                              <class>java.lang.Double</class> 
-                             </void> 
-                             <void index="1"> 
-                              <class>java.lang.Double</class> 
-                             </void> 
-                            </array> 
-                           </object> 
-                          </void> 
-                          <void property="children"> 
-                           <object class="java.util.ArrayList"> 
-                            <void method="add"> 
-                             <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
-                              <void property="typeInfo"> 
-                               <object idref="PrimitiveTypeInfo1"/> 
-                              </void> 
-                              <void property="value"> 
-                               <double>3.0</double> 
-                              </void> 
-                             </object> 
-                            </void> 
-                            <void method="add"> 
-                             <object class="org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc"> 
-                              <void property="UDFClass"> 
-                               <class>org.apache.hadoop.hive.ql.udf.UDFToDouble</class> 
-                              </void> 
-                              <void property="UDFMethod"> 
-                               <object class="org.apache.hadoop.hive.ql.udf.UDFToDouble" method="getMethod"> 
-                                <string>evaluate</string> 
-                                <array class="java.lang.Class" length="1"> 
-                                 <void index="0"> 
-                                  <class>java.lang.Integer</class> 
-                                 </void> 
-                                </array> 
-                               </object> 
-                              </void> 
-                              <void property="children"> 
-                               <object class="java.util.ArrayList"> 
-                                <void method="add"> 
-                                 <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
-                                  <void property="typeInfo"> 
-                                   <object idref="PrimitiveTypeInfo0"/> 
-                                  </void> 
-                                  <void property="value"> 
-                                   <int>2</int> 
-                                  </void> 
-                                 </object> 
-                                </void> 
-                               </object> 
-                              </void> 
-                              <void property="typeInfo"> 
-                               <object idref="PrimitiveTypeInfo1"/> 
-                              </void> 
-                             </object> 
-                            </void> 
-                           </object> 
-                          </void> 
-                          <void property="typeInfo"> 
-                           <object idref="PrimitiveTypeInfo1"/> 
-                          </void> 
-                         </object> 
+                         <object idref="exprNodeFuncDesc2"/> 
                         </void> 
                         <void method="add"> 
-                         <object class="org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc"> 
-                          <void property="UDFClass"> 
-                           <class>org.apache.hadoop.hive.ql.udf.UDFOPPlus</class> 
-                          </void> 
-                          <void property="UDFMethod"> 
-                           <object class="org.apache.hadoop.hive.ql.udf.UDFOPPlus" method="getMethod"> 
-                            <string>evaluate</string> 
-                            <array class="java.lang.Class" length="2"> 
-                             <void index="0"> 
-                              <class>java.lang.Double</class> 
-                             </void> 
-                             <void index="1"> 
-                              <class>java.lang.Double</class> 
-                             </void> 
-                            </array> 
-                           </object> 
-                          </void> 
-                          <void property="children"> 
-                           <object class="java.util.ArrayList"> 
-                            <void method="add"> 
-                             <object class="org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc"> 
-                              <void property="UDFClass"> 
-                               <class>org.apache.hadoop.hive.ql.udf.UDFToDouble</class> 
-                              </void> 
-                              <void property="UDFMethod"> 
-                               <object class="org.apache.hadoop.hive.ql.udf.UDFToDouble" method="getMethod"> 
-                                <string>evaluate</string> 
-                                <array class="java.lang.Class" length="1"> 
-                                 <void index="0"> 
-                                  <class>java.lang.Integer</class> 
-                                 </void> 
-                                </array> 
-                               </object> 
-                              </void> 
-                              <void property="children"> 
-                               <object class="java.util.ArrayList"> 
-                                <void method="add"> 
-                                 <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
-                                  <void property="typeInfo"> 
-                                   <object idref="PrimitiveTypeInfo0"/> 
-                                  </void> 
-                                  <void property="value"> 
-                                   <int>3</int> 
-                                  </void> 
-                                 </object> 
-                                </void> 
-                               </object> 
-                              </void> 
-                              <void property="typeInfo"> 
-                               <object idref="PrimitiveTypeInfo1"/> 
-                              </void> 
-                             </object> 
-                            </void> 
-                            <void method="add"> 
-                             <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
-                              <void property="typeInfo"> 
-                               <object idref="PrimitiveTypeInfo1"/> 
-                              </void> 
-                              <void property="value"> 
-                               <double>2.0</double> 
-                              </void> 
-                             </object> 
-                            </void> 
-                           </object> 
-                          </void> 
-                          <void property="typeInfo"> 
-                           <object idref="PrimitiveTypeInfo1"/> 
-                          </void> 
-                         </object> 
+                         <object idref="exprNodeFuncDesc1"/> 
                         </void> 
                         <void method="add"> 
-                         <object class="org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc"> 
-                          <void property="UDFClass"> 
-                           <class>org.apache.hadoop.hive.ql.udf.UDFOPPlus</class> 
-                          </void> 
-                          <void property="UDFMethod"> 
-                           <object class="org.apache.hadoop.hive.ql.udf.UDFOPPlus" method="getMethod"> 
-                            <string>evaluate</string> 
-                            <array class="java.lang.Class" length="2"> 
-                             <void index="0"> 
-                              <class>java.lang.Double</class> 
-                             </void> 
-                             <void index="1"> 
-                              <class>java.lang.Double</class> 
-                             </void> 
-                            </array> 
-                           </object> 
-                          </void> 
-                          <void property="children"> 
-                           <object class="java.util.ArrayList"> 
-                            <void method="add"> 
-                             <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
-                              <void property="typeInfo"> 
-                               <object idref="PrimitiveTypeInfo1"/> 
-                              </void> 
-                              <void property="value"> 
-                               <double>3.0</double> 
-                              </void> 
-                             </object> 
-                            </void> 
-                            <void method="add"> 
-                             <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
-                              <void property="typeInfo"> 
-                               <object idref="PrimitiveTypeInfo1"/> 
-                              </void> 
-                              <void property="value"> 
-                               <double>2.0</double> 
-                              </void> 
-                             </object> 
-                            </void> 
-                           </object> 
-                          </void> 
-                          <void property="typeInfo"> 
-                           <object idref="PrimitiveTypeInfo1"/> 
-                          </void> 
-                         </object> 
+                         <object idref="exprNodeFuncDesc0"/> 
                         </void> 
                         <void method="add"> 
-                         <object class="org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc"> 
-                          <void property="UDFClass"> 
-                           <class>org.apache.hadoop.hive.ql.udf.UDFOPPlus</class> 
-                          </void> 
-                          <void property="UDFMethod"> 
-                           <object class="org.apache.hadoop.hive.ql.udf.UDFOPPlus" method="getMethod"> 
-                            <string>evaluate</string> 
-                            <array class="java.lang.Class" length="2"> 
-                             <void index="0"> 
-                              <class>java.lang.Integer</class> 
-                             </void> 
-                             <void index="1"> 
-                              <class>java.lang.Integer</class> 
-                             </void> 
-                            </array> 
-                           </object> 
-                          </void> 
-                          <void property="children"> 
-                           <object class="java.util.ArrayList"> 
-                            <void method="add"> 
-                             <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
-                              <void property="typeInfo"> 
-                               <object idref="PrimitiveTypeInfo0"/> 
-                              </void> 
-                              <void property="value"> 
-                               <int>3</int> 
-                              </void> 
-                             </object> 
-                            </void> 
-                            <void method="add"> 
-                             <object class="org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc"> 
-                              <void property="UDFClass"> 
-                               <class>org.apache.hadoop.hive.ql.udf.UDFToInteger</class> 
-                              </void> 
-                              <void property="UDFMethod"> 
-                               <object class="org.apache.hadoop.hive.ql.udf.UDFToInteger" method="getMethod"> 
-                                <string>evaluate</string> 
-                                <array class="java.lang.Class" length="1"> 
-                                 <void index="0"> 
-                                  <class>java.lang.Double</class> 
-                                 </void> 
-                                </array> 
-                               </object> 
-                              </void> 
-                              <void property="children"> 
-                               <object class="java.util.ArrayList"> 
-                                <void method="add"> 
-                                 <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
-                                  <void property="typeInfo"> 
-                                   <object idref="PrimitiveTypeInfo1"/> 
-                                  </void> 
-                                  <void property="value"> 
-                                   <double>2.0</double> 
-                                  </void> 
-                                 </object> 
-                                </void> 
-                               </object> 
-                              </void> 
-                              <void property="typeInfo"> 
-                               <object idref="PrimitiveTypeInfo0"/> 
-                              </void> 
-                             </object> 
-                            </void> 
-                           </object> 
-                          </void> 
-                          <void property="typeInfo"> 
-                           <object idref="PrimitiveTypeInfo0"/> 
-                          </void> 
-                         </object> 
+                         <object idref="exprNodeFuncDesc6"/> 
                         </void> 
                         <void method="add"> 
-                         <object class="org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc"> 
-                          <void property="UDFClass"> 
-                           <class>org.apache.hadoop.hive.ql.udf.UDFToBoolean</class> 
-                          </void> 
-                          <void property="UDFMethod"> 
-                           <object class="org.apache.hadoop.hive.ql.udf.UDFToBoolean" method="getMethod"> 
-                            <string>evaluate</string> 
-                            <array class="java.lang.Class" length="1"> 
-                             <void index="0"> 
-                              <class>java.lang.Integer</class> 
-                             </void> 
-                            </array> 
-                           </object> 
-                          </void> 
-                          <void property="children"> 
-                           <object class="java.util.ArrayList"> 
-                            <void method="add"> 
-                             <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
-                              <void property="typeInfo"> 
-                               <object idref="PrimitiveTypeInfo0"/> 
-                              </void> 
-                              <void property="value"> 
-                               <int>1</int> 
-                              </void> 
-                             </object> 
-                            </void> 
-                           </object> 
-                          </void> 
-                          <void property="typeInfo"> 
-                           <object idref="PrimitiveTypeInfo2"/> 
-                          </void> 
-                         </object> 
+                         <object idref="exprNodeFuncDesc5"/> 
                         </void> 
                         <void method="add"> 
-                         <object class="org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc"> 
-                          <void property="UDFClass"> 
-                           <class>org.apache.hadoop.hive.ql.udf.UDFToInteger</class> 
-                          </void> 
-                          <void property="UDFMethod"> 
-                           <object class="org.apache.hadoop.hive.ql.udf.UDFToInteger" method="getMethod"> 
-                            <string>evaluate</string> 
-                            <array class="java.lang.Class" length="1"> 
-                             <void index="0"> 
-                              <class>java.lang.Boolean</class> 
-                             </void> 
-                            </array> 
-                           </object> 
-                          </void> 
-                          <void property="children"> 
-                           <object class="java.util.ArrayList"> 
-                            <void method="add"> 
-                             <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
-                              <void property="typeInfo"> 
-                               <object idref="PrimitiveTypeInfo2"/> 
-                              </void> 
-                              <void property="value"> 
-                               <boolean>true</boolean> 
-                              </void> 
-                             </object> 
-                            </void> 
-                           </object> 
-                          </void> 
-                          <void property="typeInfo"> 
-                           <object idref="PrimitiveTypeInfo0"/> 
-                          </void> 
-                         </object> 
+                         <object idref="exprNodeFuncDesc4"/> 
                         </void> 
                        </object> 
                       </void> 
                      </object> 
+                    </void> 
+                    <void property="id"> 
+                     <string>19</string> 
                     </void> 
                     <void property="parentOperators"> 
                      <object class="java.util.ArrayList"> 
@@ -581,7 +619,7 @@
                       </array> 
                      </object> 
                     </void> 
-                    <void property="children"> 
+                    <void property="childExprs"> 
                      <object class="java.util.ArrayList"> 
                       <void method="add"> 
                        <object class="org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc"> 
@@ -598,7 +636,7 @@
                           </array> 
                          </object> 
                         </void> 
-                        <void property="children"> 
+                        <void property="childExprs"> 
                          <object class="java.util.ArrayList"> 
                           <void method="add"> 
                            <object class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
@@ -636,7 +674,7 @@
                           </array> 
                          </object> 
                         </void> 
-                        <void property="children"> 
+                        <void property="childExprs"> 
                          <object class="java.util.ArrayList"> 
                           <void method="add"> 
                            <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
@@ -663,6 +701,9 @@
                    </object> 
                   </void> 
                  </object> 
+                </void> 
+                <void property="id"> 
+                 <string>18</string> 
                 </void> 
                 <void property="parentOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -711,6 +752,9 @@
               </void> 
              </object> 
             </void> 
+            <void property="id"> 
+             <string>17</string> 
+            </void> 
             <void property="parentOperators"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
@@ -728,6 +772,9 @@
            </object> 
           </void> 
          </object> 
+        </void> 
+        <void property="id"> 
+         <string>13</string> 
         </void> 
         <void property="schema"> 
          <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
@@ -764,7 +811,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive_commit/trunk/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src</string> 
@@ -776,7 +823,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive_commit/trunk/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"/> 
@@ -832,7 +879,7 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/data/users/njain/hive_commit/trunk/build/ql/test/data/warehouse/src</string> 
+             <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src</string> 
             </void> 
            </object> 
           </void> 

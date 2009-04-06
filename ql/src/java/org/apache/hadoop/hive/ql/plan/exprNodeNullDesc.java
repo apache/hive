@@ -39,4 +39,9 @@ public class exprNodeNullDesc extends exprNodeDesc implements Serializable {
   public String getExprString() {
     return "null";
   }
+
+  @Override
+  public exprNodeDesc clone() {
+    return new exprNodeNullDesc();
+  }
 }

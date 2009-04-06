@@ -37,6 +37,7 @@ public class DefaultGraphWalker implements GraphWalker {
 
   protected Stack<Node> opStack;
   private List<Node> toWalk = new ArrayList<Node>();
+  private Set<Node> seenList = new HashSet<Node>();
   private HashMap<Node, Object> retMap = new HashMap<Node, Object>();
   private Dispatcher dispatcher;
 
@@ -110,15 +111,17 @@ public class DefaultGraphWalker implements GraphWalker {
     if((nd.getChildren() == null) 
         || getDispatchedList().containsAll(nd.getChildren())) {
       // all children are done or no need to walk the children
+      if(getDispatchedList().contains(nd))
+        // sanity check
+        assert false;
       dispatch(nd, opStack);
       opStack.pop();
       return;
     }
-    // move all the children to the front of queue
+    // add children, self to the front of the queue in that order
+    getToWalk().add(0, nd);
     getToWalk().removeAll(nd.getChildren());
     getToWalk().addAll(0, nd.getChildren());
-    // add self to the end of the queue
-    getToWalk().add(nd);
     opStack.pop();
   }
 }
