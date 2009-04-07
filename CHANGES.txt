@@ -15,6 +15,9 @@ Trunk - unreleased changes
 
   BUG FIXES
 
+    HIVE-381. Fix JDBC HiveResultSet's next function.
+    (Kim P via namit)
+
 Release 0.3.0 - Unreleased
 
   INCOMPATIBLE CHANGES

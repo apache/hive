@@ -104,7 +104,8 @@ public class TestJdbcDriver extends TestCase {
     assertNotNull("ResultSet is null", res);
     int i = 0;
 
-    while (res.next()) {
+    boolean moreRow = res.next();
+    while (moreRow) {
       try {
         i++;
         res.getString(2);
@@ -114,6 +115,7 @@ public class TestJdbcDriver extends TestCase {
 //      System.out.println(res.getString(2));
 //      System.out.println(res.getString(1));
 //      System.out.println(res.getInt(1));
+        moreRow = res.next();
       }
       catch (SQLException e) {
         System.out.println(e.toString());
@@ -123,5 +125,8 @@ public class TestJdbcDriver extends TestCase {
     }
     // supposed to get 500 rows
     assertEquals(500, i);
+
+    // should have no more rows
+    assertEquals(false, moreRow);
   }
 }

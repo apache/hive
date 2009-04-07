@@ -981,7 +981,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    */
 
   public boolean next() throws SQLException {
-    String row_str;
+    String row_str = "";
     try {
       row_str = (String)client.fetchOne();
       if (!row_str.equals("")) {
@@ -992,7 +992,7 @@ public class HiveResultSet implements java.sql.ResultSet {
       throw new SQLException("Error retrieving next row");
     }
     // NOTE: fetchOne dosn't throw new SQLException("Method not supported").
-    return row_str != "";
+    return !row_str.equals("");
   }
 
   /* (non-Javadoc)
