@@ -102,6 +102,9 @@ Release 0.3.0 - Unreleased
     HIVE-373. 1 reducer should be used if no grouping key is present in all 
     scenarios. (Namit Jain via zshao)
 
+    HIVE-382. fixed problems in map-side aggr - backported from trunk.
+    (namit)
+
 Release 0.2.0 - Unreleased
 
   INCOMPATIBLE CHANGES
