@@ -132,6 +132,8 @@ Release 0.3.0 - Unreleased
     HIVE-384. Fixing UNION ALL when the first job is a map-only job.
     (Namit Jain via zshao)
 
+    HIVE-394. Break plans in Cluster Mode. (Namit Jain via zshao)
+
 Release 0.2.0 - Unreleased
 
   INCOMPATIBLE CHANGES

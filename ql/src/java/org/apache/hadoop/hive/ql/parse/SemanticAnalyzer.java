@@ -80,6 +80,8 @@ import org.apache.hadoop.hive.ql.optimizer.GenMRUnion1;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink3;
 import org.apache.hadoop.hive.ql.plan.*;
 import org.apache.hadoop.hive.ql.udf.UDFOPPositive;
+import org.apache.hadoop.hive.ql.exec.MapRedTask;
+import org.apache.hadoop.hive.ql.exec.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.*;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
@@ -3473,8 +3475,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   // loop over all the tasks recursviely
   private void breakTaskTree(Task<? extends Serializable> task) { 
-    if (task instanceof MapRedTask) {
-      HashMap<String, Operator<? extends Serializable>> opMap = ((MapRedTask)task).getWork().getAliasToWork();
+    
+    if ((task instanceof MapRedTask) || (task instanceof ExecDriver)) {
+      HashMap<String, Operator<? extends Serializable>> opMap = ((mapredWork)task.getWork()).getAliasToWork();
       if (!opMap.isEmpty())
         for (Operator<? extends Serializable> op: opMap.values())
           breakOperatorTree(op);
