@@ -36,7 +36,8 @@
 
   <property name="hadoop.mirror" value="http://archive.apache.org/dist"/>
   <property name="hadoop.version" value="0.19.0"/>
-  <property name="hadoop.root" location="${build.dir.hadoop}/hadoop-${hadoop.version}"/>
+  <property name="hadoop.root.default" location="${build.dir.hadoop}/hadoop-${hadoop.version}"/>
+  <property name="hadoop.root" value="${hadoop.root.default}"/>
   <property name="hadoop.jar" location="${hadoop.root}/hadoop-${hadoop.version}-core.jar"/>
   <property name="hadoop.conf.dir" location="${hadoop.root}/conf"/>
 
@@ -85,10 +86,23 @@
 
   <available property="hadoopcore.install.done" file="${build.dir.hadoop}/hadoop-${hadoop.version}.installed"/>
 
-  <target name="install-hadoopcore" depends="resolve" unless="hadoopcore.install.done">
+  <target name="install-hadoopcore-internal" depends="resolve" unless="hadoopcore.install.done">
     <untar src="${build.dir.hadoop}/hadoop-${hadoop.version}.tar.gz" dest="${build.dir.hadoop}" compression="gzip"/>
     <chmod file="${hadoop.root}/bin/hadoop" perm="+x"/>
     <touch file="${build.dir.hadoop}/hadoop-${hadoop.version}.installed"/>
+  </target>
+
+  <target name="install-hadoopcore-default" unless="hadoop.root.nondefault">
+    <antcall target="install-hadoopcore-internal"/>
+  </target>
+
+  <target name="install-hadoopcore">
+    <condition property="hadoop.root.nondefault">
+      <not>
+        <equals arg1="${hadoop.root}" arg2="${hadoop.root.default}"/>
+      </not>
+    </condition>
+    <antcall target="install-hadoopcore-default"/>
   </target>
 
   <!-- I am not sure whether we need this target any more since that package does what is needed -->
