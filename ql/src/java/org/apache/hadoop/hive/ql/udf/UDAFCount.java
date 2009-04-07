@@ -48,7 +48,8 @@ public class UDAFCount extends UDAF implements UDAFEvaluator {
   }
 
   public boolean merge(Long count) {
-    mCount += count;
+    if (count != null)
+      mCount += count;
     return true;
   }
 
