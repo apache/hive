@@ -30,10 +30,10 @@ public class UnionProcContext implements NodeProcessorCtx {
     transient private boolean[] mapOnlySubq;
     transient private boolean[] rootTask;
     
-    // currently, union has 2 inputs, but that should change - merging of unions should be allowed
-    transient private int numInputs = 2;
+    transient private int numInputs;
 
-    public UnionParseContext() {
+    public UnionParseContext(int numInputs) {
+      this.numInputs = numInputs;
       mapOnlySubq = new boolean[numInputs];
       rootTask    = new boolean[numInputs];
     }
@@ -62,11 +62,29 @@ public class UnionProcContext implements NodeProcessorCtx {
       this.numInputs = numInputs;
     }
   }
-   
+
+  // the subqueries are map-only jobs
+  private boolean mapOnlySubq;
+
+  /**
+   * @return the mapOnlySubq
+   */
+  public boolean isMapOnlySubq() {
+    return mapOnlySubq;
+  }
+
+  /**
+   * @param mapOnlySubq the mapOnlySubq to set
+   */
+  public void setMapOnlySubq(boolean mapOnlySubq) {
+    this.mapOnlySubq = mapOnlySubq;
+  }
+
   private Map<UnionOperator, UnionParseContext> uCtxMap;
 
   public UnionProcContext() {
     uCtxMap = new HashMap<UnionOperator, UnionParseContext>();
+    mapOnlySubq = true;
   }
 
   public void setUnionParseContext(UnionOperator u, UnionParseContext uCtx) { 
@@ -76,5 +94,4 @@ public class UnionProcContext implements NodeProcessorCtx {
   public UnionParseContext getUnionParseContext(UnionOperator u) { 
     return uCtxMap.get(u);
   }
-
 }

@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcFactory;
+import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext.UnionParseContext;
 
 /**
@@ -68,30 +69,22 @@ public class GenMRUnion1 implements NodeProcessor {
     UnionOperator union = (UnionOperator)nd;
     GenMRProcContext ctx = (GenMRProcContext)opProcCtx;
     ParseContext parseCtx = ctx.getParseCtx();
-    UnionParseContext uPrsCtx = parseCtx.getUCtx().getUnionParseContext(union);
-    assert uPrsCtx != null;
-
-    // The plan needs to be broken only if one of the sub-queries involve a map-reduce job
-    int numInputs = uPrsCtx.getNumInputs();
-    boolean mapOnly = true;
-    int pos = 0;
-    for (pos = 0; pos < numInputs; pos++) {
-      if (!uPrsCtx.getMapOnlySubq(pos)) {
-        mapOnly = false;
-        break;
-      }
-    }
+    UnionProcContext uCtx = parseCtx.getUCtx();
 
     // Map-only subqueries can be optimized in future to not write to a file in future
     Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx.getMapCurrCtx();
 
-    if (mapOnly) {
+    // The plan needs to be broken only if one of the sub-queries involve a map-reduce job
+    if (uCtx.isMapOnlySubq()) {
       mapCurrCtx.put((Operator<? extends Serializable>)nd, new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrTopOp(), ctx.getCurrAliasId()));
       return null;
     }
 
+    UnionParseContext uPrsCtx = uCtx.getUnionParseContext(union);
+    assert uPrsCtx != null;
+
     Task<? extends Serializable> currTask = ctx.getCurrTask();
-    pos = UnionProcFactory.getPositionParent(union, stack);
+    int pos = UnionProcFactory.getPositionParent(union, stack);
 
     // is the current task a root task
     if (uPrsCtx.getRootTask(pos) && (!ctx.getRootTasks().contains(currTask)))

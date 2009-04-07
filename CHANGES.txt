@@ -105,8 +105,11 @@ Release 0.3.0 - Unreleased
     HIVE-382. fixed problems in map-side aggr - backported from trunk.
     (namit)
 
-    HIVE-391 Fix for UDAFCount which was not handling merging nulls
+    HIVE-391. Fix for UDAFCount which was not handling merging nulls
     (Namit Jain via rmurthy)
+
+    HIVE-384. Fixing UNION ALL when the first job is a map-only job.
+    (Namit Jain via zshao)
 
 Release 0.2.0 - Unreleased
 

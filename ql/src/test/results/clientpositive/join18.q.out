@@ -76,28 +76,6 @@ STAGE PLANS:
                   type: string
                   expr: 1
                   type: bigint
-            Join Operator
-              condition map:
-                   Outer Join 0 to 1
-              condition expressions:
-                0 {VALUE.0} {VALUE.1}
-                1 {VALUE.0} {VALUE.1}
-              Select Operator
-                expressions:
-                      expr: 0
-                      type: string
-                      expr: 1
-                      type: bigint
-                      expr: 2
-                      type: string
-                      expr: 3
-                      type: bigint
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
         $INTNAME 
           Reduce Output Operator
             key expressions:

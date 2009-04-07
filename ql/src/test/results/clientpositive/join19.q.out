@@ -289,30 +289,6 @@ STAGE PLANS:
                   type: string
                   expr: 7
                   type: string
-            Join Operator
-              condition map:
-                   Inner Join 0 to 1
-              condition expressions:
-                0 {VALUE.0} {VALUE.1} {VALUE.2} {VALUE.3} {VALUE.4} {VALUE.5} {VALUE.6} {VALUE.7}
-                1 {VALUE.0} {VALUE.1}
-              Select Operator
-                expressions:
-                      expr: 3
-                      type: string
-                      expr: 5
-                      type: string
-                      expr: 0
-                      type: string
-                      expr: 7
-                      type: string
-                      expr: 9
-                      type: string
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
       Reduce Operator Tree:
         Join Operator
           condition map:

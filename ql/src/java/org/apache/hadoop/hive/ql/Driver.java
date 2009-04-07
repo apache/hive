@@ -63,14 +63,21 @@ public class Driver implements CommandProcessor {
   private BaseSemanticAnalyzer sem;
 
   public int countJobs(List<Task<? extends Serializable>> tasks) {
+    return countJobs(tasks, new ArrayList<Task<? extends Serializable>>());
+  }
+
+  public int countJobs(List<Task<? extends Serializable>> tasks, List<Task<? extends Serializable>> seenTasks) {
     if (tasks == null)
       return 0;
     int jobs = 0;
     for (Task<? extends Serializable> task : tasks) {
-      if (task.isMapRedTask()) {
-        jobs++;
+      if (!seenTasks.contains(task)) {
+        seenTasks.add(task);
+        if (task.isMapRedTask()) {
+          jobs++;
+        }
+        jobs += countJobs(task.getChildTasks(), seenTasks);
       }
-      jobs += countJobs(task.getChildTasks());
     }
     return jobs;
   }
@@ -160,7 +167,6 @@ public class Driver implements CommandProcessor {
     boolean noName = StringUtils.isEmpty(conf
         .getVar(HiveConf.ConfVars.HADOOPJOBNAME));
     int maxlen = conf.getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
-    int jobs = 0;
 
     conf.setVar(HiveConf.ConfVars.HIVEQUERYSTRING, command);
     
@@ -193,7 +199,7 @@ public class Driver implements CommandProcessor {
       sem.analyze(tree, ctx);
       LOG.info("Semantic Analysis Completed");
 
-      jobs = countJobs(sem.getRootTasks());
+      int jobs = countJobs(sem.getRootTasks());
       if (jobs > 0) {
         console.printInfo("Total MapReduce jobs = " + jobs);
       }
@@ -203,18 +209,8 @@ public class Driver implements CommandProcessor {
         SessionState.get().getHiveHistory().setIdToTableMap(sem.getIdToTableNameMap());
       }
       String jobname = Utilities.abbreviate(command, maxlen - 6);
-      int curJob = 0;
-      for (Task<? extends Serializable> rootTask : sem.getRootTasks()) {
-        // assumption that only top level tasks are map-reduce tasks
-        if (rootTask.isMapRedTask()) {
-          curJob++;
-          if (noName) {
-            conf.setVar(HiveConf.ConfVars.HADOOPJOBNAME, jobname + "(" + curJob
-                + "/" + jobs + ")");
-          }
-        }
-        rootTask.initialize(conf);
-      }
+      
+      int curJobNo = 0;
 
       // A very simple runtime that keeps putting runnable takss
       // on a list and when a job completes, it puts the children at the back of
@@ -235,6 +231,16 @@ public class Driver implements CommandProcessor {
         if (SessionState.get() != null)
           SessionState.get().getHiveHistory().startTask(queryId, tsk,
               tsk.getClass().getName());
+
+        if (tsk.isMapRedTask()) {
+          curJobNo++;
+          if (noName) {
+            conf.setVar(HiveConf.ConfVars.HADOOPJOBNAME, jobname + "(" + curJobNo
+                        + "/" + jobs + ")");
+          }
+        }
+
+        tsk.initialize(conf);
 
         int exitVal = tsk.execute();
         if (SessionState.get() != null) {
