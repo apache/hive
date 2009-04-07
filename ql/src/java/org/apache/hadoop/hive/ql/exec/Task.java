@@ -75,14 +75,6 @@ public abstract class Task <T extends Serializable> implements Serializable {
     }
 
     console = new LogHelper(LOG);
-
-    if(childTasks == null) {
-      return;
-    }
-
-    for(Task<? extends Serializable> t: childTasks) {
-      t.initialize(conf);
-    }
   }
 
   public abstract int execute();

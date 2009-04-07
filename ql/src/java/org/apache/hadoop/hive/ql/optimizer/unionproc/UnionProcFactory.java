@@ -60,8 +60,9 @@ public class UnionProcFactory {
       int pos = getPositionParent(union, stack);
       UnionParseContext uCtx = ctx.getUnionParseContext(union);
       if (uCtx == null)
-        uCtx = new UnionParseContext();
+        uCtx = new UnionParseContext(union.getConf().getNumInputs());
 
+      ctx.setMapOnlySubq(false);
       uCtx.setMapOnlySubq(pos, false);
       uCtx.setRootTask(pos, false);
       ctx.setUnionParseContext(union, uCtx); 
@@ -84,7 +85,7 @@ public class UnionProcFactory {
       int pos = getPositionParent(union, stack);
       UnionParseContext uCtx = ctx.getUnionParseContext(union);
       if (uCtx == null)
-        uCtx = new UnionParseContext();
+        uCtx = new UnionParseContext(union.getConf().getNumInputs());
 
       uCtx.setMapOnlySubq(pos, true);
       uCtx.setRootTask(pos, true);
@@ -108,7 +109,7 @@ public class UnionProcFactory {
       int pos = getPositionParent(union, stack);
       UnionParseContext uCtx = ctx.getUnionParseContext(union);
       if (uCtx == null)
-        uCtx = new UnionParseContext();
+        uCtx = new UnionParseContext(union.getConf().getNumInputs());
 
       uCtx.setMapOnlySubq(pos, true);
       uCtx.setRootTask(pos, false);

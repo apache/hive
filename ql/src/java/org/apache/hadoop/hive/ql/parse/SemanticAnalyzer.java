@@ -76,6 +76,12 @@ import org.apache.hadoop.hive.ql.optimizer.GenMRUnion1;
 import org.apache.hadoop.hive.ql.optimizer.Optimizer;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
+import org.apache.hadoop.hive.ql.optimizer.GenMRUnion1;
+import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink3;
+import org.apache.hadoop.hive.ql.plan.*;
+import org.apache.hadoop.hive.ql.udf.UDFOPPositive;
+import org.apache.hadoop.hive.ql.exec.*;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.aggregationDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
@@ -3035,18 +3041,52 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ColumnInfo lInfo = lEntry.getValue();
       unionoutRR.put(unionalias, field, lInfo);
     }
+
+    // If one of the children is a union, merge with it
+    // else create a new one
+    if ((leftOp instanceof UnionOperator) || (rightOp instanceof UnionOperator))
+    {
+      if (leftOp instanceof UnionOperator) {
+        // make left a child of right
+        List<Operator<? extends Serializable>> child = new ArrayList<Operator<? extends Serializable>>();
+        child.add(leftOp);
+        rightOp.setChildOperators(child);
+
+        List<Operator<? extends Serializable>> parent = leftOp.getParentOperators();
+        parent.add(rightOp);
+        
+        unionDesc uDesc = ((UnionOperator)leftOp).getConf();
+        uDesc.setNumInputs(uDesc.getNumInputs()+1);
+        return putOpInsertMap(leftOp, unionoutRR);
+      }
+      else {
+        // make right a child of left
+        List<Operator<? extends Serializable>> child = new ArrayList<Operator<? extends Serializable>>();
+        child.add(rightOp);
+        leftOp.setChildOperators(child);
+
+        List<Operator<? extends Serializable>> parent = rightOp.getParentOperators();
+        parent.add(leftOp);
+        unionDesc uDesc = ((UnionOperator)rightOp).getConf();
+        uDesc.setNumInputs(uDesc.getNumInputs()+1);
+        
+        return putOpInsertMap(rightOp, unionoutRR);
+      }
+    }
+
+    // Create a new union operator
     Operator<? extends Serializable> unionforward = 
       OperatorFactory.getAndMakeChild(new unionDesc(), new RowSchema(unionoutRR.getColumnInfos()));
-
-    // set forward operator as child of each of leftOp and rightOp
+    
+    // set union operator as child of each of leftOp and rightOp
     List<Operator<? extends Serializable>> child = new ArrayList<Operator<? extends Serializable>>();
     child.add(unionforward);
     rightOp.setChildOperators(child);
-
+    
     child = new ArrayList<Operator<? extends Serializable>>();
     child.add(unionforward);
     leftOp.setChildOperators(child);
-
+    
     List<Operator<? extends Serializable>> parent = new ArrayList<Operator<? extends Serializable>>();
     parent.add(leftOp);
     parent.add(rightOp);
@@ -3413,7 +3453,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     opRules.put(new RuleRegExp(new String("R2"), "TS%.*RS%"), new GenMRRedSink1());
     opRules.put(new RuleRegExp(new String("R3"), "RS%.*RS%"), new GenMRRedSink2());
     opRules.put(new RuleRegExp(new String("R4"), "FS%"), new GenMRFileSink1());
-    opRules.put(new RuleRegExp(new String("R4"), "UNION%"), new GenMRUnion1());
+    opRules.put(new RuleRegExp(new String("R5"), "UNION%"), new GenMRUnion1());
+    opRules.put(new RuleRegExp(new String("R6"), "UNION%.*RS%"), new GenMRRedSink3());
 
     // The dispatcher fires the processor corresponding to the closest matching rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(new GenMROperator(), opRules, procCtx);
@@ -3423,24 +3464,39 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     topNodes.addAll(this.topOps.values());
     ogw.startWalking(topNodes, null);
 
-    // reduce sink does not have any kids
-    breakOperatorTree(procCtx.getRootOps());
+    // reduce sink does not have any kids - since the plan by now has been broken up into multiple
+    // tasks, iterate over all tasks.
+    // For each task, go over all operators recursively
+    for(Task<? extends Serializable> rootTask: rootTasks)
+      breakTaskTree(rootTask);
   }
 
-  private void breakOperatorTree(Collection<Operator<? extends Serializable>> topOps) {
-    if (topOps == null) 
-      return;
-    Iterator<Operator<? extends Serializable>> topOpsIter = topOps.iterator();
-    while (topOpsIter.hasNext()) {
-      Operator<? extends Serializable> topOp = topOpsIter.next();
-      breakOperatorTree(topOp);
+  // loop over all the tasks recursviely
+  private void breakTaskTree(Task<? extends Serializable> task) { 
+    if (task instanceof MapRedTask) {
+      HashMap<String, Operator<? extends Serializable>> opMap = ((MapRedTask)task).getWork().getAliasToWork();
+      if (!opMap.isEmpty())
+        for (Operator<? extends Serializable> op: opMap.values())
+          breakOperatorTree(op);
     }
-  }
 
+    if (task.getChildTasks() == null)
+      return;
+    
+    for (Task<? extends Serializable> childTask :  task.getChildTasks())
+      breakTaskTree(childTask);
+  }
+    
+  // loop over all the operators recursviely
   private void breakOperatorTree(Operator<? extends Serializable> topOp) {
-    breakOperatorTree(topOp.getChildOperators());
     if (topOp instanceof ReduceSinkOperator)
       topOp.setChildOperators(null);
+
+    if (topOp.getChildOperators() == null)
+      return;
+    
+    for (Operator<? extends Serializable> op: topOp.getChildOperators())
+      breakOperatorTree(op);
   }
 
 

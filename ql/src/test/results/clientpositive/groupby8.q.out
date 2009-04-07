@@ -53,7 +53,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/zshao/sync/apache-trunk-HIVE-337-trunk/build/ql/tmp/56858921/8846383.10002 
+        /data/users/njain/hive1/hive/build/ql/tmp/376655103/656171317.10002 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -114,7 +114,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/zshao/sync/apache-trunk-HIVE-337-trunk/build/ql/tmp/56858921/8846383.10003 
+        /data/users/njain/hive1/hive/build/ql/tmp/376655103/656171317.10003 
           Reduce Output Operator
             key expressions:
                   expr: key
@@ -147,7 +147,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/zshao/sync/apache-trunk-HIVE-337-trunk/build/ql/tmp/56858921/8846383.10004 
+        /data/users/njain/hive1/hive/build/ql/tmp/376655103/656171317.10004 
           Reduce Output Operator
             key expressions:
                   expr: 0

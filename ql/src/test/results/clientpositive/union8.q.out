@@ -17,19 +17,18 @@ STAGE PLANS:
                     expr: value
                     type: string
               Union
-                Union
-                  Select Operator
-                    expressions:
-                          expr: 0
-                          type: string
-                          expr: 1
-                          type: string
-                    File Output Operator
-                      compressed: false
-                      GlobalTableId: 0
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                Select Operator
+                  expressions:
+                        expr: 0
+                        type: string
+                        expr: 1
+                        type: string
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
         null-subquery1:unionsrc-subquery1:s1 
             Select Operator
               expressions:
@@ -58,19 +57,18 @@ STAGE PLANS:
                     expr: value
                     type: string
               Union
-                Union
-                  Select Operator
-                    expressions:
-                          expr: 0
-                          type: string
-                          expr: 1
-                          type: string
-                    File Output Operator
-                      compressed: false
-                      GlobalTableId: 0
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                Select Operator
+                  expressions:
+                        expr: 0
+                        type: string
+                        expr: 1
+                        type: string
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator

@@ -119,11 +119,14 @@ Release 0.3.0 - Unreleased
     HIVE-375. LazySimpleSerDe directly creates a UTF8 buffer for primitive types.
     (Zheng Shao via namit)
 
-    HIVE-382 Fix for hash aggr, remove elements from hash table in the loop
+    HIVE-382. Fix for hash aggr, remove elements from hash table in the loop
     during close, rather than waiting till the end. (Namit Jain via rmurthy)
 
-    HIVE-391 Fix for UDAFCount which was not handling merging nulls
+    HIVE-391. Fix for UDAFCount which was not handling merging nulls
     (Namit Jain via rmurthy)
+
+    HIVE-384. Fixing UNION ALL when the first job is a map-only job.
+    (Namit Jain via zshao)
 
 Release 0.2.0 - Unreleased
 

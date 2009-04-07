@@ -28,6 +28,24 @@ import java.io.Serializable;
 public class unionDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
+  transient private int numInputs;
+  
   @SuppressWarnings("nls")
-  public unionDesc() { }
+  public unionDesc() { 
+    numInputs = 2;
+  }
+
+  /**
+   * @return the numInputs
+   */
+  public int getNumInputs() {
+    return numInputs;
+  }
+
+  /**
+   * @param numInputs the numInputs to set
+   */
+  public void setNumInputs(int numInputs) {
+    this.numInputs = numInputs;
+  }
 }
