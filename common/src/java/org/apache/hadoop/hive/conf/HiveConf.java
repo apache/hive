@@ -123,6 +123,9 @@ public class HiveConf extends Configuration {
     HIVEHWILISTENPORT("hive.hwi.listen.port","9999"),
     HIVEHWIWARFILE("hive.hwi.war.file",System.getenv("HIVE_HOME")+"/lib/hive_hwi.war"),
 
+    // mapper/reducer memory in local mode
+    HIVEHADOOPMAXMEM("hive.mapred.local.mem", 0),
+
     // Optimizer
     HIVEOPTPPD("hive.optimize.ppd", false); // predicate pushdown
     
