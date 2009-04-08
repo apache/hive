@@ -54,13 +54,16 @@ public class Warehouse {
     }
     whRoot = new Path(whRootString);
     URI uri = whRoot.toUri();
-    // if the METASTOREWAREHOUSE value doesn't have schema and authority specified then inherit
-    // from fs.default.name in hadoop-site.xml 
-    if ((uri.getScheme() == null) && (uri.getAuthority() == null)) {
-      whRoot = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.HADOOPFS), whRootString);
-    }
+
+    // if the METASTOREWAREHOUSE value does not specify the schema and the authority
+    // then use the default file system as specified by the Configuration
     try {
-      fs  = whRoot.getFileSystem(conf);
+      if ((uri.getScheme() == null) && (uri.getAuthority() == null)) {
+        fs = FileSystem.get(conf);
+        whRoot = new Path(fs.getUri().toString(), whRootString);
+      } else {
+        fs  = whRoot.getFileSystem(conf);
+      }
     } catch (IOException e) {
       MetaStoreUtils.logAndThrowMetaException(e);
     }

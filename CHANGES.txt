@@ -15,6 +15,7 @@ Trunk - unreleased changes
 
   BUG FIXES
 
+    HIVE-387. Use URI from FileSystem Object instead of from HADOOPFS directly
     HIVE-381. Fix JDBC HiveResultSet's next function.
     (Kim P via namit)
 
