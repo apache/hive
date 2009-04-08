@@ -21,9 +21,6 @@ Trunk - unreleased changes
     HIVE-387. Use URI from FileSystem Object instead of from HADOOPFS
     directly. (jssarma)
 
-    HIVE-399. Fix timeout problems caused due to the bigdata test.
-    (Namit Jain via athusoo)
-
 Release 0.3.0 - Unreleased
 
   INCOMPATIBLE CHANGES
@@ -447,3 +444,6 @@ Release 0.2.0 - Unreleased
 
     HIVE-283. Do case insensitive comparison of aliases in partition
     pruning. (athusoo)
+
+    HIVE-399. Fix timeout problems caused due to the bigdata test.
+    (Namit Jain via athusoo)
