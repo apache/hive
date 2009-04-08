@@ -40,7 +40,6 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.history.HiveHistory;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.serde2.ByteStream;
@@ -50,17 +49,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class Driver implements CommandProcessor {
-
   static final private Log LOG = LogFactory.getLog("hive.ql.Driver");
   private int maxRows = 100;
   ByteStream.Output bos = new ByteStream.Output();
 
-  private ParseDriver pd;
   private HiveConf conf;
   private DataInput resStream;
   private LogHelper console;
   private Context ctx;
-  private BaseSemanticAnalyzer sem;
+  private QueryPlan plan;
 
   public int countJobs(List<Task<? extends Serializable>> tasks) {
     return countJobs(tasks, new ArrayList<Task<? extends Serializable>>());
@@ -86,7 +83,9 @@ public class Driver implements CommandProcessor {
    * Return the Thrift DDL string of the result
    */
   public String getSchema() throws Exception {
-    if (sem != null && sem.getFetchTask() != null) {
+    if (plan != null && plan.getPlan().getFetchTask() != null) {
+      BaseSemanticAnalyzer sem = plan.getPlan();
+
       if (!sem.getFetchTaskInit()) {
         sem.setFetchTaskInit(true);
         sem.getFetchTask().initialize(conf);
@@ -149,56 +148,87 @@ public class Driver implements CommandProcessor {
     }
   }
 
-  private  String makeQueryId() {
-    GregorianCalendar gc = new GregorianCalendar();
-    String userid = System.getProperty("user.name");
+  /**
+   * Compile a new query. Any currently-planned query associated with this Driver is discarded.
+   *
+   * @param command The SQL query to compile.
+   */
+  public int compile(String command) {
+    if (plan != null) {
+      close();
+      plan = null;
+    }
 
-    return userid + "_" +
-      String.format("%1$4d%2$02d%3$02d%4$02d%5$02d%5$02d", gc.get(Calendar.YEAR),
-                    gc.get(Calendar.MONTH) + 1,
-                    gc.get(Calendar.DAY_OF_MONTH),
-                    gc.get(Calendar.HOUR_OF_DAY),
-                    gc.get(Calendar.MINUTE), gc.get(Calendar.SECOND));
-  }
-
-  
-  public int run(String command) {
-
-    boolean noName = StringUtils.isEmpty(conf
-        .getVar(HiveConf.ConfVars.HADOOPJOBNAME));
-    int maxlen = conf.getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
-
-    conf.setVar(HiveConf.ConfVars.HIVEQUERYSTRING, command);
-    
-    String queryId = makeQueryId();
-    conf.setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
+    TaskFactory.resetId();
 
     try {
-
-      TaskFactory.resetId();
-      LOG.info("Starting command: " + command);
-
       ctx.clear();
       ctx.makeScratchDir();
 
-      if (SessionState.get() != null)
-        SessionState.get().getHiveHistory().startQuery(command, conf.getVar(HiveConf.ConfVars.HIVEQUERYID) );
-
-      resStream = null;
-
-      pd = new ParseDriver();
+      ParseDriver pd = new ParseDriver();
       ASTNode tree = pd.parse(command);
 
       while ((tree.getToken() == null) && (tree.getChildCount() > 0)) {
         tree = (ASTNode) tree.getChild(0);
       }
 
-      sem = SemanticAnalyzerFactory.get(conf, tree);
-
+      BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(conf, tree);
       // Do semantic analysis and plan generation
       sem.analyze(tree, ctx);
       LOG.info("Semantic Analysis Completed");
+      plan = new QueryPlan(command, sem);
+      return (0);
+    } catch (SemanticException e) {
+      console.printError("FAILED: Error in semantic analysis: "
+          + e.getMessage(), "\n"
+          + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      return (10);
+    } catch (ParseException e) {
+      console.printError("FAILED: Parse Error: " + e.getMessage(), "\n"
+          + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      return (11);
+    } catch (Exception e) {
+      console.printError("FAILED: Unknown exception : " + e.getMessage(), "\n"
+          + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      return (12);
+    }
+  }
 
+  /**
+   * @return The current query plan associated with this Driver, if any.
+   */
+  public QueryPlan getPlan() {
+    return plan;
+  }
+
+  public int run(String command) {
+    int ret = compile(command);
+    if (ret != 0)
+      return (ret);
+
+    return execute();
+  }
+
+  public int execute() {
+    boolean noName = StringUtils.isEmpty(conf
+        .getVar(HiveConf.ConfVars.HADOOPJOBNAME));
+    int maxlen = conf.getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
+
+    String queryId = plan.getQueryId();
+    String queryStr = plan.getQueryStr();
+
+    conf.setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
+    conf.setVar(HiveConf.ConfVars.HIVEQUERYSTRING, queryStr);
+
+    try {
+      LOG.info("Starting command: " + queryStr);
+
+      if (SessionState.get() != null)
+        SessionState.get().getHiveHistory().startQuery(queryStr, conf.getVar(HiveConf.ConfVars.HIVEQUERYID) );
+
+      resStream = null;
+
+      BaseSemanticAnalyzer sem = plan.getPlan();
       int jobs = countJobs(sem.getRootTasks());
       if (jobs > 0) {
         console.printInfo("Total MapReduce jobs = " + jobs);
@@ -208,13 +238,12 @@ public class Driver implements CommandProcessor {
             Keys.QUERY_NUM_TASKS, String.valueOf(jobs));
         SessionState.get().getHiveHistory().setIdToTableMap(sem.getIdToTableNameMap());
       }
-      String jobname = Utilities.abbreviate(command, maxlen - 6);
-      
+      String jobname = Utilities.abbreviate(queryStr, maxlen - 6);
+
       int curJobNo = 0;
 
-      // A very simple runtime that keeps putting runnable takss
-      // on a list and when a job completes, it puts the children at the back of
-      // the list
+      // A very simple runtime that keeps putting runnable tasks on a list and
+      // when a job completes, it puts the children at the back of the list
       // while taking the job to run from the front of the list
       Queue<Task<? extends Serializable>> runnable = new LinkedList<Task<? extends Serializable>>();
 
@@ -275,27 +304,10 @@ public class Driver implements CommandProcessor {
             Keys.QUERY_RET_CODE, String.valueOf(0));
         SessionState.get().getHiveHistory().printRowCount(queryId);
       }
-    } catch (SemanticException e) {
-      if (SessionState.get() != null)
-        SessionState.get().getHiveHistory().setQueryProperty(queryId,
-            Keys.QUERY_RET_CODE, String.valueOf(10));
-      console.printError("FAILED: Error in semantic analysis: "
-          + e.getMessage(), "\n"
-          + org.apache.hadoop.util.StringUtils.stringifyException(e));
-      return (10);
-    } catch (ParseException e) {
-      if (SessionState.get() != null)
-        SessionState.get().getHiveHistory().setQueryProperty(queryId,
-            Keys.QUERY_RET_CODE, String.valueOf(11));
-      console.printError("FAILED: Parse Error: " + e.getMessage(), "\n"
-          + org.apache.hadoop.util.StringUtils.stringifyException(e));
-      return (11);
     } catch (Exception e) {
       if (SessionState.get() != null)
         SessionState.get().getHiveHistory().setQueryProperty(queryId,
             Keys.QUERY_RET_CODE, String.valueOf(12));
-      // Has to use full name to make sure it does not conflict with
-      // org.apache.commons.lang.StringUtils
       console.printError("FAILED: Unknown exception : " + e.getMessage(), "\n"
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return (12);
@@ -312,7 +324,8 @@ public class Driver implements CommandProcessor {
   }
 
   public boolean getResults(Vector<String> res) {
-    if (sem != null && sem.getFetchTask() != null) {
+    if (plan != null && plan.getPlan().getFetchTask() != null) {
+      BaseSemanticAnalyzer sem = plan.getPlan();
       if (!sem.getFetchTaskInit()) {
         sem.setFetchTaskInit(true);
         sem.getFetchTask().initialize(conf);

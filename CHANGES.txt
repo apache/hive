@@ -21,6 +21,9 @@ Trunk - unreleased changes
     HIVE-387. Use URI from FileSystem Object instead of from HADOOPFS
     directly. (jssarma)
 
+    HIVE-385. Split Driver's run into compile and execute.
+    (Neil Conway via namit)
+
 Release 0.3.0 - Unreleased
 
   INCOMPATIBLE CHANGES
