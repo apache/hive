@@ -113,6 +113,9 @@ Release 0.3.0 - Unreleased
 
     HIVE-394. Break plans in Cluster Mode. (Namit Jain via zshao)
 
+    HIVE-324. Fix AccessControlException when loading data.
+    (Ashish Thusoo via zshao)
+
 Release 0.2.0 - Unreleased
 
   INCOMPATIBLE CHANGES

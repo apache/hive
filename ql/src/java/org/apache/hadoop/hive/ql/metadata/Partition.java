@@ -303,13 +303,14 @@ public class Partition {
    * Replaces files in the partition with new data set specified by srcf. Works by moving files
    *
    * @param srcf Files to be moved. Leaf Directories or Globbed File Paths
+   * @param tmpd Temporary directory
    */
   @SuppressWarnings("nls")
-  protected void replaceFiles(Path srcf) throws HiveException {
+  protected void replaceFiles(Path srcf, Path tmpd) throws HiveException {
     FileSystem fs;
     try {
       fs = FileSystem.get(table.getDataLocation(), Hive.get().getConf());
-      Hive.get().replaceFiles(srcf, partPath, fs);
+      Hive.get().replaceFiles(srcf, partPath, fs, tmpd);
     } catch (IOException e) {
       throw new HiveException("addFiles: filesystem error in check phase", e);
     }

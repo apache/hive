@@ -24,6 +24,7 @@ import java.util.HashMap;
 public class loadTableDesc extends org.apache.hadoop.hive.ql.plan.loadDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   private boolean replace;
+  private String tmpDir;
 
   // TODO: the below seems like they should just be combined into partitionDesc
   private org.apache.hadoop.hive.ql.plan.tableDesc table;
@@ -32,20 +33,31 @@ public class loadTableDesc extends org.apache.hadoop.hive.ql.plan.loadDesc imple
   public loadTableDesc() { }
   public loadTableDesc(
     final String sourceDir,
+    final String tmpDir,
     final org.apache.hadoop.hive.ql.plan.tableDesc table,
     final HashMap<String, String> partitionSpec,
     final boolean replace) {
 
     super(sourceDir);
+    this.tmpDir = tmpDir;
     this.table = table;
     this.partitionSpec = partitionSpec;
     this.replace = replace;
   }
   public loadTableDesc(
     final String sourceDir,
+    final String tmpDir,
     final org.apache.hadoop.hive.ql.plan.tableDesc table,
     final HashMap<String, String> partitionSpec) {
-    this(sourceDir, table, partitionSpec, true);
+    this(sourceDir, tmpDir, table, partitionSpec, true);
+  }
+
+  @explain(displayName="tmp directory", normalExplain=false)
+  public String getTmpDir() {
+    return this.tmpDir;
+  }
+  public void setTmpDir(final String tmp) {
+    this.tmpDir = tmp;
   }
 
   @explain(displayName="table")

@@ -208,7 +208,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     List<loadTableDesc> loadTableWork =  new ArrayList<loadTableDesc>();
     List<loadFileDesc> loadFileWork = new ArrayList<loadFileDesc>();
 
-    loadTableWork.add(new loadTableDesc(fromURI.toString(), Utilities.getTableDesc(ts.tableHandle),
+    loadTableWork.add(new loadTableDesc(fromURI.toString(), getTmpFileName(), Utilities.getTableDesc(ts.tableHandle),
                                         (ts.partSpec != null) ? ts.partSpec : new HashMap<String, String> (),
                                         isOverWrite));
 

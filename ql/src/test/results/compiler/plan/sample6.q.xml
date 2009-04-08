@@ -93,6 +93,9 @@
               </void> 
              </object> 
             </void> 
+            <void property="tmpDir"> 
+             <string>/data/users/athusoo/commits/hive_trunk_ws9/ql/../build/ql/tmp/61425565/17389492.10001</string> 
+            </void> 
            </object> 
           </void> 
          </object> 

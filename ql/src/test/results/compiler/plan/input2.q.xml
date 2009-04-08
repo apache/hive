@@ -93,6 +93,9 @@
               </void> 
              </object> 
             </void> 
+            <void property="tmpDir"> 
+             <string>/data/users/athusoo/commits/hive_trunk_ws9/ql/../build/ql/tmp/53728112/1166708610.10001</string> 
+            </void> 
            </object> 
           </void> 
           <void method="add"> 
@@ -165,6 +168,9 @@
                <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
               </void> 
              </object> 
+            </void> 
+            <void property="tmpDir"> 
+             <string>/data/users/athusoo/commits/hive_trunk_ws9/ql/../build/ql/tmp/53728112/1166708610.10003</string> 
             </void> 
            </object> 
           </void> 
@@ -251,6 +257,9 @@
                <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
               </void> 
              </object> 
+            </void> 
+            <void property="tmpDir"> 
+             <string>/data/users/athusoo/commits/hive_trunk_ws9/ql/../build/ql/tmp/53728112/1166708610.10005</string> 
             </void> 
            </object> 
           </void> 

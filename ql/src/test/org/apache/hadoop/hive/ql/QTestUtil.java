@@ -209,6 +209,16 @@ public class QTestUtil {
     }
   }
 
+  private void runLoadCmd(String loadCmd) throws Exception {
+    int ecode = 0;
+    ecode = drv.run(loadCmd);
+    if(ecode != 0) {
+       throw new Exception("load command: " + loadCmd + " failed with exit code= " + ecode);
+    }
+
+    return;
+  }
+
   public void createSources() throws Exception {
     // Next create the three tables src, dest1 and dest2 each with two columns
     // key and value
@@ -227,7 +237,6 @@ public class QTestUtil {
     Path newfpath;
     HashMap<String, String> part_spec = new HashMap<String, String>();
     String loadCmd;
-    int ecode = 0;
     for (String ds: new String[]{"2008-04-08", "2008-04-09"}) {
       for (String hr: new String[]{"11", "12"}) {
         part_spec.clear();
@@ -240,12 +249,8 @@ public class QTestUtil {
         fs.copyFromLocalFile(false, true, fpath, newfpath);
         fpath = newfpath;
         //db.loadPartition(fpath, srcpart.getName(), part_spec, true);
-        loadCmd = "LOAD DATA INPATH '" +  newfpath.toString() +
-          "' INTO TABLE srcpart PARTITION (ds='" + ds + "',hr='" + hr +"')";
-        ecode = drv.run(loadCmd);
-        if(ecode != 0) {
-          throw new Exception("load command: " + loadCmd + " failed with exit code= " + ecode);
-        }
+        runLoadCmd("LOAD DATA INPATH '" +  newfpath.toString() +
+                   "' INTO TABLE srcpart PARTITION (ds='" + ds + "',hr='" + hr +"')");
       }
     }
     ArrayList<String> bucketCols = new ArrayList<String>();
@@ -256,11 +261,7 @@ public class QTestUtil {
       fpath = new Path(testFiles, fname);
       newfpath = new Path(tmppath, fname);
       fs.copyFromLocalFile(false, true, fpath, newfpath);
-      loadCmd = "LOAD DATA INPATH '" +  newfpath.toString() + "' INTO TABLE srcbucket";
-      ecode = drv.run(loadCmd);
-      if(ecode != 0) {
-        throw new Exception("load command: " + loadCmd + " failed with exit code= " + ecode);
-      }
+      runLoadCmd("LOAD DATA INPATH '" +  newfpath.toString() + "' INTO TABLE srcbucket");
     }
     
     for (String tname: new String [] {"src", "src1"}) {
@@ -289,35 +290,35 @@ public class QTestUtil {
     newfpath = new Path(tmppath, "kv1.txt");
     fs.copyFromLocalFile(false, true, fpath, newfpath);
     //db.loadTable(newfpath, "src", false);
-    loadCmd = "LOAD DATA INPATH '" +  newfpath.toString() + "' INTO TABLE src";
-    ecode = drv.run(loadCmd);
-    if(ecode != 0) {
-      throw new Exception("load command: " + loadCmd + " failed with exit code= " + ecode);
-    }
+    runLoadCmd("LOAD DATA INPATH '" +  newfpath.toString() + "' INTO TABLE src");
     
     // load the input data into the src table
     fpath = new Path(testFiles, "kv3.txt");
     newfpath = new Path(tmppath, "kv3.txt");
     fs.copyFromLocalFile(false, true, fpath, newfpath);
-    db.loadTable(newfpath, "src1", false);
+    //db.loadTable(newfpath, "src1", false);
+    runLoadCmd("LOAD DATA INPATH '" +  newfpath.toString() + "' INTO TABLE src1");
     
     // load the input data into the src_sequencefile table
     fpath = new Path(testFiles, "kv1.seq");
     newfpath = new Path(tmppath, "kv1.seq");
     fs.copyFromLocalFile(false, true, fpath, newfpath);
-    db.loadTable(newfpath, "src_sequencefile", true);
+    //db.loadTable(newfpath, "src_sequencefile", true);
+    runLoadCmd("LOAD DATA INPATH '" +  newfpath.toString() + "' INTO TABLE src_sequencefile");
     
     // load the input data into the src_thrift table
     fpath = new Path(testFiles, "complex.seq");
     newfpath = new Path(tmppath, "complex.seq");
     fs.copyFromLocalFile(false, true, fpath, newfpath);
-    db.loadTable(newfpath, "src_thrift", true);    
+    //db.loadTable(newfpath, "src_thrift", true);    
+    runLoadCmd("LOAD DATA INPATH '" +  newfpath.toString() + "' INTO TABLE src_thrift");
     
     // load the json data into the src_json table
     fpath = new Path(testFiles, "json.txt");
     newfpath = new Path(tmppath, "json.txt");
     fs.copyFromLocalFile(false, true, fpath, newfpath);
-    db.loadTable(newfpath, "src_json", false);
+    //db.loadTable(newfpath, "src_json", false);
+    runLoadCmd("LOAD DATA INPATH '" +  newfpath.toString() + "' INTO TABLE src_json");
  
   }
 
