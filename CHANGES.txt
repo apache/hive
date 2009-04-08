@@ -423,3 +423,6 @@ Release 0.2.0 - Unreleased
 
     HIVE-283. Do case insensitive comparison of aliases in partition
     pruning. (athusoo)
+
+    HIVE-399. Fix timeout problems caused due to the bigdata test.
+    (Namit Jain via athusoo)

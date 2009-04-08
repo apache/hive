@@ -121,8 +121,10 @@ public class HiveConf extends Configuration {
     // HWI
     HIVEHWILISTENHOST("hive.hwi.listen.host","0.0.0.0"),
     HIVEHWILISTENPORT("hive.hwi.listen.port","9999"),
-    HIVEHWIWARFILE("hive.hwi.war.file",System.getenv("HIVE_HOME")+"/lib/hive_hwi.war");
+    HIVEHWIWARFILE("hive.hwi.war.file",System.getenv("HIVE_HOME")+"/lib/hive_hwi.war"),
 
+    // mapper/reducer memory in local mode
+    HIVEHADOOPMAXMEM("hive.mapred.local.mem", 0);
     
     
     public final String varname;

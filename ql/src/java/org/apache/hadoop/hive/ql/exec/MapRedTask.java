@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.Serializable;
+import java.util.Map;
 
 import org.apache.hadoop.mapred.JobConf;
 
@@ -59,7 +60,7 @@ public class MapRedTask extends Task<mapredWork> implements Serializable {
       LOG.info("Generating plan file " + planFile.toString());
       FileOutputStream out = new FileOutputStream(planFile);
       Utilities.serializeMapRedWork(plan, out);
-    
+
       String cmdLine = hadoopExec + " jar " + auxJars + " " + hiveJar + " org.apache.hadoop.hive.ql.exec.ExecDriver -plan " + planFile.toString() + " " + hiveConfArgs;
       
       String files = ExecDriver.getRealFiles(conf);
@@ -68,8 +69,29 @@ public class MapRedTask extends Task<mapredWork> implements Serializable {
       }
 
       LOG.info("Executing: " + cmdLine);
-      Process executor = Runtime.getRuntime().exec(cmdLine);
+      Process executor = null;
 
+      // The user can specify the hadoop memory
+      int hadoopMem = conf.getIntVar(HiveConf.ConfVars.HIVEHADOOPMAXMEM);
+
+      if (hadoopMem == 0) 
+        executor = Runtime.getRuntime().exec(cmdLine);
+      // user specified the memory - only applicable for local mode
+      else {
+        Map<String, String> variables = System.getenv();  
+        String[] env = new String[variables.size() + 1];
+        int pos = 0;
+        
+        for (Map.Entry<String, String> entry : variables.entrySet())  
+        {  
+          String name = entry.getKey();  
+          String value = entry.getValue();  
+          env[pos++] = name + "=" + value;  
+        }  
+        
+        env[pos] = new String("HADOOP_HEAPSIZE=" + hadoopMem);
+        executor = Runtime.getRuntime().exec(cmdLine, env);
+      }
 
       StreamPrinter outPrinter = new StreamPrinter(executor.getInputStream(), null, System.out);
       StreamPrinter errPrinter = new StreamPrinter(executor.getErrorStream(), null, System.err);
