@@ -119,7 +119,16 @@ Release 0.3.0 - Unreleased
     HIVE-324. Fix AccessControlException when loading data.
     (Ashish Thusoo via zshao)
 
+    HIVE-399. Fix timeout problems caused due to the bigdata test.
+    (Namit Jain via athusoo)
+
+    HIVE-397. Make union tests deterministic by ordering the 
+    output results. (Namit Jain via athusoo)
+
     HIVE-400. Fix bug in genColList. (Namit Jain via zshao)
+
+    HIVE-390. Make partition pruner tests deterministic by ordering the 
+    output results. (Namit Jain via athusoo)
 
 Release 0.2.0 - Unreleased
 
@@ -428,9 +437,3 @@ Release 0.2.0 - Unreleased
 
     HIVE-283. Do case insensitive comparison of aliases in partition
     pruning. (athusoo)
-
-    HIVE-399. Fix timeout problems caused due to the bigdata test.
-    (Namit Jain via athusoo)
-
-    HIVE-397. Make union tests deterministic by ordering the 
-    output results. (Namit Jain via athusoo)
