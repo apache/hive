@@ -990,7 +990,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("nls")
-  private void genColList(String tabAlias, String alias, ASTNode sel,
+  private Integer genColList(String tabAlias, String alias, ASTNode sel,
     ArrayList<exprNodeDesc> col_list, RowResolver input, Integer pos,
     RowResolver output) throws SemanticException {
 
@@ -1017,6 +1017,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       output.put(tmp[0], tmp[1], new ColumnInfo(pos.toString(), colInfo.getType()));
       pos = Integer.valueOf(pos.intValue() + 1);
     }
+    return pos;
   }
 
   /**
@@ -1193,7 +1194,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         tabAlias = null;
         if (sel.getChildCount() == 1)
           tabAlias = unescapeIdentifier(sel.getChild(0).getText().toLowerCase());
-        genColList(tabAlias, alias, sel, col_list, inputRR, pos, out_rwsch);
+        pos = genColList(tabAlias, alias, sel, col_list, inputRR, pos, out_rwsch);
         selectStar = true;
       } else if (sel.getToken().getType() == HiveParser.TOK_TRANSFORM) {
         if (i > 0) {
@@ -1208,7 +1209,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             if (sel.getChildCount() == 1)
               tabAlias = unescapeIdentifier(sel.getChild(0).getText().toLowerCase());
 
-            genColList(tabAlias, alias, expr, col_list, inputRR, pos, out_rwsch);
+            pos = genColList(tabAlias, alias, expr, col_list, inputRR, pos, out_rwsch);
             selectStar = true;
           } else {
             exprNodeDesc exp = genExprNodeDesc(expr, inputRR);
