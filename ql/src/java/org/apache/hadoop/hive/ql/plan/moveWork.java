@@ -27,12 +27,16 @@ public class moveWork implements Serializable {
   private List<loadTableDesc> loadTableWork;
   private List<loadFileDesc> loadFileWork;
 
+  private boolean checkFileFormat;
+
   public moveWork() { }
   public moveWork(
     final List<loadTableDesc> loadTableWork,
-    final List<loadFileDesc> loadFileWork) {
+    final List<loadFileDesc> loadFileWork,
+    boolean checkFileFormat) {
     this.loadTableWork = loadTableWork;
     this.loadFileWork = loadFileWork;
+    this.checkFileFormat = checkFileFormat;
   }
   @explain(displayName="tables")
   public List<loadTableDesc> getLoadTableWork() {
@@ -49,4 +53,12 @@ public class moveWork implements Serializable {
   public void setLoadFileWork(final List<loadFileDesc> loadFileWork) {
     this.loadFileWork=loadFileWork;
   }
+  
+  public boolean getCheckFileFormat() {
+    return checkFileFormat;
+  }
+  public void setCheckFileFormat(boolean checkFileFormat) {
+    this.checkFileFormat = checkFileFormat;
+  }
+  
 }

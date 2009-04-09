@@ -213,9 +213,9 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
                                         isOverWrite));
 
     if(rTask != null) {
-      rTask.addDependentTask(TaskFactory.get(new moveWork(loadTableWork, loadFileWork), this.conf));
+      rTask.addDependentTask(TaskFactory.get(new moveWork(loadTableWork, loadFileWork, true), this.conf));
     } else {
-      rTask = TaskFactory.get(new moveWork(loadTableWork, loadFileWork), this.conf);
+      rTask = TaskFactory.get(new moveWork(loadTableWork, loadFileWork, true), this.conf);
     }
 
     rootTasks.add(rTask);
