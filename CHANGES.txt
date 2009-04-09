@@ -116,6 +116,8 @@ Release 0.3.0 - Unreleased
     HIVE-324. Fix AccessControlException when loading data.
     (Ashish Thusoo via zshao)
 
+    HIVE-400. Fix bug in genColList. (Namit Jain via zshao)
+
 Release 0.2.0 - Unreleased
 
   INCOMPATIBLE CHANGES
