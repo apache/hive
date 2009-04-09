@@ -23,6 +23,9 @@ Trunk - unreleased changes
 
     HIVE-385. Split Driver's run into compile and execute.
     (Neil Conway via namit)
+  
+    HIVE-393. Remove unnecessary checks in movetask for file type.
+    (Zheng Shao via namit)
 
 Release 0.3.0 - Unreleased
 

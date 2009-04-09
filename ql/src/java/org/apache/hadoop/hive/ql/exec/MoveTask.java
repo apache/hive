@@ -99,43 +99,44 @@ public class MoveTask extends Task<moveWork> implements Serializable {
         String mesg_detail = " from " + tbd.getSourceDir();
         console.printInfo(mesg, mesg_detail);
 
-        // Get the file format of the table
-        boolean tableIsSequenceFile = tbd.getTable().getInputFileFormatClass().equals(SequenceFileInputFormat.class);
-        // Get all files from the src directory
-        FileStatus [] dirs;
-        ArrayList<FileStatus> files;
-        try {
-          fs = FileSystem.get(db.getTable(tbd.getTable().getTableName()).getDataLocation(),
-              Hive.get().getConf());
-          dirs = fs.globStatus(new Path(tbd.getSourceDir()));
-          files = new ArrayList<FileStatus>();
-          for (int i=0; (dirs != null && i<dirs.length); i++) {
-            files.addAll(Arrays.asList(fs.listStatus(dirs[i].getPath())));
-            // We only check one file, so exit the loop when we have at least one.
-            if (files.size()>0) break;
-          }
-        } catch (IOException e) {
-          throw new HiveException("addFiles: filesystem error in check phase", e);
-        }
-        // Check if the file format of the file matches that of the table.
-        if (files.size() > 0) {
-          int fileId = 0;
-          boolean fileIsSequenceFile = true;   
+        if (work.getCheckFileFormat()) {
+          // Get the file format of the table
+          boolean tableIsSequenceFile = tbd.getTable().getInputFileFormatClass().equals(SequenceFileInputFormat.class);
+          // Get all files from the src directory
+          FileStatus [] dirs;
+          ArrayList<FileStatus> files;
           try {
-            SequenceFile.Reader reader = new SequenceFile.Reader(
-              fs, files.get(fileId).getPath(), conf);
-            reader.close();
+            fs = FileSystem.get(db.getTable(tbd.getTable().getTableName()).getDataLocation(),
+                Hive.get().getConf());
+            dirs = fs.globStatus(new Path(tbd.getSourceDir()));
+            files = new ArrayList<FileStatus>();
+            for (int i=0; (dirs != null && i<dirs.length); i++) {
+              files.addAll(Arrays.asList(fs.listStatus(dirs[i].getPath())));
+              // We only check one file, so exit the loop when we have at least one.
+              if (files.size()>0) break;
+            }
           } catch (IOException e) {
-            fileIsSequenceFile = false;
+            throw new HiveException("addFiles: filesystem error in check phase", e);
           }
-          if (!fileIsSequenceFile && tableIsSequenceFile) {
-            throw new HiveException("Cannot load text files into a table stored as SequenceFile.");
+          // Check if the file format of the file matches that of the table.
+          if (files.size() > 0) {
+            int fileId = 0;
+            boolean fileIsSequenceFile = true;   
+            try {
+              SequenceFile.Reader reader = new SequenceFile.Reader(
+                fs, files.get(fileId).getPath(), conf);
+              reader.close();
+            } catch (IOException e) {
+              fileIsSequenceFile = false;
+            }
+            if (!fileIsSequenceFile && tableIsSequenceFile) {
+              throw new HiveException("Cannot load text files into a table stored as SequenceFile.");
+            }
+            if (fileIsSequenceFile && !tableIsSequenceFile) {
+              throw new HiveException("Cannot load SequenceFiles into a table stored as TextFile.");
+            }
           }
-          if (fileIsSequenceFile && !tableIsSequenceFile) {
-            throw new HiveException("Cannot load SequenceFiles into a table stored as TextFile.");
-          }
-        }
-         
+        }           
 
         if(tbd.getPartitionSpec().size() == 0) {
           db.loadTable(new Path(tbd.getSourceDir()), tbd.getTable().getTableName(), tbd.getReplace());

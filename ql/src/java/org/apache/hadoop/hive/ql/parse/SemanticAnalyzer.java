@@ -3437,7 +3437,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     else {
       // First we generate the move work as this needs to be made dependent on all
       // the tasks that have a file sink operation
-      mv = new moveWork(loadTableWork, loadFileWork);
+      mv = new moveWork(loadTableWork, loadFileWork, false);
       mvTask = TaskFactory.get(mv, this.conf);
     }
 
