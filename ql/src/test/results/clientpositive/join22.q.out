@@ -1,0 +1,141 @@
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF src src4) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF src src1) (TOK_TABREF src src2) (= (TOK_COLREF src1 key) (TOK_COLREF src2 key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF src2)) (TOK_SELEXPR (TOK_COLREF src1 key) src1_key) (TOK_SELEXPR (TOK_COLREF src1 value) src1_value)))) src3) (= (TOK_COLREF src3 src1_key) (TOK_COLREF src4 key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF src3)) (TOK_SELEXPR (TOK_COLREF src4 value) src4_value) (TOK_SELEXPR (TOK_COLREF src4 key) src4_key)))) src5)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_COLREF src5 src1_value)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src5:src3:src2 
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+        src5:src3:src1 
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 0
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          condition expressions:
+            0 {VALUE.0} {VALUE.1}
+            1 {VALUE.0} {VALUE.1}
+          Select Operator
+            expressions:
+                  expr: 2
+                  type: string
+                  expr: 3
+                  type: string
+                  expr: 0
+                  type: string
+                  expr: 1
+                  type: string
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.mapred.SequenceFileOutputFormat
+                  name: binary_table
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        $INTNAME 
+          Reduce Output Operator
+            key expressions:
+                  expr: 3
+                  type: string
+            sort order: +
+            Map-reduce partition columns:
+                  expr: 3
+                  type: string
+            tag: 1
+            value expressions:
+                  expr: 0
+                  type: string
+                  expr: 1
+                  type: string
+                  expr: 3
+                  type: string
+                  expr: 4
+                  type: string
+        src5:src4 
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 0
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          condition expressions:
+            0 {VALUE.0} {VALUE.1}
+            1 {VALUE.0} {VALUE.1} {VALUE.2} {VALUE.3}
+          Select Operator
+            expressions:
+                  expr: 2
+                  type: string
+                  expr: 3
+                  type: string
+                  expr: 4
+                  type: string
+                  expr: 5
+                  type: string
+                  expr: 1
+                  type: string
+                  expr: 0
+                  type: string
+            Select Operator
+              expressions:
+                    expr: 3
+                    type: string
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
