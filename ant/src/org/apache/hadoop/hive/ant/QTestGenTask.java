@@ -156,10 +156,6 @@ public class QTestGenTask extends Task {
     return this.queryFile;
   }
 
-  /**
-   * Invoke {@link org.apache.hadoop.fs.FsShell#doMain FsShell.doMain} after a
-   * few cursory checks of the configuration.
-   */
   public void execute() throws BuildException {
 
     if (templatePath == null) {

@@ -87,11 +87,11 @@ public class Hive {
   };
   
   /**
-   * Returns hive object for the current thread. If one is not initialized then a new one is created 
+   * Gets hive object for the current thread. If one is not initialized then a new one is created 
    * If the new configuration is different in metadata conf vars then a new one is created.
    * @param c new Hive Configuration
    * @return Hive object for current thread
-   * @exception
+   * @throws HiveException
    *
    */
   public static Hive get(HiveConf c) throws HiveException {
@@ -114,7 +114,7 @@ public class Hive {
    * get a connection to metastore. see get(HiveConf) function for comments
    * @param c new conf
    * @param needsRefresh if true then creates a new one
-   * @return
+   * @return The connection to the metastore
    * @throws HiveException
    */
   public static Hive get(HiveConf c, boolean needsRefresh) throws HiveException {
@@ -471,8 +471,8 @@ public class Hive {
   
   /**
    * @param name
-   * @param location_uri
-   * @return
+   * @param locationUri
+   * @return true or false
    * @throws AlreadyExistsException
    * @throws MetaException
    * @throws TException
@@ -485,7 +485,7 @@ public class Hive {
 
   /**
    * @param name
-   * @return
+   * @return true or false
    * @throws MetaException
    * @throws TException
    * @see org.apache.hadoop.hive.metastore.HiveMetaStoreClient#dropDatabase(java.lang.String)
@@ -500,7 +500,6 @@ public class Hive {
    * - If he partition does not exist - one is created
    * - files in loadPath are moved into Hive. But the directory itself is not removed.
    *
-   * @param jc Job configuration
    * @param loadPath Directory containing files to load into Table
    * @param tableName name of table to be loaded.
    * @param partSpec defines which partition needs to be loaded
@@ -524,7 +523,6 @@ public class Hive {
    * - If table does not exist - an exception is thrown
    * - files in loadPath are moved into Hive. But the directory itself is not removed.
    *
-   * @param jc Job configuration
    * @param loadPath Directory containing files to load into Table
    * @param tableName name of table to be loaded.
    * @param replace if true - replace files in the table, otherwise add files to table
@@ -583,7 +581,7 @@ public class Hive {
 
   /**
    * Returns partition metadata
-   * @param tableName name of the partition's table
+   * @param tbl the partition's table
    * @param partSpec partition keys and values
    * @param forceCreate if this is true and partition doesn't exist then a partition is created
    * @return result partition object or null if there is no partition

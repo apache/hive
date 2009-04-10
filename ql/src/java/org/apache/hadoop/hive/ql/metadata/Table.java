@@ -83,7 +83,7 @@ public class Table {
    *
    * @param name the name of this table in the metadb
    * @param schema an object that represents the schema that this SerDe must know
-   * @param serDe a Class to be used for serializing and deserializing the data
+   * @param deserializer a Class to be used for deserializing the data
    * @param dataLocation where is the table ? (e.g., dfs://hadoop001.sf2p.facebook.com:9000/user/facebook/warehouse/example) NOTE: should not be hardcoding this, but ok for now
    *
    * @exception HiveException on internal error. Note not possible now, but in the future reserve the right to throw an exception
@@ -317,7 +317,7 @@ public class Table {
   }
 
   /**
-   * @param serDe the serDe to set
+   * @param deserializer the deserializer to set
    */
   public void setDeserializer(Deserializer deserializer) {
     this.deserializer = deserializer;
@@ -501,7 +501,7 @@ public class Table {
   }
 
   /**
-   * @return
+   * @return The owner of the table.
    * @see org.apache.hadoop.hive.metastore.api.Table#getOwner()
    */
   public String getOwner() {
@@ -509,7 +509,7 @@ public class Table {
   }
 
   /**
-   * @return
+   * @return The table parameters.
    * @see org.apache.hadoop.hive.metastore.api.Table#getParameters()
    */
   public Map<String, String> getParameters() {
@@ -517,7 +517,7 @@ public class Table {
   }
 
   /**
-   * @return
+   * @return The retention on the table.
    * @see org.apache.hadoop.hive.metastore.api.Table#getRetention()
    */
   public int getRetention() {

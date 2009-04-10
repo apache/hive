@@ -277,7 +277,7 @@ public class FunctionRegistry {
    * Get the UDF method for the name and argumentClasses.
    * @param name the name of the UDF
    * @param argumentClasses
-   * @return
+   * @return The UDF method
    */
   public static Method getUDFMethod(String name, List<Class<?>> argumentClasses) {
     Class<? extends UDF> udf = getUDFClass(name);
@@ -298,7 +298,7 @@ public class FunctionRegistry {
    * Get the UDAF evaluator for the name and argumentClasses.
    * @param name the name of the UDAF
    * @param argumentClasses
-   * @return
+   * @return The UDAF evaluator
    */
   public static Class<? extends UDAFEvaluator> getUDAFEvaluator(String name, List<Class<?>> argumentClasses) {
     Class<? extends UDAF> udf = getUDAF(name);

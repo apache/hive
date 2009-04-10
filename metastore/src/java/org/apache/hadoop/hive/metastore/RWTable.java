@@ -104,7 +104,6 @@ public class RWTable extends ROTable {
    * delete the data, but not the schema
    * Can be applied on a partition by partition basis
    *
-   * @param partition partition in that table or "" or null
    * @exception MetaException if any problems instantiating this object
    *
    */
@@ -135,8 +134,7 @@ public class RWTable extends ROTable {
    *
    * Add column names to a column set ser de table.
    *
-   * @param tableName the name of the table to alter
-   * @param columns the name of the columns
+   * @param schema the property value pairs for the table
    * @exception MetaException if any problems altering the table
    *
    */

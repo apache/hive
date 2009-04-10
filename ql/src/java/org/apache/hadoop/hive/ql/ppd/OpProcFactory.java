@@ -279,7 +279,7 @@ public class OpProcFactory {
 
     /**
      * @param nd
-     * @param extractPushdownPreds
+     * @param ewi
      */
     protected void logExpr(Node nd, ExprWalkerInfo ewi) {
       for (Entry<String, List<exprNodeFuncDesc>> e : ewi.getFinalCandidates().entrySet()) {

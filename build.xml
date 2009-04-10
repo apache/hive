@@ -21,7 +21,10 @@
 <project name="hive" default="deploy" >
 
   <property name="hive.root" location="${basedir}"/>
-  <property name="build.dir.hive" location="${hive.root}/build"/>
+  <property file="${hive.root}/build.properties"/>
+  <property file="${user.home}/build.properties" />
+  <property file="${basedir}/build.properties" />
+
   <property name="target.dir" location="${build.dir.hive}/dist"/>
   <property name="target.lib.dir" location="${target.dir}/lib"/>
   <property name="target.conf.dir" location="${target.dir}/conf"/>
@@ -30,6 +33,52 @@
   <property name="ql.test.query.dir" location="${basedir}/ql/src/test/queries"/>
   <property name="test.data.dir" location="${basedir}/data"/>
   <property name="test.build.dir" value="${build.dir.hive}/test"/>
+  <property name="build.docs" value="${target.dir}/docs"/>
+  <property name="build.javadoc" value="${build.docs}/api"/>
+  <property name="docs.src" value="${hive.root}/docs"/>
+  <property name="changes.src" value="${docs.src}/changes"/>
+  <property name="images.src" value="${docs.src}/images"/>
+  <property name="javadoc.link.java"
+            value="http://java.sun.com/javase/6/docs/api/"/>
+  <property name="final.name" value="${name}-${version}-hadoop-${hadoop.version}"/>
+  <property name="dev.final.name" value="${final.name}-dev"/>
+  <property name="bin.final.name" value="${final.name}-bin"/>
+
+  <!-- ====================================================== -->
+  <!-- Macro definitions                                      -->
+  <!-- ====================================================== -->
+  <macrodef name="macro_tar" description="Worker Macro for tar">
+    <attribute name="param.destfile"/>
+    <element name="param.listofitems"/>
+    <sequential>
+      <tar compression="gzip" longfile="gnu"
+      destfile="@{param.destfile}">
+      <param.listofitems/>
+      </tar>
+    </sequential>
+  </macrodef>
+
+  <!-- the normal classpath -->
+  <path id="common-classpath">
+    <pathelement location="${hadoop.jar}"/>
+    <pathelement location="${build.dir.hive}/classes"/>
+    <fileset dir="${hive.root}" includes="hive_*.jar"/>
+    <fileset dir="${hive.root}/lib" includes="*.jar"/>
+    <fileset dir="${hive.root}/ql/lib" includes="*.jar"/>
+  </path>
+
+  <path id="classpath">
+    <pathelement location="${build.dir.hive}/common/classes"/>
+    <pathelement location="${build.dir.hive}/serde/classes"/>
+    <pathelement location="${build.dir.hive}/metastore/classes"/>
+    <pathelement location="${build.dir.hive}/ql/classes"/>
+    <pathelement location="${build.dir.hive}/cli/classes"/>
+    <fileset dir="${hive.root}/data" includes="files/*.jar"/>
+    <fileset dir="${hive.root}/ql" includes="lib/*.jar"/>
+    <fileset dir="${hive.root}/cli" includes="lib/*.jar"/>
+    <fileset dir="${hive.root}/service" includes="lib/*.jar"/>
+    <path refid="common-classpath"/>
+  </path>
 
   <!-- ====================================================== -->
   <!-- Initialize for running junit tests                     -->
@@ -111,7 +160,7 @@
   </target>
 
   <!-- ====================================================== -->
-  <!-- Test all the contribs.                               -->
+  <!-- Test everything.                                       -->
   <!-- ====================================================== -->
   <target name="test" depends="clean-test,deploy">
     <subant target="test">
@@ -137,7 +186,7 @@
   </target>
 
   <!-- ====================================================== -->
-  <!-- Clean all the contribs.                                -->
+  <!-- Clean everything.                                      -->
   <!-- ====================================================== -->
   <target name="clean">
     <subant target="clean">
@@ -212,6 +261,9 @@
     </chmod>
   </target>
 
+  <!-- ====================================================== -->
+  <!-- Generate files for eclipse.                            -->
+  <!-- ====================================================== -->
   <target name="eclipse-files" depends="init"
           description="Generate files for Eclipse">
 
@@ -250,6 +302,126 @@
     <delete includeemptydirs="true">
       <fileset dir="." includes=".classpath .project .settings/ .externalToolBuilders/"/>
     </delete>
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- Documentation                                                      -->
+  <!-- ================================================================== -->
+
+  <target name="docs">
+    <antcall target="changes-to-html"/>
+  </target>
+
+  <target name="changes-to-html" description="Convert CHANGES.txt into an html file">
+    <mkdir dir="${build.docs}"/>
+    <exec executable="perl" input="CHANGES.txt" output="${build.docs}/changes.html" failonerror="true">
+      <arg value="${changes.src}/changes2html.pl"/>
+    </exec>
+    <copy todir="${build.docs}">
+      <fileset dir="${changes.src}" includes="*.css"/>
+    </copy>
+    <copy todir="${build.docs}/images">
+      <fileset dir="${images.src}" includes="*.jpg"/>
+    </copy>
+  </target>
+
+  <target name="javadoc" depends="package" description="Generate javadoc">
+
+    <mkdir dir="${build.javadoc}"/>
+    <javadoc
+      packagenames="org.apache.hadoop.hive.*"
+      destdir="${build.javadoc}"
+      author="true"
+      version="true"
+      use="true"
+      windowtitle="${Name} ${version} API"
+      doctitle="${Name} ${version} API"
+      bottom="Copyright &amp;copy; ${year} The Apache Software Foundation"
+      >
+      <packageset dir="ant/src"/>
+      <packageset dir="hwi/src/java"/>
+      <packageset dir="hwi/src/test"/>
+      <packageset dir="common/src/java"/>
+      <packageset dir="service/src/java"/>
+      <packageset dir="service/src/test"/>
+      <packageset dir="service/src/gen-javabean"/>
+      <packageset dir="serde/src/java"/>
+      <packageset dir="serde/src/test"/>
+      <packageset dir="serde/src/gen-java"/>
+      <packageset dir="jdbc/src/java"/>
+      <packageset dir="jdbc/src/test"/>
+      <packageset dir="metastore/src/java"/>
+      <packageset dir="metastore/src/test"/>
+      <packageset dir="metastore/src/gen-javabean"/>
+      <packageset dir="metastore/src/model"/>
+      <packageset dir="cli/src/java"/>
+      <packageset dir="${build.dir.hive}/ql/java"/>
+      <packageset dir="${build.dir.hive}/ql/gen-java"/>
+
+      <link href="${javadoc.link.java}"/>
+
+      <classpath >
+        <fileset dir="${hadoop.root}/lib">
+          <include name="**/*.jar" />
+          <exclude name="**/excluded/" />
+        </fileset>
+        <path refid="classpath" />
+        <pathelement path="${java.class.path}"/>
+      </classpath>
+
+      <group title="Hive" packages="org.apache.*"/>
+  </javadoc>
+
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- Make release tarball                                               -->
+  <!-- ================================================================== -->
+  <target name="tar" depends="package, docs, javadoc" description="Make release tarball">
+    <macro_tar param.destfile="${build.dir.hive}/${dev.final.name}.tar.gz">
+      <param.listofitems>
+        <tarfileset dir="${build.dir.hive}/dist" mode="755" prefix="${dev.final.name}">
+          <include name="bin/**"/>
+        </tarfileset>
+        <tarfileset dir="${build.dir.hive}/dist" mode="755" prefix="${dev.final.name}">
+          <include name="lib/py/**/*-remote"/>
+        </tarfileset>
+        <tarfileset dir="${build.dir.hive}/dist" mode="664" prefix="${dev.final.name}">
+          <include name="**"/>
+          <exclude name="bin/**"/>
+          <exclude name="lib/py/**/*-remote"/>
+        </tarfileset>
+        <tarfileset dir="${hive.root}" mode="664" prefix="${dev.final.name}/src">
+          <exclude name="build/**" />
+          <exclude name="bin/**" />
+          <exclude name="**/py/**/*-remote" />
+        </tarfileset>
+        <tarfileset dir="${hive.root}" mode="755" prefix="${dev.final.name}/src">
+          <exclude name="build/**" />
+          <include name="bin/**" />
+          <include name="**/py/**/*-remote" />
+        </tarfileset>
+      </param.listofitems>
+    </macro_tar>
+  </target>
+
+  <target name="binary" depends="package, docs, javadoc" description="Make tarball without source and documentation">
+    <macro_tar param.destfile="${build.dir.hive}/${bin.final.name}.tar.gz">
+      <param.listofitems>
+        <tarfileset dir="${build.dir.hive}/dist" mode="755" prefix="${bin.final.name}">
+          <include name="bin/**"/>
+        </tarfileset>
+        <tarfileset dir="${build.dir.hive}/dist" mode="755" prefix="${bin.final.name}">
+          <include name="lib/py/**/*-remote"/>
+        </tarfileset>
+        <tarfileset dir="${build.dir.hive}/dist" mode="664" prefix="${bin.final.name}">
+          <include name="**"/>
+          <exclude name="bin/**"/>
+          <exclude name="docs/**"/>
+          <exclude name="lib/py/**/*-remote"/>
+        </tarfileset>
+      </param.listofitems>
+    </macro_tar>
   </target>
 
 </project>

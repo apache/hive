@@ -119,10 +119,10 @@ public class HWISessionManager implements Runnable {
 	 * because we need to set parameters the client is not aware of. One such
 	 * parameter is the command line arguments the server was started with.
 	 * 
-	 * @param sessionname
+	 * @param a
+	 *          Authenticated user
+	 * @param sessionName
 	 *          Represents the session name
-	 * @param sessionpass
-	 *          the session password, can be ""
 	 * @return a new SessionItem or null if a session with that name already
 	 *         exists
 	 */

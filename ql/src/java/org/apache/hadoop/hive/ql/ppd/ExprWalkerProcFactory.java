@@ -226,7 +226,7 @@ public class ExprWalkerProcFactory {
    * @param opContext operator context used for resolving column references
    * @param op operator of the predicates being processed
    * @param preds
-   * @return
+   * @return The expression walker information
    * @throws SemanticException
    */
   public static ExprWalkerInfo extractPushdownPreds(OpWalkerInfo opContext, 

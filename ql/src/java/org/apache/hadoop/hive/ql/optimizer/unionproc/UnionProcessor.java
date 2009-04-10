@@ -53,7 +53,7 @@ public class UnionProcessor implements Transform {
   /**
    * Transform the query tree. For each union, store the fact whether both the 
    * sub-queries are map-only
-   * @param pactx the current parse context
+   * @param pCtx the current parse context
    */
   public ParseContext transform(ParseContext pCtx) throws SemanticException {
     // create a walker which walks the tree in a DFS manner while maintaining the operator stack.

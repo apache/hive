@@ -126,7 +126,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
   /**
    * Returns true if the specified expression is pushdown candidate else false
    * @param expr
-   * @return
+   * @return true or false
    */
   public boolean isCandidate(exprNodeDesc expr) {
     ExprInfo ei = exprInfoMap.get(expr);
@@ -151,7 +151,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
   /**
    * Returns the alias of the specified expr
    * @param expr
-   * @return
+   * @return The alias of the expression
    */
   public String getAlias(exprNodeDesc expr) {
     ExprInfo ei = exprInfoMap.get(expr);

@@ -55,7 +55,7 @@ public class UDFJson extends UDF {
    * Syntax not supported that's worth noticing:
    *    ''  : Zero length string as key
    *    ..  : Recursive descent
-   *    @   : Current object/element
+   *    &amp;#064;   : Current object/element
    *    ()  : Script expression
    *    ?() : Filter (script) expression.
    *    [,] : Union operator

@@ -43,7 +43,7 @@ public interface RawStore extends Configurable {
 
   /**
    * if this is the commit of the first open call then an actual commit is called. 
-   * @return 
+   * @return true or false
    */
   public abstract boolean commitTransaction();
 

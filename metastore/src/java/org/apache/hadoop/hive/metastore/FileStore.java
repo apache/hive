@@ -178,7 +178,7 @@ public class FileStore implements RawStore {
    *
    * Looks at metastore directories
    *
-   * @param db
+   * @param parent
    * @param tablePattern
    * @return the list of tables
    * @exception MetaException

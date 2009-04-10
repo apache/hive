@@ -81,7 +81,7 @@ public class UDAF {
   /**
    * Sets the resolver
    * 
-   * @param The method resolver to use for method resolution.
+   * @param rslv The method resolver to use for method resolution.
    */
   public void setResolver(UDAFEvaluatorResolver rslv) {
     this.rslv = rslv;

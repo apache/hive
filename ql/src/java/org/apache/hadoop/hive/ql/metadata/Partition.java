@@ -62,7 +62,7 @@ public class Partition {
   private LinkedHashMap<String, String> spec;
 
   /**
-   * @return
+   * @return The values of the partition
    * @see org.apache.hadoop.hive.metastore.api.Partition#getValues()
    */
   public List<String> getValues() {

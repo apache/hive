@@ -159,8 +159,8 @@ public class LazyInteger extends LazyPrimitive<Integer> {
    * a variable.  That's one of the reasons that we don't make radix a 
    * parameter here.
    *  
+   * @param out the outputstream to write to
    * @param i   an int to write out
-   * @return String the representation of the argument
    * @throws IOException 
    */
   public static void writeUTF8(OutputStream out, int i) throws IOException {
