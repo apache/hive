@@ -453,7 +453,7 @@ public class MetaStoreClient implements IMetaStoreClient {
   
   /**
    * This operation is unsupported in this metastore.
-   * @see MetaStoreClient#dropTable(String, String) 
+   * @see IMetaStoreClient#dropTable(String, String, boolean, boolean) 
    */
   public void dropTable(String dbname, String name, boolean deleteData, boolean ignoreUknownTab) throws 
     ExistingDependentsException, MetaException, TException, NoSuchObjectException {

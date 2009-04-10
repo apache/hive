@@ -125,7 +125,7 @@ public class MetadataTypedColumnsetSerDe implements SerDe {
   /**
    * Split the row into columns.
    * @param limit  up to limit columns will be produced (the last column takes all the rest), -1 for unlimited.
-   * @return
+   * @return The ColumnSet object
    * @throws Exception
    */
   public static Object deserialize(ColumnSet c, String row, String sep,

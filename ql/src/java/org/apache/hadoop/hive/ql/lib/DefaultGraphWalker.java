@@ -42,7 +42,6 @@ public class DefaultGraphWalker implements GraphWalker {
 
   /**
    * Constructor
-   * @param ctx graph of operators to walk
    * @param disp dispatcher to call for each op encountered
    */
   public DefaultGraphWalker(Dispatcher disp) {
@@ -66,8 +65,8 @@ public class DefaultGraphWalker implements GraphWalker {
 
   /**
    * Dispatch the current operator
-   * @param op operator being walked
-   * @param opStack stack of operators encountered
+   * @param nd node being walked
+   * @param ndStack stack of nodes encountered
    * @throws SemanticException
    */
   public void dispatch(Node nd, Stack<Node> ndStack) throws SemanticException {

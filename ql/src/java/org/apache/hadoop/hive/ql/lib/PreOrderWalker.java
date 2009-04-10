@@ -42,7 +42,6 @@ public class PreOrderWalker extends DefaultGraphWalker {
 
   /**
    * Constructor
-   * @param ctx graph of operators to walk
    * @param disp dispatcher to call for each op encountered
    */
   public PreOrderWalker(Dispatcher disp) {

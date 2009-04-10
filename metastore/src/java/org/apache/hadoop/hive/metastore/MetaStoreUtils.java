@@ -138,9 +138,8 @@ public class MetaStoreUtils {
    *
    * Get the Deserializer for a table given its name and properties.
    *
-   * @param name the name of the table
-   * @param conf - hadoop config
-   * @param p - the properties to use to instantiate the schema
+   * @param conf hadoop config
+   * @param schema the properties to use to instantiate the deserializer
    * @return the Deserializer
    * @exception MetaException if any problems instantiating the Deserializer
    *
@@ -163,11 +162,10 @@ public class MetaStoreUtils {
   /**
    * getDeserializer
    *
-   * Get the Deserializer for a table given its name and properties.
+   * Get the Deserializer for a table.
    *
-   * @param name the name of the table
    * @param conf - hadoop config
-   * @param p - SerDe info
+   * @param table the table
    * @return the Deserializer
    * @exception MetaException if any problems instantiating the Deserializer
    *
@@ -237,8 +235,8 @@ public class MetaStoreUtils {
    * Checks the name conforms to our standars which are: "[a-zA-z_0-9]+".
    * checks this is just characters and numbers and _ 
    *
-   * @param tableName the name to validate
-   * @return none
+   * @param name the name to validate
+   * @return true or false depending on conformance
    * @exception MetaException if it doesn't match the pattern.
    */
   static public boolean validateName(String name) {
@@ -541,7 +539,7 @@ public class MetaStoreUtils {
   /**
    * @param tableName
    * @param deserializer
-   * @return
+   * @return the list of fields
    * @throws SerDeException
    * @throws MetaException
    */

@@ -187,7 +187,7 @@ public class SessionState {
  
   /**
    * get hiveHitsory object which does structured logging
-   * @return 
+   * @return The hive history object
    */
   public HiveHistory getHiveHistory(){
     return hiveHist;

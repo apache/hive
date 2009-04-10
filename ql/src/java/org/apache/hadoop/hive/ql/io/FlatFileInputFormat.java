@@ -46,7 +46,7 @@ import org.apache.hadoop.io.compress.CompressionCodecFactory;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.util.ReflectionUtils;
 
-/** An {@link InputFormat} for Plain files with {@link Deserializer} records */
+/** An {@link org.apache.hadoop.mapred.InputFormat} for Plain files with {@link Deserializer} records */
 public class FlatFileInputFormat<T> extends FileInputFormat<Void, FlatFileInputFormat.RowContainer<T>> {
 
   /**

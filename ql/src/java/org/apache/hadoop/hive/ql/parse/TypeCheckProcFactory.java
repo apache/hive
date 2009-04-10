@@ -374,7 +374,7 @@ public class TypeCheckProcFactory {
      * Get the exprNodeDesc
      * @param name
      * @param children
-     * @return
+     * @return The expression node descriptor
      */
     public static exprNodeDesc getFuncExprNodeDesc(String name, exprNodeDesc... children) {
       return getFuncExprNodeDesc(name, Arrays.asList(children));

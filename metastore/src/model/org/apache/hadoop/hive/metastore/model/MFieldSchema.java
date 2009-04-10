@@ -71,7 +71,7 @@ public class MFieldSchema {
     return type;
   }
   /**
-   * @param type the type to set
+   * @param field the type to set
    */
   public void setType(String field) {
     this.type = field;

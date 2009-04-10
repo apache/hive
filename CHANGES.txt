@@ -25,6 +25,9 @@ Release 0.3.0 - Unreleased
     HIVE-393. Remove unnecessary checks for file type.
     (Zheng Shao via namit)
 
+    HIVE-82 Support for building tarballs and javadocs
+    (Ashish Thusoo via rmurthy)
+
   IMPROVEMENTS
 
     HIVE-132. Show table and describe results to be read via FetchTask.

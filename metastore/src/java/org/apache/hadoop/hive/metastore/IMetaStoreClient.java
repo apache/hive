@@ -58,7 +58,7 @@ public interface IMetaStoreClient {
 
   /**
    * Drop the table.
-   * @param dbName The database for this table
+   * @param dbname The database for this table
    * @param tableName The table to drop
    * @throws MetaException Could not drop table properly.
    * @throws NoSuchObjectException The table wasn't found.
@@ -98,10 +98,10 @@ public interface IMetaStoreClient {
     throws MetaException, TException, NoSuchObjectException;
 
   /**
-   * @param table_name
-   * @param db_name
-   * @param part_vals
-   * @return
+   * @param tableName
+   * @param dbName
+   * @param partVals
+   * @return the partition object
    * @throws InvalidObjectException
    * @throws AlreadyExistsException
    * @throws MetaException
@@ -125,13 +125,13 @@ public interface IMetaStoreClient {
       MetaException, TException;
 
   /**
-   * @param tbl_name
-   * @param db_name
-   * @param part_vals
-   * @return
+   * @param tblName
+   * @param dbName
+   * @param partVals
+   * @return the partition object
    * @throws MetaException
    * @throws TException
-   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#lookup_partition(java.lang.String, java.lang.String, java.util.List)
+   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#get_partition(java.lang.String, java.lang.String, java.util.List)
    */
   public Partition getPartition(String tblName, String dbName, List<String> partVals)
       throws MetaException, TException ;
@@ -140,11 +140,10 @@ public interface IMetaStoreClient {
    * @param tbl_name
    * @param db_name
    * @param max_parts
-   * @return
+   * @return the list of partitions
    * @throws NoSuchObjectException
    * @throws MetaException
    * @throws TException
-   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#list_partitions(java.lang.String, java.lang.String, short)
    */
   public List<Partition> listPartitions(String db_name, String tbl_name, short max_parts)
       throws NoSuchObjectException, MetaException, TException;
@@ -153,7 +152,6 @@ public interface IMetaStoreClient {
     throws  MetaException, TException;
   /**
    * @param tbl
-   * @return
    * @throws AlreadyExistsException
    * @throws InvalidObjectException
    * @throws MetaException
@@ -173,11 +171,11 @@ public interface IMetaStoreClient {
    * @param tbl_name
    * @param part_vals
    * @param deleteData delete the underlying data or just delete the table in metadata
-   * @return
+   * @return true or false
    * @throws NoSuchObjectException
    * @throws MetaException
    * @throws TException
-   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#drop_partition(java.lang.String, java.lang.String, java.util.List)
+   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#drop_partition(java.lang.String, java.lang.String, java.util.List, boolean)
    */
   public boolean dropPartition(String db_name, String tbl_name, List<String> part_vals, boolean deleteData)
       throws NoSuchObjectException, MetaException, TException;

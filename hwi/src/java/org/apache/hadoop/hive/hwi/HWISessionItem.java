@@ -196,7 +196,7 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
 	 * 
 	 * @param wanted
 	 *          a ConfVar
-	 * @return
+	 * @return Value of the configuration variable.
 	 */
 	public String getHiveConfVar(HiveConf.ConfVars wanted) throws HWIException {
 		String result = null;

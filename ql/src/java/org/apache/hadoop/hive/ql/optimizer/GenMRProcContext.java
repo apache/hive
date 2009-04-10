@@ -103,8 +103,6 @@ public class GenMRProcContext implements NodeProcessorCtx {
    * @param rootTasks  root tasks for the plan
    * @param mvTask     the final move task
    * @param scratchDir directory for temp destinations   
-   * @param randomId   identifier used for temp destinations   
-   * @param pathId     identifier used for temp destinations   
    * @param mapCurrCtx operator to task mappings
    */
   public GenMRProcContext (
@@ -240,7 +238,7 @@ public class GenMRProcContext implements NodeProcessorCtx {
   }
 
   /**
-   * @param randomId   identifier used for temp destinations   
+   * @param randomid   identifier used for temp destinations   
    */
   public void setRandomId(int randomid) {
     this.randomid = randomid;

@@ -221,7 +221,7 @@ public class ObjectStore implements RawStore, Configurable {
   
   /**
    * if this is the commit of the first open call then an actual commit is called. 
-   * @return 
+   * @return Always returns true
    */
   @SuppressWarnings("nls")
   public boolean commitTransaction() {

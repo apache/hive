@@ -198,7 +198,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   
   /**
    * @param new_part
-   * @return
+   * @return the added partition
    * @throws InvalidObjectException
    * @throws AlreadyExistsException
    * @throws MetaException
@@ -214,7 +214,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
    * @param table_name
    * @param db_name
    * @param part_vals
-   * @return
+   * @return the appended partition
    * @throws InvalidObjectException
    * @throws AlreadyExistsException
    * @throws MetaException
@@ -229,7 +229,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   /**
    * @param name
    * @param location_uri
-   * @return
+   * @return true or false
    * @throws AlreadyExistsException
    * @throws MetaException
    * @throws TException
@@ -254,7 +254,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   /**
    * @param type
-   * @return
+   * @return true or false
    * @throws AlreadyExistsException
    * @throws InvalidObjectException
    * @throws MetaException
@@ -268,7 +268,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   /**
    * @param name
-   * @return
+   * @return true or false
    * @throws MetaException
    * @throws TException
    * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#drop_database(java.lang.String)
@@ -281,11 +281,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
    * @param tbl_name
    * @param db_name
    * @param part_vals
-   * @return
+   * @return true or false
    * @throws NoSuchObjectException
    * @throws MetaException
    * @throws TException
-   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#drop_partition(java.lang.String, java.lang.String, java.util.List)
+   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#drop_partition(java.lang.String, java.lang.String, java.util.List, boolean)
    */
   public boolean dropPartition(String db_name, String tbl_name, List<String> part_vals)
       throws NoSuchObjectException, MetaException, TException {
@@ -297,11 +297,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
    * @param tbl_name
    * @param part_vals
    * @param deleteData delete the underlying data or just delete the table in metadata
-   * @return
+   * @return true or false
    * @throws NoSuchObjectException
    * @throws MetaException
    * @throws TException
-   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#drop_partition(java.lang.String, java.lang.String, java.util.List)
+   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#drop_partition(java.lang.String, java.lang.String, java.util.List, boolean)
    */
   public boolean dropPartition(String db_name, String tbl_name, List<String> part_vals, boolean deleteData)
       throws NoSuchObjectException, MetaException, TException {
@@ -311,12 +311,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   /**
    * @param name
    * @param dbname
-   * @return
    * @throws NoSuchObjectException
    * @throws ExistingDependentsException
    * @throws MetaException
    * @throws TException
-   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#drop_table(java.lang.String, java.lang.String)
+   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#drop_table(java.lang.String, java.lang.String, boolean)
    */
   public void dropTable(String dbname, String name) throws NoSuchObjectException,
       ExistingDependentsException, MetaException, TException {
@@ -327,12 +326,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
    * @param dbname
    * @param name
    * @param deleteData delete the underlying data or just delete the table in metadata
-   * @return
    * @throws NoSuchObjectException
    * @throws ExistingDependentsException
    * @throws MetaException
    * @throws TException
-   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#drop_table(java.lang.String, java.lang.String)
+   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#drop_table(java.lang.String, java.lang.String, boolean)
    */
   public void dropTable(String dbname, String name, boolean deleteData, boolean ignoreUknownTab) throws 
       ExistingDependentsException, MetaException, TException, NoSuchObjectException {
@@ -347,7 +345,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   /**
    * @param type
-   * @return
+   * @return true if the type is dropped
    * @throws MetaException
    * @throws TException
    * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#drop_type(java.lang.String)
@@ -358,7 +356,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   /**
    * @param name
-   * @return
+   * @return map of types
    * @throws MetaException
    * @throws TException
    * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#get_type_all(java.lang.String)
@@ -368,10 +366,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   }
 
   /**
-   * @return
+   * @return the list of databases
    * @throws MetaException
    * @throws TException
-   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#list_databases()
+   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#get_databases()
    */
   public List<String> getDatabases() throws MetaException, TException {
     return client.get_databases();
@@ -381,11 +379,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
    * @param tbl_name
    * @param db_name
    * @param max_parts
-   * @return
+   * @return list of partitions
    * @throws NoSuchObjectException
    * @throws MetaException
    * @throws TException
-   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#list_partitions(java.lang.String, java.lang.String, short)
    */
   public List<Partition> listPartitions(String db_name, String tbl_name, short max_parts)
       throws NoSuchObjectException, MetaException, TException {
@@ -394,11 +391,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   /**
    * @param name
-   * @return
+   * @return the database
    * @throws NoSuchObjectException
    * @throws MetaException
    * @throws TException
-   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#lookup_database(java.lang.String)
+   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#get_database(java.lang.String)
    */
   public Database getDatabase(String name) throws NoSuchObjectException, MetaException,
       TException {
@@ -409,10 +406,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
    * @param tbl_name
    * @param db_name
    * @param part_vals
-   * @return
+   * @return the partition
    * @throws MetaException
    * @throws TException
-   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#lookup_partition(java.lang.String, java.lang.String, java.util.List)
+   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#get_partition(java.lang.String, java.lang.String, java.util.List)
    */
   public Partition getPartition(String db_name, String tbl_name, List<String> part_vals)
       throws MetaException, TException {
@@ -422,12 +419,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   /**
    * @param name
    * @param dbname
-   * @return
+   * @return the table
    * @throws NoSuchObjectException
    * @throws MetaException
    * @throws TException
    * @throws NoSuchObjectException 
-   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#lookup_table(java.lang.String, java.lang.String)
+   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#get_table(java.lang.String, java.lang.String)
    */
   public Table getTable(String dbname, String name) throws MetaException, TException, NoSuchObjectException {
     return client.get_table(dbname, name);
@@ -435,10 +432,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   /**
    * @param name
-   * @return
+   * @return the type
    * @throws MetaException
    * @throws TException
-   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#lookup_type(java.lang.String)
+   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#get_type(java.lang.String)
    */
   public Type getType(String name) throws MetaException, TException {
     return client.get_type(name);

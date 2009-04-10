@@ -60,7 +60,7 @@ public class UDF {
   /**
    * Sets the resolver
    * 
-   * @param The method resolver to use for method resolution.
+   * @param rslv The method resolver to use for method resolution.
    */
   public void setResolver(UDFMethodResolver rslv) {
     this.rslv = rslv;

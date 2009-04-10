@@ -186,9 +186,8 @@ public class MetaStoreServer extends ThriftMetaStore {
      *
      * return a table's partitions
      *
-     * @param tableName - a valid table name
-     * @param low - low index
-     * @param high - high index
+     * @param dbName the database name
+     * @param tableName a valid table name
      * @return a string (including '\n's) of the rows
      * @exception TException if thrift problem
      * @exception MetaException if internal problem or bad input
@@ -235,8 +234,9 @@ public class MetaStoreServer extends ThriftMetaStore {
      *
      * For a columnsetSerDe table, add column names to it
      *
-     * @param tableName - a valid existing table name
-     * @param columns - ordered list of column names
+     * @param dbName the database
+     * @param tableName  a valid existing table name
+     * @param schema The schema information for the table
      * @exception TException if thrift problem
      * @exception MetaException if internal problem or bad input
      * @exception UnknownTableException if table does not exist already
@@ -267,8 +267,8 @@ public class MetaStoreServer extends ThriftMetaStore {
      *
      * Create names columns for a columnset type table
      *
+     * @param dbName a valid database name
      * @param tableName - a valid table name
-     * @param columns - ordered list of column names
      * @exception TException if thrift problem
      * @exception MetaException if internal problem or bad input
      */
@@ -364,8 +364,8 @@ public class MetaStoreServer extends ThriftMetaStore {
      *
      * drop a table
      *
-     * @param tableName - a valid existing table name
-     * @param delete_data - should the store auto delete the data.
+     * @param dbName the name of a database
+     * @param tableName a valid existing table name
      * @exception TException if thrift problem
      * @exception MetaException if internal problem or bad input
      * @exception UnknownTableException if table does not exist already
@@ -391,8 +391,8 @@ public class MetaStoreServer extends ThriftMetaStore {
      *
      * drop a table
      *
-     * @param tableName - a valid existing table name
-     * @param delete_data - should the store auto delete the data.
+     * @param dbName  a valid database name
+     * @param tableName  a valid existing table name
      * @exception TException if thrift problem
      * @exception MetaException if internal problem or bad input
      * @exception UnknownTableException if table does not exist already
@@ -418,7 +418,7 @@ public class MetaStoreServer extends ThriftMetaStore {
      *
      * Gets the (opaque) schema which is currently represented as a key=>value map.
      *
-     * @param name - the name of the table
+     * @param tableName - the name of the table
      * @return the key/value of the opaque schema
      * @exception MetaException if internal problem
      * @exception UnknownTableException if the table doesn't exist

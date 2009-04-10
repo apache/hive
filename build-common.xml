@@ -20,24 +20,21 @@
 
 <project xmlns:ivy="antlib:org.apache.ivy.ant" name="hivecommon" default="jar">
 
-  <property name="name" value="${ant.project.name}"/>
-
   <property name="hive.root" location="${basedir}/.."/>
+  <property file="${hive.root}/build.properties"/>
+  <property file="${user.home}/build.properties" />
+  <property file="${basedir}/build.properties" />
+
   <property name="hive.conf.dir" value="${hive.root}/conf"/>
   <property name="dist.dir" location="${hive.root}"/>
 
-  <property name="src.dir.hive" location="${hive.root}"/>
   <property name="build.dir.hive" location="${hive.root}/build"/>
   <property name="build.dir.hadoop" location="${build.dir.hive}/hadoopcore"/>
-  <property name="build.dir" location="${build.dir.hive}/${name}"/>
+  <property name="build.dir" location="${build.dir.hive}/${ant.project.name}"/>
   <property name="build.classes" location="${build.dir}/classes"/>
   <property name="build.encoding" value="ISO-8859-1"/>
   <property name="deploy.dir" location="${build.dir.hive}"/>
 
-  <property name="hadoop.mirror" value="http://archive.apache.org/dist"/>
-  <property name="hadoop.version" value="0.19.0"/>
-  <property name="hadoop.root" location="${build.dir.hadoop}/hadoop-${hadoop.version}"/>
-  <property name="hadoop.jar" location="${hadoop.root}/hadoop-${hadoop.version}-core.jar"/>
   <property name="hadoop.conf.dir" location="${hadoop.root}/conf"/>
 
   <property name="javac.debug" value="on"/>
@@ -49,13 +46,12 @@
 
   <!-- configuration needed for tests -->
   <property name="test.src.dir" value="${basedir}/src/test"/>
-  <property name="test.src.data.dir" value="${src.dir.hive}/data"/>
+  <property name="test.src.data.dir" value="${hive.root}/data"/>
   <property name="test.build.dir" value="${build.dir}/test"/>
   <property name="test.log.dir" value="${test.build.dir}/logs"/>
   <property name="test.data.dir" value="${test.build.dir}/data"/>
   <property name="test.build.src" value="${test.build.dir}/src"/>
   <property name="test.build.classes" value="${test.build.dir}/classes"/>
-  <property name="test.build.javadoc" value="${test.build.dir}/docs/api"/>
   <property name="test.include" value="Test*"/>
   <property name="test.classpath.id" value="test.classpath"/>
   <property name="test.output" value="true"/>
@@ -93,9 +89,9 @@
 
   <!-- I am not sure whether we need this target any more since that package does what is needed -->
   <target name="deploy" depends="jar">
-    <echo message="hive: ${name}"/>
+    <echo message="hive: ${ant.project.name}"/>
     <mkdir dir="${deploy.dir}"/>
-    <copy file="${build.dir}/hive_${name}.jar"
+    <copy file="${build.dir}/hive_${ant.project.name}.jar"
           todir="${deploy.dir}"/>
   </target>
 
@@ -104,8 +100,8 @@
     <pathelement location="${hadoop.jar}"/>
     <pathelement location="${build.dir.hive}/classes"/>
     <fileset dir="${build.dir.hive}" includes="hive_*.jar"/>
-    <fileset dir="${src.dir.hive}/lib" includes="*.jar"/>
-    <fileset dir="${src.dir.hive}/ql/lib" includes="*.jar"/>
+    <fileset dir="${hive.root}/lib" includes="*.jar"/>
+    <fileset dir="${hive.root}/ql/lib" includes="*.jar"/>
   </path>
 
   <path id="classpath">
@@ -144,7 +140,7 @@
   </target>
 
   <target name="compile" depends="init, install-hadoopcore">
-    <echo message="Compiling: ${name}"/>
+    <echo message="Compiling: ${ant.project.name}"/>
     <javac
      encoding="${build.encoding}"
      srcdir="${src.dir}"
@@ -158,9 +154,9 @@
   </target>
 
   <target name="jar" depends="compile">
-    <echo message="Jar: ${name}"/>
+    <echo message="Jar: ${ant.project.name}"/>
     <jar
-      jarfile="${build.dir}/hive_${name}.jar"
+      jarfile="${build.dir}/hive_${ant.project.name}.jar"
       basedir="${build.classes}"
     />
   </target>
@@ -279,7 +275,7 @@
   </target>
 
   <target name="clean">
-    <echo message="Cleaning: ${name}"/>
+    <echo message="Cleaning: ${ant.project.name}"/>
     <delete dir="${build.dir}"/>
   </target>
 

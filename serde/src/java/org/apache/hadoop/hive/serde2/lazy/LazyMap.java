@@ -283,7 +283,7 @@ public class LazyMap extends LazyNonPrimitive {
    * @param itemSeparator     The separator between different entries.
    * @param keyValueSeparator The separator between key and value.
    * @param nullSequence      The byte sequence representing NULL.
-   * @return
+   * @return the map object
    */
   public Map<Object, Object> getMap(byte itemSeparator, byte keyValueSeparator,
       Text nullSequence) {
