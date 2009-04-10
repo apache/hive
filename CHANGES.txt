@@ -9,6 +9,9 @@ Trunk - unreleased changes
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 
+    HIVE-360. Generalize the FileFormat Interface in Hive.
+    (He Yongqiang via zshao)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).

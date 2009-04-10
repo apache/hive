@@ -55,6 +55,8 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
+import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 
 import com.facebook.thrift.TException;
 import com.facebook.thrift.protocol.TBinaryProtocol;
@@ -168,7 +170,7 @@ public class Hive {
    * @throws HiveException thrown if the args are invalid or if the metadata or the data directory couldn't be created
    */
   public void createTable(String tableName, List<String> columns, List<String> partCols,
-      Class<? extends InputFormat> fileInputFormat, Class<? extends OutputFormat> fileOutputFormat) throws HiveException {
+      Class<? extends InputFormat> fileInputFormat, Class<?> fileOutputFormat) throws HiveException {
     this.createTable(tableName, columns, partCols, fileInputFormat, fileOutputFormat, -1, null);
   }
 
@@ -183,7 +185,7 @@ public class Hive {
    * @throws HiveException thrown if the args are invalid or if the metadata or the data directory couldn't be created
    */
   public void createTable(String tableName, List<String> columns, List<String> partCols,
-      Class<? extends InputFormat> fileInputFormat, Class<? extends OutputFormat> fileOutputFormat, int bucketCount, List<String> bucketCols) throws HiveException {
+      Class<? extends InputFormat> fileInputFormat, Class<?> fileOutputFormat, int bucketCount, List<String> bucketCols) throws HiveException {
     if(columns == null) {
       throw new HiveException("columns not specified for table " + tableName);
     }
@@ -422,9 +424,9 @@ public class Hive {
       table.setInputFormatClass((Class<? extends InputFormat<WritableComparable, Writable>>)
           Class.forName(table.getSchema().getProperty(org.apache.hadoop.hive.metastore.api.Constants.FILE_INPUT_FORMAT,
               org.apache.hadoop.mapred.SequenceFileInputFormat.class.getName())));
-      table.setOutputFormatClass((Class<? extends OutputFormat<WritableComparable, Writable>>)
+      table.setOutputFormatClass((Class<? extends HiveOutputFormat>)
           Class.forName(table.getSchema().getProperty(org.apache.hadoop.hive.metastore.api.Constants.FILE_OUTPUT_FORMAT,
-              org.apache.hadoop.mapred.SequenceFileOutputFormat.class.getName()))); 
+              HiveSequenceFileOutputFormat.class.getName()))); 
       table.setDeserializer(MetaStoreUtils.getDeserializer(getConf(), p));
       table.setDataLocation(new URI(tTable.getSd().getLocation()));
     } catch(Exception e) {

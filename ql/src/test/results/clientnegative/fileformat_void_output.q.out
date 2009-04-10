@@ -1,1 +1,1 @@
-FAILED: Error in semantic analysis: line 4:23 Output Format must implement OutputFormat dest1
+FAILED: Error in semantic analysis: Output Format must implement HiveOutputFormat, otherwise it should be either IgnoreKeyTextOutputFormat or SequenceFileOutputFormat

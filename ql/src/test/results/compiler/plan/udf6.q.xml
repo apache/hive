@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_07" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_03-p3" class="java.beans.XMLDecoder"> 
  <object class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
   <void property="id"> 
    <string>Stage-2</string> 
@@ -26,7 +26,7 @@
                     <void property="conf"> 
                      <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                       <void property="dirName"> 
-                       <string>/data/users/pchakka/workspace/oshive/ql/../build/ql/tmp/33781069.10001.insclause-0</string> 
+                       <string>/Users/char/Documents/workspace/Hive/ql/../build/ql/tmp/54039783.10001.insclause-0</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -37,7 +37,7 @@
                          <class>org.apache.hadoop.mapred.TextInputFormat</class> 
                         </void> 
                         <void property="outputFileFormatClass"> 
-                         <class>org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat</class> 
+                         <class>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</class> 
                         </void> 
                         <void property="properties"> 
                          <object class="java.util.Properties"> 
@@ -319,7 +319,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src</string> 
+       <string>file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src</string> 
@@ -331,7 +331,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src</string> 
+       <string>file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"/> 
@@ -345,7 +345,7 @@
            <class>org.apache.hadoop.mapred.TextInputFormat</class> 
           </void> 
           <void property="outputFileFormatClass"> 
-           <class>org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat</class> 
+           <class>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</class> 
           </void> 
           <void property="properties"> 
            <object class="java.util.Properties"> 
@@ -383,11 +383,11 @@
             </void> 
             <void method="put"> 
              <string>file.outputformat</string> 
-             <string>org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat</string> 
+             <string>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</string> 
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src</string> 
+             <string>file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/src</string> 
             </void> 
            </object> 
           </void> 

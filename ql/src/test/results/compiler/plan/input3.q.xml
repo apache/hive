@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_07" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_03-p3" class="java.beans.XMLDecoder"> 
  <object id="MapRedTask0" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
   <void property="childTasks"> 
    <object class="java.util.ArrayList"> 
@@ -28,7 +28,7 @@
              <boolean>true</boolean> 
             </void> 
             <void property="sourceDir"> 
-             <string>/data/users/pchakka/workspace/oshive/ql/../build/ql/tmp/1233327262/304849537.10003.insclause-3</string> 
+             <string>/Users/char/Documents/workspace/Hive/ql/../build/ql/tmp/326733933/1321260252.10003.insclause-3</string> 
             </void> 
             <void property="targetDir"> 
              <string>../../../../build/contrib/hive/ql/test/data/warehouse/dest4.out</string> 
@@ -48,7 +48,7 @@
              <boolean>true</boolean> 
             </void> 
             <void property="sourceDir"> 
-             <string>/data/users/pchakka/workspace/oshive/ql/../build/ql/tmp/1233327262/304849537.10000.insclause-0</string> 
+             <string>/Users/char/Documents/workspace/Hive/ql/../build/ql/tmp/326733933/1321260252.10000.insclause-0</string> 
             </void> 
             <void property="table"> 
              <object id="tableDesc0" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -59,7 +59,7 @@
                <class>org.apache.hadoop.mapred.TextInputFormat</class> 
               </void> 
               <void property="outputFileFormatClass"> 
-               <class>org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat</class> 
+               <class>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</class> 
               </void> 
               <void property="properties"> 
                <object class="java.util.Properties"> 
@@ -97,11 +97,11 @@
                 </void> 
                 <void method="put"> 
                  <string>file.outputformat</string> 
-                 <string>org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat</string> 
+                 <string>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</string> 
                 </void> 
                 <void method="put"> 
                  <string>location</string> 
-                 <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/dest1</string> 
+                 <string>file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/dest1</string> 
                 </void> 
                </object> 
               </void> 
@@ -121,7 +121,7 @@
              <boolean>true</boolean> 
             </void> 
             <void property="sourceDir"> 
-             <string>/data/users/pchakka/workspace/oshive/ql/../build/ql/tmp/1233327262/304849537.10001.insclause-1</string> 
+             <string>/Users/char/Documents/workspace/Hive/ql/../build/ql/tmp/326733933/1321260252.10001.insclause-1</string> 
             </void> 
             <void property="table"> 
              <object id="tableDesc1" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -132,7 +132,7 @@
                <class>org.apache.hadoop.mapred.TextInputFormat</class> 
               </void> 
               <void property="outputFileFormatClass"> 
-               <class>org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat</class> 
+               <class>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</class> 
               </void> 
               <void property="properties"> 
                <object class="java.util.Properties"> 
@@ -170,11 +170,11 @@
                 </void> 
                 <void method="put"> 
                  <string>file.outputformat</string> 
-                 <string>org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat</string> 
+                 <string>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</string> 
                 </void> 
                 <void method="put"> 
                  <string>location</string> 
-                 <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/dest2</string> 
+                 <string>file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/dest2</string> 
                 </void> 
                </object> 
               </void> 
@@ -203,7 +203,7 @@
              <boolean>true</boolean> 
             </void> 
             <void property="sourceDir"> 
-             <string>/data/users/pchakka/workspace/oshive/ql/../build/ql/tmp/1233327262/304849537.10002.insclause-2</string> 
+             <string>/Users/char/Documents/workspace/Hive/ql/../build/ql/tmp/326733933/1321260252.10002.insclause-2</string> 
             </void> 
             <void property="table"> 
              <object id="tableDesc2" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -214,7 +214,7 @@
                <class>org.apache.hadoop.mapred.TextInputFormat</class> 
               </void> 
               <void property="outputFileFormatClass"> 
-               <class>org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat</class> 
+               <class>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</class> 
               </void> 
               <void property="properties"> 
                <object class="java.util.Properties"> 
@@ -256,11 +256,11 @@
                 </void> 
                 <void method="put"> 
                  <string>file.outputformat</string> 
-                 <string>org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat</string> 
+                 <string>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</string> 
                 </void> 
                 <void method="put"> 
                  <string>location</string> 
-                 <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/dest3</string> 
+                 <string>file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/dest3</string> 
                 </void> 
                </object> 
               </void> 
@@ -307,7 +307,7 @@
                        <int>1</int> 
                       </void> 
                       <void property="dirName"> 
-                       <string>/data/users/pchakka/workspace/oshive/ql/../build/ql/tmp/1233327262/304849537.10000.insclause-0</string> 
+                       <string>/Users/char/Documents/workspace/Hive/ql/../build/ql/tmp/326733933/1321260252.10000.insclause-0</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object idref="tableDesc0"/> 
@@ -591,7 +591,7 @@
                        <int>2</int> 
                       </void> 
                       <void property="dirName"> 
-                       <string>/data/users/pchakka/workspace/oshive/ql/../build/ql/tmp/1233327262/304849537.10001.insclause-1</string> 
+                       <string>/Users/char/Documents/workspace/Hive/ql/../build/ql/tmp/326733933/1321260252.10001.insclause-1</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object idref="tableDesc1"/> 
@@ -957,7 +957,7 @@
                        <int>3</int> 
                       </void> 
                       <void property="dirName"> 
-                       <string>/data/users/pchakka/workspace/oshive/ql/../build/ql/tmp/1233327262/304849537.10002.insclause-2</string> 
+                       <string>/Users/char/Documents/workspace/Hive/ql/../build/ql/tmp/326733933/1321260252.10002.insclause-2</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object idref="tableDesc2"/> 
@@ -1323,7 +1323,7 @@
                        <int>4</int> 
                       </void> 
                       <void property="dirName"> 
-                       <string>/data/users/pchakka/workspace/oshive/ql/../build/ql/tmp/1233327262/304849537.10003.insclause-3</string> 
+                       <string>/Users/char/Documents/workspace/Hive/ql/../build/ql/tmp/326733933/1321260252.10003.insclause-3</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -1334,7 +1334,7 @@
                          <class>org.apache.hadoop.mapred.TextInputFormat</class> 
                         </void> 
                         <void property="outputFileFormatClass"> 
-                         <class>org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat</class> 
+                         <class>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</class> 
                         </void> 
                         <void property="properties"> 
                          <object class="java.util.Properties"> 
@@ -1568,7 +1568,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src</string> 
+       <string>file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src</string> 
@@ -1580,7 +1580,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src</string> 
+       <string>file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"/> 
@@ -1594,7 +1594,7 @@
            <class>org.apache.hadoop.mapred.TextInputFormat</class> 
           </void> 
           <void property="outputFileFormatClass"> 
-           <class>org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat</class> 
+           <class>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</class> 
           </void> 
           <void property="properties"> 
            <object class="java.util.Properties"> 
@@ -1632,11 +1632,11 @@
             </void> 
             <void method="put"> 
              <string>file.outputformat</string> 
-             <string>org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat</string> 
+             <string>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</string> 
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src</string> 
+             <string>file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/src</string> 
             </void> 
            </object> 
           </void> 

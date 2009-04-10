@@ -32,7 +32,8 @@ import org.apache.hadoop.util.Progressable;
 /**
  * This class replaces key with null before feeding the <key, value> 
  * to TextOutputFormat.RecordWriter.
- *   
+ * 
+ * @deprecated use {@link HiveIgnoreKeyTextOutputFormat} instead}
  */
 public class IgnoreKeyTextOutputFormat<K extends WritableComparable, 
                                        V extends Writable> 

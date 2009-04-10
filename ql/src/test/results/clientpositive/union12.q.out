@@ -44,13 +44,13 @@ STAGE PLANS:
               GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.mapred.SequenceFileOutputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   name: binary_table
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive1/hive/build/ql/tmp/939524149/1568103970.10002 
+        /Users/char/Documents/workspace/Hive/build/ql/tmp/109317328/81205243.10003 
           Union
             Select Operator
               expressions:
@@ -69,10 +69,10 @@ STAGE PLANS:
                   GlobalTableId: 1
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
-        /data/users/njain/hive1/hive/build/ql/tmp/939524149/1568103970.10003 
+        /Users/char/Documents/workspace/Hive/build/ql/tmp/109317328/81205243.10002 
           Union
             Select Operator
               expressions:
@@ -91,10 +91,10 @@ STAGE PLANS:
                   GlobalTableId: 1
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
-        /data/users/njain/hive1/hive/build/ql/tmp/939524149/1568103970.10001 
+        /Users/char/Documents/workspace/Hive/build/ql/tmp/109317328/81205243.10001 
           Union
             Select Operator
               expressions:
@@ -113,7 +113,7 @@ STAGE PLANS:
                   GlobalTableId: 1
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
 
@@ -123,7 +123,7 @@ STAGE PLANS:
             replace: true
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: tmptable
 
@@ -158,7 +158,7 @@ STAGE PLANS:
               GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.mapred.SequenceFileOutputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   name: binary_table
 
   Stage: Stage-4
@@ -192,7 +192,7 @@ STAGE PLANS:
               GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.mapred.SequenceFileOutputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   name: binary_table
 
 

@@ -42,7 +42,7 @@ STAGE PLANS:
               GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -94,7 +94,7 @@ STAGE PLANS:
               GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -142,13 +142,13 @@ STAGE PLANS:
             GlobalTableId: 0
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.mapred.SequenceFileOutputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 name: binary_table
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive3/hive3/build/ql/tmp/1383254596/537906623.10002 
+        /Users/char/Documents/workspace/Hive/build/ql/tmp/950933763/531461181.10002 
           Reduce Output Operator
             sort order: 
             tag: -1
@@ -169,7 +169,7 @@ STAGE PLANS:
               GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -217,7 +217,7 @@ STAGE PLANS:
               GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator

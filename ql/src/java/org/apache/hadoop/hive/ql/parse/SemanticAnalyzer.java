@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.ql.exec.UDAF;
 import org.apache.hadoop.hive.ql.exec.UDAFEvaluator;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
@@ -693,7 +694,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         case HiveParser.TOK_TAB: {
           tableSpec ts = new tableSpec(this.db, ast, true);
 
-          if (!OutputFormat.class.isAssignableFrom(ts.tableHandle.getOutputFormatClass()))
+          if (!HiveOutputFormat.class.isAssignableFrom(ts.tableHandle.getOutputFormatClass()))
             throw new SemanticException(ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE.getMsg(ast));
 
           if(ts.partSpec == null) {

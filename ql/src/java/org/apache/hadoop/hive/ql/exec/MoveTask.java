@@ -32,6 +32,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.plan.loadFileDesc;
 import org.apache.hadoop.hive.ql.plan.loadTableDesc;
 import org.apache.hadoop.hive.ql.plan.moveWork;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.io.SequenceFile;
@@ -100,8 +101,7 @@ public class MoveTask extends Task<moveWork> implements Serializable {
         console.printInfo(mesg, mesg_detail);
 
         if (work.getCheckFileFormat()) {
-          // Get the file format of the table
-          boolean tableIsSequenceFile = tbd.getTable().getInputFileFormatClass().equals(SequenceFileInputFormat.class);
+
           // Get all files from the src directory
           FileStatus [] dirs;
           ArrayList<FileStatus> files;
@@ -118,25 +118,10 @@ public class MoveTask extends Task<moveWork> implements Serializable {
           } catch (IOException e) {
             throw new HiveException("addFiles: filesystem error in check phase", e);
           }
+
           // Check if the file format of the file matches that of the table.
-          if (files.size() > 0) {
-            int fileId = 0;
-            boolean fileIsSequenceFile = true;   
-            try {
-              SequenceFile.Reader reader = new SequenceFile.Reader(
-                fs, files.get(fileId).getPath(), conf);
-              reader.close();
-            } catch (IOException e) {
-              fileIsSequenceFile = false;
-            }
-            if (!fileIsSequenceFile && tableIsSequenceFile) {
-              throw new HiveException("Cannot load text files into a table stored as SequenceFile.");
-            }
-            if (fileIsSequenceFile && !tableIsSequenceFile) {
-              throw new HiveException("Cannot load SequenceFiles into a table stored as TextFile.");
-            }
-          }
-        }           
+          HiveFileFormatUtils.checkInputFormat(fs, conf, tbd.getTable().getInputFileFormatClass(), files);
+        }
 
         if(tbd.getPartitionSpec().size() == 0) {
           db.loadTable(new Path(tbd.getSourceDir()), tbd.getTable().getTableName(), tbd.getReplace());

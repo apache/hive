@@ -13,6 +13,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.mapred.TextOutputFormat;
@@ -93,7 +94,7 @@ public class TestHiveMetaStoreChecker extends TestCase {
     Table table = new Table(tableName);
     table.getTTable().setDbName(dbName);
     table.setInputFormatClass(TextInputFormat.class);
-    table.setOutputFormatClass(TextOutputFormat.class);
+    table.setOutputFormatClass(IgnoreKeyTextOutputFormat.class);
 
     hive.createTable(table);
     // now we've got a table, check that it works
@@ -162,7 +163,7 @@ public class TestHiveMetaStoreChecker extends TestCase {
     Table table = new Table(tableName);
     table.getTTable().setDbName(dbName);
     table.setInputFormatClass(TextInputFormat.class);
-    table.setOutputFormatClass(TextOutputFormat.class);
+    table.setOutputFormatClass(IgnoreKeyTextOutputFormat.class);
     table.setPartCols(partCols);
 
     hive.createTable(table);

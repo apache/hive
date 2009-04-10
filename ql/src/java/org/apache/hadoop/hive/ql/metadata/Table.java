@@ -40,6 +40,8 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
+import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -65,7 +67,7 @@ public class Table {
   private Deserializer deserializer;
   private URI uri;
   private Class<? extends InputFormat> inputFormatClass;
-  private Class<? extends OutputFormat> outputFormatClass;
+  private Class<? extends HiveOutputFormat> outputFormatClass;
   private org.apache.hadoop.hive.metastore.api.Table tTable;
 
   /**
@@ -90,7 +92,7 @@ public class Table {
    */
   public Table(String name, Properties schema, Deserializer deserializer, 
       Class<? extends InputFormat<?, ?>> inputFormatClass,
-      Class<? extends OutputFormat<?, ?>> outputFormatClass,
+      Class<?> outputFormatClass,
       URI dataLocation, Hive hive) throws HiveException {
     initEmpty();
     this.schema = schema;
@@ -99,7 +101,7 @@ public class Table {
     getTTable().setTableName(name);
     getSerdeInfo().setSerializationLib(deserializer.getClass().getName());
     setInputFormatClass(inputFormatClass);
-    setOutputFormatClass(outputFormatClass);
+    setOutputFormatClass(HiveFileFormatUtils.getOutputFormatSubstitute(outputFormatClass));
     setDataLocation(dataLocation);
   }
   
@@ -203,11 +205,11 @@ public class Table {
   }
 
   /**
-   * @param outputFormatClass 
+   * @param class1 
    */
-  public void setOutputFormatClass(Class<? extends OutputFormat> outputFormatClass) {
-    this.outputFormatClass = outputFormatClass;
-    tTable.getSd().setOutputFormat(outputFormatClass.getName());
+  public void setOutputFormatClass(Class<?> class1) {
+    this.outputFormatClass = HiveFileFormatUtils.getOutputFormatSubstitute(class1);
+    tTable.getSd().setOutputFormat(class1.getName());
   }
 
   final public Properties getSchema()  {
@@ -241,7 +243,7 @@ public class Table {
     return inputFormatClass;
   }
 
-  final public Class<? extends OutputFormat> getOutputFormatClass() {
+  final public Class<? extends HiveOutputFormat> getOutputFormatClass() {
     return outputFormatClass;
   }
 
@@ -478,7 +480,8 @@ public class Table {
 
   public void setOutputFormatClass(String name) throws HiveException {
     try {
-      setOutputFormatClass((Class<? extends OutputFormat<WritableComparable, Writable>>)Class.forName(name));
+      Class<?> origin = Class.forName(name);
+      setOutputFormatClass(HiveFileFormatUtils.getOutputFormatSubstitute(origin));
     } catch (ClassNotFoundException e) {
       throw new HiveException("Class not found: " + name, e);
     }

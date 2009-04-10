@@ -48,19 +48,19 @@ STAGE PLANS:
                       type: string
       Needs Tagging: true
       Path -> Alias:
-        file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
-        file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
-        file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-09 
-        file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-09 
+        file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
+        file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
+        file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-09 
+        file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-09 
       Path -> Partition:
-        file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
+        file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
           Partition
             partition values:
               ds 2008-04-08
               hr 11
           
               input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 name srcpart
                 columns.types string:string
@@ -71,18 +71,18 @@ STAGE PLANS:
                 bucket_count -1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                location file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/srcpart
+                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                location file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
+        file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
           Partition
             partition values:
               ds 2008-04-08
               hr 12
           
               input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 name srcpart
                 columns.types string:string
@@ -93,18 +93,18 @@ STAGE PLANS:
                 bucket_count -1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                location file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/srcpart
+                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                location file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-09 
+        file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-09 
           Partition
             partition values:
               ds 2008-04-09
               hr 11
           
               input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 name srcpart
                 columns.types string:string
@@ -115,18 +115,18 @@ STAGE PLANS:
                 bucket_count -1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                location file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/srcpart
+                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                location file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-09 
+        file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-09 
           Partition
             partition values:
               ds 2008-04-09
               hr 12
           
               input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 name srcpart
                 columns.types string:string
@@ -137,8 +137,8 @@ STAGE PLANS:
                 bucket_count -1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                location file:/data/users/suresh/hive_external/build/ql/test/data/warehouse/srcpart
+                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                location file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
       Reduce Operator Tree:
@@ -165,10 +165,10 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
-                directory: /data/users/suresh/hive_external/build/ql/tmp/532942841/982248112.10002
+                directory: /Users/char/Documents/workspace/Hive/build/ql/tmp/251526767/204024545.10002
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.mapred.SequenceFileOutputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     properties:
                       name binary_table
                       serialization.ddl struct binary_table { string temporarycol0, string temporarycol1, string temporarycol2, string temporarycol3}
@@ -178,7 +178,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/suresh/hive_external/build/ql/tmp/532942841/982248112.10002 
+        /Users/char/Documents/workspace/Hive/build/ql/tmp/251526767/204024545.10002 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -203,13 +203,13 @@ STAGE PLANS:
                   type: string
       Needs Tagging: false
       Path -> Alias:
-        /data/users/suresh/hive_external/build/ql/tmp/532942841/982248112.10002 
+        /Users/char/Documents/workspace/Hive/build/ql/tmp/251526767/204024545.10002 
       Path -> Partition:
-        /data/users/suresh/hive_external/build/ql/tmp/532942841/982248112.10002 
+        /Users/char/Documents/workspace/Hive/build/ql/tmp/251526767/204024545.10002 
           Partition
           
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-              output format: org.apache.hadoop.mapred.SequenceFileOutputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
               properties:
                 name binary_table
                 serialization.ddl struct binary_table { string temporarycol0, string temporarycol1, string temporarycol2, string temporarycol3}
@@ -220,10 +220,10 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: /data/users/suresh/hive_external/ql/../build/ql/tmp/27678712.10001.insclause-0
+            directory: /Users/char/Documents/workspace/Hive/ql/../build/ql/tmp/120768197.10001.insclause-0
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                 properties:
                   columns s.key,s.value,s.ds,s.hr
                   serialization.format 1

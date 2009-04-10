@@ -22,6 +22,8 @@ import java.io.Serializable;
 
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
+import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDe;
 
@@ -29,21 +31,22 @@ public class tableDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   private Class<? extends Deserializer> deserializerClass;
   private Class<? extends InputFormat> inputFileFormatClass;
-  private Class<? extends OutputFormat> outputFileFormatClass;
+  private Class<? extends HiveOutputFormat> outputFileFormatClass;
   private java.util.Properties properties;
   private String serdeClassName;
   public tableDesc() { }
   public tableDesc(
       final Class<? extends Deserializer> serdeClass,
       final Class<? extends InputFormat> inputFileFormatClass,
-      final Class<? extends OutputFormat> class1,
+      final Class<?> class1,
       final java.util.Properties properties) {
     this.deserializerClass = serdeClass;
     this.inputFileFormatClass = inputFileFormatClass;
-    this.outputFileFormatClass = class1;
+    this.outputFileFormatClass = HiveFileFormatUtils.getOutputFormatSubstitute(class1);
     this.properties = properties;
     this.serdeClassName = properties.getProperty(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_LIB);;
   }
+  
   public Class<? extends Deserializer> getDeserializerClass() {
     return this.deserializerClass;
   }
@@ -64,11 +67,11 @@ public class tableDesc implements Serializable {
   public void setInputFileFormatClass(final Class<? extends InputFormat> inputFileFormatClass) {
     this.inputFileFormatClass=inputFileFormatClass;
   }
-  public Class<? extends OutputFormat> getOutputFileFormatClass() {
+  public Class<? extends HiveOutputFormat> getOutputFileFormatClass() {
     return this.outputFileFormatClass;
   }
-  public void setOutputFileFormatClass(final Class<? extends OutputFormat> outputFileFormatClass) {
-    this.outputFileFormatClass=outputFileFormatClass;
+  public void setOutputFileFormatClass(final Class<?> outputFileFormatClass) {
+    this.outputFileFormatClass = HiveFileFormatUtils.getOutputFormatSubstitute(outputFileFormatClass);
   }
   
   @explain(displayName="properties", normalExplain=false)

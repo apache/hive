@@ -23,22 +23,22 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
-                  directory: /Users/rmurthy/workspace/hive-latest/ql/../build/ql/tmp/254997074/280412486.10001.insclause-0
+                  directory: /Users/char/Documents/workspace/Hive/ql/../build/ql/tmp/88144648/77454670.10001.insclause-0
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       properties:
                         columns src.key,src.value
                         serialization.format 1
       Needs Tagging: false
       Path -> Alias:
-        file:/Users/rmurthy/workspace/hive-latest/build/ql/test/data/warehouse/src 
+        file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/src 
       Path -> Partition:
-        file:/Users/rmurthy/workspace/hive-latest/build/ql/test/data/warehouse/src 
+        file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/src 
           Partition
           
               input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
                 name src
                 columns.types string:string
@@ -48,8 +48,8 @@ STAGE PLANS:
                 bucket_count -1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                file.outputformat org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-                location file:/Users/rmurthy/workspace/hive-latest/build/ql/test/data/warehouse/src
+                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                location file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/src
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
 

@@ -68,7 +68,7 @@ public enum ErrorMsg {
   CLUSTERBY_SORTBY_CONFLICT("Cannot have both Cluster By and Sort By Clauses"),
   UNION_NOTIN_SUBQ("Top level Union is not supported currently; use a subquery for the union"),
   INVALID_INPUT_FORMAT_TYPE("Input Format must implement InputFormat"),
-  INVALID_OUTPUT_FORMAT_TYPE("Output Format must implement OutputFormat"),
+  INVALID_OUTPUT_FORMAT_TYPE("Output Format must implement HiveOutputFormat, otherwise it should be either IgnoreKeyTextOutputFormat or SequenceFileOutputFormat"),
   NON_BUCKETED_TABLE("Sampling Expression Needed for Non-Bucketed Table");
 
   private String mesg;

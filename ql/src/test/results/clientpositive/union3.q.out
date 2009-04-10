@@ -46,13 +46,13 @@ STAGE PLANS:
                 GlobalTableId: 0
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.mapred.SequenceFileOutputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     name: binary_table
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive1/hive/build/ql/tmp/525256518/528364249.10002 
+        /Users/char/Documents/workspace/Hive/build/ql/tmp/156638389/398032648.10002 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -72,13 +72,13 @@ STAGE PLANS:
             GlobalTableId: 0
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.mapred.SequenceFileOutputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 name: binary_table
 
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive1/hive/build/ql/tmp/525256518/528364249.10004 
+        /Users/char/Documents/workspace/Hive/build/ql/tmp/156638389/398032648.10004 
           Union
             Select Operator
               expressions:
@@ -89,8 +89,8 @@ STAGE PLANS:
                 GlobalTableId: 0
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-        /data/users/njain/hive1/hive/build/ql/tmp/525256518/528364249.10003 
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+        /Users/char/Documents/workspace/Hive/build/ql/tmp/156638389/398032648.10007 
           Union
             Select Operator
               expressions:
@@ -101,8 +101,8 @@ STAGE PLANS:
                 GlobalTableId: 0
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-        /data/users/njain/hive1/hive/build/ql/tmp/525256518/528364249.10006 
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+        /Users/char/Documents/workspace/Hive/build/ql/tmp/156638389/398032648.10006 
           Union
             Select Operator
               expressions:
@@ -113,8 +113,8 @@ STAGE PLANS:
                 GlobalTableId: 0
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-        /data/users/njain/hive1/hive/build/ql/tmp/525256518/528364249.10007 
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+        /Users/char/Documents/workspace/Hive/build/ql/tmp/156638389/398032648.10003 
           Union
             Select Operator
               expressions:
@@ -125,7 +125,7 @@ STAGE PLANS:
                 GlobalTableId: 0
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-4
     Map Reduce
@@ -158,7 +158,7 @@ STAGE PLANS:
                 GlobalTableId: 0
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.mapred.SequenceFileOutputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     name: binary_table
 
   Stage: Stage-5
@@ -192,13 +192,13 @@ STAGE PLANS:
                 GlobalTableId: 0
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.mapred.SequenceFileOutputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     name: binary_table
 
   Stage: Stage-6
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive1/hive/build/ql/tmp/525256518/528364249.10005 
+        /Users/char/Documents/workspace/Hive/build/ql/tmp/156638389/398032648.10005 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -218,7 +218,7 @@ STAGE PLANS:
             GlobalTableId: 0
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.mapred.SequenceFileOutputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 name: binary_table
 
   Stage: Stage-7
@@ -252,7 +252,7 @@ STAGE PLANS:
                 GlobalTableId: 0
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.mapred.SequenceFileOutputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     name: binary_table
 
   Stage: Stage-0

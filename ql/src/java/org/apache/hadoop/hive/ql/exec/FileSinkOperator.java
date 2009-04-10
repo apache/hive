@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.*;
 import java.lang.reflect.Method;
+import java.util.Properties;
 
 import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapred.*;
@@ -28,7 +29,10 @@ import org.apache.hadoop.conf.Configuration;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.fileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.ql.exec.FilterOperator.Counter;
+import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -120,58 +124,19 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
 
       LOG.info("Writing to temp file: " + outPath);
 
-      OutputFormat<?, ?> outputFormat = conf.getTableInfo().getOutputFileFormatClass().newInstance();
+      HiveOutputFormat<?, ?> hiveOutputFormat = conf.getTableInfo().getOutputFileFormatClass().newInstance();
       final Class<? extends Writable> outputClass = serializer.getSerializedClass();
       boolean isCompressed = conf.getCompressed();
 
-      // The reason to keep these instead of using OutputFormat.getRecordWriter() is that
-      // getRecordWriter does not give us enough control over the file name that we create.
-      if(outputFormat instanceof IgnoreKeyTextOutputFormat) {
-        finalPath = new Path(Utilities.toTempPath(conf.getDirName()), Utilities.getTaskId(hconf) +
-                             Utilities.getFileExtension(jc, isCompressed));
+      // The reason to keep these instead of using
+      // OutputFormat.getRecordWriter() is that
+      // getRecordWriter does not give us enough control over the file name that
+      // we create.
+      Path parent = Utilities.toTempPath(conf.getDirName());
+      finalPath = HiveFileFormatUtils.getOutputFormatFinalPath(parent, jc, hiveOutputFormat, isCompressed, finalPath);
+      tableDesc tableInfo = conf.getTableInfo();
 
-        String rowSeparatorString = conf.getTableInfo().getProperties().getProperty(Constants.LINE_DELIM, "\n");
-        int rowSeparator = 0;
-        try {
-          rowSeparator = Byte.parseByte(rowSeparatorString); 
-        } catch (NumberFormatException e) {
-          rowSeparator = rowSeparatorString.charAt(0); 
-        }
-        final int finalRowSeparator = rowSeparator;  
-        final OutputStream outStream = Utilities.createCompressedStream(jc, fs.create(outPath), isCompressed);
-        outWriter = new RecordWriter () {
-            public void write(Writable r) throws IOException {
-              if (r instanceof Text) {
-                Text tr = (Text)r;
-                outStream.write(tr.getBytes(), 0, tr.getLength());
-                outStream.write(finalRowSeparator);
-              } else {
-                // DynamicSerDe always writes out BytesWritable
-                BytesWritable bw = (BytesWritable)r;
-                outStream.write(bw.get(), 0, bw.getSize());
-                outStream.write(finalRowSeparator);
-              }
-            }
-            public void close(boolean abort) throws IOException {
-              outStream.close();
-            }
-          };
-      } else if (outputFormat instanceof SequenceFileOutputFormat) {
-        final SequenceFile.Writer outStream =
-          Utilities.createSequenceWriter(jc, fs, outPath, BytesWritable.class, outputClass,
-                                         isCompressed);
-        outWriter = new RecordWriter () {
-            public void write(Writable r) throws IOException {
-              outStream.append(commonKey, r);
-            }
-            public void close(boolean abort) throws IOException {
-              outStream.close();
-            }
-          };
-      } else {
-        // should never come here - we should be catching this in ddl command
-        throw new HiveException ("Illegal outputformat: " + outputFormat.getClass().getName());
-      }
+      this.outWriter = getRecordWriter(jc, hiveOutputFormat, outputClass, isCompressed, tableInfo.getProperties(), outPath);
 
       // in recent hadoop versions, use deleteOnExit to clean tmp files.
       try {
@@ -187,6 +152,15 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
       e.printStackTrace();
       throw new HiveException(e);
     }
+  }
+
+  public static RecordWriter getRecordWriter(JobConf jc, HiveOutputFormat<?, ?> hiveOutputFormat,
+      final Class<? extends Writable> valueClass, boolean isCompressed,
+      Properties tableProp, Path outPath) throws IOException, HiveException {
+    if (hiveOutputFormat != null) {
+      return hiveOutputFormat.getHiveRecordWriter(jc, outPath, valueClass, isCompressed, tableProp, null);
+    }
+    return null;
   }
 
   Writable recordValue; 

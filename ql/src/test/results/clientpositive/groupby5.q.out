@@ -36,13 +36,13 @@ STAGE PLANS:
             GlobalTableId: 0
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.mapred.SequenceFileOutputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 name: binary_table
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/zshao/sync/apache-trunk-HIVE-337-trunk/build/ql/tmp/808701189/631585736.10001 
+        /Users/char/Documents/workspace/Hive/build/ql/tmp/215020454/124661671.10001 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -80,7 +80,7 @@ STAGE PLANS:
                 GlobalTableId: 1
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: dest1
 
@@ -90,7 +90,7 @@ STAGE PLANS:
             replace: true
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: dest1
 
