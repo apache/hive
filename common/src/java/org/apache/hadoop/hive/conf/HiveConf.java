@@ -79,6 +79,7 @@ public class HiveConf extends Configuration {
     METASTOREDIRECTORY("hive.metastore.metadb.dir", ""),
     METASTOREWAREHOUSE("hive.metastore.warehouse.dir", ""),
     METASTOREURIS("hive.metastore.uris", ""),
+    METASTOREPWD("javax.jdo.option.ConnectionPassword", ""),
 
     // Things we log in the jobconf
 

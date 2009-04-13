@@ -385,12 +385,17 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
         return 0;
       }
 
+      // remove the pwd from conf file so that job tracker doesn't show this logs
+      String pwd = job.get(HiveConf.ConfVars.METASTOREPWD.varname);
+      job.set(HiveConf.ConfVars.METASTOREPWD.varname, "HIVE");
       JobClient jc = new JobClient(job);
 
       // make this client wait if job trcker is not behaving well.
       Throttle.checkJobTracker(job, LOG);
 
       orig_rj = rj = jc.submitJob(job);
+      // replace it back
+      job.set(HiveConf.ConfVars.METASTOREPWD.varname, pwd);
 
       // add to list of running jobs so in case of abnormal shutdown can kill
       // it.
