@@ -30,6 +30,10 @@ Trunk - unreleased changes
     HIVE-393. Remove unnecessary checks in movetask for file type.
     (Zheng Shao via namit)
 
+    HIVE-403. remove password param from job config that is submitted to job
+    tracker and from log (Prasad Chakka)
+
+
 Release 0.3.0 - Unreleased
 
   INCOMPATIBLE CHANGES
