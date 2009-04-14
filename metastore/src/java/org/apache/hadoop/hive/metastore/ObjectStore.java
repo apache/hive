@@ -41,6 +41,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
@@ -158,7 +159,7 @@ public class ObjectStore implements RawStore, Configurable {
       Map.Entry<String, String> e = iter.next();
       if(e.getKey().contains("jpox") || e.getKey().contains("jdo")) {
         Object prevVal = prop.setProperty(e.getKey(), e.getValue());
-        if(LOG.isDebugEnabled()) {
+        if(LOG.isDebugEnabled() && !e.getKey().equals(HiveConf.ConfVars.METASTOREPWD.varname)) {
           LOG.debug("Overriding " + e.getKey() + " value " + prevVal 
               + " from  jpox.properties with " + e.getValue());
         }
@@ -167,7 +168,8 @@ public class ObjectStore implements RawStore, Configurable {
 
     if(LOG.isDebugEnabled()) {
       for (Entry<Object, Object> e: prop.entrySet()) {
-        LOG.debug(e.getKey() + " = " + e.getValue());
+        if(!e.getKey().equals(HiveConf.ConfVars.METASTOREPWD.varname))
+          LOG.debug(e.getKey() + " = " + e.getValue());
       }
     }
   }

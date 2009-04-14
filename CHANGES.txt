@@ -139,6 +139,9 @@ Release 0.3.0 - Unreleased
     HIVE-390. Make partition pruner tests deterministic by ordering the 
     output results. (Namit Jain via athusoo)
 
+    HIVE-403. remove password param from job config that is submitted to job
+    tracker and from log (Prasad Chakka)
+
 Release 0.2.0 - Unreleased
 
   INCOMPATIBLE CHANGES
