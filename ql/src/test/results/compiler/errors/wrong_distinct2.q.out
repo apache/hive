@@ -1,1 +1,1 @@
-Parse Error: line 2:29 cannot recognize input 'SELECT' in select expression
+Parse Error: line 2:45 cannot recognize input 'DISTINCT' in select expression

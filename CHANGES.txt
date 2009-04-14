@@ -29,7 +29,10 @@ Release 0.3.0 - Unreleased
     (Ashish Thusoo via rmurthy)
 
     HIVE-407 Permission issues in test scripts in tarballs.
-    (Ashish Thusoo via njain)
+    (Ashish Thusoo via namit)
+
+    HIVE-372 Fix parse time Memory consumption for nested UDFs
+    (Zheng Shao via namit)
 
   IMPROVEMENTS
 
