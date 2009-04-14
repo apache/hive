@@ -395,11 +395,17 @@
           <exclude name="build/**" />
           <exclude name="bin/**" />
           <exclude name="**/py/**/*-remote" />
+          <exclude name="data/scripts/**" />
+          <exclude name="metastore/scripts/**" />
+          <exclude name="ql/src/test/scripts/**" />
         </tarfileset>
         <tarfileset dir="${hive.root}" mode="755" prefix="${dev.final.name}/src">
           <exclude name="build/**" />
           <include name="bin/**" />
           <include name="**/py/**/*-remote" />
+          <include name="data/scripts/**" />
+          <include name="metastore/scripts/**" />
+          <include name="ql/src/test/scripts/**" />
         </tarfileset>
       </param.listofitems>
     </macro_tar>

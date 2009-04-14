@@ -33,6 +33,8 @@ Trunk - unreleased changes
     HIVE-403. remove password param from job config that is submitted to job
     tracker and from log (Prasad Chakka)
 
+    HIVE-407. fix permissions for test scripts in release tarball.
+    (Ashish Thusoo via namit)
 
 Release 0.3.0 - Unreleased
 
