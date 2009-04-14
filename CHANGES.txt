@@ -36,6 +36,9 @@ Trunk - unreleased changes
     HIVE-407. fix permissions for test scripts in release tarball.
     (Ashish Thusoo via namit)
 
+    HIVE-414. Add Hive Web Interface code to Eclipse config
+    (Prasad Chakka)
+
 Release 0.3.0 - Unreleased
 
   INCOMPATIBLE CHANGES

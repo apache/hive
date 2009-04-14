@@ -2,6 +2,8 @@
 <classpath>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry exported="true" kind="lib" path="build/hadoopcore/hadoop-@HADOOPVER@/hadoop-@HADOOPVER@-core.jar"/>
+	<classpathentry exported="true" kind="lib" path="build/hadoopcore/hadoop-@HADOOPVER@/lib/servlet-api.jar"/>
+	<classpathentry exported="true" kind="lib" path="build/hadoopcore/hadoop-@HADOOPVER@/lib/jetty-5.1.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="cli/lib/jline-0.9.94.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/json.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/asm-3.1.jar"/>
@@ -39,5 +41,7 @@
 	<classpathentry kind="src" path="service/src/test"/>
 	<classpathentry kind="src" path="jdbc/src/java"/>
 	<classpathentry kind="src" path="jdbc/src/test"/>
-	<classpathentry kind="output" path="build/eclipse-classes"/>
+    <classpathentry kind="src" path="hwi/src/java"/>
+	<classpathentry kind="src" path="hwi/src/test"/>
+    <classpathentry kind="output" path="build/eclipse-classes"/>
 </classpath>
