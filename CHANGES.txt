@@ -31,9 +31,6 @@ Release 0.3.0 - Unreleased
     HIVE-407 Permission issues in test scripts in tarballs.
     (Ashish Thusoo via namit)
 
-    HIVE-372 Fix parse time Memory consumption for nested UDFs
-    (Zheng Shao via namit)
-
   IMPROVEMENTS
 
     HIVE-132. Show table and describe results to be read via FetchTask.
@@ -141,6 +138,9 @@ Release 0.3.0 - Unreleased
 
     HIVE-403. remove password param from job config that is submitted to job
     tracker and from log (Prasad Chakka)
+
+    HIVE-372 Fix parse time Memory consumption for nested UDFs
+    (Zheng Shao via namit)
 
 Release 0.2.0 - Unreleased
 
