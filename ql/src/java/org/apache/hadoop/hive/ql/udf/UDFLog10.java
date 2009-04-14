@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
 
 public class UDFLog10 extends UDF {
@@ -28,17 +29,21 @@ public class UDFLog10 extends UDF {
   private static Log LOG = LogFactory.getLog(UDFLog10.class.getName());
 
   private static double log10 = Math.log(10.0);
+  
+  DoubleWritable result = new DoubleWritable();
+  
   public UDFLog10() {
   }
 
   /**
    * Returns the logarithm of "a" with base 10.
    */
-  public Double evaluate(Double a)  {
-    if (a == null || a <= 0.0) {
+  public DoubleWritable evaluate(DoubleWritable a)  {
+    if (a == null || a.get() <= 0.0) {
       return null;
     } else {
-      return Double.valueOf(Math.log(a)/log10);
+      result.set(Math.log(a.get())/log10);
+      return result;
     }
   }
 

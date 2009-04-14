@@ -21,23 +21,26 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
 
 public class UDFPower extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFPower.class.getName());
 
+  DoubleWritable result = new DoubleWritable();
   public UDFPower() {
   }
 
   /**
    * Raise a to the power of b. 
    */
-  public Double evaluate(Double a, Double b)  {
+  public DoubleWritable evaluate(DoubleWritable a, DoubleWritable b)  {
     if (a == null || b == null) {
       return null;
     } else {
-      return Double.valueOf(Math.pow(a, b));
+      result.set(Math.pow(a.get(), b.get()));
+      return result;
     }
   }
 

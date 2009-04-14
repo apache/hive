@@ -21,6 +21,7 @@ const string QUOTE_CHAR = "quote.delim"
 typedef string PrimitiveType
 typedef string CollectionType
 
+const string VOID_TYPE_NAME       = "void";
 const string BOOLEAN_TYPE_NAME  = "boolean";
 const string TINYINT_TYPE_NAME   = "tinyint";
 const string SMALLINT_TYPE_NAME  = "smallint";
@@ -35,8 +36,9 @@ const string TIMESTAMP_TYPE_NAME = "timestamp";
 
 const string LIST_TYPE_NAME = "array";
 const string MAP_TYPE_NAME  = "map";
+const string STRUCT_TYPE_NAME  = "struct";
 
-const set<string> PrimitiveTypes  = [ BOOLEAN_TYPE_NAME TINYINT_TYPE_NAME SMALLINT_TYPE_NAME INT_TYPE_NAME BIGINT_TYPE_NAME FLOAT_TYPE_NAME DOUBLE_TYPE_NAME STRING_TYPE_NAME  DATE_TYPE_NAME DATETIME_TYPE_NAME TIMESTAMP_TYPE_NAME ],
+const set<string> PrimitiveTypes  = [ VOID_TYPE_NAME BOOLEAN_TYPE_NAME TINYINT_TYPE_NAME SMALLINT_TYPE_NAME INT_TYPE_NAME BIGINT_TYPE_NAME FLOAT_TYPE_NAME DOUBLE_TYPE_NAME STRING_TYPE_NAME  DATE_TYPE_NAME DATETIME_TYPE_NAME TIMESTAMP_TYPE_NAME ],
 const set<string> CollectionTypes = [ LIST_TYPE_NAME MAP_TYPE_NAME ],
 
 

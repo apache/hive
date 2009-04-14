@@ -56,6 +56,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
 /**
  * FetchTask implementation
@@ -159,7 +160,7 @@ public class FetchTask extends Task<fetchWork> implements Serializable {
     for(String key: partKeys) {
       partNames.add(key);
       partValues.add(partSpec.get(key));
-      partObjectInspectors.add(ObjectInspectorFactory.getStandardPrimitiveObjectInspector(String.class));
+      partObjectInspectors.add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
     }
     StructObjectInspector partObjectInspector = ObjectInspectorFactory.getStandardStructObjectInspector(partNames, partObjectInspectors);
     rowObjectInspector = (StructObjectInspector)serde.getObjectInspector();

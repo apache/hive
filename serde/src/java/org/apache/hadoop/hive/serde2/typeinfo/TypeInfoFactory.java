@@ -23,7 +23,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.io.IntWritable;
 
 
@@ -37,16 +39,43 @@ import org.apache.hadoop.io.IntWritable;
  */
 public class TypeInfoFactory {
 
-  static HashMap<Class<?>, TypeInfo> cachedPrimitiveTypeInfo = new HashMap<Class<?>, TypeInfo>();
-  public static TypeInfo getPrimitiveTypeInfo(Class<?> primitiveClass) {
-    assert(ObjectInspectorUtils.isPrimitiveClass(primitiveClass));
-    primitiveClass = ObjectInspectorUtils.generalizePrimitive(primitiveClass);
-    TypeInfo result = cachedPrimitiveTypeInfo.get(primitiveClass);
+  static HashMap<String, TypeInfo> cachedPrimitiveTypeInfo = new HashMap<String, TypeInfo>();
+  public static TypeInfo getPrimitiveTypeInfo(String typeName) {
+    if (null == PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(typeName)) {
+      throw new RuntimeException("Cannot getPrimitiveTypeInfo for " + typeName);
+    }
+    TypeInfo result = cachedPrimitiveTypeInfo.get(typeName);
     if (result == null) { 
-      result = new PrimitiveTypeInfo(primitiveClass);
-      cachedPrimitiveTypeInfo.put(primitiveClass, result);
+      result = new PrimitiveTypeInfo(typeName);
+      cachedPrimitiveTypeInfo.put(typeName, result);
     }
     return result;
+  }
+
+  public static final TypeInfo voidTypeInfo = getPrimitiveTypeInfo(Constants.VOID_TYPE_NAME);
+  public static final TypeInfo booleanTypeInfo = getPrimitiveTypeInfo(Constants.BOOLEAN_TYPE_NAME);
+  public static final TypeInfo intTypeInfo = getPrimitiveTypeInfo(Constants.INT_TYPE_NAME);
+  public static final TypeInfo longTypeInfo = getPrimitiveTypeInfo(Constants.BIGINT_TYPE_NAME);
+  public static final TypeInfo stringTypeInfo = getPrimitiveTypeInfo(Constants.STRING_TYPE_NAME);
+  public static final TypeInfo floatTypeInfo = getPrimitiveTypeInfo(Constants.FLOAT_TYPE_NAME);
+  public static final TypeInfo doubleTypeInfo = getPrimitiveTypeInfo(Constants.DOUBLE_TYPE_NAME);
+  public static final TypeInfo byteTypeInfo = getPrimitiveTypeInfo(Constants.TINYINT_TYPE_NAME);
+  public static final TypeInfo shortTypeInfo = getPrimitiveTypeInfo(Constants.SMALLINT_TYPE_NAME);
+
+  public static final TypeInfo unknownTypeInfo = getPrimitiveTypeInfo("unknown");
+  public static final TypeInfo unknownMapTypeInfo = getPrimitiveTypeInfo(Constants.MAP_TYPE_NAME);
+  public static final TypeInfo unknownListTypeInfo = getPrimitiveTypeInfo(Constants.LIST_TYPE_NAME);
+  
+  public static TypeInfo getPrimitiveTypeInfoFromPrimitiveWritable(Class<?> clazz) {
+    String typeName = PrimitiveObjectInspectorUtils.getTypeNameFromPrimitiveWritable(clazz);
+    if (typeName == null) {
+      throw new RuntimeException("Internal error: Cannot get typeName for " + clazz);
+    }
+    return getPrimitiveTypeInfo(typeName);
+  }
+
+  public static TypeInfo getPrimitiveTypeInfoFromJavaPrimitive(Class<?> clazz) {
+    return getPrimitiveTypeInfo(PrimitiveObjectInspectorUtils.getTypeNameFromPrimitiveJava(clazz));
   }
   
   static HashMap<ArrayList<List<?>>, TypeInfo> cachedStructTypeInfo = new HashMap<ArrayList<List<?>>, TypeInfo>();

@@ -21,12 +21,24 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
+
 
 
 public class UDFToBoolean extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFToBoolean.class.getName());
 
+  BooleanWritable booleanWritable = new BooleanWritable();
+  
   public UDFToBoolean() {
   }
 
@@ -34,9 +46,9 @@ public class UDFToBoolean extends UDF {
    * Convert a void to boolean. This is called for CAST(... AS BOOLEAN)
    *
    * @param i The value of a void type
-   * @return Boolean
+   * @return BooleanWritable
    */
-  public Boolean evaluate(Void i)  {
+  public BooleanWritable evaluate(NullWritable i)  {
       return null;
   }
 
@@ -44,13 +56,14 @@ public class UDFToBoolean extends UDF {
    * Convert from a byte to boolean. This is called for CAST(... AS BOOLEAN)
    *
    * @param i The byte value to convert
-   * @return Boolean
+   * @return BooleanWritable
    */
-  public Boolean evaluate(Byte i)  {
+  public BooleanWritable evaluate(ByteWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Boolean.valueOf(i.byteValue() != 0);
+      booleanWritable.set(i.get() != 0);
+      return booleanWritable;
     }
   }
 
@@ -58,13 +71,14 @@ public class UDFToBoolean extends UDF {
    * Convert from a short to boolean. This is called for CAST(... AS BOOLEAN)
    *
    * @param i The short value to convert
-   * @return Boolean
+   * @return BooleanWritable
    */
-  public Boolean evaluate(Short i)  {
+  public BooleanWritable evaluate(ShortWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Boolean.valueOf(i.shortValue() != 0);
+      booleanWritable.set(i.get() != 0);
+      return booleanWritable;
     }
   }
 
@@ -72,13 +86,14 @@ public class UDFToBoolean extends UDF {
    * Convert from a integer to boolean. This is called for CAST(... AS BOOLEAN)
    *
    * @param i The integer value to convert
-   * @return Boolean
+   * @return BooleanWritable
    */
-  public Boolean evaluate(Integer i)  {
+  public BooleanWritable evaluate(IntWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Boolean.valueOf(i.intValue() != 0);
+      booleanWritable.set(i.get() != 0);
+      return booleanWritable;
     }
   }
 
@@ -86,13 +101,14 @@ public class UDFToBoolean extends UDF {
    * Convert from a long to boolean. This is called for CAST(... AS BOOLEAN)
    *
    * @param i The long value to convert
-   * @return Boolean
+   * @return BooleanWritable
    */
-  public Boolean evaluate(Long i)  {
+  public BooleanWritable evaluate(LongWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Boolean.valueOf(i.longValue() != 0);
+      booleanWritable.set(i.get() != 0);
+      return booleanWritable;
     }
   }
 
@@ -100,13 +116,14 @@ public class UDFToBoolean extends UDF {
    * Convert from a float to boolean. This is called for CAST(... AS BOOLEAN)
    *
    * @param i The float value to convert
-   * @return Boolean
+   * @return BooleanWritable
    */  
-  public Boolean evaluate(Float i)  {
+  public BooleanWritable evaluate(FloatWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Boolean.valueOf(i.floatValue() != 0);
+      booleanWritable.set(i.get() != 0);
+      return booleanWritable;
     }
   }
 
@@ -114,13 +131,14 @@ public class UDFToBoolean extends UDF {
    * Convert from a double to boolean. This is called for CAST(... AS BOOLEAN)
    *
    * @param i The double value to convert
-   * @return Boolean
+   * @return BooleanWritable
    */
-  public Boolean evaluate(Double i)  {
+  public BooleanWritable evaluate(DoubleWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Boolean.valueOf(i.doubleValue() != 0);
+      booleanWritable.set(i.get() != 0);
+      return booleanWritable;
     }
   }
 
@@ -128,13 +146,14 @@ public class UDFToBoolean extends UDF {
    * Convert from a string to boolean. This is called for CAST(... AS BOOLEAN)
    *
    * @param i The string value to convert
-   * @return Boolean
+   * @return BooleanWritable
    */
-  public Boolean evaluate(String i)  {
+  public BooleanWritable evaluate(Text i)  {
     if (i == null) {
       return null;
     } else {
-      return Boolean.valueOf(i.length() != 0);
+      booleanWritable.set(i.getLength() != 0);
+      return booleanWritable;
     }
   }
 

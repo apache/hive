@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.Text;
 
@@ -92,7 +93,7 @@ public class LazyStruct extends LazyNonPrimitive {
       boolean lastColumnTakesRest) {
     
     if (fields == null) {
-      List<TypeInfo> fieldTypeInfos = typeInfo.getAllStructFieldTypeInfos();
+      List<TypeInfo> fieldTypeInfos = ((StructTypeInfo)typeInfo).getAllStructFieldTypeInfos();
       fields = new LazyObject[fieldTypeInfos.size()];
       for (int i = 0 ; i < fields.length; i++) {
         fields[i] = LazyFactory.createLazyObject(fieldTypeInfos.get(i));

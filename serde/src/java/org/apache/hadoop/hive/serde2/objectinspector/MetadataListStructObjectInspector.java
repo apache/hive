@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.apache.hadoop.hive.serde2.ColumnSet;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
 /**
  * StructObjectInspector works on struct data that is stored as a Java List or Java Array object.
@@ -51,7 +53,7 @@ public class MetadataListStructObjectInspector extends StandardStructObjectInspe
   static ArrayList<ObjectInspector> getFieldObjectInspectors(int fields) {
     ArrayList<ObjectInspector> r = new ArrayList<ObjectInspector>(fields);
     for(int i=0; i<fields; i++) {
-      r.add(ObjectInspectorFactory.getStandardPrimitiveObjectInspector(String.class));
+      r.add(PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(PrimitiveCategory.STRING));
     }
     return r;
   }

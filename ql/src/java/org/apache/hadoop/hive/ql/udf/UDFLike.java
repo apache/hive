@@ -21,15 +21,19 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.Text;
+
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 public class UDFLike extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFLike.class.getName());
-  private String lastLikePattern = null;
+  private Text lastLikePattern = new Text();
   private Pattern p = null;
 
+  private BooleanWritable result = new BooleanWritable();
   public UDFLike() {
   }
 
@@ -59,16 +63,17 @@ public class UDFLike extends UDF {
     return sb.toString();
   }
   
-  public Boolean evaluate(String s, String likePattern) {
+  public BooleanWritable evaluate(Text s, Text likePattern) {
     if (s == null || likePattern == null) {
       return null;
     }
     if (!likePattern.equals(lastLikePattern)) {
-      lastLikePattern = likePattern;
-      p = Pattern.compile(likePatternToRegExp(likePattern));
+      lastLikePattern.set(likePattern);
+      p = Pattern.compile(likePatternToRegExp(likePattern.toString()));
     }
-    Matcher m = p.matcher(s);
-    return Boolean.valueOf(m.matches());    
+    Matcher m = p.matcher(s.toString());
+    result.set(m.matches());
+    return result;
   }
   
 }

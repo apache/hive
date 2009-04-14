@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_03-p3" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_07" class="java.beans.XMLDecoder"> 
  <object class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
   <void property="id"> 
    <string>Stage-2</string> 
@@ -26,7 +26,7 @@
                     <void property="conf"> 
                      <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                       <void property="dirName"> 
-                       <string>/Users/char/Documents/workspace/Hive/ql/../build/ql/tmp/936716235.10001.insclause-0</string> 
+                       <string>/data/users/zshao/sync/apache-trunk-HIVE-266-trunk/ql/../build/ql/tmp/172893890.10001.insclause-0</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -76,8 +76,8 @@
                           </void> 
                           <void property="type"> 
                            <object id="PrimitiveTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
-                            <void property="primitiveClass"> 
-                             <class>java.lang.Integer</class> 
+                            <void property="typeName"> 
+                             <string>int</string> 
                             </void> 
                            </object> 
                           </void> 
@@ -90,8 +90,8 @@
                           </void> 
                           <void property="type"> 
                            <object id="PrimitiveTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
-                            <void property="primitiveClass"> 
-                             <class>java.lang.String</class> 
+                            <void property="typeName"> 
+                             <string>string</string> 
                             </void> 
                            </object> 
                           </void> 
@@ -441,7 +441,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/src_thrift</string> 
+       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-266-trunk/build/ql/test/data/warehouse/src_thrift</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src_thrift</string> 
@@ -453,7 +453,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/src_thrift</string> 
+       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-266-trunk/build/ql/test/data/warehouse/src_thrift</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"/> 
@@ -513,7 +513,7 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/src_thrift</string> 
+             <string>file:/data/users/zshao/sync/apache-trunk-HIVE-266-trunk/build/ql/test/data/warehouse/src_thrift</string> 
             </void> 
            </object> 
           </void> 

@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.io.Text;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.regex.Pattern;
@@ -26,14 +27,16 @@ import java.util.regex.Matcher;
 
 public class UDFRTrim extends UDF {
 
+  Text result = new Text();
   public UDFRTrim() {
   }
 
-  public String evaluate(String s) {
+  public Text evaluate(Text s) {
     if (s == null) {
       return null;
     }
-    return StringUtils.stripEnd(s, " ");
+    result.set(StringUtils.stripEnd(s.toString(), " "));
+    return result;
   }
 
 }

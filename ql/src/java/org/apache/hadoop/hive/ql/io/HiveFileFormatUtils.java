@@ -37,11 +37,14 @@ import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 
 /**
- * An util class for various Hive file format tasks. {@link
- * registerOutputFormatSubstitute( Class<? extends OutputFormat>, Class<?
- * extends HiveOutputFormat>)} and {@link getOutputFormatSubstitute(Class<?
- * extends OutputFormat> )} is added for backward compatibility. They find the
- * newly added HiveOutputFormat for older ones.
+ * An util class for various Hive file format tasks.
+ * {@link #registerOutputFormatSubstitute(Class, Class) and 
+ * {@link #getOutputFormatSubstitute(Class)} are added for backward 
+ * compatibility. They return the newly added HiveOutputFormat for the older 
+ * ones.
+ * 
+ * }
+ * 
  * 
  */
 public class HiveFileFormatUtils {
@@ -73,9 +76,6 @@ public class HiveFileFormatUtils {
 
   /**
    * get a OutputFormat's substitute HiveOutputFormat
-   * 
-   * @param origin
-   * @return
    */
   @SuppressWarnings("unchecked")
   public synchronized static Class<? extends HiveOutputFormat> getOutputFormatSubstitute(
@@ -94,11 +94,6 @@ public class HiveFileFormatUtils {
    *          parent dir of the expected final output path
    * @param jc
    *          job configuration
-   * @param hiveOutputFormat
-   * @param isCompressed
-   * @param defaultFinalPath
-   * @return
-   * @throws IOException
    */
   public static Path getOutputFormatFinalPath(Path parent, JobConf jc,
       HiveOutputFormat<?, ?> hiveOutputFormat, boolean isCompressed,
@@ -112,12 +107,6 @@ public class HiveFileFormatUtils {
 
   /**
    * checks if files are in same format as the given input format
-   * 
-   * @param fs
-   * @param conf
-   * @param inputFormatCls
-   * @param files
-   * @throws HiveException
    */
   public static boolean checkInputFormat(FileSystem fs, HiveConf conf,
       Class<? extends InputFormat> inputFormatCls, ArrayList<FileStatus> files)

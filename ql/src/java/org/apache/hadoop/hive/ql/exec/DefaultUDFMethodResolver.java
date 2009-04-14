@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.exec;
 import java.lang.reflect.Method;
 import java.util.List;
 
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+
 /**
  * The default UDF Method resolver. This resolver is used for resolving the UDF method that is to be
  * used for evaluation given the list of the argument types. The getEvalMethod goes through all the
@@ -50,7 +52,8 @@ public class DefaultUDFMethodResolver implements UDFMethodResolver {
    * @param argClasses The list of the argument types that need to matched with the evaluate
    *                   function signature.
    */
-  public Method getEvalMethod(List<Class<?>> argClasses) 
+  @Override
+  public Method getEvalMethod(List<TypeInfo> argClasses) 
     throws AmbiguousMethodException {
     Method m = FunctionRegistry.getMethodInternal(udfClass, "evaluate", false, argClasses);
     if (m == null) {

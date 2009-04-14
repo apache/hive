@@ -22,12 +22,18 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
 
 
-
+/**
+ * exprNodeIndexDesc describes the operation of getting a list element out
+ * of a list, and getting a value out of a map.  
+ */
 public class exprNodeIndexDesc extends exprNodeDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   exprNodeDesc desc;
@@ -40,7 +46,9 @@ public class exprNodeIndexDesc extends exprNodeDesc implements Serializable {
     this.index = index;    
   }
   public exprNodeIndexDesc(exprNodeDesc desc, exprNodeDesc index) {
-    super(desc.getTypeInfo().getListElementTypeInfo());
+    super( desc.getTypeInfo().getCategory().equals(Category.LIST)
+        ? ((ListTypeInfo)desc.getTypeInfo()).getListElementTypeInfo()
+        : ((MapTypeInfo)desc.getTypeInfo()).getMapValueTypeInfo());
     this.desc = desc;
     this.index = index;    
   }

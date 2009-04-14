@@ -63,10 +63,10 @@ public class ListTypeInfo extends TypeInfo implements Serializable {
 
   public boolean equals(Object other) {
     if (this == other) return true;
-    if (!(other instanceof TypeInfo)) {
+    if (!(other instanceof ListTypeInfo)) {
       return false;
     }
-    TypeInfo o = (TypeInfo) other;
+    ListTypeInfo o = (ListTypeInfo) other;
     return o.getCategory().equals(getCategory())
         && o.getListElementTypeInfo().equals(getListElementTypeInfo());
   }

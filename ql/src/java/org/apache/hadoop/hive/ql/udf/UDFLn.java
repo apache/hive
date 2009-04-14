@@ -21,23 +21,27 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
 
 public class UDFLn extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFLn.class.getName());
 
+  DoubleWritable result = new DoubleWritable();
+  
   public UDFLn() {
   }
 
   /**
    * Returns the natural logarithm of "a".
    */
-  public Double evaluate(Double a)  {
-    if (a == null || a <= 0.0) {
+  public DoubleWritable evaluate(DoubleWritable a)  {
+    if (a == null || a.get() <= 0.0) {
       return null;
     } else {
-      return Double.valueOf(Math.log(a));
+      result.set(Math.log(a.get()));
+      return result;
     }
   }
 

@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.util.List;
 
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+
 /**
  * Exception thrown by the UDF and UDAF method resolvers in case a unique method is not found.
  *
@@ -39,24 +41,24 @@ public class AmbiguousMethodException extends Exception {
   /**
    * The list of parameter types.
    */
-  List<Class<?>> argClasses;
+  List<TypeInfo> argTypeInfos;
   
   /**
    * Constructor.
    * 
    * @param funcClass The UDF or UDAF class.
-   * @param argClasses The list of argument types that lead to an ambiguity.
+   * @param argTypeInfos The list of argument types that lead to an ambiguity.
    */
-  public AmbiguousMethodException(Class<?> funcClass, List<Class<?>> argClasses) {
+  public AmbiguousMethodException(Class<?> funcClass, List<TypeInfo> argTypeInfos) {
     this.funcClass = funcClass;
-    this.argClasses = argClasses;
+    this.argTypeInfos = argTypeInfos;
   }
   
   Class<?> getFunctionClass() {
     return funcClass;
   }
   
-  List<Class<?>> getArgTypeList() {
-    return argClasses;
+  List<TypeInfo> getArgTypeList() {
+    return argTypeInfos;
   }
 }

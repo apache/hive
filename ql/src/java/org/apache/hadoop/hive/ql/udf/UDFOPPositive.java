@@ -21,32 +21,49 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 
 
-public class UDFOPPositive extends UDF {
+public class UDFOPPositive extends UDFBaseNumericUnaryOp {
 
   private static Log LOG = LogFactory.getLog(UDFOPPositive.class.getName());
 
   public UDFOPPositive() {
   }
 
-  public Byte evaluate(Byte a)  {
+
+  @Override
+  public ByteWritable evaluate(ByteWritable a) {
     return a;
   }
 
-  public Integer evaluate(Integer a)  {
+  @Override
+  public ShortWritable evaluate(ShortWritable a) {
     return a;
   }
 
-  public Long evaluate(Long a)  {
+  @Override
+  public IntWritable evaluate(IntWritable a) {
     return a;
   }
 
-  public Float evaluate(Float a)  {
+  @Override
+  public LongWritable evaluate(LongWritable a) {
     return a;
   }
 
-  public Double evaluate(Double a)  {
+  @Override
+  public FloatWritable evaluate(FloatWritable a) {
+    return a;
+  }
+
+  @Override
+  public DoubleWritable evaluate(DoubleWritable a) {
     return a;
   }
 

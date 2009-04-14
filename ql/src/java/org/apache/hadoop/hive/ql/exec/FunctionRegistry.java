@@ -33,7 +33,12 @@ import org.apache.hadoop.hive.ql.exec.FunctionInfo.OperatorType;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.groupByDesc;
 import org.apache.hadoop.hive.ql.udf.*;
+import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 public class FunctionRegistry {
 
@@ -130,24 +135,22 @@ public class FunctionRegistry {
 
     // Aliases for Java Class Names
     // These are used in getImplicitConvertUDFMethod
-    registerUDF(Boolean.class.getName(), UDFToBoolean.class, OperatorType.PREFIX, false,
+    registerUDF(Constants.BOOLEAN_TYPE_NAME, UDFToBoolean.class, OperatorType.PREFIX, false,
                 UDFToBoolean.class.getSimpleName());
-    registerUDF(Byte.class.getName(), UDFToByte.class, OperatorType.PREFIX, false,
+    registerUDF(Constants.TINYINT_TYPE_NAME, UDFToByte.class, OperatorType.PREFIX, false,
                 UDFToByte.class.getSimpleName());
-    registerUDF(Short.class.getName(), UDFToShort.class, OperatorType.PREFIX, false,
+    registerUDF(Constants.SMALLINT_TYPE_NAME, UDFToShort.class, OperatorType.PREFIX, false,
                 UDFToShort.class.getSimpleName());
-    registerUDF(Integer.class.getName(), UDFToInteger.class, OperatorType.PREFIX, false,
+    registerUDF(Constants.INT_TYPE_NAME, UDFToInteger.class, OperatorType.PREFIX, false,
                 UDFToInteger.class.getSimpleName());
-    registerUDF(Long.class.getName(), UDFToLong.class, OperatorType.PREFIX, false,
+    registerUDF(Constants.BIGINT_TYPE_NAME, UDFToLong.class, OperatorType.PREFIX, false,
                 UDFToLong.class.getSimpleName());
-    registerUDF(Float.class.getName(), UDFToFloat.class, OperatorType.PREFIX, false,
+    registerUDF(Constants.FLOAT_TYPE_NAME, UDFToFloat.class, OperatorType.PREFIX, false,
                 UDFToFloat.class.getSimpleName());
-    registerUDF(Double.class.getName(), UDFToDouble.class, OperatorType.PREFIX, false,
+    registerUDF(Constants.DOUBLE_TYPE_NAME, UDFToDouble.class, OperatorType.PREFIX, false,
                 UDFToDouble.class.getSimpleName());
-    registerUDF(String.class.getName(), UDFToString.class, OperatorType.PREFIX, false,
+    registerUDF(Constants.STRING_TYPE_NAME, UDFToString.class, OperatorType.PREFIX, false,
                 UDFToString.class.getSimpleName());
-    registerUDF(java.sql.Date.class.getName(), UDFToDate.class, OperatorType.PREFIX, false,
-                UDFToDate.class.getSimpleName());
 
     // Aggregate functions
     registerUDAF("sum", UDAFSum.class);
@@ -215,53 +218,53 @@ public class FunctionRegistry {
     return result;
   }
 
-  static Map<Class<?>, Integer> numericTypes;
+  static Map<TypeInfo, Integer> numericTypes = new HashMap<TypeInfo, Integer>();
+  static List<TypeInfo> numericTypeList = new ArrayList<TypeInfo>();
+  static void registerNumericType(String typeName, int level) {
+    TypeInfo t = TypeInfoFactory.getPrimitiveTypeInfo(typeName);
+    numericTypeList.add(t);
+    numericTypes.put(t, level); 
+  }
   static {
-    numericTypes = new HashMap<Class<?>, Integer>();
-    numericTypes.put(Byte.class, 1);
-    numericTypes.put(Short.class, 2);
-    numericTypes.put(Integer.class, 3);
-    numericTypes.put(Long.class, 4);
-    numericTypes.put(Float.class, 5);
-    numericTypes.put(Double.class, 6);
-    numericTypes.put(String.class, 7);
+    registerNumericType(Constants.TINYINT_TYPE_NAME, 1);
+    registerNumericType(Constants.SMALLINT_TYPE_NAME, 2);
+    registerNumericType(Constants.INT_TYPE_NAME, 3);
+    registerNumericType(Constants.BIGINT_TYPE_NAME, 4);
+    registerNumericType(Constants.FLOAT_TYPE_NAME, 5);
+    registerNumericType(Constants.DOUBLE_TYPE_NAME, 6);
+    registerNumericType(Constants.STRING_TYPE_NAME, 7);
   }
 
   /**
-   * Find a common class that objects of both Class a and Class b can convert to.
+   * Find a common class that objects of both TypeInfo a and TypeInfo b can convert to.
    * @return null if no common class could be found.
    */
-  public static Class<?> getCommonClass(Class<?> a, Class<?> b) {
-    // Equal
+  public static TypeInfo getCommonClass(TypeInfo a, TypeInfo b) {
+    // If same return one of them
     if (a.equals(b)) return a;
-    // Java class inheritance hierarchy
-    if (a.isAssignableFrom(b)) return a;
-    if (b.isAssignableFrom(a)) return b;
-    // Prefer String to Number conversion before implicit conversions
-    if (Number.class.isAssignableFrom(a) && b.equals(String.class)) return Double.class;
-    if (Number.class.isAssignableFrom(b) && a.equals(String.class)) return Double.class;
-    // implicit conversions
-    if (FunctionRegistry.implicitConvertable(a, b)) return b;
-    if (FunctionRegistry.implicitConvertable(b, a)) return a;
+    
+    for (TypeInfo t: numericTypeList) {
+      if (FunctionRegistry.implicitConvertable(a, t) &&
+          FunctionRegistry.implicitConvertable(b, t)) {
+        return t;
+      }
+    }
     return null;
   }
 
   /** Returns whether it is possible to implicitly convert an object of Class from to Class to.
    */
-  public static boolean implicitConvertable(Class<?> from, Class<?> to) {
-    assert(!from.equals(to));
+  public static boolean implicitConvertable(TypeInfo from, TypeInfo to) {
+    if (from.equals(to)) {
+      return true;
+    }
     // Allow implicit String to Double conversion
-    if (from.equals(String.class) && to.equals(Double.class)) {
-      return true;
-    }
-    if (from.equals(String.class) && to.equals(java.sql.Date.class)) {
-      return true;
-    }
-    if (from.equals(java.sql.Date.class) && to.equals(String.class)) {
+    if (from.equals(TypeInfoFactory.stringTypeInfo)
+        && to.equals(TypeInfoFactory.doubleTypeInfo)) {
       return true;
     }
     // Void can be converted to any type
-    if (from.equals(Void.class)) {
+    if (from.equals(TypeInfoFactory.voidTypeInfo)) {
       return true;
     }
 
@@ -276,20 +279,20 @@ public class FunctionRegistry {
   /**
    * Get the UDF method for the name and argumentClasses.
    * @param name the name of the UDF
-   * @param argumentClasses
+   * @param argumentTypeInfos
    * @return The UDF method
    */
-  public static Method getUDFMethod(String name, List<Class<?>> argumentClasses) {
+  public static Method getUDFMethod(String name, List<TypeInfo> argumentTypeInfos) {
     Class<? extends UDF> udf = getUDFClass(name);
     if (udf == null) return null;
     Method udfMethod = null;
     try {
-      udfMethod = udf.newInstance().getResolver().getEvalMethod(argumentClasses);
+      udfMethod = udf.newInstance().getResolver().getEvalMethod(argumentTypeInfos);
     }
     catch (AmbiguousMethodException e) {
     }
     catch (Exception e) {
-      throw new RuntimeException("getUDFMethod exception: " + e.getMessage());
+      throw new RuntimeException("Cannot get UDF for " + name + " " + argumentTypeInfos, e);
     }
     return udfMethod;
   }
@@ -297,21 +300,21 @@ public class FunctionRegistry {
   /**
    * Get the UDAF evaluator for the name and argumentClasses.
    * @param name the name of the UDAF
-   * @param argumentClasses
+   * @param argumentTypeInfos
    * @return The UDAF evaluator
    */
-  public static Class<? extends UDAFEvaluator> getUDAFEvaluator(String name, List<Class<?>> argumentClasses) {
+  public static Class<? extends UDAFEvaluator> getUDAFEvaluator(String name, List<TypeInfo> argumentTypeInfos) {
     Class<? extends UDAF> udf = getUDAF(name);
     if (udf == null) return null;
 
     Class<? extends UDAFEvaluator> evalClass = null;
     try {
-      evalClass = udf.newInstance().getResolver().getEvaluatorClass(argumentClasses);
+      evalClass = udf.newInstance().getResolver().getEvaluatorClass(argumentTypeInfos);
     }
     catch (AmbiguousMethodException e) {
     }
     catch (Exception e) {
-      throw new RuntimeException("getUADFEvaluator exception: " + e.getMessage());
+      throw new RuntimeException("Cannot get UDAF for " + name + argumentTypeInfos, e);
     }
     return evalClass;
   }
@@ -320,7 +323,7 @@ public class FunctionRegistry {
    * This method is shared between UDFRegistry and UDAFRegistry.
    * methodName will be "evaluate" for UDFRegistry, and "aggregate"/"evaluate"/"evaluatePartial" for UDAFRegistry.
    */
-  public static <T> Method getMethodInternal(Class<? extends T> udfClass, String methodName, boolean exact, List<Class<?>> argumentClasses) {
+  public static <T> Method getMethodInternal(Class<? extends T> udfClass, String methodName, boolean exact, List<TypeInfo> argumentClasses) {
 
     ArrayList<Method> mlist = new ArrayList<Method>();
 
@@ -333,7 +336,7 @@ public class FunctionRegistry {
     return getMethodInternal(mlist, exact, argumentClasses);
   }
 
-  public static Method getUDFMethod(String name, Class<?> ... argumentClasses) {
+  public static Method getUDFMethod(String name, TypeInfo ... argumentClasses) {
     return getUDFMethod(name, Arrays.asList(argumentClasses));
   }
 
@@ -361,9 +364,9 @@ public class FunctionRegistry {
   }
 
   /**
-   * Returns the "aggregate" method of the UDAF.
+   * Returns the "iterate" method of the UDAF.
    */
-  public static Method getUDAFMethod(String name, List<Class<?>> argumentClasses) {
+  public static Method getUDAFMethod(String name, List<TypeInfo> argumentClasses) {
     Class<? extends UDAF> udaf = getUDAF(name);
     if (udaf == null)
       return null;
@@ -386,13 +389,13 @@ public class FunctionRegistry {
     return FunctionRegistry.getMethodInternal(udaf,
         (mode == groupByDesc.Mode.COMPLETE || mode == groupByDesc.Mode.FINAL)
         ? "terminate" : "terminatePartial", true,
-        new ArrayList<Class<?>>() );
+        new ArrayList<TypeInfo>() );
   }
 
   /**
    * Returns the "aggregate" method of the UDAF.
    */
-  public static Method getUDAFMethod(String name, Class<?>... argumentClasses) {
+  public static Method getUDAFMethod(String name, TypeInfo... argumentClasses) {
     return getUDAFMethod(name, Arrays.asList(argumentClasses));
   }
 
@@ -436,26 +439,45 @@ public class FunctionRegistry {
    *
    * @param mlist The list of methods to inspect.
    * @param exact Boolean to indicate whether this is an exact match or not.
-   * @param argumentClasses The classes for the argument.
+   * @param argumentsPassed The classes for the argument.
    * @return The matching method.
    */
   public static Method getMethodInternal(ArrayList<Method> mlist, boolean exact,
-      List<Class<?>> argumentClasses) {
+      List<TypeInfo> argumentsPassed) {
     int leastImplicitConversions = Integer.MAX_VALUE;
     Method udfMethod = null;
 
     for(Method m: mlist) {
-      Class<?>[] argumentTypeInfos = m.getParameterTypes();
-
-      boolean match = (argumentTypeInfos.length == argumentClasses.size());
+      List<TypeInfo> argumentsAccepted = TypeInfoUtils.getParameterTypeInfos(m);
+      
+      boolean match = (argumentsAccepted.size() == argumentsPassed.size());
       int implicitConversions = 0;
 
-      for(int i=0; i<argumentClasses.size() && match; i++) {
-        if (argumentClasses.get(i) == Void.class) continue;
-        Class<?> accepted = ObjectInspectorUtils.generalizePrimitive(argumentTypeInfos[i]);
-        if (accepted.isAssignableFrom(argumentClasses.get(i))) {
+      for(int i=0; i<argumentsPassed.size() && match; i++) {
+        TypeInfo argumentPassed = argumentsPassed.get(i);
+        TypeInfo argumentAccepted = argumentsAccepted.get(i);
+        if (argumentPassed.equals(TypeInfoFactory.voidTypeInfo)) {
+          // passing null matches everything
+          continue;
+        }
+        if (argumentAccepted.equals(TypeInfoFactory.unknownTypeInfo)) {
+          // accepting Object means accepting everything
+          continue;
+        }
+        if (argumentPassed.getCategory().equals(Category.LIST) 
+            && argumentAccepted.equals(TypeInfoFactory.unknownListTypeInfo)) {
+          // accepting List means accepting List of everything
+          continue;
+        }
+        if (argumentPassed.getCategory().equals(Category.MAP) 
+            && argumentAccepted.equals(TypeInfoFactory.unknownMapTypeInfo)) {
+          // accepting Map means accepting Map of everything
+          continue;
+        }
+        TypeInfo accepted = argumentsAccepted.get(i);
+        if (accepted.equals(argumentsPassed.get(i))) {
           // do nothing if match
-        } else if (!exact && implicitConvertable(argumentClasses.get(i), accepted)) {
+        } else if (!exact && implicitConvertable(argumentsPassed.get(i), accepted)) {
           implicitConversions ++;
         } else {
           match = false;

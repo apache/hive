@@ -30,14 +30,11 @@ import org.apache.hadoop.util.Progressable;
 
 /**
  * <code>HiveOutputFormat</code> describes the output-specification for Hive's
- * operators. It has
- * <p>
- * Add a {@link getHiveRecordWriter(JobConf, Path, final Class<? extends
- * Writable>, boolean, tableProperties, Progressable)}, with various parameters
- * used to create the final out file and get some specific settings.
+ * operators. It has a method {@link #getHiveRecordWriter(JobConf, Path, Class, 
+ * boolean, Properties, Progressable)}, with various parameters used to create 
+ * the final out file and get some specific settings.
  * 
- * 
- * @see OutputFormat
+ * @see org.apache.hadoop.mapred.OutputFormat
  * @see RecordWriter
  * @see JobConf
  */
@@ -58,8 +55,7 @@ public interface HiveOutputFormat<K extends WritableComparable, V extends Writab
    *          the table properties of this file's corresponding table
    * @param progress
    *          progress used for status report
-   * @return
-   * @throws IOException
+   * @return the RecordWriter for the output file
    */
   public RecordWriter getHiveRecordWriter(JobConf jc, Path finalOutPath,
       final Class<? extends Writable> valueClass, boolean isCompressed,

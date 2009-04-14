@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.serde2.lazy;
 
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+
 /**
  * LazyObject for storing a value of Short.
  * 
@@ -30,19 +32,19 @@ package org.apache.hadoop.hive.serde2.lazy;
  * </p>
  * 
  */
-public class LazyShort extends LazyPrimitive<Short> {
+public class LazyShort extends LazyPrimitive<ShortWritable> {
 
   public LazyShort() {
+    data = new ShortWritable();
   }
   
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
     try {
-      // Slower method: convert to String and then convert to Integer
-      // return Short.valueOf(LazyUtils.convertToString(bytes, start, length));
-      data = Short.valueOf(parseShort(bytes.getData(), start, length));
+      data.set(parseShort(bytes.getData(), start, length));
+      isNull = false;
     } catch (NumberFormatException e) {
-      data = null;
+      isNull = true;
     }
   }
 

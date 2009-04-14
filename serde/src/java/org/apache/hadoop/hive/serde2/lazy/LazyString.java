@@ -17,27 +17,20 @@
  */
 package org.apache.hadoop.hive.serde2.lazy;
 
-import java.nio.charset.CharacterCodingException;
-
 import org.apache.hadoop.io.Text;
 
 /**
  * LazyObject for storing a value of String.
  */
-public class LazyString extends LazyPrimitive<String> {
+public class LazyString extends LazyPrimitive<Text> {
 
   public LazyString() {
+    data = new Text();
   }
 
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
-    // In the future, we should allow returning a Text Object to save the UTF-8
-    // decoding/encoding, and the creation of new String object.
-    try {
-      data = Text.decode(bytes.getData(), start, length);
-    } catch (CharacterCodingException e) {
-      data = null;
-    }
+    data.set(bytes.getData(), start, length);
   }
 
 }

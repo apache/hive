@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.serde2.lazy;
 
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
+
 /**
  * LazyObject for storing a value of Byte.
  * 
@@ -30,19 +32,19 @@ package org.apache.hadoop.hive.serde2.lazy;
  * </p>
  * 
  */
-public class LazyByte extends LazyPrimitive<Byte> {
+public class LazyByte extends LazyPrimitive<ByteWritable> {
 
   public LazyByte() {
+    data = new ByteWritable();
   }
 
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
     try {
-      // Slower method: convert to String and then convert to Integer
-      // return Byte.valueOf(LazyUtils.convertToString(bytes, start, length));
-      data = Byte.valueOf(parseByte(bytes.getData(), start, length));
+      data.set(parseByte(bytes.getData(), start, length, 10));
+      isNull = false;
     } catch (NumberFormatException e) {
-      data = null;
+      isNull = true;
     }
   }
   

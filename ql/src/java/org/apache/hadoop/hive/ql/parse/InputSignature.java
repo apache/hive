@@ -59,7 +59,7 @@ public class InputSignature {
     
     if (classList.length != 0) {
       for(Class<?> cl: classList) {
-        typeArray.add(TypeInfoFactory.getPrimitiveTypeInfo(cl));
+        typeArray.add(TypeInfoFactory.getPrimitiveTypeInfoFromPrimitiveWritable(cl));
       }
     }
   }

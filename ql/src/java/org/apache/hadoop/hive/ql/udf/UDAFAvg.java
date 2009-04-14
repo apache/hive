@@ -20,50 +20,55 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.NumericUDAF;
 import org.apache.hadoop.hive.ql.exec.UDAFEvaluator;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.io.Text;
 
 
 
-public class UDAFAvg extends NumericUDAF implements UDAFEvaluator {
+public class UDAFAvg extends NumericUDAF {
 
-  private long mCount;
-  private double mSum;
-  
-  public UDAFAvg() {
-    super();
-    init();
-  }
-
-  public void init() {
-    mSum = 0;
-    mCount = 0;
-  }
-
-  public boolean iterate(Double o) {
-    if (o != null) {
-      mSum += o;
-      mCount ++;
+  public static class UDAFAvgEvaluator implements UDAFEvaluator {
+    private long mCount;
+    private double mSum;
+    
+    public UDAFAvgEvaluator() {
+      super();
+      init();
     }
-    return true;
+  
+    public void init() {
+      mSum = 0;
+      mCount = 0;
+    }
+  
+    public boolean iterate(DoubleWritable o) {
+      if (o != null) {
+        mSum += o.get();
+        mCount ++;
+      }
+      return true;
+    }
+    
+    public Text terminatePartial() {
+      // This is SQL standard - average of zero items should be null.
+      return mCount == 0 ? null : new Text(String.valueOf(mSum) + '/' + String.valueOf(mCount));
+    }
+  
+    public boolean merge(Text o) {
+      if (o != null) {
+        String s = o.toString();
+        int pos = s.indexOf('/');
+        assert(pos != -1);
+        mSum += Double.parseDouble(s.substring(0, pos));
+        mCount += Long.parseLong(s.substring(pos+1));
+      }
+      return true;
+    }
+  
+    public DoubleWritable terminate() {
+      // This is SQL standard - average of zero items should be null.
+      return mCount == 0 ? null : new DoubleWritable(mSum / mCount);
+    }
   }
   
-  public String terminatePartial() {
-    // This is SQL standard - average of zero items should be null.
-    return mCount == 0 ? null : String.valueOf(mSum) + '/' + String.valueOf(mCount);
-  }
-
-  public boolean merge(String o) {
-    if (o != null && !o.isEmpty()) {
-      int pos = o.indexOf('/');
-      assert(pos != -1);
-      mSum += Double.parseDouble(o.substring(0, pos));
-      mCount += Long.parseLong(o.substring(pos+1));
-    }
-    return true;
-  }
-
-  public Double terminate() {
-    // This is SQL standard - average of zero items should be null.
-    return mCount == 0 ? null : Double.valueOf(mSum / mCount);
-  }
-
 }

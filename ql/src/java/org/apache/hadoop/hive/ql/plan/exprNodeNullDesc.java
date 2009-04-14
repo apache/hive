@@ -21,13 +21,14 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.io.NullWritable;
 
 public class exprNodeNullDesc extends exprNodeDesc implements Serializable {
   
   private static final long serialVersionUID = 1L;
 
   public exprNodeNullDesc() {
-    super(TypeInfoFactory.getPrimitiveTypeInfo(Void.class));
+    super(TypeInfoFactory.getPrimitiveTypeInfoFromPrimitiveWritable(NullWritable.class));
   }
 
   public Object getValue() {

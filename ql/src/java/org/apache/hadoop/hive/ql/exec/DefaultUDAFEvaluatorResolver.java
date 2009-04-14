@@ -22,6 +22,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+
 /**
  * The default UDAF Method resolver. This resolver is used for resolving the UDAF methods are
  * used for partial and final evaluation given the list of the argument types. The getEvalMethod goes through all the
@@ -50,18 +52,10 @@ public class DefaultUDAFEvaluatorResolver implements UDAFEvaluatorResolver {
    * 
    * @param argClasses The list of the parameter types.
    */
-  public Class<? extends UDAFEvaluator> getEvaluatorClass(List<Class<?>> argClasses)
+  public Class<? extends UDAFEvaluator> getEvaluatorClass(List<TypeInfo> argClasses)
     throws AmbiguousMethodException {
     
     ArrayList<Class<? extends UDAFEvaluator>> classList = new ArrayList<Class<? extends UDAFEvaluator>>();
-    
-    // Add the udaf class if it implements and evaluator
-    for(Class<?> iface: udafClass.getInterfaces()) {
-      if (iface == UDAFEvaluator.class) {
-        Class<? extends UDAFEvaluator> udafClass2 = (Class<? extends UDAFEvaluator>) udafClass;
-        classList.add(udafClass2);
-      }
-    }
     
     // Add all the public member classes that implement an evaluator
     for(Class<?> enclClass: udafClass.getClasses()) {

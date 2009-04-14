@@ -43,8 +43,8 @@ public class TestPlan extends TestCase {
 
     try {
       // initialize a complete map reduce configuration
-      exprNodeDesc expr1 = new exprNodeColumnDesc(TypeInfoFactory.getPrimitiveTypeInfo(String.class), F1);
-      exprNodeDesc expr2 = new exprNodeColumnDesc(TypeInfoFactory.getPrimitiveTypeInfo(String.class), F2);
+      exprNodeDesc expr1 = new exprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, F1);
+      exprNodeDesc expr2 = new exprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, F2);
       exprNodeDesc filterExpr = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("==", expr1, expr2);
 
       filterDesc filterCtx = new filterDesc(filterExpr);

@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
 import junit.framework.TestCase;
 
@@ -35,18 +36,18 @@ public class TestUnionStructObjectInspector extends TestCase {
       fieldNames1.add("secondString");
       fieldNames1.add("thirdBoolean");
       ArrayList<ObjectInspector> fieldObjectInspectors1 = new ArrayList<ObjectInspector>();
-      fieldObjectInspectors1.add(ObjectInspectorFactory.getStandardPrimitiveObjectInspector(Integer.class));
-      fieldObjectInspectors1.add(ObjectInspectorFactory.getStandardPrimitiveObjectInspector(String.class));
-      fieldObjectInspectors1.add(ObjectInspectorFactory.getStandardPrimitiveObjectInspector(Boolean.class));
+      fieldObjectInspectors1.add(PrimitiveObjectInspectorFactory.javaIntObjectInspector);
+      fieldObjectInspectors1.add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
+      fieldObjectInspectors1.add(PrimitiveObjectInspectorFactory.javaBooleanObjectInspector);
       StandardStructObjectInspector soi1 = ObjectInspectorFactory.getStandardStructObjectInspector(
           fieldNames1, fieldObjectInspectors1);
   
       ArrayList<String> fieldNames2 = new ArrayList<String>();
-      fieldNames2.add("fourthDate");
+      fieldNames2.add("fourthDouble");
       fieldNames2.add("fifthLong");
       ArrayList<ObjectInspector> fieldObjectInspectors2 = new ArrayList<ObjectInspector>();
-      fieldObjectInspectors2.add(ObjectInspectorFactory.getStandardPrimitiveObjectInspector(java.sql.Date.class));
-      fieldObjectInspectors2.add(ObjectInspectorFactory.getStandardPrimitiveObjectInspector(Long.class));
+      fieldObjectInspectors2.add(PrimitiveObjectInspectorFactory.javaDoubleObjectInspector);
+      fieldObjectInspectors2.add(PrimitiveObjectInspectorFactory.javaLongObjectInspector);
       StandardStructObjectInspector soi2 = ObjectInspectorFactory.getStandardStructObjectInspector(
           fieldNames2, fieldObjectInspectors2);
       
@@ -84,7 +85,7 @@ public class TestUnionStructObjectInspector extends TestCase {
       struct1.add("two");
       struct1.add(true);
       ArrayList<Object> struct2 = new ArrayList<Object>(2);
-      struct2.add(java.sql.Date.valueOf("2008-08-08"));
+      struct2.add(1.0);
       struct2.add(new Long(111));
       ArrayList<Object> struct = new ArrayList<Object>(2);
       struct.add(struct1);

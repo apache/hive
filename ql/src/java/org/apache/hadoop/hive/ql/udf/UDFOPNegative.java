@@ -21,53 +21,56 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 
 
-public class UDFOPNegative extends UDF {
+public class UDFOPNegative extends UDFBaseNumericUnaryOp {
 
   private static Log LOG = LogFactory.getLog(UDFOPNegative.class.getName());
 
   public UDFOPNegative() {
   }
 
-  public Byte evaluate(Byte a)  {
-    if (a == null)
-      return null;
-
-    Byte r = Byte.valueOf((byte)-a.byteValue());
-    return r;
+  @Override
+  public ByteWritable evaluate(ByteWritable a) {
+    byteWritable.set((byte)-a.get());
+    return byteWritable;
   }
 
-  public Integer evaluate(Integer a)  {
-    if (a == null)
-      return null;
-
-    Integer r = Integer.valueOf(-a.intValue());
-    return r;
+  @Override
+  public ShortWritable evaluate(ShortWritable a) {
+    shortWritable.set((short)-a.get());
+    return shortWritable;
   }
 
-  public Long evaluate(Long a)  {
-    if (a == null)
-      return null;
-
-    Long r = Long.valueOf(-a.longValue());
-    return r;
+  @Override
+  public IntWritable evaluate(IntWritable a) {
+    intWritable.set(-a.get());
+    return intWritable;
   }
 
-  public Float evaluate(Float a)  {
-    if (a == null)
-      return null;
-
-    Float r = Float.valueOf(-a.floatValue());
-    return r;
+  @Override
+  public LongWritable evaluate(LongWritable a) {
+    longWritable.set(-a.get());
+    return longWritable;
   }
 
-  public Double evaluate(Double a)  {
-    if (a == null)
-      return null;
-
-    Double r = Double.valueOf(-a.doubleValue());
-    return r;
+  @Override
+  public FloatWritable evaluate(FloatWritable a) {
+    floatWritable.set(-a.get());
+    return floatWritable;
   }
+
+  @Override
+  public DoubleWritable evaluate(DoubleWritable a) {
+    doubleWritable.set(-a.get());
+    return doubleWritable;
+  }
+
 
 }

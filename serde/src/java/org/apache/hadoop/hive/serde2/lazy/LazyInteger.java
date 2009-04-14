@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.serde2.lazy;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.apache.hadoop.io.IntWritable;
+
 /**
  * LazyObject for storing a value of Integer.
  * 
@@ -33,19 +35,19 @@ import java.io.OutputStream;
  * </p>
  * 
  */
-public class LazyInteger extends LazyPrimitive<Integer> {
+public class LazyInteger extends LazyPrimitive<IntWritable> {
 
   public LazyInteger() {
+    data = new IntWritable();
   }
 
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
     try {
-      // Slower method: convert to String and then convert to Integer
-      // return Integer.valueOf(LazyUtils.convertToString(bytes, start, length));
-      data = Integer.valueOf(parseInt(bytes.getData(), start, length));
+      data.set(parseInt(bytes.getData(), start, length, 10));
+      isNull = false;
     } catch (NumberFormatException e) {
-      data = null;
+      isNull = true;
     }
   }
   
@@ -189,4 +191,11 @@ public class LazyInteger extends LazyPrimitive<Integer> {
     }
   }
   
+  public static void writeUTF8NoException(OutputStream out, int i) {
+    try {
+      writeUTF8(out, i);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }  
 }

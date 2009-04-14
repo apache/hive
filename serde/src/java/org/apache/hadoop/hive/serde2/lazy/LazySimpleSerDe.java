@@ -36,11 +36,12 @@ import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -76,8 +77,8 @@ public class LazySimpleSerDe implements SerDe {
 
   public String toString() {
     return getClass().toString() + "[" + Arrays.asList(separators) + ":" 
-        + rowTypeInfo.getAllStructFieldNames()
-        + ":" + rowTypeInfo.getAllStructFieldTypeInfos() + "]";
+        + ((StructTypeInfo)rowTypeInfo).getAllStructFieldNames()
+        + ":" + ((StructTypeInfo)rowTypeInfo).getAllStructFieldTypeInfos() + "]";
   }
 
   public LazySimpleSerDe() throws SerDeException {
@@ -232,8 +233,6 @@ public class LazySimpleSerDe implements SerDe {
   
   Text serializeCache = new Text();
   ByteStream.Output serializeStream = new ByteStream.Output();
-  ObjectInspector stringObjectInspector = 
-      ObjectInspectorFactory.getStandardPrimitiveObjectInspector(String.class);
   /**
    * Serialize a row of data.
    * @param obj          The row object
@@ -256,7 +255,7 @@ public class LazySimpleSerDe implements SerDe {
     List<? extends StructField> fields = soi.getAllStructFieldRefs();
     List<Object> list = soi.getStructFieldsDataAsList(obj);
     List<? extends StructField> declaredFields = 
-        (rowTypeInfo != null && rowTypeInfo.getAllStructFieldNames().size()>0)
+        (rowTypeInfo != null && ((StructTypeInfo)rowTypeInfo).getAllStructFieldNames().size()>0)
         ? ((StructObjectInspector)getObjectInspector()).getAllStructFieldRefs()
         : null;
         
@@ -292,7 +291,8 @@ public class LazySimpleSerDe implements SerDe {
                 declaredFields.get(i).getFieldObjectInspector().getCategory()
                 .equals(Category.PRIMITIVE))) {
           serialize(serializeStream, SerDeUtils.getJSONString(f, foi), 
-              stringObjectInspector, separators, 1, nullSequence);
+              PrimitiveObjectInspectorFactory.javaStringObjectInspector,
+              separators, 1, nullSequence);
         } else {
           serialize(serializeStream, f, foi, separators, 1, nullSequence);
         }
@@ -328,7 +328,7 @@ public class LazySimpleSerDe implements SerDe {
     
     switch (objInspector.getCategory()) {
       case PRIMITIVE: {
-        LazyUtils.writePrimitiveUTF8(out, obj);
+        LazyUtils.writePrimitiveUTF8(out, obj, (PrimitiveObjectInspector)objInspector);
         return;
       }
       case LIST: {

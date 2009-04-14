@@ -50,18 +50,17 @@ public class HiveIgnoreKeyTextOutputFormat<K extends WritableComparable, V exten
    * 
    * @param jc
    *          the job configuration file
-   * @param finalOutPath
+   * @param outPath
    *          the final output file to be created
    * @param valueClass
    *          the value class used for create
    * @param isCompressed
    *          whether the content is compressed or not
-   * @param tableInfo
-   *          the tableInfo of this file's corresponding table
+   * @param tableProperties
+   *          the tableProperties of this file's corresponding table
    * @param progress
    *          progress used for status report
-   * @return
-   * @throws IOException
+   * @return the RecordWriter
    */
   @Override
   public RecordWriter getHiveRecordWriter(JobConf jc, Path outPath,

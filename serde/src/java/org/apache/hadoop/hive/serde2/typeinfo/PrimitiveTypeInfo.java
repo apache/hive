@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.serde2.typeinfo;
 import java.io.Serializable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 
 
 /** There are limited number of Primitive Types.
@@ -33,49 +35,62 @@ public class PrimitiveTypeInfo extends TypeInfo implements Serializable {
 
   private static final long serialVersionUID = 1L;
   
-  Class<?> primitiveClass;
+  String typeName;
   
   /** For java serialization use only.
    */
   public PrimitiveTypeInfo() {}
 
-  public String getTypeName() {
-    return ObjectInspectorUtils.getClassShortName(primitiveClass);
-  }
-  
-  
-  /** For java serialization use only.
-   */
-  public void setPrimitiveClass(Class<?> primitiveClass) {
-    this.primitiveClass = primitiveClass;
-  }
-  
   /** For TypeInfoFactory use only.
    */
-  PrimitiveTypeInfo(Class<?> primitiveClass) {
-    this.primitiveClass = primitiveClass;
+  PrimitiveTypeInfo(String typeName) {
+    this.typeName = typeName;
   }
   
+  /**
+   * Returns the category of this TypeInfo.
+   */
+  @Override  
   public Category getCategory() {
     return Category.PRIMITIVE;
   }
 
-  public Class<?> getPrimitiveClass() {
-    return primitiveClass;
-  }
-
-  public boolean equals(Object other) {
-    if (this == other) return true;
-    if (!(other instanceof TypeInfo)) {
-      return false;
-    }
-    TypeInfo o = (TypeInfo) other;
-    return o.getCategory().equals(getCategory())
-        && o.getPrimitiveClass().equals(getPrimitiveClass());
+  public PrimitiveCategory getPrimitiveCategory() {
+    return PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(typeName).primitiveCategory;
   }
   
+  public Class<?> getPrimitiveWritableClass() {
+    return PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(typeName).primitiveWritableClass;
+  }
+  
+  public Class<?> getPrimitiveJavaClass() {
+    return PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(typeName).primitiveJavaClass;
+  }
+  
+  
+  // The following 2 methods are for java serialization use only.
+  public void setTypeName(String typeName) {
+    this.typeName = typeName;
+  }
+
+  public String getTypeName() {
+    return typeName;
+  }
+
+  /**
+   * Compare if 2 TypeInfos are the same.
+   * We use TypeInfoFactory to cache TypeInfos, so we only 
+   * need to compare the Object pointer.
+   */
+  public boolean equals(Object other) {
+    return this == other;
+  }
+  
+  /**
+   * Generate the hashCode for this TypeInfo.
+   */
   public int hashCode() {
-    return primitiveClass.hashCode();
+    return typeName.hashCode();
   }
   
 }

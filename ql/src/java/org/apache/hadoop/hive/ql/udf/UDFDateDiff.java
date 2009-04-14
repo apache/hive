@@ -25,6 +25,8 @@ import java.util.TimeZone;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
 
 
 public class UDFDateDiff extends UDF {
@@ -33,6 +35,8 @@ public class UDFDateDiff extends UDF {
 
   private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
+  IntWritable result = new IntWritable();
+  
   public UDFDateDiff() {
     formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
   }
@@ -46,13 +50,15 @@ public class UDFDateDiff extends UDF {
    * @param dateString2 the date string in the format of "yyyy-MM-dd HH:mm:ss" or "yyyy-MM-dd".
    * @return the difference in days.
    */
-  public Integer evaluate(String dateString1, String dateString2)  {
+  public IntWritable evaluate(Text dateString1, Text dateString2)  {
     try {
       // NOTE: This implementation avoids the extra-second problem
       // by comparing with UTC epoch and integer division.
-      long diffInMilliSeconds = (formatter.parse(dateString1).getTime() - formatter.parse(dateString2).getTime());
+      long diffInMilliSeconds = (formatter.parse(dateString1.toString()).getTime()
+          - formatter.parse(dateString2.toString()).getTime());
       // 86400 is the number of seconds in a day
-      return Integer.valueOf((int)(diffInMilliSeconds / (86400 * 1000)));
+      result.set((int)(diffInMilliSeconds / (86400 * 1000)));
+      return result;
     } catch (ParseException e) {
       return null;
     }

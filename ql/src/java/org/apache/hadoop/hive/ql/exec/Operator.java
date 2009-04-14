@@ -32,7 +32,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.explain;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.mapredWork;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
@@ -50,7 +52,7 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   protected List<Operator<? extends Serializable>> parentOperators;
   private static int seqId;
 
-  // It can be opimized later so that an operator operator (init/close) is performed
+  // It can be optimized later so that an operator operator (init/close) is performed
   // only after that operation has been performed on all the parents. This will require
   // initializing the whole tree in all the mappers (which might be required for mappers
   // spanning multiple files anyway, in future)
@@ -318,28 +320,43 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     }
   }
 
+  /**
+   *  Cache childOperators in an array for faster access. childOperatorsArray is accessed
+   *  per row, so it's important to make the access efficient.
+   */
+  transient protected Operator<? extends Serializable>[] childOperatorsArray;
+  
   protected void forward(Object row, ObjectInspector rowInspector) throws HiveException {
     
-    if((childOperators == null) || (getDone())) {
+    // For debugging purposes:
+    // System.out.println("" + this.getClass() + ": " + SerDeUtils.getJSONString(row, rowInspector));
+    // System.out.println("" + this.getClass() + ">> " + ObjectInspectorUtils.getObjectInspectorName(rowInspector));
+    
+    // Copy operators from List to Array for faster access
+    if (childOperatorsArray == null && childOperators != null) {
+      childOperatorsArray = new Operator[childOperators.size()];
+      for (int i=0; i<childOperatorsArray.length; i++) {
+        childOperatorsArray[i] = childOperators.get(i); 
+      }
+    }
+    
+    if((childOperatorsArray == null) || (getDone())) {
       return;
+    }
+    
+    int childrenDone = 0;
+    for (int i = 0; i < childOperatorsArray.length; i++) {
+      Operator<? extends Serializable> o = childOperatorsArray[i];
+      if (o.getDone()) {
+        childrenDone ++;
+      } else {
+        o.process(row, rowInspector);
+      }
     }
     
     // if all children are done, this operator is also done
-    boolean isDone = true;
-    for(Operator<? extends Serializable> o: childOperators) {
-      if (!o.getDone()) {
-        isDone = false;
-        break;
-      }
-    }
-
-    if (isDone) {
-      setDone(isDone);
-      return;
-    }
-
-    for(Operator<? extends Serializable> o: childOperators) {
-      o.process(row, rowInspector);
+    if (childrenDone == childOperatorsArray.length) {
+      setDone(true);
     }
   }
 

@@ -21,45 +21,50 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 
 
-public class UDFOPBitNot extends UDF {
+public class UDFOPBitNot extends UDFBaseBitOP {
 
   private static Log LOG = LogFactory.getLog(UDFOPBitNot.class.getName());
 
   public UDFOPBitNot() {
   }
 
-  public Byte evaluate(Byte a)  {
-    if (a == null)
+  public ByteWritable evaluate(ByteWritable a) {
+    if (a == null) {
       return null;
-
-    Byte r = Byte.valueOf((byte)~a.byteValue());
-    return r;
+    }
+    byteWritable.set((byte)(~a.get()));
+    return byteWritable;
   }
 
-  public Integer evaluate(Integer a)  {
-    if (a == null)
+  public ShortWritable evaluate(ShortWritable a) {
+    if (a == null) {
       return null;
-
-    Integer r = Integer.valueOf(~a.intValue());
-    return r;
-  }
-
-  public Long evaluate(Long a)  {
-    if (a == null)
-      return null;
-
-    Long r = Long.valueOf(~a.longValue());
-    return r;
-  }
-
-  public Long evaluate(String a)  {
-    if (a == null)
-      return null;
-
-    return evaluate(Long.valueOf(a));
+    }
+    shortWritable.set((short)(~a.get()));
+    return shortWritable;
   }
   
+  public IntWritable evaluate(IntWritable a) {
+    if (a == null) {
+      return null;
+    }
+    intWritable.set(~a.get());
+    return intWritable;
+  }
+
+  public LongWritable evaluate(LongWritable a) {
+    if (a == null) {
+      return null;
+    }
+    longWritable.set(~a.get());
+    return longWritable;
+  }
+
 
 }

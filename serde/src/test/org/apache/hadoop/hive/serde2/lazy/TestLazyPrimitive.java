@@ -18,9 +18,12 @@
 package org.apache.hadoop.hive.serde2.lazy;
 
 
-import java.util.Arrays;
-
 import org.apache.hadoop.hive.serde2.ByteStream;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
 import junit.framework.TestCase;
@@ -44,21 +47,21 @@ public class TestLazyPrimitive extends TestCase {
       initLazyObject(b,new byte[]{'0'}, 0, 0);
       assertNull(b.getObject());
       initLazyObject(b,new byte[]{'0'}, 0, 1);
-      assertEquals(Byte.valueOf((byte)0), b.getObject());
+      assertEquals(new ByteWritable((byte)0), b.getObject());
       initLazyObject(b,new byte[]{'+', '0'}, 0, 2);
-      assertEquals(Byte.valueOf((byte)0), b.getObject());
+      assertEquals(new ByteWritable((byte)0), b.getObject());
       initLazyObject(b,new byte[]{'-', '0'}, 0, 2);
-      assertEquals(Byte.valueOf((byte)0), b.getObject());
+      assertEquals(new ByteWritable((byte)0), b.getObject());
       initLazyObject(b,new byte[]{'a', '1', 'b'}, 1, 1);
-      assertEquals(Byte.valueOf((byte)1), b.getObject());
+      assertEquals(new ByteWritable((byte)1), b.getObject());
       initLazyObject(b,new byte[]{'a', '-', '1'}, 1, 2);
-      assertEquals(Byte.valueOf((byte)-1), b.getObject());
+      assertEquals(new ByteWritable((byte)-1), b.getObject());
       initLazyObject(b,new byte[]{'a', '+', '1'}, 1, 2);
-      assertEquals(Byte.valueOf((byte)1), b.getObject());
+      assertEquals(new ByteWritable((byte)1), b.getObject());
       initLazyObject(b,new byte[]{'-', '1', '2', '8'}, 0, 4);
-      assertEquals(Byte.valueOf((byte)-128), b.getObject());
+      assertEquals(new ByteWritable((byte)-128), b.getObject());
       initLazyObject(b,new byte[]{'+', '1', '2', '7'}, 0, 4);
-      assertEquals(Byte.valueOf((byte)127), b.getObject());
+      assertEquals(new ByteWritable((byte)127), b.getObject());
       
       initLazyObject(b,new byte[]{'a', '1', 'b'}, 1, 2);
       assertNull(b.getObject());
@@ -86,25 +89,25 @@ public class TestLazyPrimitive extends TestCase {
       initLazyObject(b,new byte[]{'0'}, 0, 0);
       assertNull(b.getObject());
       initLazyObject(b,new byte[]{'0'}, 0, 1);
-      assertEquals(Short.valueOf((short)0), b.getObject());
+      assertEquals(new ShortWritable((short)0), b.getObject());
       initLazyObject(b,new byte[]{'+', '0'}, 0, 2);
-      assertEquals(Short.valueOf((short)0), b.getObject());
+      assertEquals(new ShortWritable((short)0), b.getObject());
       initLazyObject(b,new byte[]{'-', '0'}, 0, 2);
-      assertEquals(Short.valueOf((short)0), b.getObject());
+      assertEquals(new ShortWritable((short)0), b.getObject());
       initLazyObject(b,new byte[]{'a', '1', 'b'}, 1, 1);
-      assertEquals(Short.valueOf((short)1), b.getObject());
+      assertEquals(new ShortWritable((short)1), b.getObject());
       initLazyObject(b,new byte[]{'a', '-', '1'}, 1, 2);
-      assertEquals(Short.valueOf((short)-1), b.getObject());
+      assertEquals(new ShortWritable((short)-1), b.getObject());
       initLazyObject(b,new byte[]{'a', '+', '1'}, 1, 2);
-      assertEquals(Short.valueOf((short)1), b.getObject());
+      assertEquals(new ShortWritable((short)1), b.getObject());
       initLazyObject(b,new byte[]{'-', '1', '2', '8'}, 0, 4);
-      assertEquals(Short.valueOf((short)-128), b.getObject());
+      assertEquals(new ShortWritable((short)-128), b.getObject());
       initLazyObject(b,new byte[]{'+', '1', '2', '7'}, 0, 4);
-      assertEquals(Short.valueOf((short)127), b.getObject());
+      assertEquals(new ShortWritable((short)127), b.getObject());
       initLazyObject(b,new byte[]{'-', '3', '2', '7', '6', '8'}, 0, 6);
-      assertEquals(Short.valueOf((short)-32768), b.getObject());
+      assertEquals(new ShortWritable((short)-32768), b.getObject());
       initLazyObject(b,new byte[]{'+', '3', '2', '7', '6', '7'}, 0, 6);
-      assertEquals(Short.valueOf((short)32767), b.getObject());
+      assertEquals(new ShortWritable((short)32767), b.getObject());
 
       initLazyObject(b,new byte[]{'a', '1', 'b'}, 1, 2);
       assertNull(b.getObject());
@@ -133,29 +136,29 @@ public class TestLazyPrimitive extends TestCase {
       initLazyObject(b,new byte[]{'0'}, 0, 0);
       assertNull(b.getObject());
       initLazyObject(b,new byte[]{'0'}, 0, 1);
-      assertEquals(Integer.valueOf((int)0), b.getObject());
+      assertEquals(new IntWritable((int)0), b.getObject());
       initLazyObject(b,new byte[]{'+', '0'}, 0, 2);
-      assertEquals(Integer.valueOf((int)0), b.getObject());
+      assertEquals(new IntWritable((int)0), b.getObject());
       initLazyObject(b,new byte[]{'-', '0'}, 0, 2);
-      assertEquals(Integer.valueOf((int)0), b.getObject());
+      assertEquals(new IntWritable((int)0), b.getObject());
       initLazyObject(b,new byte[]{'a', '1', 'b'}, 1, 1);
-      assertEquals(Integer.valueOf((int)1), b.getObject());
+      assertEquals(new IntWritable((int)1), b.getObject());
       initLazyObject(b,new byte[]{'a', '-', '1'}, 1, 2);
-      assertEquals(Integer.valueOf((int)-1), b.getObject());
+      assertEquals(new IntWritable((int)-1), b.getObject());
       initLazyObject(b,new byte[]{'a', '+', '1'}, 1, 2);
-      assertEquals(Integer.valueOf((int)1), b.getObject());
+      assertEquals(new IntWritable((int)1), b.getObject());
       initLazyObject(b,new byte[]{'-', '1', '2', '8'}, 0, 4);
-      assertEquals(Integer.valueOf((int)-128), b.getObject());
+      assertEquals(new IntWritable((int)-128), b.getObject());
       initLazyObject(b,new byte[]{'+', '1', '2', '7'}, 0, 4);
-      assertEquals(Integer.valueOf((int)127), b.getObject());
+      assertEquals(new IntWritable((int)127), b.getObject());
       initLazyObject(b,new byte[]{'-', '3', '2', '7', '6', '8'}, 0, 6);
-      assertEquals(Integer.valueOf((int)-32768), b.getObject());
+      assertEquals(new IntWritable((int)-32768), b.getObject());
       initLazyObject(b,new byte[]{'+', '3', '2', '7', '6', '7'}, 0, 6);
-      assertEquals(Integer.valueOf((int)32767), b.getObject());
+      assertEquals(new IntWritable((int)32767), b.getObject());
       initLazyObject(b,new byte[]{'-', '2', '1', '4', '7', '4', '8', '3', '6', '4', '8'}, 0, 11);
-      assertEquals(Integer.valueOf((int)-2147483648), b.getObject());
+      assertEquals(new IntWritable((int)-2147483648), b.getObject());
       initLazyObject(b,new byte[]{'+', '2', '1', '4', '7', '4', '8', '3', '6', '4', '7'}, 0, 11);
-      assertEquals(Integer.valueOf((int)2147483647), b.getObject());
+      assertEquals(new IntWritable((int)2147483647), b.getObject());
 
       initLazyObject(b,new byte[]{'a', '1', 'b'}, 1, 2);
       assertNull(b.getObject());
@@ -184,35 +187,35 @@ public class TestLazyPrimitive extends TestCase {
       initLazyObject(b,new byte[]{'0'}, 0, 0);
       assertNull(b.getObject());
       initLazyObject(b,new byte[]{'0'}, 0, 1);
-      assertEquals(Long.valueOf((long)0), b.getObject());
+      assertEquals(new LongWritable((long)0), b.getObject());
       initLazyObject(b,new byte[]{'+', '0'}, 0, 2);
-      assertEquals(Long.valueOf((long)0), b.getObject());
+      assertEquals(new LongWritable((long)0), b.getObject());
       initLazyObject(b,new byte[]{'-', '0'}, 0, 2);
-      assertEquals(Long.valueOf((long)0), b.getObject());
+      assertEquals(new LongWritable((long)0), b.getObject());
       initLazyObject(b,new byte[]{'a', '1', 'b'}, 1, 1);
-      assertEquals(Long.valueOf((long)1), b.getObject());
+      assertEquals(new LongWritable((long)1), b.getObject());
       initLazyObject(b,new byte[]{'a', '-', '1'}, 1, 2);
-      assertEquals(Long.valueOf((long)-1), b.getObject());
+      assertEquals(new LongWritable((long)-1), b.getObject());
       initLazyObject(b,new byte[]{'a', '+', '1'}, 1, 2);
-      assertEquals(Long.valueOf((long)1), b.getObject());
+      assertEquals(new LongWritable((long)1), b.getObject());
       initLazyObject(b,new byte[]{'-', '1', '2', '8'}, 0, 4);
-      assertEquals(Long.valueOf((long)-128), b.getObject());
+      assertEquals(new LongWritable((long)-128), b.getObject());
       initLazyObject(b,new byte[]{'+', '1', '2', '7'}, 0, 4);
-      assertEquals(Long.valueOf((long)127), b.getObject());
+      assertEquals(new LongWritable((long)127), b.getObject());
       initLazyObject(b,new byte[]{'-', '3', '2', '7', '6', '8'}, 0, 6);
-      assertEquals(Long.valueOf((long)-32768), b.getObject());
+      assertEquals(new LongWritable((long)-32768), b.getObject());
       initLazyObject(b,new byte[]{'+', '3', '2', '7', '6', '7'}, 0, 6);
-      assertEquals(Long.valueOf((long)32767), b.getObject());
+      assertEquals(new LongWritable((long)32767), b.getObject());
       initLazyObject(b,new byte[]{'-', '2', '1', '4', '7', '4', '8', '3', '6', '4', '8'}, 0, 11);
-      assertEquals(Long.valueOf((long)-2147483648), b.getObject());
+      assertEquals(new LongWritable((long)-2147483648), b.getObject());
       initLazyObject(b,new byte[]{'+', '2', '1', '4', '7', '4', '8', '3', '6', '4', '7'}, 0, 11);
-      assertEquals(Long.valueOf((long)2147483647), b.getObject());
+      assertEquals(new LongWritable((long)2147483647), b.getObject());
       initLazyObject(b,new byte[]{'-', '9', '2', '2', '3', '3', '7', '2', '0', '3', '6', '8', '5',
           '4', '7', '7', '5', '8', '0', '8'}, 0, 20);
-      assertEquals(Long.valueOf((long)-9223372036854775808L), b.getObject());
+      assertEquals(new LongWritable((long)-9223372036854775808L), b.getObject());
       initLazyObject(b,new byte[]{'+', '9', '2', '2', '3', '3', '7', '2', '0', '3', '6', '8', '5',
           '4', '7', '7', '5', '8', '0', '7'}, 0, 20);
-      assertEquals(Long.valueOf((long)9223372036854775807L), b.getObject());
+      assertEquals(new LongWritable((long)9223372036854775807L), b.getObject());
 
       initLazyObject(b,new byte[]{'a', '1', 'b'}, 1, 2);
       assertNull(b.getObject());
@@ -242,57 +245,57 @@ public class TestLazyPrimitive extends TestCase {
       initLazyObject(b,new byte[]{'0'}, 0, 0);
       assertNull(b.getObject());
       initLazyObject(b,new byte[]{'0'}, 0, 1);
-      assertEquals(Double.valueOf((double)0), b.getObject());
+      assertEquals(new DoubleWritable((double)0), b.getObject());
       initLazyObject(b,new byte[]{'+', '0'}, 0, 2);
-      assertEquals(Double.valueOf((double)0), b.getObject());
+      assertEquals(new DoubleWritable((double)0), b.getObject());
       initLazyObject(b,new byte[]{'-', '0'}, 0, 2);
-      assertEquals(Double.valueOf((double)-0.0), b.getObject());
+      assertEquals(new DoubleWritable((double)-0.0), b.getObject());
       initLazyObject(b,new byte[]{'a', '1', 'b'}, 1, 1);
-      assertEquals(Double.valueOf((double)1), b.getObject());
+      assertEquals(new DoubleWritable((double)1), b.getObject());
       initLazyObject(b,new byte[]{'a', '-', '1'}, 1, 2);
-      assertEquals(Double.valueOf((double)-1), b.getObject());
+      assertEquals(new DoubleWritable((double)-1), b.getObject());
       initLazyObject(b,new byte[]{'a', '+', '1'}, 1, 2);
-      assertEquals(Double.valueOf((double)1), b.getObject());
+      assertEquals(new DoubleWritable((double)1), b.getObject());
       initLazyObject(b,new byte[]{'-', '1', '2', '8'}, 0, 4);
-      assertEquals(Double.valueOf((double)-128), b.getObject());
+      assertEquals(new DoubleWritable((double)-128), b.getObject());
       initLazyObject(b,new byte[]{'+', '1', '2', '7'}, 0, 4);
-      assertEquals(Double.valueOf((double)127), b.getObject());
+      assertEquals(new DoubleWritable((double)127), b.getObject());
       initLazyObject(b,new byte[]{'-', '3', '2', '7', '6', '8'}, 0, 6);
-      assertEquals(Double.valueOf((double)-32768), b.getObject());
+      assertEquals(new DoubleWritable((double)-32768), b.getObject());
       initLazyObject(b,new byte[]{'+', '3', '2', '7', '6', '7'}, 0, 6);
-      assertEquals(Double.valueOf((double)32767), b.getObject());
+      assertEquals(new DoubleWritable((double)32767), b.getObject());
       initLazyObject(b,new byte[]{'-', '2', '1', '4', '7', '4', '8', '3', '6', '4', '8'}, 0, 11);
-      assertEquals(Double.valueOf((double)-2147483648), b.getObject());
+      assertEquals(new DoubleWritable((double)-2147483648), b.getObject());
       initLazyObject(b,new byte[]{'+', '2', '1', '4', '7', '4', '8', '3', '6', '4', '7'}, 0, 11);
-      assertEquals(Double.valueOf((double)2147483647), b.getObject());
+      assertEquals(new DoubleWritable((double)2147483647), b.getObject());
       initLazyObject(b,new byte[]{'-', '9', '2', '2', '3', '3', '7', '2', '0', '3', '6', '8', '5',
           '4', '7', '7', '5', '8', '0', '8'}, 0, 20);
-      assertEquals(Double.valueOf((double)-9223372036854775808L), b.getObject());
+      assertEquals(new DoubleWritable((double)-9223372036854775808L), b.getObject());
       initLazyObject(b,new byte[]{'+', '9', '2', '2', '3', '3', '7', '2', '0', '3', '6', '8', '5',
           '4', '7', '7', '5', '8', '0', '7'}, 0, 20);
-      assertEquals(Double.valueOf((long)9223372036854775807L), b.getObject());
+      assertEquals(new DoubleWritable((long)9223372036854775807L), b.getObject());
 
       initLazyObject(b,new byte[]{'-', '3', '.', '7', '6', '8'}, 0, 6);
-      assertEquals(Double.valueOf((double)-3.768), b.getObject());
+      assertEquals(new DoubleWritable((double)-3.768), b.getObject());
       initLazyObject(b,new byte[]{'+', '3', '.', '7', '6', '7'}, 0, 6);
-      assertEquals(Double.valueOf((double)3.767), b.getObject());
+      assertEquals(new DoubleWritable((double)3.767), b.getObject());
       initLazyObject(b,new byte[]{'-', '2', '.', '4', '7', '4', '8', '3', '6', 'e', '8'}, 0, 11);
-      assertEquals(Double.valueOf((double)-2.474836e8), b.getObject());
+      assertEquals(new DoubleWritable((double)-2.474836e8), b.getObject());
       initLazyObject(b,new byte[]{'+', '2', '.', '4', '7', '4', '8', '3', 'E', '-', '7'}, 0, 11);
-      assertEquals(Double.valueOf((double)2.47483E-7), b.getObject());
+      assertEquals(new DoubleWritable((double)2.47483E-7), b.getObject());
       initLazyObject(b,new byte[]{'-', '.', '4', '7', '4', '8', '3', '6', 'e', '8'}, 0, 10);
-      assertEquals(Double.valueOf((double)-.474836e8), b.getObject());
+      assertEquals(new DoubleWritable((double)-.474836e8), b.getObject());
       initLazyObject(b,new byte[]{'+', '.', '4', '7', '4', '8', '3', 'E', '-', '7'}, 0, 10);
-      assertEquals(Double.valueOf((double).47483E-7), b.getObject());
+      assertEquals(new DoubleWritable((double).47483E-7), b.getObject());
       initLazyObject(b,new byte[]{'-', '2', '1', '4', '7', '4', '8', '3', '6', '4', '.'}, 0, 11);
-      assertEquals(Double.valueOf((double)-214748364.), b.getObject());
+      assertEquals(new DoubleWritable((double)-214748364.), b.getObject());
       initLazyObject(b,new byte[]{'+', '2', '1', '4', '7', '4', '8', '3', '6', '4', '.'}, 0, 11);
-      assertEquals(Double.valueOf((double)+214748364.), b.getObject());
+      assertEquals(new DoubleWritable((double)+214748364.), b.getObject());
 
       initLazyObject(b,new byte[]{'.', '0'}, 0, 2);
-      assertEquals(Double.valueOf((double).0), b.getObject());
+      assertEquals(new DoubleWritable((double).0), b.getObject());
       initLazyObject(b,new byte[]{'0', '.'}, 0, 2);
-      assertEquals(Double.valueOf((double)0.), b.getObject());
+      assertEquals(new DoubleWritable((double)0.), b.getObject());
       
       initLazyObject(b,new byte[]{'a', '1', 'b'}, 1, 2);
       assertNull(b.getObject());
@@ -305,14 +308,14 @@ public class TestLazyPrimitive extends TestCase {
       assertNull(b.getObject());
       
       initLazyObject(b,new byte[]{'-', '1', 'e', '3', '3', '3', '3', '3', '3'}, 0, 9);
-      assertEquals(Double.NEGATIVE_INFINITY, b.getObject());
+      assertEquals(new DoubleWritable(Double.NEGATIVE_INFINITY), b.getObject());
       initLazyObject(b,new byte[]{'+', '1', 'e', '3', '3', '3', '3', '3', '3'}, 0, 9);
-      assertEquals(Double.POSITIVE_INFINITY, b.getObject());
+      assertEquals(new DoubleWritable(Double.POSITIVE_INFINITY), b.getObject());
 
       initLazyObject(b,new byte[]{'+', '1', 'e', '-', '3', '3', '3', '3', '3'}, 0, 8);
-      assertEquals(Double.valueOf((double)0), b.getObject());
+      assertEquals(new DoubleWritable((double)0), b.getObject());
       initLazyObject(b,new byte[]{'-', '1', 'e', '-', '3', '3', '3', '3', '3'}, 0, 8);
-      assertEquals(Double.valueOf((double)-0.0), b.getObject());
+      assertEquals(new DoubleWritable((double)-0.0), b.getObject());
       
     } catch (Throwable e) {
       e.printStackTrace();
@@ -327,11 +330,11 @@ public class TestLazyPrimitive extends TestCase {
     try {
       LazyString b = new LazyString();
       initLazyObject(b,new byte[]{'0'}, 0, 0);
-      assertEquals("", b.getObject());
+      assertEquals(new Text(""), b.getObject());
       initLazyObject(b,new byte[]{'0'}, 0, 1);
-      assertEquals("0", b.getObject());
+      assertEquals(new Text("0"), b.getObject());
       initLazyObject(b,new byte[]{'0', '1', '2'}, 1, 1);
-      assertEquals("1", b.getObject());
+      assertEquals(new Text("1"), b.getObject());
       
     } catch (Throwable e) {
       e.printStackTrace();

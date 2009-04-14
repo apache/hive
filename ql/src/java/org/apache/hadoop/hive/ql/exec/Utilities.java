@@ -208,7 +208,6 @@ public class Utilities {
   public final static int newLineCode = 10;
   public final static int tabCode = 9;
   public final static int ctrlaCode = 1;
-  public final static ByteWritable zeroByteWritable = new ByteWritable (0);
 
   // Note: When DDL supports specifying what string to represent null,
   // we should specify "NULL" to represent null in the temp table, and then 

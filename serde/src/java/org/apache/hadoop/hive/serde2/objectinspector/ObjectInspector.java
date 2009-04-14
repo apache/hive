@@ -32,7 +32,7 @@ package org.apache.hadoop.hive.serde2.objectinspector;
  * An efficient implementation of ObjectInspector should rely on factory, so that we can 
  * make sure the same ObjectInspector only has one instance.  That also makes sure
  * hashCode() and equals() methods of java.lang.Object directly works for ObjectInspector
- * as well.
+ * as well.  
  */
 public interface ObjectInspector {
 

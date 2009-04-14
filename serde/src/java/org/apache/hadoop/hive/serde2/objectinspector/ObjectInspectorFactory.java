@@ -27,6 +27,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableBooleanObjectInspector;
 import org.apache.hadoop.io.Text;
 
 
@@ -102,11 +106,24 @@ public class ObjectInspectorFactory {
     }
     Class<?> c = (Class<?>)t;
     
-    // Primitive?
-    if (ObjectInspectorUtils.isPrimitiveClass(c)) {
-      return getStandardPrimitiveObjectInspector(c);
+    // Java Primitive Type?
+    if (PrimitiveObjectInspectorUtils.isPrimitiveJavaType(c)) {
+      return PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
+          PrimitiveObjectInspectorUtils.getTypeEntryFromPrimitiveJavaType(c).primitiveCategory);
+    }
+
+    // Java Primitive Class?
+    if (PrimitiveObjectInspectorUtils.isPrimitiveJavaClass(c)) {
+      return PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
+          PrimitiveObjectInspectorUtils.getTypeEntryFromPrimitiveJavaClass(c).primitiveCategory);
     }
     
+    // Primitive Writable class?
+    if (PrimitiveObjectInspectorUtils.isPrimitiveWritableClass(c)) {
+      return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
+          PrimitiveObjectInspectorUtils.getTypeEntryFromPrimitiveWritableClass(c).primitiveCategory);
+    }
+
     // Must be struct because List and Map need to be ParameterizedType
     assert(!List.class.isAssignableFrom(c));
     assert(!Map.class.isAssignableFrom(c));
@@ -134,18 +151,6 @@ public class ObjectInspectorFactory {
     }
     oi.init(c, structFieldObjectInspectors);
     return oi;
-  }
-  
-  
-  private static HashMap<Class<?>, StandardPrimitiveObjectInspector> cachedStandardPrimitiveInspectorCache = new HashMap<Class<?>, StandardPrimitiveObjectInspector>();
-  public static StandardPrimitiveObjectInspector getStandardPrimitiveObjectInspector(Class<?> c) {
-    c = ObjectInspectorUtils.generalizePrimitive(c);
-    StandardPrimitiveObjectInspector result = cachedStandardPrimitiveInspectorCache.get(c);
-    if (result == null) {
-      result = new StandardPrimitiveObjectInspector(c);
-      cachedStandardPrimitiveInspectorCache.put(c, result);
-    }
-    return result;
   }
   
   static HashMap<ObjectInspector, StandardListObjectInspector> cachedStandardListObjectInspector =

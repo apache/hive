@@ -22,7 +22,10 @@ import junit.framework.TestCase;
 import java.io.*;
 import java.util.*;
 
+import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
@@ -35,15 +38,17 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
+import org.apache.hadoop.io.Text;
 
 public class TestExpressionEvaluator extends TestCase {
 
   // this is our row to test expressions on
   protected InspectableObject r;
 
-  ArrayList<String> col1;
+  ArrayList<Text> col1;
   TypeInfo col1Type;
-  ArrayList<String> cola;
+  ArrayList<Text> cola;
   TypeInfo colaType;
   ArrayList<Object> data;
   ArrayList<String> names;
@@ -51,19 +56,19 @@ public class TestExpressionEvaluator extends TestCase {
   TypeInfo dataType;
   
   public TestExpressionEvaluator() {
-    col1 = new ArrayList<String> ();
-    col1.add("0");
-    col1.add("1");
-    col1.add("2");
-    col1.add("3");
+    col1 = new ArrayList<Text> ();
+    col1.add(new Text("0"));
+    col1.add(new Text("1"));
+    col1.add(new Text("2"));
+    col1.add(new Text("3"));
     col1Type = TypeInfoFactory.getListTypeInfo(
-        TypeInfoFactory.getPrimitiveTypeInfo(String.class));
-    cola = new ArrayList<String> ();
-    cola.add("a");
-    cola.add("b");
-    cola.add("c");
+        TypeInfoFactory.stringTypeInfo);
+    cola = new ArrayList<Text> ();
+    cola.add(new Text("a"));
+    cola.add(new Text("b"));
+    cola.add(new Text("c"));
     colaType = TypeInfoFactory.getListTypeInfo(
-        TypeInfoFactory.getPrimitiveTypeInfo(String.class));
+        TypeInfoFactory.stringTypeInfo);
     try {
       data = new ArrayList<Object>();
       data.add(col1);
@@ -97,7 +102,8 @@ public class TestExpressionEvaluator extends TestCase {
       // evaluate on row
       InspectableObject result = new InspectableObject();
       eval.evaluate(r.o, r.oi, result);
-      assertEquals(result.o, cola);
+      Object standardResult = ObjectInspectorUtils.copyToStandardObject(result.o, result.oi, ObjectInspectorCopyOption.WRITABLE);   
+      assertEquals(cola, standardResult);
       System.out.println("ExprNodeColumnEvaluator ok");
     } catch (Throwable e) {
       e.printStackTrace();
@@ -118,7 +124,8 @@ public class TestExpressionEvaluator extends TestCase {
       // evaluate on row
       InspectableObject result = new InspectableObject();
       eval.evaluate(r.o, r.oi, result);
-      assertEquals(result.o, "1a");
+      assertEquals("1a",
+          ObjectInspectorUtils.copyToStandardObject(result.o, result.oi, ObjectInspectorCopyOption.JAVA));
       System.out.println("ExprNodeFuncEvaluator ok");
     } catch (Throwable e) {
       e.printStackTrace();
@@ -131,13 +138,14 @@ public class TestExpressionEvaluator extends TestCase {
       // get a evaluator for a string concatenation expression
       exprNodeDesc col1desc = new exprNodeColumnDesc(col1Type, "col1");
       exprNodeDesc col11desc = new exprNodeIndexDesc(col1desc, new exprNodeConstantDesc(new Integer(1)));
-      exprNodeDesc func1 = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc(Double.class.getName(), col11desc);
+      exprNodeDesc func1 = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc(Constants.DOUBLE_TYPE_NAME, col11desc);
       ExprNodeEvaluator eval = ExprNodeEvaluatorFactory.get(func1);
 
       // evaluate on row
       InspectableObject result = new InspectableObject();
       eval.evaluate(r.o, r.oi, result);
-      assertEquals(result.o, Double.valueOf("1"));
+      assertEquals(Double.valueOf("1"),
+          ObjectInspectorUtils.copyToStandardObject(result.o, result.oi, ObjectInspectorCopyOption.JAVA));
       System.out.println("testExprNodeConversionEvaluator ok");
     } catch (Throwable e) {
       e.printStackTrace();
@@ -145,16 +153,17 @@ public class TestExpressionEvaluator extends TestCase {
     }
   }
 
-  private static void measureSpeed(String expr, int times, ExprNodeEvaluator eval, InspectableObject input, Object standardOutput) throws HiveException {
+  private static void measureSpeed(String expr, int times, ExprNodeEvaluator eval, InspectableObject input, Object standardJavaOutput) throws HiveException {
     System.out.println("Evaluating " + expr + " for " + times + " times");
     // evaluate on row
     InspectableObject output = new InspectableObject(); 
     long start = System.currentTimeMillis();
     for (int i=0; i<times; i++) {
       eval.evaluate(input.o, input.oi, output);
-      assertEquals(output.o, standardOutput);
     }
     long end = System.currentTimeMillis();
+    assertEquals(standardJavaOutput,
+        ObjectInspectorUtils.copyToStandardObject(output.o, output.oi, ObjectInspectorCopyOption.JAVA));
     System.out.println("Evaluation finished: " + String.format("%2.3f", (end - start)*0.001) + " seconds, " 
         + String.format("%2.3f", (end - start)*1000.0/times) + " seconds/million call.");
   }

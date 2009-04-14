@@ -21,12 +21,23 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
 
 
 public class UDFToFloat extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFToFloat.class.getName());
 
+  FloatWritable floatWritable = new FloatWritable();
+  
   public UDFToFloat() {
   }
 
@@ -34,9 +45,9 @@ public class UDFToFloat extends UDF {
    * Convert from void to a float. This is called for CAST(... AS FLOAT)
    *
    * @param i The void value to convert
-   * @return Float
+   * @return FloatWritable
    */
-  public Float evaluate(Void i)  {
+  public FloatWritable evaluate(NullWritable i)  {
     return null;
   }
 
@@ -44,13 +55,14 @@ public class UDFToFloat extends UDF {
    * Convert from boolean to a float. This is called for CAST(... AS FLOAT)
    *
    * @param i The boolean value to convert
-   * @return Float
+   * @return FloatWritable
    */
-  public Float evaluate(Boolean i)  {
+  public FloatWritable evaluate(BooleanWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return i.booleanValue() ? (float)1.0 : (float)0.0;
+      floatWritable.set(i.get() ? (float)1.0 : (float)0.0);
+      return floatWritable;
     }
   }
   
@@ -58,13 +70,14 @@ public class UDFToFloat extends UDF {
    * Convert from byte to a float. This is called for CAST(... AS FLOAT)
    *
    * @param i The byte value to convert
-   * @return Float
+   * @return FloatWritable
    */
-  public Float evaluate(Byte i)  {
+  public FloatWritable evaluate(ByteWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Float.valueOf(i.floatValue());
+      floatWritable.set((float)i.get());
+      return floatWritable;
     }
   }
   
@@ -72,13 +85,14 @@ public class UDFToFloat extends UDF {
    * Convert from short to a float. This is called for CAST(... AS FLOAT)
    *
    * @param i The short value to convert
-   * @return Float
+   * @return FloatWritable
    */
-  public Float evaluate(Short i)  {
+  public FloatWritable evaluate(ShortWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Float.valueOf(i.floatValue());
+      floatWritable.set((float)i.get());
+      return floatWritable;
     }
   }
   
@@ -86,13 +100,14 @@ public class UDFToFloat extends UDF {
    * Convert from integer to a float. This is called for CAST(... AS FLOAT)
    *
    * @param i The integer value to convert
-   * @return Float
+   * @return FloatWritable
    */
-  public Float evaluate(Integer i)  {
+  public FloatWritable evaluate(IntWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Float.valueOf(i.floatValue());
+      floatWritable.set((float)i.get());
+      return floatWritable;
     }
   }
   
@@ -100,13 +115,14 @@ public class UDFToFloat extends UDF {
    * Convert from long to a float. This is called for CAST(... AS FLOAT)
    *
    * @param i The long value to convert
-   * @return Float
+   * @return FloatWritable
    */
-  public Float evaluate(Long i)  {
+  public FloatWritable evaluate(LongWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Float.valueOf(i.floatValue());
+      floatWritable.set((float)i.get());
+      return floatWritable;
     }
   }
 
@@ -114,13 +130,14 @@ public class UDFToFloat extends UDF {
    * Convert from double to a float. This is called for CAST(... AS FLOAT)
    *
    * @param i The double value to convert
-   * @return Float
+   * @return FloatWritable
    */  
-  public Float evaluate(Double i)  {
+  public FloatWritable evaluate(DoubleWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Float.valueOf(i.floatValue());
+      floatWritable.set((float)i.get());
+      return floatWritable;
     }
   }
   
@@ -128,30 +145,21 @@ public class UDFToFloat extends UDF {
    * Convert from string to a float. This is called for CAST(... AS FLOAT)
    *
    * @param i The string value to convert
-   * @return Float
+   * @return FloatWritable
    */
-  public Float evaluate(String i)  {
+  public FloatWritable evaluate(Text i)  {
     if (i == null) {
       return null;
     } else {
-      // MySQL returns 0 if the string is not a well-formed numeric value.
-      // return Float.valueOf(0);
-      // But we decided to return NULL instead, which is more conservative.
-      return null;
+      try {
+        floatWritable.set(Float.valueOf(i.toString()));
+        return floatWritable;
+      } catch (NumberFormatException e) {
+        // MySQL returns 0 if the string is not a well-formed numeric value.
+        // But we decided to return NULL instead, which is more conservative.
+        return null;
+      }
     }
   }
   
-  /**
-   * Convert from date to a float. This is called for CAST(... AS FLOAT)
-   *
-   * @param i The date value to convert
-   * @return Float
-   */
-  public Float evaluate(java.sql.Date i)  {
-    if (i == null) {
-      return null;
-    } else {
-        return Float.valueOf(i.getTime());
-    }
-  }  
 }

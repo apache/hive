@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.Text;
 
@@ -173,7 +174,7 @@ public class LazyArray extends LazyNonPrimitive {
         elementInited[index] = true;
         if (arrayElements[index] == null) {
           arrayElements[index] = LazyFactory.createLazyObject(
-            typeInfo.getListElementTypeInfo());
+            ((ListTypeInfo)typeInfo).getListElementTypeInfo());
         }
         arrayElements[index].init(bytes, startPosition[index], 
             elementLength);

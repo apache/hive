@@ -119,9 +119,12 @@ public class OpProcFactory {
           children.add(condn);
           children.add((exprNodeDesc) preds.get(i));
           condn = new exprNodeFuncDesc(
-              TypeInfoFactory.getPrimitiveTypeInfo(Boolean.class),
+              TypeInfoFactory.booleanTypeInfo,
               FunctionRegistry.getUDFClass("AND"),
-              FunctionRegistry.getUDFMethod("AND", Boolean.class, Boolean.class), children);
+              FunctionRegistry.getUDFMethod("AND",
+                  TypeInfoFactory.booleanTypeInfo,
+                  TypeInfoFactory.booleanTypeInfo),
+              children);
         }
       }
       if(condn == null)

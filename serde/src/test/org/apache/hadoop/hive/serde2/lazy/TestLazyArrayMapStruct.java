@@ -23,10 +23,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import java.util.HashMap;
 
@@ -46,11 +48,13 @@ public class TestLazyArrayMapStruct extends TestCase {
       TestLazyPrimitive.initLazyObject(b, data, 0, data.length);
       
       assertNull(b.getListElementObject(-1, (byte)1, nullSequence));
-      assertEquals(Byte.valueOf((byte)-1), b.getListElementObject(0, (byte)1, nullSequence));
+      assertEquals(new ByteWritable((byte)-1), b.getListElementObject(0, (byte)1, nullSequence));
       assertNull(b.getListElementObject(1, (byte)1, nullSequence));
-      assertEquals(Byte.valueOf((byte)8), b.getListElementObject(2, (byte)1, nullSequence));
+      assertEquals(new ByteWritable((byte)8), b.getListElementObject(2, (byte)1, nullSequence));
       assertNull(b.getListElementObject(3, (byte)1, nullSequence));
-      assertEquals(Arrays.asList(new Byte[]{-1,null,8}), b.getList((byte)1, nullSequence));
+      assertEquals(
+          Arrays.asList(new ByteWritable[]{new ByteWritable((byte)-1), null, new ByteWritable((byte)8)}),
+          b.getList((byte)1, nullSequence));
       
       // Array of String
       b = (LazyArray)LazyFactory.createLazyObject(TypeInfoUtils.getTypeInfoFromTypeString("array<string>"));
@@ -58,13 +62,14 @@ public class TestLazyArrayMapStruct extends TestCase {
       // Note: the first and last element of the byte[] are NOT used
       TestLazyPrimitive.initLazyObject(b, data, 1, data.length - 2);
       assertNull(b.getListElementObject(-1, (byte)'\t', nullSequence));
-      assertEquals("b", b.getListElementObject(0, (byte)'\t', nullSequence));
-      assertEquals("c", b.getListElementObject(1, (byte)'\t', nullSequence));
+      assertEquals(new Text("b"), b.getListElementObject(0, (byte)'\t', nullSequence));
+      assertEquals(new Text("c"), b.getListElementObject(1, (byte)'\t', nullSequence));
       assertNull(b.getListElementObject(2, (byte)'\t', nullSequence));
-      assertEquals("", b.getListElementObject(3, (byte)'\t', nullSequence));
-      assertEquals("", b.getListElementObject(4, (byte)'\t', nullSequence));
+      assertEquals(new Text(""), b.getListElementObject(3, (byte)'\t', nullSequence));
+      assertEquals(new Text(""), b.getListElementObject(4, (byte)'\t', nullSequence));
       assertNull(b.getListElementObject(5, (byte)'\t', nullSequence));
-      assertEquals(Arrays.asList(new String[]{"b", "c", null, "", ""}), b.getList((byte)'\t', nullSequence));
+      assertEquals(Arrays.asList(new Text[]{new Text("b"), new Text("c"), null, new Text(""), new Text("")}),
+          b.getList((byte)'\t', nullSequence));
       
     } catch (Throwable e) {
       e.printStackTrace();
@@ -84,17 +89,17 @@ public class TestLazyArrayMapStruct extends TestCase {
         byte[] data = new byte[]{'2', 2, 'd', 'e', 'f', 1, '-', '1', 2, '\\', 'N', 1, '0', 2, '0', 1, '8', 2, 'a', 'b', 'c'};
         TestLazyPrimitive.initLazyObject(b, data, 0, data.length);
         
-        assertEquals("def", b.getMapValueElement((byte)1, (byte)2, nullSequence, Integer.valueOf(2)));
+        assertEquals(new Text("def"), b.getMapValueElement((byte)1, (byte)2, nullSequence, new IntWritable(2)));
         assertNull(b.getMapValueElement((byte)1, (byte)2, nullSequence, Integer.valueOf(-1)));
-        assertEquals("0", b.getMapValueElement((byte)1, (byte)2, nullSequence, Integer.valueOf(0)));
-        assertEquals("abc", b.getMapValueElement((byte)1, (byte)2, nullSequence, Integer.valueOf(8)));
-        assertNull(b.getMapValueElement((byte)1, (byte)2, nullSequence, Integer.valueOf(12345)));
+        assertEquals(new Text("0"), b.getMapValueElement((byte)1, (byte)2, nullSequence, new IntWritable(0)));
+        assertEquals(new Text("abc"), b.getMapValueElement((byte)1, (byte)2, nullSequence, new IntWritable(8)));
+        assertNull(b.getMapValueElement((byte)1, (byte)2, nullSequence, new IntWritable(12345)));
         
-        HashMap<Integer, String> r = new HashMap<Integer, String>();
-        r.put(2, "def");
-        r.put(-1, null);
-        r.put(0, "0");
-        r.put(8, "abc");
+        HashMap<IntWritable, Text> r = new HashMap<IntWritable, Text>();
+        r.put(new IntWritable(2), new Text("def"));
+        r.put(new IntWritable(-1), null);
+        r.put(new IntWritable(0), new Text("0"));
+        r.put(new IntWritable(8), new Text("abc"));
         assertEquals(r, b.getMap((byte)1, (byte)2, nullSequence));
       }
       
@@ -105,17 +110,17 @@ public class TestLazyArrayMapStruct extends TestCase {
         byte[] data = new byte[]{'2', '\t', 'd', '\t', 'f', '#', '2', '\t', 'd', '#', '-', '1', '#', '0', '\t', '0', '#', '8', '\t', 'a', 'b', 'c'};
         TestLazyPrimitive.initLazyObject(b, data, 0, data.length);
         
-        assertEquals("d\tf", b.getMapValueElement((byte)'#', (byte)'\t', nullSequence, "2"));
-        assertNull(b.getMapValueElement((byte)'#', (byte)'\t', nullSequence, Integer.valueOf(-1)));
-        assertEquals("0", b.getMapValueElement((byte)'#', (byte)'\t', nullSequence, "0"));
-        assertEquals("abc", b.getMapValueElement((byte)'#', (byte)'\t', nullSequence, "8"));
-        assertNull(b.getMapValueElement((byte)'#', (byte)'\t', nullSequence, "-"));
+        assertEquals(new Text("d\tf"), b.getMapValueElement((byte)'#', (byte)'\t', nullSequence, new Text("2")));
+        assertNull(b.getMapValueElement((byte)'#', (byte)'\t', nullSequence, new Text("-1")));
+        assertEquals(new Text("0"), b.getMapValueElement((byte)'#', (byte)'\t', nullSequence, new Text("0")));
+        assertEquals(new Text("abc"), b.getMapValueElement((byte)'#', (byte)'\t', nullSequence, new Text("8")));
+        assertNull(b.getMapValueElement((byte)'#', (byte)'\t', nullSequence, new Text("-")));
         
-        HashMap<String,String> r = new HashMap<String, String>();
-        r.put("2", "d\tf");
-        r.put("-1", null);
-        r.put("0", "0");
-        r.put("8", "abc");
+        HashMap<Text,Text> r = new HashMap<Text, Text>();
+        r.put(new Text("2"), new Text("d\tf"));
+        r.put(new Text("-1"), null);
+        r.put(new Text("0"), new Text("0"));
+        r.put(new Text("8"), new Text("abc"));
         assertEquals(r, b.getMap((byte)1, (byte)2, nullSequence));
       }
       
@@ -146,17 +151,17 @@ public class TestLazyArrayMapStruct extends TestCase {
         
         data = new Text("123 a:b:c d=e:f=g hi");
         TestLazyPrimitive.initLazyObject(o, data.getBytes(), 0, data.getLength());
-        assertEquals("{'a':123,'b':['a','b','c'],'c':{'f':'g','d':'e'},'d':'hi'}".replace("'", "\""),
+        assertEquals("{'a':123,'b':['a','b','c'],'c':{'d':'e','f':'g'},'d':'hi'}".replace("'", "\""),
             SerDeUtils.getJSONString(o, oi));
 
         data = new Text("123 \\N d=e:f=g \\N");
         TestLazyPrimitive.initLazyObject(o, data.getBytes(), 0, data.getLength());
-        assertEquals("{'a':123,'b':null,'c':{'f':'g','d':'e'},'d':null}".replace("'", "\""),
+        assertEquals("{'a':123,'b':null,'c':{'d':'e','f':'g'},'d':null}".replace("'", "\""),
             SerDeUtils.getJSONString(o, oi));
 
         data = new Text("\\N a d=\\N:f=g:h no tail");
         TestLazyPrimitive.initLazyObject(o, data.getBytes(), 0, data.getLength());
-        assertEquals("{'a':null,'b':['a'],'c':{'f':'g','d':null,'h':null},'d':'no'}".replace("'", "\""),
+        assertEquals("{'a':null,'b':['a'],'c':{'d':null,'f':'g','h':null},'d':'no'}".replace("'", "\""),
             SerDeUtils.getJSONString(o, oi));
 
         data = new Text("\\N :a:: \\N no tail");
@@ -184,7 +189,7 @@ public class TestLazyArrayMapStruct extends TestCase {
             fieldTypeInfos, new byte[] {' ', ':', '='}, nullSequence, true);
         data = new Text("\\N a d=\\N:f=g:h has tail");
         TestLazyPrimitive.initLazyObject(o, data.getBytes(), 0, data.getLength());
-        assertEquals("{'a':null,'b':['a'],'c':{'f':'g','d':null,'h':null},'d':'has tail'}".replace("'", "\""),
+        assertEquals("{'a':null,'b':['a'],'c':{'d':null,'f':'g','h':null},'d':'has tail'}".replace("'", "\""),
             SerDeUtils.getJSONString(o, oi));
       }
     } catch (Throwable e) {

@@ -22,6 +22,7 @@ import java.util.*;
 import java.io.*;
 
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.conf.Configuration;
@@ -38,6 +39,7 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
 
 /**
@@ -58,7 +60,7 @@ public class MapOperator extends Operator <mapredWork> implements Serializable {
   transient private StructObjectInspector rowObjectInspector;
 
   transient private List<String> partNames;
-  transient private List<String> partValues;
+  transient private Object[] partValues;
   transient private List<ObjectInspector> partObjectInspectors;
   
 
@@ -110,15 +112,16 @@ public class MapOperator extends Operator <mapredWork> implements Serializable {
           // the serdes for the partition columns
           String pcols = p.getProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_PARTITION_COLUMNS);
           if (pcols != null && pcols.length() > 0) {
-            partNames = new ArrayList<String>();
-            partValues = new ArrayList<String>();
-            partObjectInspectors = new ArrayList<ObjectInspector>();
             String[] partKeys = pcols.trim().split("/");
-            for(String key: partKeys) {
+            partNames = new ArrayList<String>(partKeys.length);
+            partValues = new Object[partKeys.length];
+            partObjectInspectors = new ArrayList<ObjectInspector>(partKeys.length);
+            for(int i = 0; i < partKeys.length; i++ ) {
+              String key = partKeys[i];
               partNames.add(key);
-              partValues.add(partSpec.get(key));
+              partValues[i] = new Text(partSpec.get(key));
               partObjectInspectors.add(
-                  ObjectInspectorFactory.getStandardPrimitiveObjectInspector(String.class));
+                  PrimitiveObjectInspectorFactory.writableStringObjectInspector);
             }
             StructObjectInspector partObjectInspector = ObjectInspectorFactory.getStandardStructObjectInspector(partNames, partObjectInspectors);
             

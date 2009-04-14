@@ -30,6 +30,7 @@ import java.io.*;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.io.Text;
 
 import java.util.Properties;
 
@@ -63,7 +64,8 @@ import java.util.Properties;
  * This is not thrift compliant in that it doesn't write out field ids
  * so things cannot actually be versioned.
  */
-public class TBinarySortableProtocol extends TProtocol implements ConfigurableTProtocol, WriteNullsProtocol {
+public class TBinarySortableProtocol extends TProtocol implements ConfigurableTProtocol,
+    WriteNullsProtocol, WriteTextProtocol {
 
   final static Log LOG = LogFactory.getLog(TBinarySortableProtocol.class.getName());
   
@@ -300,32 +302,7 @@ public class TBinarySortableProtocol extends TProtocol implements ConfigurableTP
     } catch (UnsupportedEncodingException uex) {
       throw new TException("JVM DOES NOT SUPPORT UTF-8: " + uex.getMessage());
     }
-    writeRawBytes(nonNullByte, 0, 1);
-    int begin = 0;
-    int i = 0;
-    for (; i < dat.length; i++) {
-      if (dat[i] == 0 || dat[i] == 1) {
-        // Write the first part of the array
-        if (i > begin) {
-          writeRawBytes(dat, begin, i-begin);
-        }
-        // Write the escaped byte.
-        if (dat[i] == 0) {
-          writeRawBytes(escapedNull, 0, escapedNull.length);
-        } else {
-          writeRawBytes(escapedOne, 0, escapedOne.length);
-        }
-        // Move the pointer to the next byte, since we have written
-        // out the escaped byte in the block above already.
-        begin = i+1;
-      }
-    }
-    // Write the remaining part of the array
-    if (i > begin) {
-      writeRawBytes(dat, begin, i-begin);
-    }
-    // Write the terminating NULL byte
-    writeRawBytes(nullByte, 0, 1);
+    writeTextBytes(dat, 0, dat.length);
   }
 
   public void writeBinary(byte[] bin) throws TException {
@@ -573,6 +550,40 @@ public class TBinarySortableProtocol extends TProtocol implements ConfigurableTP
 
   public void writeNull() throws TException {
     writeRawBytes(nullByte, 0, 1);
+  }
+
+  
+  void writeTextBytes(byte[] bytes, int start, int length) throws TException {
+    writeRawBytes(nonNullByte, 0, 1);
+    int begin = 0;
+    int i = start;
+    for (; i < length; i++) {
+      if (bytes[i] == 0 || bytes[i] == 1) {
+        // Write the first part of the array
+        if (i > begin) {
+          writeRawBytes(bytes, begin, i-begin);
+        }
+        // Write the escaped byte.
+        if (bytes[i] == 0) {
+          writeRawBytes(escapedNull, 0, escapedNull.length);
+        } else {
+          writeRawBytes(escapedOne, 0, escapedOne.length);
+        }
+        // Move the pointer to the next byte, since we have written
+        // out the escaped byte in the block above already.
+        begin = i+1;
+      }
+    }
+    // Write the remaining part of the array
+    if (i > begin) {
+      writeRawBytes(bytes, begin, i-begin);
+    }
+    // Write the terminating NULL byte
+    writeRawBytes(nullByte, 0, 1);
+  }
+  
+  public void writeText(Text text) throws TException {
+    writeTextBytes(text.getBytes(), 0, text.getLength());
   }
   
 }

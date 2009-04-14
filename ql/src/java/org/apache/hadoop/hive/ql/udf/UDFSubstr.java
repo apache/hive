@@ -19,38 +19,57 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
 
 
 public class UDFSubstr extends UDF {
 
+  Text r;
   public UDFSubstr() {
+    r = new Text();
   }
+  
+  public Text evaluate(Text t, IntWritable pos, IntWritable len)  {
+    
+    if ((t == null) || (pos == null) || (len == null)) {
+      return null;
+    }
+    
+    r.clear();
+    if ((len.get() <= 0)) {
+      return r;
+    }
 
-  public String evaluate(String s, Integer pos, Integer len)  {
+    String s = t.toString();
+    if ((Math.abs(pos.get()) > s.length())) {
+      return r;
+    }
+    
     int start, end;
 
-    if ((s == null) || (pos == null) || (len == null))
-      return null;
-    if ((len <= 0) || (Math.abs(pos) > s.length()))
-      return "";
-
-    if (pos > 0)
-      start = pos - 1;
-    else if (pos < 0)
-      start = s.length() + pos;
-    else
+    if (pos.get() > 0) {
+      start = pos.get() - 1;
+    } else if (pos.get() < 0) {
+      start = s.length() + pos.get();
+    } else {
       start = 0;
-
-    if ((s.length() - start) < len)
+    }
+    
+    if ((s.length() - start) < len.get()) {
       end = s.length();
-    else
-      end = start + len;
-
-    return s.substring(start, end);
+    } else {
+      end = start + len.get();
+    }
+    
+    r.set(s.substring(start, end));
+    return r;
   }
 
-  public String evaluate(String s, Integer pos)  {
-    return evaluate(s, pos, Integer.MAX_VALUE);
+  IntWritable maxValue = new IntWritable(Integer.MAX_VALUE);
+  
+  public Text evaluate(Text s, IntWritable pos)  {
+    return evaluate(s, pos, maxValue);
   }
 
 }

@@ -23,6 +23,7 @@ import com.facebook.thrift.protocol.*;
 import org.apache.hadoop.hive.serde2.*;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 
 import com.facebook.thrift.protocol.TType;
 
@@ -57,10 +58,8 @@ public class DynamicSerDeTypeBool extends DynamicSerDeTypeBase {
   public void serialize(Object o, ObjectInspector oi, TProtocol oprot)
       throws TException, SerDeException, NoSuchFieldException,
       IllegalAccessException {
-    assert (oi.getCategory() == ObjectInspector.Category.PRIMITIVE);
-    assert (((PrimitiveObjectInspector) oi).getPrimitiveClass()
-        .equals(Boolean.class));
-    oprot.writeBool((Boolean) o);
+    BooleanObjectInspector poi = (BooleanObjectInspector) oi;
+    oprot.writeBool(poi.get(o));
   }
 
   public byte getType() {

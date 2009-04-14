@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
 import junit.framework.TestCase;
 
@@ -72,19 +73,19 @@ public class TestReflectionObjectInspectors extends TestCase {
       assertEquals(afields, soi.getStructFieldsDataAsList(a));
       
       // sub fields
-      assertEquals(ObjectInspectorFactory.getStandardPrimitiveObjectInspector(Integer.class),
+      assertEquals(PrimitiveObjectInspectorFactory.javaIntObjectInspector,
           fields.get(0).getFieldObjectInspector());
-      assertEquals(ObjectInspectorFactory.getStandardPrimitiveObjectInspector(Integer.class),
+      assertEquals(PrimitiveObjectInspectorFactory.javaIntObjectInspector,
           fields.get(1).getFieldObjectInspector());
-      assertEquals(ObjectInspectorFactory.getStandardPrimitiveObjectInspector(String.class),
+      assertEquals(PrimitiveObjectInspectorFactory.javaStringObjectInspector,
           fields.get(2).getFieldObjectInspector());
       assertEquals(soi, fields.get(3).getFieldObjectInspector());
       assertEquals(ObjectInspectorFactory.getStandardListObjectInspector(
-          ObjectInspectorFactory.getStandardPrimitiveObjectInspector(String.class)),
+          PrimitiveObjectInspectorFactory.javaStringObjectInspector),
           fields.get(4).getFieldObjectInspector());
       assertEquals(ObjectInspectorFactory.getStandardMapObjectInspector(
-          ObjectInspectorFactory.getStandardPrimitiveObjectInspector(String.class),
-          ObjectInspectorFactory.getStandardPrimitiveObjectInspector(String.class)),
+          PrimitiveObjectInspectorFactory.javaStringObjectInspector,
+          PrimitiveObjectInspectorFactory.javaStringObjectInspector),
           fields.get(5).getFieldObjectInspector());
     } catch (Throwable e) {
       e.printStackTrace();

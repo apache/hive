@@ -21,12 +21,23 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
 
 
 public class UDFToDouble extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFToDouble.class.getName());
 
+  DoubleWritable doubleWritable = new DoubleWritable();
+  
   public UDFToDouble() {
   }
 
@@ -34,9 +45,9 @@ public class UDFToDouble extends UDF {
    * Convert from void to a double. This is called for CAST(... AS DOUBLE)
    *
    * @param i The void value to convert
-   * @return Double
+   * @return DoubleWritable
    */
-  public Double evaluate(Void i)  {
+  public DoubleWritable evaluate(NullWritable i)  {
     return null;
   }
 
@@ -44,13 +55,14 @@ public class UDFToDouble extends UDF {
    * Convert from boolean to a double. This is called for CAST(... AS DOUBLE)
    *
    * @param i The boolean value to convert
-   * @return Double
+   * @return DoubleWritable
    */
-  public Double evaluate(Boolean i)  {
+  public DoubleWritable evaluate(BooleanWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return i.booleanValue() ? 1.0 : 0.0;
+      doubleWritable.set(i.get() ? 1.0 : 0.0);
+      return doubleWritable;
     }
   }
 
@@ -58,13 +70,14 @@ public class UDFToDouble extends UDF {
    * Convert from boolean to a double. This is called for CAST(... AS DOUBLE)
    *
    * @param i The byte value to convert
-   * @return Double
+   * @return DoubleWritable
    */
-  public Double evaluate(Byte i)  {
+  public DoubleWritable evaluate(ByteWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Double.valueOf(i.doubleValue());
+      doubleWritable.set(i.get());
+      return doubleWritable;
     }
   }
   
@@ -72,13 +85,14 @@ public class UDFToDouble extends UDF {
    * Convert from short to a double. This is called for CAST(... AS DOUBLE)
    *
    * @param i The short value to convert
-   * @return Double
+   * @return DoubleWritable
    */
-  public Double evaluate(Short i)  {
+  public DoubleWritable evaluate(ShortWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Double.valueOf(i.doubleValue());
+      doubleWritable.set(i.get());
+      return doubleWritable;
     }
   }
   
@@ -86,13 +100,14 @@ public class UDFToDouble extends UDF {
    * Convert from integer to a double. This is called for CAST(... AS DOUBLE)
    *
    * @param i The integer value to convert
-   * @return Double
+   * @return DoubleWritable
    */
-  public Double evaluate(Integer i)  {
+  public DoubleWritable evaluate(IntWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Double.valueOf(i.doubleValue());
+      doubleWritable.set(i.get());
+      return doubleWritable;
     }
   }
   
@@ -100,13 +115,14 @@ public class UDFToDouble extends UDF {
    * Convert from long to a double. This is called for CAST(... AS DOUBLE)
    *
    * @param i The long value to convert
-   * @return Double
+   * @return DoubleWritable
    */
-  public Double evaluate(Long i)  {
+  public DoubleWritable evaluate(LongWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Double.valueOf(i.doubleValue());
+      doubleWritable.set(i.get());
+      return doubleWritable;
     }
   }
  
@@ -114,13 +130,14 @@ public class UDFToDouble extends UDF {
    * Convert from float to a double. This is called for CAST(... AS DOUBLE)
    *
    * @param i The float value to convert
-   * @return Double
+   * @return DoubleWritable
    */
-  public Double evaluate(Float i)  {
+  public DoubleWritable evaluate(FloatWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Double.valueOf(i.doubleValue());
+      doubleWritable.set(i.get());
+      return doubleWritable;
     }
   }
   
@@ -128,35 +145,22 @@ public class UDFToDouble extends UDF {
    * Convert from string to a double. This is called for CAST(... AS DOUBLE)
    *
    * @param i The string value to convert
-   * @return Double
+   * @return DoubleWritable
    */
-  public Double evaluate(String i)  {
+  public DoubleWritable evaluate(Text i)  {
     if (i == null) {
       return null;
     } else {
       try {
-        return Double.valueOf(i);
+        doubleWritable.set(Double.valueOf(i.toString()));
+        return doubleWritable;
       } catch (NumberFormatException e) {
         // MySQL returns 0 if the string is not a well-formed double value.
-        // return Double.valueOf(0);
         // But we decided to return NULL instead, which is more conservative.
         return null;
       }
     }
   }
   
-  /**
-   * Convert from date to a double. This is called for CAST(... AS DOUBLE)
-   *
-   * @param i The date value to convert
-   * @return Double
-   */
-  public Double evaluate(java.sql.Date i)  {
-    if (i == null) {
-      return null;
-    } else {
-        return Double.valueOf(i.getTime());
-    }
-  }
   
 }

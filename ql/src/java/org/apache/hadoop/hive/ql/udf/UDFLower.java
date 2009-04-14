@@ -19,19 +19,23 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.io.Text;
+
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 public class UDFLower extends UDF {
 
+  Text t = new Text();
   public UDFLower() {
   }
 
-  public String evaluate(String s) {
+  public Text evaluate(Text s) {
     if (s == null) {
       return null;
     }
-    return s.toLowerCase();
+    t.set(s.toString().toUpperCase());
+    return t;
   }
 
 }

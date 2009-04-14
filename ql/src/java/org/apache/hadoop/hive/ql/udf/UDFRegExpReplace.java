@@ -19,33 +19,47 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.io.Text;
+
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 public class UDFRegExpReplace extends UDF {
 
-  private String lastRegex = null;
+  private Text lastRegex = new Text();
   private Pattern p = null;
+  
+  private Text lastReplacement = new Text();
+  private String replacementString = null; 
 
+  Text result = new Text();
   public UDFRegExpReplace() {
   }
 
-  public String evaluate(String s, String regex, String replacement) {
+  public Text evaluate(Text s, Text regex, Text replacement) {
     if (s == null || regex == null || replacement == null) {
       return null;
     }
+    // If the regex is changed, make sure we compile the regex again.
     if (!regex.equals(lastRegex)) {
-      lastRegex = regex;
-      p = Pattern.compile(regex);
+      lastRegex.set(regex);
+      p = Pattern.compile(regex.toString());
     }
-    Matcher m = p.matcher(s);
+    Matcher m = p.matcher(s.toString());
+    // If the replacement is changed, make sure we redo toString again.
+    if (!replacement.equals(lastReplacement)) {
+      lastReplacement.set(replacement);
+      replacementString = replacement.toString();
+    }
     
     StringBuffer sb = new StringBuffer();
     while (m.find()) {
-      m.appendReplacement(sb, replacement);
+      m.appendReplacement(sb, replacementString);
     }
     m.appendTail(sb);
-    return sb.toString();    
+    
+    result.set(sb.toString());
+    return result;    
   }
 
 }

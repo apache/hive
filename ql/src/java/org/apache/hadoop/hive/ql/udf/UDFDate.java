@@ -26,6 +26,7 @@ import java.util.Date;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.io.Text;
 
 
 public class UDFDate extends UDF {
@@ -33,8 +34,8 @@ public class UDFDate extends UDF {
   private static Log LOG = LogFactory.getLog(UDFDate.class.getName());
 
   private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-  private Calendar calendar = Calendar.getInstance();
 
+  Text t = new Text();
   public UDFDate() {
   }
 
@@ -44,11 +45,12 @@ public class UDFDate extends UDF {
    * @param dateString the date string in the format of "yyyy-MM-dd HH:mm:ss" or "yyyy-MM-dd".
    * @return the date in the format of "yyyy-MM-dd".
    */
-  public String evaluate(String dateString)  {
+  public Text evaluate(Text dateString)  {
     
     try {
-      Date date = formatter.parse(dateString);
-      return formatter.format(date);
+      Date date = formatter.parse(dateString.toString());
+      t.set(formatter.format(date));
+      return t;
     } catch (ParseException e) {
       return null;
     }

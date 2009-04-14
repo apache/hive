@@ -21,19 +21,23 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.io.LongWritable;
 
 public class UDFCeil extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFCeil.class.getName());
 
+  LongWritable longWritable = new LongWritable();
   public UDFCeil() {
   }
 
-  public Long evaluate(Double i)  {
+  public LongWritable evaluate(DoubleWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Long.valueOf((long)Math.ceil(i));
+      longWritable.set((long)Math.ceil(i.get()));
+      return longWritable;
     }
   }
   

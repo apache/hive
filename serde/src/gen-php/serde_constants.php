@@ -32,6 +32,8 @@ $GLOBALS['serde_CONSTANTS']['MAPKEY_DELIM'] = 'mapkey.delim';
 
 $GLOBALS['serde_CONSTANTS']['QUOTE_CHAR'] = 'quote.delim';
 
+$GLOBALS['serde_CONSTANTS']['VOID_TYPE_NAME'] = 'void';
+
 $GLOBALS['serde_CONSTANTS']['BOOLEAN_TYPE_NAME'] = 'boolean';
 
 $GLOBALS['serde_CONSTANTS']['TINYINT_TYPE_NAME'] = 'tinyint';
@@ -58,7 +60,10 @@ $GLOBALS['serde_CONSTANTS']['LIST_TYPE_NAME'] = 'array';
 
 $GLOBALS['serde_CONSTANTS']['MAP_TYPE_NAME'] = 'map';
 
+$GLOBALS['serde_CONSTANTS']['STRUCT_TYPE_NAME'] = 'struct';
+
 $GLOBALS['serde_CONSTANTS']['PrimitiveTypes'] = array(
+  'void' => true,
   'boolean' => true,
   'tinyint' => true,
   'smallint' => true,

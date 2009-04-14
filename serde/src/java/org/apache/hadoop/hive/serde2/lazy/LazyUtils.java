@@ -21,6 +21,13 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
+
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.io.Text;
 
 public class LazyUtils {
@@ -88,20 +95,40 @@ public class LazyUtils {
    * Write out the text representation of a Primitive Object to a UTF8 byte stream. 
    * @param out  The UTF8 byte OutputStream
    * @param o    The primitive Object
-   * @throws IOException
    */
-  public static void writePrimitiveUTF8(OutputStream out, Object o) throws IOException {
-    if (o.getClass() == Integer.class || o.getClass() == Short.class 
-        || o.getClass() == Byte.class) {
-      LazyInteger.writeUTF8(out, ((Number)o).intValue());
-    } else if (o.getClass() == Long.class) {
-      LazyLong.writeUTF8(out, ((Long)o).longValue());
-    } else if (o.getClass() == Text.class) {
-      Text t = (Text)o;
-      out.write(t.getBytes(), 0, t.getLength());
-    } else {
-      ByteBuffer b = Text.encode(o.toString());
-      out.write(b.array(), 0, b.limit());
+  public static void writePrimitiveUTF8(OutputStream out, Object o, PrimitiveObjectInspector oi) throws IOException {
+    
+    switch (oi.getPrimitiveCategory()) {
+      case BYTE: {
+        LazyInteger.writeUTF8(out, ((ByteObjectInspector)oi).get(o));
+        break;
+      }
+      case SHORT: {
+        LazyInteger.writeUTF8(out, ((ShortObjectInspector)oi).get(o));
+        break;
+      }
+      case INT: {
+        LazyInteger.writeUTF8(out, ((IntObjectInspector)oi).get(o));
+        break;
+      }
+      case LONG: {
+        LazyLong.writeUTF8(out, ((LongObjectInspector)oi).get(o));
+        break;
+      }
+      // TODO: We should enable this piece of code, once we pass ObjectInspector in the Operator.init() 
+      // instead of Operator.forward().  Until then, JoinOperator will assume the output columns are
+      // all strings but they may not be.
+      /*
+      case STRING: {
+        Text t = ((StringObjectInspector)oi).getPrimitiveWritableObject(o);
+        out.write(t.getBytes(), 0, t.getLength());
+        break;
+      }
+      */
+      default: { 
+        ByteBuffer b = Text.encode(o.toString());
+        out.write(b.array(), 0, b.limit());
+      }
     }
   }
   

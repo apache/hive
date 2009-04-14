@@ -21,12 +21,25 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.lazy.LazyByte;
+import org.apache.hadoop.hive.serde2.lazy.LazyShort;
+import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
 
 
 public class UDFToShort extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFToByte.class.getName());
 
+  ShortWritable shortWritable = new ShortWritable();
+  
   public UDFToShort() {
   }
 
@@ -34,9 +47,9 @@ public class UDFToShort extends UDF {
    * Convert from void to a short. This is called for CAST(... AS SMALLINT)
    *
    * @param i The void value to convert
-   * @return Short
+   * @return ShortWritable
    */
-  public Short evaluate(Void i)  {
+  public ShortWritable evaluate(NullWritable i)  {
     return null;
   }
 
@@ -44,13 +57,14 @@ public class UDFToShort extends UDF {
    * Convert from boolean to a short. This is called for CAST(... AS SMALLINT)
    *
    * @param i The boolean value to convert
-   * @return Short
+   * @return ShortWritable
    */
-  public Short evaluate(Boolean i)  {
+  public ShortWritable evaluate(BooleanWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return i.booleanValue() ? (short)1 : (short)0;
+      shortWritable.set(i.get() ? (short)1 : (short)0);
+      return shortWritable;
     }
   }
 
@@ -58,13 +72,14 @@ public class UDFToShort extends UDF {
    * Convert from byte to a short. This is called for CAST(... AS SMALLINT)
    *
    * @param i The byte value to convert
-   * @return Short
+   * @return ShortWritable
    */
-  public Short evaluate(Byte i)  {
+  public ShortWritable evaluate(ByteWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Short.valueOf(i.shortValue());
+      shortWritable.set((short)i.get());
+      return shortWritable;
     }
   }
 
@@ -72,13 +87,14 @@ public class UDFToShort extends UDF {
    * Convert from integer to a short. This is called for CAST(... AS SMALLINT)
    *
    * @param i The integer value to convert
-   * @return Short
+   * @return ShortWritable
    */
-  public Short evaluate(Integer i)  {
+  public ShortWritable evaluate(IntWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Short.valueOf(i.shortValue());
+      shortWritable.set((short)i.get());
+      return shortWritable;
     }
   }
 
@@ -86,13 +102,14 @@ public class UDFToShort extends UDF {
    * Convert from long to a short. This is called for CAST(... AS SMALLINT)
    *
    * @param i The long value to convert
-   * @return Short
+   * @return ShortWritable
    */
-  public Short evaluate(Long i)  {
+  public ShortWritable evaluate(LongWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Short.valueOf(i.shortValue());
+      shortWritable.set((short)i.get());
+      return shortWritable;
     }
   }
   
@@ -100,13 +117,14 @@ public class UDFToShort extends UDF {
    * Convert from float to a short. This is called for CAST(... AS SMALLINT)
    *
    * @param i The float value to convert
-   * @return Short
+   * @return ShortWritable
    */
-  public Short evaluate(Float i)  {
+  public ShortWritable evaluate(FloatWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Short.valueOf(i.shortValue());
+      shortWritable.set((short)i.get());
+      return shortWritable;
     }
   }
   
@@ -114,13 +132,14 @@ public class UDFToShort extends UDF {
    * Convert from double to a short. This is called for CAST(... AS SMALLINT)
    *
    * @param i The double value to convert
-   * @return Short
+   * @return ShortWritable
    */
-  public Short evaluate(Double i)  {
+  public ShortWritable evaluate(DoubleWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Short.valueOf(i.shortValue());
+      shortWritable.set((short)i.get());
+      return shortWritable;
     }
   }
   
@@ -128,14 +147,15 @@ public class UDFToShort extends UDF {
    * Convert from string to a short. This is called for CAST(... AS SMALLINT)
    *
    * @param i The string value to convert
-   * @return Short
+   * @return ShortWritable
    */
-  public Short evaluate(String i)  {
+  public ShortWritable evaluate(Text i)  {
     if (i == null) {
       return null;
     } else {
       try {
-        return Short.valueOf(i);
+        shortWritable.set(LazyShort.parseShort(i.getBytes(), 0 , i.getLength(), 10));
+        return shortWritable;
       } catch (NumberFormatException e) {
         // MySQL returns 0 if the string is not a well-formed numeric value.
         // return Byte.valueOf(0);
@@ -144,18 +164,4 @@ public class UDFToShort extends UDF {
       }
     }
   }
-  
-  /**
-   * Convert from date to a short. This is called for CAST(... AS SMALLINT)
-   *
-   * @param i The date value to convert
-   * @return Short
-   */
-  public Short evaluate(java.sql.Date i)  {
-    if (i == null) {
-      return null;
-    } else {
-        return Long.valueOf(i.getTime()).shortValue();
-    }
-  }  
 }

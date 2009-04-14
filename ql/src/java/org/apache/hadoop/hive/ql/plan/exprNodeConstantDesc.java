@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
@@ -33,11 +34,9 @@ public class exprNodeConstantDesc extends exprNodeDesc implements Serializable {
     super(typeInfo);
     this.value = value;
   }
-  public exprNodeConstantDesc(Class<?> c, Object value) {
-    this(TypeInfoFactory.getPrimitiveTypeInfo(c), value);
-  }
   public exprNodeConstantDesc(Object value) {
-    this(value.getClass(), value);
+    this(TypeInfoFactory.getPrimitiveTypeInfoFromJavaPrimitive(value.getClass()),
+        value);
   }
 
   public void setValue(Object value) {
@@ -59,7 +58,7 @@ public class exprNodeConstantDesc extends exprNodeDesc implements Serializable {
       return "null";
     }
 
-    if (typeInfo.getPrimitiveClass() == String.class) {
+    if (typeInfo.getTypeName().equals(Constants.STRING_TYPE_NAME)) {
       return "'" + value.toString() + "'";
     }
     else {

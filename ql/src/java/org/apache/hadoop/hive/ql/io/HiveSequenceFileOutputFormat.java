@@ -51,12 +51,11 @@ public class HiveSequenceFileOutputFormat extends
    *          the value class used for create
    * @param isCompressed
    *          whether the content is compressed or not
-   * @param tableInfo
+   * @param tableProperties
    *          the tableInfo of this file's corresponding table
    * @param progress
    *          progress used for status report
-   * @return
-   * @throws IOException
+   * @return the RecordWriter for the output file
    */
   @Override
   public RecordWriter getHiveRecordWriter(JobConf jc, Path finalOutPath,

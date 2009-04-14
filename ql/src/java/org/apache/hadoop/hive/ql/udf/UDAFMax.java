@@ -18,10 +18,14 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import java.sql.Date;
-
 import org.apache.hadoop.hive.ql.exec.UDAF;
 import org.apache.hadoop.hive.ql.exec.UDAFEvaluator;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
 
 
 
@@ -41,28 +45,28 @@ public class UDAFMax extends UDAF {
       mEmpty = true;
     }
 
-    public boolean iterate(Short o) {
+    public boolean iterate(ShortWritable o) {
       if (o != null) {
         if (mEmpty) {
-          mMax = o;
+          mMax = o.get();
           mEmpty = false;
         } else {
-          mMax = (short) Math.max(mMax, o);
+          mMax = (short) Math.max(mMax, o.get());
         }
       }
       return true;
     }
 
-    public Short terminatePartial() {
-      return mEmpty ? null : Short.valueOf(mMax);
+    public ShortWritable terminatePartial() {
+      return mEmpty ? null : new ShortWritable(mMax);
     }
 
-    public boolean merge(Short o) {
+    public boolean merge(ShortWritable o) {
       return iterate(o);
     }
 
-    public Short terminate() {
-      return mEmpty ? null : Short.valueOf(mMax);
+    public ShortWritable terminate() {
+      return mEmpty ? null : new ShortWritable(mMax);
     }
   }
 
@@ -80,28 +84,28 @@ public class UDAFMax extends UDAF {
       mEmpty = true;
     }
 
-    public boolean iterate(Integer o) {
+    public boolean iterate(IntWritable o) {
       if (o != null) {
         if (mEmpty) {
-          mMax = o;
+          mMax = o.get();
           mEmpty = false;
         } else {
-          mMax = Math.max(mMax, o);
+          mMax = Math.max(mMax, o.get());
         }
       }
       return true;
     }
 
-    public Integer terminatePartial() {
-      return mEmpty ? null : Integer.valueOf(mMax);
+    public IntWritable terminatePartial() {
+      return mEmpty ? null : new IntWritable(mMax);
     }
 
-    public boolean merge(Integer o) {
+    public boolean merge(IntWritable o) {
       return iterate(o);
     }
 
-    public Integer terminate() {
-      return mEmpty ? null : Integer.valueOf(mMax);
+    public IntWritable terminate() {
+      return mEmpty ? null : new IntWritable(mMax);
     }
   }
 
@@ -119,28 +123,28 @@ public class UDAFMax extends UDAF {
       mEmpty = true;
     }
 
-    public boolean iterate(Long o) {
+    public boolean iterate(LongWritable o) {
       if (o != null) {
         if (mEmpty) {
-          mMax = o;
+          mMax = o.get();
           mEmpty = false;
         } else {
-          mMax = Math.max(mMax, o);
+          mMax = Math.max(mMax, o.get());
         }
       }
       return true;
     }
 
-    public Long terminatePartial() {
-      return mEmpty ? null : Long.valueOf(mMax);
+    public LongWritable terminatePartial() {
+      return mEmpty ? null : new LongWritable(mMax);
     }
 
-    public boolean merge(Long o) {
+    public boolean merge(LongWritable o) {
       return iterate(o);
     }
 
-    public Long terminate() {
-      return mEmpty ? null : Long.valueOf(mMax);
+    public LongWritable terminate() {
+      return mEmpty ? null : new LongWritable(mMax);
     }
   }
 
@@ -158,28 +162,28 @@ public class UDAFMax extends UDAF {
       mEmpty = true;
     }
 
-    public boolean iterate(Float o) {
+    public boolean iterate(FloatWritable o) {
       if (o != null) {
         if (mEmpty) {
-          mMax = o;
+          mMax = o.get();
           mEmpty = false;
         } else {
-          mMax = Math.max(mMax, o);
+          mMax = Math.max(mMax, o.get());
         }
       }
       return true;
     }
 
-    public Float terminatePartial() {
-      return mEmpty ? null : Float.valueOf(mMax);
+    public FloatWritable terminatePartial() {
+      return mEmpty ? null : new FloatWritable(mMax);
     }
 
-    public boolean merge(Float o) {
+    public boolean merge(FloatWritable o) {
       return iterate(o);
     }
 
-    public Float terminate() {
-      return mEmpty ? null : Float.valueOf(mMax);
+    public FloatWritable terminate() {
+      return mEmpty ? null : new FloatWritable(mMax);
     }
   }
 
@@ -197,33 +201,33 @@ public class UDAFMax extends UDAF {
       mEmpty = true;
     }
 
-    public boolean iterate(Double o) {
+    public boolean iterate(DoubleWritable o) {
       if (o != null) {
         if (mEmpty) {
-          mMax = o;
+          mMax = o.get();
           mEmpty = false;
         } else {
-          mMax = Math.max(mMax, o);
+          mMax = Math.max(mMax, o.get());
         }
       }
       return true;
     }
 
-    public Double terminatePartial() {
-      return mEmpty ? null : Double.valueOf(mMax);
+    public DoubleWritable terminatePartial() {
+      return mEmpty ? null : new DoubleWritable(mMax);
     }
 
-    public boolean merge(Double o) {
+    public boolean merge(DoubleWritable o) {
       return iterate(o);
     }
 
-    public Double terminate() {
-      return mEmpty ? null : Double.valueOf(mMax);
+    public DoubleWritable terminate() {
+      return mEmpty ? null : new DoubleWritable(mMax);
     }
   }
 
   static public class MaxStringEvaluator implements UDAFEvaluator {
-    private String mMax;
+    private Text mMax;
     private boolean mEmpty;
 
     public MaxStringEvaluator() {
@@ -236,68 +240,30 @@ public class UDAFMax extends UDAF {
       mEmpty = true;
     }
 
-    public boolean iterate(String o) {
+    public boolean iterate(Text o) {
       if (o != null) {
         if (mEmpty) {
-          mMax = o;
+          mMax = new Text(o);
           mEmpty = false;
         } else if (mMax.compareTo(o) < 0) {
-          mMax = o;
+          mMax.set(o);
         }
       }
       return true;
     }
 
-    public String terminatePartial() {
+    public Text terminatePartial() {
       return mEmpty ? null : mMax;
     }
 
-    public boolean merge(String o) {
+    public boolean merge(Text o) {
       return iterate(o);
     }
 
-    public String terminate() {
+    public Text terminate() {
       return mEmpty ? null : mMax;
     }
   }
 
-  static public class MaxDateEvaluator implements UDAFEvaluator {
-    private Date mMax;
-    private boolean mEmpty;
-
-    public MaxDateEvaluator() {
-      super();
-      init();
-    }
-
-    public void init() {
-      mMax = null;
-      mEmpty = true;
-    }
-
-    public boolean iterate(Date o) {
-      if (o != null) {
-        if (mEmpty) {
-          mMax = o;
-          mEmpty = false;
-        } else if (mMax.compareTo(o) < 0){
-          mMax = o;
-        }
-      }
-      return true;
-    }
-
-    public Date terminatePartial() {
-      return mEmpty ? null : mMax;
-    }
-
-    public boolean merge(Date o) {
-      return iterate(o);
-    }
-
-    public Date terminate() {
-      return mEmpty ? null : mMax;
-    }
-  }
 
 }

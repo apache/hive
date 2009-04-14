@@ -35,7 +35,7 @@ public class exprNodeColumnDesc extends exprNodeDesc implements Serializable {
     this.column = column;
   }
   public exprNodeColumnDesc(Class<?> c, String column) {
-    super(TypeInfoFactory.getPrimitiveTypeInfo(c));
+    super(TypeInfoFactory.getPrimitiveTypeInfoFromJavaPrimitive(c));
     this.column = column;
   }
   public String getColumn() {

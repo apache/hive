@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 
 public class ExprNodeIndexEvaluator extends ExprNodeEvaluator {
@@ -48,16 +49,25 @@ public class ExprNodeIndexEvaluator extends ExprNodeEvaluator {
     indexEvaluator.evaluate(row, rowInspector, indexInspectableObject);
 
     if (mainInspectableObject.oi.getCategory() == Category.LIST) {
-      int index = ((Number)indexInspectableObject.o).intValue();
+      PrimitiveObjectInspector poi = ((PrimitiveObjectInspector)indexInspectableObject.oi);
+      Object indexObject = poi.getPrimitiveJavaObject(indexInspectableObject.o);
+      int index = ((Number)indexObject).intValue();
     
       ListObjectInspector loi = (ListObjectInspector)mainInspectableObject.oi;
       result.oi = loi.getListElementObjectInspector();
       result.o = loi.getListElement(mainInspectableObject.o, index);
     }
     else if (mainInspectableObject.oi.getCategory() == Category.MAP) {
+      PrimitiveObjectInspector poi = ((PrimitiveObjectInspector)indexInspectableObject.oi);
       MapObjectInspector moi = (MapObjectInspector)mainInspectableObject.oi;
       result.oi = moi.getMapValueObjectInspector();
-      result.o = moi.getMapValueElement(mainInspectableObject.o, indexInspectableObject.o);
+      if (((PrimitiveObjectInspector)moi.getMapKeyObjectInspector()).isWritable()) {
+        Object indexObject = poi.getPrimitiveWritableObject(indexInspectableObject.o);
+        result.o = moi.getMapValueElement(mainInspectableObject.o, indexObject);
+      } else {
+        Object indexObject = poi.getPrimitiveJavaObject(indexInspectableObject.o);
+        result.o = moi.getMapValueElement(mainInspectableObject.o, indexObject);
+      }
     }
     else {
       // Should never happen because we checked this in SemanticAnalyzer.getXpathOrFuncExprNodeDesc

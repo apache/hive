@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.Text;
 
@@ -237,7 +238,7 @@ public class LazyMap extends LazyNonPrimitive {
       valueInited[index] = true;
       if (valueObjects[index] == null) {
         valueObjects[index] = LazyFactory.createLazyObject(
-            typeInfo.getMapValueTypeInfo());
+            ((MapTypeInfo)typeInfo).getMapValueTypeInfo());
       }
       valueObjects[index].init(bytes, valueIBegin, valueILength);
     }
@@ -263,7 +264,7 @@ public class LazyMap extends LazyNonPrimitive {
       if (keyObjects[index] == null) {
         // Keys are always primitive
         keyObjects[index] = LazyFactory.createLazyPrimitiveClass(
-            typeInfo.getMapKeyTypeInfo().getPrimitiveClass());
+            ((MapTypeInfo)typeInfo).getMapKeyTypeInfo().getTypeName());
       }
       keyObjects[index].init(bytes, keyIBegin, keyILength);
     }

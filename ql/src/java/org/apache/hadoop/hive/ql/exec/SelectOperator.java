@@ -38,7 +38,7 @@ public class SelectOperator extends Operator <selectDesc> implements Serializabl
   private static final long serialVersionUID = 1L;
   transient protected ExprNodeEvaluator[] eval;
 
-  transient ArrayList<Object> output;
+  transient Object[] output;
   transient ArrayList<ObjectInspector> outputFieldObjectInspectors;
   transient ObjectInspector outputObjectInspector;
   transient InspectableObject tempInspectableObject;
@@ -54,10 +54,10 @@ public class SelectOperator extends Operator <selectDesc> implements Serializabl
         assert(colList.get(i) != null);
         eval[i] = ExprNodeEvaluatorFactory.get(colList.get(i));
       }
-      output = new ArrayList<Object>(eval.length);
+      output = new Object[eval.length];
       outputFieldObjectInspectors = new ArrayList<ObjectInspector>(eval.length);
       for(int j=0; j<eval.length; j++) {
-        output.add(null);
+        output[j] = null;
         outputFieldObjectInspectors.add(null);
       }
       tempInspectableObject = new InspectableObject();      
@@ -72,7 +72,7 @@ public class SelectOperator extends Operator <selectDesc> implements Serializabl
       throws HiveException {
     for(int i=0; i<eval.length; i++) {
       eval[i].evaluate(row, rowInspector, tempInspectableObject);
-      output.set(i, tempInspectableObject.o);
+      output[i] = tempInspectableObject.o;
       if (firstRow) {
         outputFieldObjectInspectors.set(i, tempInspectableObject.oi);
       }

@@ -22,23 +22,33 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 
 
 public class UDFRound extends UDF {
 
+  DoubleWritable doubleWritable = new DoubleWritable();
+  LongWritable longWritable = new LongWritable();
+  
   public UDFRound() {
   }
 
-  public Long evaluate(Double n) {
-    if (n == null)
+  public LongWritable evaluate(DoubleWritable n) {
+    if (n == null) {
       return null;
-    return evaluate(n, 0).longValue();
+    }
+    longWritable.set(BigDecimal.valueOf(n.get()).setScale(0, RoundingMode.HALF_UP).longValue());
+    return longWritable;
   }
 
-  public Double evaluate(Double n, Integer i) {
-    if ((n == null) || (i == null))
+  public DoubleWritable evaluate(DoubleWritable n, IntWritable i) {
+    if ((n == null) || (i == null)) {
       return null;
-    return BigDecimal.valueOf(n).setScale(i, RoundingMode.HALF_UP).doubleValue();
+    }
+    doubleWritable.set(BigDecimal.valueOf(n.get()).setScale(i.get(), RoundingMode.HALF_UP).doubleValue());
+    return doubleWritable;
   }
   
 }

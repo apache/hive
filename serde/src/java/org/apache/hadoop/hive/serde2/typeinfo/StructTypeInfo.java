@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 
 /** StructTypeInfo represents the TypeInfo of a struct.
@@ -45,7 +46,7 @@ public class StructTypeInfo extends TypeInfo implements Serializable{
 
   public String getTypeName() {
     StringBuilder sb = new StringBuilder();
-    sb.append("struct<");
+    sb.append(Constants.STRUCT_TYPE_NAME + "<");
     for(int i=0; i<allStructFieldNames.size(); i++) {
       if (i>0) sb.append(",");
       sb.append(allStructFieldNames.get(i));
@@ -105,10 +106,10 @@ public class StructTypeInfo extends TypeInfo implements Serializable{
   @Override
   public boolean equals(Object other) {
     if (this == other) return true;
-    if (!(other instanceof TypeInfo)) {
+    if (!(other instanceof StructTypeInfo)) {
       return false;
     }
-    TypeInfo o = (TypeInfo) other;
+    StructTypeInfo o = (StructTypeInfo) other;
     return o.getCategory().equals(getCategory())
         && o.getAllStructFieldNames().equals(getAllStructFieldNames())
         && o.getAllStructFieldTypeInfos().equals(getAllStructFieldTypeInfos());

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_03-p3" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_07" class="java.beans.XMLDecoder"> 
  <object id="MapRedTask0" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
   <void property="childTasks"> 
    <object class="java.util.ArrayList"> 
@@ -28,7 +28,7 @@
              <boolean>true</boolean> 
             </void> 
             <void property="sourceDir"> 
-             <string>/Users/char/Documents/workspace/Hive/ql/../build/ql/tmp/63973424/1137538944.10000.insclause-0</string> 
+             <string>/data/users/zshao/sync/apache-trunk-HIVE-266-trunk/ql/../build/ql/tmp/285475753/676359278.10000.insclause-0</string> 
             </void> 
             <void property="targetDir"> 
              <string>../build/ql/test/data/warehouse/union.out</string> 
@@ -82,7 +82,7 @@
                                <int>1</int> 
                               </void> 
                               <void property="dirName"> 
-                               <string>/Users/char/Documents/workspace/Hive/ql/../build/ql/tmp/63973424/1137538944.10000.insclause-0</string> 
+                               <string>/data/users/zshao/sync/apache-trunk-HIVE-266-trunk/ql/../build/ql/tmp/285475753/676359278.10000.insclause-0</string> 
                               </void> 
                               <void property="tableInfo"> 
                                <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -132,8 +132,8 @@
                                   </void> 
                                   <void property="type"> 
                                    <object id="PrimitiveTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
-                                    <void property="primitiveClass"> 
-                                     <class>java.lang.String</class> 
+                                    <void property="typeName"> 
+                                     <string>string</string> 
                                     </void> 
                                    </object> 
                                   </void> 
@@ -310,10 +310,10 @@
                                   <string>evaluate</string> 
                                   <array class="java.lang.Class" length="2"> 
                                    <void index="0"> 
-                                    <class>java.lang.Double</class> 
+                                    <class>org.apache.hadoop.hive.serde2.io.DoubleWritable</class> 
                                    </void> 
                                    <void index="1"> 
-                                    <class>java.lang.Double</class> 
+                                    <class>org.apache.hadoop.hive.serde2.io.DoubleWritable</class> 
                                    </void> 
                                   </array> 
                                  </object> 
@@ -330,7 +330,7 @@
                                       <string>evaluate</string> 
                                       <array class="java.lang.Class" length="1"> 
                                        <void index="0"> 
-                                        <class>java.lang.String</class> 
+                                        <class>org.apache.hadoop.io.Text</class> 
                                        </void> 
                                       </array> 
                                      </object> 
@@ -351,8 +351,8 @@
                                     </void> 
                                     <void property="typeInfo"> 
                                      <object id="PrimitiveTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
-                                      <void property="primitiveClass"> 
-                                       <class>java.lang.Double</class> 
+                                      <void property="typeName"> 
+                                       <string>double</string> 
                                       </void> 
                                      </object> 
                                     </void> 
@@ -368,7 +368,7 @@
                                       <string>evaluate</string> 
                                       <array class="java.lang.Class" length="1"> 
                                        <void index="0"> 
-                                        <class>java.lang.Integer</class> 
+                                        <class>org.apache.hadoop.io.IntWritable</class> 
                                        </void> 
                                       </array> 
                                      </object> 
@@ -379,8 +379,8 @@
                                        <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
                                         <void property="typeInfo"> 
                                          <object id="PrimitiveTypeInfo2" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
-                                          <void property="primitiveClass"> 
-                                           <class>java.lang.Integer</class> 
+                                          <void property="typeName"> 
+                                           <string>int</string> 
                                           </void> 
                                          </object> 
                                         </void> 
@@ -400,8 +400,8 @@
                                 </void> 
                                 <void property="typeInfo"> 
                                  <object id="PrimitiveTypeInfo3" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
-                                  <void property="primitiveClass"> 
-                                   <class>java.lang.Boolean</class> 
+                                  <void property="typeName"> 
+                                   <string>boolean</string> 
                                   </void> 
                                  </object> 
                                 </void> 
@@ -613,10 +613,10 @@
                   <string>evaluate</string> 
                   <array class="java.lang.Class" length="2"> 
                    <void index="0"> 
-                    <class>java.lang.Double</class> 
+                    <class>org.apache.hadoop.hive.serde2.io.DoubleWritable</class> 
                    </void> 
                    <void index="1"> 
-                    <class>java.lang.Double</class> 
+                    <class>org.apache.hadoop.hive.serde2.io.DoubleWritable</class> 
                    </void> 
                   </array> 
                  </object> 
@@ -633,7 +633,7 @@
                       <string>evaluate</string> 
                       <array class="java.lang.Class" length="1"> 
                        <void index="0"> 
-                        <class>java.lang.String</class> 
+                        <class>org.apache.hadoop.io.Text</class> 
                        </void> 
                       </array> 
                      </object> 
@@ -667,7 +667,7 @@
                       <string>evaluate</string> 
                       <array class="java.lang.Class" length="1"> 
                        <void index="0"> 
-                        <class>java.lang.Integer</class> 
+                        <class>org.apache.hadoop.io.IntWritable</class> 
                        </void> 
                       </array> 
                      </object> 
@@ -763,7 +763,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-266-trunk/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>null-subquery1:unioninput-subquery1:src</string> 
@@ -778,7 +778,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/zshao/sync/apache-trunk-HIVE-266-trunk/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"/> 
@@ -834,7 +834,7 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/src</string> 
+             <string>file:/data/users/zshao/sync/apache-trunk-HIVE-266-trunk/build/ql/test/data/warehouse/src</string> 
             </void> 
            </object> 
           </void> 

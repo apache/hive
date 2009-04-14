@@ -21,12 +21,24 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.lazy.LazyByte;
+import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
 
 
 public class UDFToByte extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFToByte.class.getName());
 
+  ByteWritable byteWritable = new ByteWritable();
+  
   public UDFToByte() {
   }
 
@@ -36,7 +48,7 @@ public class UDFToByte extends UDF {
    * @param i The void value to convert
    * @return Byte
    */
-  public Byte evaluate(Void i)  {
+  public ByteWritable evaluate(NullWritable i)  {
     return null;
   }  
 
@@ -46,11 +58,12 @@ public class UDFToByte extends UDF {
    * @param i The boolean value to convert
    * @return Byte
    */
-  public Byte evaluate(Boolean i)  {
+  public ByteWritable evaluate(BooleanWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return i.booleanValue() ? (byte)1 : (byte)0;
+      byteWritable.set(i.get() ? (byte)1 : (byte)0);
+      return byteWritable;
     }
   }  
 
@@ -60,11 +73,12 @@ public class UDFToByte extends UDF {
    * @param i The short value to convert
    * @return Byte
    */
-  public Byte evaluate(Short i)  {
+  public ByteWritable evaluate(ShortWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Byte.valueOf(i.byteValue());
+      byteWritable.set((byte)i.get());
+      return byteWritable;
     }
   }
 
@@ -74,11 +88,12 @@ public class UDFToByte extends UDF {
    * @param i The integer value to convert
    * @return Byte
    */
-  public Byte evaluate(Integer i)  {
+  public ByteWritable evaluate(IntWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Byte.valueOf(i.byteValue());
+      byteWritable.set((byte)i.get());
+      return byteWritable;
     }
   }
 
@@ -88,11 +103,12 @@ public class UDFToByte extends UDF {
    * @param i The long value to convert
    * @return Byte
    */
-  public Byte evaluate(Long i)  {
+  public ByteWritable evaluate(LongWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Byte.valueOf(i.byteValue());
+      byteWritable.set((byte)i.get());
+      return byteWritable;
     }
   }  
 
@@ -102,11 +118,12 @@ public class UDFToByte extends UDF {
    * @param i The float value to convert
    * @return Byte
    */
-  public Byte evaluate(Float i)  {
+  public ByteWritable evaluate(FloatWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Byte.valueOf(i.byteValue());
+      byteWritable.set((byte)i.get());
+      return byteWritable;
     }
   }
 
@@ -116,11 +133,12 @@ public class UDFToByte extends UDF {
    * @param i The double value to convert
    * @return Byte
    */  
-  public Byte evaluate(Double i)  {
+  public ByteWritable evaluate(DoubleWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Byte.valueOf(i.byteValue());
+      byteWritable.set((byte)i.get());
+      return byteWritable;
     }
   }
 
@@ -130,12 +148,13 @@ public class UDFToByte extends UDF {
    * @param i The string value to convert
    * @return Byte
    */  
-  public Byte evaluate(String i)  {
+  public ByteWritable evaluate(Text i)  {
     if (i == null) {
       return null;
     } else {
       try {
-        return Byte.valueOf(i);
+        byteWritable.set(LazyByte.parseByte(i.getBytes(), 0 , i.getLength(), 10));
+        return byteWritable;
       } catch (NumberFormatException e) {
         // MySQL returns 0 if the string is not a well-formed numeric value.
         // return Byte.valueOf(0);
@@ -144,18 +163,5 @@ public class UDFToByte extends UDF {
       }
     }
   }
-  
-  /**
-   * Convert from date to a Byte. This is called for CAST(... AS TINYINT)
-   *
-   * @param i The date value to convert
-   * @return Byte
-   */
-  public Byte evaluate(java.sql.Date i)  {
-    if (i == null) {
-      return null;
-    } else {
-        return Long.valueOf(i.getTime()).byteValue();
-    }
-  }  
+
 }

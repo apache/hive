@@ -22,6 +22,9 @@ import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+
 /**
  * Resolver for Numeric UDAFs like sum and avg. If the input argument is string or date,
  * the resolver returns the evaluator whose iterate function operates on doubles.
@@ -40,14 +43,14 @@ public class NumericUDAFEvaluatorResolver extends DefaultUDAFEvaluatorResolver {
    */
   @Override
   public Class<? extends UDAFEvaluator> getEvaluatorClass(
-      List<Class<?>> argClasses) throws AmbiguousMethodException {
+      List<TypeInfo> argTypeInfos) throws AmbiguousMethodException {
     // Go through the argClasses and for any string, void or date time, start looking for doubles
-    ArrayList<Class<?>> args = new ArrayList<Class<?>>();
-    for(Class<?>arg: argClasses) {
-      if (arg == Void.class || arg == String.class || arg == Date.class) {
-        args.add(Double.class);
-      }
-      else {
+    ArrayList<TypeInfo> args = new ArrayList<TypeInfo>();
+    for(TypeInfo arg: argTypeInfos) {
+      if (arg.equals(TypeInfoFactory.voidTypeInfo)
+          || arg.equals(TypeInfoFactory.stringTypeInfo)) {
+        args.add(TypeInfoFactory.doubleTypeInfo);
+      } else {
         args.add(arg);
       }
     }

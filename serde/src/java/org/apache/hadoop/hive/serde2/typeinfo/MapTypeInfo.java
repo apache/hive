@@ -79,10 +79,10 @@ public class MapTypeInfo extends TypeInfo implements Serializable{
 
   public boolean equals(Object other) {
     if (this == other) return true;
-    if (!(other instanceof TypeInfo)) {
+    if (!(other instanceof MapTypeInfo)) {
       return false;
     }
-    TypeInfo o = (TypeInfo) other;
+    MapTypeInfo o = (MapTypeInfo) other;
     return o.getCategory().equals(getCategory())
         && o.getMapKeyTypeInfo().equals(getMapKeyTypeInfo())
         && o.getMapValueTypeInfo().equals(getMapValueTypeInfo());

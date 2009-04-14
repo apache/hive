@@ -28,6 +28,9 @@ import java.io.*;
 import org.apache.hadoop.hive.serde2.*;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
+import org.apache.hadoop.hive.serde2.thrift.WriteTextProtocol;
+import org.apache.hadoop.io.Text;
 
 import java.lang.reflect.*;
 import com.facebook.thrift.protocol.TType.*;
@@ -55,14 +58,14 @@ public class DynamicSerDeTypeString extends DynamicSerDeTypeBase {
     return iprot.readString();
   }
   
-  public void serialize(Object s, TProtocol oprot) throws TException, SerDeException, NoSuchFieldException,IllegalAccessException  {
-    oprot.writeString((String)s);
-  }
   @Override
   public void serialize(Object o, ObjectInspector oi, TProtocol oprot) throws TException, SerDeException, NoSuchFieldException,IllegalAccessException  {
-    assert(oi.getCategory() == ObjectInspector.Category.PRIMITIVE);
-    assert(((PrimitiveObjectInspector)oi).getPrimitiveClass().equals(String.class));
-    oprot.writeString((String)o);
+    StringObjectInspector poi = (StringObjectInspector) oi;
+    if (oprot instanceof WriteTextProtocol) {
+      ((WriteTextProtocol)oprot).writeText((Text)poi.getPrimitiveWritableObject(o));
+    } else {
+      oprot.writeString((String)poi.getPrimitiveJavaObject(o));
+    }
   }
 
   public byte getType() {

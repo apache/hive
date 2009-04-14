@@ -20,48 +20,51 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.NumericUDAF;
 import org.apache.hadoop.hive.ql.exec.UDAFEvaluator;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
 
 
-public class UDAFSum extends NumericUDAF implements UDAFEvaluator {
+public class UDAFSum extends NumericUDAF {
 
-  private double mSum;
-  private boolean mEmpty;
-  
-  public UDAFSum() {
-    super();
-    init();
-  }
-
-  public void init() {
-    mSum = 0;
-    mEmpty = true;
-  }
-
-  public boolean iterate(Double o) {
-    if (o != null) {
-      mSum += o;
-      mEmpty = false;
+  public static class UDAFSumEvaluator implements UDAFEvaluator { 
+    private double mSum;
+    private boolean mEmpty;
+    
+    public UDAFSumEvaluator() {
+      super();
+      init();
     }
-    return true;
+  
+    public void init() {
+      mSum = 0;
+      mEmpty = true;
+    }
+  
+    public boolean iterate(DoubleWritable o) {
+      if (o != null) {
+        mSum += o.get();
+        mEmpty = false;
+      }
+      return true;
+    }
+    
+    public DoubleWritable terminatePartial() {
+      // This is SQL standard - sum of zero items should be null.
+      return mEmpty ? null : new DoubleWritable(mSum);
+    }
+  
+    public boolean merge(DoubleWritable o) {
+      if (o != null) {
+        mSum += o.get();
+        mEmpty = false;
+      }
+      return true;
+    }
+  
+    public DoubleWritable terminate() {
+      // This is SQL standard - sum of zero items should be null.
+      return mEmpty ? null : new DoubleWritable(mSum);
+    }
   }
   
-  public Double terminatePartial() {
-    // This is SQL standard - sum of zero items should be null.
-    return mEmpty ? null : new Double(mSum);
-  }
-
-  public boolean merge(Double o) {
-    if (o != null) {
-      mSum += o;
-      mEmpty = false;
-    }
-    return true;
-  }
-
-  public Double terminate() {
-    // This is SQL standard - sum of zero items should be null.
-    return mEmpty ? null : new Double(mSum);
-  }
-
 }

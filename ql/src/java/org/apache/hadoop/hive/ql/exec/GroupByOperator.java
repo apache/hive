@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,11 +36,18 @@ import org.apache.hadoop.hive.ql.plan.groupByDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -55,7 +63,9 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
   private static final int  NUMROWSESTIMATESIZE = 1000;
 
   transient protected ExprNodeEvaluator[] keyFields;
+  transient protected InspectableObject[] keyInspectableObject;
   transient protected ExprNodeEvaluator[][] aggregationParameterFields;
+  transient protected InspectableObject[][] aggregationParameterInspectableObject;
   // In the future, we may allow both count(DISTINCT a) and sum(DISTINCT a) in the same SQL clause,
   // so aggregationIsDistinct is a boolean array instead of a single number. 
   transient protected boolean[] aggregationIsDistinct;
@@ -70,6 +80,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
 
   // Used by sort-based GroupBy: Mode = COMPLETE, PARTIAL1, PARTIAL2
   transient protected ArrayList<Object> currentKeys;
+  transient protected ArrayList<Object> newKeys;  
   transient protected UDAFEvaluator[] aggregations;
   transient protected Object[][] aggregationsParametersLastInvoke;
 
@@ -84,6 +95,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
   transient int     groupbyMapAggrInterval;
   transient long    numRowsCompareHashAggr;
 
+  
   /**
    * This is used to store the position and field names for variable length fields.
    **/
@@ -124,17 +136,23 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
 
     // init keyFields
     keyFields = new ExprNodeEvaluator[conf.getKeys().size()];
+    keyInspectableObject = new InspectableObject[conf.getKeys().size()];
     for (int i = 0; i < keyFields.length; i++) {
       keyFields[i] = ExprNodeEvaluatorFactory.get(conf.getKeys().get(i));
+      keyInspectableObject[i] = new InspectableObject();
     }
-
+    newKeys = new ArrayList<Object>(keyFields.length);
+    
     // init aggregationParameterFields
     aggregationParameterFields = new ExprNodeEvaluator[conf.getAggregators().size()][];
+    aggregationParameterInspectableObject = new InspectableObject[conf.getAggregators().size()][];
     for (int i = 0; i < aggregationParameterFields.length; i++) {
       ArrayList<exprNodeDesc> parameters = conf.getAggregators().get(i).getParameters();
       aggregationParameterFields[i] = new ExprNodeEvaluator[parameters.size()];
+      aggregationParameterInspectableObject[i] = new InspectableObject[parameters.size()];
       for (int j = 0; j < parameters.size(); j++) {
         aggregationParameterFields[i][j] = ExprNodeEvaluatorFactory.get(parameters.get(j));
+        aggregationParameterInspectableObject[i][j] = new InspectableObject();
       }
     }
     // init aggregationIsDistinct
@@ -210,8 +228,9 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
       objectInspectors.add(null);
     }
     for(int i=0; i<aggregationClasses.length; i++) {
-      objectInspectors.add(ObjectInspectorFactory.getStandardPrimitiveObjectInspector(
-          aggregationsEvaluateMethods[i].getReturnType()));
+      objectInspectors.add(PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
+          PrimitiveObjectInspectorUtils.getTypeEntryFromPrimitiveWritableClass(
+          aggregationsEvaluateMethods[i].getReturnType()).primitiveCategory));
     }
 
     fieldNames = new ArrayList<String>(objectInspectors.size());
@@ -253,23 +272,26 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
    * @param c   the type of the key
    * @return the size of this datatype
    **/
-  private int getSize(int pos, Class<?> c) {
-    if (c.isPrimitive() ||
-        c.isInstance(new Boolean(true)) ||
-        c.isInstance(new Byte((byte)0)) ||
-        c.isInstance(new Short((short)0)) ||
-        c.isInstance(new Integer(0)) ||
-        c.isInstance(new Long(0)) ||
-        c.isInstance(new Float(0)) ||
-        c.isInstance(new Double(0)))
-      return javaSizePrimitiveType;
-
-    if (c.isInstance(new String())) {
-      keyPositionsSize.add(new Integer(pos));
-      return javaObjectOverHead;
+  private int getSize(int pos, PrimitiveCategory category) {
+    switch(category) {
+      case VOID:
+      case BOOLEAN:
+      case BYTE:
+      case SHORT:
+      case INT:
+      case LONG:
+      case FLOAT:
+      case DOUBLE: {
+        return javaSizePrimitiveType;
+      }
+      case STRING: {
+        keyPositionsSize.add(new Integer(pos));
+        return javaObjectOverHead;
+      }
+      default: {
+        return javaSizeUnknownType;
+      }
     }
-      
-    return javaSizeUnknownType;
   }
 
   /**
@@ -320,7 +342,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
    **/
   private int getSize(int pos, TypeInfo typeInfo) {
     if (typeInfo instanceof PrimitiveTypeInfo) 
-      return getSize(pos, typeInfo.getPrimitiveClass());
+      return getSize(pos, ((PrimitiveTypeInfo)typeInfo).getPrimitiveCategory());
     return javaSizeUnknownType;
   }
 
@@ -366,8 +388,6 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     return aggs;
   }
 
-  InspectableObject tempInspectableObject = new InspectableObject();
-  
   protected void updateAggregations(UDAFEvaluator[] aggs, Object row, ObjectInspector rowInspector, boolean hashAggr, boolean newEntry,
                                     Object[][] lastInvoke) throws HiveException {
     for(int ai=0; ai<aggs.length; ai++) {
@@ -375,8 +395,9 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
       // Calculate the parameters 
       Object[] o = new Object[aggregationParameterFields[ai].length];
       for(int pi=0; pi<aggregationParameterFields[ai].length; pi++) {
-        aggregationParameterFields[ai][pi].evaluate(row, rowInspector, tempInspectableObject);
-        o[pi] = tempInspectableObject.o; 
+        aggregationParameterFields[ai][pi].evaluate(row, rowInspector, aggregationParameterInspectableObject[ai][pi]);
+        PrimitiveObjectInspector poi = (PrimitiveObjectInspector)aggregationParameterInspectableObject[ai][pi].oi;
+        o[pi] = poi.getPrimitiveWritableObject(aggregationParameterInspectableObject[ai][pi].o);
       }
 
       // Update the aggregations.
@@ -407,7 +428,13 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
 
           if (differentParameters) {
             FunctionRegistry.invoke(aggregationsAggregateMethods[ai], aggs[ai], o);
-            lastInvoke[ai] = o;
+            if (lastInvoke[ai] == null) {
+              lastInvoke[ai] = new Object[o.length];
+            }
+            for (int pi=0; pi<o.length; pi++) {
+              lastInvoke[ai][pi] = ObjectInspectorUtils.copyToStandardObject(o[pi],
+                  aggregationParameterInspectableObject[ai][pi].oi);
+            }
           }
         }
       }
@@ -437,12 +464,12 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
 
     try {
       // Compute the keys
-      ArrayList<Object> newKeys = new ArrayList<Object>(keyFields.length);
+      newKeys.clear();
       for (int i = 0; i < keyFields.length; i++) {
-        keyFields[i].evaluate(row, rowInspector, tempInspectableObject);
-        newKeys.add(tempInspectableObject.o);
+        keyFields[i].evaluate(row, rowInspector, keyInspectableObject[i]);
+        newKeys.add(keyInspectableObject[i].o);
         if (firstRow) {
-          objectInspectors.set(i, tempInspectableObject.oi);
+          objectInspectors.set(i, keyInspectableObject[i].oi);
         }
       }
 
@@ -463,6 +490,19 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     }
   }
 
+  private static ArrayList<Object> deepCopyElements(InspectableObject[] keys) {
+    ArrayList<Object> result = new ArrayList<Object>(keys.length);
+    deepCopyElements(keys, result);
+    return result;
+  }
+  
+  private static void deepCopyElements(InspectableObject[] keys, ArrayList<Object> result) {
+    result.clear();
+    for (int i=0; i<keys.length; i++) {
+      result.add(ObjectInspectorUtils.copyToStandardObject(keys[i].o, keys[i].oi));
+    }
+  }
+  
   private void processHashAggr(Object row, ObjectInspector rowInspector, ArrayList<Object> newKeys) throws HiveException {
     // Prepare aggs for updating
     UDAFEvaluator[] aggs = null;
@@ -472,7 +512,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     aggs = hashAggregations.get(newKeys);
     if (aggs == null) {
       aggs = newAggregations();
-      hashAggregations.put(newKeys, aggs);
+      hashAggregations.put(deepCopyElements(keyInspectableObject), aggs);
       newEntry = true;
       numRowsHashTbl++;      // new entry in the hash table
     }
@@ -480,7 +520,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     // Update the aggs
     updateAggregations(aggs, row, rowInspector, true, newEntry, null);
     
-    // based on used-specified pramaters, check if the hash table needs to be flushed
+    // based on used-specified parameters, check if the hash table needs to be flushed
     if (shouldBeFlushed(newKeys)) {
       flush(false);
     }
@@ -492,15 +532,18 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     Object[][] lastInvoke = null;
     boolean keysAreEqual = newKeys.equals(currentKeys);
     
-    // forward the current keys if needed for sort-based aggregation
+    // Forward the current keys if needed for sort-based aggregation
     if (currentKeys != null && !keysAreEqual)
       forward(currentKeys, aggregations);
     
     // Need to update the keys?
     if (currentKeys == null || !keysAreEqual) {
-      currentKeys = newKeys;
+      if (currentKeys == null) {
+        currentKeys = new ArrayList<Object>(keyFields.length);
+      }
+      deepCopyElements(keyInspectableObject, currentKeys);
       
-      // init aggregations
+      // Init aggregations
       for(UDAFEvaluator aggregation: aggregations)
         aggregation.init();
       
@@ -528,8 +571,13 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
       for (Integer pos : keyPositionsSize) {
         Object key = newKeys.get(pos.intValue());
         // Ignore nulls
-        if (key != null)
-          totalVariableSize += ((String)key).length();
+        if (key != null) {
+          if (key instanceof String) {
+            totalVariableSize += ((String)key).length();
+          } else {
+            totalVariableSize += ((Text)key).getLength();
+          }
+        }
       }
 
       UDAFEvaluator[] aggs = null;
@@ -555,9 +603,6 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
       // Update the number of entries that can fit in the hash table
       numEntriesHashTable = (int)(maxHashTblMemory / (fixedRowSize + ((int)totalVariableSize/numEntriesVarSize)));
       LOG.trace("Hash Aggr: #hash table = " + numEntries + " #max in hash table = " + numEntriesHashTable);
-
-      if ((numEntries % (100 * NUMROWSESTIMATESIZE)) == 0)
-        LOG.warn("Hash Aggr: #hash table = " + numEntries + " #max in hash table = " + numEntriesHashTable);
     }
 
     // flush if necessary
@@ -599,6 +644,8 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     }
   }
 
+  transient Object[] forwardCache;
+
   /**
    * Forward a record of keys and aggregation results.
    * 
@@ -608,19 +655,21 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
    */
   protected void forward(ArrayList<Object> keys, UDAFEvaluator[] aggs) throws HiveException {
     int totalFields = keys.size() + aggs.length;
-    List<Object> a = new ArrayList<Object>(totalFields);
+    if (forwardCache == null) {
+      forwardCache = new Object[totalFields];
+    }
     for(int i=0; i<keys.size(); i++) {
-      a.add(keys.get(i));
+      forwardCache[i] = keys.get(i);
     }
     for(int i=0; i<aggs.length; i++) {
       try {
-        a.add(aggregationsEvaluateMethods[i].invoke(aggs[i]));
+        forwardCache[keys.size() + i] = aggregationsEvaluateMethods[i].invoke(aggs[i]);
       } catch (Exception e) {
         throw new HiveException("Unable to execute UDAF function " + aggregationsEvaluateMethods[i] + " " 
             + " on object " + "(" + aggs[i] + ") " + ": " + e.getMessage());
       }
     }
-    forward(a, outputObjectInspector);
+    forward(forwardCache, outputObjectInspector);
   }
   
   /**

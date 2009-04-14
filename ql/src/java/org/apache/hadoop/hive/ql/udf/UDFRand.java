@@ -23,6 +23,8 @@ import java.util.Random;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.io.LongWritable;
 
 @UDFType(deterministic=false)
 public class UDFRand extends UDF {
@@ -31,21 +33,24 @@ public class UDFRand extends UDF {
 
   private Random random;
   
+  DoubleWritable result = new DoubleWritable();
   public UDFRand() {
   }
 
-  public Double evaluate()  {
+  public DoubleWritable evaluate()  {
     if (random == null) {
       random = new Random();
     }
-    return random.nextDouble();
+    result.set(random.nextDouble());
+    return result;
   }
 
-  public Double evaluate(long seed)  {
+  public DoubleWritable evaluate(LongWritable seed)  {
     if (random == null) {
-      random = new Random(seed);
+      random = new Random(seed.get());
     }
-    return random.nextDouble();
+    result.set(random.nextDouble());
+    return result;
   }
 
 }

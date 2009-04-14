@@ -20,56 +20,50 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 
 
-public class UDFOPBitOr extends UDF {
+public class UDFOPBitOr extends UDFBaseBitOP {
 
   private static Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.udf.UDFOPBitOr");
 
   public UDFOPBitOr() {
   }
 
-  public Byte evaluate(Byte a, Byte b)  {
-    if ((a == null) || (b == null))
+  public ByteWritable evaluate(ByteWritable a, ByteWritable b) {
+    if (a == null || b == null) {
       return null;
-
-    return Byte.valueOf((byte)(a.byteValue() | b.byteValue()));
+    }
+    byteWritable.set((byte)(a.get() | b.get()));
+    return byteWritable;
   }
 
-  public Integer evaluate(Integer a, Integer b)  {
-    if ((a == null) || (b == null))
+  public ShortWritable evaluate(ShortWritable a, ShortWritable b) {
+    if (a == null || b == null) {
       return null;
-
-    return Integer.valueOf(a.intValue() | b.intValue());
-  }
-
-  public Long evaluate(Long a, Long b)  {
-    if ((a == null) || (b == null))
-      return null;
-
-    return Long.valueOf(a.longValue() | b.longValue());
+    }
+    shortWritable.set((short)(a.get() | b.get()));
+    return shortWritable;
   }
   
-  public Long evaluate(String a, String b)  {
-    if ((a == null) || (b == null))
+  public IntWritable evaluate(IntWritable a, IntWritable b) {
+    if (a == null || b == null) {
       return null;
-
-    return evaluate(Long.valueOf(a), Long.valueOf(b));
+    }
+    intWritable.set(a.get() | b.get());
+    return intWritable;
   }
-  
-  public Long evaluate(Long a, String b)  {
-    if ((a == null) || (b == null))
+
+  public LongWritable evaluate(LongWritable a, LongWritable b) {
+    if (a == null || b == null) {
       return null;
-
-    return evaluate(a, Long.valueOf(b));
+    }
+    longWritable.set(a.get() | b.get());
+    return longWritable;
   }
-  
-  public Long evaluate(String a, Long b)  {
-    if ((a == null) || (b == null))
-      return null;
 
-    return evaluate(Long.valueOf(a), b);
-  }
 
 }

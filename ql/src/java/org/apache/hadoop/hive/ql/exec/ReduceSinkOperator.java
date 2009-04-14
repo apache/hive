@@ -119,13 +119,19 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
   transient ArrayList<ObjectInspector> keyFieldsObjectInspectors = new ArrayList<ObjectInspector>();
   transient ArrayList<ObjectInspector> valueFieldsObjectInspectors = new ArrayList<ObjectInspector>();
 
+  transient Object[] cachedKeys;
+  transient Object[] cachedValues;
+  
   public void process(Object row, ObjectInspector rowInspector) throws HiveException {
     try {
       // Evaluate the keys
-      ArrayList<Object> keys = new ArrayList<Object>(keyEval.length);
-      for(ExprNodeEvaluator e: keyEval) {
+      if (cachedKeys == null) {
+        cachedKeys = new Object[keyEval.length];
+      }
+      for (int i=0; i<keyEval.length; i++) {
+        ExprNodeEvaluator e = keyEval[i]; 
         e.evaluate(row, rowInspector, tempInspectableObject);
-        keys.add(tempInspectableObject.o);
+        cachedKeys[i] = tempInspectableObject.o;
         // Construct the keyObjectInspector from the first row
         if (keyObjectInspector == null) {
           keyFieldsObjectInspectors.add(tempInspectableObject.oi);
@@ -139,7 +145,7 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
       }
       // Serialize the keys and append the tag
       if (keyIsText) {
-        Text key = (Text)keySerializer.serialize(keys, keyObjectInspector);
+        Text key = (Text)keySerializer.serialize(cachedKeys, keyObjectInspector);
         if (tag == -1) {
           keyWritable.set(key.getBytes(), 0, key.getLength());
         } else {
@@ -150,7 +156,7 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
         }
       } else {
         // Must be BytesWritable
-        BytesWritable key = (BytesWritable)keySerializer.serialize(keys, keyObjectInspector);
+        BytesWritable key = (BytesWritable)keySerializer.serialize(cachedKeys, keyObjectInspector);
         if (tag == -1) {
           keyWritable.set(key.get(), 0, key.getSize());
         } else {
@@ -170,10 +176,13 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
       keyWritable.setHashCode(keyHashCode);
       
       // Evaluate the value
-      ArrayList<Object> values = new ArrayList<Object>(valueEval.length);
-      for(ExprNodeEvaluator e: valueEval) {
+      if (cachedValues == null) {
+        cachedValues = new Object[valueEval.length];
+      }
+      for (int i=0; i<valueEval.length; i++) {
+        ExprNodeEvaluator e = valueEval[i];
         e.evaluate(row, rowInspector, tempInspectableObject);
-        values.add(tempInspectableObject.o);
+        cachedValues[i] = tempInspectableObject.o;
         // Construct the valueObjectInspector from the first row
         if (valueObjectInspector == null) {
           valueFieldsObjectInspectors.add(tempInspectableObject.oi);
@@ -186,7 +195,7 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
             valueFieldsObjectInspectors);
       }
       // Serialize the value
-      value = valueSerializer.serialize(values, valueObjectInspector);
+      value = valueSerializer.serialize(cachedValues, valueObjectInspector);
     } catch (SerDeException e) {
       throw new HiveException(e);
     }

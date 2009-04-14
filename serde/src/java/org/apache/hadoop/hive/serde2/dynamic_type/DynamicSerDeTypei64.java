@@ -28,6 +28,8 @@ import java.io.*;
 import org.apache.hadoop.hive.serde2.*;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 
 import java.lang.reflect.*;
 import com.facebook.thrift.protocol.TType;
@@ -59,9 +61,8 @@ public class DynamicSerDeTypei64 extends DynamicSerDeTypeBase {
 
   @Override
   public void serialize(Object o, ObjectInspector oi, TProtocol oprot) throws TException, SerDeException, NoSuchFieldException,IllegalAccessException  {
-    assert(oi.getCategory() == ObjectInspector.Category.PRIMITIVE);
-    assert(((PrimitiveObjectInspector)oi).getPrimitiveClass().equals(Long.class));
-    oprot.writeI64((Long)o);
+    LongObjectInspector poi = (LongObjectInspector) oi;
+    oprot.writeI64(poi.get(o));
   }
 
   public byte getType() {

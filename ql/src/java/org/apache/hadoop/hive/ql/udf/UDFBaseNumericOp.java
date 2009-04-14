@@ -20,6 +20,12 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.NumericOpMethodResolver;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 
 /**
  * Base class for numeric operators like +, -, / etc. All these operators
@@ -37,10 +43,18 @@ public abstract class UDFBaseNumericOp extends UDF {
     setResolver(new NumericOpMethodResolver(this.getClass()));
   }
 
-  public abstract Byte evaluate(Byte a, Byte b);  
-  public abstract Integer evaluate(Integer a, Integer b);  
-  public abstract Long evaluate(Long a, Long b);  
-  public abstract Float evaluate(Float a, Float b);  
-  public abstract Double evaluate(Double a, Double b);  
+  protected ByteWritable byteWritable = new ByteWritable();
+  protected ShortWritable shortWritable = new ShortWritable();
+  protected IntWritable intWritable = new IntWritable();
+  protected LongWritable longWritable = new LongWritable();
+  protected FloatWritable floatWritable = new FloatWritable();
+  protected DoubleWritable doubleWritable = new DoubleWritable();
+  
+  public abstract ByteWritable evaluate(ByteWritable a, ByteWritable b);  
+  public abstract ShortWritable evaluate(ShortWritable a, ShortWritable b);  
+  public abstract IntWritable evaluate(IntWritable a, IntWritable b);  
+  public abstract LongWritable evaluate(LongWritable a, LongWritable b);  
+  public abstract FloatWritable evaluate(FloatWritable a, FloatWritable b);  
+  public abstract DoubleWritable evaluate(DoubleWritable a, DoubleWritable b);  
 
 }

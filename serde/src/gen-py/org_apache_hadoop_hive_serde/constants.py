@@ -31,6 +31,8 @@ MAPKEY_DELIM = 'mapkey.delim'
 
 QUOTE_CHAR = 'quote.delim'
 
+VOID_TYPE_NAME = 'void'
+
 BOOLEAN_TYPE_NAME = 'boolean'
 
 TINYINT_TYPE_NAME = 'tinyint'
@@ -57,7 +59,10 @@ LIST_TYPE_NAME = 'array'
 
 MAP_TYPE_NAME = 'map'
 
+STRUCT_TYPE_NAME = 'struct'
+
 PrimitiveTypes = set([
+  'void',
   'boolean',
   'tinyint',
   'smallint',

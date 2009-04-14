@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
 
 /**
@@ -30,6 +31,7 @@ public class UDFSqrt extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFSqrt.class.getName());
 
+  DoubleWritable result = new DoubleWritable();
   public UDFSqrt() {
   }
 
@@ -37,13 +39,14 @@ public class UDFSqrt extends UDF {
    * Return NULL for NULL or negative inputs; otherwise, return
    * the square root.
    */
-  public Double evaluate(Double i)  {
+  public DoubleWritable evaluate(DoubleWritable i)  {
     if (i == null) {
       return null;
-    } else if (i < 0) {
+    } else if (i.get() < 0) {
       return null;
     } else {
-      return Double.valueOf(Math.sqrt(i));
+      result.set(Math.sqrt(i.get()));
+      return result;
     }
   }
   

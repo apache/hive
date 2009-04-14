@@ -22,23 +22,26 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 public class ExprNodeConstantEvaluator extends ExprNodeEvaluator {
 
   protected exprNodeConstantDesc expr;
   transient ObjectInspector objectInspector;
+  transient Object value;
   
   public ExprNodeConstantEvaluator(exprNodeConstantDesc expr) {
     this.expr = expr;
-    objectInspector = ObjectInspectorFactory.getStandardPrimitiveObjectInspector(expr.getTypeInfo().getPrimitiveClass());
+    objectInspector = PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
+        ((PrimitiveTypeInfo)expr.getTypeInfo()).getPrimitiveCategory());
+    value = expr.getValue();
   }
 
   public void evaluate(Object row, ObjectInspector rowInspector,
       InspectableObject result) throws HiveException {
     assert(result != null);
-    result.o = expr.getValue();
+    result.o = value;
     result.oi = objectInspector;
   }
 

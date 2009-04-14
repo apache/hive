@@ -19,11 +19,10 @@
 package org.apache.hadoop.hive.serde2.typeinfo;
 
 import java.io.Serializable;
-import java.util.List;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 
 /**
- * Stores information about a type (DDL).
+ * Stores information about a type.
  * Always use the TypeInfoFactory to create new TypeInfo objects.
  * 
  * We support 4 categories of types:
@@ -35,39 +34,18 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 public abstract class TypeInfo implements Serializable {
 
   protected TypeInfo() {}
+
+  /**
+   * The Category of this TypeInfo.
+   * Possible values are Primitive, List, Map and Struct, which corresponds
+   * to the 4 sub-classes of TypeInfo. 
+   */
+  public abstract Category getCategory();
   
-  public String getTypeName() {
-    throw new RuntimeException("Unsupported: " + this.getClass() + ".getCategory()");
-  }
-  
-  public Category getCategory() {
-    throw new RuntimeException("Unsupported: " + this.getClass() + ".getCategory()");
-  }
-  
-  public Class<?> getPrimitiveClass() {
-    throw new RuntimeException("Unsupported: " + this.getClass() + ".getPrimitiveClass()");
-  }
-  
-  public TypeInfo getListElementTypeInfo() {
-    throw new RuntimeException("Unsupported: " + this.getClass() + ".getListElementTypeInfo()");
-  }
-  
-  public TypeInfo getMapKeyTypeInfo() {
-    throw new RuntimeException("Unsupported: " + this.getClass() + ".getMapKeyTypeInfo()");
-  }
-  public TypeInfo getMapValueTypeInfo() {
-    throw new RuntimeException("Unsupported: " + this.getClass() + ".getMapValueTypeInfo()");
-  }
-  
-  public List<String> getAllStructFieldNames() {
-    throw new RuntimeException("Unsupported: " + this.getClass() + ".getAllStructFieldNames()");
-  }
-  public List<TypeInfo> getAllStructFieldTypeInfos() {
-    throw new RuntimeException("Unsupported: " + this.getClass() + ".getAllStructFieldTypeInfos()");
-  }
-  public TypeInfo getStructFieldTypeInfo(String field) {
-    throw new RuntimeException("Unsupported: " + this.getClass() + ".getStructFieldTypeInfo()");
-  }
+  /**
+   * A String representation of the TypeInfo.
+   */
+  public abstract String getTypeName();
   
   public String toString() {
     return getTypeName();

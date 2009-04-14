@@ -55,7 +55,7 @@ public class ColumnInfo implements Serializable {
   
   public ColumnInfo(String internalName, Class type) {
     this.internalName = internalName;
-    this.type = TypeInfoFactory.getPrimitiveTypeInfo(type);
+    this.type = TypeInfoFactory.getPrimitiveTypeInfoFromPrimitiveWritable(type);
   }
   
   public TypeInfo getType() {

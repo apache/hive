@@ -21,17 +21,20 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.io.BooleanWritable;
 
 
 public class UDFOPNotNull extends UDF {
 
   private static Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.udf.UDFOPNotNull");
 
+  BooleanWritable result = new BooleanWritable();
   public UDFOPNotNull() {
   }
 
-  public Boolean evaluate(Object a)  {
-    return Boolean.valueOf(a != null);
+  public BooleanWritable evaluate(Object a)  {
+    result.set(a != null);
+    return result;
   }
 
 }

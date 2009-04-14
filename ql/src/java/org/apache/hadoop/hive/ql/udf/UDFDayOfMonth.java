@@ -26,6 +26,8 @@ import java.util.Date;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
 
 
 public class UDFDayOfMonth extends UDF {
@@ -35,6 +37,7 @@ public class UDFDayOfMonth extends UDF {
   private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
   private Calendar calendar = Calendar.getInstance();
 
+  IntWritable result = new IntWritable();
   public UDFDayOfMonth() {
   }
 
@@ -44,12 +47,13 @@ public class UDFDayOfMonth extends UDF {
    * @param dateString the dateString in the format of "yyyy-MM-dd HH:mm:ss" or "yyyy-MM-dd".
    * @return an int from 1 to 31. null if the dateString is not a valid date string.
    */
-  public Integer evaluate(String dateString)  {
+  public IntWritable evaluate(Text dateString)  {
     
     try {
-      Date date = formatter.parse(dateString);
+      Date date = formatter.parse(dateString.toString());
       calendar.setTime(date);
-      return calendar.get(Calendar.DAY_OF_MONTH);
+      result.set(calendar.get(Calendar.DAY_OF_MONTH));
+      return result;
     } catch (ParseException e) {
       return null;
     }

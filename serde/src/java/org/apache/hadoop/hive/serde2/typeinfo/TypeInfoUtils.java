@@ -1,8 +1,10 @@
 package org.apache.hadoop.hive.serde2.typeinfo;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
@@ -13,9 +15,35 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
 
 public class TypeInfoUtils {
   
+  
+  public static List<TypeInfo> getParameterTypeInfos(Method m) {
+    Class<?>[] parameterTypes = m.getParameterTypes();
+    List<TypeInfo> typeInfos = new ArrayList<TypeInfo>(parameterTypes.length);
+    for (int i=0; i<parameterTypes.length; i++) {
+      if (PrimitiveObjectInspectorUtils.isPrimitiveWritableClass(parameterTypes[i])) {
+        typeInfos.add(TypeInfoFactory.getPrimitiveTypeInfoFromPrimitiveWritable(parameterTypes[i]));
+      } else if (PrimitiveObjectInspectorUtils.isPrimitiveJavaClass(parameterTypes[i])
+          || PrimitiveObjectInspectorUtils.isPrimitiveJavaType(parameterTypes[i])) {
+          typeInfos.add(TypeInfoFactory.getPrimitiveTypeInfoFromJavaPrimitive(parameterTypes[i]));
+      } else if (Map.class.isAssignableFrom(parameterTypes[i])) {
+        typeInfos.add(TypeInfoFactory.unknownMapTypeInfo);
+      } else if (List.class.isAssignableFrom(parameterTypes[i])) {
+        typeInfos.add(TypeInfoFactory.unknownListTypeInfo);
+      } else if (parameterTypes[i].equals(Object.class)){
+        typeInfos.add(TypeInfoFactory.unknownTypeInfo);
+      } else {
+        throw new RuntimeException("Hive does not understand type " + parameterTypes[i] + " from " + m);
+      }
+    }
+    return typeInfos;
+  }
   /**
    * Parse a recursive TypeInfo list String.
    * For example, the following inputs are valid inputs: 
@@ -28,12 +56,13 @@ public class TypeInfoUtils {
    */
   private static class TypeInfoParser {
     
-    static final String STRUCT_TYPE_NAME = "struct";
-    
     private static class Token {
       public int position;
       public String text;
       public boolean isAlphaDigit;
+      public String toString() {
+        return "" + position + ":" + text;
+      }
     };
     
     /**
@@ -85,7 +114,7 @@ public class TypeInfoUtils {
             iToken ++;
           } else {
             throw new IllegalArgumentException("Error: ',', ':', or ';' expected at position " 
-                + separator.position + " from '" + typeInfoString + "'" );
+                + separator.position + " from '" + typeInfoString + "' " + typeInfoTokens );
           }
         }
       }
@@ -105,8 +134,8 @@ public class TypeInfoUtils {
       if (item.equals("type")) {
         if (!Constants.LIST_TYPE_NAME.equals(t.text)
             && !Constants.MAP_TYPE_NAME.equals(t.text)
-            && !STRUCT_TYPE_NAME.equals(t.text)
-            && null == ObjectInspectorUtils.typeNameToClass.get(t.text)
+            && !Constants.STRUCT_TYPE_NAME.equals(t.text)
+            && null == PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(t.text)
             && !t.text.equals(alternative)) {
           throw new IllegalArgumentException("Error: " + item + " expected at the position "
               + t.position + " of '" + typeInfoString + "'" );
@@ -131,9 +160,9 @@ public class TypeInfoUtils {
       Token t = expect("type");
   
       // Is this a primitive type?
-      Class<?> clazz = ObjectInspectorUtils.typeNameToClass.get(t.text);
-      if (clazz != null) {
-        return TypeInfoFactory.getPrimitiveTypeInfo(clazz);
+      PrimitiveTypeEntry primitiveType = PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(t.text);
+      if (primitiveType != null && !primitiveType.primitiveCategory.equals(PrimitiveCategory.UNKNOWN)) {
+        return TypeInfoFactory.getPrimitiveTypeInfo(primitiveType.typeName);
       }
       
       // Is this a list type?
@@ -155,7 +184,7 @@ public class TypeInfoUtils {
       }
   
       // Is this a struct type?
-      if (STRUCT_TYPE_NAME.equals(t.text)) {
+      if (Constants.STRUCT_TYPE_NAME.equals(t.text)) {
         ArrayList<String> fieldNames = new ArrayList<String>();
         ArrayList<TypeInfo> fieldTypeInfos = new ArrayList<TypeInfo>();
         boolean first = true;
@@ -195,23 +224,27 @@ public class TypeInfoUtils {
     if (result == null) {
       switch(typeInfo.getCategory()) {
         case PRIMITIVE: {
-          result = ObjectInspectorFactory.getStandardPrimitiveObjectInspector(typeInfo.getPrimitiveClass());
+          result = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
+              ((PrimitiveTypeInfo)typeInfo).getPrimitiveCategory());
           break;
         }
         case LIST: {
-          ObjectInspector elementObjectInspector = getStandardObjectInspectorFromTypeInfo(typeInfo.getListElementTypeInfo());
+          ObjectInspector elementObjectInspector = getStandardObjectInspectorFromTypeInfo(
+              ((ListTypeInfo)typeInfo).getListElementTypeInfo());
           result = ObjectInspectorFactory.getStandardListObjectInspector(elementObjectInspector);
           break;
         }
         case MAP: {
-          ObjectInspector keyObjectInspector = getStandardObjectInspectorFromTypeInfo(typeInfo.getMapKeyTypeInfo());
-          ObjectInspector valueObjectInspector = getStandardObjectInspectorFromTypeInfo(typeInfo.getMapValueTypeInfo());
+          MapTypeInfo mapTypeInfo = (MapTypeInfo)typeInfo;
+          ObjectInspector keyObjectInspector = getStandardObjectInspectorFromTypeInfo(mapTypeInfo.getMapKeyTypeInfo());
+          ObjectInspector valueObjectInspector = getStandardObjectInspectorFromTypeInfo(mapTypeInfo.getMapValueTypeInfo());
           result = ObjectInspectorFactory.getStandardMapObjectInspector(keyObjectInspector, valueObjectInspector);
           break;
         }
         case STRUCT: {
-          List<String> fieldNames = typeInfo.getAllStructFieldNames();
-          List<TypeInfo> fieldTypeInfos = typeInfo.getAllStructFieldTypeInfos();
+          StructTypeInfo structTypeInfo = (StructTypeInfo)typeInfo;
+          List<String> fieldNames = structTypeInfo.getAllStructFieldNames();
+          List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
           List<ObjectInspector> fieldObjectInspectors = new ArrayList<ObjectInspector>(fieldTypeInfos.size());
           for(int i=0; i<fieldTypeInfos.size(); i++) {
             fieldObjectInspectors.add(getStandardObjectInspectorFromTypeInfo(fieldTypeInfos.get(i)));
@@ -228,6 +261,55 @@ public class TypeInfoUtils {
     return result;
   }
 
+
+  
+  static HashMap<TypeInfo, ObjectInspector> cachedStandardJavaObjectInspector = new HashMap<TypeInfo, ObjectInspector>();
+  /**
+   * Returns the standard object inspector that can be used to translate an object of that typeInfo
+   * to a standard object type.  
+   */
+  public static ObjectInspector getStandardJavaObjectInspectorFromTypeInfo(TypeInfo typeInfo) {
+    ObjectInspector result = cachedStandardJavaObjectInspector.get(typeInfo);
+    if (result == null) {
+      switch(typeInfo.getCategory()) {
+        case PRIMITIVE: {
+          // NOTE: we use JavaPrimitiveObjectInspector instead of StandardPrimitiveObjectInspector
+          result = PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
+              PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(typeInfo.getTypeName()).primitiveCategory);
+          break;
+        }
+        case LIST: {
+          ObjectInspector elementObjectInspector = getStandardJavaObjectInspectorFromTypeInfo(
+              ((ListTypeInfo)typeInfo).getListElementTypeInfo());
+          result = ObjectInspectorFactory.getStandardListObjectInspector(elementObjectInspector);
+          break;
+        }
+        case MAP: {
+          MapTypeInfo mapTypeInfo = (MapTypeInfo)typeInfo;
+          ObjectInspector keyObjectInspector = getStandardJavaObjectInspectorFromTypeInfo(mapTypeInfo.getMapKeyTypeInfo());
+          ObjectInspector valueObjectInspector = getStandardJavaObjectInspectorFromTypeInfo(mapTypeInfo.getMapValueTypeInfo());
+          result = ObjectInspectorFactory.getStandardMapObjectInspector(keyObjectInspector, valueObjectInspector);
+          break;
+        }
+        case STRUCT: {
+          StructTypeInfo strucTypeInfo = (StructTypeInfo)typeInfo;
+          List<String> fieldNames = strucTypeInfo.getAllStructFieldNames();
+          List<TypeInfo> fieldTypeInfos = strucTypeInfo.getAllStructFieldTypeInfos();
+          List<ObjectInspector> fieldObjectInspectors = new ArrayList<ObjectInspector>(fieldTypeInfos.size());
+          for(int i=0; i<fieldTypeInfos.size(); i++) {
+            fieldObjectInspectors.add(getStandardJavaObjectInspectorFromTypeInfo(fieldTypeInfos.get(i)));
+          }
+          result = ObjectInspectorFactory.getStandardStructObjectInspector(fieldNames, fieldObjectInspectors);
+          break;
+        }
+        default: {
+          result = null;
+        }
+      }
+      cachedStandardJavaObjectInspector.put(typeInfo, result);
+    }
+    return result;
+  }
   
   /**
    * Get the TypeInfo object from the ObjectInspector object by recursively going into the
@@ -245,7 +327,7 @@ public class TypeInfoUtils {
     switch (oi.getCategory()) {
       case PRIMITIVE: {
         PrimitiveObjectInspector poi =(PrimitiveObjectInspector)oi;
-        result = TypeInfoFactory.getPrimitiveTypeInfo(poi.getPrimitiveClass());
+        result = TypeInfoFactory.getPrimitiveTypeInfo(poi.getTypeName());
         break;
       }
       case LIST: {
@@ -280,44 +362,6 @@ public class TypeInfoUtils {
     return result;
   }
     
-  /**
-   * Return the 
-   */
-  public static String getTypeStringFromTypeInfo(TypeInfo typeInfo) {
-    switch(typeInfo.getCategory()) {
-      case PRIMITIVE: {
-        return ObjectInspectorUtils.getClassShortName(typeInfo.getPrimitiveClass());
-      }
-      case LIST: {
-        String elementType = getTypeStringFromTypeInfo(typeInfo.getListElementTypeInfo());
-        return org.apache.hadoop.hive.serde.Constants.LIST_TYPE_NAME + "<" + elementType + ">";
-      }
-      case MAP: {
-        String keyType = getTypeStringFromTypeInfo(typeInfo.getMapKeyTypeInfo());
-        String valueType = getTypeStringFromTypeInfo(typeInfo.getMapValueTypeInfo());
-        return org.apache.hadoop.hive.serde.Constants.MAP_TYPE_NAME + "<" +
-          keyType + "," + valueType + ">";
-      }
-      case STRUCT: {
-        StringBuilder sb = new StringBuilder();
-        sb.append("struct<");
-        List<String> fieldNames = typeInfo.getAllStructFieldNames();
-        List<TypeInfo> fieldTypeInfos = typeInfo.getAllStructFieldTypeInfos();
-        for (int i = 0; i < fieldNames.size(); i++) {
-          if (i>0) sb.append(",");
-          sb.append(fieldNames.get(i));
-          sb.append(":");
-          sb.append(getTypeStringFromTypeInfo(fieldTypeInfos.get(i)));
-        }        
-        sb.append(">");
-        return sb.toString();
-      }
-      default: {
-        throw new RuntimeException("Unknown type!");
-      }
-    }
-  }
-  
   public static ArrayList<TypeInfo> getTypeInfosFromTypeString(String typeString) {
     TypeInfoParser parser = new TypeInfoParser(typeString);
     return parser.parseTypeInfos();

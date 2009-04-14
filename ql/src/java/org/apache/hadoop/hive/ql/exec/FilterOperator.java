@@ -25,6 +25,8 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.filterDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.Reporter;
 
@@ -61,7 +63,8 @@ public class FilterOperator extends Operator <filterDesc> implements Serializabl
   public void process(Object row, ObjectInspector rowInspector) throws HiveException {
     try {
       conditionEvaluator.evaluate(row, rowInspector, conditionInspectableObject);
-      Boolean ret = (Boolean)(conditionInspectableObject.o);
+      PrimitiveObjectInspector poi = (PrimitiveObjectInspector)conditionInspectableObject.oi;
+      Boolean ret = (Boolean)poi.getPrimitiveJavaObject(conditionInspectableObject.o);
       if (Boolean.TRUE.equals(ret)) {
         forward(row, rowInspector);
         passed_count.set(passed_count.get()+1);

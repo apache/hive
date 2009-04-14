@@ -18,96 +18,101 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import java.sql.Date;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
 
 
 public class UDFOPEqualOrLessThan extends UDFBaseCompare {
 
   private static Log LOG = LogFactory.getLog(UDFOPEqualOrLessThan.class.getName());
 
+  BooleanWritable resultCache;
   public UDFOPEqualOrLessThan() {
+    resultCache = new BooleanWritable();
   }
 
-
-  public Boolean evaluate(String a, String b)  {
-
-    Boolean r = null;
+  public BooleanWritable evaluate(Text a, Text b)  {
+    BooleanWritable r = this.resultCache;
     if ((a == null) || (b == null)) {
       r = null;
     } else {
-      r = Boolean.valueOf(a.compareTo(b) <= 0);
+      r.set(a.compareTo(b) <= 0);
     }
     // LOG.info("evaluate(" + a + "," + b + ")=" + r);
     return r;
   }
 
-
-  public Boolean evaluate(Byte a, Byte b)  {
-    Boolean r = null;
+  public BooleanWritable evaluate(ByteWritable a, ByteWritable b)  {
+    BooleanWritable r = this.resultCache;
     if ((a == null) || (b == null)) {
       r = null;
     } else {
-      r = Boolean.valueOf(a.byteValue() <= b.byteValue());
+      r.set(a.get() <= b.get());
     }
     // LOG.info("evaluate(" + a + "," + b + ")=" + r);
     return r;
   }
 
-  public Boolean evaluate(Integer a, Integer b)  {
-    Boolean r = null;
+  public BooleanWritable evaluate(ShortWritable a, ShortWritable b)  {
+    BooleanWritable r = this.resultCache;
     if ((a == null) || (b == null)) {
       r = null;
     } else {
-      r = Boolean.valueOf(a.intValue() <= b.intValue());
+      r.set(a.get() <= b.get());
     }
     // LOG.info("evaluate(" + a + "," + b + ")=" + r);
     return r;
   }
-  
-  public Boolean evaluate(Long a, Long b)  {
-    Boolean r = null;
+
+  public BooleanWritable evaluate(IntWritable a, IntWritable b)  {
+    BooleanWritable r = this.resultCache;
     if ((a == null) || (b == null)) {
       r = null;
     } else {
-      r = Boolean.valueOf(a.longValue() <= b.longValue());
+      r.set(a.get() <= b.get());
     }
     // LOG.info("evaluate(" + a + "," + b + ")=" + r);
     return r;
   }
   
-  public Boolean evaluate(Float a, Float b)  {
-    Boolean r = null;
+  public BooleanWritable evaluate(LongWritable a, LongWritable b)  {
+    BooleanWritable r = this.resultCache;
     if ((a == null) || (b == null)) {
       r = null;
     } else {
-      r = Boolean.valueOf(a.floatValue() <= b.floatValue());
+      r.set(a.get() <= b.get());
+    }
+    // LOG.info("evaluate(" + a + "," + b + ")=" + r);
+    return r;
+  }
+  
+  public BooleanWritable evaluate(FloatWritable a, FloatWritable b)  {
+    BooleanWritable r = this.resultCache;
+    if ((a == null) || (b == null)) {
+      r = null;
+    } else {
+      r.set(a.get() <= b.get());
     }
     // LOG.info("evaluate(" + a + "," + b + ")=" + r);
     return r;
   }  
 
-  public Boolean evaluate(Double a, Double b)  {
-    Boolean r = null;
+  public BooleanWritable evaluate(DoubleWritable a, DoubleWritable b)  {
+    BooleanWritable r = this.resultCache;
     if ((a == null) || (b == null)) {
       r = null;
     } else {
-      r = Boolean.valueOf(a.doubleValue() <= b.doubleValue());
+      r.set(a.get() <= b.get());
     }
     // LOG.info("evaluate(" + a + "," + b + ")=" + r);
     return r;
-  }  
-
-  public Boolean evaluate(Date a, Date b)  {
-    Boolean r = null;
-    if ((a == null) || (b == null)) {
-      r = null;
-    } else {
-      r = Boolean.valueOf(a.compareTo(b) <= 0);
-    }
-    // LOG.info("evaluate(" + a + "," + b + ")=" + r);
-    return r;
-  }  
+  }
 }

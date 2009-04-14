@@ -16,6 +16,8 @@ Trunk - unreleased changes
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).
 
+    HIVE-266. Use Text instead of String (Zheng Shao via namit).
+
   BUG FIXES
 
     HIVE-381. Fix JDBC HiveResultSet's next function.

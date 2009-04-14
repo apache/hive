@@ -19,12 +19,20 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
 
 /**
  * A UDF for testing, which evaluates the length of a string.
  */
 public class UDFTestLength extends UDF {
-  public Integer evaluate(String s) {
-    return s == null ? null : s.length();
+  
+  IntWritable result = new IntWritable();
+  public IntWritable evaluate(Text s) {
+    if (s == null) {
+      return null;
+    }
+    result.set(s.toString().length());
+    return result;
   }
 }

@@ -22,85 +22,106 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
 
+import org.apache.hadoop.hive.serde2.ByteStream;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
+import org.apache.hadoop.hive.serde2.lazy.LazyLong;
+import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
+
 
 public class UDFToString extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFToString.class.getName());
 
+  Text t = new Text();
+  ByteStream.Output out = new ByteStream.Output();
+  
   public UDFToString() {
   }
 
-  public String evaluate(Void i)  {
+  public Text evaluate(NullWritable i)  {
     return null;
   }
 
-  public String evaluate(Boolean i)  {
+  byte[] trueBytes = {'T', 'R', 'U', 'E'};
+  byte[] falseBytes = {'F', 'A', 'L', 'S', 'E'};
+  public Text evaluate(BooleanWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return i.booleanValue() ? "TRUE" : "FALSE";
+      t.clear();
+      t.set(i.get() ? trueBytes : falseBytes);
+      return t;
     }
   }
   
-  public String evaluate(Byte i)  {
+  public Text evaluate(ByteWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return i.toString();
+      out.reset();
+      LazyInteger.writeUTF8NoException(out, i.get());
+      t.set(out.getData(), 0, out.getCount());
+      return t;
     }
   }
   
-  public String evaluate(Short i)  {
+  public Text evaluate(ShortWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return i.toString();
+      out.reset();
+      LazyInteger.writeUTF8NoException(out, i.get());
+      t.set(out.getData(), 0, out.getCount());
+      return t;
     }
   }
     
-  public String evaluate(Integer i)  {
+  public Text evaluate(IntWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return i.toString();
+      out.reset();
+      LazyInteger.writeUTF8NoException(out, i.get());
+      t.set(out.getData(), 0, out.getCount());
+      return t;
     }
   }
 
-  public String evaluate(Long i)  {
+  public Text evaluate(LongWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return i.toString();
+      out.reset();
+      LazyLong.writeUTF8NoException(out, i.get());
+      t.set(out.getData(), 0, out.getCount());
+      return t;
     }
   }
   
-  public String evaluate(Float i)  {
+  public Text evaluate(FloatWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return i.toString();
+      t.set(i.toString());
+      return t;
     }
   }
   
-  public String evaluate(Double i)  {
+  public Text evaluate(DoubleWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return i.toString();
+      t.set(i.toString());
+      return t;
     }
   }
   
-  /**
-   * Convert from date to a string. This is called for CAST(... AS STRING)
-   *
-   * @param i The date value to convert
-   * @return String
-   */
-  public String evaluate(java.sql.Date i)  {
-    if (i == null) {
-      return null;
-    } else {
-        return i.toString();
-    }
-  }  
 }

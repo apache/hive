@@ -19,22 +19,28 @@ package org.apache.hadoop.hive.serde2.lazy;
 
 import java.nio.charset.CharacterCodingException;
 
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 
 /**
  * LazyObject for storing a value of Double.
  * 
  */
-public class LazyDouble extends LazyPrimitive<Double> {
+public class LazyDouble extends LazyPrimitive<DoubleWritable> {
 
+  public LazyDouble() {
+    data = new DoubleWritable();
+  }
+  
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
     try {
-      data = Double.valueOf(Text.decode(bytes.getData(), start, length));
+      data.set(Double.parseDouble(Text.decode(bytes.getData(), start, length)));
+      isNull = false;
     } catch (NumberFormatException e) {
-      data = null;
+      isNull = true;
     } catch (CharacterCodingException e) {
-      data = null;
+      isNull = true;
     }
   }
 

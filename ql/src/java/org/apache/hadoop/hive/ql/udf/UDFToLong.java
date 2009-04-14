@@ -21,12 +21,24 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.lazy.LazyLong;
+import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
 
 
 public class UDFToLong extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFToLong.class.getName());
 
+  LongWritable longWritable = new LongWritable();
+  
   public UDFToLong() {
   }
 
@@ -34,9 +46,9 @@ public class UDFToLong extends UDF {
    * Convert from void to a long. This is called for CAST(... AS BIGINT)
    *
    * @param i The void value to convert
-   * @return Long
+   * @return LongWritable
    */
-  public Long evaluate(Void i)  {
+  public LongWritable evaluate(NullWritable i)  {
     return null;
   }
 
@@ -44,13 +56,14 @@ public class UDFToLong extends UDF {
    * Convert from boolean to a long. This is called for CAST(... AS BIGINT)
    *
    * @param i The boolean value to convert
-   * @return Long
+   * @return LongWritable
    */
-  public Long evaluate(Boolean i)  {
+  public LongWritable evaluate(BooleanWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return i.booleanValue() ? (long)1 : (long)0;
+      longWritable.set(i.get()? (long)1 : (long) 0);
+      return longWritable;
     }
   }
 
@@ -58,13 +71,14 @@ public class UDFToLong extends UDF {
    * Convert from byte to a long. This is called for CAST(... AS BIGINT)
    *
    * @param i The byte value to convert
-   * @return Long
+   * @return LongWritable
    */
-  public Long evaluate(Byte i)  {
+  public LongWritable evaluate(ByteWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Long.valueOf(i.longValue());
+      longWritable.set((long)i.get());
+      return longWritable;
     }
   }
   
@@ -72,13 +86,14 @@ public class UDFToLong extends UDF {
    * Convert from short to a long. This is called for CAST(... AS BIGINT)
    *
    * @param i The short value to convert
-   * @return Long
+   * @return LongWritable
    */
-  public Long evaluate(Short i)  {
+  public LongWritable evaluate(ShortWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Long.valueOf(i.longValue());
+      longWritable.set((long)i.get());
+      return longWritable;
     }
   }
   
@@ -86,13 +101,14 @@ public class UDFToLong extends UDF {
    * Convert from integer to a long. This is called for CAST(... AS BIGINT)
    *
    * @param i The integer value to convert
-   * @return Long
+   * @return LongWritable
    */
-  public Long evaluate(Integer i)  {
+  public LongWritable evaluate(IntWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Long.valueOf(i.longValue());
+      longWritable.set((long)i.get());
+      return longWritable;
     }
   }
 
@@ -100,9 +116,9 @@ public class UDFToLong extends UDF {
    * Convert from long to a long. This is called for CAST(... AS BIGINT)
    *
    * @param i The long value to convert
-   * @return Long
+   * @return LongWritable
    */
-  public Long evaluate(Long i)  {
+  public LongWritable evaluate(LongWritable i)  {
     return i;
   }
 
@@ -110,13 +126,14 @@ public class UDFToLong extends UDF {
    * Convert from float to a long. This is called for CAST(... AS BIGINT)
    *
    * @param i The float value to convert
-   * @return Long
+   * @return LongWritable
    */
-  public Long evaluate(Float i)  {
+  public LongWritable evaluate(FloatWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Long.valueOf(i.longValue());
+      longWritable.set((long)i.get());
+      return longWritable;
     }
   }
   
@@ -124,13 +141,14 @@ public class UDFToLong extends UDF {
    * Convert from double to a long. This is called for CAST(... AS BIGINT)
    *
    * @param i The double value to convert
-   * @return Long
+   * @return LongWritable
    */
-  public Long evaluate(Double i)  {
+  public LongWritable evaluate(DoubleWritable i)  {
     if (i == null) {
       return null;
     } else {
-      return Long.valueOf(i.longValue());
+      longWritable.set((long)i.get());
+      return longWritable;
     }
   }
   
@@ -138,34 +156,22 @@ public class UDFToLong extends UDF {
    * Convert from string to a long. This is called for CAST(... AS BIGINT)
    *
    * @param i The string value to convert
-   * @return Long
+   * @return LongWritable
    */
-  public Long evaluate(String i)  {
+  public LongWritable evaluate(Text i)  {
     if (i == null) {
       return null;
     } else {
       try {
-        return Long.valueOf(i);
+        longWritable.set(LazyLong.parseLong(i.getBytes(), 0 , i.getLength(), 10));
+        return longWritable;
       } catch (NumberFormatException e) {
         // MySQL returns 0 if the string is not a well-formed numeric value.
-        // return Long.valueOf(0);
+        // return LongWritable.valueOf(0);
         // But we decided to return NULL instead, which is more conservative.
         return null;
       }
     }
   }
   
-  /**
-   * Convert from date to a long. This is called for CAST(... AS BIGINT)
-   *
-   * @param i The date value to convert
-   * @return Long
-   */
-  public Long evaluate(java.sql.Date i)  {
-    if (i == null) {
-      return null;
-    } else {
-        return Long.valueOf(i.getTime());
-    }
-  }  
 }

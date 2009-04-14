@@ -40,6 +40,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.Reporter;
 
 /**
@@ -112,9 +116,9 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
 
   static {
     aliasField = ExprNodeEvaluatorFactory.get(new exprNodeColumnDesc(
-        String.class, Utilities.ReduceField.ALIAS.toString()));
+        TypeInfoFactory.stringTypeInfo, Utilities.ReduceField.ALIAS.toString()));
     keyField = ExprNodeEvaluatorFactory.get(new exprNodeColumnDesc(
-        String.class, Utilities.ReduceField.KEY.toString()));
+        TypeInfoFactory.stringTypeInfo, Utilities.ReduceField.KEY.toString()));
   }
 
   HashMap<Byte, Vector<ArrayList<Object>>> storage;
@@ -156,8 +160,8 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
     ArrayList<ObjectInspector> structFieldObjectInspectors = new ArrayList<ObjectInspector>(
         totalSz);
     for (int i = 0; i < totalSz; i++) {
-      structFieldObjectInspectors.add(ObjectInspectorFactory
-          .getStandardPrimitiveObjectInspector(String.class));
+      structFieldObjectInspectors.add(PrimitiveObjectInspectorFactory
+          .writableStringObjectInspector);
     }
     joinOutputObjectInspector = ObjectInspectorFactory
         .getStandardStructObjectInspector(ObjectInspectorUtils
@@ -184,6 +188,8 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
     iterators = new Stack<Iterator<ArrayList<Object>>>();
     
     joinEmitInterval = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEJOINEMITINTERVAL);
+    
+    forwardCache = new Object[totalSz];
   }
 
   public void startGroup() throws HiveException {
@@ -200,7 +206,7 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
     try {
       // get alias
       aliasField.evaluate(row, rowInspector, tempAliasInspectableObject);
-      Byte alias = (Byte) (tempAliasInspectableObject.o);
+      Byte alias = (Byte) ((PrimitiveObjectInspector)tempAliasInspectableObject.oi).getPrimitiveJavaObject(tempAliasInspectableObject.o);
 
       // get the expressions for that alias
       JoinExprMap exmap = joinExprs.get(alias);
@@ -210,7 +216,7 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
       ArrayList<Object> nr = new ArrayList<Object>(valueFields.length);
       for (ExprNodeEvaluator vField : valueFields) {
         vField.evaluate(row, rowInspector, tempAliasInspectableObject);
-        nr.add(tempAliasInspectableObject.o);
+        nr.add(ObjectInspectorUtils.copyToStandardObject(tempAliasInspectableObject.o, tempAliasInspectableObject.oi));
       }
 
       // Are we consuming too much memory
@@ -245,24 +251,26 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
     }
   }
 
+  transient Object[] forwardCache;
+  
   private void createForwardJoinObject(IntermediateObject intObj,
       boolean[] nullsArr) throws HiveException {
-    ArrayList<Object> nr = new ArrayList<Object>(totalSz);
+    int p = 0;
     for (int i = 0; i < numValues; i++) {
       Byte alias = order[i];
       int sz = joinExprs.get(alias).getValueFields().length;
       if (nullsArr[i]) {
         for (int j = 0; j < sz; j++) {
-          nr.add(null);
+          forwardCache[p++] = null;
         }
       } else {
         ArrayList<Object> obj = intObj.getObjs()[i];
         for (int j = 0; j < sz; j++) {
-          nr.add(obj.get(j));
+          forwardCache[p++] = obj.get(j);
         }
       }
     }
-    forward(nr, joinOutputObjectInspector);
+    forward(forwardCache, joinOutputObjectInspector);
   }
 
   private void copyOldArray(boolean[] src, boolean[] dest) {

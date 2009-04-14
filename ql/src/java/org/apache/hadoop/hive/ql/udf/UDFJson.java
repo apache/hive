@@ -31,6 +31,7 @@ import org.json.JSONException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.io.Text;
 
 
 public class UDFJson extends UDF {
@@ -38,6 +39,7 @@ public class UDFJson extends UDF {
   private Pattern pattern_key = Pattern.compile("^([a-zA-Z0-9_\\-]+).*");
   private Pattern pattern_index = Pattern.compile("\\[([0-9]+|\\*)\\]");
 
+  Text result = new Text();
   public UDFJson() {
   }
 
@@ -61,15 +63,18 @@ public class UDFJson extends UDF {
    *    [,] : Union operator
    *    [start:end:step] : array slice operator
    *
-   * @param jsonString the json string.
-   * @param pathString the json path expression.
+   * @param jsonText the json string.
+   * @param pathText the json path expression.
    * @return json string or null when error happens.
    */
-  public String evaluate(String jsonString, String pathString) {
-    if (jsonString == null || pathString == null) {
+  public Text evaluate(Text jsonText, Text pathText) {
+    if (jsonText == null || pathText == null) {
       return null;
     }
 
+    String jsonString = jsonText.toString();
+    String pathString = pathText.toString();
+    
     try {
       String[] pathExpr = pathString.split("\\.", -1);
       if (!pathExpr[0].equalsIgnoreCase("$")) {
@@ -79,7 +84,8 @@ public class UDFJson extends UDF {
       for (int i = 1; i < pathExpr.length; i++) {
         extractObject = extract(extractObject, pathExpr[i]);
       }
-      return extractObject.toString();
+      result.set(extractObject.toString());
+      return result;
     } catch (Exception e) {
       return null;
     }

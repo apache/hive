@@ -19,27 +19,32 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.Text;
+
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 public class UDFRegExp extends UDF {
 
-  private String lastRegex = null;
+  private Text lastRegex = new Text();
   private Pattern p = null;
 
+  BooleanWritable result = new BooleanWritable();
   public UDFRegExp() {
   }
 
-  public Boolean evaluate(String s, String regex) {
+  public BooleanWritable evaluate(Text s, Text regex) {
     if (s == null || regex == null) {
       return null;
     }
     if (!regex.equals(lastRegex)) {
-      lastRegex = regex;
-      p = Pattern.compile(regex);
+      lastRegex.set(regex);
+      p = Pattern.compile(regex.toString());
     }
-    Matcher m = p.matcher(s);
-    return Boolean.valueOf(m.matches());    
+    Matcher m = p.matcher(s.toString());
+    result.set(m.matches());
+    return result;
   }
 
 }

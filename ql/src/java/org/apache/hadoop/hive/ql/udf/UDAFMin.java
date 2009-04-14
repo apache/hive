@@ -18,10 +18,14 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import java.sql.Date;
-
 import org.apache.hadoop.hive.ql.exec.UDAF;
 import org.apache.hadoop.hive.ql.exec.UDAFEvaluator;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
 
 
 public class UDAFMin extends UDAF {
@@ -40,28 +44,28 @@ public class UDAFMin extends UDAF {
       mEmpty = true;
     }
 
-    public boolean iterate(Short o) {
+    public boolean iterate(ShortWritable o) {
       if (o != null) {
         if (mEmpty) {
-          mMin = o;
+          mMin = o.get();
           mEmpty = false;
         } else {
-          mMin = (short) Math.min(mMin, o);
+          mMin = (short) Math.min(mMin, o.get());
         }
       }
       return true;
     }
 
-    public Short terminatePartial() {
-      return mEmpty ? null : Short.valueOf(mMin);
+    public ShortWritable terminatePartial() {
+      return mEmpty ? null : new ShortWritable(mMin);
     }
 
-    public boolean merge(Short o) {
+    public boolean merge(ShortWritable o) {
       return iterate(o);
     }
 
-    public Short terminate() {
-      return mEmpty ? null : Short.valueOf(mMin);
+    public ShortWritable terminate() {
+      return mEmpty ? null : new ShortWritable(mMin);
     }
   }
 
@@ -79,28 +83,28 @@ public class UDAFMin extends UDAF {
       mEmpty = true;
     }
 
-    public boolean iterate(Integer o) {
+    public boolean iterate(IntWritable o) {
       if (o != null) {
         if (mEmpty) {
-          mMin = o;
+          mMin = o.get();
           mEmpty = false;
         } else {
-          mMin = Math.min(mMin, o);
+          mMin = Math.min(mMin, o.get());
         }
       }
       return true;
     }
 
-    public Integer terminatePartial() {
-      return mEmpty ? null : Integer.valueOf(mMin);
+    public IntWritable terminatePartial() {
+      return mEmpty ? null : new IntWritable(mMin);
     }
 
-    public boolean merge(Integer o) {
+    public boolean merge(IntWritable o) {
       return iterate(o);
     }
 
-    public Integer terminate() {
-      return mEmpty ? null : Integer.valueOf(mMin);
+    public IntWritable terminate() {
+      return mEmpty ? null : new IntWritable(mMin);
     }
   }
 
@@ -118,28 +122,28 @@ public class UDAFMin extends UDAF {
       mEmpty = true;
     }
 
-    public boolean iterate(Long o) {
+    public boolean iterate(LongWritable o) {
       if (o != null) {
         if (mEmpty) {
-          mMin = o;
+          mMin = o.get();
           mEmpty = false;
         } else {
-          mMin = Math.min(mMin, o);
+          mMin = Math.min(mMin, o.get());
         }
       }
       return true;
     }
 
-    public Long terminatePartial() {
-      return mEmpty ? null : Long.valueOf(mMin);
+    public LongWritable terminatePartial() {
+      return mEmpty ? null : new LongWritable(mMin);
     }
 
-    public boolean merge(Long o) {
+    public boolean merge(LongWritable o) {
       return iterate(o);
     }
 
-    public Long terminate() {
-      return mEmpty ? null : Long.valueOf(mMin);
+    public LongWritable terminate() {
+      return mEmpty ? null : new LongWritable(mMin);
     }
   }
 
@@ -157,28 +161,28 @@ public class UDAFMin extends UDAF {
       mEmpty = true;
     }
 
-    public boolean iterate(Float o) {
+    public boolean iterate(FloatWritable o) {
       if (o != null) {
         if (mEmpty) {
-          mMin = o;
+          mMin = o.get();
           mEmpty = false;
         } else {
-          mMin = Math.min(mMin, o);
+          mMin = Math.min(mMin, o.get());
         }
       }
       return true;
     }
 
-    public Float terminatePartial() {
-      return mEmpty ? null : Float.valueOf(mMin);
+    public FloatWritable terminatePartial() {
+      return mEmpty ? null : new FloatWritable(mMin);
     }
 
-    public boolean merge(Float o) {
+    public boolean merge(FloatWritable o) {
       return iterate(o);
     }
 
-    public Float terminate() {
-      return mEmpty ? null : Float.valueOf(mMin);
+    public FloatWritable terminate() {
+      return mEmpty ? null : new FloatWritable(mMin);
     }
   }
 
@@ -196,33 +200,33 @@ public class UDAFMin extends UDAF {
       mEmpty = true;
     }
 
-    public boolean iterate(Double o) {
+    public boolean iterate(DoubleWritable o) {
       if (o != null) {
         if (mEmpty) {
-          mMin = o;
+          mMin = o.get();
           mEmpty = false;
         } else {
-          mMin = Math.min(mMin, o);
+          mMin = Math.min(mMin, o.get());
         }
       }
       return true;
     }
 
-    public Double terminatePartial() {
-      return mEmpty ? null : Double.valueOf(mMin);
+    public DoubleWritable terminatePartial() {
+      return mEmpty ? null : new DoubleWritable(mMin);
     }
 
-    public boolean merge(Double o) {
+    public boolean merge(DoubleWritable o) {
       return iterate(o);
     }
 
-    public Double terminate() {
-      return mEmpty ? null : Double.valueOf(mMin);
+    public DoubleWritable terminate() {
+      return mEmpty ? null : new DoubleWritable(mMin);
     }
   }
 
   static public class MinStringEvaluator implements UDAFEvaluator {
-    private String mMin;
+    private Text mMin;
     private boolean mEmpty;
 
     public MinStringEvaluator() {
@@ -235,66 +239,27 @@ public class UDAFMin extends UDAF {
       mEmpty = true;
     }
 
-    public boolean iterate(String o) {
+    public boolean iterate(Text o) {
       if (o != null) {
         if (mEmpty) {
-          mMin = o;
+          mMin = new Text(o);
           mEmpty = false;
         } else if (mMin.compareTo(o) > 0) {
-          mMin = o;
+          mMin.set(o);
         }
       }
       return true;
     }
 
-    public String terminatePartial() {
+    public Text terminatePartial() {
       return mEmpty ? null : mMin;
     }
 
-    public boolean merge(String o) {
+    public boolean merge(Text o) {
       return iterate(o);
     }
 
-    public String terminate() {
-      return mEmpty ? null : mMin;
-    }
-  }
-
-  static public class MinDateEvaluator implements UDAFEvaluator {
-    private Date mMin;
-    private boolean mEmpty;
-
-    public MinDateEvaluator() {
-      super();
-      init();
-    }
-
-    public void init() {
-      mMin = null;
-      mEmpty = true;
-    }
-
-    public boolean iterate(Date o) {
-      if (o != null) {
-        if (mEmpty) {
-          mMin = o;
-          mEmpty = false;
-        } else if (mMin.compareTo(o) > 0){
-          mMin = o;
-        }
-      }
-      return true;
-    }
-
-    public Date terminatePartial() {
-      return mEmpty ? null : mMin;
-    }
-
-    public boolean merge(Date o) {
-      return iterate(o);
-    }
-
-    public Date terminate() {
+    public Text terminate() {
       return mEmpty ? null : mMin;
     }
   }

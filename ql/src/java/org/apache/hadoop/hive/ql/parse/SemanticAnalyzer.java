@@ -1079,7 +1079,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       out_rwsch.put(
         qb.getParseInfo().getAlias(),
         outputColList.get(i),
-        new ColumnInfo(outputColList.get(i), String.class)  // Script output is always a string
+        new ColumnInfo(outputColList.get(i), TypeInfoFactory.stringTypeInfo)  // Script output is always a string
       );
     }
 
@@ -1245,7 +1245,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Map<String, exprNodeDesc> colExprMap = new HashMap<String, exprNodeDesc>();
     for (int i=0; i<col_list.size(); i++) {
       if (col_list.get(i) instanceof exprNodeNullDesc) {
-        col_list.set(i, new exprNodeConstantDesc(String.class, null));
+        col_list.set(i, new exprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, null));
       }
       colExprMap.put(Integer.toString(i), col_list.get(i));
     }
@@ -1287,13 +1287,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   UDAFInfo getUDAFInfo(String aggName, groupByDesc.Mode mode,
       ArrayList<exprNodeDesc> aggParameters, ASTNode aggTree) throws SemanticException {
     UDAFInfo r = new UDAFInfo();
-    ArrayList<Class<?>> aggClasses = new ArrayList<Class<?>>();
+    ArrayList<TypeInfo> aggTypeInfos = new ArrayList<TypeInfo>();
     for(exprNodeDesc expr: aggParameters) {
-      aggClasses.add(expr.getTypeInfo().getPrimitiveClass());
+      aggTypeInfos.add(expr.getTypeInfo());
     }
-    r.evalClass = FunctionRegistry.getUDAFEvaluator(aggName, aggClasses);
+    r.evalClass = FunctionRegistry.getUDAFEvaluator(aggName, aggTypeInfos);
     if (null == r.evalClass) {
-      String reason = "Looking for UDAF Evaluator\"" + aggName + "\" with parameters " + aggClasses;
+      String reason = "Looking for UDAF Evaluator\"" + aggName + "\" with parameters " + aggTypeInfos;
       throw new SemanticException(ErrorMsg.INVALID_FUNCTION_SIGNATURE.getMsg((ASTNode)aggTree.getChild(0), reason));
     }
     
@@ -1310,7 +1310,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     
     if (null == r.aggMethod) {
-      String reason = "Looking for UDAF Evaluator Iterator\"" + aggName + "\" with parameters " + aggClasses;
+      String reason = "Looking for UDAF Evaluator Iterator\"" + aggName + "\" with parameters " + aggTypeInfos;
       throw new SemanticException(ErrorMsg.INVALID_FUNCTION_SIGNATURE.getMsg((ASTNode)aggTree.getChild(0), reason));
     }
 
@@ -1597,41 +1597,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return op;
   }
 
-  private ArrayList<exprNodeDesc> convertParameters(Method m, ArrayList<exprNodeDesc> aggParameters) {
-    
-    ArrayList<exprNodeDesc> newParameters = new ArrayList<exprNodeDesc>();
-    Class<?>[] pTypes = m.getParameterTypes();
-
-    // 0 is the function name
-    for (int i = 0; i < aggParameters.size(); i++) {
-      exprNodeDesc desc = aggParameters.get(i);
-      Class<?> pType = ObjectInspectorUtils.generalizePrimitive(pTypes[i]);
-      if (desc instanceof exprNodeNullDesc) {
-        exprNodeConstantDesc newCh = new exprNodeConstantDesc(TypeInfoFactory.getPrimitiveTypeInfo(pType), null);
-        newParameters.add(newCh);
-      } else if (pType.isAssignableFrom(desc.getTypeInfo().getPrimitiveClass())) {
-        // no type conversion needed
-        newParameters.add(desc);
-      } else {
-        // must be implicit type conversion
-        Class<?> from = desc.getTypeInfo().getPrimitiveClass();
-        Class<?> to = pType;
-        assert(FunctionRegistry.implicitConvertable(from, to));
-        Method conv = FunctionRegistry.getUDFMethod(to.getName(), from);
-        assert(conv != null);
-        Class<? extends UDF> c = FunctionRegistry.getUDFClass(to.getName());
-        assert(c != null);
-        
-        // get the conversion method
-        ArrayList<exprNodeDesc> conversionArg = new ArrayList<exprNodeDesc>(1);
-        conversionArg.add(desc);
-        newParameters.add(new exprNodeFuncDesc(TypeInfoFactory.getPrimitiveTypeInfo(pType),
-                                               c, conv, conversionArg));
-      }
-    }
-
-    return newParameters;
-  }
 
   /**
    * Generate the ReduceSinkOperator for the Group By Query Block (qb.getPartInfo().getXXX(dest)).
@@ -1842,7 +1807,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         .getAggregationExprsForClause(dest);
     for (Map.Entry<String, ASTNode> entry : aggregationTrees.entrySet()) {
       ArrayList<exprNodeDesc> aggParameters = new ArrayList<exprNodeDesc>();
-      ArrayList<Class<?>> aggParamTypes = new ArrayList<Class<?>>();
       ASTNode value = entry.getValue();
       String text = entry.getKey();
       ColumnInfo paraExprInfo = groupByInputRowResolver2.get("",text);
@@ -1852,7 +1816,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String paraExpression = paraExprInfo.getInternalName();
       assert(paraExpression != null);
       aggParameters.add(new exprNodeColumnDesc(paraExprInfo.getType(), paraExpression));
-      aggParamTypes.add(paraExprInfo.getType().getPrimitiveClass());
 
       String aggName = value.getChild(0).getText();
       Class<? extends UDAF> aggClass = FunctionRegistry.getUDAF(aggName);
@@ -2322,14 +2285,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // LazySimpleSerDe can convert any types to String type using JSON-format.
         if (!tableFieldTypeInfo.equals(rowFieldTypeInfo)
             && !(isLazySimpleSerDe && tableFieldTypeInfo.getCategory().equals(Category.PRIMITIVE)
-              && tableFieldTypeInfo.getPrimitiveClass().equals(String.class))) { 
+              && tableFieldTypeInfo.equals(TypeInfoFactory.stringTypeInfo))) { 
           // need to do some conversions here
           converted = true;
           if (tableFieldTypeInfo.getCategory() != Category.PRIMITIVE) {
             // cannot convert to complex types
             column = null; 
           } else {
-            column = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc(tableFieldTypeInfo.getPrimitiveClass().getName(), column);
+            column = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc(tableFieldTypeInfo.getTypeName(), column);
           }
           if (column == null) {
             String reason = "Cannot convert column " + i + " from " + rowFieldTypeInfo + " to " 
@@ -2476,7 +2439,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     Operator output = putOpInsertMap(
       OperatorFactory.getAndMakeChild(
-        new extractDesc(new exprNodeColumnDesc(String.class, Utilities.ReduceField.VALUE.toString())),
+        new extractDesc(new exprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, Utilities.ReduceField.VALUE.toString())),
         new RowSchema(out_rwsch.getColumnInfos()),
         interim), out_rwsch);
 
@@ -2643,19 +2606,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // implicit type conversion hierarchy
     for (int k = 0; k < keyLength; k++) {
       // Find the common class for type conversion
-      Class<?> commonClass = keys.get(0).get(k).getTypeInfo().getPrimitiveClass();
+      TypeInfo commonType = keys.get(0).get(k).getTypeInfo();
       for(int i=1; i<right.length; i++) {
-        Class<?> a = commonClass;
-        Class<?> b = keys.get(i).get(k).getTypeInfo().getPrimitiveClass(); 
-        commonClass = FunctionRegistry.getCommonClass(a, b);
-        if (commonClass == null) {
-          throw new SemanticException("Cannot do equality join on different types: " + a.getClass() + " and " + b.getClass());
+        TypeInfo a = commonType;
+        TypeInfo b = keys.get(i).get(k).getTypeInfo(); 
+        commonType = FunctionRegistry.getCommonClass(a, b);
+        if (commonType == null) {
+          throw new SemanticException("Cannot do equality join on different types: " + a.getTypeName() + " and " + b.getTypeName());
         }
       }
       // Add implicit type conversion if necessary
       for(int i=0; i<right.length; i++) {
-        if (!commonClass.isAssignableFrom(keys.get(i).get(k).getTypeInfo().getPrimitiveClass())) {
-          keys.get(i).set(k, TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc(commonClass.getName(), keys.get(i).get(k)));
+        if (!commonType.equals(keys.get(i).get(k).getTypeInfo())) {
+          keys.get(i).set(k, TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc(commonType.getTypeName(), keys.get(i).get(k)));
         }
       }
     }
@@ -3126,15 +3089,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     throws SemanticException {
 	  
     exprNodeDesc numeratorExpr = new exprNodeConstantDesc(
-        TypeInfoFactory.getPrimitiveTypeInfo(Integer.class), 
+        TypeInfoFactory.intTypeInfo, 
         Integer.valueOf(ts.getNumerator() - 1));
       
     exprNodeDesc denominatorExpr = new exprNodeConstantDesc(
-        TypeInfoFactory.getPrimitiveTypeInfo(Integer.class), 
+        TypeInfoFactory.intTypeInfo, 
         Integer.valueOf(ts.getDenominator()));
 
     exprNodeDesc intMaxExpr = new exprNodeConstantDesc(
-        TypeInfoFactory.getPrimitiveTypeInfo(Integer.class), 
+        TypeInfoFactory.intTypeInfo, 
         Integer.valueOf(Integer.MAX_VALUE));
     
     ArrayList<exprNodeDesc> args = new ArrayList<exprNodeDesc>();
@@ -3142,7 +3105,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       for (String col : bucketCols) {
         ColumnInfo ci = rwsch.get(alias, col);
         // TODO: change type to the one in the table schema
-        args.add(new exprNodeColumnDesc(ci.getType().getPrimitiveClass(), ci.getInternalName()));
+        args.add(new exprNodeColumnDesc(ci.getType(), ci.getInternalName()));
       }
     }
     else {
@@ -3198,7 +3161,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       for(FieldSchema part_col: tab.getPartCols()) {
         LOG.trace("Adding partition col: " + part_col);
         // TODO: use the right type by calling part_col.getType() instead of String.class
-        rwsch.put(alias, part_col.getName(), new ColumnInfo(part_col.getName(), String.class));
+        rwsch.put(alias, part_col.getName(), new ColumnInfo(part_col.getName(), TypeInfoFactory.stringTypeInfo));
       }
       
       // Create the root of the operator tree
@@ -3630,7 +3593,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.Identifier:
         // This is the case for an XPATH element (like "c" in "a.b.c.d")
         desc = new exprNodeConstantDesc(
-            TypeInfoFactory.getPrimitiveTypeInfo(String.class), unescapeIdentifier(expr.getText()));
+            TypeInfoFactory.getPrimitiveTypeInfoFromPrimitiveWritable(String.class), unescapeIdentifier(expr.getText()));
         break;
       case HiveParser.Number:
         Number v = null;
@@ -3647,16 +3610,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         desc = new exprNodeConstantDesc(v);
         break;
       case HiveParser.StringLiteral:
-        desc = new exprNodeConstantDesc(String.class, BaseSemanticAnalyzer.unescapeSQLString(expr.getText()));
+        desc = new exprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, BaseSemanticAnalyzer.unescapeSQLString(expr.getText()));
         break;
       case HiveParser.TOK_CHARSETLITERAL:
-        desc = new exprNodeConstantDesc(String.class, BaseSemanticAnalyzer.charSetString(expr.getChild(0).getText(), expr.getChild(1).getText()));
+        desc = new exprNodeConstantDesc(BaseSemanticAnalyzer.charSetString(expr.getChild(0).getText(), expr.getChild(1).getText()));
         break;
       case HiveParser.KW_TRUE:
-        desc = new exprNodeConstantDesc(Boolean.class, Boolean.TRUE);
+        desc = new exprNodeConstantDesc(Boolean.TRUE);
         break;
       case HiveParser.KW_FALSE:
-        desc = new exprNodeConstantDesc(Boolean.class, Boolean.FALSE);
+        desc = new exprNodeConstantDesc(Boolean.FALSE);
         break;
     }
     return desc;
@@ -3692,4 +3655,49 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 	  }
 	  return tabAlias;
   }
+  
+  
+  public static ArrayList<exprNodeDesc> convertParameters(Method m, List<exprNodeDesc> parametersPassed) {
+    
+    ArrayList<exprNodeDesc> newParameters = new ArrayList<exprNodeDesc>();
+    List<TypeInfo> parametersAccepted = TypeInfoUtils.getParameterTypeInfos(m);
+
+    // 0 is the function name
+    for (int i = 0; i < parametersPassed.size(); i++) {
+      exprNodeDesc descPassed = parametersPassed.get(i);
+      TypeInfo typeInfoPassed = descPassed.getTypeInfo();
+      TypeInfo typeInfoAccepted = parametersAccepted.get(i);
+      if (descPassed instanceof exprNodeNullDesc) {
+        exprNodeConstantDesc newCh = new exprNodeConstantDesc(typeInfoAccepted, null);
+        newParameters.add(newCh);
+      } else if (typeInfoAccepted.equals(typeInfoPassed)
+          || typeInfoAccepted.equals(TypeInfoFactory.unknownTypeInfo)
+          || (typeInfoAccepted.equals(TypeInfoFactory.unknownMapTypeInfo) 
+              && typeInfoPassed.getCategory().equals(Category.MAP))
+          || (typeInfoAccepted.equals(TypeInfoFactory.unknownListTypeInfo)
+              && typeInfoPassed.getCategory().equals(Category.LIST))
+          ) {
+        // no type conversion needed
+        newParameters.add(descPassed);
+      } else {
+        // must be implicit type conversion
+        TypeInfo to = typeInfoAccepted;
+        if (!FunctionRegistry.implicitConvertable(typeInfoPassed, to)) {
+          throw new RuntimeException("Internal exception: cannot convert from " + typeInfoPassed + " to " + to);
+        }
+        Method conv = FunctionRegistry.getUDFMethod(to.getTypeName(), typeInfoPassed);
+        assert(conv != null);
+        Class<? extends UDF> c = FunctionRegistry.getUDFClass(to.getTypeName());
+        assert(c != null);
+        
+        // get the conversion method
+        ArrayList<exprNodeDesc> conversionArg = new ArrayList<exprNodeDesc>(1);
+        conversionArg.add(descPassed);
+        newParameters.add(new exprNodeFuncDesc(typeInfoAccepted, c, conv, conversionArg));
+      }
+    }
+
+    return newParameters;
+  }
+  
 }

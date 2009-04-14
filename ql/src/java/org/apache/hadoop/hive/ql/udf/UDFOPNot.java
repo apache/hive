@@ -21,23 +21,23 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.io.BooleanWritable;
 
 
 public class UDFOPNot extends UDF {
 
   private static Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.udf.UDFOPNot");
 
+  BooleanWritable result = new BooleanWritable();
   public UDFOPNot() {
   }
 
   // Three-value Boolean: NULL stands for unknown
-  public Boolean evaluate(Boolean a)  {
-    if (Boolean.TRUE.equals(a)) {
-      return Boolean.FALSE;
+  public BooleanWritable evaluate(BooleanWritable a)  {
+    if (a == null) {
+      return null;
     }
-    if (Boolean.FALSE.equals(a)) {
-      return Boolean.TRUE;
-    }
-    return null;
+    result.set(!a.get());
+    return result;
   }
 }

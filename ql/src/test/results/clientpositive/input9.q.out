@@ -27,7 +27,7 @@ STAGE PLANS:
                   Select Operator
                     expressions:
                           expr: 0
-                          type: Void
+                          type: void
                           expr: UDFToInteger(1)
                           type: int
                     File Output Operator

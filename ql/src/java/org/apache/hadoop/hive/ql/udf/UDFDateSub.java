@@ -27,6 +27,8 @@ import java.util.TimeZone;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
 
 
 public class UDFDateSub extends UDF {
@@ -36,6 +38,7 @@ public class UDFDateSub extends UDF {
   private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
   private Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 
+  Text result = new Text();
   public UDFDateSub() {
   }
 
@@ -50,13 +53,14 @@ public class UDFDateSub extends UDF {
    * @param days the number of days to subtract.
    * @return the date in the format of "yyyy-MM-dd".
    */
-  public String evaluate(String dateString1, int days)  {
+  public Text evaluate(Text dateString1, IntWritable days)  {
     
     try {
-      calendar.setTime(formatter.parse(dateString1));
-      calendar.add(Calendar.DAY_OF_MONTH, -days);
+      calendar.setTime(formatter.parse(dateString1.toString()));
+      calendar.add(Calendar.DAY_OF_MONTH, -days.get());
       Date newDate = calendar.getTime();
-      return formatter.format(newDate);
+      result.set(formatter.format(newDate));
+      return result;
     } catch (ParseException e) {
       return null;
     }

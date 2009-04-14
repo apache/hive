@@ -19,23 +19,28 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class UDFDefaultSampleHashFn extends UDF {
   protected final Log LOG;
 
+  IntWritable result = new IntWritable();
+  
   public UDFDefaultSampleHashFn() {
     LOG = LogFactory.getLog(this.getClass().getName());
   }
 
-  public int evaluate(Object o) {
-    return o.hashCode();
+  public IntWritable evaluate(Object o) {
+    result.set(o.hashCode());
+    return result;
   }
   
   // TODO: For now, only allow up to two columns on which to sample
   // Going forward we will allow sampling on an arbitrary number of columns
-  public int evaluate(Object o1, Object o2) {
-    return o1.hashCode() ^ o2.hashCode();
+  public IntWritable evaluate(Object o1, Object o2) {
+    result.set(o1.hashCode() ^ o2.hashCode());
+    return result;
   }
 }

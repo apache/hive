@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -39,12 +38,17 @@ import org.apache.hadoop.hive.ql.plan.exprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeIndexDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeNullDesc;
+import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.ql.udf.UDFOPPositive;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 
 /**
  * The Factory for creating typecheck processors. The typecheck processors are used to
@@ -184,7 +188,7 @@ public class TypeCheckProcFactory {
         str = BaseSemanticAnalyzer.unescapeIdentifier(expr.getText());
         break;
       }
-      return new exprNodeConstantDesc(String.class, str);
+      return new exprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, str);
     }
     
   }
@@ -224,7 +228,7 @@ public class TypeCheckProcFactory {
       default:
         assert false;
       }
-      return new exprNodeConstantDesc(Boolean.class, bool);      
+      return new exprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo, bool);      
     }
     
   }
@@ -319,15 +323,14 @@ public class TypeCheckProcFactory {
       specialFunctionTextHashMap.put(HiveParser.TOK_ISNULL, "isnull");
       specialFunctionTextHashMap.put(HiveParser.TOK_ISNOTNULL, "isnotnull");
       conversionFunctionTextHashMap = new HashMap<Integer, String>();
-      conversionFunctionTextHashMap.put(HiveParser.TOK_BOOLEAN, Boolean.class.getName());
-      conversionFunctionTextHashMap.put(HiveParser.TOK_TINYINT, Byte.class.getName());
-      conversionFunctionTextHashMap.put(HiveParser.TOK_SMALLINT, Short.class.getName());
-      conversionFunctionTextHashMap.put(HiveParser.TOK_INT, Integer.class.getName());
-      conversionFunctionTextHashMap.put(HiveParser.TOK_BIGINT, Long.class.getName());
-      conversionFunctionTextHashMap.put(HiveParser.TOK_FLOAT, Float.class.getName());
-      conversionFunctionTextHashMap.put(HiveParser.TOK_DOUBLE, Double.class.getName());
-      conversionFunctionTextHashMap.put(HiveParser.TOK_STRING, String.class.getName());
-      conversionFunctionTextHashMap.put(HiveParser.TOK_DATE, java.sql.Date.class.getName());
+      conversionFunctionTextHashMap.put(HiveParser.TOK_BOOLEAN, Constants.BOOLEAN_TYPE_NAME);
+      conversionFunctionTextHashMap.put(HiveParser.TOK_TINYINT, Constants.TINYINT_TYPE_NAME);
+      conversionFunctionTextHashMap.put(HiveParser.TOK_SMALLINT, Constants.SMALLINT_TYPE_NAME);
+      conversionFunctionTextHashMap.put(HiveParser.TOK_INT, Constants.INT_TYPE_NAME);
+      conversionFunctionTextHashMap.put(HiveParser.TOK_BIGINT, Constants.BIGINT_TYPE_NAME);
+      conversionFunctionTextHashMap.put(HiveParser.TOK_FLOAT, Constants.FLOAT_TYPE_NAME);
+      conversionFunctionTextHashMap.put(HiveParser.TOK_DOUBLE, Constants.DOUBLE_TYPE_NAME);
+      conversionFunctionTextHashMap.put(HiveParser.TOK_STRING, Constants.STRING_TYPE_NAME);
     }
 
     public static boolean isRedundantConversionFunction(ASTNode expr, boolean isFunction, ArrayList<exprNodeDesc> children) {
@@ -340,7 +343,7 @@ public class TypeCheckProcFactory {
       // not a conversion function 
       if (funcText == null) return false;
       // return true when the child type and the conversion target type is the same
-      return children.get(0).getTypeInfo().getPrimitiveClass().getName().equals(funcText);
+      return ((PrimitiveTypeInfo)children.get(0).getTypeInfo()).getPrimitiveWritableClass().getName().equals(funcText);
     }
     
     public static String getFunctionText(ASTNode expr, boolean isFunction) {
@@ -370,6 +373,7 @@ public class TypeCheckProcFactory {
     }
 
 
+    
     /**
      * Get the exprNodeDesc
      * @param name
@@ -386,81 +390,29 @@ public class TypeCheckProcFactory {
      * @throws SemanticException 
      */
     public static exprNodeDesc getFuncExprNodeDesc(String udfName, List<exprNodeDesc> children) {
+
       // Find the corresponding method
-      ArrayList<Class<?>> argumentClasses = new ArrayList<Class<?>>(children.size());
+      ArrayList<TypeInfo> argumentTypeInfos = new ArrayList<TypeInfo>(children.size());
       for(int i=0; i<children.size(); i++) {
         exprNodeDesc child = children.get(i);
-        assert(child != null);
-        TypeInfo childTypeInfo = child.getTypeInfo();
-        assert(childTypeInfo != null);
-        
-        // Note: we don't pass the element types of MAP/LIST to UDF.
-        // That will work for null test and size but not other more complex functionalities like list slice etc.
-        // For those more complex functionalities, we plan to have a ComplexUDF interface which has an evaluate
-        // method that accepts a list of objects and a list of objectinspectors. 
-        switch (childTypeInfo.getCategory()) {
-          case PRIMITIVE: {
-            argumentClasses.add(childTypeInfo.getPrimitiveClass());
-            break;
-          }
-          case MAP: {
-            argumentClasses.add(Map.class);
-            break;
-          }
-          case LIST: {
-            argumentClasses.add(List.class);
-            break;
-          }
-          case STRUCT: {
-            argumentClasses.add(Object.class);
-            break;
-          }
-          default: {
-            // should never happen
-            assert(false);
-          }
-        }
+        argumentTypeInfos.add(child.getTypeInfo());
       }
-      Method udfMethod = FunctionRegistry.getUDFMethod(udfName, argumentClasses);
+      
+      Method udfMethod = FunctionRegistry.getUDFMethod(udfName, argumentTypeInfos);
       if (udfMethod == null) return null;
 
-      ArrayList<exprNodeDesc> ch = new ArrayList<exprNodeDesc>();
-      Class<?>[] pTypes = udfMethod.getParameterTypes();
+      ArrayList<exprNodeDesc> ch = SemanticAnalyzer.convertParameters(udfMethod, children);
 
-      for (int i = 0; i < children.size(); i++)
-      {
-        exprNodeDesc desc = children.get(i);
-        Class<?> pType = ObjectInspectorUtils.generalizePrimitive(pTypes[i]);
-        if (desc instanceof exprNodeNullDesc) {
-          exprNodeConstantDesc newCh = new exprNodeConstantDesc(TypeInfoFactory.getPrimitiveTypeInfo(pType), null);
-          ch.add(newCh);
-        } else if (pType.isAssignableFrom(argumentClasses.get(i))) {
-          // no type conversion needed
-          ch.add(desc);
-        } else {
-          // must be implicit type conversion
-          Class<?> from = argumentClasses.get(i);
-          Class<?> to = pType;
-          if(!FunctionRegistry.implicitConvertable(from, to)) {
-            System.err.println("cannot implicitly convert from " + from + " to " + to);
-            throw new RuntimeException("cannot implicitly convert from " + from + " to " + to);
-          }
-          Method m = FunctionRegistry.getUDFMethod(to.getName(), from);
-          assert(m != null);
-          Class<? extends UDF> c = FunctionRegistry.getUDFClass(to.getName());
-          assert(c != null);
-
-          // get the conversion method
-          ArrayList<exprNodeDesc> conversionArg = new ArrayList<exprNodeDesc>(1);
-          conversionArg.add(desc);
-          ch.add(new exprNodeFuncDesc(
-                TypeInfoFactory.getPrimitiveTypeInfo(pType),
-                c, m, conversionArg));
-        }
+      // The return type of a function can be of either Java Primitive Type/Class or Writable Class.
+      TypeInfo resultTypeInfo = null;
+      if (PrimitiveObjectInspectorUtils.isPrimitiveWritableClass(udfMethod.getReturnType())) {
+        resultTypeInfo = TypeInfoFactory.getPrimitiveTypeInfoFromPrimitiveWritable(udfMethod.getReturnType()); 
+      } else {
+        resultTypeInfo = TypeInfoFactory.getPrimitiveTypeInfoFromJavaPrimitive(udfMethod.getReturnType());
       }
-
+      
       exprNodeFuncDesc desc = new exprNodeFuncDesc(
-        TypeInfoFactory.getPrimitiveTypeInfo(udfMethod.getReturnType()),
+        resultTypeInfo,
         FunctionRegistry.getUDFClass(udfName),
         udfMethod, ch);
       return desc;
@@ -493,12 +445,12 @@ public class TypeCheckProcFactory {
         // Allow accessing a field of list element structs directly from a list  
         boolean isList = (object.getTypeInfo().getCategory() == ObjectInspector.Category.LIST);
         if (isList) {
-          objectTypeInfo = objectTypeInfo.getListElementTypeInfo();
+          objectTypeInfo = ((ListTypeInfo)objectTypeInfo).getListElementTypeInfo();
         }
         if (objectTypeInfo.getCategory() != Category.STRUCT) {
           throw new SemanticException(ErrorMsg.INVALID_DOT.getMsg(expr));
         }
-        TypeInfo t = objectTypeInfo.getStructFieldTypeInfo(fieldNameString);
+        TypeInfo t = ((StructTypeInfo)objectTypeInfo).getStructFieldTypeInfo(fieldNameString);
         if (isList) {
           t = TypeInfoFactory.getListTypeInfo(t);
         }
@@ -515,12 +467,12 @@ public class TypeCheckProcFactory {
         if (myt.getCategory() == Category.LIST) {
           // Only allow constant integer index for now
           if (!(children.get(1) instanceof exprNodeConstantDesc)
-              || !(((exprNodeConstantDesc)children.get(1)).getValue() instanceof Integer)) {
+              || !(((exprNodeConstantDesc)children.get(1)).getTypeInfo().equals(TypeInfoFactory.intTypeInfo))) {
             throw new SemanticException(ErrorMsg.INVALID_ARRAYINDEX_CONSTANT.getMsg(expr));
           }
         
           // Calculate TypeInfo
-          TypeInfo t = myt.getListElementTypeInfo();
+          TypeInfo t = ((ListTypeInfo)myt).getListElementTypeInfo();
           desc = new exprNodeIndexDesc(t, children.get(0), children.get(1));
         }
         else if (myt.getCategory() == Category.MAP) {
@@ -528,12 +480,12 @@ public class TypeCheckProcFactory {
           if (!(children.get(1) instanceof exprNodeConstantDesc)) {
             throw new SemanticException(ErrorMsg.INVALID_MAPINDEX_CONSTANT.getMsg(expr));
           }
-          if (!(((exprNodeConstantDesc)children.get(1)).getValue().getClass() == 
-                myt.getMapKeyTypeInfo().getPrimitiveClass())) {
+          if (!(((exprNodeConstantDesc)children.get(1)).getTypeInfo().equals( 
+              ((MapTypeInfo)myt).getMapKeyTypeInfo()))) {
             throw new SemanticException(ErrorMsg.INVALID_MAPINDEX_TYPE.getMsg(expr));
           }
           // Calculate TypeInfo
-          TypeInfo t = myt.getMapValueTypeInfo();
+          TypeInfo t = ((MapTypeInfo)myt).getMapValueTypeInfo();
           
           desc = new exprNodeIndexDesc(t, children.get(0), children.get(1));
         }
@@ -555,7 +507,7 @@ public class TypeCheckProcFactory {
         if (desc == null) {
           ArrayList<Class<?>> argumentClasses = new ArrayList<Class<?>>(children.size());
           for(int i=0; i<children.size(); i++) {
-            argumentClasses.add(children.get(i).getTypeInfo().getPrimitiveClass());
+            argumentClasses.add(((PrimitiveTypeInfo)children.get(i).getTypeInfo()).getPrimitiveWritableClass());
           }
     
           if (isFunction) {

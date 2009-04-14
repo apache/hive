@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.ComparisonOpMethodResolver;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.io.BooleanWritable;
 
 public abstract class UDFBaseCompare extends UDF {
 
@@ -32,5 +34,5 @@ public abstract class UDFBaseCompare extends UDF {
     setResolver(new ComparisonOpMethodResolver(this.getClass()));
   }
 
-  public abstract Boolean evaluate(Double a, Double b);  
+  public abstract BooleanWritable evaluate(DoubleWritable a, DoubleWritable b);  
 }

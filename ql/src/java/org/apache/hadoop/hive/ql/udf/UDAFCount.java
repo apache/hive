@@ -20,41 +20,47 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDAF;
 import org.apache.hadoop.hive.ql.exec.UDAFEvaluator;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
 
 
-public class UDAFCount extends UDAF implements UDAFEvaluator {
+public class UDAFCount extends UDAF {
 
-  private long mCount;
+  static public class UDAFCountEvaluator implements UDAFEvaluator {
   
-  public UDAFCount() {
-    super();
-    init();
-  }
-
-  public void init() {
-    mCount = 0;
-  }
-  
-  public boolean iterate(Object o) {
-    // Our SerDe between map/reduce boundary may convert MetadataTypedSerDe to 
-    if (o != null && !o.equals("")) {
-      mCount ++;
+    private long mCount;
+    
+    public UDAFCountEvaluator() {
+      super();
+      init();
     }
-    return true;
+  
+    public void init() {
+      mCount = 0;
+    }
+    
+    Text emptyText = new Text();
+    
+    public boolean iterate(Object o) {
+      if (o != null && !emptyText.equals(o)) {
+        mCount ++;
+      }
+      return true;
+    }
+  
+    public LongWritable terminatePartial() {
+      return new LongWritable(mCount);
+    }
+  
+    public boolean merge(LongWritable count) {
+      if (count != null)
+        mCount += count.get();
+      return true;
+    }
+  
+    public LongWritable terminate() {
+      return new LongWritable(mCount);
+    }
   }
-
-  public Long terminatePartial() {
-    return Long.valueOf(mCount);
-  }
-
-  public boolean merge(Long count) {
-    if (count != null)
-      mCount += count;
-    return true;
-  }
-
-  public Long terminate() {
-    return Long.valueOf(mCount);
-  }
-
+  
 }

@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.serde2.thrift.test.Complex;
 import org.apache.hadoop.hive.serde2.thrift.test.IntString;
 
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
 public class TestThriftObjectInspectors extends TestCase {
 
@@ -75,23 +76,23 @@ public class TestThriftObjectInspectors extends TestCase {
       assertEquals(cfields, soi.getStructFieldsDataAsList(c));
       
       // sub fields
-      assertEquals(ObjectInspectorFactory.getStandardPrimitiveObjectInspector(Integer.class),
+      assertEquals(PrimitiveObjectInspectorFactory.javaIntObjectInspector,
           fields.get(0).getFieldObjectInspector());
-      assertEquals(ObjectInspectorFactory.getStandardPrimitiveObjectInspector(String.class),
+      assertEquals(PrimitiveObjectInspectorFactory.javaStringObjectInspector,
           fields.get(1).getFieldObjectInspector());
       assertEquals(ObjectInspectorFactory.getStandardListObjectInspector(
-          ObjectInspectorFactory.getStandardPrimitiveObjectInspector(Integer.class)),
+          PrimitiveObjectInspectorFactory.javaIntObjectInspector),
           fields.get(2).getFieldObjectInspector());
       assertEquals(ObjectInspectorFactory.getStandardListObjectInspector(
-          ObjectInspectorFactory.getStandardPrimitiveObjectInspector(String.class)),
+          PrimitiveObjectInspectorFactory.javaStringObjectInspector),
           fields.get(3).getFieldObjectInspector());
       assertEquals(ObjectInspectorFactory.getStandardListObjectInspector(
           ObjectInspectorFactory.getReflectionObjectInspector(IntString.class, 
               ObjectInspectorFactory.ObjectInspectorOptions.THRIFT)),
           fields.get(4).getFieldObjectInspector());
       assertEquals(ObjectInspectorFactory.getStandardMapObjectInspector(
-          ObjectInspectorFactory.getStandardPrimitiveObjectInspector(String.class),
-          ObjectInspectorFactory.getStandardPrimitiveObjectInspector(String.class)),
+          PrimitiveObjectInspectorFactory.javaStringObjectInspector,
+          PrimitiveObjectInspectorFactory.javaStringObjectInspector),
           fields.get(5).getFieldObjectInspector());
     } catch (Throwable e) {
       e.printStackTrace();

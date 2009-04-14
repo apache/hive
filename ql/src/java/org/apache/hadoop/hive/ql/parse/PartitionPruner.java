@@ -33,14 +33,18 @@ import org.apache.hadoop.hive.ql.plan.exprNodeNullDesc;
 import org.apache.hadoop.hive.ql.udf.UDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.UDFOPNot;
 import org.apache.hadoop.hive.ql.udf.UDFOPOr;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -121,18 +125,18 @@ public class PartitionPruner {
 
         // Set value to null if it's not partition column
         if (tabAlias.equalsIgnoreCase(tableAlias) && tab.isPartitionKey(colName)) {
-          desc = new exprNodeColumnDesc(String.class, colName); 
+          desc = new exprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, colName); 
         } else {
           try {
             // might be a column from another table
             Table t = this.metaData.getTableForAlias(tabAlias);
             if (t.isPartitionKey(colName)) {
-              desc = new exprNodeConstantDesc(String.class, null);
+              desc = new exprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, null);
             }
             else {
               TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromObjectInspector(
                                                                                this.metaData.getTableForAlias(tabAlias).getDeserializer().getObjectInspector());
-              desc = new exprNodeConstantDesc(typeInfo.getStructFieldTypeInfo(colName), null);
+              desc = new exprNodeConstantDesc(((StructTypeInfo)typeInfo).getStructFieldTypeInfo(colName), null);
               containsPartCols = false;
             }
           } catch (SerDeException e){
@@ -354,7 +358,7 @@ public class PartitionPruner {
         for(Map.Entry<String,String>entry : partSpec.entrySet()) {
           partNames.add(entry.getKey());
           partValues.add(entry.getValue());
-          partObjectInspectors.add(ObjectInspectorFactory.getStandardPrimitiveObjectInspector(String.class)); 
+          partObjectInspectors.add(PrimitiveObjectInspectorFactory.javaStringObjectInspector); 
         }
         StructObjectInspector partObjectInspector = ObjectInspectorFactory.getStandardStructObjectInspector(partNames, partObjectInspectors);
         
@@ -367,12 +371,13 @@ public class PartitionPruner {
         // evaluate the expression tree
         if (evaluator != null) {
           evaluator.evaluate(rowWithPart, rowWithPartObjectInspector, inspectableObject);
-          LOG.trace("prune result for partition " + partSpec + ": " + inspectableObject.o);
-          if (Boolean.TRUE.equals(inspectableObject.o)) {
+          Boolean r = (Boolean) ((PrimitiveObjectInspector)inspectableObject.oi).getPrimitiveJavaObject(inspectableObject.o);
+          LOG.trace("prune result for partition " + partSpec + ": " + r);
+          if (Boolean.TRUE.equals(r)) {
             LOG.debug("retained partition: " + partSpec);
             true_parts.add(part);
           } 
-          else if (Boolean.FALSE.equals(inspectableObject.o)) {
+          else if (Boolean.FALSE.equals(r)) {
             LOG.trace("pruned partition: " + partSpec);
           } 
           else {

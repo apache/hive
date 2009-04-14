@@ -19,27 +19,34 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.io.IntWritable;
 
 import java.util.Map;
 import java.util.List;
 
 public class UDFSize extends UDF {
 
+  IntWritable result = new IntWritable();
+  
   public UDFSize() {
   }
 
-  public Integer evaluate(Map<?,?> s) {
+  public IntWritable evaluate(Map<?,?> s) {
     if (s == null) {
-      return -1;
+      result.set(-1);
+    } else {
+      result.set(s.size());
     }
-    return s.size();
+    return result;
   }
 
-  public Integer evaluate(List<?> s) {
+  public IntWritable evaluate(List<?> s) {
     if (s == null) {
-      return -1;
+      result.set(-1);
+    } else {
+      result.set(s.size());
     }
-    return s.size();
+    return result;
   }
   
 }

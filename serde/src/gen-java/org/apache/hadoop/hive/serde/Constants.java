@@ -39,6 +39,8 @@ public class Constants {
 
   public static final String QUOTE_CHAR = "quote.delim";
 
+  public static final String VOID_TYPE_NAME = "void";
+
   public static final String BOOLEAN_TYPE_NAME = "boolean";
 
   public static final String TINYINT_TYPE_NAME = "tinyint";
@@ -65,8 +67,11 @@ public class Constants {
 
   public static final String MAP_TYPE_NAME = "map";
 
+  public static final String STRUCT_TYPE_NAME = "struct";
+
   public static final Set<String> PrimitiveTypes = new HashSet<String>();
   static {
+    PrimitiveTypes.add("void");
     PrimitiveTypes.add("boolean");
     PrimitiveTypes.add("tinyint");
     PrimitiveTypes.add("smallint");

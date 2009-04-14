@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.io.Text;
 
 
 public class UDFConcat extends UDF {
@@ -26,8 +27,12 @@ public class UDFConcat extends UDF {
   public UDFConcat() {
   }
 
-  public String evaluate(String a, String b) {
-    return a+b;
+  Text text = new Text();
+  public Text evaluate(Text a, Text b) {
+    text.clear();
+    text.set(a);
+    text.append(b.getBytes(), 0, b.getLength());
+    return text;
   }
   
 }

@@ -26,6 +26,8 @@ import java.util.Date;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
 
 
 @UDFType(deterministic=false)
@@ -36,6 +38,7 @@ public class UDFUnixTimeStamp extends UDF {
   //  For now, we just use the default time zone.
   private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+  LongWritable result = new LongWritable();
   public UDFUnixTimeStamp() {
   }
 
@@ -43,43 +46,51 @@ public class UDFUnixTimeStamp extends UDF {
    * Return current UnixTime.
    * @return long Number of seconds from 1970-01-01 00:00:00
    */
-  public long evaluate()  {
+  public LongWritable evaluate()  {
     Date date = new Date();
-    return date.getTime() / 1000;
+    result.set(date.getTime() / 1000);
+    return result;
   }
 
   /**
    * Convert time string to UnixTime.
-   * @param datestring Time string in format yyyy-MM-dd HH:mm:ss
+   * @param dateText Time string in format yyyy-MM-dd HH:mm:ss
    * @return long Number of seconds from 1970-01-01 00:00:00
    */
-  public long evaluate(String datestring)  {
-    if (datestring == null) {
-      Date date = new Date();
-      return date.getTime() / 1000;
+  public LongWritable evaluate(Text dateText)  {
+    if (dateText == null) {
+      return null;
     }
 
     try {
-      Date date = (Date)formatter.parse(datestring);
-      return date.getTime() / 1000;
+      Date date = (Date)formatter.parse(dateText.toString());
+      result.set(date.getTime() / 1000);
+      return result;
     } catch (ParseException e) {
-      return 0;
+      return null;
     }
   }
 
+  Text lastPatternText = new Text();
   /**
    * Convert time string to UnixTime with user defined pattern.
-   * @param datestring Time string in format patternstring
-   * @param patternstring Time patterns string supported by SimpleDateFormat
+   * @param dateText Time string in format patternstring
+   * @param patternText Time patterns string supported by SimpleDateFormat
    * @return long Number of seconds from 1970-01-01 00:00:00
    */
-  public long evaluate(String datestring, String patternstring)  {
+  public LongWritable evaluate(Text dateText, Text patternText)  {
+    if (dateText == null || patternText == null) {
+      return null;
+    }
     try {
-      formatter.applyPattern(patternstring);
+      if (!patternText.equals(lastPatternText)) {
+        formatter.applyPattern(patternText.toString());
+        lastPatternText.set(patternText);
+      }      
     } catch (Exception e) {
-      return 0;
+      return null;
     }
 
-    return evaluate(datestring);
+    return evaluate(dateText);
   }
 }

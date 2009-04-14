@@ -20,11 +20,14 @@ package org.apache.hadoop.hive.serde2;
 
 import java.util.*;
 
+import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.io.Text;
 
 public class SerDeUtils {
 
@@ -182,14 +185,17 @@ public class SerDeUtils {
 
     switch(oi.getCategory()) {
       case PRIMITIVE: {
+        PrimitiveObjectInspector poi = (PrimitiveObjectInspector)oi;
         if (o == null) {
           sb.append("null");
-        } else if (o instanceof String) {
+        } else if (oi.getTypeName().equals(Constants.STRING_TYPE_NAME)) {
+          String s = (String)poi.getPrimitiveJavaObject(o);
           sb.append(QUOTE);
-          sb.append(escapeString((String)o));
+          sb.append(escapeString(s));
           sb.append(QUOTE);
-        } else if (o instanceof Boolean) {
-          sb.append(((Boolean)o).booleanValue() ? "True" : "False");
+        } else if (oi.getTypeName().equals(Constants.BOOLEAN_TYPE_NAME)) {
+          Boolean b = (Boolean)poi.getPrimitiveJavaObject(o);
+          sb.append(b.booleanValue() ? "True" : "False");
         } else {
           // it's a number - so doesn't need to be escaped.
           sb.append(o.toString());

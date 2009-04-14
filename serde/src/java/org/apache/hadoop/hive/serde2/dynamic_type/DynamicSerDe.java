@@ -24,6 +24,8 @@ import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.*;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 
 import org.apache.hadoop.hive.serde2.thrift.ConfigurableTProtocol;
 
@@ -141,7 +143,8 @@ public class DynamicSerDe implements SerDe, Serializable {
           dynamicSerDeStructBaseToObjectInspector(btMap.getKeyType()), 
           dynamicSerDeStructBaseToObjectInspector(btMap.getValueType()));
     } else if (bt.isPrimitive()) {
-      return ObjectInspectorFactory.getStandardPrimitiveObjectInspector(bt.getRealType());
+      return PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
+          PrimitiveObjectInspectorUtils.getTypeEntryFromPrimitiveJavaClass(bt.getRealType()).primitiveCategory);
     } else {
       // Must be a struct
       DynamicSerDeStructBase btStruct = (DynamicSerDeStructBase)bt;

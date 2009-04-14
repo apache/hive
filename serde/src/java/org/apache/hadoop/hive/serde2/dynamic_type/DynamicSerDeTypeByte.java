@@ -24,6 +24,8 @@ import com.facebook.thrift.protocol.*;
 import org.apache.hadoop.hive.serde2.*;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
+
 import com.facebook.thrift.protocol.TType;
 
 public class DynamicSerDeTypeByte extends DynamicSerDeTypeBase {
@@ -52,15 +54,9 @@ public class DynamicSerDeTypeByte extends DynamicSerDeTypeBase {
     return deserialize(iprot);
   }
 
-  public void serialize(Object s, TProtocol oprot) throws TException, SerDeException, NoSuchFieldException,IllegalAccessException  {
-    // bugbug need to use object of byte type!!!
-    oprot.writeByte((Byte)s);
-  }
-
   public void serialize(Object o, ObjectInspector oi, TProtocol oprot) throws TException, SerDeException, NoSuchFieldException,IllegalAccessException  {
-    assert(oi.getCategory() == ObjectInspector.Category.PRIMITIVE);
-    assert(((PrimitiveObjectInspector)oi).getPrimitiveClass().equals(Byte.class));
-    oprot.writeByte((Byte)o);
+    ByteObjectInspector poi = (ByteObjectInspector) oi;
+    oprot.writeByte(poi.get(o));
   }
 
   public byte getType() {

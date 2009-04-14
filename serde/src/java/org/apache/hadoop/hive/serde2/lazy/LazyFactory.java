@@ -22,29 +22,48 @@ import java.util.List;
 
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.io.Text;
 
 public class LazyFactory {
 
   /**
-   * Create a lazy primitive class given the java class. 
+   * Create a lazy primitive class given the type name. 
    */
-  public static LazyPrimitive<?> createLazyPrimitiveClass(Class<?> c) {
-    if (String.class.equals(c)) {
-      return new LazyString();
-    } else if (Integer.class.equals(c)) {
-      return new LazyInteger();
-    } else if (Double.class.equals(c)) {
-      return new LazyDouble();
-    } else if (Byte.class.equals(c)) {
-      return new LazyByte();
-    } else if (Short.class.equals(c)) {
-      return new LazyShort();
-    } else if (Long.class.equals(c)) {
-      return new LazyLong();
-    } else {
-      return null;
+  public static LazyPrimitive<?> createLazyPrimitiveClass(String typeName) {
+    PrimitiveCategory p = PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(typeName).primitiveCategory;
+    switch(p) {
+      case BYTE: {
+        return new LazyByte();
+      }
+      case SHORT: {
+        return new LazyShort();
+      }
+      case INT: {
+        return new LazyInteger();
+      }
+      case LONG: {
+        return new LazyLong();
+      }
+      case FLOAT: {
+        return new LazyFloat();
+      }
+      case DOUBLE: {
+        return new LazyDouble();
+      }
+      case STRING: {
+        return new LazyString();
+      }
+      default: {
+        throw new RuntimeException("Internal error: no LazyObject for " + p);
+      }
     }
   }
 
@@ -55,7 +74,7 @@ public class LazyFactory {
     ObjectInspector.Category c = typeInfo.getCategory();
     switch(c) {
     case PRIMITIVE:
-      return createLazyPrimitiveClass(typeInfo.getPrimitiveClass());
+      return createLazyPrimitiveClass(typeInfo.getTypeName());
     case MAP:
       return new LazyMap(typeInfo);      
     case LIST: 
@@ -84,22 +103,24 @@ public class LazyFactory {
     ObjectInspector.Category c = typeInfo.getCategory();
     switch(c) {
     case PRIMITIVE:
-      return ObjectInspectorFactory.getStandardPrimitiveObjectInspector(typeInfo.getPrimitiveClass());
+      return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
+          ((PrimitiveTypeInfo)typeInfo).getPrimitiveCategory());
     case MAP:
       return ObjectInspectorFactory.getLazySimpleMapObjectInspector(
-          createLazyObjectInspector(typeInfo.getMapKeyTypeInfo(), separator, separatorIndex+2, nullSequence), 
-          createLazyObjectInspector(typeInfo.getMapValueTypeInfo(), separator, separatorIndex+2, nullSequence), 
+          createLazyObjectInspector(((MapTypeInfo)typeInfo).getMapKeyTypeInfo(), separator, separatorIndex+2, nullSequence), 
+          createLazyObjectInspector(((MapTypeInfo)typeInfo).getMapValueTypeInfo(), separator, separatorIndex+2, nullSequence), 
           separator[separatorIndex], 
           separator[separatorIndex+1], 
           nullSequence);
     case LIST: 
       return ObjectInspectorFactory.getLazySimpleListObjectInspector(
-          createLazyObjectInspector(typeInfo.getListElementTypeInfo(), separator, separatorIndex+1, nullSequence),
+          createLazyObjectInspector(((ListTypeInfo)typeInfo).getListElementTypeInfo(), separator, separatorIndex+1, nullSequence),
           separator[separatorIndex], 
           nullSequence);
     case STRUCT:
-      List<String> fieldNames = typeInfo.getAllStructFieldNames();
-      List<TypeInfo> fieldTypeInfos = typeInfo.getAllStructFieldTypeInfos();
+      StructTypeInfo structTypeInfo = (StructTypeInfo)typeInfo;
+      List<String> fieldNames = structTypeInfo.getAllStructFieldNames();
+      List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
       List<ObjectInspector> fieldObjectInspectors = new ArrayList<ObjectInspector>(fieldTypeInfos.size());
       for(int i=0; i<fieldTypeInfos.size(); i++) {
         fieldObjectInspectors.add(

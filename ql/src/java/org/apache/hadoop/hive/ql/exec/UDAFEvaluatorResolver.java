@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.util.List;
 
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+
 /**
  * The UDF Method resolver interface. A user can plugin a resolver to their UDF by implementing the
  * functions in this interface. Note that the resolver is stored in the UDF class as an instance
@@ -36,7 +38,7 @@ public interface UDAFEvaluatorResolver {
   /**
    * Gets the evaluator class corresponding to the passed parameter list.
    */
-  Class<? extends UDAFEvaluator> getEvaluatorClass(List<Class<?>> argClasses)
+  Class<? extends UDAFEvaluator> getEvaluatorClass(List<TypeInfo> argClasses)
     throws AmbiguousMethodException;
   
 }

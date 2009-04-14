@@ -52,7 +52,7 @@ public class CollectOperator extends Operator <collectDesc> implements Serializa
       // Create a standard copy of the object.
       // In the future we can optimize this by doing copy-on-write.
       // Here we always copy the object so that other operators can reuse the object for the next row. 
-      Object o = ObjectInspectorUtils.getStandardObject(row, rowInspector);
+      Object o = ObjectInspectorUtils.copyToStandardObject(row, rowInspector);
       ObjectInspector oi = ObjectInspectorUtils.getStandardObjectInspector(rowInspector);
       rowList.add(o);
       rowInspectorList.add(oi);

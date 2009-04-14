@@ -24,6 +24,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 /**
  * The class implements the method resolution for operators like (+, -, *, /, %, |, &, ^). The
@@ -49,27 +52,27 @@ public class NumericOpMethodResolver implements UDFMethodResolver {
    * @see org.apache.hadoop.hive.ql.exec.UDFMethodResolver#getEvalMethod(java.util.List)
    */
   @Override
-  public Method getEvalMethod(List<Class<?>> argClasses)
+  public Method getEvalMethod(List<TypeInfo> argTypeInfos)
   throws AmbiguousMethodException {
-    assert(argClasses.size() == 2);
+    assert(argTypeInfos.size() == 2);
 
-    List<Class<?>> pClasses = null;
-    if (argClasses.get(0) == Void.class ||
-        argClasses.get(1) == Void.class) {
-      pClasses = new ArrayList<Class<?>>();
-      pClasses.add(Double.class);
-      pClasses.add(Double.class);      
-    } else if (argClasses.get(0) == String.class ||
-        argClasses.get(1) == String.class) {
-      pClasses = new ArrayList<Class<?>>();
-      pClasses.add(Double.class);
-      pClasses.add(Double.class);
-    } else if (argClasses.get(0) == argClasses.get(1)) {
-      pClasses = argClasses;
+    List<TypeInfo> pTypeInfos = null;
+    if (argTypeInfos.get(0).equals(TypeInfoFactory.voidTypeInfo) ||
+        argTypeInfos.get(1).equals(TypeInfoFactory.voidTypeInfo)) {
+      pTypeInfos = new ArrayList<TypeInfo>();
+      pTypeInfos.add(TypeInfoFactory.doubleTypeInfo);
+      pTypeInfos.add(TypeInfoFactory.doubleTypeInfo);      
+    } else if (argTypeInfos.get(0).equals(TypeInfoFactory.stringTypeInfo) ||
+        argTypeInfos.get(1).equals(TypeInfoFactory.stringTypeInfo) ) {
+      pTypeInfos = new ArrayList<TypeInfo>();
+      pTypeInfos.add(TypeInfoFactory.doubleTypeInfo);
+      pTypeInfos.add(TypeInfoFactory.doubleTypeInfo);
+    } else if (argTypeInfos.get(0) == argTypeInfos.get(1)) {
+      pTypeInfos = argTypeInfos;
     } else {
-      pClasses = new ArrayList<Class<?>>();
-      pClasses.add(Double.class);
-      pClasses.add(Double.class);
+      pTypeInfos = new ArrayList<TypeInfo>();
+      pTypeInfos.add(TypeInfoFactory.doubleTypeInfo);
+      pTypeInfos.add(TypeInfoFactory.doubleTypeInfo);
     }
 
     Method udfMethod = null;
@@ -77,20 +80,20 @@ public class NumericOpMethodResolver implements UDFMethodResolver {
     for(Method m: Arrays.asList(udfClass.getMethods())) {
       if (m.getName().equals("evaluate")) {
 
-        Class<?>[] argumentTypeInfos = m.getParameterTypes();
+        List<TypeInfo> argumentTypeInfos = TypeInfoUtils.getParameterTypeInfos(m);
 
-        boolean match = (argumentTypeInfos.length == pClasses.size());
+        boolean match = (argumentTypeInfos.size() == pTypeInfos.size());
 
-        for(int i=0; i<pClasses.size() && match; i++) {
-          Class<?> accepted = ObjectInspectorUtils.generalizePrimitive(argumentTypeInfos[i]);
-          if (accepted != pClasses.get(i)) {
+        for(int i=0; i<pTypeInfos.size() && match; i++) {
+          TypeInfo accepted = argumentTypeInfos.get(i);
+          if (!accepted.equals(pTypeInfos.get(i))) {
             match = false;
           }
         }
 
         if (match) {
           if (udfMethod != null) {
-            throw new AmbiguousMethodException(udfClass, argClasses);
+            throw new AmbiguousMethodException(udfClass, argTypeInfos);
           }
           else {
             udfMethod = m;

@@ -28,7 +28,18 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.AmbiguousMethodException;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.UDFMethodResolver;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
 
 /**
  * UDF Class for SQL construct "IF".
@@ -64,8 +75,16 @@ public class UDFIf extends UDF {
      */
     Class<? extends UDF> udfClass;
     
-    static Class[] classPriority = {String.class, Double.class, Long.class,
-      Integer.class, Short.class, Byte.class, Boolean.class, Void.class};
+    static TypeInfo[] classPriority = {
+      TypeInfoFactory.stringTypeInfo, 
+      TypeInfoFactory.doubleTypeInfo, 
+      TypeInfoFactory.floatTypeInfo,
+      TypeInfoFactory.longTypeInfo,
+      TypeInfoFactory.intTypeInfo,
+      TypeInfoFactory.shortTypeInfo,
+      TypeInfoFactory.byteTypeInfo,
+      TypeInfoFactory.booleanTypeInfo,
+      TypeInfoFactory.voidTypeInfo};
     
     /**
      * Constuctor.
@@ -78,19 +97,19 @@ public class UDFIf extends UDF {
      * @see org.apache.hadoop.hive.ql.exec.UDFMethodResolver#getEvalMethod(java.util.List)
      */
     @Override
-    public Method getEvalMethod(List<Class<?>> argClasses)
+    public Method getEvalMethod(List<TypeInfo> argTypeInfos)
     throws AmbiguousMethodException {
       
-      if (argClasses.size() != 3) {
+      if (argTypeInfos.size() != 3) {
         return null;
       }
       
-      List<Class<?>> pClasses = new ArrayList<Class<?>>(3);
-      pClasses.add(Boolean.class);
+      List<TypeInfo> pClasses = new ArrayList<TypeInfo>(3);
+      pClasses.add(TypeInfoFactory.booleanTypeInfo);
 
       for(int i=0; i<classPriority.length; i++) {
-        if (ObjectInspectorUtils.generalizePrimitive(argClasses.get(1)) == classPriority[i] ||
-            ObjectInspectorUtils.generalizePrimitive(argClasses.get(2)) == classPriority[i]) {
+        if (argTypeInfos.get(1).equals(classPriority[i]) ||
+            argTypeInfos.get(2).equals(classPriority[i])) {
           pClasses.add(classPriority[i]);
           pClasses.add(classPriority[i]);
           break;
@@ -100,26 +119,25 @@ public class UDFIf extends UDF {
         return null;
       }
       
-      System.err.println("Matched UDFIF: " + pClasses);
       Method udfMethod = null;
 
       for(Method m: Arrays.asList(udfClass.getMethods())) {
         if (m.getName().equals("evaluate")) {
 
-          Class<?>[] argumentTypeInfos = m.getParameterTypes();
+          List<TypeInfo> acceptedTypeInfos = TypeInfoUtils.getParameterTypeInfos(m);
 
-          boolean match = (argumentTypeInfos.length == pClasses.size());
+          boolean match = (acceptedTypeInfos.size() == pClasses.size());
 
           for(int i=0; i<pClasses.size() && match; i++) {
-            Class<?> accepted = ObjectInspectorUtils.generalizePrimitive(argumentTypeInfos[i]);
-            if (accepted != pClasses.get(i)) {
+            TypeInfo accepted = acceptedTypeInfos.get(i);
+            if (!accepted.equals(pClasses.get(i))) {
               match = false;
             }
           }
 
           if (match) {
             if (udfMethod != null) {
-              throw new AmbiguousMethodException(udfClass, argClasses);
+              throw new AmbiguousMethodException(udfClass, argTypeInfos);
             }
             else {
               udfMethod = m;
@@ -134,8 +152,8 @@ public class UDFIf extends UDF {
   /**
    * Method for SQL construct "IF(test,valueTrue,valueFalse)"
    */
-  public String evaluate(Boolean test, String valueTrue, String valueFalse)  {
-    if (Boolean.TRUE.equals(test)) {
+  public Text evaluate(BooleanWritable test, Text valueTrue, Text valueFalse)  {
+    if (test != null && test.get()) {
       return valueTrue;
     } else {
       return valueFalse;
@@ -145,8 +163,8 @@ public class UDFIf extends UDF {
   /**
    * Method for SQL construct "IF(test,valueTrue,valueFalse)"
    */
-  public Double evaluate(Boolean test, Double valueTrue, Double valueFalse)  {
-    if (Boolean.TRUE.equals(test)) {
+  public DoubleWritable evaluate(BooleanWritable test, DoubleWritable valueTrue, DoubleWritable valueFalse)  {
+    if (test != null && test.get()) {
       return valueTrue;
     } else {
       return valueFalse;
@@ -156,30 +174,8 @@ public class UDFIf extends UDF {
   /**
    * Method for SQL construct "IF(test,valueTrue,valueFalse)"
    */
-  public Byte evaluate(Boolean test, Byte valueTrue, Byte valueFalse)  {
-    if (Boolean.TRUE.equals(test)) {
-      return valueTrue;
-    } else {
-      return valueFalse;
-    }
-  }
-
-  /**
-   * Method for SQL construct "IF(test,valueTrue,valueFalse)"
-   */
-  public Short evaluate(Boolean test, Short valueTrue, Short valueFalse)  {
-    if (Boolean.TRUE.equals(test)) {
-      return valueTrue;
-    } else {
-      return valueFalse;
-    }
-  }
-
-  /**
-   * Method for SQL construct "IF(test,valueTrue,valueFalse)"
-   */
-  public Integer evaluate(Boolean test, Integer valueTrue, Integer valueFalse)  {
-    if (Boolean.TRUE.equals(test)) {
+  public FloatWritable evaluate(BooleanWritable test, FloatWritable valueTrue, FloatWritable valueFalse)  {
+    if (test != null && test.get()) {
       return valueTrue;
     } else {
       return valueFalse;
@@ -189,8 +185,8 @@ public class UDFIf extends UDF {
   /**
    * Method for SQL construct "IF(test,valueTrue,valueFalse)"
    */
-  public Long evaluate(Boolean test, Long valueTrue, Long valueFalse)  {
-    if (Boolean.TRUE.equals(test)) {
+  public ByteWritable evaluate(BooleanWritable test, ByteWritable valueTrue, ByteWritable valueFalse)  {
+    if (test != null && test.get()) {
       return valueTrue;
     } else {
       return valueFalse;
@@ -200,8 +196,8 @@ public class UDFIf extends UDF {
   /**
    * Method for SQL construct "IF(test,valueTrue,valueFalse)"
    */
-  public Boolean evaluate(Boolean test, Boolean valueTrue, Boolean valueFalse)  {
-    if (Boolean.TRUE.equals(test)) {
+  public ShortWritable evaluate(BooleanWritable test, ShortWritable valueTrue, ShortWritable valueFalse)  {
+    if (test != null && test.get()) {
       return valueTrue;
     } else {
       return valueFalse;
@@ -211,8 +207,41 @@ public class UDFIf extends UDF {
   /**
    * Method for SQL construct "IF(test,valueTrue,valueFalse)"
    */
-  public Void evaluate(Boolean test, Void valueTrue, Void valueFalse)  {
-    if (Boolean.TRUE.equals(test)) {
+  public IntWritable evaluate(BooleanWritable test, IntWritable valueTrue, IntWritable valueFalse)  {
+    if (test != null && test.get()) {
+      return valueTrue;
+    } else {
+      return valueFalse;
+    }
+  }
+  
+  /**
+   * Method for SQL construct "IF(test,valueTrue,valueFalse)"
+   */
+  public LongWritable evaluate(BooleanWritable test, LongWritable valueTrue, LongWritable valueFalse)  {
+    if (test != null && test.get()) {
+      return valueTrue;
+    } else {
+      return valueFalse;
+    }
+  }
+
+  /**
+   * Method for SQL construct "IF(test,valueTrue,valueFalse)"
+   */
+  public BooleanWritable evaluate(BooleanWritable test, BooleanWritable valueTrue, BooleanWritable valueFalse)  {
+    if (test != null && test.get()) {
+      return valueTrue;
+    } else {
+      return valueFalse;
+    }
+  }
+
+  /**
+   * Method for SQL construct "IF(test,valueTrue,valueFalse)"
+   */
+  public NullWritable evaluate(BooleanWritable test, NullWritable valueTrue, NullWritable valueFalse)  {
+    if (test != null && test.get()) {
       return valueTrue;
     } else {
       return valueFalse;

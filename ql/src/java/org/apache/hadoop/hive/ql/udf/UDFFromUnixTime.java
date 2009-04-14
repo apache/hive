@@ -24,6 +24,8 @@ import java.util.Date;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
 
 
 public class UDFFromUnixTime extends UDF {
@@ -32,11 +34,15 @@ public class UDFFromUnixTime extends UDF {
 
   private SimpleDateFormat formatter;
   
+  Text result = new Text();
+  Text lastFormat = new Text();
+    
   public UDFFromUnixTime() {
   }
 
-  public String evaluate(Integer unixtime)  {
-    return evaluate(unixtime, "yyyy-MM-dd HH:mm:ss");
+  Text defaultFormat = new Text("yyyy-MM-dd HH:mm:ss");
+  public Text evaluate(IntWritable unixtime)  {
+    return evaluate(unixtime, defaultFormat);
   }
   
   /**
@@ -45,18 +51,20 @@ public class UDFFromUnixTime extends UDF {
    * @param format See http://java.sun.com/j2se/1.4.2/docs/api/java/text/SimpleDateFormat.html
    * @return a String in the format specified.
    */
-  public String evaluate(Integer unixtime, String format)  {
+  public Text evaluate(IntWritable unixtime, Text format)  {
     if (unixtime == null || format == null) {
       return null;
     }
     
-    if (formatter == null) {
-      formatter = new SimpleDateFormat(format);
+    if (!format.equals(lastFormat)) {
+      formatter = new SimpleDateFormat(format.toString());
+      lastFormat.set(format);
     }
     
     // convert seconds to milliseconds
-    Date date = new Date(unixtime * 1000L);
-    return formatter.format(date);
+    Date date = new Date(unixtime.get() * 1000L);
+    result.set(formatter.format(date));
+    return result;
   }
 
 }

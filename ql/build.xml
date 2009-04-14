@@ -142,12 +142,6 @@
 
   <target name="jar" depends="compile">
     <echo message="Jar: ${name}"/>
-    <unzip src="lib/commons-jexl-1.1.jar" dest="${build.dir.hive}/jexl/classes">
-      <patternset>
-          <exclude name="META-INF"/>
-          <exclude name="META-INF/MANIFEST.MF"/>
-      </patternset>
-    </unzip>
     <unzip src="${hive.root}/lib/libthrift.jar" dest="${build.dir.hive}/thrift/classes">
       <patternset>
           <exclude name="META-INF"/>
@@ -171,7 +165,6 @@
       <fileset dir="${build.dir.hive}/common/classes" includes="**/*.class"/>
       <fileset dir="${build.dir.hive}/ql/classes" includes="**/*.class"/>
       <fileset dir="${build.dir.hive}/serde/classes" includes="**/*.class"/>
-      <fileset dir="${build.dir.hive}/jexl/classes" includes="**/*.class"/>
       <fileset dir="${build.dir.hive}/thrift/classes" includes="**/*.class"/>
       <fileset dir="${build.dir.hive}/commons-lang/classes" includes="**/StringUtils.class,**/WordUtils.class"/>
       <fileset dir="${build.dir.hive}/json/classes" includes="**/*.class"/>

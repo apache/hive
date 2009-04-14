@@ -34,8 +34,10 @@ import org.apache.hadoop.hive.ql.exec.ExecMapper.reportStats;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
 
@@ -85,7 +87,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         ArrayList<ObjectInspector> ois = new ArrayList<ObjectInspector>();
         ois.add(keyObjectInspector);
         ois.add(valueObjectInspector[tag]);
-        ois.add(ObjectInspectorFactory.getStandardPrimitiveObjectInspector(Byte.class));
+        ois.add(PrimitiveObjectInspectorFactory.writableByteObjectInspector);
         rowObjectInspector[tag] = ObjectInspectorFactory.getStandardStructObjectInspector(
             Arrays.asList(fieldNames), ois);
       }
@@ -103,6 +105,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
   private BytesWritable groupKey;
   
   ArrayList<Object> row = new ArrayList<Object>(3);
+  ByteWritable tag = new ByteWritable();
   public void reduce(Object key, Iterator values,
                      OutputCollector output,
                      Reporter reporter) throws IOException {
@@ -122,11 +125,11 @@ public class ExecReducer extends MapReduceBase implements Reducer {
 
     try {
       BytesWritable keyWritable = (BytesWritable)key;
-      byte tag = 0;
+      tag.set((byte)0);
       if (isTagged) {
         // remove the tag
         int size = keyWritable.getSize() - 1;
-        tag = keyWritable.get()[size]; 
+        tag.set(keyWritable.get()[size]); 
         keyWritable.setSize(size);
       }
       
@@ -153,15 +156,15 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         Writable valueWritable = (Writable) values.next();
         //System.err.print(who.getHo().toString());
         try {
-          valueObject[tag] = inputValueDeserializer[tag].deserialize(valueWritable);
+          valueObject[tag.get()] = inputValueDeserializer[tag.get()].deserialize(valueWritable);
         } catch (SerDeException e) {
           throw new HiveException(e);
         }
         row.clear();
         row.add(keyObject);
-        row.add(valueObject[tag]);
+        row.add(valueObject[tag.get()]);
         row.add(tag);
-        reducer.process(row, rowObjectInspector[tag]);
+        reducer.process(row, rowObjectInspector[tag.get()]);
       }
 
     } catch (HiveException e) {

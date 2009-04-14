@@ -20,21 +20,41 @@ package org.apache.hadoop.hive.serde2.objectinspector;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
 
 import junit.framework.TestCase;
 
 public class TestStandardObjectInspectors extends TestCase {
 
   
-  void doTestStandardPrimitiveObjectInspector(Class<?> c) throws Throwable {
+  void doTestStandardPrimitiveObjectInspector(Class<?> writableClass, Class<?> javaClass) throws Throwable {
     try {
-      StandardPrimitiveObjectInspector oi1 = ObjectInspectorFactory.getStandardPrimitiveObjectInspector(c);
-      StandardPrimitiveObjectInspector oi2 = ObjectInspectorFactory.getStandardPrimitiveObjectInspector(c);
+      PrimitiveObjectInspector oi1 = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
+          PrimitiveObjectInspectorUtils.getTypeEntryFromPrimitiveWritableClass(writableClass).primitiveCategory);
+      PrimitiveObjectInspector oi2 = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
+          PrimitiveObjectInspectorUtils.getTypeEntryFromPrimitiveWritableClass(writableClass).primitiveCategory);
       assertEquals(oi1, oi2);
       assertEquals(Category.PRIMITIVE, oi1.getCategory());
-      assertEquals(c, oi1.getPrimitiveClass());
-      assertEquals(ObjectInspectorUtils.getClassShortName(c),
+      assertEquals(writableClass, oi1.getPrimitiveWritableClass());
+      assertEquals(javaClass, oi1.getJavaPrimitiveClass());
+      // Cannot create NullWritable instances
+      if (!NullWritable.class.equals(writableClass)) {
+        assertEquals(writableClass, oi1.getPrimitiveWritableObject(writableClass.newInstance()).getClass());
+        assertEquals(javaClass, oi1.getPrimitiveJavaObject(writableClass.newInstance()).getClass());
+      }
+      assertEquals(PrimitiveObjectInspectorUtils.getTypeNameFromPrimitiveWritable(writableClass),
           oi1.getTypeName()); 
     } catch (Throwable e) {
       e.printStackTrace();
@@ -44,14 +64,56 @@ public class TestStandardObjectInspectors extends TestCase {
   
   public void testStandardPrimitiveObjectInspector() throws Throwable {
     try {
-      doTestStandardPrimitiveObjectInspector(Boolean.class);
-      doTestStandardPrimitiveObjectInspector(Byte.class);
-      doTestStandardPrimitiveObjectInspector(Integer.class);
-      doTestStandardPrimitiveObjectInspector(Long.class);
-      doTestStandardPrimitiveObjectInspector(Float.class);
-      doTestStandardPrimitiveObjectInspector(Double.class);
-      doTestStandardPrimitiveObjectInspector(String.class);
-      doTestStandardPrimitiveObjectInspector(java.sql.Date.class);
+      doTestStandardPrimitiveObjectInspector(NullWritable.class, Void.class);
+      doTestStandardPrimitiveObjectInspector(BooleanWritable.class, Boolean.class);
+      doTestStandardPrimitiveObjectInspector(ByteWritable.class, Byte.class);
+      doTestStandardPrimitiveObjectInspector(ShortWritable.class, Short.class);
+      doTestStandardPrimitiveObjectInspector(IntWritable.class, Integer.class);
+      doTestStandardPrimitiveObjectInspector(LongWritable.class, Long.class);
+      doTestStandardPrimitiveObjectInspector(FloatWritable.class, Float.class);
+      doTestStandardPrimitiveObjectInspector(DoubleWritable.class, Double.class);
+      doTestStandardPrimitiveObjectInspector(Text.class, String.class);
+    } catch (Throwable e) {
+      e.printStackTrace();
+      throw e;
+    }
+  }
+
+  void doTestJavaPrimitiveObjectInspector(Class<?> writableClass, Class<?> javaClass, Object javaObject) throws Throwable {
+    try {
+      PrimitiveObjectInspector oi1 = PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
+          PrimitiveObjectInspectorUtils.getTypeEntryFromPrimitiveJavaClass(javaClass).primitiveCategory);
+      PrimitiveObjectInspector oi2 = PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
+          PrimitiveObjectInspectorUtils.getTypeEntryFromPrimitiveJavaClass(javaClass).primitiveCategory);
+      assertEquals(oi1, oi2);
+      assertEquals(Category.PRIMITIVE, oi1.getCategory());
+      assertEquals(javaClass, oi1.getJavaPrimitiveClass());
+      assertEquals(writableClass, oi1.getPrimitiveWritableClass());
+      if (javaObject != null) {
+        assertEquals(javaClass, oi1.getPrimitiveJavaObject(javaObject).getClass());
+        assertEquals(writableClass, oi1.getPrimitiveWritableObject(javaObject).getClass());
+      }
+      
+      assertEquals(PrimitiveObjectInspectorUtils.getTypeNameFromPrimitiveJava(javaClass),
+          oi1.getTypeName()); 
+    } catch (Throwable e) {
+      e.printStackTrace();
+      throw e;
+    }
+  }
+  
+  public void testJavaPrimitiveObjectInspector() throws Throwable {
+    try {
+      doTestJavaPrimitiveObjectInspector(NullWritable.class, Void.class, null);
+      doTestJavaPrimitiveObjectInspector(BooleanWritable.class, Boolean.class, true);
+      doTestJavaPrimitiveObjectInspector(ByteWritable.class, Byte.class, (byte)1);
+      doTestJavaPrimitiveObjectInspector(ShortWritable.class, Short.class, (short)1);
+      doTestJavaPrimitiveObjectInspector(IntWritable.class, Integer.class, (int)1);
+      doTestJavaPrimitiveObjectInspector(LongWritable.class, Long.class, (long)1);
+      doTestJavaPrimitiveObjectInspector(FloatWritable.class, Float.class, (float)1);
+      doTestJavaPrimitiveObjectInspector(DoubleWritable.class, Double.class, (double)1);
+      doTestJavaPrimitiveObjectInspector(Text.class, String.class, "a");
+      
     } catch (Throwable e) {
       e.printStackTrace();
       throw e;
@@ -61,14 +123,14 @@ public class TestStandardObjectInspectors extends TestCase {
   public void testStandardListObjectInspector() throws Throwable {
     try {
       StandardListObjectInspector loi1 = ObjectInspectorFactory.getStandardListObjectInspector(
-          ObjectInspectorFactory.getStandardPrimitiveObjectInspector(Integer.class));
+          PrimitiveObjectInspectorFactory.javaIntObjectInspector);
       StandardListObjectInspector loi2 = ObjectInspectorFactory.getStandardListObjectInspector(
-          ObjectInspectorFactory.getStandardPrimitiveObjectInspector(Integer.class));
+          PrimitiveObjectInspectorFactory.javaIntObjectInspector);
       assertEquals(loi1, loi2);
       
       // metadata
       assertEquals(Category.LIST, loi1.getCategory());
-      assertEquals(ObjectInspectorFactory.getStandardPrimitiveObjectInspector(Integer.class),
+      assertEquals(PrimitiveObjectInspectorFactory.javaIntObjectInspector,
           loi1.getListElementObjectInspector());
       
       // null
@@ -99,21 +161,21 @@ public class TestStandardObjectInspectors extends TestCase {
   public void testStandardMapObjectInspector() throws Throwable {
     try {
       StandardMapObjectInspector moi1 = ObjectInspectorFactory.getStandardMapObjectInspector(
-          ObjectInspectorFactory.getStandardPrimitiveObjectInspector(String.class),
-          ObjectInspectorFactory.getStandardPrimitiveObjectInspector(Integer.class)
+          PrimitiveObjectInspectorFactory.javaStringObjectInspector,
+          PrimitiveObjectInspectorFactory.javaIntObjectInspector
           );
       StandardMapObjectInspector moi2 = ObjectInspectorFactory.getStandardMapObjectInspector(
-          ObjectInspectorFactory.getStandardPrimitiveObjectInspector(String.class),
-          ObjectInspectorFactory.getStandardPrimitiveObjectInspector(Integer.class)
+          PrimitiveObjectInspectorFactory.javaStringObjectInspector,
+          PrimitiveObjectInspectorFactory.javaIntObjectInspector
           );
       assertEquals(moi1, moi2);
       
       // metadata
       assertEquals(Category.MAP, moi1.getCategory());
       assertEquals(moi1.getMapKeyObjectInspector(), 
-          ObjectInspectorFactory.getStandardPrimitiveObjectInspector(String.class));
+          PrimitiveObjectInspectorFactory.javaStringObjectInspector);
       assertEquals(moi2.getMapValueObjectInspector(), 
-          ObjectInspectorFactory.getStandardPrimitiveObjectInspector(Integer.class));
+          PrimitiveObjectInspectorFactory.javaIntObjectInspector);
       
       // null
       assertNull(moi1.getMap(null));
@@ -121,8 +183,8 @@ public class TestStandardObjectInspectors extends TestCase {
       assertNull(moi1.getMapValueElement(null, "nokey"));
       assertEquals(-1, moi1.getMapSize(null));
       assertEquals("map<" 
-          + ObjectInspectorFactory.getStandardPrimitiveObjectInspector(String.class).getTypeName() + ","
-          + ObjectInspectorFactory.getStandardPrimitiveObjectInspector(Integer.class).getTypeName() + ">",
+          + PrimitiveObjectInspectorFactory.javaStringObjectInspector.getTypeName() + ","
+          + PrimitiveObjectInspectorFactory.javaIntObjectInspector.getTypeName() + ">",
           moi1.getTypeName());
   
       // HashMap
@@ -153,9 +215,9 @@ public class TestStandardObjectInspectors extends TestCase {
       fieldNames.add("secondString");
       fieldNames.add("thirdBoolean");
       ArrayList<ObjectInspector> fieldObjectInspectors = new ArrayList<ObjectInspector>();
-      fieldObjectInspectors.add(ObjectInspectorFactory.getStandardPrimitiveObjectInspector(Integer.class));
-      fieldObjectInspectors.add(ObjectInspectorFactory.getStandardPrimitiveObjectInspector(String.class));
-      fieldObjectInspectors.add(ObjectInspectorFactory.getStandardPrimitiveObjectInspector(Boolean.class));
+      fieldObjectInspectors.add(PrimitiveObjectInspectorFactory.javaIntObjectInspector);
+      fieldObjectInspectors.add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
+      fieldObjectInspectors.add(PrimitiveObjectInspectorFactory.javaBooleanObjectInspector);
       
       StandardStructObjectInspector soi1 = ObjectInspectorFactory.getStandardStructObjectInspector(
           fieldNames, fieldObjectInspectors);
@@ -173,14 +235,14 @@ public class TestStandardObjectInspectors extends TestCase {
       }
       assertEquals(fields.get(1), soi1.getStructFieldRef("secondString"));
       StringBuilder structTypeName = new StringBuilder(); 
-      structTypeName.append("struct{");
+      structTypeName.append("struct<");
       for(int i=0; i<fields.size(); i++) {
         if (i>0) structTypeName.append(",");
         structTypeName.append(fields.get(i).getFieldName());
         structTypeName.append(":");
         structTypeName.append(fields.get(i).getFieldObjectInspector().getTypeName());
       }
-      structTypeName.append("}");
+      structTypeName.append(">");
       assertEquals(structTypeName.toString(), soi1.getTypeName());
   
       // null

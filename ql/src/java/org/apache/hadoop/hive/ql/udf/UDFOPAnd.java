@@ -21,25 +21,28 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.io.BooleanWritable;
 
 
 public class UDFOPAnd extends UDF {
 
   private static Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.udf.UDFOPAnd");
 
+  BooleanWritable result = new BooleanWritable();
   public UDFOPAnd() {
   }
 
   // Three-value Boolean: NULL stands for unknown
-  public Boolean evaluate(Boolean a, Boolean b)  {
-    Boolean r = null;
-    if (Boolean.TRUE.equals(a) && Boolean.TRUE.equals(b)) {
-      r = Boolean.TRUE;
+  public BooleanWritable evaluate(BooleanWritable a, BooleanWritable b)  {
+    
+    if ((a != null && a.get() == false) || (b != null && b.get() == false)) {
+      result.set(false);
+      return result;
     }
-    if (Boolean.FALSE.equals(a) || Boolean.FALSE.equals(b)) {
-      r = Boolean.FALSE;
+    if ((a != null && a.get() == true) && (b != null && b.get() == true)) {
+      result.set(true);
+      return result;
     }
-    // LOG.info("evaluate(" + a + "," + b + ")=" + r);
-    return r;
+    return null;
   }
 }

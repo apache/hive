@@ -26,6 +26,18 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 
 /**
  * ObjectInspectorFactory is the primary way to create new ObjectInspector instances.
@@ -37,81 +49,6 @@ public class ObjectInspectorUtils {
 
   private static Log LOG = LogFactory.getLog(ObjectInspectorUtils.class.getName());
   
-  /** This function defines the list of PrimitiveClasses that we support. 
-   *  A PrimitiveClass should support java serialization/deserialization.
-   */
-  public static boolean isPrimitiveClass(Class<?> c) {
-    return ((c == String.class) || (c == Boolean.class) ||
-            (c == Character.class) || (c == java.sql.Date.class) || 
-            java.lang.Number.class.isAssignableFrom(c) || (c == Void.class) ||
-            c.isPrimitive());
-  }
-  
-  /**
-   * Generalize the Java primitive types to the corresponding 
-   * Java Classes.  
-   */
-  public static Class<?> generalizePrimitive(Class<?> primitiveClass) {
-    if (primitiveClass == Boolean.TYPE)   primitiveClass = Boolean.class;
-    if (primitiveClass == Byte.TYPE)      primitiveClass = Byte.class;
-    if (primitiveClass == Character.TYPE) primitiveClass = Character.class;
-    if (primitiveClass == Short.TYPE)     primitiveClass = Short.class;
-    if (primitiveClass == Integer.TYPE)   primitiveClass = Integer.class;
-    if (primitiveClass == Long.TYPE)      primitiveClass = Long.class;
-    if (primitiveClass == Float.TYPE)     primitiveClass = Float.class;
-    if (primitiveClass == Double.TYPE)    primitiveClass = Double.class;
-    if (primitiveClass == Void.TYPE)      primitiveClass = Void.class;
-    return primitiveClass;
-  }
-  
-  public static final Map<Class<?>, String> classToTypeName = new HashMap<Class<?>, String>();
-  static {
-    classToTypeName.put(Boolean.class, org.apache.hadoop.hive.serde.Constants.BOOLEAN_TYPE_NAME);
-    classToTypeName.put(Byte.class, org.apache.hadoop.hive.serde.Constants.TINYINT_TYPE_NAME);
-    classToTypeName.put(Short.class, org.apache.hadoop.hive.serde.Constants.SMALLINT_TYPE_NAME);
-    classToTypeName.put(Integer.class, org.apache.hadoop.hive.serde.Constants.INT_TYPE_NAME);
-    classToTypeName.put(Long.class, org.apache.hadoop.hive.serde.Constants.BIGINT_TYPE_NAME);
-    classToTypeName.put(Float.class, org.apache.hadoop.hive.serde.Constants.FLOAT_TYPE_NAME);
-    classToTypeName.put(Double.class, org.apache.hadoop.hive.serde.Constants.DOUBLE_TYPE_NAME);
-    classToTypeName.put(String.class, org.apache.hadoop.hive.serde.Constants.STRING_TYPE_NAME);
-    classToTypeName.put(java.sql.Date.class, org.apache.hadoop.hive.serde.Constants.DATE_TYPE_NAME);
-  }
-  
-  /**
-   * The mapping from type name in DDL to the Java class. 
-   */
-  public static final Map<String, Class<?>> typeNameToClass = new HashMap<String, Class<?>>();
-  static {
-    typeNameToClass.put(Constants.BOOLEAN_TYPE_NAME, Boolean.class);
-    typeNameToClass.put(Constants.TINYINT_TYPE_NAME, Byte.class);
-    typeNameToClass.put(Constants.SMALLINT_TYPE_NAME, Short.class);
-    typeNameToClass.put(Constants.INT_TYPE_NAME, Integer.class);
-    typeNameToClass.put(Constants.BIGINT_TYPE_NAME, Long.class);
-    typeNameToClass.put(Constants.FLOAT_TYPE_NAME, Float.class);
-    typeNameToClass.put(Constants.DOUBLE_TYPE_NAME, Double.class);
-    typeNameToClass.put(Constants.STRING_TYPE_NAME, String.class);
-    typeNameToClass.put(Constants.DATE_TYPE_NAME, java.sql.Date.class);
-    // These types are not supported yet. 
-    // TypeNameToClass.put(Constants.DATETIME_TYPE_NAME);
-    // TypeNameToClass.put(Constants.TIMESTAMP_TYPE_NAME);
-  }
-  
-  /**
-   * Get the short name for the types
-   */
-  public static String getClassShortName(Class<?> classObject) {
-    String result = classToTypeName.get(classObject);
-    if (result == null) {
-      result = classObject.getName();
-      LOG.warn("unsupported class: " + result);
-      // Remove prefix
-      String prefix = "java.lang.";
-      if (result.startsWith(prefix)) {
-        result = result.substring(prefix.length());
-      }
-    }
-    return result;
-  }
   
   static ArrayList<ArrayList<String>> integerArrayCache = new ArrayList<ArrayList<String>>();
   /**
@@ -153,16 +90,47 @@ public class ObjectInspectorUtils {
   
 
   /**
+   * This enum controls how we copy primitive objects.
+   * 
+   * KEEP means keeping the original format of the primitive object. This is usually the most efficient. 
+   * JAVA means converting all primitive objects to java primitive objects.
+   * WRITABLE means converting all primitive objects to writable objects. 
+   *
+   */
+  public enum ObjectInspectorCopyOption {
+    KEEP,
+    JAVA,
+    WRITABLE
+  }
+  
+  /**
    * Get the standard ObjectInspector for an ObjectInspector.
    * 
    * The returned ObjectInspector can be used to inspect the standard object.
    */
   public static ObjectInspector getStandardObjectInspector(ObjectInspector oi) {
+    return getStandardObjectInspector(oi, ObjectInspectorCopyOption.KEEP);
+  }
+  
+  public static ObjectInspector getStandardObjectInspector(ObjectInspector oi, ObjectInspectorCopyOption objectInspectorOption) {
     ObjectInspector result = null;
     switch (oi.getCategory()) {
       case PRIMITIVE: {
-        PrimitiveObjectInspector poi =(PrimitiveObjectInspector)oi;
-        result = poi;
+        PrimitiveObjectInspector poi = (PrimitiveObjectInspector)oi;
+        switch (objectInspectorOption) {
+          case KEEP: {
+            result = poi;
+            break;
+          }
+          case JAVA: {
+            result = PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(poi.getPrimitiveCategory());
+            break;
+          }
+          case WRITABLE: {
+            result = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(poi.getPrimitiveCategory());
+            break;
+          }
+        }
         break;
       }
       case LIST: {
@@ -196,9 +164,15 @@ public class ObjectInspectorUtils {
     return result;
   }
   
-  // TODO: should return o if the ObjectInspector is a standard ObjectInspector hierarchy
-  // (all internal ObjectInspector needs to be standard ObjectInspectors)
-  public static Object getStandardObject(Object o, ObjectInspector oi) {
+  /**
+   * Returns a deep copy of the Object o that can be scanned by a
+   * StandardObjectInspector returned by getStandardObjectInspector(oi).
+   */
+  public static Object copyToStandardObject(Object o, ObjectInspector oi) {
+    return copyToStandardObject(o, oi, ObjectInspectorCopyOption.KEEP);
+  }
+  
+  public static Object copyToStandardObject(Object o, ObjectInspector oi, ObjectInspectorCopyOption objectInspectorOption) {
     if (o == null) {
       return null;
     }
@@ -206,7 +180,21 @@ public class ObjectInspectorUtils {
     Object result = null;
     switch (oi.getCategory()) {
       case PRIMITIVE: {
-        result = o;
+        PrimitiveObjectInspector loi = (PrimitiveObjectInspector)oi;
+        switch (objectInspectorOption) {
+          case KEEP: {
+            result = loi.copyObject(o);
+            break;
+          }
+          case JAVA: {
+            result = loi.getPrimitiveJavaObject(o);
+            break;
+          }
+          case WRITABLE: {
+            result = loi.getPrimitiveWritableObject(o);
+            break;
+          }
+        }
         break;
       }
       case LIST: {
@@ -214,9 +202,10 @@ public class ObjectInspectorUtils {
         int length = loi.getListLength(o);
         ArrayList<Object> list = new ArrayList<Object>(length);
         for(int i=0; i<length; i++) {
-          list.add(getStandardObject(
+          list.add(copyToStandardObject(
               loi.getListElement(o, i),
-              loi.getListElementObjectInspector()));
+              loi.getListElementObjectInspector(),
+              objectInspectorOption));
         }
         result = list;
         break;
@@ -226,8 +215,8 @@ public class ObjectInspectorUtils {
         HashMap<Object, Object> map = new HashMap<Object, Object>();
         Map<? extends Object, ? extends Object> omap = moi.getMap(o);
         for(Map.Entry<? extends Object, ? extends Object> entry: omap.entrySet()) {
-          map.put(getStandardObject(entry.getKey(), moi.getMapKeyObjectInspector()),
-              getStandardObject(entry.getValue(), moi.getMapValueObjectInspector()));
+          map.put(copyToStandardObject(entry.getKey(), moi.getMapKeyObjectInspector(), objectInspectorOption),
+              copyToStandardObject(entry.getValue(), moi.getMapValueObjectInspector(), objectInspectorOption));
         }
         result = map;
         break;
@@ -237,7 +226,7 @@ public class ObjectInspectorUtils {
         List<? extends StructField> fields = soi.getAllStructFieldRefs();
         ArrayList<Object> struct = new ArrayList<Object>(fields.size()); 
         for(StructField f : fields) {
-          struct.add(getStandardObject(soi.getStructFieldData(o, f), f.getFieldObjectInspector()));
+          struct.add(copyToStandardObject(soi.getStructFieldData(o, f), f.getFieldObjectInspector(), objectInspectorOption));
         }
         result = struct;
         break;
@@ -251,7 +240,7 @@ public class ObjectInspectorUtils {
   
   public static String getStandardStructTypeName(StructObjectInspector soi) {
     StringBuilder sb = new StringBuilder();
-    sb.append("struct{");
+    sb.append("struct<");
     List<? extends StructField> fields = soi.getAllStructFieldRefs(); 
     for(int i=0; i<fields.size(); i++) {
       if (i>0) sb.append(",");
@@ -259,7 +248,7 @@ public class ObjectInspectorUtils {
       sb.append(":");
       sb.append(fields.get(i).getFieldObjectInspector().getTypeName());
     }
-    sb.append("}");
+    sb.append(">");
     return sb.toString();
   }
   
@@ -282,4 +271,45 @@ public class ObjectInspectorUtils {
     throw new RuntimeException("cannot find field " + fieldName + " from " + fields); 
     // return null;
   }
+  
+  /**
+   * Get the class names of the ObjectInspector hierarchy. Mainly used for debugging. 
+   */
+  public static String getObjectInspectorName(ObjectInspector oi) {
+    switch (oi.getCategory()) {
+      case PRIMITIVE: {
+        return oi.getClass().getSimpleName();
+      }
+      case LIST: {
+        ListObjectInspector loi = (ListObjectInspector)oi;
+        return oi.getClass().getSimpleName() + "<" + getObjectInspectorName(loi.getListElementObjectInspector()) + ">";
+      }
+      case MAP: {
+        MapObjectInspector moi = (MapObjectInspector)oi;
+        return oi.getClass().getSimpleName() + "<" + getObjectInspectorName(moi.getMapKeyObjectInspector()) 
+            + "," + getObjectInspectorName(moi.getMapValueObjectInspector()) + ">";
+      }
+      case STRUCT: {
+        StringBuffer result = new StringBuffer();
+        result.append(oi.getClass().getSimpleName() + "<");
+        StructObjectInspector soi = (StructObjectInspector)oi;
+        List<? extends StructField> fields = soi.getAllStructFieldRefs();
+        for(int i = 0; i<fields.size(); i++) {
+          result.append(fields.get(i).getFieldName());
+          result.append(":");
+          result.append(getObjectInspectorName(fields.get(i).getFieldObjectInspector()));
+          if (i == fields.size() - 1) {
+            result.append(">");
+          } else {
+            result.append(",");
+          }
+        }
+        return result.toString();
+      }
+      default: {
+        throw new RuntimeException("Unknown ObjectInspector category!");
+      }
+    }
+  }
+    
 }

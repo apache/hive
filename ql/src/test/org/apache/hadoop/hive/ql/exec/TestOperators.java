@@ -36,8 +36,10 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
 public class TestOperators extends TestCase {
 
@@ -51,9 +53,9 @@ public class TestOperators extends TestCase {
     names.add("col1");
     names.add("col2");
     ArrayList<ObjectInspector> objectInspectors = new ArrayList<ObjectInspector>(3);
-    objectInspectors.add(ObjectInspectorFactory.getStandardPrimitiveObjectInspector(String.class));
-    objectInspectors.add(ObjectInspectorFactory.getStandardPrimitiveObjectInspector(String.class));
-    objectInspectors.add(ObjectInspectorFactory.getStandardPrimitiveObjectInspector(String.class));
+    objectInspectors.add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
+    objectInspectors.add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
+    objectInspectors.add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
     for(int i=0; i<5; i++) {
       ArrayList<String> data = new ArrayList<String> ();
       data.add(""+i);
@@ -72,10 +74,10 @@ public class TestOperators extends TestCase {
   public void testBaseFilterOperator() throws Throwable {
     try {
       System.out.println("Testing Filter Operator");
-      exprNodeDesc col0 = new exprNodeColumnDesc(String.class, "col0");
-      exprNodeDesc col1 = new exprNodeColumnDesc(String.class, "col1");
-      exprNodeDesc col2 = new exprNodeColumnDesc(String.class, "col2");
-      exprNodeDesc zero = new exprNodeConstantDesc(String.class, "0");
+      exprNodeDesc col0 = TestExecDriver.getStringColumn("col0");
+      exprNodeDesc col1 = TestExecDriver.getStringColumn("col1");
+      exprNodeDesc col2 = TestExecDriver.getStringColumn("col2");
+      exprNodeDesc zero = new exprNodeConstantDesc("0");
       exprNodeDesc func1 = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc(">", col2, col1);
       exprNodeDesc func2 = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("==", col0, zero);
       exprNodeDesc func3 = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("&&", func1, func2); 
@@ -95,9 +97,9 @@ public class TestOperators extends TestCase {
 
       Map<Enum<?>, Long> results = op.getStats();
       System.out.println("filtered = " + results.get(FilterOperator.Counter.FILTERED));
-      assertEquals(results.get(FilterOperator.Counter.FILTERED), Long.valueOf(4));
+      assertEquals(Long.valueOf(4), results.get(FilterOperator.Counter.FILTERED));
       System.out.println("passed = " + results.get(FilterOperator.Counter.PASSED));
-      assertEquals(results.get(FilterOperator.Counter.PASSED), Long.valueOf(1));
+      assertEquals(Long.valueOf(1), results.get(FilterOperator.Counter.PASSED));
 
       /*
       for(Enum e: results.keySet()) {
@@ -116,12 +118,11 @@ public class TestOperators extends TestCase {
     try {
       System.out.println("Testing FileSink Operator");
       // col1
-      exprNodeDesc exprDesc1 = new exprNodeColumnDesc(TypeInfoFactory.getPrimitiveTypeInfo(String.class),
-          "col1");
+      exprNodeDesc exprDesc1 = TestExecDriver.getStringColumn("col1");
 
       // col2
       ArrayList<exprNodeDesc> exprDesc2children = new ArrayList<exprNodeDesc>();
-      exprNodeDesc expr1 = new exprNodeColumnDesc(String.class, "col0");
+      exprNodeDesc expr1 = TestExecDriver.getStringColumn("col0");
       exprNodeDesc expr2 = new exprNodeConstantDesc("1");
       exprNodeDesc exprDesc2 = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("concat", expr1, expr2);
 
@@ -163,10 +164,10 @@ public class TestOperators extends TestCase {
     try {
       System.out.println("Testing Script Operator");
       // col1
-      exprNodeDesc exprDesc1 = new exprNodeColumnDesc(String.class, "col1");
+      exprNodeDesc exprDesc1 = TestExecDriver.getStringColumn("col1");
 
       // col2
-      exprNodeDesc expr1 = new exprNodeColumnDesc(String.class, "col0");
+      exprNodeDesc expr1 = TestExecDriver.getStringColumn("col0");
       exprNodeDesc expr2 = new exprNodeConstantDesc("1");
       exprNodeDesc exprDesc2 = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("concat", expr1, expr2);
 
@@ -219,8 +220,10 @@ public class TestOperators extends TestCase {
         assert(soi != null);
         StructField a = soi.getStructFieldRef("a");
         StructField b = soi.getStructFieldRef("b");
-        assertEquals(""+(i+1), soi.getStructFieldData(io.o, a));
-        assertEquals((i) + "1", soi.getStructFieldData(io.o, b));
+        assertEquals(""+(i+1), ((PrimitiveObjectInspector)a.getFieldObjectInspector())
+            .getPrimitiveJavaObject(soi.getStructFieldData(io.o, a)));
+        assertEquals((i) + "1", ((PrimitiveObjectInspector)b.getFieldObjectInspector())
+            .getPrimitiveJavaObject(soi.getStructFieldData(io.o, b)));
       }
 
       System.out.println("Script Operator ok");

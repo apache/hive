@@ -24,12 +24,13 @@ package org.apache.hadoop.hive.serde2.lazy;
 public abstract class LazyPrimitive<T> implements LazyObject {
 
   T data;
+  boolean isNull = false;
 
   /**
    * Returns the actual primitive object represented by this LazyObject.
    */
   public T getObject() {
-    return data;
+    return isNull ? null : data;
   }
 
 }

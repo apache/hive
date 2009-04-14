@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.serde2.lazy;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.apache.hadoop.io.LongWritable;
+
 /**
  * LazyObject for storing a value of Long.
  * 
@@ -33,19 +35,20 @@ import java.io.OutputStream;
  * </p>
  * 
  */
-public class LazyLong extends LazyPrimitive<Long> {
+public class LazyLong extends LazyPrimitive<LongWritable> {
+
 
   public LazyLong() {
+    data = new LongWritable();
   }
 
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
     try {
-      // Slower method: convert to String and then convert to Long
-      // return Long.valueOf(LazyUtils.convertToString(bytes, start, length));
-      data = Long.valueOf(parseLong(bytes.getData(), start, length));
+      data.set(parseLong(bytes.getData(), start, length, 10));
+      isNull = false;
     } catch (NumberFormatException e) {
-      data = null;
+      isNull = true;
     }
   }
 
@@ -188,5 +191,13 @@ public class LazyLong extends LazyPrimitive<Long> {
       start /= 10;
     }
   }
-  
+
+  public static void writeUTF8NoException(OutputStream out, long i) {
+    try {
+      writeUTF8(out, i);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
 }
