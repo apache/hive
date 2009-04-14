@@ -28,6 +28,9 @@ Release 0.3.0 - Unreleased
     HIVE-82 Support for building tarballs and javadocs
     (Ashish Thusoo via rmurthy)
 
+    HIVE-407 Permission issues in test scripts in tarballs.
+    (Ashish Thusoo via njain)
+
   IMPROVEMENTS
 
     HIVE-132. Show table and describe results to be read via FetchTask.
