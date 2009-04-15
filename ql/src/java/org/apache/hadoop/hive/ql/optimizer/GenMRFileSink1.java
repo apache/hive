@@ -68,14 +68,14 @@ public class GenMRFileSink1 implements NodeProcessor {
       if (mapTask == null) {
         assert (!seenOps.contains(currTopOp));
         seenOps.add(currTopOp);
-        GenMapRedUtils.setTaskPlan(currAliasId, currTopOp, (mapredWork) currTask.getWork(), false, ctx);
+        GenMapRedUtils.setTaskPlan(currAliasId, currTopOp, null, (mapredWork) currTask.getWork(), false, ctx);
         opTaskMap.put(null, currTask);
         rootTasks.add(currTask);
       }
       else {
         if (!seenOps.contains(currTopOp)) {
           seenOps.add(currTopOp);
-          GenMapRedUtils.setTaskPlan(currAliasId, currTopOp, (mapredWork) mapTask.getWork(), false, ctx);
+          GenMapRedUtils.setTaskPlan(currAliasId, currTopOp, null, (mapredWork) mapTask.getWork(), false, ctx);
         }
         if (ret)
           currTask.removeDependentTask(mvTask);

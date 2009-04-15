@@ -93,10 +93,10 @@ public class GenMapRedUtils {
     assert currTopOp != null;
     List<Operator<? extends Serializable>> seenOps = opProcCtx.getSeenOps();
     String currAliasId = opProcCtx.getCurrAliasId();
-
+      
     seenOps.add(currTopOp);
-    setTaskPlan(currAliasId, currTopOp, plan, false, opProcCtx);
-    
+    setTaskPlan(currAliasId, currTopOp, op, plan, false, opProcCtx);
+
     currTopOp = null;
     currAliasId = null;
 
@@ -129,7 +129,7 @@ public class GenMapRedUtils {
       
       if (!seenOps.contains(currTopOp)) {
         seenOps.add(currTopOp);
-        setTaskPlan(currAliasId, currTopOp, plan, false, opProcCtx);
+        setTaskPlan(currAliasId, currTopOp, op, plan, false, opProcCtx);
       }
       currTopOp = null;
       opProcCtx.setCurrTopOp(currTopOp);
@@ -173,7 +173,8 @@ public class GenMapRedUtils {
    * @param local    whether you need to add to map-reduce or local work
    * @param opProcCtx processing context
    */
-  public static void setTaskPlan(String alias_id, Operator<? extends Serializable> topOp, mapredWork plan, boolean local, GenMRProcContext opProcCtx) 
+  public static void setTaskPlan(String alias_id, Operator<? extends Serializable> topOp, Operator<? extends Serializable> currOp,
+      mapredWork plan, boolean local, GenMRProcContext opProcCtx) 
     throws SemanticException {
     ParseContext parseCtx = opProcCtx.getParseCtx();
 
@@ -218,7 +219,7 @@ public class GenMapRedUtils {
         }
       }
       plan.getAliasToWork().put(alias_id, topOp);
-      setKeyAndValueDesc(plan, topOp);
+      setKeyAndValueDesc(plan, currOp);
       LOG.debug("Created Map Work for " + alias_id);
     }
     else {
@@ -234,6 +235,9 @@ public class GenMapRedUtils {
    * @param topOp    current top operator in the path
    */
   public static void setKeyAndValueDesc(mapredWork plan, Operator<? extends Serializable> topOp) {
+    if (topOp == null)
+      return;
+    
     if (topOp instanceof ReduceSinkOperator) {
       ReduceSinkOperator rs = (ReduceSinkOperator)topOp;
       plan.setKeyDesc(rs.getConf().getKeySerializeInfo());

@@ -49,6 +49,8 @@ Trunk - unreleased changes
     HIVE-372. Fix UDF memory consumptions and bad error messages.
     (Zheng Shao via namit)
 
+    HIVE-413. Fix multi-table insert. (Namit Jain via zshao)
+
 Release 0.3.0 - Unreleased
 
   INCOMPATIBLE CHANGES

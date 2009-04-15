@@ -144,7 +144,7 @@ public class GenMRUnion1 implements NodeProcessor {
 
     // If it is map-only task, add the files to be processed
     if (uPrsCtx.getMapOnlySubq(pos) && uPrsCtx.getRootTask(pos))
-      GenMapRedUtils.setTaskPlan(ctx.getCurrAliasId(), ctx.getCurrTopOp(), (mapredWork) currTask.getWork(), false, ctx);
+      GenMapRedUtils.setTaskPlan(ctx.getCurrAliasId(), ctx.getCurrTopOp(), union, (mapredWork) currTask.getWork(), false, ctx);
 
     ctx.setCurrTask(uTask);
     ctx.setCurrAliasId(null);
