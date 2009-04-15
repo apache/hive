@@ -28,7 +28,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.ExistingDependentsException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -318,7 +317,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
    * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#drop_table(java.lang.String, java.lang.String, boolean)
    */
   public void dropTable(String dbname, String name) throws NoSuchObjectException,
-      ExistingDependentsException, MetaException, TException {
+      MetaException, TException {
         dropTable(dbname, name, true, true);
       }
 
@@ -333,7 +332,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
    * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#drop_table(java.lang.String, java.lang.String, boolean)
    */
   public void dropTable(String dbname, String name, boolean deleteData, boolean ignoreUknownTab) throws 
-      ExistingDependentsException, MetaException, TException, NoSuchObjectException {
+      MetaException, TException, NoSuchObjectException {
     try {
       client.drop_table(dbname, name, deleteData);
     } catch (NoSuchObjectException e) {

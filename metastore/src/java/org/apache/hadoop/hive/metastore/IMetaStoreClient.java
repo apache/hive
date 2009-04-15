@@ -20,9 +20,7 @@ package org.apache.hadoop.hive.metastore;
 
 import java.util.List;
 
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.ExistingDependentsException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -66,7 +64,7 @@ public interface IMetaStoreClient {
    * @throws ExistingDependentsException
    */
   public void dropTable(String dbname, String tableName, boolean deleteData, 
-      boolean ignoreUknownTab) throws ExistingDependentsException, 
+      boolean ignoreUknownTab) throws  
       MetaException, TException, NoSuchObjectException;
 
   //public void createTable(String tableName, Properties schema) throws MetaException, UnknownTableException,

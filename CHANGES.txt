@@ -3,6 +3,9 @@ Hive Change Log
 Trunk - unreleased changes
 
   INCOMPATIBLE CHANGES
+  
+    HIVE-143. Remove the old file based metastore, in favour of the
+    RDBMS based metastore. (prasadc via johan)
 
   NEW FEATURES
 

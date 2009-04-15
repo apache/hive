@@ -112,10 +112,6 @@ exception InvalidObjectException {
   string message
 }
 
-exception ExistingDependentsException {
-  string message
-}
-
 exception NoSuchObjectException {
   string message
 }
@@ -191,49 +187,6 @@ service ThriftHiveMetastore extends fb303.FacebookService
 
   // index related metadata (may not be in the open source)
   bool create_index(1:Index index_def) throws(1:IndexAlreadyExistsException o1, 2:MetaException o2)
-}
-
-
-/**
-* This interface is deprecated.
-*/
-service ThriftMetaStore extends fb303.FacebookService
-{
-  // retrieve a printable representation of the fields in a table (logfile, type) or table subtype
-  list<FieldSchema> get_fields(string db_name, string table_name) throws (MetaException o1, UnknownTableException o2, UnknownDBException o3),
-
-  // get all the tables (logfiles, types) in the metastore - no partitioning like different dbs yet
-  list<string> get_tables(string db_name, string pattern)  throws (MetaException o1, UnknownTableException o2, UnknownDBException o3),
-
-  // retrieve the opaque schema representation of this table (logfile, type) which contains enough
-  // information for the caller to instantiate some kind of object that will let it examine the type.
-  // That object might be a thrift, jute, or SerDe.
-  map<string,string> get_schema(string table_name) throws (MetaException o1, UnknownTableException o2, UnknownDBException o3),
-
-  // add some structure to the table or change its structure
-  void alter_table(string db_name, string table_name, map<string,string> schema) throws (MetaException o1, UnknownTableException o2, UnknownDBException o3),
-
-  // create_table == create_table4 (table_name, SIMPLE_META_SERDE, '\t', "",  dict [ META_COLUMNS => columns]
-  // bugbug do above transformation and deprecate this API
-  void create_table(string db_name, string table_name, map<string,string> schema) throws (MetaException o1, UnknownDBException o2),
-
-  // drop a table (i.e., remove it from the metastore) - for now allow metastore to do the delete (so python shell can do drops)
-  void drop_table(string db_name, string table_name) throws  (MetaException o1, UnknownTableException o2, UnknownDBException o3),
-
-  // truncate a table - i.e., delete its data, but keep the hdfs directory and the schema
-  void truncate_table(string db_name, string table_name, string partition)  throws (MetaException o1, UnknownTableException o2, UnknownDBException o3),
-
-  // generally does the table exist
-  bool table_exists(string db_name, string table_name) throws (MetaException o1, UnknownDBException o2),
-
-  // create a table with named columns
-  list<string> get_partitions(string db_name, string table_name) throws (MetaException o1, UnknownTableException o2, UnknownDBException o3),
-
-  // enumerate all the databases in this store
-  list<string> get_dbs() throws  (MetaException o),
-
-  // /bin/cat the table in human readable format
-  list<string> cat(string db_name, string table_name,string partition, i32 high) throws  (MetaException o1, UnknownDBException o2, UnknownTableException o3),
 }
 
 // these should be needed only for backward compatibility with filestore

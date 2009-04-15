@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.MetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
@@ -778,15 +777,13 @@ public class Hive {
   }
 
   /**
-   * @return
-   * @throws HiveMetaException 
+   * Creates a metastore client. Currently it creates only JDBC based client as File based store
+   * support is removed
+   * @returns a Meta Store Client
+   * @throws HiveMetaException  if a working client can't be created
    */
   private IMetaStoreClient createMetaStoreClient() throws MetaException {
-    boolean useFileStore = conf.getBoolean("hive.metastore.usefilestore", false);
-    if(!useFileStore) {
       return new HiveMetaStoreClient(this.conf);
-    }
-    return new MetaStoreClient(this.conf);
   }
   
   /**

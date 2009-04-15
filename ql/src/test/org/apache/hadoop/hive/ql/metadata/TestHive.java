@@ -27,12 +27,12 @@ import junit.framework.TestCase;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.DB;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
+import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.thrift.test.Complex;
-import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.ThriftDeserializer;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
@@ -76,7 +76,7 @@ public class TestHive extends TestCase {
       // create a simple table and test create, drop, get
       String tableName = "table_for_testtable";
       try {
-        this.hm.dropTable(tableName);
+        this.hm.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
       } catch (HiveException e1) {
         e1.printStackTrace();
         assertTrue("Unable to drop table", false);
@@ -89,7 +89,7 @@ public class TestHive extends TestCase {
       fields.add(new FieldSchema("col3", Constants.DOUBLE_TYPE_NAME, "double -- thrift column"));
       tbl.setFields(fields);
 
-      tbl.setOutputFormatClass(IgnoreKeyTextOutputFormat.class);
+      tbl.setOutputFormatClass(HiveIgnoreKeyTextOutputFormat.class);
       tbl.setInputFormatClass(SequenceFileInputFormat.class);
 
       tbl.setProperty("comment", "this is a test table created as part junit tests");
@@ -131,13 +131,14 @@ public class TestHive extends TestCase {
 
       // get table
       Table ft = null;
+      Warehouse wh = new Warehouse(hiveConf);
       try {
-        ft = hm.getTable(tableName);
+        ft = hm.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
         ft.checkValidity();
         assertEquals("Table names didn't match for table: " + tableName, tbl.getName(), ft.getName());
         assertEquals("Table owners didn't match for table: " + tableName, tbl.getOwner(), ft.getOwner());
         assertEquals("Table retention didn't match for table: " + tableName, tbl.getRetention(), ft.getRetention());
-        assertEquals("Data location is not set correctly", DB.getDefaultTablePath(tableName, this.hiveConf).toString(), ft.getDataLocation().toString());
+        assertEquals("Data location is not set correctly", wh.getDefaultTablePath(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName).toString(), ft.getDataLocation().toString());
         // now that URI is set correctly, set the original table's uri and then compare the two tables
         tbl.setDataLocation(ft.getDataLocation());
         assertTrue("Tables doesn't match: " + tableName, ft.getTTable().equals(tbl.getTTable()));
@@ -149,8 +150,8 @@ public class TestHive extends TestCase {
       }
 
       try {
-        hm.dropTable(tableName, true, false);
-        Table ft2 = hm.getTable(tableName, false);
+        hm.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName, true, false);
+        Table ft2 = hm.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName, false);
         assertNull("Unable to drop table ", ft2);
       } catch (HiveException e) {
         assertTrue("Unable to drop table: " + tableName, false);
@@ -170,7 +171,7 @@ public class TestHive extends TestCase {
     String tableName = "table_for_test_thrifttable";
     try {
       try {
-        this.hm.dropTable(tableName);
+        this.hm.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
       } catch (HiveException e1) {
         System.err.println(StringUtils.stringifyException(e1));
         assertTrue("Unable to drop table", false);
@@ -188,15 +189,16 @@ public class TestHive extends TestCase {
         assertTrue("Unable to create table: " + tableName, false);
       }
       // get table
+      Warehouse wh = new Warehouse(hiveConf);
       Table ft = null;
       try {
-        ft = hm.getTable(tableName);
+        ft = hm.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
         assertNotNull("Unable to fetch table", ft);
         ft.checkValidity();
         assertEquals("Table names didn't match for table: " + tableName, tbl.getName(), ft.getName());
         assertEquals("Table owners didn't match for table: " + tableName, tbl.getOwner(), ft.getOwner());
         assertEquals("Table retention didn't match for table: " + tableName, tbl.getRetention(), ft.getRetention());
-        assertEquals("Data location is not set correctly", DB.getDefaultTablePath(tableName, this.hiveConf).toString(), ft.getDataLocation().toString());
+        assertEquals("Data location is not set correctly", wh.getDefaultTablePath(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName).toString(), ft.getDataLocation().toString());
         // now that URI is set correctly, set the original table's uri and then compare the two tables
         tbl.setDataLocation(ft.getDataLocation());
         assertTrue("Tables  doesn't match: " + tableName, ft.getTTable().equals(tbl.getTTable()));
@@ -206,7 +208,7 @@ public class TestHive extends TestCase {
         System.err.println(StringUtils.stringifyException(e));
         assertTrue("Unable to fetch table correctly: " + tableName, false);
       }
-      hm.dropTable(tableName);
+      hm.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
     } catch (Throwable e) {
       System.err.println(StringUtils.stringifyException(e));
       System.err.println("testThriftTable() failed");
@@ -271,7 +273,7 @@ public class TestHive extends TestCase {
     try {
       String tableName = "table_for_testpartition";
       try {
-        hm.dropTable(tableName);
+        hm.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
       } catch (HiveException e) {
         System.err.println(StringUtils.stringifyException(e));
         assertTrue("Unable to drop table: " + tableName, false);
@@ -284,14 +286,14 @@ public class TestHive extends TestCase {
       part_cols.add("ds");
       part_cols.add("hr");
       try {
-        hm.createTable(tableName, cols, part_cols, TextInputFormat.class, IgnoreKeyTextOutputFormat.class);
+        hm.createTable(tableName, cols, part_cols, TextInputFormat.class, HiveIgnoreKeyTextOutputFormat.class);
       } catch (HiveException e) {
         System.err.println(StringUtils.stringifyException(e));
         assertTrue("Unable to create table: " + tableName, false);
       }
       Table tbl = null;
       try {
-        tbl = hm.getTable(tableName);
+        tbl = hm.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
       } catch (HiveException e) {
         System.err.println(StringUtils.stringifyException(e));
         assertTrue("Unable to fetch table: " + tableName, false);
@@ -306,7 +308,7 @@ public class TestHive extends TestCase {
         System.err.println(StringUtils.stringifyException(e));
         assertTrue("Unable to create parition for table: " + tableName, false);
       }
-      hm.dropTable(tableName);
+      hm.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
     } catch (Throwable e) {
       System.err.println(StringUtils.stringifyException(e));
       System.err.println("testPartition() failed");
