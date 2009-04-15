@@ -142,6 +142,8 @@ Release 0.3.0 - Unreleased
     HIVE-372 Fix parse time Memory consumption for nested UDFs
     (Zheng Shao via namit)
 
+    HIVE-415. Fix long query parsing problems. (Namit Jain via zshao)
+
 Release 0.2.0 - Unreleased
 
   INCOMPATIBLE CHANGES

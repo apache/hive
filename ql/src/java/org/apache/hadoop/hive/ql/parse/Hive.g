@@ -511,7 +511,7 @@ queryOperator
 
 // select statement select ... from ... where ... group by ... order by ...
 queryStatementExpression
-    : queryStatement (queryOperator^ queryStatementExpression)*
+    : queryStatement (queryOperator^ queryStatement)*
     ;
 
 queryStatement
