@@ -1,2 +1,2 @@
-FAILED: Parse Error: line 1:32 cannot recognize input '.' in table column identifier
+FAILED: Parse Error: line 1:32 cannot recognize input '.' in expression specification
 

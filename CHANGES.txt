@@ -46,6 +46,9 @@ Trunk - unreleased changes
     HIVE-414. Add Hive Web Interface code to Eclipse config
     (Prasad Chakka)
 
+    HIVE-372. Fix UDF memory consumptions and bad error messages.
+    (Zheng Shao via namit)
+
 Release 0.3.0 - Unreleased
 
   INCOMPATIBLE CHANGES

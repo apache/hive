@@ -1,0 +1,44 @@
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim (TOK_FUNCTION trim '  abc  ')))))))))))) (TOK_WHERE (= (TOK_COLREF src key) 86))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src 
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(0) = UDFToDouble(86))
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: trim(trim(trim(trim(trim(trim(trim(trim(trim(trim('  abc  '))))))))))
+                        type: string
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 1
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: dest1
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+            replace: true
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: dest1
+
+
