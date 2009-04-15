@@ -12,6 +12,8 @@ Trunk - unreleased changes
     HIVE-360. Generalize the FileFormat Interface in Hive.
     (He Yongqiang via zshao)
 
+    HIVE-406. Build file improvements. (Joydeep Sen Sarma via zshao).
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).

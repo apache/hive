@@ -33,7 +33,6 @@
   <property name="build.dir" location="${build.dir.hive}/${ant.project.name}"/>
   <property name="build.classes" location="${build.dir}/classes"/>
   <property name="build.encoding" value="ISO-8859-1"/>
-  <property name="deploy.dir" location="${build.dir.hive}"/>
 
   <property name="hadoop.conf.dir" location="${hadoop.root}/conf"/>
 
@@ -100,24 +99,17 @@
     <antcall target="install-hadoopcore-default"/>
   </target>
 
-  <!-- I am not sure whether we need this target any more since that package does what is needed -->
-  <target name="deploy" depends="jar">
-    <echo message="hive: ${ant.project.name}"/>
-    <mkdir dir="${deploy.dir}"/>
-    <copy file="${build.dir}/hive_${ant.project.name}.jar"
-          todir="${deploy.dir}"/>
-  </target>
-
   <!-- the normal classpath -->
   <path id="common-classpath">
     <pathelement location="${hadoop.jar}"/>
     <pathelement location="${build.dir.hive}/classes"/>
-    <fileset dir="${build.dir.hive}" includes="hive_*.jar"/>
+    <fileset dir="${build.dir.hive}" includes="*/*.jar"/>
     <fileset dir="${hive.root}/lib" includes="*.jar"/>
     <fileset dir="${hive.root}/ql/lib" includes="*.jar"/>
   </path>
 
   <path id="classpath">
+    <pathelement location="${build.dir.hive}/service/classes"/>
     <pathelement location="${build.dir.hive}/common/classes"/>
     <pathelement location="${build.dir.hive}/serde/classes"/>
     <pathelement location="${build.dir.hive}/metastore/classes"/>
@@ -238,7 +230,7 @@
   </target>
 
   <target name="deploy-ant-tasks" depends="compile-ant-tasks">
-    <subant target="deploy">
+    <subant target="jar">
       <fileset dir=".." includes="ant/build.xml"/>
     </subant>
   </target>

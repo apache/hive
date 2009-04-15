@@ -18,7 +18,7 @@
 -->
 
 
-<project name="hive" default="deploy" >
+<project name="hive" default="jar" >
 
   <property name="hive.root" location="${basedir}"/>
   <property file="${hive.root}/build.properties"/>
@@ -58,6 +58,24 @@
     </sequential>
   </macrodef>
 
+  <macrodef name="iterate-all">
+    <attribute name="target"/>
+    <sequential>
+      <subant target="@{target}">
+        <filelist dir="." files="common/build.xml,serde/build.xml,metastore/build.xml,ql/build.xml,cli/build.xml,service/build.xml,jdbc/build.xml,hwi/build.xml,ant/build.xml"/>
+      </subant>
+    </sequential>
+  </macrodef>
+
+  <macrodef name="iterate">
+    <attribute name="target"/>
+    <sequential>
+      <subant target="@{target}">
+        <filelist dir="." files="common/build.xml,serde/build.xml,metastore/build.xml,ql/build.xml,cli/build.xml,service/build.xml,jdbc/build.xml,hwi/build.xml"/>
+      </subant>
+    </sequential>
+  </macrodef>
+
   <!-- the normal classpath -->
   <path id="common-classpath">
     <pathelement location="${hadoop.jar}"/>
@@ -80,92 +98,24 @@
     <path refid="common-classpath"/>
   </path>
 
-  <!-- ====================================================== -->
-  <!-- Initialize for running junit tests                     -->
-  <!-- ====================================================== -->
-
   <target name="init">
-    <subant target="init">
-      <fileset dir="." includes="*/build.xml"/>
-    </subant>
+    <iterate-all target="init"/>
   </target>
 
   <target name="test-init">
-    <subant target="test-init">
-      <fileset dir="." includes="*/build.xml"/>
-    </subant>
+    <iterate-all target="test-init"/>
   </target>
-
-
-  <!-- ====================================================== -->
-  <!-- Compile all the contrib jars.                          -->
-  <!-- ====================================================== -->
 
   <target name="compile">
-    <subant target="compile">
-      <fileset dir="." includes="common/build.xml"/>
-    </subant>
-    <subant target="compile">
-      <fileset dir="." includes="serde/build.xml"/>
-    </subant>
-    <subant target="compile">
-      <fileset dir="." includes="metastore/build.xml"/>
-    </subant>
-    <subant target="compile">
-      <fileset dir="." includes="ql/build.xml"/>
-    </subant>
-    <subant target="compile">
-      <fileset dir="." includes="cli/build.xml"/>
-    </subant>
-    <subant target="compile">
-      <fileset dir="." includes="service/build.xml"/>
-    </subant>
-    <subant target="compile">
-      <fileset dir="." includes="jdbc/build.xml"/>
-    </subant>
-    <subant target="compile">
-      <fileset dir="." includes="hwi/build.xml"/>
-    </subant>
+    <iterate target="compile"/>
   </target>
 
-  <!-- ====================================================== -->
-  <!-- Build & deploy all the contrib jars.                   -->
-  <!-- ====================================================== -->
-
-  <target name="deploy">
-    <subant target="deploy">
-      <fileset dir="." includes="common/build.xml"/>
-    </subant>
-    <subant target="deploy">
-      <fileset dir="." includes="serde/build.xml"/>
-    </subant>
-    <subant target="deploy">
-      <fileset dir="." includes="metastore/build.xml"/>
-    </subant>
-    <subant target="deploy">
-      <fileset dir="." includes="ql/build.xml"/>
-    </subant>
-    <subant target="deploy">
-      <fileset dir="." includes="cli/build.xml"/>
-    </subant>
-    <subant target="deploy">
-      <fileset dir="." includes="service/build.xml"/>
-    </subant>
-    <subant target="deploy">
-      <fileset dir="." includes="jdbc/build.xml"/>
-    </subant>
-    <subant target="deploy">
-      <fileset dir="." includes="hwi/build.xml"/>
-    </subant>
+  <target name="jar">
+    <iterate target="jar"/>
   </target>
 
-  <!-- ====================================================== -->
-  <!-- Test everything.                                       -->
-  <!-- ====================================================== -->
-  <target name="test" depends="clean-test,deploy">
-    <subant target="test">
-      <fileset dir="." includes="*/build.xml" excludes="ant/build.xml"/>
-    </subant>
+  <target name="test" depends="clean-test,jar">
+    <iterate target="test"/>
   </target>
 	
   <!-- create an html report from junit output files -->
@@ -179,19 +129,12 @@
   </target>
 
   <target name="clean-test">
-    <subant target="clean-test">
-      <fileset dir="." includes="*/build.xml" excludes="ant/build.xml"/>
-    </subant>
+    <iterate target="clean-test"/>
     <delete dir="${build.dir.hive}/test"/>
   </target>
 
-  <!-- ====================================================== -->
-  <!-- Clean everything.                                      -->
-  <!-- ====================================================== -->
   <target name="clean">
-    <subant target="clean">
-      <fileset dir="." includes="*/build.xml"/>
-    </subant>
+    <iterate-all target="clean"/>
     <delete dir="${target.dir}"/>
     <delete dir="${build.dir.hive}"/>
   </target>
@@ -199,13 +142,13 @@
   <!-- ====================================================== -->
   <!-- Generate some of the test data.                        -->
   <!-- ====================================================== -->
-  <target name="gen-testdata" depends="deploy">
+  <target name="gen-testdata" depends="jar">
     <subant target="gen-testdata">
       <fileset dir="." includes="serde/build.xml"/>
     </subant>
   </target>
 
-  <target name="package" depends="deploy">
+  <target name="package" depends="jar">
     <echo message="Deploying Hive jars to ${target.dir}"/>
     <mkdir dir="${target.dir}"/>
     <mkdir dir="${target.lib.dir}"/>

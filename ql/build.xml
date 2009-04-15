@@ -45,7 +45,7 @@
 
   <target name="gen-test" depends="deploy-ant-tasks, test-conditions, test-init" >
     <taskdef name="qtestgen" classname="org.apache.hadoop.hive.ant.QTestGenTask"
-             classpath="${build.dir.hive}/hive_anttasks.jar:${hive.root}/lib/velocity-1.5.jar:${hive.root}/lib/commons-collections-3.2.1.jar:${hive.root}/lib/commons-lang-2.4.jar"/>
+             classpath="${build.dir.hive}/anttasks/hive_anttasks.jar:${hive.root}/lib/velocity-1.5.jar:${hive.root}/lib/commons-collections-3.2.1.jar:${hive.root}/lib/commons-lang-2.4.jar"/>
     
     <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/ql/parse" 
               templatePath="${ql.test.template.dir}" template="TestParse.vm" 
@@ -102,7 +102,7 @@
   <target name="configure" depends="deploy-ant-tasks">
     <!-- If not set already make sure that they are defined but empty -->
     <taskdef name="getversionpref" classname="org.apache.hadoop.hive.ant.GetVersionPref"
-             classpath="${build.dir.hive}/hive_anttasks.jar"/>
+             classpath="${build.dir.hive}/anttasks/hive_anttasks.jar"/>
 
     <getversionpref property="hadoop.version.prefix" input="${hadoop.version}"/>
 
