@@ -1,136 +1,24 @@
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_LIMIT 1))) s1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 1 id)) (TOK_CLUSTERBY (TOK_COLREF id)))) (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_LIMIT 1))) s1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 2 id)) (TOK_CLUSTERBY (TOK_COLREF id)))) (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_LIMIT 1))) s2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 3 id)))) (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_LIMIT 1))) s2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 4 id))))))) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_UNION (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_LIMIT 1))) s1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 1 id)) (TOK_CLUSTERBY (TOK_COLREF id)))) (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_LIMIT 1))) s1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 2 id)) (TOK_CLUSTERBY (TOK_COLREF id))))) (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_LIMIT 1))) s2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 3 id))))) (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_LIMIT 1))) s2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 4 id))))) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-3 depends on stages: Stage-2, Stage-4, Stage-6, Stage-7
+  Stage-2 depends on stages: Stage-1, Stage-3, Stage-5, Stage-7
+  Stage-3 is a root stage
+  Stage-2 depends on stages: Stage-1, Stage-3, Stage-5, Stage-7
   Stage-4 is a root stage
-  Stage-3 depends on stages: Stage-2, Stage-4, Stage-6, Stage-7
-  Stage-5 is a root stage
-  Stage-6 depends on stages: Stage-5
-  Stage-3 depends on stages: Stage-2, Stage-4, Stage-6, Stage-7
-  Stage-7 is a root stage
-  Stage-3 depends on stages: Stage-2, Stage-4, Stage-6, Stage-7
+  Stage-5 depends on stages: Stage-4
+  Stage-2 depends on stages: Stage-1, Stage-3, Stage-5, Stage-7
+  Stage-6 is a root stage
+  Stage-7 depends on stages: Stage-6
+  Stage-2 depends on stages: Stage-1, Stage-3, Stage-5, Stage-7
   Stage-0 is a root stage
 
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        null-subquery2-subquery1:a-subquery2-subquery1:s1:src 
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              Limit
-                Reduce Output Operator
-                  sort order: 
-                  tag: -1
-                  value expressions:
-                        expr: 0
-                        type: string
-                        expr: 1
-                        type: string
-      Reduce Operator Tree:
-        Extract
-          Limit
-            Select Operator
-              expressions:
-                    expr: 2
-                    type: int
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    name: binary_table
-
-  Stage: Stage-2
-    Map Reduce
-      Alias -> Map Operator Tree:
-        /Users/char/Documents/workspace/Hive/build/ql/tmp/156638389/398032648.10002 
-          Reduce Output Operator
-            key expressions:
-                  expr: 0
-                  type: int
-            sort order: +
-            Map-reduce partition columns:
-                  expr: 0
-                  type: int
-            tag: -1
-            value expressions:
-                  expr: 0
-                  type: int
-      Reduce Operator Tree:
-        Extract
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                name: binary_table
-
-  Stage: Stage-3
-    Map Reduce
-      Alias -> Map Operator Tree:
-        /Users/char/Documents/workspace/Hive/build/ql/tmp/156638389/398032648.10004 
-          Union
-            Select Operator
-              expressions:
-                    expr: 0
-                    type: int
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        /Users/char/Documents/workspace/Hive/build/ql/tmp/156638389/398032648.10007 
-          Union
-            Select Operator
-              expressions:
-                    expr: 0
-                    type: int
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        /Users/char/Documents/workspace/Hive/build/ql/tmp/156638389/398032648.10006 
-          Union
-            Select Operator
-              expressions:
-                    expr: 0
-                    type: int
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        /Users/char/Documents/workspace/Hive/build/ql/tmp/156638389/398032648.10003 
-          Union
-            Select Operator
-              expressions:
-                    expr: 0
-                    type: int
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-
-  Stage: Stage-4
-    Map Reduce
-      Alias -> Map Operator Tree:
-        null-subquery2-subquery2-subquery2:a-subquery2-subquery2-subquery2:s2:src 
+        null-subquery2:a-subquery2:s2:src 
             Select Operator
               expressions:
                     expr: key
@@ -161,10 +49,96 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     name: binary_table
 
-  Stage: Stage-5
+  Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        null-subquery1:a-subquery1:s1:src 
+        /data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/150085610/141128926.10005 
+          Union
+            Select Operator
+              expressions:
+                    expr: 0
+                    type: int
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+        /data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/150085610/141128926.10003 
+          Union
+            Select Operator
+              expressions:
+                    expr: 0
+                    type: int
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+        /data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/150085610/141128926.10007 
+          Union
+            Select Operator
+              expressions:
+                    expr: 0
+                    type: int
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+        /data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/150085610/141128926.10002 
+          Union
+            Select Operator
+              expressions:
+                    expr: 0
+                    type: int
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+        null-subquery1-subquery2:a-subquery1-subquery2:s2:src 
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              Limit
+                Reduce Output Operator
+                  sort order: 
+                  tag: -1
+                  value expressions:
+                        expr: 0
+                        type: string
+                        expr: 1
+                        type: string
+      Reduce Operator Tree:
+        Extract
+          Limit
+            Select Operator
+              expressions:
+                    expr: 3
+                    type: int
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    name: binary_table
+
+  Stage: Stage-4
+    Map Reduce
+      Alias -> Map Operator Tree:
+        null-subquery1-subquery1-subquery1:a-subquery1-subquery1-subquery1:s1:src 
             Select Operator
               expressions:
                     expr: key
@@ -195,10 +169,10 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     name: binary_table
 
-  Stage: Stage-6
+  Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        /Users/char/Documents/workspace/Hive/build/ql/tmp/156638389/398032648.10005 
+        /data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/150085610/141128926.10004 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -221,10 +195,10 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 name: binary_table
 
-  Stage: Stage-7
+  Stage: Stage-6
     Map Reduce
       Alias -> Map Operator Tree:
-        null-subquery2-subquery2-subquery1:a-subquery2-subquery2-subquery1:s2:src 
+        null-subquery1-subquery1-subquery2:a-subquery1-subquery1-subquery2:s1:src 
             Select Operator
               expressions:
                     expr: key
@@ -245,7 +219,7 @@ STAGE PLANS:
           Limit
             Select Operator
               expressions:
-                    expr: 3
+                    expr: 2
                     type: int
               File Output Operator
                 compressed: false
@@ -254,6 +228,32 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     name: binary_table
+
+  Stage: Stage-7
+    Map Reduce
+      Alias -> Map Operator Tree:
+        /data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/150085610/141128926.10006 
+          Reduce Output Operator
+            key expressions:
+                  expr: 0
+                  type: int
+            sort order: +
+            Map-reduce partition columns:
+                  expr: 0
+                  type: int
+            tag: -1
+            value expressions:
+                  expr: 0
+                  type: int
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                name: binary_table
 
   Stage: Stage-0
     Fetch Operator
