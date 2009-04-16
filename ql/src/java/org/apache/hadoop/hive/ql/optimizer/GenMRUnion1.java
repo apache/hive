@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.ql.plan.fileSinkDesc;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
+import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMRUnionCtx;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcFactory;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext.UnionParseContext;
@@ -80,6 +81,8 @@ public class GenMRUnion1 implements NodeProcessor {
       return null;
     }
 
+    ctx.setCurrUnionOp(union);
+
     UnionParseContext uPrsCtx = uCtx.getUnionParseContext(union);
     assert uPrsCtx != null;
 
@@ -90,21 +93,26 @@ public class GenMRUnion1 implements NodeProcessor {
     if (uPrsCtx.getRootTask(pos) && (!ctx.getRootTasks().contains(currTask)))
       ctx.getRootTasks().add(currTask);
     
-    Task<? extends Serializable> uTask = ctx.getUnionTask(union);
+    GenMRUnionCtx uCtxTask = ctx.getUnionTask(union);
+    Task<? extends Serializable> uTask = null;
 
     pos = UnionProcFactory.getPositionParent(union, stack);
     Operator<? extends Serializable> parent = union.getParentOperators().get(pos);   
     mapredWork uPlan = null;
 
     // union is encountered for the first time
-    if (uTask == null) {
+    if (uCtxTask == null) {
+      uCtxTask = new GenMRUnionCtx();
       uPlan = GenMapRedUtils.getMapRedWork();
       uTask = TaskFactory.get(uPlan, parseCtx.getConf());
-      ctx.setUnionTask(union, uTask);
+      uCtxTask.setUTask(uTask);
+      ctx.setUnionTask(union, uCtxTask);
     }
-    else 
+    else {
+      uTask = uCtxTask.getUTask();
       uPlan = (mapredWork)uTask.getWork();
-    
+    }
+
     tableDesc tt_desc = 
       PlanUtils.getBinaryTableDesc(PlanUtils.getFieldSchemasFromRowSchema(parent.getSchema(), "temporarycol")); 
     
@@ -119,12 +127,11 @@ public class GenMRUnion1 implements NodeProcessor {
     ctx.setPathId(pathid);
     
     // Add the path to alias mapping
-    assert uPlan.getPathToAliases().get(taskTmpDir) == null;
-    uPlan.getPathToAliases().put(taskTmpDir, new ArrayList<String>());
-    uPlan.getPathToAliases().get(taskTmpDir).add(taskTmpDir);
-    uPlan.getPathToPartitionInfo().put(taskTmpDir, new partitionDesc(tt_desc, null));
-    uPlan.getAliasToWork().put(taskTmpDir, union);
-    GenMapRedUtils.setKeyAndValueDesc(uPlan, union);
+    uCtxTask.addTaskTmpDir(taskTmpDir);
+    uCtxTask.addTTDesc(tt_desc);
+
+    // The union task is empty. The files created for all the inputs are assembled in the
+    // union context and later used to initialize the union plan
     
     // Create a file sink operator for this file name
     Operator<? extends Serializable> fs_op =
@@ -144,7 +151,7 @@ public class GenMRUnion1 implements NodeProcessor {
 
     // If it is map-only task, add the files to be processed
     if (uPrsCtx.getMapOnlySubq(pos) && uPrsCtx.getRootTask(pos))
-      GenMapRedUtils.setTaskPlan(ctx.getCurrAliasId(), ctx.getCurrTopOp(), union, (mapredWork) currTask.getWork(), false, ctx);
+      GenMapRedUtils.setTaskPlan(ctx.getCurrAliasId(), ctx.getCurrTopOp(), (mapredWork) currTask.getWork(), false, ctx);
 
     ctx.setCurrTask(uTask);
     ctx.setCurrAliasId(null);
