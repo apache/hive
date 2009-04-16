@@ -147,6 +147,8 @@ Release 0.3.0 - Unreleased
     HIVE-423. Change launch templates to use hive_model.jar.
     (Raghotham Murthy via zshao)
 
+    HIVE-421. Fix union followed by multi-table insert. (Namit Jain via zshao).
+
 Release 0.2.0 - Unreleased
 
   INCOMPATIBLE CHANGES

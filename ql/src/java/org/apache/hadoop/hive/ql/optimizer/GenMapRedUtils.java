@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
+import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
@@ -50,6 +51,7 @@ import org.apache.hadoop.hive.ql.parse.*;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
+import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMRUnionCtx;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -103,6 +105,64 @@ public class GenMapRedUtils {
     opProcCtx.setCurrTask(currTask);
     opProcCtx.setCurrTopOp(currTopOp);
     opProcCtx.setCurrAliasId(currAliasId);
+  }
+
+  /**
+   * Initialize the current union plan.
+   * 
+   * @param op the reduce sink operator encountered
+   * @param opProcCtx processing context
+   */
+  public static void initUnionPlan(ReduceSinkOperator op, GenMRProcContext opProcCtx) throws SemanticException {
+    Operator<? extends Serializable> reducer = op.getChildOperators().get(0);
+    Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = opProcCtx.getMapCurrCtx();
+    GenMapRedCtx mapredCtx = mapCurrCtx.get(op.getParentOperators().get(0));
+    Task<? extends Serializable> currTask    = mapredCtx.getCurrTask();
+    mapredWork plan = (mapredWork) currTask.getWork();
+    HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = opProcCtx.getOpTaskMap();
+
+    opTaskMap.put(reducer, currTask);
+    plan.setReducer(reducer);
+    reduceSinkDesc desc = (reduceSinkDesc)op.getConf();
+    
+    plan.setNumReduceTasks(desc.getNumReducers());
+
+    List<Task<? extends Serializable>> rootTasks = opProcCtx.getRootTasks();
+
+    //    rootTasks.add(currTask);
+    if (reducer.getClass() == JoinOperator.class)
+      plan.setNeedsTagging(true);
+
+    initUnionPlan(opProcCtx, currTask); 
+  }
+
+  /*
+   * It is a idempotent function to add various intermediate files as the source for the
+   * union. The plan has already been created.
+   */
+  public static void initUnionPlan(GenMRProcContext opProcCtx, Task<? extends Serializable> currTask) {
+    mapredWork plan = (mapredWork) currTask.getWork();
+    UnionOperator currUnionOp = opProcCtx.getCurrUnionOp();
+    assert currUnionOp != null;
+    GenMRUnionCtx uCtx = opProcCtx.getUnionTask(currUnionOp);
+    assert uCtx != null;
+
+    List<String>    taskTmpDirLst = uCtx.getTaskTmpDir();
+    List<tableDesc> tt_descLst    = uCtx.getTTDesc(); 
+    assert !taskTmpDirLst.isEmpty() && !tt_descLst.isEmpty();
+    assert taskTmpDirLst.size() == tt_descLst.size();
+    int size = taskTmpDirLst.size();
+
+    for (int pos = 0; pos < size; pos++) {
+      String taskTmpDir = taskTmpDirLst.get(pos);
+      tableDesc tt_desc = tt_descLst.get(pos); 
+      if (plan.getPathToAliases().get(taskTmpDir) == null) {
+        plan.getPathToAliases().put(taskTmpDir, new ArrayList<String>());
+        plan.getPathToAliases().get(taskTmpDir).add(taskTmpDir);
+        plan.getPathToPartitionInfo().put(taskTmpDir, new partitionDesc(tt_desc, null));
+        plan.getAliasToWork().put(taskTmpDir, currUnionOp);
+      }
+    }
   }
 
   /**
@@ -218,7 +278,6 @@ public class GenMapRedUtils {
         }
       }
       plan.getAliasToWork().put(alias_id, topOp);
-      setKeyAndValueDesc(plan, topOp);
       LOG.debug("Created Map Work for " + alias_id);
     }
     else {
@@ -261,7 +320,7 @@ public class GenMapRedUtils {
     mapredWork work = new mapredWork();
     work.setPathToAliases(new LinkedHashMap<String, ArrayList<String>>());
     work.setPathToPartitionInfo(new LinkedHashMap<String, partitionDesc>());
-    work.setAliasToWork(new HashMap<String, Operator<? extends Serializable>>());
+    work.setAliasToWork(new LinkedHashMap<String, Operator<? extends Serializable>>());
     work.setTagToValueDesc(new ArrayList<tableDesc>());
     work.setReducer(null);
     return work;
@@ -361,7 +420,6 @@ public class GenMapRedUtils {
     cplan.getPathToAliases().get(taskTmpDir).add(streamDesc);
     cplan.getPathToPartitionInfo().put(taskTmpDir, new partitionDesc(tt_desc, null));
     cplan.getAliasToWork().put(streamDesc, op);
-    setKeyAndValueDesc(cplan, op);
 
     // TODO: Allocate work to remove the temporary files and make that
     // dependent on the redTask

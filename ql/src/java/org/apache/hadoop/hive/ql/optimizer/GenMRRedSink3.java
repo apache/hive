@@ -70,19 +70,34 @@ public class GenMRRedSink3 implements NodeProcessor {
     Task<? extends Serializable> currTask    = mapredCtx.getCurrTask();
     mapredWork plan = (mapredWork) currTask.getWork();
     HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = ctx.getOpTaskMap();
-    
-    opTaskMap.put(reducer, currTask);
-    plan.setReducer(reducer);
-    reduceSinkDesc desc = (reduceSinkDesc)op.getConf();
-    
-    plan.setNumReduceTasks(desc.getNumReducers());
-    
-    if (reducer.getClass() == JoinOperator.class)
-      plan.setNeedsTagging(true);
+    Task<? extends Serializable> opMapTask = opTaskMap.get(reducer);
     
     ctx.setCurrTask(currTask);
-    ctx.setCurrTopOp(null);
-    ctx.setCurrAliasId(null);
+
+    // If the plan for this reducer does not exist, initialize the plan
+    if (opMapTask == null) {
+      // When the reducer is encountered for the first time
+      if (plan.getReducer() == null)
+        GenMapRedUtils.initUnionPlan(op, ctx);
+      // When union is followed by a multi-table insert
+      else
+        GenMapRedUtils.splitPlan(op, ctx);
+    }
+    // The union is already initialized. However, the union is walked from another input
+    // initUnionPlan is idempotent
+    else if (plan.getReducer() == reducer)
+      GenMapRedUtils.initUnionPlan(op, ctx);
+    // There is a join after union. One of the branches of union has already been initialized.
+    // Initialize the current branch, and join with the original plan.
+    else {
+      GenMapRedUtils.initUnionPlan(ctx, currTask);
+      GenMapRedUtils.joinPlan(op, currTask, opMapTask, ctx);
+    }
+
+    mapCurrCtx.put(op, new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrTopOp(), ctx.getCurrAliasId()));
+    
+    // the union operator has been processed
+    ctx.setCurrUnionOp(null);
     return null;
   }
 }

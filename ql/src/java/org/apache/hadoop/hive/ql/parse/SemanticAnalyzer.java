@@ -63,6 +63,7 @@ import org.apache.hadoop.hive.ql.optimizer.GenMRTableScan1;
 import org.apache.hadoop.hive.ql.optimizer.GenMRFileSink1;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink1;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink2;
+import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
@@ -3372,6 +3373,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // For each task, go over all operators recursively
     for(Task<? extends Serializable> rootTask: rootTasks)
       breakTaskTree(rootTask);
+
+    // For each task, set the key descriptor for the reducer
+    for(Task<? extends Serializable> rootTask: rootTasks)
+      setKeyDescTaskTree(rootTask);
   }
 
   // loop over all the tasks recursviely
@@ -3403,6 +3408,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       breakOperatorTree(op);
   }
 
+  // loop over all the tasks recursviely
+  private void setKeyDescTaskTree(Task<? extends Serializable> task) { 
+    
+    if ((task instanceof MapRedTask) || (task instanceof ExecDriver)) {
+      mapredWork work = (mapredWork)task.getWork();
+      HashMap<String, Operator<? extends Serializable>> opMap = work.getAliasToWork();
+      if (!opMap.isEmpty())
+        for (Operator<? extends Serializable> op: opMap.values())
+          GenMapRedUtils.setKeyAndValueDesc(work, op);
+    }
+
+    if (task.getChildTasks() == null)
+      return;
+    
+    for (Task<? extends Serializable> childTask :  task.getChildTasks())
+      setKeyDescTaskTree(childTask);
+  }
 
   @SuppressWarnings("nls")
   public Phase1Ctx initPhase1Ctx() {

@@ -28,7 +28,7 @@
              <boolean>true</boolean> 
             </void> 
             <void property="sourceDir"> 
-             <string>/data/users/njain/hive1/hive/ql/../build/ql/tmp/19261714/504589071.10000.insclause-0</string> 
+             <string>/data/users/njain/hive_branch3/hive_br3/ql/../build/ql/tmp/682029393/463757025.10000.insclause-0</string> 
             </void> 
             <void property="targetDir"> 
              <string>../build/ql/test/data/warehouse/union.out</string> 
@@ -52,7 +52,7 @@
   <void property="work"> 
    <object class="org.apache.hadoop.hive.ql.plan.mapredWork"> 
     <void property="aliasToWork"> 
-     <object class="java.util.HashMap"> 
+     <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
        <string>null-subquery1:unioninput-subquery1:src</string> 
        <object id="TableScanOperator0" class="org.apache.hadoop.hive.ql.exec.TableScanOperator"> 
@@ -82,7 +82,7 @@
                                <int>1</int> 
                               </void> 
                               <void property="dirName"> 
-                               <string>/data/users/njain/hive1/hive/ql/../build/ql/tmp/19261714/504589071.10000.insclause-0</string> 
+                               <string>/data/users/njain/hive_branch3/hive_br3/ql/../build/ql/tmp/682029393/463757025.10000.insclause-0</string> 
                               </void> 
                               <void property="tableInfo"> 
                                <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -700,7 +700,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive1/hive/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/njain/hive_branch3/hive_br3/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>null-subquery1:unioninput-subquery1:src</string> 
@@ -715,7 +715,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive1/hive/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/njain/hive_branch3/hive_br3/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"/> 
@@ -771,7 +771,7 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/data/users/njain/hive1/hive/build/ql/test/data/warehouse/src</string> 
+             <string>file:/data/users/njain/hive_branch3/hive_br3/build/ql/test/data/warehouse/src</string> 
             </void> 
            </object> 
           </void> 

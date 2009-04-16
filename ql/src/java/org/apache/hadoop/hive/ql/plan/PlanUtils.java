@@ -49,7 +49,7 @@ public class PlanUtils {
     return new mapredWork("", 
                           new LinkedHashMap<String, ArrayList<String>> (),
                           new LinkedHashMap<String, partitionDesc> (),
-                          new HashMap<String, Operator<? extends Serializable>> (),
+                          new LinkedHashMap<String, Operator<? extends Serializable>> (),
                           new tableDesc(),
                           new ArrayList<tableDesc> (),
                           null,

@@ -24,6 +24,7 @@ import java.util.Stack;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.plan.mapredWork;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -51,6 +52,7 @@ public class GenMRFileSink1 implements NodeProcessor {
     Task<? extends Serializable> mvTask = ctx.getMvTask();
     Task<? extends Serializable> currTask = ctx.getCurrTask();
     Operator<? extends Serializable> currTopOp = ctx.getCurrTopOp();
+    UnionOperator currUnionOp = ctx.getCurrUnionOp();
     String currAliasId = ctx.getCurrAliasId();
     HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = ctx.getOpTaskMap();
     List<Operator<? extends Serializable>> seenOps = ctx.getSeenOps();
@@ -81,6 +83,11 @@ public class GenMRFileSink1 implements NodeProcessor {
           currTask.removeDependentTask(mvTask);
       }
     }
+    else if (currUnionOp != null) {
+      opTaskMap.put(null, currTask);
+      GenMapRedUtils.initUnionPlan(ctx, currTask);
+    }
+
     return null;
   }
 }

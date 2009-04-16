@@ -7,7 +7,7 @@
   <void property="work"> 
    <object class="org.apache.hadoop.hive.ql.plan.mapredWork"> 
     <void property="aliasToWork"> 
-     <object class="java.util.HashMap"> 
+     <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
        <string>src</string> 
        <object id="TableScanOperator0" class="org.apache.hadoop.hive.ql.exec.TableScanOperator"> 
@@ -604,7 +604,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive_commit/trunk/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/njain/hive_branch3/hive_br3/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src</string> 
@@ -616,7 +616,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive_commit/trunk/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/njain/hive_branch3/hive_br3/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"/> 
@@ -672,7 +672,7 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/data/users/njain/hive_commit/trunk/build/ql/test/data/warehouse/src</string> 
+             <string>file:/data/users/njain/hive_branch3/hive_br3/build/ql/test/data/warehouse/src</string> 
             </void> 
            </object> 
           </void> 
@@ -698,7 +698,7 @@
               <void property="conf"> 
                <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                 <void property="dirName"> 
-                 <string>/data/users/njain/hive_commit/trunk/ql/../build/ql/tmp/1429866985/222456329.10001.insclause-0</string> 
+                 <string>/data/users/njain/hive_branch3/hive_br3/ql/../build/ql/tmp/1506439038/147172800.10001.insclause-0</string> 
                 </void> 
                 <void property="tableInfo"> 
                  <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 

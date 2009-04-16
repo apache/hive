@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.plan.tableDesc;
 
 /**
  * Processor Context for creating map reduce task. Walk the tree in a DFS manner and process the nodes. Some state is 
@@ -79,8 +80,44 @@ public class GenMRProcContext implements NodeProcessorCtx {
     }
   }
 
+  public static class GenMRUnionCtx {
+    Task<? extends Serializable>         uTask;
+    List<String>                         taskTmpDir;
+    List<tableDesc>                      tt_desc; 
+
+    public GenMRUnionCtx() { 
+      uTask = null;
+      taskTmpDir = new ArrayList<String>();
+      tt_desc = new ArrayList<tableDesc>(); 
+    }
+
+    public Task<? extends Serializable> getUTask() { 
+      return uTask;
+    }
+
+    public void setUTask(Task<? extends Serializable> uTask) { 
+      this.uTask = uTask;
+    }
+    
+    public void addTaskTmpDir(String taskTmpDir) {
+      this.taskTmpDir.add(taskTmpDir);
+    }
+
+    public List<String> getTaskTmpDir() {
+      return taskTmpDir;
+    }
+
+    public void addTTDesc(tableDesc tt_desc) {
+      this.tt_desc.add(tt_desc);
+    }
+
+    public List<tableDesc> getTTDesc() {
+      return tt_desc;
+    }
+  }
+
   private HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap;
-  private HashMap<UnionOperator, Task<? extends Serializable>>   unionTaskMap;
+  private HashMap<UnionOperator, GenMRUnionCtx>  unionTaskMap;
   private List<Operator<? extends Serializable>> seenOps;
 
   private ParseContext                          parseCtx;
@@ -93,6 +130,7 @@ public class GenMRProcContext implements NodeProcessorCtx {
   private Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx; 
   private Task<? extends Serializable>         currTask;
   private Operator<? extends Serializable>     currTopOp;
+  private UnionOperator                        currUnionOp;
   private String                               currAliasId;
   private List<Operator<? extends Serializable>> rootOps;
 
@@ -126,10 +164,11 @@ public class GenMRProcContext implements NodeProcessorCtx {
     this.mapCurrCtx = mapCurrCtx;
     currTask        = null;
     currTopOp       = null;
+    currUnionOp     = null;
     currAliasId     = null;
     rootOps         = new ArrayList<Operator<? extends Serializable>>();
     rootOps.addAll(parseCtx.getTopOps().values());
-    unionTaskMap = new HashMap<UnionOperator, Task<? extends Serializable>>();
+    unionTaskMap = new HashMap<UnionOperator, GenMRUnionCtx>();
   }
 
   /**
@@ -300,6 +339,17 @@ public class GenMRProcContext implements NodeProcessorCtx {
     this.currTopOp = currTopOp;
   }      
 
+  public UnionOperator getCurrUnionOp() {
+    return currUnionOp;
+  }   
+   
+  /**
+   * @param currUnionOp current union operator
+   */
+  public void setCurrUnionOp(UnionOperator currUnionOp) {
+    this.currUnionOp = currUnionOp;
+  }      
+
   /**
    * @return current top alias
    */
@@ -314,11 +364,11 @@ public class GenMRProcContext implements NodeProcessorCtx {
     this.currAliasId = currAliasId;
   }
 
-  public Task<? extends Serializable> getUnionTask(UnionOperator op) {
+  public GenMRUnionCtx getUnionTask(UnionOperator op) {
     return unionTaskMap.get(op);
   }
 
-  public void setUnionTask(UnionOperator op, Task<? extends Serializable> uTask) {
+  public void setUnionTask(UnionOperator op, GenMRUnionCtx uTask) {
     unionTaskMap.put(op, uTask);
   }
 }
