@@ -55,6 +55,9 @@ Trunk - unreleased changes
 
     HIVE-421. Fix union followed by multi-table insert. (Namit Jain via zshao).
 
+    HIVE-423. Change launch templates to use hive_model.jar.
+    (Raghotham Murthy via zshao)
+
 Release 0.3.0 - Unreleased
 
   INCOMPATIBLE CHANGES
