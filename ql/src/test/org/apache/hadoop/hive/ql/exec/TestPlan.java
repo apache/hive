@@ -61,7 +61,7 @@ public class TestPlan extends TestCase {
       LinkedHashMap<String, partitionDesc> pt = new LinkedHashMap<String, partitionDesc> ();
       pt.put("/tmp/testfolder", partDesc);
 
-      HashMap<String, Operator<? extends Serializable>> ao = new HashMap<String, Operator<? extends Serializable>> ();
+      LinkedHashMap<String, Operator<? extends Serializable>> ao = new LinkedHashMap<String, Operator<? extends Serializable>> ();
       ao.put("a", op);
 
       mapredWork mrwork = new mapredWork();

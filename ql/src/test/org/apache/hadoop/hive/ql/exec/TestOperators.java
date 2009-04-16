@@ -262,7 +262,7 @@ public class TestOperators extends TestCase {
       cdop1.setConf(cd);
       CollectOperator cdop2 = (CollectOperator) OperatorFactory.get(collectDesc.class);
       cdop2.setConf(cd);
-      HashMap<String,Operator<? extends Serializable>> aliasToWork = new HashMap<String,Operator<? extends Serializable>> ();
+      LinkedHashMap<String,Operator<? extends Serializable>> aliasToWork = new LinkedHashMap<String,Operator<? extends Serializable>> ();
       aliasToWork.put("a", cdop1);
       aliasToWork.put("b", cdop2);
 

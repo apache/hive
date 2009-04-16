@@ -62,21 +62,6 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        src3 
-            Reduce Output Operator
-              key expressions:
-                    expr: UDFToDouble(key)
-                    type: double
-              sort order: +
-              Map-reduce partition columns:
-                    expr: UDFToDouble(key)
-                    type: double
-              tag: 1
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
         $INTNAME 
           Reduce Output Operator
             key expressions:
@@ -92,6 +77,21 @@ STAGE PLANS:
                   type: string
                   expr: 0
                   type: string
+        src3 
+            Reduce Output Operator
+              key expressions:
+                    expr: UDFToDouble(key)
+                    type: double
+              sort order: +
+              Map-reduce partition columns:
+                    expr: UDFToDouble(key)
+                    type: double
+              tag: 1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
       Reduce Operator Tree:
         Join Operator
           condition map:

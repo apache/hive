@@ -58,6 +58,9 @@ Trunk - unreleased changes
     HIVE-423. Change launch templates to use hive_model.jar.
     (Raghotham Murthy via zshao)
 
+    HIVE-426. Fix undeterministic query plan because of aliasToWork.
+    (Namit Jain via zshao)
+
 Release 0.3.0 - Unreleased
 
   INCOMPATIBLE CHANGES

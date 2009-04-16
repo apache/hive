@@ -7,9 +7,9 @@
   <void property="work"> 
    <object class="org.apache.hadoop.hive.ql.plan.mapredWork"> 
     <void property="aliasToWork"> 
-     <object class="java.util.HashMap"> 
+     <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>c:b:src2</string> 
+       <string>c:a:src1</string> 
        <object id="TableScanOperator0" class="org.apache.hadoop.hive.ql.exec.TableScanOperator"> 
         <void property="childOperators"> 
          <object class="java.util.ArrayList"> 
@@ -108,9 +108,6 @@
                       <void property="partitionCols"> 
                        <object idref="ArrayList0"/> 
                       </void> 
-                      <void property="tag"> 
-                       <int>1</int> 
-                      </void> 
                       <void property="valueCols"> 
                        <object class="java.util.ArrayList"> 
                         <void method="add"> 
@@ -149,7 +146,7 @@
                      </object> 
                     </void> 
                     <void property="id"> 
-                     <string>454</string> 
+                     <string>453</string> 
                     </void> 
                     <void property="parentOperators"> 
                      <object class="java.util.ArrayList"> 
@@ -231,7 +228,7 @@
                  </object> 
                 </void> 
                 <void property="id"> 
-                 <string>449</string> 
+                 <string>452</string> 
                 </void> 
                 <void property="parentOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -379,7 +376,7 @@
                              </object> 
                             </void> 
                             <void property="value"> 
-                             <int>15</int> 
+                             <int>10</int> 
                             </void> 
                            </object> 
                           </void> 
@@ -478,7 +475,7 @@
                              <object idref="PrimitiveTypeInfo2"/> 
                             </void> 
                             <void property="value"> 
-                             <int>25</int> 
+                             <int>20</int> 
                             </void> 
                            </object> 
                           </void> 
@@ -506,7 +503,7 @@
              </object> 
             </void> 
             <void property="id"> 
-             <string>448</string> 
+             <string>451</string> 
             </void> 
             <void property="parentOperators"> 
              <object class="java.util.ArrayList"> 
@@ -548,7 +545,7 @@
          </object> 
         </void> 
         <void property="id"> 
-         <string>447</string> 
+         <string>450</string> 
         </void> 
         <void property="schema"> 
          <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
@@ -560,7 +557,7 @@
        </object> 
       </void> 
       <void method="put"> 
-       <string>c:a:src1</string> 
+       <string>c:b:src2</string> 
        <object id="TableScanOperator1" class="org.apache.hadoop.hive.ql.exec.TableScanOperator"> 
         <void property="childOperators"> 
          <object class="java.util.ArrayList"> 
@@ -655,6 +652,9 @@
                       <void property="partitionCols"> 
                        <object idref="ArrayList1"/> 
                       </void> 
+                      <void property="tag"> 
+                       <int>1</int> 
+                      </void> 
                       <void property="valueCols"> 
                        <object class="java.util.ArrayList"> 
                         <void method="add"> 
@@ -693,7 +693,7 @@
                      </object> 
                     </void> 
                     <void property="id"> 
-                     <string>453</string> 
+                     <string>454</string> 
                     </void> 
                     <void property="parentOperators"> 
                      <object class="java.util.ArrayList"> 
@@ -775,7 +775,7 @@
                  </object> 
                 </void> 
                 <void property="id"> 
-                 <string>452</string> 
+                 <string>449</string> 
                 </void> 
                 <void property="parentOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -915,7 +915,7 @@
                              <object idref="PrimitiveTypeInfo2"/> 
                             </void> 
                             <void property="value"> 
-                             <int>10</int> 
+                             <int>15</int> 
                             </void> 
                            </object> 
                           </void> 
@@ -1010,7 +1010,7 @@
                              <object idref="PrimitiveTypeInfo2"/> 
                             </void> 
                             <void property="value"> 
-                             <int>20</int> 
+                             <int>25</int> 
                             </void> 
                            </object> 
                           </void> 
@@ -1038,7 +1038,7 @@
              </object> 
             </void> 
             <void property="id"> 
-             <string>451</string> 
+             <string>448</string> 
             </void> 
             <void property="parentOperators"> 
              <object class="java.util.ArrayList"> 
@@ -1080,7 +1080,7 @@
          </object> 
         </void> 
         <void property="id"> 
-         <string>450</string> 
+         <string>447</string> 
         </void> 
         <void property="schema"> 
          <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
@@ -1105,7 +1105,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/njain/hive2/hive/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>c:a:src1</string> 
@@ -1120,7 +1120,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/njain/hive2/hive/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"/> 
@@ -1176,7 +1176,7 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/src</string> 
+             <string>file:/data/users/njain/hive2/hive/build/ql/test/data/warehouse/src</string> 
             </void> 
            </object> 
           </void> 
@@ -1206,7 +1206,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>/data/users/njain/hive5/hive5/ql/../build/ql/tmp/356213041/1259913387.10001.insclause-0</string> 
+                     <string>/data/users/njain/hive2/hive/ql/../build/ql/tmp/530555031/40463203.10001.insclause-0</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -1614,10 +1614,10 @@
       <void property="parentOperators"> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
-         <object idref="ReduceSinkOperator1"/> 
+         <object idref="ReduceSinkOperator0"/> 
         </void> 
         <void method="add"> 
-         <object idref="ReduceSinkOperator0"/> 
+         <object idref="ReduceSinkOperator1"/> 
         </void> 
        </object> 
       </void> 
@@ -1694,10 +1694,10 @@
     <void property="tagToValueDesc"> 
      <object class="java.util.ArrayList"> 
       <void method="add"> 
-       <object idref="tableDesc2"/> 
+       <object idref="tableDesc0"/> 
       </void> 
       <void method="add"> 
-       <object idref="tableDesc0"/> 
+       <object idref="tableDesc2"/> 
       </void> 
      </object> 
     </void> 

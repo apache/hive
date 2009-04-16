@@ -324,7 +324,7 @@ public class GenMapRedUtils {
     mapredWork work = new mapredWork();
     work.setPathToAliases(new LinkedHashMap<String, ArrayList<String>>());
     work.setPathToPartitionInfo(new LinkedHashMap<String, partitionDesc>());
-    work.setAliasToWork(new HashMap<String, Operator<? extends Serializable>>());
+    work.setAliasToWork(new LinkedHashMap<String, Operator<? extends Serializable>>());
     work.setTagToValueDesc(new ArrayList<tableDesc>());
     work.setReducer(null);
     return work;
