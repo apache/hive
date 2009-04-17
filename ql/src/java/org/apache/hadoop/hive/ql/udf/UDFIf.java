@@ -100,7 +100,6 @@ public class UDFIf extends UDF {
         return null;
       }
       
-      System.err.println("Matched UDFIF: " + pClasses);
       Method udfMethod = null;
 
       for(Method m: Arrays.asList(udfClass.getMethods())) {
