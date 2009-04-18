@@ -67,6 +67,8 @@ Trunk - unreleased changes
     HIVE-404. Fix ordering in "SELECT * FROM t SORT BY col1 LIMIT 100" when
     query is a outer-most query.  (Namit Jain via zshao)
 
+    HIVE-416. Fix backtrack in Hive.g. (Namit Jain via zshao)
+
 Release 0.3.0 - Unreleased
 
   INCOMPATIBLE CHANGES
