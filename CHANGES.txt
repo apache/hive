@@ -23,6 +23,9 @@ Trunk - unreleased changes
 
     HIVE-266. Use Text instead of String (Zheng Shao via namit).
 
+    HIVE-427. Add missing config parameters in hive-default.xml.
+    (Namit Jain via zshao)
+
   BUG FIXES
 
     HIVE-381. Fix JDBC HiveResultSet's next function.

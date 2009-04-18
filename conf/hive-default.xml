@@ -65,6 +65,36 @@
 </property>
 
 <property>
+  <name>hive.groupby.skewindata</name>
+  <value>false</value>
+  <description>Whether there is skew in data to optimize group by queries</description>
+</property>
+
+<property>
+  <name>hive.groupby.mapaggr.checkinterval</name>
+  <value>100000</value>
+  <description>Number of rows after which size of the grouping keys/aggregation classes is performed</description>
+</property>
+
+<property>
+  <name>hive.mapred.local.mem</name>
+  <value>0</value>
+  <description>For local mode, memory of the mappers/reducers</description>
+</property>
+
+<property>
+  <name>hive.map.aggr.hash.percentmemory</name>
+  <value>0.5</value>
+  <description>Portion of total memory to be used by map-side grup aggregation hash table</description>
+</property>
+
+<property>
+  <name>hive.optimize.ppd</name>
+  <value>false</value>
+  <description>Whether to enable predicate pushdown</description>
+</property>
+
+<property>
   <name>hive.join.emit.interval</name>
   <value>1000</value>
   <description>How many rows in the right-most join operand Hive should buffer before emitting the join result. </description>
