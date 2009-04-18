@@ -65,7 +65,7 @@ Trunk - unreleased changes
     (Namit Jain via zshao)
 
     HIVE-404. Fix ordering in "SELECT * FROM t SORT BY col1 LIMIT 100" when
-    query is not a outer-most query.  (Namit Jain via zshao)
+    query is a outer-most query.  (Namit Jain via zshao)
 
 Release 0.3.0 - Unreleased
 
