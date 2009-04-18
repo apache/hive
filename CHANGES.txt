@@ -36,6 +36,9 @@ Release 0.3.0 - Unreleased
     HIVE-132. Show table and describe results to be read via FetchTask.
     (Raghotham Murthy via zshao)
 
+    HIVE-427. Add missing config parameters in hive-default.xml.
+    (Namit Jain via zshao)
+
   OPTIMIZATIONS
 
   BUG FIXES
