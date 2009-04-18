@@ -2351,13 +2351,28 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Add the limit operator to get the value fields
     Operator curr = genLimitPlan(dest, qb, input, limit);
 
-    // If it is a outer most query, the exact limit is applied by the fetch task
-    if (isOuterQuery)
+    // If it is a outer most query and no sorting is specified, exact limit is applied by the fetch task
+    if (isOuterQuery && !sortRequired(dest, qb))
       return curr;
 
     // Create a reduceSink operator followed by another limit
     curr = genReduceSinkPlan(dest, qb, curr, 1);
     return genLimitPlan(dest, qb, curr, limit);
+  }
+
+  /*
+   * Is sorting reuired ?
+   * If there are no cluster by/sort by keys, then an additional map-reduce job is not needed.
+   * Else, sort the output by the relevant key (via another map-reduce job).
+   */
+  private boolean sortRequired(String dest, QB qb) {
+    if (qb.getParseInfo().getClusterByForClause(dest) != null)
+      return true;
+
+    if (qb.getParseInfo().getSortByForClause(dest) != null)
+      return true;
+    
+    return false;
   }
 
   @SuppressWarnings("nls")
