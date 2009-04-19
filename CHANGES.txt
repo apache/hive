@@ -25,10 +25,10 @@ Release 0.3.0 - Unreleased
     HIVE-393. Remove unnecessary checks for file type.
     (Zheng Shao via namit)
 
-    HIVE-82 Support for building tarballs and javadocs
+    HIVE-82. Support for building tarballs and javadocs
     (Ashish Thusoo via rmurthy)
 
-    HIVE-407 Permission issues in test scripts in tarballs.
+    HIVE-407. Permission issues in test scripts in tarballs.
     (Ashish Thusoo via namit)
 
   IMPROVEMENTS
@@ -151,6 +151,9 @@ Release 0.3.0 - Unreleased
     (Raghotham Murthy via zshao)
 
     HIVE-421. Fix union followed by multi-table insert. (Namit Jain via zshao).
+
+    HIVE-404. Fix ordering in "SELECT * FROM t SORT BY col1 LIMIT 100" when
+    query is a outer-most query.  (Namit Jain via zshao)
 
 Release 0.2.0 - Unreleased
 
