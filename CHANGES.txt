@@ -155,6 +155,9 @@ Release 0.3.0 - Unreleased
     HIVE-404. Fix ordering in "SELECT * FROM t SORT BY col1 LIMIT 100" when
     query is a outer-most query.  (Namit Jain via zshao)
 
+    HIVE-432. Fix "SORT BY" using only one reducer.
+    (Zheng Shao via njain)
+
 Release 0.2.0 - Unreleased
 
   INCOMPATIBLE CHANGES
