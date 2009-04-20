@@ -69,6 +69,9 @@ Trunk - unreleased changes
 
     HIVE-416. Fix backtrack in Hive.g. (Namit Jain via zshao)
 
+    HIVE-432. Fix "SORT BY" using only one reducer.
+    (Zheng Shao via njain)
+
 Release 0.3.0 - Unreleased
 
   INCOMPATIBLE CHANGES

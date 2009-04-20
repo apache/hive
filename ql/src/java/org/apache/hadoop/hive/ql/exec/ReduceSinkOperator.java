@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Random;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.io.HiveKey;
@@ -122,6 +123,8 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
   transient Object[] cachedKeys;
   transient Object[] cachedValues;
   
+  transient Random random;
+  
   public void process(Object row, ObjectInspector rowInspector) throws HiveException {
     try {
       // Evaluate the keys
@@ -168,10 +171,21 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
       }
       // Set the HashCode
       int keyHashCode = 0;
-      for(ExprNodeEvaluator e: partitionEval) {
-        e.evaluate(row, rowInspector, tempInspectableObject);
-        keyHashCode = keyHashCode * 31 
-          + (tempInspectableObject.o == null ? 0 : tempInspectableObject.o.hashCode());
+      if (partitionEval.length == 0) {
+        // If no partition cols, just distribute the data uniformly to provide better
+        // load balance.  If the requirement is to have a single reducer, we should set
+        // the number of reducers to 1.
+        // Use a constant seed to make the code deterministic.
+        if (random == null) {
+          random = new Random(12345);
+        }
+        keyHashCode = random.nextInt();
+      } else {
+        for(ExprNodeEvaluator e: partitionEval) {
+          e.evaluate(row, rowInspector, tempInspectableObject);
+          keyHashCode = keyHashCode * 31 
+            + (tempInspectableObject.o == null ? 0 : tempInspectableObject.o.hashCode());
+        }
       }
       keyWritable.setHashCode(keyHashCode);
       
