@@ -156,7 +156,10 @@ Release 0.3.0 - Unreleased
     query is a outer-most query.  (Namit Jain via zshao)
 
     HIVE-432. Fix "SORT BY" using only one reducer.
-    (Zheng Shao via njain)
+    (Zheng Shao via namit)
+
+    HIVE-435. Fix Null pointer exception if password is null.
+    (Prasad Chakka via namit)
 
 Release 0.2.0 - Unreleased
 
