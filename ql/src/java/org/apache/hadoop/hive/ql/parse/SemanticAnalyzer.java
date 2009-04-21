@@ -470,6 +470,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (qbp.getClusterByForClause(ctx_1.dest) != null) {
           throw new SemanticException(ErrorMsg.CLUSTERBY_DISTRIBUTEBY_CONFLICT.getMsg(ast));
         }
+        else if (qbp.getOrderByForClause(ctx_1.dest) != null) {
+          throw new SemanticException(ErrorMsg.ORDERBY_DISTRIBUTEBY_CONFLICT.getMsg(ast));
+        }
       }
         break;
 
@@ -479,6 +482,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         qbp.setSortByExprForClause(ctx_1.dest, ast);
         if (qbp.getClusterByForClause(ctx_1.dest) != null) {
           throw new SemanticException(ErrorMsg.CLUSTERBY_SORTBY_CONFLICT.getMsg(ast));
+        }
+        else if (qbp.getOrderByForClause(ctx_1.dest) != null) {
+          throw new SemanticException(ErrorMsg.ORDERBY_SORTBY_CONFLICT.getMsg(ast));
+        }
+        
+      }
+        break;
+
+      case HiveParser.TOK_ORDERBY: {
+        // Get the order by aliases - these are aliased to the entries in the
+        // select list
+        qbp.setOrderByExprForClause(ctx_1.dest, ast);
+        if (qbp.getClusterByForClause(ctx_1.dest) != null) {
+          throw new SemanticException(ErrorMsg.CLUSTERBY_ORDERBY_CONFLICT.getMsg(ast));
         }
       }
         break;
@@ -2344,35 +2361,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("nls")
-  private Operator genLimitMapRedPlan(String dest, QB qb, Operator input, int limit, boolean isOuterQuery) throws SemanticException {
+  private Operator genLimitMapRedPlan(String dest, QB qb, Operator input, int limit, boolean extraMRStep) 
+    throws SemanticException {
     // A map-only job can be optimized - instead of converting it to a map-reduce job, we can have another map
     // job to do the same to avoid the cost of sorting in the map-reduce phase. A better approach would be to
     // write into a local file and then have a map-only job.
     // Add the limit operator to get the value fields
     Operator curr = genLimitPlan(dest, qb, input, limit);
 
-    // If it is a outer most query and no sorting is specified, exact limit is applied by the fetch task
-    if (isOuterQuery && !sortRequired(dest, qb))
+    // the client requested that an extra map-reduce step be performed
+    if (!extraMRStep)
       return curr;
 
     // Create a reduceSink operator followed by another limit
     curr = genReduceSinkPlan(dest, qb, curr, 1);
     return genLimitPlan(dest, qb, curr, limit);
-  }
-
-  /*
-   * Is sorting reuired ?
-   * If there are no cluster by/sort by keys, then an additional map-reduce job is not needed.
-   * Else, sort the output by the relevant key (via another map-reduce job).
-   */
-  private boolean sortRequired(String dest, QB qb) {
-    if (qb.getParseInfo().getClusterByForClause(dest) != null)
-      return true;
-
-    if (qb.getParseInfo().getSortByForClause(dest) != null)
-      return true;
-    
-    return false;
   }
 
   @SuppressWarnings("nls")
@@ -2399,6 +2402,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ASTNode sortExprs = qb.getParseInfo().getClusterByForClause(dest);
     if (sortExprs == null) {
       sortExprs = qb.getParseInfo().getSortByForClause(dest);
+    }
+
+    if (sortExprs == null) {
+      sortExprs = qb.getParseInfo().getOrderByForClause(dest);
+      if (sortExprs != null) {
+        assert numReducers == 1;
+        // in strict mode, in the presence of order by, limit must be specified
+        Integer limit = qb.getParseInfo().getDestLimit(dest);
+        if (conf.getVar(HiveConf.ConfVars.HIVEPARTITIONPRUNER).equalsIgnoreCase("strict") && limit == null)
+          throw new SemanticException(ErrorMsg.NO_LIMIT_WITH_ORDERBY.getMsg(sortExprs));
+      }
     }
 
     ArrayList<exprNodeDesc> sortCols = new ArrayList<exprNodeDesc>();
@@ -2946,19 +2960,35 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       if (qbp.getClusterByForClause(dest) != null
           || qbp.getDistributeByForClause(dest) != null
+          || qbp.getOrderByForClause(dest) != null
           || qbp.getSortByForClause(dest) != null) {
-        curr = genReduceSinkPlan(dest, qb, curr, -1);
+
+        int numReducers = -1;
+
+        // Use only 1 reducer if order by is present
+        if (qbp.getOrderByForClause(dest) != null)
+          numReducers = 1;
+
+        curr = genReduceSinkPlan(dest, qb, curr, numReducers);
       }
 
       if (qbp.getIsSubQ()) {
         if (limit != null) {
-          curr = genLimitMapRedPlan(dest, qb, curr, limit.intValue(), false);
+          // In case of order by, only 1 reducer is used, so no need of another shuffle
+          curr = genLimitMapRedPlan(dest, qb, curr, limit.intValue(), qbp.getOrderByForClause(dest) != null ? false : true);
         }
       } else {
         curr = genConversionOps(dest, qb, curr);
         // exact limit can be taken care of by the fetch operator
         if (limit != null) {
-          curr = genLimitMapRedPlan(dest, qb, curr, limit.intValue(), qb.getIsQuery());
+          boolean extraMRStep = true;
+
+          if (qb.getIsQuery() &&
+              qbp.getClusterByForClause(dest) == null &&
+              qbp.getSortByForClause(dest) == null)
+            extraMRStep = false;
+
+          curr = genLimitMapRedPlan(dest, qb, curr, limit.intValue(), extraMRStep);
           qb.getParseInfo().setOuterQueryLimit(limit.intValue());
         }
         curr = genFileSinkPlan(dest, qb, curr);
@@ -3353,6 +3383,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (qb.isSelectStarQuery()
         && qbParseInfo.getDestToClusterBy().isEmpty()
         && qbParseInfo.getDestToDistributeBy().isEmpty()
+        && qbParseInfo.getDestToOrderBy().isEmpty()
         && qbParseInfo.getDestToSortBy().isEmpty()) {
       Iterator<Map.Entry<String, Table>> iter = qb.getMetaData().getAliasToTable().entrySet().iterator();
       Table tab = ((Map.Entry<String, Table>)iter.next()).getValue();

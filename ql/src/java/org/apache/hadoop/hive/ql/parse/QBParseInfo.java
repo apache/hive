@@ -53,7 +53,11 @@ public class QBParseInfo {
    * SortBy controls the reduce keys, which affects the order of rows 
    * that the reducer receives. 
    */
+
   private HashMap<String, ASTNode> destToSortby;
+
+  /* Order by clause */
+  private HashMap<String, ASTNode> destToOrderby;
   private HashMap<String, Integer>    destToLimit;
   private int outerQueryLimit;
 
@@ -74,6 +78,7 @@ public class QBParseInfo {
     this.destToClusterby = new HashMap<String, ASTNode>();
     this.destToDistributeby = new HashMap<String, ASTNode>();
     this.destToSortby = new HashMap<String, ASTNode>();
+    this.destToOrderby = new HashMap<String, ASTNode>();
     this.destToLimit = new HashMap<String, Integer>();
     
     this.destToAggregationExprs = new LinkedHashMap<String, LinkedHashMap<String, ASTNode> >();
@@ -143,6 +148,10 @@ public class QBParseInfo {
     this.destToSortby.put(clause, ast);
   }
 
+  public void setOrderByExprForClause(String clause, ASTNode ast) {
+    this.destToOrderby.put(clause, ast);
+  }
+
   public void setSrcForAlias(String alias, ASTNode ast) {
     this.aliasToSrc.put(alias.toLowerCase(), ast);
   }
@@ -210,10 +219,17 @@ public class QBParseInfo {
     return this.destToSortby.get(clause);
   }
 
+  public ASTNode getOrderByForClause(String clause) {
+    return this.destToOrderby.get(clause);
+  }
+
   public HashMap<String, ASTNode> getDestToSortBy() {
     return destToSortby;
   }
   
+  public HashMap<String, ASTNode> getDestToOrderBy() {
+    return destToOrderby;
+  }
   
   public ASTNode getSrcForAlias(String alias) {
     return this.aliasToSrc.get(alias.toLowerCase());
