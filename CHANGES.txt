@@ -163,6 +163,9 @@ Release 0.3.0 - Unreleased
     HIVE-435. Fix Null pointer exception if password is null.
     (Prasad Chakka via namit)
 
+    HIVE-416. Fix backtrack in Hive.g
+    (Zheng Shao via namit)
+
 Release 0.2.0 - Unreleased
 
   INCOMPATIBLE CHANGES

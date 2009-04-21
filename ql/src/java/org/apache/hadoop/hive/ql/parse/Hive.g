@@ -4,7 +4,7 @@ options
 {
 output=AST;
 ASTLabelType=CommonTree;
-backtrack=true;
+backtrack=false;
 k=3;
 }
  
@@ -208,33 +208,39 @@ dropStatement
 alterStatement
 @init { msgs.push("alter statement"); }
 @after { msgs.pop(); }
-    : alterStatementRename
-    | alterStatementAddCol
-    | alterStatementDropPartitions
-    | alterStatementAddPartitions
-    | alterStatementProperties
-    | alterStatementSerdeProperties
+    : KW_ALTER! KW_TABLE! alterStatementSuffix
     ;
 
-alterStatementRename
+alterStatementSuffix
+@init { msgs.push("alter statement"); }
+@after { msgs.pop(); }
+    : alterStatementSuffixRename
+    | alterStatementSuffixAddCol
+    | alterStatementSuffixDropPartitions
+    | alterStatementSuffixAddPartitions
+    | alterStatementSuffixProperties
+    | alterStatementSuffixSerdeProperties
+    ;
+
+alterStatementSuffixRename
 @init { msgs.push("rename statement"); }
 @after { msgs.pop(); }
-    : KW_ALTER KW_TABLE oldName=Identifier KW_RENAME KW_TO newName=Identifier 
+    : oldName=Identifier KW_RENAME KW_TO newName=Identifier 
     -> ^(TOK_ALTERTABLE_RENAME $oldName $newName)
     ;
 
-alterStatementAddCol
+alterStatementSuffixAddCol
 @init { msgs.push("add column statement"); }
 @after { msgs.pop(); }
-    : KW_ALTER KW_TABLE Identifier (add=KW_ADD | replace=KW_REPLACE) KW_COLUMNS LPAREN columnNameTypeList RPAREN
+    : Identifier (add=KW_ADD | replace=KW_REPLACE) KW_COLUMNS LPAREN columnNameTypeList RPAREN
     -> {$add != null}? ^(TOK_ALTERTABLE_ADDCOLS Identifier columnNameTypeList)
     ->                 ^(TOK_ALTERTABLE_REPLACECOLS Identifier columnNameTypeList)
     ;
 
-alterStatementAddPartitions
+alterStatementSuffixAddPartitions
 @init { msgs.push("add partition statement"); }
 @after { msgs.pop(); }
-    : KW_ALTER KW_TABLE Identifier KW_ADD partitionSpec partitionLocation? (partitionSpec partitionLocation?)*
+    : Identifier KW_ADD partitionSpec partitionLocation? (partitionSpec partitionLocation?)*
     -> ^(TOK_ALTERTABLE_ADDPARTS Identifier (partitionSpec partitionLocation?)+)
     ;
 
@@ -245,26 +251,26 @@ partitionLocation
       KW_LOCATION locn=StringLiteral -> ^(TOK_PARTITIONLOCATION $locn)
     ;
 
-alterStatementDropPartitions
+alterStatementSuffixDropPartitions
 @init { msgs.push("drop partition statement"); }
 @after { msgs.pop(); }
-    : KW_ALTER KW_TABLE Identifier KW_DROP partitionSpec (COMMA partitionSpec)*
+    : Identifier KW_DROP partitionSpec (COMMA partitionSpec)*
     -> ^(TOK_ALTERTABLE_DROPPARTS Identifier partitionSpec+)
     ;
 
-alterStatementProperties
+alterStatementSuffixProperties
 @init { msgs.push("alter properties statement"); }
 @after { msgs.pop(); }
-    : KW_ALTER KW_TABLE name=Identifier KW_SET KW_PROPERTIES tableProperties
+    : name=Identifier KW_SET KW_PROPERTIES tableProperties
     -> ^(TOK_ALTERTABLE_PROPERTIES $name tableProperties)
     ;
 
-alterStatementSerdeProperties
+alterStatementSuffixSerdeProperties
 @init { msgs.push("alter serdes statement"); }
 @after { msgs.pop(); }
-    : KW_ALTER KW_TABLE name=Identifier KW_SET KW_SERDE serde=StringLiteral (KW_WITH KW_SERDEPROPERTIES tableProperties)?
+    : name=Identifier KW_SET KW_SERDE serde=StringLiteral (KW_WITH KW_SERDEPROPERTIES tableProperties)?
     -> ^(TOK_ALTERTABLE_SERIALIZER $name $serde tableProperties?)
-    | KW_ALTER KW_TABLE name=Identifier KW_SET KW_SERDEPROPERTIES tableProperties
+    | name=Identifier KW_SET KW_SERDEPROPERTIES tableProperties
     -> ^(TOK_ALTERTABLE_SERDEPROPERTIES $name tableProperties)
     ;
 
@@ -609,11 +615,7 @@ selectClause
     selectList -> {$dist == null}? ^(TOK_SELECT selectList)
                ->                  ^(TOK_SELECTDI selectList)
     |
-    KW_SELECT KW_TRANSFORM trfmClause -> ^(TOK_SELECT ^(TOK_SELEXPR trfmClause) )
-    |
-    KW_MAP trfmClause -> ^(TOK_SELECT ^(TOK_SELEXPR trfmClause) )
-    |
-    KW_REDUCE trfmClause -> ^(TOK_SELECT ^(TOK_SELEXPR trfmClause) )
+    trfmClause  ->^(TOK_SELECT ^(TOK_SELEXPR trfmClause) )
     ;
 
 selectList
@@ -634,7 +636,9 @@ trfmClause
 @init { msgs.push("transform clause"); }
 @after { msgs.pop(); }
     :
-    ( LPAREN selectExpressionList RPAREN | selectExpressionList )
+    ( KW_SELECT KW_TRANSFORM LPAREN selectExpressionList RPAREN
+      | KW_MAP    selectExpressionList
+      | KW_REDUCE selectExpressionList )
     KW_USING StringLiteral
     (KW_AS (LPAREN aliasList RPAREN | aliasList) )?
     -> ^(TOK_TRANSFORM selectExpressionList StringLiteral aliasList?)
@@ -691,16 +695,15 @@ fromClause
 @init { msgs.push("from clause"); }
 @after { msgs.pop(); }
     :
-      KW_FROM joinSource -> ^(TOK_FROM joinSource)
-    | KW_FROM fromSource -> ^(TOK_FROM fromSource)
+    KW_FROM joinSource -> ^(TOK_FROM joinSource)
     ;
 
-joinSource    
+joinSource
 @init { msgs.push("join source"); }
 @after { msgs.pop(); }
     :
-    fromSource 
-    ( joinToken^ fromSource (KW_ON! expression)? )+
+    fromSource
+    ( joinToken^ fromSource (KW_ON! expression)? )*
     ;
 
 joinToken
@@ -829,11 +832,9 @@ function
 @after { msgs.pop(); }
     :
     functionName
-    LPAREN (
-          ((dist=KW_DISTINCT)?
-           expression
-           (COMMA expression)*)?
-        )?
+    LPAREN
+      (dist=KW_DISTINCT)?
+      (expression (COMMA expression)*)?
     RPAREN -> {$dist == null}? ^(TOK_FUNCTION functionName (expression+)?)
                           -> ^(TOK_FUNCTIONDI functionName (expression+)?)
 
@@ -903,11 +904,21 @@ precedenceUnaryOperator
     PLUS | MINUS | TILDE
     ;
 
-precedenceUnaryExpression
+nullCondition
     :
-      precedenceFieldExpression KW_IS KW_NULL -> ^(TOK_FUNCTION TOK_ISNULL precedenceFieldExpression)
-    | precedenceFieldExpression KW_IS KW_NOT KW_NULL -> ^(TOK_FUNCTION TOK_ISNOTNULL precedenceFieldExpression)
-    | (precedenceUnaryOperator^)* precedenceFieldExpression
+    KW_NULL -> ^(TOK_ISNULL)
+    | KW_NOT KW_NULL -> ^(TOK_ISNOTNULL)
+    ;
+
+precedenceUnaryPrefixExpression
+    :
+    (precedenceUnaryOperator^)* precedenceFieldExpression
+    ;
+
+precedenceUnarySuffixExpression
+    : precedenceUnaryPrefixExpression (a=KW_IS nullCondition)?
+    -> {$a != null}? ^(TOK_FUNCTION nullCondition precedenceUnaryPrefixExpression)
+    -> precedenceUnaryPrefixExpression
     ;
 
 
@@ -918,7 +929,7 @@ precedenceBitwiseXorOperator
 
 precedenceBitwiseXorExpression
     :
-    precedenceUnaryExpression (precedenceBitwiseXorOperator^ precedenceUnaryExpression)*
+    precedenceUnarySuffixExpression (precedenceBitwiseXorOperator^ precedenceUnarySuffixExpression)*
     ;
 
 	
