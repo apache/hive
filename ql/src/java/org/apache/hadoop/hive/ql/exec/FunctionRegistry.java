@@ -79,6 +79,7 @@ public class FunctionRegistry {
     registerUDF("trim", UDFTrim.class, OperatorType.PREFIX, false);
     registerUDF("ltrim", UDFLTrim.class, OperatorType.PREFIX, false);
     registerUDF("rtrim", UDFRTrim.class, OperatorType.PREFIX, false);
+    registerUDF("length", UDFLength.class, OperatorType.PREFIX, false);
 
     registerUDF("like", UDFLike.class, OperatorType.INFIX, true);
     registerUDF("rlike", UDFRegExp.class, OperatorType.INFIX, true);

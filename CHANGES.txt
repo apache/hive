@@ -9,6 +9,8 @@ Trunk - unreleased changes
 
   NEW FEATURES
 
+    HIVE-354. UDF for length of a string. (Neil Conway via namit).
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 
