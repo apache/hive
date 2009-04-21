@@ -11,6 +11,8 @@ Trunk - unreleased changes
 
     HIVE-354. UDF for length of a string. (Neil Conway via namit).
 
+    HIVE-61. Implement "ORDER BY". (Namit Jain via zshao)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 
@@ -76,8 +78,6 @@ Trunk - unreleased changes
 
     HIVE-435. Fix Null pointer exception if password is null.
     (Prasad Chakka via namit)
-
-    HIVE-61. Implement Group-By. (Namit Jain via zshao)
 
 Release 0.3.0 - Unreleased
 
