@@ -13,6 +13,8 @@ Trunk - unreleased changes
 
     HIVE-61. Implement "ORDER BY". (Namit Jain via zshao)
 
+    HIVE-402. Implement UDF regexp. (Raghu Murthy via namit)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 

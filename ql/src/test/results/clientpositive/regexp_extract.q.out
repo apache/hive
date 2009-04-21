@@ -1,0 +1,358 @@
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (TOK_COLREF src key) (TOK_COLREF src value) (+ 1 2) (+ 3 4)) '/bin/cat'))) (TOK_CLUSTERBY (TOK_COLREF key)))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_COLREF tmap key)) (TOK_SELEXPR (TOK_FUNCTION regexp_extract (TOK_COLREF tmap value) 'val_(\\d+\\t\\d+)' 1))) (TOK_WHERE (< (TOK_COLREF tmap key) 100))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        tmap:src 
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+                    expr: (1 + 2)
+                    type: int
+                    expr: (3 + 4)
+                    type: int
+              Transform Operator
+                command: /bin/cat
+                output info:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      columns key,value
+                      serialization.format 9
+                      serialization.last.column.takes.rest true
+                Reduce Output Operator
+                  key expressions:
+                        expr: key
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: key
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: key
+                        type: string
+                        expr: value
+                        type: string
+      Needs Tagging: false
+      Path -> Alias:
+        file:/Users/rmurthy/workspace/hive/build/ql/test/data/warehouse/src 
+      Path -> Partition:
+        file:/Users/rmurthy/workspace/hive/build/ql/test/data/warehouse/src 
+          Partition
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                name src
+                columns.types string:string
+                serialization.ddl struct src { string key, string value}
+                serialization.format 1
+                columns key,value
+                bucket_count -1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                location file:/Users/rmurthy/workspace/hive/build/ql/test/data/warehouse/src
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: src
+      Reduce Operator Tree:
+        Extract
+          Filter Operator
+            predicate:
+                expr: (UDFToDouble(0) < UDFToDouble(100))
+                type: boolean
+            Select Operator
+              expressions:
+                    expr: 0
+                    type: string
+                    expr: regexp_extract(1, 'val_(\d+\t\d+)', 1)
+                    type: string
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                directory: /Users/rmurthy/workspace/hive/ql/../build/ql/tmp/257217303/58912596.10001.insclause-0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      columns tmap.key,_c1
+                      serialization.format 1
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+0	0	3
+0	0	3
+0	0	3
+10	10	3
+11	11	3
+12	12	3
+12	12	3
+15	15	3
+15	15	3
+17	17	3
+18	18	3
+18	18	3
+19	19	3
+2	2	3
+20	20	3
+24	24	3
+24	24	3
+26	26	3
+26	26	3
+27	27	3
+28	28	3
+30	30	3
+33	33	3
+34	34	3
+35	35	3
+35	35	3
+35	35	3
+37	37	3
+37	37	3
+4	4	3
+41	41	3
+42	42	3
+42	42	3
+43	43	3
+44	44	3
+47	47	3
+5	5	3
+5	5	3
+5	5	3
+51	51	3
+51	51	3
+53	53	3
+54	54	3
+57	57	3
+58	58	3
+58	58	3
+64	64	3
+65	65	3
+66	66	3
+67	67	3
+67	67	3
+69	69	3
+70	70	3
+70	70	3
+70	70	3
+72	72	3
+72	72	3
+74	74	3
+76	76	3
+76	76	3
+77	77	3
+78	78	3
+8	8	3
+80	80	3
+82	82	3
+83	83	3
+83	83	3
+84	84	3
+84	84	3
+85	85	3
+86	86	3
+87	87	3
+9	9	3
+90	90	3
+90	90	3
+90	90	3
+92	92	3
+95	95	3
+95	95	3
+96	96	3
+97	97	3
+97	97	3
+98	98	3
+98	98	3
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (TOK_COLREF src key) (TOK_COLREF src value) (+ 1 2) (+ 3 4)) '/bin/cat'))) (TOK_CLUSTERBY (TOK_COLREF key)))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_COLREF tmap key)) (TOK_SELEXPR (TOK_FUNCTION regexp_extract (TOK_COLREF tmap value) 'val_(\\d+\\t\\d+)'))) (TOK_WHERE (< (TOK_COLREF tmap key) 100))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        tmap:src 
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+                    expr: (1 + 2)
+                    type: int
+                    expr: (3 + 4)
+                    type: int
+              Transform Operator
+                command: /bin/cat
+                output info:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      columns key,value
+                      serialization.format 9
+                      serialization.last.column.takes.rest true
+                Reduce Output Operator
+                  key expressions:
+                        expr: key
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: key
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: key
+                        type: string
+                        expr: value
+                        type: string
+      Needs Tagging: false
+      Path -> Alias:
+        file:/Users/rmurthy/workspace/hive/build/ql/test/data/warehouse/src 
+      Path -> Partition:
+        file:/Users/rmurthy/workspace/hive/build/ql/test/data/warehouse/src 
+          Partition
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                name src
+                columns.types string:string
+                serialization.ddl struct src { string key, string value}
+                serialization.format 1
+                columns key,value
+                bucket_count -1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                location file:/Users/rmurthy/workspace/hive/build/ql/test/data/warehouse/src
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: src
+      Reduce Operator Tree:
+        Extract
+          Filter Operator
+            predicate:
+                expr: (UDFToDouble(0) < UDFToDouble(100))
+                type: boolean
+            Select Operator
+              expressions:
+                    expr: 0
+                    type: string
+                    expr: regexp_extract(1, 'val_(\d+\t\d+)')
+                    type: string
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                directory: /Users/rmurthy/workspace/hive/ql/../build/ql/tmp/6812598/238772131.10001.insclause-0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      columns tmap.key,_c1
+                      serialization.format 1
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+0	0	3
+0	0	3
+0	0	3
+10	10	3
+11	11	3
+12	12	3
+12	12	3
+15	15	3
+15	15	3
+17	17	3
+18	18	3
+18	18	3
+19	19	3
+2	2	3
+20	20	3
+24	24	3
+24	24	3
+26	26	3
+26	26	3
+27	27	3
+28	28	3
+30	30	3
+33	33	3
+34	34	3
+35	35	3
+35	35	3
+35	35	3
+37	37	3
+37	37	3
+4	4	3
+41	41	3
+42	42	3
+42	42	3
+43	43	3
+44	44	3
+47	47	3
+5	5	3
+5	5	3
+5	5	3
+51	51	3
+51	51	3
+53	53	3
+54	54	3
+57	57	3
+58	58	3
+58	58	3
+64	64	3
+65	65	3
+66	66	3
+67	67	3
+67	67	3
+69	69	3
+70	70	3
+70	70	3
+70	70	3
+72	72	3
+72	72	3
+74	74	3
+76	76	3
+76	76	3
+77	77	3
+78	78	3
+8	8	3
+80	80	3
+82	82	3
+83	83	3
+83	83	3
+84	84	3
+84	84	3
+85	85	3
+86	86	3
+87	87	3
+9	9	3
+90	90	3
+90	90	3
+90	90	3
+92	92	3
+95	95	3
+95	95	3
+96	96	3
+97	97	3
+97	97	3
+98	98	3
+98	98	3
