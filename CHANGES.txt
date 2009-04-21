@@ -31,6 +31,8 @@ Release 0.3.0 - Unreleased
     HIVE-407. Permission issues in test scripts in tarballs.
     (Ashish Thusoo via namit)
 
+    HIVE-61. Implement "ORDER BY". (Namit Jain via zshao)
+
   IMPROVEMENTS
 
     HIVE-132. Show table and describe results to be read via FetchTask.
@@ -160,8 +162,6 @@ Release 0.3.0 - Unreleased
 
     HIVE-435. Fix Null pointer exception if password is null.
     (Prasad Chakka via namit)
-
-    HIVE-61. Implement Group-By. (Namit Jain via zshao)
 
 Release 0.2.0 - Unreleased
 
