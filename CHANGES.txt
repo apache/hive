@@ -23,6 +23,9 @@ Trunk - unreleased changes
 
     HIVE-406. Build file improvements. (Joydeep Sen Sarma via zshao).
 
+    HIVE-440. Reducer and Join to print out number of rows processed.
+    (Namit Jain via zshao)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).
