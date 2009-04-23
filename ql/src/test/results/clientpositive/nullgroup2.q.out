@@ -1,5 +1,5 @@
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_COLREF x key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (> (TOK_COLREF x key) 9999)) (TOK_GROUPBY (TOK_COLREF x key))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (> (. (TOK_TABLE_OR_COL x) key) 9999)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x) key))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -57,7 +57,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /Users/char/Documents/workspace/Hive/build/ql/tmp/168915756/20510440.10002 
+        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/520309707/211312349.10002 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -97,7 +97,7 @@ STAGE PLANS:
 
 
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_COLREF x key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (> (TOK_COLREF x key) 9999)) (TOK_GROUPBY (TOK_COLREF x key))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (> (. (TOK_TABLE_OR_COL x) key) 9999)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x) key))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -162,7 +162,7 @@ STAGE PLANS:
 
 
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_COLREF x key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (> (TOK_COLREF x key) 9999)) (TOK_GROUPBY (TOK_COLREF x key))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (> (. (TOK_TABLE_OR_COL x) key) 9999)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x) key))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -213,7 +213,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /Users/char/Documents/workspace/Hive/build/ql/tmp/306839768/62237003.10002 
+        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/1162050685/275319179.10002 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -253,7 +253,7 @@ STAGE PLANS:
 
 
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_COLREF x key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (> (TOK_COLREF x key) 9999)) (TOK_GROUPBY (TOK_COLREF x key))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (> (. (TOK_TABLE_OR_COL x) key) 9999)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x) key))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

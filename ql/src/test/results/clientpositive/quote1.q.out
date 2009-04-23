@@ -1,5 +1,5 @@
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1 (TOK_PARTSPEC (TOK_PARTVAL `table` '2008-04-08')))) (TOK_SELECT (TOK_SELEXPR (TOK_COLREF src key) `partition`) (TOK_SELEXPR (TOK_COLREF src value) `from`)) (TOK_WHERE (and (>= (TOK_COLREF src key) 200) (< (TOK_COLREF src key) 300)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1 (TOK_PARTSPEC (TOK_PARTVAL `table` '2008-04-08')))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key) `partition`) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value) `from`)) (TOK_WHERE (and (>= (. (TOK_TABLE_OR_COL src) key) 200) (< (. (TOK_TABLE_OR_COL src) key) 300)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -49,7 +49,7 @@ STAGE PLANS:
 
 
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF dest1 `table`)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_COLREF `table` `location`)) (TOK_SELEXPR (TOK_COLREF `table` `type`)) (TOK_SELEXPR (TOK_COLREF `table` `table`))) (TOK_WHERE (= (TOK_COLREF `table` `table`) '2008-04-08'))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF dest1 `int`)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL `int`) `location`)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL `int`) `type`)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL `int`) `table`))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL `int`) `table`) '2008-04-08'))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -59,7 +59,7 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        table 
+        int 
             Filter Operator
               predicate:
                   expr: (table = '2008-04-08')

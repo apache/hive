@@ -1,5 +1,5 @@
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF SRCPART X)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF X))) (TOK_WHERE (and (= (TOK_COLREF X ds) '2008-04-08') (< (TOK_COLREF X key) 100))))) (TOK_QUERY (TOK_FROM (TOK_TABREF SRCPART Y)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF Y))) (TOK_WHERE (and (= (TOK_COLREF Y ds) '2008-04-08') (< (TOK_COLREF Y key) 100)))))) A)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_COLREF A key)))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF SRCPART X)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF X))) (TOK_WHERE (and (= (. (TOK_TABLE_OR_COL X) ds) '2008-04-08') (< (. (TOK_TABLE_OR_COL X) key) 100))))) (TOK_QUERY (TOK_FROM (TOK_TABREF SRCPART Y)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF Y))) (TOK_WHERE (and (= (. (TOK_TABLE_OR_COL Y) ds) '2008-04-08') (< (. (TOK_TABLE_OR_COL Y) key) 100)))))) A)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL A) key)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -93,10 +93,10 @@ STAGE PLANS:
                             type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
-        file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
+        file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
+        file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
       Path -> Partition:
-        file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
+        file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
           Partition
             partition values:
               ds 2008-04-08
@@ -115,10 +115,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
+        file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
           Partition
             partition values:
               ds 2008-04-08
@@ -137,7 +137,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
       Reduce Operator Tree:
@@ -145,7 +145,7 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: /Users/char/Documents/workspace/Hive/ql/../build/ql/tmp/1819397504/1215043470.10001.insclause-0
+            directory: /data/users/zshao/tools/416-trunk-apache-hive/ql/../build/ql/tmp/286749465/113841220.10001.insclause-0
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

@@ -397,7 +397,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive2/hive/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src</string> 
@@ -409,7 +409,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive2/hive/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"/> 
@@ -465,7 +465,7 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/data/users/njain/hive2/hive/build/ql/test/data/warehouse/src</string> 
+             <string>file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
             </void> 
            </object> 
           </void> 
@@ -491,7 +491,7 @@
               <void property="conf"> 
                <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                 <void property="dirName"> 
-                 <string>/data/users/njain/hive2/hive/ql/../build/ql/tmp/629028061/1564666516.10001.insclause-0</string> 
+                 <string>/data/users/zshao/tools/416-trunk-apache-hive/ql/../build/ql/tmp/10177773/282872905.10001.insclause-0</string> 
                 </void> 
                 <void property="tableInfo"> 
                  <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -508,7 +508,7 @@
                    <object class="java.util.Properties"> 
                     <void method="put"> 
                      <string>columns</string> 
-                     <string>src.key,_c1</string> 
+                     <string>key,_c1</string> 
                     </void> 
                     <void method="put"> 
                      <string>serialization.format</string> 

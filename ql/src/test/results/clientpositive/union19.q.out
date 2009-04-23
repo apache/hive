@@ -1,5 +1,5 @@
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF src s1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst1' key) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (TOK_FUNCTION count 1)) value)))) (TOK_QUERY (TOK_FROM (TOK_TABREF src s2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_COLREF s2 key) key) (TOK_SELEXPR (TOK_COLREF s2 value) value))))) unionsrc)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB DEST1)) (TOK_SELECT (TOK_SELEXPR (TOK_COLREF unionsrc key)) (TOK_SELEXPR (TOK_FUNCTION count (TOK_COLREF unionsrc value)))) (TOK_GROUPBY (TOK_COLREF unionsrc key))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB DEST2)) (TOK_SELECT (TOK_SELEXPR (TOK_COLREF unionsrc key)) (TOK_SELEXPR (TOK_COLREF unionsrc value)) (TOK_SELEXPR (TOK_COLREF unionsrc value)))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF src s1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst1' key) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (TOK_FUNCTION count 1)) value)))) (TOK_QUERY (TOK_FROM (TOK_TABREF src s2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) key) key) (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) value) value))))) unionsrc)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB DEST1)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) key)) (TOK_SELEXPR (TOK_FUNCTION count (. (TOK_TABLE_OR_COL unionsrc) value)))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL unionsrc) key))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB DEST2)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -47,7 +47,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive5/hive5/build/ql/tmp/9803368/352635500.10003 
+        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/1632924385/196168588.10002 
           Union
             Group By Operator
               aggregations:
@@ -84,7 +84,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: dest2
-        /data/users/njain/hive5/hive5/build/ql/tmp/9803368/352635500.10002 
+        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/1632924385/196168588.10003 
           Union
             Group By Operator
               aggregations:

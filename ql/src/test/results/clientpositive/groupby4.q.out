@@ -1,5 +1,5 @@
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION substr (TOK_COLREF src key) 1 1))) (TOK_GROUPBY (TOK_FUNCTION substr (TOK_COLREF src key) 1 1))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) key) 1 1))) (TOK_GROUPBY (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) key) 1 1))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -41,7 +41,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /Users/char/Documents/workspace/Hive/build/ql/tmp/110682417/1959129570.10001 
+        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/577453870/133273038.10001 
           Reduce Output Operator
             key expressions:
                   expr: 0

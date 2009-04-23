@@ -1,5 +1,5 @@
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart (TOK_TABLESAMPLE 1 1 (TOK_FUNCTION rand)) s)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF s))) (TOK_WHERE (and (= (TOK_COLREF s ds) '2008-04-08') (= (TOK_COLREF s hr) '11')))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart (TOK_TABLESAMPLE 1 1 (TOK_FUNCTION rand)) s)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF s))) (TOK_WHERE (and (= (. (TOK_TABLE_OR_COL s) ds) '2008-04-08') (= (. (TOK_TABLE_OR_COL s) hr) '11')))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -41,7 +41,7 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       GlobalTableId: 1
-                      directory: /Users/char/Documents/workspace/Hive/ql/../build/ql/tmp/2806371/621996897.10000.insclause-0
+                      directory: /data/users/zshao/tools/416-trunk-apache-hive/ql/../build/ql/tmp/505940550/970696290.10000.insclause-0
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -55,14 +55,14 @@ STAGE PLANS:
                             serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             file.inputformat org.apache.hadoop.mapred.TextInputFormat
                             file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            location file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/dest1
+                            location file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/dest1
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: dest1
       Needs Tagging: false
       Path -> Alias:
-        file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
+        file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
       Path -> Partition:
-        file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
+        file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
           Partition
             partition values:
               ds 2008-04-08
@@ -81,7 +81,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
 
@@ -89,7 +89,7 @@ STAGE PLANS:
     Move Operator
       tables:
             replace: true
-            source: /Users/char/Documents/workspace/Hive/ql/../build/ql/tmp/2806371/621996897.10000.insclause-0
+            source: /data/users/zshao/tools/416-trunk-apache-hive/ql/../build/ql/tmp/505940550/970696290.10000.insclause-0
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -103,7 +103,7 @@ STAGE PLANS:
                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   file.inputformat org.apache.hadoop.mapred.TextInputFormat
                   file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  location file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/dest1
+                  location file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/dest1
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: dest1
 

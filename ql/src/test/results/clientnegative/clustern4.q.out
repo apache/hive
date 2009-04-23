@@ -1,1 +1,1 @@
-FAILED: Error in semantic analysis: line 2:50 Invalid Column Reference key
+FAILED: Error in semantic analysis: line 2:50 Invalid Table Alias or Column Reference key

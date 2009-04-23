@@ -1,5 +1,5 @@
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF srcpart (TOK_TABLESAMPLE 1 1 (TOK_COLREF key)) s) (TOK_TABREF srcpart (TOK_TABLESAMPLE 1 10 (TOK_COLREF key)) t))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF s))) (TOK_WHERE (and (and (and (and (and (= (TOK_COLREF t key) (TOK_COLREF s key)) (= (TOK_COLREF t value) (TOK_COLREF s value))) (= (TOK_COLREF s ds) '2008-04-08')) (= (TOK_COLREF s hr) '11')) (= (TOK_COLREF s ds) '2008-04-08')) (= (TOK_COLREF s hr) '11'))) (TOK_DISTRIBUTEBY (TOK_COLREF key) (TOK_COLREF value)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_COLREF key)) (TOK_TABSORTCOLNAMEASC (TOK_COLREF value)))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF srcpart (TOK_TABLESAMPLE 1 1 (TOK_TABLE_OR_COL key)) s) (TOK_TABREF srcpart (TOK_TABLESAMPLE 1 10 (TOK_TABLE_OR_COL key)) t))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF s))) (TOK_WHERE (and (and (and (and (and (= (. (TOK_TABLE_OR_COL t) key) (. (TOK_TABLE_OR_COL s) key)) (= (. (TOK_TABLE_OR_COL t) value) (. (TOK_TABLE_OR_COL s) value))) (= (. (TOK_TABLE_OR_COL s) ds) '2008-04-08')) (= (. (TOK_TABLE_OR_COL s) hr) '11')) (= (. (TOK_TABLE_OR_COL s) ds) '2008-04-08')) (= (. (TOK_TABLE_OR_COL s) hr) '11'))) (TOK_DISTRIBUTEBY (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -48,12 +48,12 @@ STAGE PLANS:
                       type: string
       Needs Tagging: true
       Path -> Alias:
-        file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
-        file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
-        file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-09 
-        file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-09 
+        file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
+        file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
+        file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-09 
+        file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-09 
       Path -> Partition:
-        file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
+        file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
           Partition
             partition values:
               ds 2008-04-08
@@ -72,10 +72,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
+        file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
           Partition
             partition values:
               ds 2008-04-08
@@ -94,10 +94,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-09 
+        file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-09 
           Partition
             partition values:
               ds 2008-04-09
@@ -116,10 +116,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-09 
+        file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-09 
           Partition
             partition values:
               ds 2008-04-09
@@ -138,7 +138,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
       Reduce Operator Tree:
@@ -165,7 +165,7 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
-                directory: /Users/char/Documents/workspace/Hive/build/ql/tmp/251526767/204024545.10002
+                directory: /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/87240990/187310002.10002
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -178,7 +178,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /Users/char/Documents/workspace/Hive/build/ql/tmp/251526767/204024545.10002 
+        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/87240990/187310002.10002 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -203,9 +203,9 @@ STAGE PLANS:
                   type: string
       Needs Tagging: false
       Path -> Alias:
-        /Users/char/Documents/workspace/Hive/build/ql/tmp/251526767/204024545.10002 
+        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/87240990/187310002.10002 
       Path -> Partition:
-        /Users/char/Documents/workspace/Hive/build/ql/tmp/251526767/204024545.10002 
+        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/87240990/187310002.10002 
           Partition
           
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -220,7 +220,7 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: /Users/char/Documents/workspace/Hive/ql/../build/ql/tmp/120768197.10001.insclause-0
+            directory: /data/users/zshao/tools/416-trunk-apache-hive/ql/../build/ql/tmp/96085592.10001.insclause-0
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

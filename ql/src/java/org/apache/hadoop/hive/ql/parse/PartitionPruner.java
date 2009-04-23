@@ -67,7 +67,7 @@ public class PartitionPruner {
   // This is used to optimize select * from table where ... scenario, when the where condition only references
   // partitioning columns - the partitions are identified and streamed directly to the client without requiring 
   // a map-reduce job
-  private boolean containsPartCols;
+  private boolean onlyContainsPartCols;
 
   /** Creates a new instance of PartitionPruner */
   public PartitionPruner(String tableAlias, QBMetaData metaData) {
@@ -75,11 +75,103 @@ public class PartitionPruner {
     this.metaData = metaData;
     this.tab = metaData.getTableForAlias(tableAlias);
     this.prunerExpr = null;
-    containsPartCols = true;
+    onlyContainsPartCols = true;
   }
 
-  public boolean containsPartitionCols() {
-    return containsPartCols;
+  public boolean onlyContainsPartitionCols() {
+    return onlyContainsPartCols;
+  }
+  
+  
+  /** Class to store the return result of genExprNodeDesc.
+   * 
+   *  TODO: In the future when we refactor the PartitionPruner code, we should
+   *  use the same code (GraphWalker) as it is now in TypeCheckProcFactory. 
+   *  We should use NULL to represent a table name node, and the DOT operator
+   *  should descend into the sub tree for 2 levels in order to find out the
+   *  table name.  The benefit is that we get rid of another concept class -
+   *  here it is ExprNodeTempDesc - the return value of a branch in the 
+   *  Expression Syntax Tree, which is different from the value of a branch in
+   *  the Expression Evaluation Tree.  
+   *     
+   */
+  static class ExprNodeTempDesc {
+
+    public ExprNodeTempDesc(exprNodeDesc desc) {
+      isTableName = false;
+      this.desc = desc;
+    }
+    
+    public ExprNodeTempDesc(String tableName) {
+      isTableName = true;
+      this.tableName = tableName;
+    }
+    
+    public boolean getIsTableName() {
+      return isTableName;
+    }
+    
+    public exprNodeDesc getDesc() {
+      return desc;
+    }
+    
+    public String getTableName() {
+      return tableName;
+    }
+    
+    boolean isTableName;
+    exprNodeDesc desc;
+    String tableName;
+    
+    public String toString() {
+      if (isTableName) {
+        return "Table:" + tableName;
+      } else {
+        return "Desc: " + desc;
+      }
+    }
+  };
+  
+  static ExprNodeTempDesc genSimpleExprNodeDesc(ASTNode expr) throws SemanticException {
+    exprNodeDesc desc = null;
+    switch(expr.getType()) {
+      case HiveParser.TOK_NULL:
+        desc = new exprNodeNullDesc();
+        break;
+      case HiveParser.Identifier:
+        // This is the case for an XPATH element (like "c" in "a.b.c.d")
+        desc = new exprNodeConstantDesc(
+            TypeInfoFactory.stringTypeInfo, 
+                SemanticAnalyzer.unescapeIdentifier(expr.getText()));
+        break;
+      case HiveParser.Number:
+        Number v = null;
+        try {
+          v = Double.valueOf(expr.getText());
+          v = Long.valueOf(expr.getText());
+          v = Integer.valueOf(expr.getText());
+        } catch (NumberFormatException e) {
+          // do nothing here, we will throw an exception in the following block
+        }
+        if (v == null) {
+          throw new SemanticException(ErrorMsg.INVALID_NUMERICAL_CONSTANT.getMsg(expr));
+        }
+        desc = new exprNodeConstantDesc(v);
+        break;
+      case HiveParser.StringLiteral:
+        desc = new exprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, BaseSemanticAnalyzer.unescapeSQLString(expr.getText()));
+        break;
+      case HiveParser.TOK_CHARSETLITERAL:
+        desc = new exprNodeConstantDesc(BaseSemanticAnalyzer.charSetString(expr.getChild(0).getText(), expr.getChild(1).getText()));
+        break;
+      case HiveParser.KW_TRUE:
+        desc = new exprNodeConstantDesc(Boolean.TRUE);
+        break;
+      case HiveParser.KW_FALSE:
+        desc = new exprNodeConstantDesc(Boolean.FALSE);
+        break;
+    }
+    return desc == null ? null : new ExprNodeTempDesc(desc);
   }
   
   /**
@@ -92,93 +184,109 @@ public class PartitionPruner {
    * @throws SemanticException
    */
   @SuppressWarnings("nls")
-  private exprNodeDesc genExprNodeDesc(ASTNode expr)
+  private ExprNodeTempDesc genExprNodeDesc(ASTNode expr)
   throws SemanticException {
     //  We recursively create the exprNodeDesc.  Base cases:  when we encounter 
     //  a column ref, we convert that into an exprNodeColumnDesc;  when we encounter 
     //  a constant, we convert that into an exprNodeConstantDesc.  For others we just 
     //  build the exprNodeFuncDesc with recursively built children.
 
-    exprNodeDesc desc = null;
-
     //  Is this a simple expr node (not a TOK_COLREF or a TOK_FUNCTION or an operator)?
-    desc = SemanticAnalyzer.genSimpleExprNodeDesc(expr);
-    if (desc != null) {
-      return desc;
+    ExprNodeTempDesc tempDesc = genSimpleExprNodeDesc(expr);
+    if (tempDesc != null) {
+      return tempDesc;
     }
 
     int tokType = expr.getType();
     switch (tokType) {
-      case HiveParser.TOK_COLREF: {
-
-        String tabAlias = null;
-        String colName = null;
-        if (expr.getChildCount() != 1) {
-          assert(expr.getChildCount() == 2);
-          tabAlias = BaseSemanticAnalyzer.unescapeIdentifier(expr.getChild(0).getText());
-          colName = BaseSemanticAnalyzer.unescapeIdentifier(expr.getChild(1).getText());
-        }
-        else {
-          colName = BaseSemanticAnalyzer.unescapeIdentifier(expr.getChild(0).getText());
-          tabAlias = SemanticAnalyzer.getTabAliasForCol(this.metaData, colName, (ASTNode)expr.getChild(0));
-        }
-
-        // Set value to null if it's not partition column
-        if (tabAlias.equalsIgnoreCase(tableAlias) && tab.isPartitionKey(colName)) {
-          desc = new exprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, colName); 
+      case HiveParser.TOK_TABLE_OR_COL: {
+        String tableOrCol = BaseSemanticAnalyzer.unescapeIdentifier(expr.getChild(0).getText());
+        
+        if (metaData.getAliasToTable().get(tableOrCol.toLowerCase()) != null) {
+          // It's a table name
+          tempDesc = new ExprNodeTempDesc(tableOrCol);
         } else {
-          try {
-            // might be a column from another table
-            Table t = this.metaData.getTableForAlias(tabAlias);
-            if (t.isPartitionKey(colName)) {
-              desc = new exprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, null);
-            }
-            else {
-              TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromObjectInspector(
-                                                                               this.metaData.getTableForAlias(tabAlias).getDeserializer().getObjectInspector());
-              desc = new exprNodeConstantDesc(((StructTypeInfo)typeInfo).getStructFieldTypeInfo(colName), null);
-              containsPartCols = false;
-            }
-          } catch (SerDeException e){
-            throw new RuntimeException(e);
-          }
+          // It's a column
+          String colName = tableOrCol;
+          String tabAlias = SemanticAnalyzer.getTabAliasForCol(this.metaData, colName, (ASTNode)expr.getChild(0));
+          LOG.debug("getTableColumnDesc(" + tabAlias + ", " + colName);
+          tempDesc = getTableColumnDesc(tabAlias, colName);
         }
         break;
       }
+      
 
       default: {
+        
         boolean isFunction = (expr.getType() == HiveParser.TOK_FUNCTION);
         
         // Create all children
         int childrenBegin = (isFunction ? 1 : 0);
-        ArrayList<exprNodeDesc> children = new ArrayList<exprNodeDesc>(expr.getChildCount() - childrenBegin);
+        ArrayList<ExprNodeTempDesc> tempChildren = new ArrayList<ExprNodeTempDesc>(expr.getChildCount() - childrenBegin);
         for (int ci=childrenBegin; ci<expr.getChildCount(); ci++) {
-          exprNodeDesc child = genExprNodeDesc((ASTNode)expr.getChild(ci));
-          assert(child.getTypeInfo() != null);
-          children.add(child);
+          ExprNodeTempDesc child = genExprNodeDesc((ASTNode)expr.getChild(ci));
+          tempChildren.add(child);
         }
-
-        // Create function desc
-        desc = TypeCheckProcFactory.DefaultExprProcessor.getXpathOrFuncExprNodeDesc(expr, isFunction, children);
+        // Is it a special case: table DOT column?
+        if (expr.getType() == HiveParser.DOT && tempChildren.get(0).getIsTableName()) {
+          String tabAlias = tempChildren.get(0).getTableName();
+          String colName = ((exprNodeConstantDesc) tempChildren.get(1).getDesc()).getValue().toString();
+          tempDesc = getTableColumnDesc(tabAlias, colName);
+          
+        } else {
         
-        if (desc instanceof exprNodeFuncDesc && (
-            ((exprNodeFuncDesc)desc).getUDFMethod().getDeclaringClass().equals(UDFOPAnd.class) 
-            || ((exprNodeFuncDesc)desc).getUDFMethod().getDeclaringClass().equals(UDFOPOr.class)
-            || ((exprNodeFuncDesc)desc).getUDFMethod().getDeclaringClass().equals(UDFOPNot.class))) {
-          // do nothing because "And" and "Or" and "Not" supports null value evaluation
-          // NOTE: In the future all UDFs that treats null value as UNKNOWN (both in parameters and return 
-          // values) should derive from a common base class UDFNullAsUnknown, so instead of listing the classes
-          // here we would test whether a class is derived from that base class. 
-        } else if ((desc instanceof exprNodeFuncDesc && 
-            ((exprNodeFuncDesc)desc).getUDFClass().getAnnotation(UDFType.class) != null && 
-            ((exprNodeFuncDesc)desc).getUDFClass().getAnnotation(UDFType.class).deterministic() == false) ||
-            mightBeUnknown(desc)) {
-           // If its a non-deterministic UDF or if any child is null, set this node to null
-          LOG.trace("Pruner function might be unknown: " + expr.toStringTree());
-          desc = new exprNodeConstantDesc(desc.getTypeInfo(), null);    
+          ArrayList<exprNodeDesc> children = new ArrayList<exprNodeDesc>(expr.getChildCount() - childrenBegin);
+          for (int ci=0; ci<tempChildren.size(); ci++) {
+            children.add(tempChildren.get(ci).getDesc());
+          }
+          
+          // Create function desc
+          exprNodeDesc desc = TypeCheckProcFactory.DefaultExprProcessor.getXpathOrFuncExprNodeDesc(expr, isFunction, children);
+          
+          if (desc instanceof exprNodeFuncDesc && (
+              ((exprNodeFuncDesc)desc).getUDFMethod().getDeclaringClass().equals(UDFOPAnd.class) 
+              || ((exprNodeFuncDesc)desc).getUDFMethod().getDeclaringClass().equals(UDFOPOr.class)
+              || ((exprNodeFuncDesc)desc).getUDFMethod().getDeclaringClass().equals(UDFOPNot.class))) {
+            // do nothing because "And" and "Or" and "Not" supports null value evaluation
+            // NOTE: In the future all UDFs that treats null value as UNKNOWN (both in parameters and return 
+            // values) should derive from a common base class UDFNullAsUnknown, so instead of listing the classes
+            // here we would test whether a class is derived from that base class. 
+          } else if ((desc instanceof exprNodeFuncDesc && 
+              ((exprNodeFuncDesc)desc).getUDFClass().getAnnotation(UDFType.class) != null && 
+              ((exprNodeFuncDesc)desc).getUDFClass().getAnnotation(UDFType.class).deterministic() == false) ||
+              mightBeUnknown(desc)) {
+             // If its a non-deterministic UDF or if any child is null, set this node to null
+            LOG.trace("Pruner function might be unknown: " + expr.toStringTree());
+            desc = new exprNodeConstantDesc(desc.getTypeInfo(), null);
+          }
+          tempDesc = new ExprNodeTempDesc(desc);
         }
         break;
       }
+    }
+    return tempDesc;
+  }
+
+  private ExprNodeTempDesc getTableColumnDesc(String tabAlias, String colName) {
+    ExprNodeTempDesc desc;
+    try {
+      Table t = this.metaData.getTableForAlias(tabAlias);
+      if (t.isPartitionKey(colName)) {
+        // Set value to null if it's not partition column
+        if (tabAlias.equalsIgnoreCase(tableAlias)) {
+          desc = new ExprNodeTempDesc(new exprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, colName)); 
+        } else {                
+          desc = new ExprNodeTempDesc(new exprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, null));
+        }
+      } else {
+        TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromObjectInspector(
+            this.metaData.getTableForAlias(tabAlias).getDeserializer().getObjectInspector());
+        desc = new ExprNodeTempDesc(
+            new exprNodeConstantDesc(((StructTypeInfo)typeInfo).getStructFieldTypeInfo(colName), null));
+        onlyContainsPartCols = false;
+      }
+    } catch (SerDeException e){
+      throw new RuntimeException(e);
     }
     return desc;
   }  
@@ -214,17 +322,28 @@ public class PartitionPruner {
     int tokType = expr.getType();
     boolean hasPPred = false;
     switch (tokType) {
-      case HiveParser.TOK_COLREF: {
+      case HiveParser.TOK_TABLE_OR_COL: {
+        // Must be a column. If it's a table then it's already processed by "case DOT" below. 
+        String colName = BaseSemanticAnalyzer.unescapeIdentifier(expr.getChild(0).getText());
 
-        assert(expr.getChildCount() == 2);
-        String tabAlias = BaseSemanticAnalyzer.unescapeIdentifier(expr.getChild(0).getText());
-        String colName = BaseSemanticAnalyzer.unescapeIdentifier(expr.getChild(1).getText());
-        if (tabAlias.equalsIgnoreCase(tableAlias) && tab.isPartitionKey(colName)) {
-          hasPPred = true;
-        }
-        break;
+        return tab.isPartitionKey(colName);
       }
-
+      case HiveParser.DOT: {
+        assert(expr.getChildCount() == 2);
+        ASTNode left = (ASTNode)expr.getChild(0);
+        ASTNode right = (ASTNode)expr.getChild(1);
+        
+        if (left.getType() == HiveParser.TOK_TABLE_OR_COL) {
+          // Is "left" a table?
+          String tableOrCol = BaseSemanticAnalyzer.unescapeIdentifier(left.getChild(0).getText());
+          if (metaData.getAliasToTable().get(tableOrCol.toLowerCase()) != null) {
+            // "left" is a table
+            String colName = BaseSemanticAnalyzer.unescapeIdentifier(right.getText());
+            return tableAlias.equalsIgnoreCase(tableOrCol) && tab.isPartitionKey(colName);
+          }
+        }
+        // else fall through to default
+      }
       default: {
         boolean isFunction = (expr.getType() == HiveParser.TOK_FUNCTION);
         
@@ -243,8 +362,10 @@ public class PartitionPruner {
   /** Add an expression */
   @SuppressWarnings("nls")
   public void addExpression(ASTNode expr) throws SemanticException {
-    LOG.trace("adding pruning Tree = " + expr.toStringTree());
-    exprNodeDesc desc = genExprNodeDesc(expr);
+    LOG.debug("adding pruning Tree = " + expr.toStringTree());
+    ExprNodeTempDesc temp = genExprNodeDesc(expr);
+    LOG.debug("new pruning Tree = " + temp);
+    exprNodeDesc desc = temp.getDesc();
     // Ignore null constant expressions
     if (!(desc instanceof exprNodeConstantDesc) || ((exprNodeConstantDesc)desc).getValue() != null ) {
       LOG.trace("adding pruning expr = " + desc);
@@ -263,7 +384,7 @@ public class PartitionPruner {
   @SuppressWarnings("nls")
   public void addJoinOnExpression(ASTNode expr) throws SemanticException {
     LOG.trace("adding pruning Tree = " + expr.toStringTree());
-    exprNodeDesc desc = genExprNodeDesc(expr);
+    exprNodeDesc desc = genExprNodeDesc(expr).getDesc();
     // Ignore null constant expressions
     if (!(desc instanceof exprNodeConstantDesc) || ((exprNodeConstantDesc)desc).getValue() != null ) {
       LOG.trace("adding pruning expr = " + desc);

@@ -1,5 +1,5 @@
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF src) (TOK_TABREF srcpart) (and (AND (= (TOK_COLREF src key) (TOK_COLREF srcpart key)) (= (TOK_COLREF srcpart ds) '2008-04-08')) (> (TOK_COLREF src key) 100)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_COLREF src key)) (TOK_SELEXPR (TOK_COLREF srcpart value)))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF src) (TOK_TABREF srcpart) (and (AND (= (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL srcpart) key)) (= (. (TOK_TABLE_OR_COL srcpart) ds) '2008-04-08')) (> (. (TOK_TABLE_OR_COL src) key) 100)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL srcpart) value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

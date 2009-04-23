@@ -1,5 +1,5 @@
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (TOK_COLREF src key) (TOK_COLREF src value) (+ 1 2) (+ 3 4)) '/bin/cat'))) (TOK_CLUSTERBY (TOK_COLREF key)))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_COLREF tmap key)) (TOK_SELEXPR (TOK_FUNCTION regexp_extract (TOK_COLREF tmap value) 'val_(\\d+\\t\\d+)' 1))) (TOK_WHERE (< (TOK_COLREF tmap key) 100))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) value) (+ 1 2) (+ 3 4)) '/bin/cat'))) (TOK_CLUSTERBY (TOK_TABLE_OR_COL key)))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) key)) (TOK_SELEXPR (TOK_FUNCTION regexp_extract (. (TOK_TABLE_OR_COL tmap) value) 'val_(\\d+\\t\\d+)' 1))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL tmap) key) 100))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -45,9 +45,9 @@ STAGE PLANS:
                         type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/Users/rmurthy/workspace/hive/build/ql/test/data/warehouse/src 
+        file:/data/users/zshao/tools/437-trunk-apache-hive/build/ql/test/data/warehouse/src 
       Path -> Partition:
-        file:/Users/rmurthy/workspace/hive/build/ql/test/data/warehouse/src 
+        file:/data/users/zshao/tools/437-trunk-apache-hive/build/ql/test/data/warehouse/src 
           Partition
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -62,7 +62,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/Users/rmurthy/workspace/hive/build/ql/test/data/warehouse/src
+                location file:/data/users/zshao/tools/437-trunk-apache-hive/build/ql/test/data/warehouse/src
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
       Reduce Operator Tree:
@@ -80,7 +80,7 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
-                directory: /Users/rmurthy/workspace/hive/ql/../build/ql/tmp/257217303/58912596.10001.insclause-0
+                directory: /data/users/zshao/tools/437-trunk-apache-hive/ql/../build/ql/tmp/223320410/1076677009.10001.insclause-0
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -178,7 +178,7 @@ STAGE PLANS:
 98	98	3
 98	98	3
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (TOK_COLREF src key) (TOK_COLREF src value) (+ 1 2) (+ 3 4)) '/bin/cat'))) (TOK_CLUSTERBY (TOK_COLREF key)))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_COLREF tmap key)) (TOK_SELEXPR (TOK_FUNCTION regexp_extract (TOK_COLREF tmap value) 'val_(\\d+\\t\\d+)'))) (TOK_WHERE (< (TOK_COLREF tmap key) 100))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) value) (+ 1 2) (+ 3 4)) '/bin/cat'))) (TOK_CLUSTERBY (TOK_TABLE_OR_COL key)))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) key)) (TOK_SELEXPR (TOK_FUNCTION regexp_extract (. (TOK_TABLE_OR_COL tmap) value) 'val_(\\d+\\t\\d+)'))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL tmap) key) 100))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -224,9 +224,9 @@ STAGE PLANS:
                         type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/Users/rmurthy/workspace/hive/build/ql/test/data/warehouse/src 
+        file:/data/users/zshao/tools/437-trunk-apache-hive/build/ql/test/data/warehouse/src 
       Path -> Partition:
-        file:/Users/rmurthy/workspace/hive/build/ql/test/data/warehouse/src 
+        file:/data/users/zshao/tools/437-trunk-apache-hive/build/ql/test/data/warehouse/src 
           Partition
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -241,7 +241,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/Users/rmurthy/workspace/hive/build/ql/test/data/warehouse/src
+                location file:/data/users/zshao/tools/437-trunk-apache-hive/build/ql/test/data/warehouse/src
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
       Reduce Operator Tree:
@@ -259,7 +259,7 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
-                directory: /Users/rmurthy/workspace/hive/ql/../build/ql/tmp/6812598/238772131.10001.insclause-0
+                directory: /data/users/zshao/tools/437-trunk-apache-hive/ql/../build/ql/tmp/36446055/150992891.10001.insclause-0
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat

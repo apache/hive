@@ -316,7 +316,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     String alias = unescapeIdentifier(tabref.getChild(aliasIndex).getText());
     // If the alias is already there then we have a conflict
     if (qb.exists(alias)) {
-      throw new SemanticException(ErrorMsg.AMBIGOUS_TABLE_ALIAS.getMsg(tabref.getChild(aliasIndex)));
+      throw new SemanticException(ErrorMsg.AMBIGUOUS_TABLE_ALIAS.getMsg(tabref.getChild(aliasIndex)));
     }
     if (tableSamplePresent) {
       ASTNode sampleClause = (ASTNode)tabref.getChild(1);
@@ -360,7 +360,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // If the alias is already there then we have a conflict
     if (qb.exists(alias)) {
-      throw new SemanticException(ErrorMsg.AMBIGOUS_TABLE_ALIAS.getMsg(subq.getChild(1)));
+      throw new SemanticException(ErrorMsg.AMBIGUOUS_TABLE_ALIAS.getMsg(subq.getChild(1)));
     }
     // Insert this map into the stats
     qb.setSubqAlias(alias, qbexpr);
@@ -798,20 +798,24 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throws SemanticException {
     // String[] allAliases = joinTree.getAllAliases();
     switch (condn.getToken().getType()) {
-    case HiveParser.TOK_COLREF:
-      String tblName = unescapeIdentifier(condn.getChild(0).getText().toLowerCase());
-      if (isPresent(joinTree.getLeftAliases(), tblName)) {
-        if (!leftAliases.contains(tblName))
-          leftAliases.add(tblName);
-      } else if (isPresent(joinTree.getRightAliases(), tblName)) {
-        if (!rightAliases.contains(tblName))
-          rightAliases.add(tblName);
-      } else
+    case HiveParser.TOK_TABLE_OR_COL:
+      String tableOrCol = unescapeIdentifier(condn.getChild(0).getText().toLowerCase());
+      if (isPresent(joinTree.getLeftAliases(), tableOrCol)) {
+        if (!leftAliases.contains(tableOrCol))
+          leftAliases.add(tableOrCol);
+      } else if (isPresent(joinTree.getRightAliases(), tableOrCol)) {
+        if (!rightAliases.contains(tableOrCol))
+          rightAliases.add(tableOrCol);
+      } else {
+        // We don't support columns without table prefix in JOIN condition right now.
+        // We need to pass Metadata here to know which table the column belongs to. 
         throw new SemanticException(ErrorMsg.INVALID_TABLE_ALIAS.getMsg(condn.getChild(0)));
+      }
       break;
 
     case HiveParser.Number:
     case HiveParser.StringLiteral:
+    case HiveParser.Identifier:
     case HiveParser.TOK_CHARSETLITERAL:
     case HiveParser.KW_TRUE:
     case HiveParser.KW_FALSE:
@@ -1144,10 +1148,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
   
-  private static String[] getColAlias(ASTNode selExpr, String defaultName) {
+  private static String[] getColAlias(ASTNode selExpr, String defaultName, RowResolver inputRR) {
     String colAlias = null;
     String tabAlias = null;
     String[] colRef = new String[2];
+    
     if (selExpr.getChildCount() == 2) {
       // return zz for "xx + yy AS zz"
       colAlias  = unescapeIdentifier(selExpr.getChild(1).getText());
@@ -1157,28 +1162,34 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     ASTNode root = (ASTNode) selExpr.getChild(0);
-    if (root.getType() == HiveParser.TOK_COLREF && root.getChildCount() > 1) {
+    if (root.getType() == HiveParser.TOK_TABLE_OR_COL) {
+      colAlias = root.getChild(0).getText();
+      colRef[0] = tabAlias;
+      colRef[1] = colAlias;
+      return colRef;
+    }
+
+    if (root.getType() == HiveParser.DOT) {
       ASTNode tab = (ASTNode) root.getChild(0);
-      tabAlias = unescapeIdentifier(tab.getText());
+      if (tab.getType() == HiveParser.TOK_TABLE_OR_COL) {
+        String t = unescapeIdentifier(tab.getChild(0).getText());
+        if (inputRR.hasTableAlias(t)) {
+          tabAlias = t;
+        }
+      }
+
+      // Return zz for "xx.zz" and "xx.yy.zz"
+      ASTNode col = (ASTNode) root.getChild(1);
+      if (col.getType() == HiveParser.Identifier) {
+        colAlias = unescapeIdentifier(col.getText());
+      }
     }
   
-    while (root.getType() == HiveParser.DOT || root.getType() == HiveParser.TOK_COLREF) {
-      if (root.getType() == HiveParser.TOK_COLREF && root.getChildCount() == 1) {
-        root = (ASTNode) root.getChild(0);
-      }
-      else {
-        assert(root.getChildCount() == 2);
-        root = (ASTNode) root.getChild(1);
-      }
-    }
-    if (root.getType() == HiveParser.Identifier) {
-      // Return zz for "xx.zz" and "xx.yy.zz"
-      colAlias = unescapeIdentifier(root.getText());
-    }
     if(colAlias == null) {
       // Return defaultName if selExpr is not a simple xx.yy.zz 
       colAlias = defaultName;
     }
+    
     colRef[0] = tabAlias;
     colRef[1] = colAlias;
     return colRef;
@@ -1204,7 +1215,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // list of the columns
       ASTNode selExpr = (ASTNode) selExprList.getChild(i);
-      String[] colRef = getColAlias(selExpr, "_C" + i);
+      String[] colRef = getColAlias(selExpr, "_C" + i, inputRR);
       String colAlias = colRef[1];
       String tabAlias = colRef[0];
       ASTNode sel = (ASTNode)selExpr.getChild(0);
@@ -1235,7 +1246,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             col_list.add(exp);
             if (!StringUtils.isEmpty(alias) &&
                 (out_rwsch.get(null, colAlias) != null)) {
-              throw new SemanticException(ErrorMsg.AMBIGOUS_COLUMN.getMsg(expr.getChild(1)));
+              throw new SemanticException(ErrorMsg.AMBIGUOUS_COLUMN.getMsg(expr.getChild(1)));
             }
 
             out_rwsch.put(tabAlias, unescapeIdentifier(expr.getText()),
@@ -1249,7 +1260,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         col_list.add(exp);
         if (!StringUtils.isEmpty(alias) &&
             (out_rwsch.get(null, colAlias) != null)) {
-          throw new SemanticException(ErrorMsg.AMBIGOUS_COLUMN.getMsg(sel.getChild(1)));
+          throw new SemanticException(ErrorMsg.AMBIGUOUS_COLUMN.getMsg(sel.getChild(1)));
         }
         // Since the as clause is lacking we just use the text representation
         // of the expression as the column name
@@ -3251,14 +3262,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       for (int i = 0; i < sampleExprs.size() && colsEqual; i++) {
         boolean colFound = false;
         for (int j = 0; j < tabBucketCols.size() && !colFound; j++) {
-          if (sampleExprs.get(i).getToken().getType() != HiveParser.TOK_COLREF) {
+          if (sampleExprs.get(i).getToken().getType() != HiveParser.TOK_TABLE_OR_COL) {
         	  break;
           }
           
-          if (sampleExprs.get(i).getChildCount() != 1) {
-            throw new SemanticException(ErrorMsg.TABLE_ALIAS_NOT_ALLOWED.getMsg());
-          }
-
           if (((ASTNode)sampleExprs.get(i).getChild(0)).getText().equalsIgnoreCase(tabBucketCols.get(j))) {
             colFound = true;
           }
@@ -3395,7 +3402,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (aliasToPruner.size() == 1) {
           Iterator<Map.Entry<String, PartitionPruner>> iterP = aliasToPruner.entrySet().iterator();
           PartitionPruner pr = ((Map.Entry<String, PartitionPruner>)iterP.next()).getValue();
-          if (pr.containsPartitionCols()) {
+          if (pr.onlyContainsPartitionCols()) {
             List<Path> listP = new ArrayList<Path>();
             List<partitionDesc> partP = new ArrayList<partitionDesc>();
             PartitionPruner.PrunedPartitionList partsList = null;
@@ -3633,7 +3640,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                                TypeCheckProcFactory.getStrExprProcessor());
     opRules.put(new RuleRegExp("R4", HiveParser.KW_TRUE + "%|" + HiveParser.KW_FALSE + "%"), 
                                TypeCheckProcFactory.getBoolExprProcessor());
-    opRules.put(new RuleRegExp("R5", HiveParser.TOK_COLREF + "%"), TypeCheckProcFactory.getColumnExprProcessor());
+    opRules.put(new RuleRegExp("R5", HiveParser.TOK_TABLE_OR_COL + "%"), TypeCheckProcFactory.getColumnExprProcessor());
 
     // The dispatcher fires the processor corresponding to the closest matching rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(TypeCheckProcFactory.getDefaultExprProcessor(), opRules, tcCtx);
@@ -3652,46 +3659,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return desc;
   }
   
-  static exprNodeDesc genSimpleExprNodeDesc(ASTNode expr) throws SemanticException {
-    exprNodeDesc desc = null;
-    switch(expr.getType()) {
-      case HiveParser.TOK_NULL:
-        desc = new exprNodeNullDesc();
-        break;
-      case HiveParser.Identifier:
-        // This is the case for an XPATH element (like "c" in "a.b.c.d")
-        desc = new exprNodeConstantDesc(
-            TypeInfoFactory.getPrimitiveTypeInfoFromPrimitiveWritable(String.class), unescapeIdentifier(expr.getText()));
-        break;
-      case HiveParser.Number:
-        Number v = null;
-        try {
-          v = Double.valueOf(expr.getText());
-          v = Long.valueOf(expr.getText());
-          v = Integer.valueOf(expr.getText());
-        } catch (NumberFormatException e) {
-          // do nothing here, we will throw an exception in the following block
-        }
-        if (v == null) {
-          throw new SemanticException(ErrorMsg.INVALID_NUMERICAL_CONSTANT.getMsg(expr));
-        }
-        desc = new exprNodeConstantDesc(v);
-        break;
-      case HiveParser.StringLiteral:
-        desc = new exprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, BaseSemanticAnalyzer.unescapeSQLString(expr.getText()));
-        break;
-      case HiveParser.TOK_CHARSETLITERAL:
-        desc = new exprNodeConstantDesc(BaseSemanticAnalyzer.charSetString(expr.getChild(0).getText(), expr.getChild(1).getText()));
-        break;
-      case HiveParser.KW_TRUE:
-        desc = new exprNodeConstantDesc(Boolean.TRUE);
-        break;
-      case HiveParser.KW_FALSE:
-        desc = new exprNodeConstantDesc(Boolean.FALSE);
-        break;
-    }
-    return desc;
-  }
   
   /**
    * Gets the table Alias for the column from the column name. This function throws
@@ -3713,7 +3680,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 		  for(FieldSchema field: ent.getValue().getAllCols()) {
 			  if (colName.equalsIgnoreCase(field.getName())) {
 				if (found) {
-					throw new SemanticException(ErrorMsg.AMBIGOUS_COLUMN.getMsg(pt));
+					throw new SemanticException(ErrorMsg.AMBIGUOUS_COLUMN.getMsg(pt));
 				}
 				
 				found = true;

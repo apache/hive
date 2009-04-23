@@ -84,6 +84,9 @@ Trunk - unreleased changes
     HIVE-435. Fix Null pointer exception if password is null.
     (Prasad Chakka via namit)
 
+    HIVE-437. Allow both table.name and col.field
+    (Zheng Shao via namit)
+
 Release 0.3.0 - Unreleased
 
   INCOMPATIBLE CHANGES

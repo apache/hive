@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDF;
@@ -58,6 +60,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
  */
 public class TypeCheckProcFactory {
 
+  protected static final Log LOG = LogFactory.getLog(TypeCheckProcFactory.class.getName());
   /**
    * Function to do groupby subexpression elimination. This is called by all the processors initially.
    * As an example, consider the query
@@ -99,6 +102,11 @@ public class TypeCheckProcFactory {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
+      TypeCheckCtx ctx = (TypeCheckCtx)procCtx;
+      if (ctx.getError() != null) {
+        return null;
+      }
+      
       exprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
       if (desc != null) {
         return desc;
@@ -126,6 +134,11 @@ public class TypeCheckProcFactory {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
+      TypeCheckCtx ctx = (TypeCheckCtx)procCtx;
+      if (ctx.getError() != null) {
+        return null;
+      }
+      
       exprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
       if (desc != null) {
         return desc;
@@ -168,6 +181,11 @@ public class TypeCheckProcFactory {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
+      TypeCheckCtx ctx = (TypeCheckCtx)procCtx;
+      if (ctx.getError() != null) {
+        return null;
+      }
+      
       exprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
       if (desc != null) {
         return desc;
@@ -210,6 +228,11 @@ public class TypeCheckProcFactory {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
+      TypeCheckCtx ctx = (TypeCheckCtx)procCtx;
+      if (ctx.getError() != null) {
+        return null;
+      }
+
       exprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
       if (desc != null) {
         return desc;
@@ -250,51 +273,57 @@ public class TypeCheckProcFactory {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
+      TypeCheckCtx ctx = (TypeCheckCtx)procCtx;
+      if (ctx.getError() != null) {
+        return null;
+      }
+
       exprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
       if (desc != null) {
         return desc;
       }
 
       ASTNode expr = (ASTNode)nd;
-      TypeCheckCtx ctx = (TypeCheckCtx)procCtx;
       RowResolver input = ctx.getInputRR();
 
-      if(expr.getType() != HiveParser.TOK_COLREF) {
+      if (expr.getType() != HiveParser.TOK_TABLE_OR_COL) {
         ctx.setError(ErrorMsg.INVALID_COLUMN.getMsg(expr));
         return null;
       }
       
-      String tabAlias = null;
-      String colName = null;
+      assert(expr.getChildCount() == 1);
+      String tableOrCol = BaseSemanticAnalyzer.unescapeIdentifier(expr.getChild(0).getText());
+
+      boolean isTableAlias = input.hasTableAlias(tableOrCol);
+      ColumnInfo colInfo = input.get(null, tableOrCol);
       
-      if (expr.getChildCount() != 1) {
-        tabAlias = BaseSemanticAnalyzer.unescapeIdentifier(expr.getChild(0).getText());
-        colName = BaseSemanticAnalyzer.unescapeIdentifier(expr.getChild(1).getText());
-      }
-      else {
-        colName = BaseSemanticAnalyzer.unescapeIdentifier(expr.getChild(0).getText());
+      if (isTableAlias) {
+        if (colInfo != null) {
+          // it's a table alias, and also a column
+          ctx.setError(ErrorMsg.AMBIGUOUS_TABLE_OR_COLUMN.getMsg(expr));
+          return null;
+        } else {
+          // It's a table alias.
+          // We will process that later in DOT. 
+          return null;
+        }
+      } else {
+        if (colInfo == null) {
+          // It's not a column or a table alias.
+          if (input.getIsExprResolver()) {
+            ctx.setError(ErrorMsg.NON_KEY_EXPR_IN_GROUPBY.getMsg(expr));
+            return null;
+          } else {
+            ctx.setError(ErrorMsg.INVALID_TABLE_OR_COLUMN.getMsg(expr.getChild(0)));
+            LOG.debug(ErrorMsg.INVALID_TABLE_OR_COLUMN.toString() + ":" + input.toString());
+            return null;
+          }
+        } else {
+          // It's a column.
+          return new exprNodeColumnDesc(colInfo.getType(), colInfo.getInternalName());
+        }
       }
 
-      if (colName == null) {
-        ctx.setError(ErrorMsg.INVALID_XPATH.getMsg(expr));
-        return null;
-      }
-
-      ColumnInfo colInfo = input.get(tabAlias, colName);
-
-      if (colInfo == null && input.getIsExprResolver()) {
-        ctx.setError(ErrorMsg.NON_KEY_EXPR_IN_GROUPBY.getMsg(expr));
-        return null;
-      }         
-      else if (tabAlias != null && !input.hasTableAlias(tabAlias)) {
-        ctx.setError(ErrorMsg.INVALID_TABLE_ALIAS.getMsg(expr.getChild(0)));
-        return null;
-      } else if (colInfo == null) {
-        ctx.setError(ErrorMsg.INVALID_COLUMN.getMsg(tabAlias == null? expr.getChild(0) : expr.getChild(1)));
-        return null;
-      }
-
-      return new exprNodeColumnDesc(colInfo.getType(), colInfo.getInternalName());
     }
     
   }
@@ -537,8 +566,42 @@ public class TypeCheckProcFactory {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
+      TypeCheckCtx ctx = (TypeCheckCtx)procCtx;
+
+      // If this is a GroupBy expression, clear error and continue
+      exprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
+      if (desc != null) {
+        ctx.setError(null);
+        return desc;
+      }
+      
+      if (ctx.getError() != null) {
+        return null;
+      }
+      
       ASTNode expr = (ASTNode)nd;
       
+      // If the first child is a TOK_TABLE_OR_COL, and nodeOutput[0] is NULL, 
+      // and the operator is a DOT, then it's a table column reference.
+      if (expr.getType() == HiveParser.DOT
+          && expr.getChild(0).getType() == HiveParser.TOK_TABLE_OR_COL
+          && nodeOutputs[0] == null) {
+
+        RowResolver input = ctx.getInputRR();
+        String tableAlias = SemanticAnalyzer.unescapeIdentifier(
+            expr.getChild(0).getChild(0).getText());
+        // NOTE: tableAlias must be a valid non-ambiguous table alias,
+        // because we've checked that in TOK_TABLE_OR_COL's process method.
+        ColumnInfo colInfo = input.get(tableAlias, 
+            ((exprNodeConstantDesc)nodeOutputs[1]).getValue().toString() );
+
+        if (colInfo == null) {
+          ctx.setError(ErrorMsg.INVALID_COLUMN.getMsg(expr.getChild(1)));
+          return null;
+        }
+        return new exprNodeColumnDesc(colInfo.getType(), colInfo.getInternalName());
+      }
+
       // Return nulls for conversion operators
       if (conversionFunctionTextHashMap.keySet().contains(expr.getType()) ||
           specialFunctionTextHashMap.keySet().contains(expr.getType()) ||
@@ -547,11 +610,6 @@ public class TypeCheckProcFactory {
         return null;
       }
       
-      exprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
-      if (desc != null) {
-        return desc;
-      }
-
       boolean isFunction = (expr.getType() == HiveParser.TOK_FUNCTION);
       
       // Create all children

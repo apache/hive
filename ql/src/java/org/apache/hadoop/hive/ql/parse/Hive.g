@@ -24,7 +24,7 @@ TOK_TABREF;
 TOK_SUBQUERY;
 TOK_DESTINATION;
 TOK_ALLCOLREF;
-TOK_COLREF;
+TOK_TABLE_OR_COL;
 TOK_FUNCTION;
 TOK_FUNCTIONDI;
 TOK_WHERE;
@@ -459,9 +459,9 @@ columnNameOrder
 columnRefOrder
 @init { msgs.push("column order"); }
 @after { msgs.pop(); }
-    : tableColumn (asc=KW_ASC | desc=KW_DESC)? 
-    -> {$desc == null}? ^(TOK_TABSORTCOLNAMEASC tableColumn)
-    ->                  ^(TOK_TABSORTCOLNAMEDESC tableColumn)
+    : expression (asc=KW_ASC | desc=KW_DESC)? 
+    -> {$desc == null}? ^(TOK_TABSORTCOLNAMEASC expression)
+    ->                  ^(TOK_TABSORTCOLNAMEDESC expression)
     ;
 
 columnNameType
@@ -667,12 +667,12 @@ tableAllColumns
     | Identifier DOT STAR -> ^(TOK_ALLCOLREF Identifier)
     ;
     
-// table.column
-tableColumn
-@init { msgs.push("table column identifier"); }
+// (table|column)
+tableOrColumn
+@init { msgs.push("table or column identifier"); }
 @after { msgs.pop(); }
     :
-    (tab=Identifier  DOT)? col=Identifier -> ^(TOK_COLREF $tab? $col)
+    Identifier -> ^(TOK_TABLE_OR_COL Identifier)
     ;
 
 expressionList
@@ -805,8 +805,8 @@ clusterByClause
 @after { msgs.pop(); }
     :
     KW_CLUSTER KW_BY
-    tableColumn
-    ( COMMA tableColumn )* -> ^(TOK_CLUSTERBY tableColumn+)
+    expression
+    ( COMMA expression )* -> ^(TOK_CLUSTERBY expression+)
     ;
 
 distributeByClause
@@ -889,7 +889,7 @@ atomExpression
     | constant
     | function
     | castExpression
-    | tableColumn
+    | tableOrColumn
     | LPAREN! expression RPAREN!
     ;
 

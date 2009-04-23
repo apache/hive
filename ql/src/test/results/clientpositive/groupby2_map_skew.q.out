@@ -1,5 +1,5 @@
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION substr (TOK_COLREF src key) 1 1)) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_FUNCTION substr (TOK_COLREF src value) 5))) (TOK_SELEXPR (TOK_FUNCTION concat (TOK_FUNCTION substr (TOK_COLREF src key) 1 1) (TOK_FUNCTION sum (TOK_FUNCTION substr (TOK_COLREF src value) 5))))) (TOK_GROUPBY (TOK_FUNCTION substr (TOK_COLREF src key) 1 1))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) key) 1 1)) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) value) 5))) (TOK_SELEXPR (TOK_FUNCTION concat (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) key) 1 1) (TOK_FUNCTION sum (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) value) 5))))) (TOK_GROUPBY (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) key) 1 1))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -59,7 +59,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /Users/char/Documents/workspace/Hive/build/ql/tmp/20274358/546963627.10001 
+        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/339920934/34511760.10001 
           Reduce Output Operator
             key expressions:
                   expr: 0
