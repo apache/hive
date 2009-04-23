@@ -113,6 +113,8 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
 
   HashMap<Byte, Vector<ArrayList<Object>>> storage;
   int joinEmitInterval = -1;
+  int nextSz = 0;
+  transient Byte lastAlias = null;
   
   public void initialize(Configuration hconf, Reporter reporter) throws HiveException {
     super.initialize(hconf, reporter);
@@ -189,12 +191,23 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
 
   InspectableObject tempAliasInspectableObject = new InspectableObject();
 
+  private int getNextSize(int sz) {
+    // A very simple counter to keep track of join entries for a key
+    if (sz >= 100000)
+      return sz + 100000;
+    
+    return 2 * sz;
+  }
+
   public void process(Object row, ObjectInspector rowInspector)
       throws HiveException {
     try {
       // get alias
       aliasField.evaluate(row, rowInspector, tempAliasInspectableObject);
       Byte alias = (Byte) (tempAliasInspectableObject.o);
+
+      if ((lastAlias == null) || (!lastAlias.equals(alias)))
+        nextSz = joinEmitInterval;
 
       // get the expressions for that alias
       JoinExprMap exmap = joinExprs.get(alias);
@@ -206,27 +219,29 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
         vField.evaluate(row, rowInspector, tempAliasInspectableObject);
         nr.add(tempAliasInspectableObject.o);
       }
+      
+      // number of rows for the key in the given table
+      int sz = storage.get(alias).size();
 
       // Are we consuming too much memory
-      if (storage.get(alias).size() == joinEmitInterval) {
-        if (alias == numValues - 1) {
-          // The input is sorted by alias, so if we are already in the last join
-          // operand,
+      if (alias == numValues - 1) {
+        if (sz == joinEmitInterval) {
+          // The input is sorted by alias, so if we are already in the last join operand,
           // we can emit some results now.
-          // Note this has to be done before adding the current row to the
-          // storage,
+          // Note this has to be done before adding the current row to the storage,
           // to preserve the correctness for outer joins.
           checkAndGenObject();
           storage.get(alias).clear();
-        } else {
-          // Output a warning if we reached at least 1000 rows for a join
-          // operand
+        }
+      } else {
+        if (sz == nextSz) {
+          // Output a warning if we reached at least 1000 rows for a join operand
           // We won't output a warning for the last join operand since the size
           // will never goes to joinEmitInterval.
           InspectableObject io = new InspectableObject();
           keyField.evaluate(row, rowInspector, io);
-          LOG.warn("table " + alias
-              + " has more than joinEmitInterval rows for join key " + io.o);
+          LOG.warn("table " + alias + " has " + sz + " rows for join key " + io.o);
+          nextSz = getNextSize(nextSz);
         }
       }
 

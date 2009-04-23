@@ -47,6 +47,8 @@ public class ExecReducer extends MapReduceBase implements Reducer {
   private Reporter rp;
   private boolean abort = false;
   private boolean isTagged = false;
+  private long cntr = 0;
+  private long nextCntr = 1;
 
   private static String [] fieldNames;
   public static final Log l4j = LogFactory.getLog("ExecReducer");
@@ -161,6 +163,10 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         row.add(keyObject);
         row.add(valueObject[tag]);
         row.add(tag);
+        if (cntr == nextCntr) {
+          l4j.info("ExecReducer: processing " + cntr + " rows");
+          nextCntr = getNextCntr(cntr);
+        }
         reducer.process(row, rowObjectInspector[tag]);
       }
 
@@ -168,6 +174,15 @@ public class ExecReducer extends MapReduceBase implements Reducer {
       abort = true;
       throw new IOException (e);
     }
+  }
+
+  private long getNextCntr(long cntr) {
+    // A very simple counter to keep track of number of rows processed by the reducer. It dumps
+    // every 1 million times, and quickly before that
+    if (cntr >= 1000000)
+      return cntr + 1000000;
+    
+    return 10 * cntr;
   }
 
   public void close() {
@@ -191,6 +206,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         l4j.trace("End Group");
         reducer.endGroup();
       }
+      l4j.info("ExecReducer: processed " + cntr + " rows");
       reducer.close(abort);
       reportStats rps = new reportStats (rp);
       reducer.preorderMap(rps);
