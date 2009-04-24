@@ -124,11 +124,11 @@ public class MoveTask extends Task<moveWork> implements Serializable {
         }
 
         if(tbd.getPartitionSpec().size() == 0) {
-          db.loadTable(new Path(tbd.getSourceDir()), tbd.getTable().getTableName(), tbd.getReplace());
+          db.loadTable(new Path(tbd.getSourceDir()), tbd.getTable().getTableName(), tbd.getReplace(), new Path(tbd.getTmpDir()));
         } else {
           LOG.info("Partition is: " + tbd.getPartitionSpec().toString());
           db.loadPartition(new Path(tbd.getSourceDir()), tbd.getTable().getTableName(),
-              tbd.getPartitionSpec(), tbd.getReplace());
+              tbd.getPartitionSpec(), tbd.getReplace(), new Path(tbd.getTmpDir()));
         }
       }
 

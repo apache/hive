@@ -445,12 +445,13 @@ public class Table {
   /**
    * Replaces files in the partition with new data set specified by srcf. Works by moving files
    * @param srcf Files to be replaced. Leaf directories or globbed file paths
+   * @param tmpd Temporary directory
    */
-  protected void replaceFiles(Path srcf) throws HiveException {
+  protected void replaceFiles(Path srcf, Path tmpd) throws HiveException {
     FileSystem fs;
     try {
       fs = FileSystem.get(getDataLocation(), Hive.get().getConf());
-      Hive.get().replaceFiles(srcf, new Path(getDataLocation().getPath()), fs);
+      Hive.get().replaceFiles(srcf, new Path(getDataLocation().getPath()), fs, tmpd);
     } catch (IOException e) {
       throw new HiveException("addFiles: filesystem error in check phase", e);
     }

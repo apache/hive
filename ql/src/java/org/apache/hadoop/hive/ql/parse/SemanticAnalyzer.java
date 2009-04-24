@@ -2206,7 +2206,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
         dest_path = dest_tab.getPath().toString();
         // Create the work for moving the table
-        this.loadTableWork.add(new loadTableDesc(queryTmpdir,
+        this.loadTableWork.add(new loadTableDesc(queryTmpdir, getTmpFileName(),
                                             table_desc,
                                             new HashMap<String, String>()));
         break;
@@ -2221,7 +2221,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         currentTableId = this.destTableId;
         this.destTableId ++;
         
-        this.loadTableWork.add(new loadTableDesc(queryTmpdir, table_desc, dest_part.getSpec()));
+        this.loadTableWork.add(new loadTableDesc(queryTmpdir, getTmpFileName(), table_desc, dest_part.getSpec()));
         break;
       }
     case QBMetaData.DEST_LOCAL_FILE:

@@ -505,14 +505,16 @@ public class Hive {
    * @param tableName name of table to be loaded.
    * @param partSpec defines which partition needs to be loaded
    * @param replace if true - replace files in the partition, otherwise add files to the partition
+   * @param tmpDirPath The temporary directory.
    */
   public void loadPartition(Path loadPath, String tableName,
-      AbstractMap<String, String> partSpec, boolean replace)
+      AbstractMap<String, String> partSpec, boolean replace,
+      Path tmpDirPath)
   throws HiveException {
     Table tbl = getTable(tableName);
     Partition part = getPartition(tbl, partSpec, true);
     if(replace) {
-      part.replaceFiles(loadPath);
+      part.replaceFiles(loadPath, tmpDirPath);
     } else {
       part.copyFiles(loadPath);
     }
@@ -527,11 +529,14 @@ public class Hive {
    * @param loadPath Directory containing files to load into Table
    * @param tableName name of table to be loaded.
    * @param replace if true - replace files in the table, otherwise add files to table
+   * @param tmpDirPath The temporary directory.
    */
-  public void loadTable(Path loadPath, String tableName, boolean replace) throws HiveException {
+  public void loadTable(Path loadPath, String tableName, 
+       boolean replace,
+       Path tmpDirPath) throws HiveException {
     Table tbl = getTable(tableName);
     if(replace) {
-      tbl.replaceFiles(loadPath);
+      tbl.replaceFiles(loadPath, tmpDirPath);
     } else {
       tbl.copyFiles(loadPath);
     }
@@ -732,8 +737,12 @@ public class Hive {
    * Replaces files in the partition with new data set specifed by srcf. Works by moving files
    *
    * @param srcf Files to be moved. Leaf Directories or Globbed File Paths
+   * @param dest The directory where the final data needs to go
+   * @param fs The filesystem handle
+   * @param tmppath Temporary directory
    */
-  protected void replaceFiles(Path srcf, Path destf, FileSystem fs) throws HiveException {
+  protected void replaceFiles(Path srcf, Path destf, FileSystem fs,
+      Path tmppath) throws HiveException {
       FileStatus [] srcs;
       try {
           srcs = fs.globStatus(srcf);
@@ -747,8 +756,6 @@ public class Hive {
       }
       checkPaths(fs, srcs, destf, true);
 
-      Random randGen = new Random();
-      Path tmppath = new Path("/tmp/"+randGen.nextInt());
       try {
           fs.mkdirs(tmppath);
           for(int i=0; i<srcs.length; i++) {

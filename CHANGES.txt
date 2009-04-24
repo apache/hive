@@ -99,6 +99,9 @@ Trunk - unreleased changes
     HIVE-433. Fixed union18 and union19 tests.
     (athusoo via johan)
 
+    HIVE-324. Fix AccessControlException when loading data.
+    (Ashish Thusoo via zshao)
+
 Release 0.3.0 - Unreleased
 
   INCOMPATIBLE CHANGES
