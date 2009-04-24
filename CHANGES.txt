@@ -15,6 +15,9 @@ Trunk - unreleased changes
 
     HIVE-402. Implement UDF regexp. (Raghu Murthy via namit)
 
+    HIVE-250. Shared memory java dbm for map-side joins.
+    (Joydeep Sen Sarma via zshao)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 
