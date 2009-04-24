@@ -625,7 +625,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           
            ASTNode whexp = (ASTNode)qbp.getWhrForClause(clause);
            if (pruner.getTable().isPartitioned() &&
-               conf.getVar(HiveConf.ConfVars.HIVEPARTITIONPRUNER).equalsIgnoreCase("strict") &&
+               conf.getVar(HiveConf.ConfVars.HIVEMAPREDMODE).equalsIgnoreCase("strict") &&
                (whexp == null || !pruner.hasPartitionPredicate((ASTNode)whexp.getChild(0)))) {
              throw new SemanticException(ErrorMsg.NO_PARTITION_PREDICATE.getMsg(whexp != null ? whexp : qbp.getSelForClause(clause), 
                                                                                 " for Alias " + alias + " Table " + pruner.getTable().getName()));
@@ -2421,7 +2421,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         assert numReducers == 1;
         // in strict mode, in the presence of order by, limit must be specified
         Integer limit = qb.getParseInfo().getDestLimit(dest);
-        if (conf.getVar(HiveConf.ConfVars.HIVEPARTITIONPRUNER).equalsIgnoreCase("strict") && limit == null)
+        if (conf.getVar(HiveConf.ConfVars.HIVEMAPREDMODE).equalsIgnoreCase("strict") && limit == null)
           throw new SemanticException(ErrorMsg.NO_LIMIT_WITH_ORDERBY.getMsg(sortExprs));
       }
     }
@@ -2588,9 +2588,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
+    int numReds = -1;
+
+    // Use only 1 reducer in case of cartesian product
+    if (reduceKeys.size() == 0) {
+      numReds = 1;
+
+      // Cartesian product is not supported in strict mode
+      if (conf.getVar(HiveConf.ConfVars.HIVEMAPREDMODE).equalsIgnoreCase("strict"))
+        throw new SemanticException(ErrorMsg.NO_CARTESIAN_PRODUCT.getMsg());
+    }
+
     ReduceSinkOperator rsOp = (ReduceSinkOperator)putOpInsertMap(
       OperatorFactory.getAndMakeChild(
-        PlanUtils.getReduceSinkDesc(reduceKeys, reduceValues, joinTree.getNextTag(), reduceKeys.size(), -1), 
+        PlanUtils.getReduceSinkDesc(reduceKeys, reduceValues, joinTree.getNextTag(), reduceKeys.size(), numReds), 
         new RowSchema(outputRS.getColumnInfos()),
         child), outputRS);
     rsOp.setColumnExprMap(colExprMap);

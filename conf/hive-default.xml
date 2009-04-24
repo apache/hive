@@ -101,6 +101,12 @@
 </property>
 
 <property>
+  <name>hive.mapred.mode</name>
+  <value>nonstrict</value>
+  <description>The mode in which the hive operations are being performed. In strict mode, some risky queries are not allowed to run</description>
+</property>
+
+<property>
   <name>hive.exec.script.maxerrsize</name>
   <value>100000</value>
   <description>Maximum number of bytes a script is allowed to emit to standard error (per map-reduce task). This prevents runaway scripts from filling logs partitions to capacity </description>

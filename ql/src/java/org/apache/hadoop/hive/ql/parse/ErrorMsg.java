@@ -72,6 +72,7 @@ public enum ErrorMsg {
   ORDERBY_SORTBY_CONFLICT("Cannot have both Order By and Sort By Clauses"),
   CLUSTERBY_ORDERBY_CONFLICT("Cannot have both Cluster By and Order By Clauses"),
   NO_LIMIT_WITH_ORDERBY("In strict mode, limit must be specified if ORDER BY is present"),
+  NO_CARTESIAN_PRODUCT("In strict mode, cartesian product is not allowed. If you really want to perform the operation, set hive.mapred.mode=nonstrict"),
   UNION_NOTIN_SUBQ("Top level Union is not supported currently; use a subquery for the union"),
   INVALID_INPUT_FORMAT_TYPE("Input Format must implement InputFormat"),
   INVALID_OUTPUT_FORMAT_TYPE("Output Format must implement HiveOutputFormat, otherwise it should be either IgnoreKeyTextOutputFormat or SequenceFileOutputFormat"),
