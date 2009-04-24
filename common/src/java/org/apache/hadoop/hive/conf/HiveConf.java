@@ -104,7 +104,7 @@ public class HiveConf extends Configuration {
     // for hive script operator
     HIVETABLENAME("hive.table.name", ""),
     HIVEPARTITIONNAME("hive.partition.name", ""),
-    HIVEPARTITIONPRUNER("hive.partition.pruning", "nonstrict"),
+    HIVEMAPREDMODE("hive.mapred.mode", "nonstrict"),
     HIVEALIAS("hive.alias", ""),
     HIVEMAPSIDEAGGREGATE("hive.map.aggr", "true"),
     HIVEGROUPBYSKEW("hive.groupby.skewindata", "false"),

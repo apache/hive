@@ -33,6 +33,9 @@ Release 0.3.0 - Unreleased
 
     HIVE-61. Implement "ORDER BY". (Namit Jain via zshao)
 
+    HIVE-376. In strict mode do not allow join without "ON" condition.
+    (Namit Jain via zshao)
+
   IMPROVEMENTS
 
     HIVE-132. Show table and describe results to be read via FetchTask.
