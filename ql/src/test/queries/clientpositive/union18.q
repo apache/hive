@@ -19,8 +19,8 @@ FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
 INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, unionsrc.value
 INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, unionsrc.value;
 
-SELECT DEST1.* FROM DEST1;
-SELECT DEST2.* FROM DEST2;
+SELECT DEST1.* FROM DEST1 SORT BY DEST1.key, DEST1.value;
+SELECT DEST2.* FROM DEST2 SORT BY DEST2.key, DEST2.val1, DEST2.val2;
 
 drop table DEST1;
 drop table DEST2;

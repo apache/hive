@@ -95,6 +95,9 @@ Trunk - unreleased changes
 
     HIVE-366. testParse should not depend on a static field
     (Zheng Shao via namit)
+    
+    HIVE-433. Fixed union18 and union19 tests.
+    (athusoo via johan)
 
 Release 0.3.0 - Unreleased
 
