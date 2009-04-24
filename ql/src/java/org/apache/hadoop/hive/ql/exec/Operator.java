@@ -162,7 +162,13 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     this.id = id;
   }
   
-  public String getid() { return id; }
+  /**
+   * This function is not named getId(), to make sure java serialization
+   * does NOT serialize it.  Some TestParse tests will fail if we serialize
+   * this field, since the Operator ID will change based on the number of
+   * query tests.
+   */
+  public String getIdentifier() { return id; }
   
   public void setOutputCollector(OutputCollector out) {
     this.out = out;

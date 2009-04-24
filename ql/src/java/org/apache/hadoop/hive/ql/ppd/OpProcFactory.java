@@ -74,7 +74,7 @@ public class OpProcFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-      LOG.info("Processing for " +  nd.getName() + "(" + ((Operator)nd).getid() + ")");
+      LOG.info("Processing for " +  nd.getName() + "(" + ((Operator)nd).getIdentifier() + ")");
       // script operator is a black-box to hive so no optimization here
       // assuming that nothing can be pushed above the script op
       return null;
@@ -90,7 +90,7 @@ public class OpProcFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-      LOG.info("Processing for " +  nd.getName() + "(" + ((Operator)nd).getid() + ")");
+      LOG.info("Processing for " +  nd.getName() + "(" + ((Operator)nd).getIdentifier() + ")");
       OpWalkerInfo owi = (OpWalkerInfo)procCtx;
       RowResolver inputRR = owi.getRowResolver(nd);
       TableScanOperator tsOp = (TableScanOperator)nd;
@@ -160,7 +160,7 @@ public class OpProcFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-      LOG.info("Processing for " +  nd.getName() + "(" + ((Operator)nd).getid() + ")");
+      LOG.info("Processing for " +  nd.getName() + "(" + ((Operator)nd).getIdentifier() + ")");
       OpWalkerInfo owi = (OpWalkerInfo)procCtx;
       Operator<? extends Serializable> op = (Operator<? extends Serializable>) nd;
       exprNodeFuncDesc predicate = (exprNodeFuncDesc) (((FilterOperator)nd).getConf()).getPredicate();
@@ -183,7 +183,7 @@ public class OpProcFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-      LOG.info("Processing for " +  nd.getName() + "(" + ((Operator)nd).getid() + ")");
+      LOG.info("Processing for " +  nd.getName() + "(" + ((Operator)nd).getIdentifier() + ")");
       OpWalkerInfo owi = (OpWalkerInfo)procCtx;
       Set<String> aliases = getQualifiedAliases((JoinOperator) nd, owi.getRowResolver(nd));
       mergeWithChildrenPred(nd, owi, null, aliases, false);
@@ -251,7 +251,7 @@ public class OpProcFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-      LOG.info("Processing for " +  nd.getName() + "(" + ((Operator)nd).getid() + ")");
+      LOG.info("Processing for " +  nd.getName() + "(" + ((Operator)nd).getIdentifier() + ")");
       OpWalkerInfo owi = (OpWalkerInfo)procCtx;
       Set<String> aliases = owi.getRowResolver(nd).getTableNames();
       boolean ignoreAliases = false;
@@ -275,7 +275,7 @@ public class OpProcFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-      LOG.info("Processing for " +  nd.getName() + "(" + ((Operator)nd).getid() + ")");
+      LOG.info("Processing for " +  nd.getName() + "(" + ((Operator)nd).getIdentifier() + ")");
       mergeWithChildrenPred(nd, (OpWalkerInfo)procCtx, null, null, false);
       return null;
     }

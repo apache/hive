@@ -163,9 +163,6 @@
                           </void> 
                          </object> 
                         </void> 
-                        <void property="id"> 
-                         <string>158</string> 
-                        </void> 
                         <void property="parentOperators"> 
                          <object class="java.util.ArrayList"> 
                           <void method="add"> 
@@ -265,9 +262,6 @@
                        </object> 
                       </void> 
                      </object> 
-                    </void> 
-                    <void property="id"> 
-                     <string>157</string> 
                     </void> 
                     <void property="parentOperators"> 
                      <object class="java.util.ArrayList"> 
@@ -505,9 +499,6 @@
                   </void> 
                  </object> 
                 </void> 
-                <void property="id"> 
-                 <string>156</string> 
-                </void> 
                 <void property="parentOperators"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
@@ -565,9 +556,6 @@
               </void> 
              </object> 
             </void> 
-            <void property="id"> 
-             <string>155</string> 
-            </void> 
             <void property="parentOperators"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
@@ -596,9 +584,6 @@
            </object> 
           </void> 
          </object> 
-        </void> 
-        <void property="id"> 
-         <string>147</string> 
         </void> 
         <void property="schema"> 
          <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
@@ -641,7 +626,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive2/hive/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>tmap:src</string> 
@@ -653,7 +638,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive2/hive/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"/> 
@@ -709,7 +694,7 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/data/users/njain/hive2/hive/build/ql/test/data/warehouse/src</string> 
+             <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
             </void> 
            </object> 
           </void> 
@@ -739,7 +724,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>/data/users/njain/hive2/hive/ql/../build/ql/tmp/9754968.10001.insclause-0</string> 
+                     <string>/data/users/zshao/tools/deploy-trunk-apache-hive/ql/../build/ql/tmp/681046781.10001.insclause-0</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -767,9 +752,6 @@
                      </object> 
                     </void> 
                    </object> 
-                  </void> 
-                  <void property="id"> 
-                   <string>162</string> 
                   </void> 
                   <void property="parentOperators"> 
                    <object class="java.util.ArrayList"> 
@@ -867,9 +849,6 @@
                 </void> 
                </object> 
               </void> 
-              <void property="id"> 
-               <string>161</string> 
-              </void> 
               <void property="parentOperators"> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
@@ -928,9 +907,6 @@
             </void> 
            </object> 
           </void> 
-          <void property="id"> 
-           <string>160</string> 
-          </void> 
           <void property="parentOperators"> 
            <object class="java.util.ArrayList"> 
             <void method="add"> 
@@ -983,9 +959,6 @@
          </object> 
         </void> 
        </object> 
-      </void> 
-      <void property="id"> 
-       <string>159</string> 
       </void> 
       <void property="parentOperators"> 
        <object class="java.util.ArrayList"> 
