@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.metadata;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -41,11 +40,10 @@ import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.serde.Constants;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.Writable;
@@ -449,7 +447,7 @@ public class Table {
     FileSystem fs;
     try {
       fs = FileSystem.get(getDataLocation(), Hive.get().getConf());
-      Hive.get().replaceFiles(srcf, new Path(getDataLocation().getPath()), fs, tmpd);
+      Hive.replaceFiles(srcf, new Path(getDataLocation().getPath()), fs, tmpd);
     } catch (IOException e) {
       throw new HiveException("addFiles: filesystem error in check phase", e);
     }
@@ -463,7 +461,7 @@ public class Table {
     FileSystem fs;
     try {
       fs = FileSystem.get(getDataLocation(), Hive.get().getConf());
-      Hive.get().copyFiles(srcf, new Path(getDataLocation().getPath()), fs);
+      Hive.copyFiles(srcf, new Path(getDataLocation().getPath()), fs);
     } catch (IOException e) {
       throw new HiveException("addFiles: filesystem error in check phase", e);
     }
@@ -574,7 +572,7 @@ public class Table {
    * @param tp Use the information from this partition.
    * @return Partition name to value mapping.
    */
-  public Map<String, String> createSpec(
+  public LinkedHashMap<String, String> createSpec(
       org.apache.hadoop.hive.metastore.api.Partition tp) {
     
     List<FieldSchema> fsl = getPartCols();

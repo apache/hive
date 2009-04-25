@@ -462,6 +462,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           if(tbl == null) {
             throw new InvalidObjectException("Unable to add partition because table or database do not exist");
           }
+          if (part.getSd().getLocation() == null) {
+            // set default location if not specified
+            part.getSd().setLocation(Warehouse.makePartName(tbl.getPartitionKeys(), part.getValues()));
+          }
           // add partition
           success = getMS().addPartition(part);
           if(success) {
