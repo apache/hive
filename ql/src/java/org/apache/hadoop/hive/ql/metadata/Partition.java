@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -90,7 +89,7 @@ public class Partition {
     for (FieldSchema field : tbl.getPartCols()) {
       pvals.add(partSpec.get(field.getName()));
     }
-
+    
     org.apache.hadoop.hive.metastore.api.Partition tpart = 
       new org.apache.hadoop.hive.metastore.api.Partition();
     tpart.setDbName(tbl.getDbName());
@@ -111,7 +110,11 @@ public class Partition {
     } 
 
     tpart.setSd(sd);
-    tpart.getSd().setLocation(location.toString());
+    if (location != null) {
+      tpart.getSd().setLocation(location.toString());
+    } else {
+      tpart.getSd().setLocation(null);
+    }
 
     initialize(tbl, tpart);
   }
@@ -126,28 +129,34 @@ public class Partition {
       org.apache.hadoop.hive.metastore.api.Partition tp) 
   throws HiveException {
 
-    this.table = tbl;
-    this.tPartition = tp;
-    this.partName = "";
+    table = tbl;
+    tPartition = tp;
+    partName = "";
 
     if(tbl.isPartitioned()) {
       try {
-        this.partName = Warehouse.makePartName(tbl.getPartCols(), 
+        partName = Warehouse.makePartName(tbl.getPartCols(), 
             tp.getValues());
+        if (tp.getSd().getLocation() == null) {
+          // set default if location is not set
+          partPath = new Path(tbl.getDataLocation().toString(), partName);
+          tp.getSd().setLocation(partPath.toString());
+        } else {
+          partPath = new Path(tp.getSd().getLocation());
+        }
       } catch (MetaException e) {
         throw new HiveException("Invalid partition for table " + tbl.getName(),
             e);
       }
-      this.partPath = new Path(tp.getSd().getLocation());
     } else {
       // We are in the HACK territory. 
       // SemanticAnalyzer expects a single partition whose schema
       // is same as the table partition. 
-      this.partPath = table.getPath();
+      partPath = table.getPath();
     }
 
-    this.spec = new LinkedHashMap<String, String>(tbl.createSpec(tp));
-    this.partURI = partPath.toUri();
+    spec = tbl.createSpec(tp);
+    partURI = partPath.toUri();
   }
 
   public String getName() {
@@ -155,21 +164,21 @@ public class Partition {
   }
 
   public Table getTable() {
-    return (this.table);
+    return table;
   }
 
   public Path [] getPath() {
     Path [] ret = new Path [1];
-    ret[0] = this.partPath;
+    ret[0] = partPath;
     return(ret);
   }
 
   public Path getPartitionPath() {
-    return this.partPath;
+    return partPath;
   }
 
   final public URI getDataLocation() {
-    return this.partURI;
+    return partURI;
   }
 
   /**
@@ -177,7 +186,7 @@ public class Partition {
    * storing it as a property of the table as a short term measure.
    */
   public int getBucketCount() {
-    return this.table.getNumBuckets();
+    return table.getNumBuckets();
     /*
       TODO: Keeping this code around for later use when we will support
       sampling on tables which are not created with CLUSTERED INTO clause
@@ -202,7 +211,7 @@ public class Partition {
   }
 
   public List<String> getBucketCols() {
-    return this.table.getBucketCols();
+    return table.getBucketCols();
   }
 
   /**
@@ -212,8 +221,8 @@ public class Partition {
   @SuppressWarnings("nls")
   public Path getBucketPath(int bucketNum) {
     try {
-      FileSystem fs = FileSystem.get(this.table.getDataLocation(), Hive.get().getConf());
-      String pathPattern = this.partPath.toString();
+      FileSystem fs = FileSystem.get(table.getDataLocation(), Hive.get().getConf());
+      String pathPattern = partPath.toString();
       if (getBucketCount() > 0) {
         pathPattern = pathPattern + "/*";
       }
@@ -228,7 +237,6 @@ public class Partition {
     catch (Exception e) {
       throw new RuntimeException("Cannot get bucket path for bucket " + bucketNum, e);
     }
-    // return new Path(this.partPath, String.format("part-%1$05d", bucketNum));
   }
 
   /**
@@ -257,13 +265,13 @@ public class Partition {
     if(s == null) {
       return getPath();
     } else {
-      int bcount = this.getBucketCount();
+      int bcount = getBucketCount();
       if(bcount == 0) {
         return getPath();
       }
 
       Dimension d = s.getSampleDimension();
-      if(!d.getDimensionId().equals(this.table.getBucketingDimensionId())) {
+      if(!d.getDimensionId().equals(table.getBucketingDimensionId())) {
         // if the bucket dimension is not the same as the sampling dimension
         // we must scan all the data
         return getPath();
@@ -277,14 +285,14 @@ public class Partition {
       } else if (bcount < scount) {
         if((scount/bcount)*bcount != scount) {
           throw new HiveException("Sample Count"+scount+" is not a multiple of bucket count " +
-              bcount + " for table " + this.table.getName());
+              bcount + " for table " + table.getName());
         }
         // undersampling a bucket
         ret.add(getBucketPath((s.getSampleNum()-1)%bcount));
       } else if (bcount > scount) {
         if((bcount/scount)*scount != bcount) {
           throw new HiveException("Sample Count"+scount+" is not a divisor of bucket count " +
-              bcount + " for table " + this.table.getName());
+              bcount + " for table " + table.getName());
         }
         // sampling multiple buckets
         for(int i=0; i<bcount/scount; i++) {
@@ -296,41 +304,9 @@ public class Partition {
   }
 
   public LinkedHashMap<String, String> getSpec() {
-    return this.spec;
+    return spec;
   }
 
-  /**
-   * Replaces files in the partition with new data set specified by srcf. Works by moving files
-   *
-   * @param srcf Files to be moved. Leaf Directories or Globbed File Paths
-   * @param tmpd Temporary directory
-   */
-  @SuppressWarnings("nls")
-  protected void replaceFiles(Path srcf, Path tmpd) throws HiveException {
-    FileSystem fs;
-    try {
-      fs = FileSystem.get(table.getDataLocation(), Hive.get().getConf());
-      Hive.get().replaceFiles(srcf, partPath, fs, tmpd);
-    } catch (IOException e) {
-      throw new HiveException("addFiles: filesystem error in check phase", e);
-    }
-  }
-
-  /**
-   * Inserts files specified into the partition. Works by moving files
-   *
-   * @param srcf Files to be moved. Leaf Directories or Globbed File Paths
-   */
-  @SuppressWarnings("nls")
-  protected void copyFiles(Path srcf) throws HiveException {
-    FileSystem fs;
-    try {
-      fs = FileSystem.get(table.getDataLocation(), Hive.get().getConf());
-      Hive.get().copyFiles(srcf, partPath, fs);
-    } catch (IOException e) {
-      throw new HiveException("addFiles: filesystem error in check phase", e);
-    }
-  }
 
   @SuppressWarnings("nls")
   @Override

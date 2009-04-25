@@ -160,7 +160,7 @@ public class Warehouse {
     StringBuilder name = new StringBuilder();
     for(int i=0; i< partCols.size(); i++) {
       if(i > 0) {
-        name.append('/');
+        name.append(Path.SEPARATOR);
       }
       name.append((partCols.get(i)).getName());
       name.append('=');

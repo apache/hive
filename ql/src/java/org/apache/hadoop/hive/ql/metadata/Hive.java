@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Random;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -43,23 +42,18 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.ql.parse.ParseDriver;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
+import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
-import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
-import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 
 import com.facebook.thrift.TException;
-import com.facebook.thrift.protocol.TBinaryProtocol;
-import com.facebook.thrift.transport.TMemoryBuffer;
 
 /**
  * The Hive class contains information about this instance of Hive.
@@ -259,8 +253,6 @@ public class Hive {
       if (!ifNotExists) {
         throw new HiveException(e);
       }
-    } catch (HiveException e) {
-      throw e;
     } catch (Exception e) {
       throw new HiveException(e);
     }
@@ -273,7 +265,7 @@ public class Hive {
    * @deprecated Use {@link #dropTable(String, String)} instead
    */
   public void dropTable(String tableName) throws HiveException {
-    dropTable(tableName, true, true);
+    dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName, true, true);
   }
 
   
@@ -511,13 +503,29 @@ public class Hive {
       AbstractMap<String, String> partSpec, boolean replace,
       Path tmpDirPath)
   throws HiveException {
-    Table tbl = getTable(tableName);
-    Partition part = getPartition(tbl, partSpec, true);
-    if(replace) {
-      part.replaceFiles(loadPath, tmpDirPath);
-    } else {
-      part.copyFiles(loadPath);
-    }
+    Table tbl = getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
+    try {
+      FileSystem fs = FileSystem.get(tbl.getDataLocation(), getConf());
+      Path partPath = new Path(tbl.getDataLocation().getPath(), Warehouse.makePartName(partSpec));
+      /** Move files before creating the partition since down stream processes check 
+       *  for existence of partition in metadata before accessing the data. If partition
+       *  is created before data is moved, downstream waiting processes might move forward
+       *  with partial data
+       */
+      if(replace) {
+        Hive.replaceFiles(loadPath, partPath, fs, tmpDirPath);
+      } else {
+        Hive.copyFiles(loadPath, partPath, fs);
+      }
+      // create a partition if it doesn't exist
+      getPartition(tbl, partSpec, true);
+    } catch (IOException e) {
+      LOG.error(StringUtils.stringifyException(e));
+      throw new HiveException(e);
+    } catch (MetaException e) {
+      LOG.error(StringUtils.stringifyException(e));
+      throw new HiveException(e);
+    } 
   }
 
   /**
@@ -534,7 +542,7 @@ public class Hive {
   public void loadTable(Path loadPath, String tableName, 
        boolean replace,
        Path tmpDirPath) throws HiveException {
-    Table tbl = getTable(tableName);
+    Table tbl = getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
     if(replace) {
       tbl.replaceFiles(loadPath, tmpDirPath);
     } else {
@@ -551,14 +559,7 @@ public class Hive {
    */
   public Partition createPartition(Table tbl, Map<String, String> partSpec)
     throws HiveException {
-    
-    try {
-      String loc = tbl.getTTable().getSd().getLocation() +
-        Path.SEPARATOR + Warehouse.makePartName(partSpec);
-      return createPartition(tbl, partSpec, new Path(loc));
-    } catch (MetaException e) {
-      throw new HiveException("Could not create partition location");
-    }
+      return createPartition(tbl, partSpec, null);
   }
   
   /**
@@ -677,7 +678,7 @@ public class Hive {
     }
   }
 
-  private void checkPaths(FileSystem fs, FileStatus [] srcs, Path destf, boolean replace) throws HiveException {
+  static private void checkPaths(FileSystem fs, FileStatus [] srcs, Path destf, boolean replace) throws HiveException {
     try {
         for(int i=0; i<srcs.length; i++) {
             FileStatus [] items = fs.listStatus(srcs[i].getPath());
@@ -704,7 +705,7 @@ public class Hive {
     }
 }
 
-  protected void copyFiles(Path srcf, Path destf, FileSystem fs) throws HiveException {
+  static protected void copyFiles(Path srcf, Path destf, FileSystem fs) throws HiveException {
     FileStatus[] srcs;
     try {
       srcs = fs.globStatus(srcf);
@@ -741,7 +742,7 @@ public class Hive {
    * @param fs The filesystem handle
    * @param tmppath Temporary directory
    */
-  protected void replaceFiles(Path srcf, Path destf, FileSystem fs,
+  static protected void replaceFiles(Path srcf, Path destf, FileSystem fs,
       Path tmppath) throws HiveException {
       FileStatus [] srcs;
       try {

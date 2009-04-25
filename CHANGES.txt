@@ -102,6 +102,9 @@ Trunk - unreleased changes
     HIVE-324. Fix AccessControlException when loading data.
     (Ashish Thusoo via zshao)
 
+    HIVE-442. Move the data before creating the partition.
+    (Prasad Chakka via zshao)
+
 Release 0.3.0 - Unreleased
 
   INCOMPATIBLE CHANGES
