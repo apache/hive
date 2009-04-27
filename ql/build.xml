@@ -99,36 +99,11 @@
     <mkdir dir="${build.dir}/gen-java/org/apache/hadoop/hive/ql/parse"/>
   </target>
 
-  <target name="configure" depends="deploy-ant-tasks">
-    <!-- If not set already make sure that they are defined but empty -->
-    <taskdef name="getversionpref" classname="org.apache.hadoop.hive.ant.GetVersionPref"
-             classpath="${build.dir.hive}/anttasks/hive_anttasks.jar"/>
-
-    <getversionpref property="hadoop.version.prefix" input="${hadoop.version}"/>
-
-    <condition property="exclude_0_19.token" value="/*" else="">
-      <equals arg1="${hadoop.version.prefix}" arg2="0.19"/>
-    </condition>
-    <condition property="endexclude_0_19.token" value="*/" else="">
-      <equals arg1="${hadoop.version.prefix}" arg2="0.19"/>
-    </condition>
-
-    <copy todir="${build.dir}/java">
-      <fileset dir="${src.dir}">
-        <include name="**/*.java"/>
-      </fileset>
-      <filterset begintoken="//[" endtoken="]">
-        <filter token="exclude_0_19" value="${exclude_0_19.token}"/>
-        <filter token="endexclude_0_19" value="${endexclude_0_19.token}"/>
-      </filterset>
-    </copy> 
-  </target>
-
-  <target name="compile" depends="init, ql-init, build-grammar, configure">
+  <target name="compile" depends="init, ql-init, build-grammar">
     <echo message="Compiling: ${name}"/>
     <javac
      encoding="${build.encoding}"
-     srcdir="${build.dir}/java:${build.dir}/gen-java"
+     srcdir="${src.dir}:${build.dir}/gen-java"
      includes="**/*.java"
      destdir="${build.classes}"
      debug="${javac.debug}"

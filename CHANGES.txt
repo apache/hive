@@ -105,6 +105,9 @@ Trunk - unreleased changes
     HIVE-442. Move the data before creating the partition.
     (Prasad Chakka via zshao)
 
+    HIVE-395. Fix build problems with eclipse and 0.19 hadoop.
+    (Neil Conway via athusoo)
+
 Release 0.3.0 - Unreleased
 
   INCOMPATIBLE CHANGES

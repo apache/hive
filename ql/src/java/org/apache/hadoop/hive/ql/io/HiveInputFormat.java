@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.io;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -179,7 +180,7 @@ public class HiveInputFormat<K extends WritableComparable,
     }
 
     InputFormat inputFormat = getInputFormatFromCache(inputFormatClass);
-    
+
     return new HiveRecordReader(inputFormat.getRecordReader(inputSplit, job, reporter));
   }
 
@@ -219,7 +220,6 @@ public class HiveInputFormat<K extends WritableComparable,
     return result.toArray(new HiveInputSplit[result.size()]);
   }
 
-//[exclude_0_19]
   public void validateInput(JobConf job) throws IOException {
 
     init(job);
@@ -231,17 +231,20 @@ public class HiveInputFormat<K extends WritableComparable,
     JobConf newjob = new JobConf(job);
 
     // for each dir, get the InputFormat, and do validateInput.
-    for(Path dir: dirs) {
+    for (Path dir: dirs) {
       tableDesc table = getTableDescFromPath(dir);
       // create a new InputFormat instance if this is the first time to see this class
       InputFormat inputFormat = getInputFormatFromCache(table.getInputFileFormatClass());
 
       FileInputFormat.setInputPaths(newjob, dir);
       newjob.setInputFormat(inputFormat.getClass());
-      inputFormat.validateInput(newjob);
+      try {
+        Method validateInput = inputFormat.getClass().getDeclaredMethod("validateInput", newjob.getClass());
+        validateInput.setAccessible(true);
+        validateInput.invoke(inputFormat, newjob);
+      } catch (Exception e) {}
     }
   }
-//[endexclude_0_19]
 
   private tableDesc getTableDescFromPath(Path dir) throws IOException {
 

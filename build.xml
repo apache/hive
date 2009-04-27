@@ -298,7 +298,7 @@
       <packageset dir="metastore/src/gen-javabean"/>
       <packageset dir="metastore/src/model"/>
       <packageset dir="cli/src/java"/>
-      <packageset dir="${build.dir.hive}/ql/java"/>
+      <packageset dir="ql/src/java"/>
       <packageset dir="${build.dir.hive}/ql/gen-java"/>
 
       <link href="${javadoc.link.java}"/>
