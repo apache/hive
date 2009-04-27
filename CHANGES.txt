@@ -175,6 +175,8 @@ Release 0.3.0 - Unreleased
     HIVE-442. Move the data before creating the partition.
     (Prasad Chakka via zshao)
 
+    HIVE-447. Fix tests on hudson. (Ashish Thusoo via zshao)
+
 Release 0.2.0 - Unreleased
 
   INCOMPATIBLE CHANGES
