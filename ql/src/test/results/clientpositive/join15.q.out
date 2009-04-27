@@ -1,8 +1,9 @@
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF src src1) (TOK_TABREF src src2) (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF src src1) (TOK_TABREF src src2) (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -60,8 +61,43 @@ STAGE PLANS:
               compressed: false
               GlobalTableId: 0
               table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  name: binary_table
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        /data/users/athusoo/commits/hive_trunk_ws6/build/ql/tmp/340146088/929907680.10002 
+          Reduce Output Operator
+            key expressions:
+                  expr: 0
+                  type: string
+                  expr: 1
+                  type: string
+                  expr: 2
+                  type: string
+                  expr: 3
+                  type: string
+            sort order: ++++
+            tag: -1
+            value expressions:
+                  expr: 0
+                  type: string
+                  expr: 1
+                  type: string
+                  expr: 2
+                  type: string
+                  expr: 3
+                  type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator

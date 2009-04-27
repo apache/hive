@@ -108,6 +108,8 @@ Trunk - unreleased changes
     HIVE-395. Fix build problems with eclipse and 0.19 hadoop.
     (Neil Conway via athusoo)
 
+    HIVE-447. Fix tests on hudson. (Ashish Thusoo via zshao)
+
 Release 0.3.0 - Unreleased
 
   INCOMPATIBLE CHANGES
