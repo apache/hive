@@ -32,6 +32,9 @@ Trunk - unreleased changes
     HIVE-440. Reducer and Join to print out number of rows processed.
     (Namit Jain via zshao)
 
+    HIVE-254. Link jobtracker from Hive History in Hive Web Interface.
+    (Edward Capriolo via athusoo)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).

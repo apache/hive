@@ -101,7 +101,7 @@
 				
 				<tr>
 					<td>Query</td>
-					<td><textarea name="query" rows="8" cols="30"><% 
+					<td><textarea name="query" rows="8" cols="70"><% 
 				if (sess.getQuery()==null) { out.print(""); } else { out.print(sess.getQuery()); }
 				%></textarea></td>
 				</tr>

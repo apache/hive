@@ -138,7 +138,7 @@
 
 <property>
   <name>hive.hwi.war.file</name>
-  <value>${HIVE_HOME}/lib/hive.war</value>
+  <value>${HIVE_HOME}/lib/hive-hwi.war</value>
   <description>This is the WAR file with the jsp content for Hive Web Interface</description>
 </property>
 

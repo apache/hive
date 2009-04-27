@@ -207,7 +207,44 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
 		}
 		return result;
 	}
-
+	
+	public String getHiveConfVar(String s) throws HWIException{
+		String result=null;
+		try {
+			result = conf.get(s);
+		} catch (Exception ex) {
+			throw new HWIException(ex);
+		}
+		return result;
+	}
+	/*
+	 * mapred.job.tracker could be host:port or just local
+	 * mapred.job.tracker.http.address could be host:port or just host
+	 * In some configurations http.address is set to 0.0.0.0 we are combining the two
+	 * variables to provide a url to the job tracker WUI if it exists. If hadoop chose
+	 * the first available port for the JobTracker HTTP port will can not determine it.
+	 */
+	public String getJobTrackerURL(String jobid) throws HWIException{
+		String jt = this.getHiveConfVar( "mapred.job.tracker" );
+		String jth = this.getHiveConfVar( "mapred.job.tracker.http.address" );
+		String [] jtparts = null; 
+		String [] jthttpParts = null;
+		if (jt.equalsIgnoreCase("local")){
+			jtparts = new String [2];
+			jtparts [0]="local";
+			jtparts [1]="";
+		} else {
+			jtparts = jt.split(":");
+		}
+		if (jth.contains(":")) {
+			jthttpParts = jth.split(":");
+		} else {
+			jthttpParts = new String [2];
+			jthttpParts [0] = jth;
+			jthttpParts [1] = "";
+		}
+		return jtparts[0]+":"+jthttpParts[1]+"/jobdetails.jsp?jobid="+jobid+"&refresh=30";
+	}
 	@Override
 	/*
 	 * HWISessionItem uses a wait() notify() system. If the thread detects conf to

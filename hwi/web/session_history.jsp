@@ -46,10 +46,15 @@
 		<ul>
 			<% TaskInfo ti = hv.getTaskInfoMap().get(taskKey); %>
 			<% for (String tiKey: ti.hm.keySet() ) { %>
-			<li><%=tiKey%> <%=ti.hm.get(tiKey)%></li>
+				<li><%=tiKey%> <%=ti.hm.get(tiKey)%>
+					<% if (tiKey.equalsIgnoreCase("TASK_HADOOP_ID") ){ %>
+						<a href="http://<%=si.getJobTrackerURL(ti.hm.get(tiKey))%>"><%=ti.hm.get(tiKey)%></a>	 
+					<% } %>		
+				<% } %>
+				</li>          
 			<% } %>
 		</ul>
-		<% } %>
+		
 		</td>
 	  </tr>
     </table>
