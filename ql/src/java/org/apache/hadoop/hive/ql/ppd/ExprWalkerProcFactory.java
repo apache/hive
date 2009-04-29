@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc;
+import org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeIndexDesc;
 import org.apache.hadoop.hive.ql.udf.UDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.UDFType;
@@ -139,6 +140,57 @@ public class ExprWalkerProcFactory {
 
   }
 
+  /**
+   * If all children are candidates and refer only to one table alias then this expr is a candidate
+   * else it is not a candidate but its children could be final candidates
+   */
+  public static class GenericFuncExprProcessor implements NodeProcessor {
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+        Object... nodeOutputs) throws SemanticException {
+      ExprWalkerInfo ctx = (ExprWalkerInfo) procCtx;
+      String alias = null;
+      exprNodeGenericFuncDesc expr = (exprNodeGenericFuncDesc) nd;
+
+      UDFType note = expr.getGenericUDFClass().getAnnotation(UDFType.class);
+      if(note != null && !note.deterministic()) {
+        // this GenericUDF can't be pushed down
+        ctx.setIsCandidate(expr, false);
+        return false;
+      }
+      
+      boolean isCandidate = true;
+      for (int i=0; i < nd.getChildren().size(); i++) {
+        exprNodeDesc ch = (exprNodeDesc) nd.getChildren().get(i);
+        exprNodeDesc newCh = ctx.getConvertedNode(ch);
+        if (newCh != null) {
+          expr.getChildExprs().set(i, newCh);
+          ch = newCh;
+        }
+        String chAlias = ctx.getAlias(ch);
+        
+        isCandidate = isCandidate && ctx.isCandidate(ch);
+        // need to iterate through all children even if one is found to be not a candidate
+        // in case if the other children could be individually pushed up
+        if (isCandidate && chAlias != null) {
+          if (alias == null) {
+            alias = chAlias;
+          } else if (!chAlias.equalsIgnoreCase(alias)) {
+            isCandidate = false;
+          }
+        }
+        
+        if(!isCandidate)
+          break;
+      }
+      ctx.addAlias(expr, alias);
+      ctx.setIsCandidate(expr, isCandidate);
+      return isCandidate;
+    }
+
+  }
+  
   public static class IndexExprProcessor implements NodeProcessor {
 
     @Override
@@ -205,6 +257,10 @@ public class ExprWalkerProcFactory {
     return new FuncExprProcessor();
   }
 
+  public static NodeProcessor getGenericFuncProcessor() {
+    return new GenericFuncExprProcessor();
+  }
+
   public static NodeProcessor getIndexProcessor() {
     return new IndexExprProcessor();
   }
@@ -215,8 +271,8 @@ public class ExprWalkerProcFactory {
 
   public static ExprWalkerInfo extractPushdownPreds(OpWalkerInfo opContext, 
       Operator<? extends Serializable> op,
-      exprNodeFuncDesc pred) throws SemanticException {
-    List<exprNodeFuncDesc> preds = new ArrayList<exprNodeFuncDesc>();
+      exprNodeDesc pred) throws SemanticException {
+    List<exprNodeDesc> preds = new ArrayList<exprNodeDesc>();
     preds.add(pred);
     return extractPushdownPreds(opContext, op, preds);
   }
@@ -231,7 +287,7 @@ public class ExprWalkerProcFactory {
    */
   public static ExprWalkerInfo extractPushdownPreds(OpWalkerInfo opContext, 
       Operator<? extends Serializable> op,
-      List<exprNodeFuncDesc> preds) throws SemanticException {
+      List<exprNodeDesc> preds) throws SemanticException {
     // Create the walker, the rules dispatcher and the context.
     ExprWalkerInfo exprContext = new ExprWalkerInfo(op, opContext.getRowResolver(op));
     
@@ -242,22 +298,23 @@ public class ExprWalkerProcFactory {
     exprRules.put(new RuleRegExp("R2", exprNodeFieldDesc.class.getName() + "%"), getFuncProcessor());
     exprRules.put(new RuleRegExp("R3", exprNodeFuncDesc.class.getName() + "%"), getFuncProcessor());
     exprRules.put(new RuleRegExp("R4", exprNodeIndexDesc.class.getName() + "%"), getIndexProcessor());
+    exprRules.put(new RuleRegExp("R5", exprNodeGenericFuncDesc.class.getName() + "%"), getGenericFuncProcessor());
   
     // The dispatcher fires the processor corresponding to the closest matching rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(getDefaultExprProcessor(), exprRules, exprContext);
     GraphWalker egw = new DefaultGraphWalker(disp);
   
     List<Node> startNodes = new ArrayList<Node>();
-    List<exprNodeFuncDesc> clonedPreds = new ArrayList<exprNodeFuncDesc>();
-    for (exprNodeFuncDesc node : preds) {
-      clonedPreds.add((exprNodeFuncDesc) node.clone());
+    List<exprNodeDesc> clonedPreds = new ArrayList<exprNodeDesc>();
+    for (exprNodeDesc node : preds) {
+      clonedPreds.add((exprNodeDesc) node.clone());
     }
     startNodes.addAll(clonedPreds);
     
     egw.startWalking(startNodes, null);
     
     // check the root expression for final candidates
-    for (exprNodeFuncDesc pred : clonedPreds) {
+    for (exprNodeDesc pred : clonedPreds) {
       extractFinalCandidates(pred, exprContext);
     }
     return exprContext;
@@ -266,20 +323,20 @@ public class ExprWalkerProcFactory {
   /**
    * Walks through the top AND nodes and determine which of them are final candidates
    */
-  private static void extractFinalCandidates(exprNodeFuncDesc expr, ExprWalkerInfo ctx) {
+  private static void extractFinalCandidates(exprNodeDesc expr, ExprWalkerInfo ctx) {
     if (ctx.isCandidate(expr)) {
       ctx.addFinalCandidate(expr);
       return;
     }
     
-    if (!UDFOPAnd.class.isAssignableFrom(expr.getUDFClass())) {
-      return;
+    // If the operator is AND, we can try to push down its children
+    if (expr instanceof exprNodeFuncDesc
+        && ((exprNodeFuncDesc)expr).getUDFClass().equals(UDFOPAnd.class)) {
+      // now determine if any of the children are final candidates
+      for (Node ch : expr.getChildren()) {
+        extractFinalCandidates((exprNodeDesc) ch, ctx);
+      }        
     }
-    // now determine if any of the children are final candidates
-    for (Node ch : expr.getChildren()) {
-      if(ch instanceof exprNodeFuncDesc)
-        extractFinalCandidates((exprNodeFuncDesc) ch, ctx);
-    }        
+    
   }
-
 }

@@ -35,7 +35,7 @@ public class DefaultRuleDispatcher implements Dispatcher {
 
   /**
    * constructor
-   * @param defaultProc defualt processor to be fired if no rule matches
+   * @param defaultProc default processor to be fired if no rule matches
    * @param rules operator processor that handles actual processing of the node
    * @param procCtx operator processor context, which is opaque to the dispatcher
    */

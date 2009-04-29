@@ -104,9 +104,9 @@ public class OpProcFactory {
       }
       
       // combine all predicates into a single expression
-      List<exprNodeFuncDesc> preds = null;
+      List<exprNodeDesc> preds = null;
       exprNodeFuncDesc condn = null; 
-      Iterator<List<exprNodeFuncDesc>> iterator = pushDownPreds.getFinalCandidates().values().iterator();
+      Iterator<List<exprNodeDesc>> iterator = pushDownPreds.getFinalCandidates().values().iterator();
       while (iterator.hasNext()) {
         preds = iterator.next();
         int i = 0;
@@ -285,9 +285,9 @@ public class OpProcFactory {
      * @param ewi
      */
     protected void logExpr(Node nd, ExprWalkerInfo ewi) {
-      for (Entry<String, List<exprNodeFuncDesc>> e : ewi.getFinalCandidates().entrySet()) {
+      for (Entry<String, List<exprNodeDesc>> e : ewi.getFinalCandidates().entrySet()) {
         LOG.info("Pushdown Predicates of " + nd.getName() + " For Alias : " + e.getKey() );
-        for (exprNodeFuncDesc n : e.getValue()) {
+        for (exprNodeDesc n : e.getValue()) {
         LOG.info("\t" + n.getExprString());
         }
       }
@@ -316,7 +316,7 @@ public class OpProcFactory {
       if(ewi == null) {
         ewi = new ExprWalkerInfo();
       }
-      for (Entry<String, List<exprNodeFuncDesc>> e : childPreds.getFinalCandidates().entrySet()) {
+      for (Entry<String, List<exprNodeDesc>> e : childPreds.getFinalCandidates().entrySet()) {
         if(ignoreAliases || aliases == null || aliases.contains(e.getKey()) || e.getKey() == null) {
           // e.getKey() (alias) can be null in case of constant expressions. see input8.q
           ExprWalkerInfo extractPushdownPreds = ExprWalkerProcFactory.extractPushdownPreds(owi, op, e.getValue());

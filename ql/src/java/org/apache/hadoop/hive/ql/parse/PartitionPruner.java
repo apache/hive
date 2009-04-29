@@ -22,6 +22,7 @@ import java.util.*;
 
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc;
@@ -39,7 +40,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -81,7 +81,6 @@ public class PartitionPruner {
   public boolean onlyContainsPartitionCols() {
     return onlyContainsPartCols;
   }
-  
   
   /** Class to store the return result of genExprNodeDesc.
    * 
@@ -227,6 +226,7 @@ public class PartitionPruner {
           ExprNodeTempDesc child = genExprNodeDesc((ASTNode)expr.getChild(ci));
           tempChildren.add(child);
         }
+
         // Is it a special case: table DOT column?
         if (expr.getType() == HiveParser.DOT && tempChildren.get(0).getIsTableName()) {
           String tabAlias = tempChildren.get(0).getTableName();
@@ -241,7 +241,13 @@ public class PartitionPruner {
           }
           
           // Create function desc
-          exprNodeDesc desc = TypeCheckProcFactory.DefaultExprProcessor.getXpathOrFuncExprNodeDesc(expr, isFunction, children);
+          exprNodeDesc desc = null;
+          try {
+            desc = TypeCheckProcFactory.DefaultExprProcessor.getXpathOrFuncExprNodeDesc(expr, isFunction, children);
+          } catch (UDFArgumentTypeException e) {
+            throw new SemanticException(ErrorMsg.INVALID_ARGUMENT_TYPE
+                .getMsg(expr.getChild(childrenBegin + e.getArgumentId()), e.getMessage()));
+          }
           
           if (desc instanceof exprNodeFuncDesc && (
               ((exprNodeFuncDesc)desc).getUDFMethod().getDeclaringClass().equals(UDFOPAnd.class) 
@@ -463,11 +469,7 @@ public class PartitionPruner {
     try {
       StructObjectInspector rowObjectInspector = (StructObjectInspector)this.tab.getDeserializer().getObjectInspector();
       Object[] rowWithPart = new Object[2];
-      InspectableObject inspectableObject = new InspectableObject();
-     
-      ExprNodeEvaluator evaluator = null;
-      if (this.prunerExpr != null)
-        evaluator = ExprNodeEvaluatorFactory.get(this.prunerExpr);
+      
       for(Partition part: Hive.get().getPartitions(this.tab)) {
         // Set all the variables here
         LinkedHashMap<String, String> partSpec = part.getSpec();
@@ -490,9 +492,11 @@ public class PartitionPruner {
         StructObjectInspector rowWithPartObjectInspector = ObjectInspectorFactory.getUnionStructObjectInspector(ois);
         
         // evaluate the expression tree
-        if (evaluator != null) {
-          evaluator.evaluate(rowWithPart, rowWithPartObjectInspector, inspectableObject);
-          Boolean r = (Boolean) ((PrimitiveObjectInspector)inspectableObject.oi).getPrimitiveJavaObject(inspectableObject.o);
+        if (this.prunerExpr != null) {
+          ExprNodeEvaluator evaluator = ExprNodeEvaluatorFactory.get(this.prunerExpr);
+          ObjectInspector evaluateResultOI = evaluator.initialize(rowWithPartObjectInspector);
+          Object evaluateResultO = evaluator.evaluate(rowWithPart);
+          Boolean r = (Boolean) ((PrimitiveObjectInspector)evaluateResultOI).getPrimitiveJavaObject(evaluateResultO);
           LOG.trace("prune result for partition " + partSpec + ": " + r);
           if (Boolean.TRUE.equals(r)) {
             LOG.debug("retained partition: " + partSpec);

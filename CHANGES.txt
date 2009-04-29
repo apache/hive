@@ -21,6 +21,8 @@ Trunk - unreleased changes
     HIVE-376. In strict mode do not allow join without "ON" condition.
     (Namit Jain via zshao)
 
+    HIVE-164. Use CASE through GenericUDF (Zheng Shao via namit)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 

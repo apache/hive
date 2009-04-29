@@ -1,0 +1,1 @@
+FAILED: Error in semantic analysis: line 2:13 Argument Type Mismatch 1: The expressions after WHEN should have the same type with that after CASE: "string" is expected but "int" is found

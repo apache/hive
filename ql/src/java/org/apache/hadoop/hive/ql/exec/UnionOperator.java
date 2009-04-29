@@ -34,9 +34,9 @@ public class UnionOperator extends  Operator<unionDesc>  implements Serializable
   private static final long serialVersionUID = 1L;
 
   @Override
-  public void process(Object row, ObjectInspector rowInspector)
+  public void process(Object row, ObjectInspector rowInspector, int tag)
       throws HiveException {
-    forward(row, rowInspector);    
+    forward(row, rowInspector);
   }
 
   /**

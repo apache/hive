@@ -41,6 +41,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.Text;
@@ -94,9 +96,8 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
   }
 
   transient protected int numValues; // number of aliases
-  transient static protected ExprNodeEvaluator aliasField;
-  transient static protected ExprNodeEvaluator keyField;
   transient protected HashMap<Byte, JoinExprMap> joinExprs;
+  transient protected HashMap<Byte, ObjectInspector[]> joinExprsObjectInspectors;
   transient static protected Byte[] order; // order in which the results should
                                            // be outputted
   transient protected joinCond[] condn;
@@ -114,13 +115,6 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
   transient private Map<Integer, Set<String>> posToAliasMap;
 
 
-  static {
-    aliasField = ExprNodeEvaluatorFactory.get(new exprNodeColumnDesc(
-        TypeInfoFactory.stringTypeInfo, Utilities.ReduceField.ALIAS.toString()));
-    keyField = ExprNodeEvaluatorFactory.get(new exprNodeColumnDesc(
-        TypeInfoFactory.stringTypeInfo, Utilities.ReduceField.KEY.toString()));
-  }
-
   HashMap<Byte, Vector<ArrayList<Object>>> storage;
   int joinEmitInterval = -1;
   int nextSz = 0;
@@ -135,6 +129,7 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
 
     numValues = conf.getExprs().size();
     joinExprs = new HashMap<Byte, JoinExprMap>();
+    joinExprsObjectInspectors = new HashMap<Byte, ObjectInspector[]>();
     if (order == null) {
       order = new Byte[numValues];
       for (int i = 0; i < numValues; i++)
@@ -201,8 +196,6 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
       storage.put(alias, new Vector<ArrayList<Object>>());
   }
 
-  InspectableObject tempAliasInspectableObject = new InspectableObject();
-
   private int getNextSize(int sz) {
     // A very simple counter to keep track of join entries for a key
     if (sz >= 100000)
@@ -211,12 +204,11 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
     return 2 * sz;
   }
 
-  public void process(Object row, ObjectInspector rowInspector)
+  public void process(Object row, ObjectInspector rowInspector, int tag)
       throws HiveException {
     try {
       // get alias
-      aliasField.evaluate(row, rowInspector, tempAliasInspectableObject);
-      Byte alias = (Byte) ((PrimitiveObjectInspector)tempAliasInspectableObject.oi).getPrimitiveJavaObject(tempAliasInspectableObject.o);
+      Byte alias = (byte)tag;
 
       if ((lastAlias == null) || (!lastAlias.equals(alias)))
         nextSz = joinEmitInterval;
@@ -225,11 +217,23 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
       JoinExprMap exmap = joinExprs.get(alias);
       ExprNodeEvaluator[] valueFields = exmap.getValueFields();
 
+      // Get the valueFields Object Inspectors
+      ObjectInspector[] valueFieldOI = joinExprsObjectInspectors.get(alias);
+      if (valueFieldOI == null) {
+        // Initialize the ExprEvaluator if necessary
+        valueFieldOI = new ObjectInspector[valueFields.length];
+        for (int i=0; i<valueFields.length; i++) {
+          valueFieldOI[i] = valueFields[i].initialize(rowInspector);
+        }
+        joinExprsObjectInspectors.put(alias, valueFieldOI);
+      }
+      
       // Compute the values
       ArrayList<Object> nr = new ArrayList<Object>(valueFields.length);
-      for (ExprNodeEvaluator vField : valueFields) {
-        vField.evaluate(row, rowInspector, tempAliasInspectableObject);
-        nr.add(ObjectInspectorUtils.copyToStandardObject(tempAliasInspectableObject.o, tempAliasInspectableObject.oi));
+      for (int i=0; i<valueFields.length; i++) {
+        nr.add(ObjectInspectorUtils.copyToStandardObject(
+            valueFields[i].evaluate(row),
+            valueFieldOI[i]));
       }
       
       // number of rows for the key in the given table
@@ -250,9 +254,10 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
           // Output a warning if we reached at least 1000 rows for a join operand
           // We won't output a warning for the last join operand since the size
           // will never goes to joinEmitInterval.
-          InspectableObject io = new InspectableObject();
-          keyField.evaluate(row, rowInspector, io);
-          LOG.warn("table " + alias + " has " + sz + " rows for join key " + io.o);
+          StructObjectInspector soi = (StructObjectInspector)rowInspector;
+          StructField sf = soi.getStructFieldRef(Utilities.ReduceField.KEY.toString());
+          Object keyObject = soi.getStructFieldData(row, sf);
+          LOG.warn("table " + alias + " has " + sz + " rows for join key " + keyObject);
           nextSz = getNextSize(nextSz);
         }
       }

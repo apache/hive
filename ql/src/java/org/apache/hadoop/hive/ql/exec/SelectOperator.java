@@ -39,52 +39,32 @@ public class SelectOperator extends Operator <selectDesc> implements Serializabl
   transient protected ExprNodeEvaluator[] eval;
 
   transient Object[] output;
-  transient ArrayList<ObjectInspector> outputFieldObjectInspectors;
   transient ObjectInspector outputObjectInspector;
-  transient InspectableObject tempInspectableObject;
   
   boolean firstRow;
   
   public void initialize(Configuration hconf, Reporter reporter) throws HiveException {
     super.initialize(hconf, reporter);
-    try {
-      ArrayList<exprNodeDesc> colList = conf.getColList();
-      eval = new ExprNodeEvaluator[colList.size()];
-      for(int i=0; i<colList.size(); i++) {
-        assert(colList.get(i) != null);
-        eval[i] = ExprNodeEvaluatorFactory.get(colList.get(i));
-      }
-      output = new Object[eval.length];
-      outputFieldObjectInspectors = new ArrayList<ObjectInspector>(eval.length);
-      for(int j=0; j<eval.length; j++) {
-        output[j] = null;
-        outputFieldObjectInspectors.add(null);
-      }
-      tempInspectableObject = new InspectableObject();      
-      firstRow = true;
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw new RuntimeException(e);
+
+    ArrayList<exprNodeDesc> colList = conf.getColList();
+    eval = new ExprNodeEvaluator[colList.size()];
+    for(int i=0; i<colList.size(); i++) {
+      assert(colList.get(i) != null);
+      eval[i] = ExprNodeEvaluatorFactory.get(colList.get(i));
     }
+    firstRow = true;
   }
 
-  public void process(Object row, ObjectInspector rowInspector)
+  public void process(Object row, ObjectInspector rowInspector, int tag)
       throws HiveException {
-    for(int i=0; i<eval.length; i++) {
-      eval[i].evaluate(row, rowInspector, tempInspectableObject);
-      output[i] = tempInspectableObject.o;
-      if (firstRow) {
-        outputFieldObjectInspectors.set(i, tempInspectableObject.oi);
-      }
-    }
     if (firstRow) {
       firstRow = false;
-      ArrayList<String> fieldNames = new ArrayList<String>(eval.length);
-      for(int i=0; i<eval.length; i++) {
-        fieldNames.add(Integer.valueOf(i).toString());
-      }
-      outputObjectInspector = ObjectInspectorFactory.getStandardStructObjectInspector(
-        fieldNames, outputFieldObjectInspectors);
+      output = new Object[eval.length];
+      outputObjectInspector = initEvaluatorsAndReturnStruct(eval, rowInspector);
+    }
+    
+    for(int i=0; i<eval.length; i++) {
+      output[i] = eval[i].evaluate(row);
     }
     forward(output, outputObjectInspector);
   }

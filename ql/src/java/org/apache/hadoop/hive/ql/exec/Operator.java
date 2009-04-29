@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Vector;
@@ -34,7 +35,9 @@ import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.mapredWork;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
@@ -259,7 +262,14 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     LOG.info("Initialization Done");
   }
 
-  public abstract void process(Object row, ObjectInspector rowInspector) throws HiveException;
+  /**
+   * Process the row.
+   * @param row  The object representing the row.
+   * @param rowInspector  The inspector for the row object, will be deprecated soon.
+   * @param tag  The tag of the row usually means which parent this row comes from.
+   *             Rows with the same tag should have exactly the same rowInspector all the time.
+   */
+  public abstract void process(Object row, ObjectInspector rowInspector, int tag) throws HiveException;
  
   // If a operator wants to do some work at the beginning of a group
   public void startGroup() throws HiveException {
@@ -331,7 +341,8 @@ public abstract class Operator <T extends Serializable> implements Serializable,
    *  per row, so it's important to make the access efficient.
    */
   transient protected Operator<? extends Serializable>[] childOperatorsArray;
-  
+  transient protected int[] childOperatorsTag; 
+                          
   protected void forward(Object row, ObjectInspector rowInspector) throws HiveException {
     
     // For debugging purposes:
@@ -343,6 +354,19 @@ public abstract class Operator <T extends Serializable> implements Serializable,
       childOperatorsArray = new Operator[childOperators.size()];
       for (int i=0; i<childOperatorsArray.length; i++) {
         childOperatorsArray[i] = childOperators.get(i); 
+      }
+      childOperatorsTag = new int[childOperatorsArray.length];
+      for (int i=0; i<childOperatorsArray.length; i++) {
+        List<Operator<? extends Serializable>> parentOperators = 
+            childOperatorsArray[i].getParentOperators();
+        if (parentOperators == null) {
+          throw new HiveException("Hive internal error: parent is null in " 
+              + childOperatorsArray[i].getClass() + "!");
+        }
+        childOperatorsTag[i] = parentOperators.indexOf(this);
+        if (childOperatorsTag[i] == -1) {
+          throw new HiveException("Hive internal error: cannot find parent in the child operator!");
+        }
       }
     }
     
@@ -356,7 +380,7 @@ public abstract class Operator <T extends Serializable> implements Serializable,
       if (o.getDone()) {
         childrenDone ++;
       } else {
-        o.process(row, rowInspector);
+        o.process(row, rowInspector, childOperatorsTag[i]);
       }
     }
     
@@ -435,4 +459,31 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     s.append("<\\" + getName() + ">");
     return s.toString();
   }
+  
+  /**
+   * Initialize an array of ExprNodeEvaluator and return the result
+   * ObjectInspectors.
+   */  
+  protected static ObjectInspector[] initEvaluators(ExprNodeEvaluator[] evals, 
+      ObjectInspector rowInspector) throws HiveException {
+    ObjectInspector[] result = new ObjectInspector[evals.length];
+    for (int i=0; i<evals.length; i++) {
+      result[i] = evals[i].initialize(rowInspector);
+    }
+    return result;
+  }
+
+  /**
+   * Initialize an array of ExprNodeEvaluator and put the return values into a 
+   * StructObjectInspector with integer field names.
+   */  
+  protected static StructObjectInspector initEvaluatorsAndReturnStruct(
+      ExprNodeEvaluator[] evals, ObjectInspector rowInspector) 
+      throws HiveException {
+    ObjectInspector[] fieldObjectInspectors = initEvaluators(evals, rowInspector);
+    return ObjectInspectorFactory.getStandardStructObjectInspector(
+        ObjectInspectorUtils.getIntegerArray(fieldObjectInspectors.length),
+        Arrays.asList(fieldObjectInspectors));
+  }
+  
 }

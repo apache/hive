@@ -28,8 +28,10 @@ import java.util.Stack;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
@@ -38,6 +40,7 @@ import org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc;
+import org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeIndexDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeNullDesc;
 import org.apache.hadoop.hive.serde.Constants;
@@ -48,9 +51,11 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.ql.udf.UDFOPPositive;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.util.ReflectionUtils;
 
 /**
  * The Factory for creating typecheck processors. The typecheck processors are used to
@@ -408,9 +413,14 @@ public class TypeCheckProcFactory {
      * @param name
      * @param children
      * @return The expression node descriptor
+     * @throws UDFArgumentTypeException 
      */
     public static exprNodeDesc getFuncExprNodeDesc(String name, exprNodeDesc... children) {
-      return getFuncExprNodeDesc(name, Arrays.asList(children));
+      try {
+        return getFuncExprNodeDesc(name, Arrays.asList(children));
+      } catch (UDFArgumentTypeException e) {
+        throw new RuntimeException("Hive 2 internal error", e);
+      }
     }
     
     /**
@@ -418,8 +428,19 @@ public class TypeCheckProcFactory {
      * It will insert implicit type conversion functions if necessary. 
      * @throws SemanticException 
      */
-    public static exprNodeDesc getFuncExprNodeDesc(String udfName, List<exprNodeDesc> children) {
+    public static exprNodeDesc getFuncExprNodeDesc(String udfName, List<exprNodeDesc> children)
+        throws UDFArgumentTypeException {
 
+      FunctionInfo fi = FunctionRegistry.getFunctionInfo(udfName);
+      if (fi == null) return null;
+      
+      // Is it a generic UDF?
+      Class<? extends GenericUDF> genericUDFClass = fi.getGenericUDFClass();
+      if (genericUDFClass != null) {
+        return exprNodeGenericFuncDesc.newInstance(genericUDFClass, children);
+      }
+      
+      // TODO: extract as a function
       // Find the corresponding method
       ArrayList<TypeInfo> argumentTypeInfos = new ArrayList<TypeInfo>(children.size());
       for(int i=0; i<children.size(); i++) {
@@ -430,6 +451,7 @@ public class TypeCheckProcFactory {
       Method udfMethod = FunctionRegistry.getUDFMethod(udfName, argumentTypeInfos);
       if (udfMethod == null) return null;
 
+      // Convert the parameters if the type of parameters do not exactly match.
       ArrayList<exprNodeDesc> ch = SemanticAnalyzer.convertParameters(udfMethod, children);
 
       // The return type of a function can be of either Java Primitive Type/Class or Writable Class.
@@ -449,7 +471,7 @@ public class TypeCheckProcFactory {
 
     static exprNodeDesc getXpathOrFuncExprNodeDesc(ASTNode expr, boolean isFunction,
         ArrayList<exprNodeDesc> children)
-        throws SemanticException {
+        throws SemanticException, UDFArgumentTypeException {
       // return the child directly if the conversion is redundant.
       if (isRedundantConversionFunction(expr, isFunction, children)) {
         assert(children.size() == 1);
@@ -524,8 +546,9 @@ public class TypeCheckProcFactory {
         }
       } else {
         // other operators or functions
-        Class<? extends UDF> udf = FunctionRegistry.getUDFClass(funcText);
-        if (udf == null) {
+        FunctionInfo fi = FunctionRegistry.getFunctionInfo(funcText);
+        
+        if (fi == null) {
           if (isFunction)
             throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg((ASTNode)expr.getChild(0)));
           else
@@ -626,7 +649,12 @@ public class TypeCheckProcFactory {
       }
       
       // Create function desc
-      return getXpathOrFuncExprNodeDesc(expr, isFunction, children);
+      try {
+        return getXpathOrFuncExprNodeDesc(expr, isFunction, children);
+      } catch (UDFArgumentTypeException e) {
+        throw new SemanticException(ErrorMsg.INVALID_ARGUMENT_TYPE
+            .getMsg(expr.getChild(childrenBegin + e.getArgumentId()), e.getMessage()));
+      }
     }
     
   }

@@ -859,6 +859,26 @@ castExpression
     RPAREN -> ^(TOK_FUNCTION primitiveType expression)
     ;
     
+caseExpression
+@init { msgs.push("case expression"); }
+@after { msgs.pop(); }
+    :
+    KW_CASE expression
+    (KW_WHEN expression KW_THEN expression)+
+    (KW_ELSE expression)?
+    KW_END -> ^(TOK_FUNCTION KW_CASE expression*)
+    ;
+    
+whenExpression
+@init { msgs.push("case expression"); }
+@after { msgs.pop(); }
+    :
+    KW_CASE
+     ( KW_WHEN expression KW_THEN expression)+
+    (KW_ELSE expression)?
+    KW_END -> ^(TOK_FUNCTION KW_WHEN expression*)
+    ;
+    
 constant
 @init { msgs.push("constant"); }
 @after { msgs.pop(); }
@@ -889,6 +909,8 @@ atomExpression
     | constant
     | function
     | castExpression
+    | caseExpression
+    | whenExpression
     | tableOrColumn
     | LPAREN! expression RPAREN!
     ;
@@ -1157,6 +1179,11 @@ KW_SET: 'SET';
 KW_PROPERTIES: 'TBLPROPERTIES';
 KW_VALUE_TYPE: '$VALUE$';
 KW_ELEM_TYPE: '$ELEM$';
+KW_CASE: 'CASE';
+KW_WHEN: 'WHEN';
+KW_THEN: 'THEN';
+KW_ELSE: 'ELSE';
+KW_END: 'END';
 
 // Operators
 

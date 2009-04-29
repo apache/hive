@@ -92,7 +92,7 @@ public class TestOperators extends TestCase {
       op.initialize(null, null);
 
       for(InspectableObject oner: r) {
-        op.process(oner.o, oner.oi);
+        op.process(oner.o, oner.oi, 0);
       }
 
       Map<Enum<?>, Long> results = op.getStats();
@@ -137,17 +137,13 @@ public class TestOperators extends TestCase {
       // fileSinkOperator to dump the output of the select
       fileSinkDesc fsd = new fileSinkDesc ("file:///tmp" + File.separator + System.getProperty("user.name") + File.separator + "TestFileSinkOperator",
                                            Utilities.defaultTd, false);
-      Operator<fileSinkDesc> flop = OperatorFactory.get(fileSinkDesc.class);
-      flop.setConf(fsd);
-      ArrayList<Operator<? extends Serializable>> nextOp = new ArrayList<Operator<? extends Serializable>> ();
-      nextOp.add(flop);
-
-      op.setChildOperators(nextOp);
+      Operator<fileSinkDesc> flop = OperatorFactory.getAndMakeChild(fsd, op);
+      
       op.initialize(new JobConf(TestOperators.class), Reporter.NULL);
 
       // evaluate on row
       for(int i=0; i<5; i++) {
-        op.process(r[i].o, r[i].oi);
+        op.process(r[i].o, r[i].oi, 0);
       }
       op.close(false);
 
@@ -183,31 +179,17 @@ public class TestOperators extends TestCase {
       tableDesc scriptOutput = PlanUtils.getDefaultTableDesc("" + Utilities.tabCode, "a,b");
       tableDesc scriptInput  = PlanUtils.getDefaultTableDesc("" + Utilities.tabCode, "a,b");
       scriptDesc sd = new scriptDesc("cat", scriptOutput, scriptInput);
-      Operator<scriptDesc> sop = OperatorFactory.get(scriptDesc.class);
-      sop.setConf(sd);
-      ArrayList<Operator<? extends Serializable>> nextScriptOp = new ArrayList<Operator<? extends Serializable>> ();
-      nextScriptOp.add(sop);
-
+      Operator<scriptDesc> sop = OperatorFactory.getAndMakeChild(sd, op);
 
       // Collect operator to observe the output of the script
       collectDesc cd = new collectDesc (Integer.valueOf(10));
-      CollectOperator cdop = (CollectOperator) OperatorFactory.get(collectDesc.class);
-      cdop.setConf(cd);
-      ArrayList<Operator<? extends Serializable>> nextCollectOp = new ArrayList<Operator<? extends Serializable>> ();
-      nextCollectOp.add(cdop);
-
-
-      // chain the scriptOperator to the select operator
-      op.setChildOperators(nextScriptOp);
-      // chain the collect operator to the script operator
-      sop.setChildOperators(nextCollectOp);
-
+      CollectOperator cdop = (CollectOperator) OperatorFactory.getAndMakeChild(cd, sop);
 
       op.initialize(new JobConf(TestOperators.class), null);
 
       // evaluate on row
       for(int i=0; i<5; i++) {
-        op.process(r[i].o, r[i].oi);
+        op.process(r[i].o, r[i].oi, 0);
       }
       op.close(false);
 

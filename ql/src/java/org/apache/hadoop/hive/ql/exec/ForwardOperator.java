@@ -38,7 +38,7 @@ public class ForwardOperator extends  Operator<forwardDesc>  implements Serializ
   }
 
   @Override
-  public void process(Object row, ObjectInspector rowInspector)
+  public void process(Object row, ObjectInspector rowInspector, int tag)
       throws HiveException {
     forward(row, rowInspector);    
   }

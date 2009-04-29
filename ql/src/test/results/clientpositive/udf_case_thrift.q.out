@@ -1,0 +1,42 @@
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src_thrift)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION CASE ([ (. (TOK_TABLE_OR_COL src_thrift) lint) 0) 0 (+ ([ (. (TOK_TABLE_OR_COL src_thrift) lint) 0) 1) 1 (+ ([ (. (TOK_TABLE_OR_COL src_thrift) lint) 0) 2) 2 100 5)) (TOK_SELEXPR (TOK_FUNCTION CASE ([ (. (TOK_TABLE_OR_COL src_thrift) lstring) 0) '0' 'zero' '10' (TOK_FUNCTION CONCAT ([ (. (TOK_TABLE_OR_COL src_thrift) lstring) 0) " is ten") 'default')) (TOK_SELEXPR ([ (TOK_FUNCTION CASE ([ (. (TOK_TABLE_OR_COL src_thrift) lstring) 0) '0' (. (TOK_TABLE_OR_COL src_thrift) lstring) TOK_NULL) 0))) (TOK_LIMIT 3)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src_thrift 
+            Select Operator
+              expressions:
+                    expr: lint
+                    type: array<int>
+                    expr: lstring
+                    type: array<string>
+              Select Operator
+                expressions:
+                      expr: CASE (0[0]) WHEN (0) THEN ((0[0] + 1)) WHEN (1) THEN ((0[0] + 2)) WHEN (2) THEN (100) ELSE (5) END
+                      type: int
+                      expr: CASE (1[0]) WHEN ('0') THEN ('zero') WHEN ('10') THEN (concat(1[0], ' is ten')) ELSE ('default') END
+                      type: string
+                      expr: CASE (1[0]) WHEN ('0') THEN (1) ELSE (null) END[0]
+                      type: string
+                Limit
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 3
+
+
+1	zero	0
+3	10 is ten	NULL
+100	default	NULL

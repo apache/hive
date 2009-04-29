@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.UDAF;
 import org.apache.hadoop.hive.ql.exec.UDAFEvaluator;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
@@ -82,8 +83,6 @@ import org.apache.hadoop.hive.ql.optimizer.GenMRUnion1;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink3;
 import org.apache.hadoop.hive.ql.plan.*;
 import org.apache.hadoop.hive.ql.udf.UDFOPPositive;
-import org.apache.hadoop.hive.ql.exec.MapRedTask;
-import org.apache.hadoop.hive.ql.exec.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.*;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
@@ -3182,19 +3181,24 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    exprNodeDesc hashfnExpr = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("default_sample_hashfn", args);
-    assert(hashfnExpr != null);
-    LOG.info("hashfnExpr = " + hashfnExpr);
-    exprNodeDesc andExpr = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("&", hashfnExpr, intMaxExpr);
-    assert(andExpr != null);
-    LOG.info("andExpr = " + andExpr);
-    exprNodeDesc modExpr = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("%", andExpr, denominatorExpr);
-    assert(modExpr != null);
-    LOG.info("modExpr = " + modExpr);
-    LOG.info("numeratorExpr = " + numeratorExpr);
-    exprNodeDesc equalsExpr = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("==", modExpr, numeratorExpr);
-    LOG.info("equalsExpr = " + equalsExpr);
-    assert(equalsExpr != null);
+    exprNodeDesc equalsExpr = null;
+    try {
+      exprNodeDesc hashfnExpr = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("default_sample_hashfn", args);
+      assert(hashfnExpr != null);
+      LOG.info("hashfnExpr = " + hashfnExpr);
+      exprNodeDesc andExpr = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("&", hashfnExpr, intMaxExpr);
+      assert(andExpr != null);
+      LOG.info("andExpr = " + andExpr);
+      exprNodeDesc modExpr = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("%", andExpr, denominatorExpr);
+      assert(modExpr != null);
+      LOG.info("modExpr = " + modExpr);
+      LOG.info("numeratorExpr = " + numeratorExpr);
+      equalsExpr = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("==", modExpr, numeratorExpr);
+      LOG.info("equalsExpr = " + equalsExpr);
+      assert(equalsExpr != null);
+    } catch (UDFArgumentTypeException e) {
+      throw new RuntimeException("Hive 2 internal exception", e);
+    }
     return equalsExpr;
   }
   
@@ -3646,8 +3650,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     opRules.put(new RuleRegExp("R2", HiveParser.Number + "%"), TypeCheckProcFactory.getNumExprProcessor());
     opRules.put(new RuleRegExp("R3", HiveParser.Identifier + "%|" + 
                                      HiveParser.StringLiteral + "%|" + 
+                                     HiveParser.TOK_CHARSETLITERAL + "%|" +
                                      HiveParser.KW_IF + "%|" + 
-                                     HiveParser.TOK_CHARSETLITERAL + "%"), 
+                                     HiveParser.KW_CASE + "%|" +
+                                     HiveParser.KW_WHEN + "%"),
                                TypeCheckProcFactory.getStrExprProcessor());
     opRules.put(new RuleRegExp("R4", HiveParser.KW_TRUE + "%|" + HiveParser.KW_FALSE + "%"), 
                                TypeCheckProcFactory.getBoolExprProcessor());
@@ -3669,7 +3675,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     return desc;
   }
-  
   
   /**
    * Gets the table Alias for the column from the column name. This function throws

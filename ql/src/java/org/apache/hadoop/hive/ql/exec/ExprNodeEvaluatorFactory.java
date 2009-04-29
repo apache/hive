@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec;
 import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeNullDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc;
@@ -42,6 +43,10 @@ public class ExprNodeEvaluatorFactory {
     // Function node, e.g. an operator or a UDF node
     if (desc instanceof exprNodeFuncDesc) {
       return new ExprNodeFuncEvaluator((exprNodeFuncDesc)desc);
+    }
+    // Generic Function node, e.g. CASE
+    if (desc instanceof exprNodeGenericFuncDesc) {
+      return new ExprNodeGenericFuncEvaluator((exprNodeGenericFuncDesc)desc);
     }
     // Field node, e.g. get a.myfield1 from a
     if (desc instanceof exprNodeFieldDesc) {

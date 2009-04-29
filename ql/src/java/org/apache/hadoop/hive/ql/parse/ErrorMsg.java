@@ -38,6 +38,7 @@ public enum ErrorMsg {
   INVALID_FUNCTION("Invalid Function"),
   INVALID_FUNCTION_SIGNATURE("Function Argument Type Mismatch"),
   INVALID_OPERATOR_SIGNATURE("Operator Argument Type Mismatch"),
+  INVALID_ARGUMENT_TYPE("Argument Type Mismatch"),
   INVALID_JOIN_CONDITION_1("Both Left and Right Aliases Encountered in Join"),
   INVALID_JOIN_CONDITION_2("Neither Left nor Right Aliases Encountered in Join"),
   INVALID_JOIN_CONDITION_3("OR not supported in Join currently"),

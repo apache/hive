@@ -45,7 +45,7 @@ public class LimitOperator extends Operator<limitDesc> implements Serializable {
     currCount = 0;
   }
 
-  public void process(Object row, ObjectInspector rowInspector) throws HiveException {
+  public void process(Object row, ObjectInspector rowInspector, int tag) throws HiveException {
     if (currCount < limit) {
       forward(row, rowInspector);
       currCount++;

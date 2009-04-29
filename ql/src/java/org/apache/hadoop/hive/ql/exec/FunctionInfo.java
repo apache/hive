@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+
 public class FunctionInfo {
 
   private String displayName;
@@ -29,16 +31,20 @@ public class FunctionInfo {
   private Class<? extends UDF> udfClass;
 
   private Class<? extends UDAF> udafClass;
+  
+  private Class<? extends GenericUDF> genericUDFClass;
 
   public static enum OperatorType { NO_OP, PREFIX, INFIX, POSTFIX };
 
-  public FunctionInfo(String displayName, Class<? extends UDF> udfClass, Class<? extends UDAF> udafClass) {
+  public FunctionInfo(String displayName, Class<? extends UDF> udfClass, Class<? extends UDAF> udafClass,
+      Class<? extends GenericUDF> genericUdfClass) {
     assert(udfClass == null || udafClass == null);
     this.displayName = displayName;
     opType = OperatorType.NO_OP;
     isOperator = false;
     this.udfClass = udfClass;
     this.udafClass = udafClass;
+    this.genericUDFClass = genericUdfClass;
   }
 
   public FunctionInfo(String displayName, OperatorType opType, Class<? extends UDF> udfClass) {
@@ -74,6 +80,10 @@ public class FunctionInfo {
 
   public Class<? extends UDAF> getUDAFClass() {
     return udafClass;
+  }
+  
+  public Class<? extends GenericUDF> getGenericUDFClass() {
+    return genericUDFClass;
   }
   
   public String getDisplayName() {

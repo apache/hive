@@ -36,26 +36,28 @@ public class CollectOperator extends Operator <collectDesc> implements Serializa
 
   private static final long serialVersionUID = 1L;
   transient protected ArrayList<Object> rowList;
-  transient protected ArrayList<ObjectInspector> rowInspectorList;
+  transient protected ObjectInspector standardRowInspector;
   transient int maxSize;
 
   public void initialize(Configuration hconf, Reporter reporter) throws HiveException {
     super.initialize(hconf, reporter);
     rowList = new ArrayList<Object> ();
-    rowInspectorList = new ArrayList<ObjectInspector> ();
     maxSize = conf.getBufferSize().intValue();
   }
 
-  public void process(Object row, ObjectInspector rowInspector)
+  boolean firstRow = true;
+  public void process(Object row, ObjectInspector rowInspector, int tag)
       throws HiveException {
-    if(rowList.size() < maxSize) {
+    if (firstRow) {
+      firstRow = false;
+      // Get the standard ObjectInspector of the row
+      this.standardRowInspector = ObjectInspectorUtils.getStandardObjectInspector(rowInspector);
+    }
+    
+    if (rowList.size() < maxSize) {
       // Create a standard copy of the object.
-      // In the future we can optimize this by doing copy-on-write.
-      // Here we always copy the object so that other operators can reuse the object for the next row. 
       Object o = ObjectInspectorUtils.copyToStandardObject(row, rowInspector);
-      ObjectInspector oi = ObjectInspectorUtils.getStandardObjectInspector(rowInspector);
       rowList.add(o);
-      rowInspectorList.add(oi);
     }
     forward(row, rowInspector);
   }
@@ -67,7 +69,7 @@ public class CollectOperator extends Operator <collectDesc> implements Serializa
       result.oi = null;
     } else {
       result.o = rowList.remove(0);
-      result.oi = rowInspectorList.remove(0);
+      result.oi = standardRowInspector;
     }
   }
 

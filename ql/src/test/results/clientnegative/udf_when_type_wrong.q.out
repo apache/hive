@@ -1,0 +1,1 @@
+FAILED: Error in semantic analysis: line 3:13 Argument Type Mismatch '1': "boolean" is expected after WHEN, but "string" is found

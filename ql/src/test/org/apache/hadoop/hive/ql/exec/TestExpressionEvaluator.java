@@ -24,6 +24,7 @@ import java.util.*;
 
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -100,9 +101,10 @@ public class TestExpressionEvaluator extends TestCase {
       ExprNodeEvaluator eval = ExprNodeEvaluatorFactory.get(exprDesc);
 
       // evaluate on row
-      InspectableObject result = new InspectableObject();
-      eval.evaluate(r.o, r.oi, result);
-      Object standardResult = ObjectInspectorUtils.copyToStandardObject(result.o, result.oi, ObjectInspectorCopyOption.WRITABLE);   
+      ObjectInspector resultOI = eval.initialize(r.oi);
+      Object resultO = eval.evaluate(r.o);
+      
+      Object standardResult = ObjectInspectorUtils.copyToStandardObject(resultO, resultOI, ObjectInspectorCopyOption.WRITABLE);   
       assertEquals(cola, standardResult);
       System.out.println("ExprNodeColumnEvaluator ok");
     } catch (Throwable e) {
@@ -122,10 +124,10 @@ public class TestExpressionEvaluator extends TestCase {
       ExprNodeEvaluator eval = ExprNodeEvaluatorFactory.get(func1);
 
       // evaluate on row
-      InspectableObject result = new InspectableObject();
-      eval.evaluate(r.o, r.oi, result);
+      ObjectInspector resultOI = eval.initialize(r.oi);
+      Object resultO = eval.evaluate(r.o);
       assertEquals("1a",
-          ObjectInspectorUtils.copyToStandardObject(result.o, result.oi, ObjectInspectorCopyOption.JAVA));
+          ObjectInspectorUtils.copyToStandardObject(resultO, resultOI, ObjectInspectorCopyOption.JAVA));
       System.out.println("ExprNodeFuncEvaluator ok");
     } catch (Throwable e) {
       e.printStackTrace();
@@ -142,10 +144,10 @@ public class TestExpressionEvaluator extends TestCase {
       ExprNodeEvaluator eval = ExprNodeEvaluatorFactory.get(func1);
 
       // evaluate on row
-      InspectableObject result = new InspectableObject();
-      eval.evaluate(r.o, r.oi, result);
+      ObjectInspector resultOI = eval.initialize(r.oi);
+      Object resultO = eval.evaluate(r.o);
       assertEquals(Double.valueOf("1"),
-          ObjectInspectorUtils.copyToStandardObject(result.o, result.oi, ObjectInspectorCopyOption.JAVA));
+          ObjectInspectorUtils.copyToStandardObject(resultO, resultOI, ObjectInspectorCopyOption.JAVA));
       System.out.println("testExprNodeConversionEvaluator ok");
     } catch (Throwable e) {
       e.printStackTrace();
@@ -157,13 +159,15 @@ public class TestExpressionEvaluator extends TestCase {
     System.out.println("Evaluating " + expr + " for " + times + " times");
     // evaluate on row
     InspectableObject output = new InspectableObject(); 
+    ObjectInspector resultOI = eval.initialize(input.oi);
+    Object resultO = null;
     long start = System.currentTimeMillis();
     for (int i=0; i<times; i++) {
-      eval.evaluate(input.o, input.oi, output);
+      resultO = eval.evaluate(input.o);
     }
     long end = System.currentTimeMillis();
     assertEquals(standardJavaOutput,
-        ObjectInspectorUtils.copyToStandardObject(output.o, output.oi, ObjectInspectorCopyOption.JAVA));
+        ObjectInspectorUtils.copyToStandardObject(resultO, resultOI, ObjectInspectorCopyOption.JAVA));
     System.out.println("Evaluation finished: " + String.format("%2.3f", (end - start)*0.001) + " seconds, " 
         + String.format("%2.3f", (end - start)*1000.0/times) + " seconds/million call.");
   }

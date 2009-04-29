@@ -79,7 +79,11 @@ public class MapOperator extends Operator <mapredWork> implements Serializable {
         List<String> aliases = conf.getPathToAliases().get(onefile);
         for(String onealias: aliases) {
           LOG.info("Adding alias " + onealias + " to work list for file " + fpath.toUri().getPath());
-          todo.add(conf.getAliasToWork().get(onealias));
+          Operator<? extends Serializable> op = conf.getAliasToWork().get(onealias);
+          List<Operator<? extends Serializable>> parents = new ArrayList<Operator<? extends Serializable>>();
+          parents.add(this);
+          op.setParentOperators(parents);
+          todo.add(op);
         }
 
         // initialize decoder once based on what table we are processing
@@ -187,7 +191,7 @@ public class MapOperator extends Operator <mapredWork> implements Serializable {
     }
   }
 
-  public void process(Object row, ObjectInspector rowInspector)
+  public void process(Object row, ObjectInspector rowInspector, int tag)
       throws HiveException {
     throw new HiveException("Hive 2 Internal error: should not be called!");
   }

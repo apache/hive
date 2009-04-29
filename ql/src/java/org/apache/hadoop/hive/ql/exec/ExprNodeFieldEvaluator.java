@@ -31,11 +31,16 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
+/**
+ * This Evaluator can evaluate s.f for s as both struct and list of struct.
+ * If s is struct, then s.f is the field.
+ * If s is list of struct, then s.f is the list of struct field.   
+ */
 public class ExprNodeFieldEvaluator extends ExprNodeEvaluator {
 
   protected exprNodeFieldDesc desc;
   transient ExprNodeEvaluator leftEvaluator;
-  transient InspectableObject leftInspectableObject;
+  transient ObjectInspector leftInspector;
   transient StructObjectInspector structObjectInspector;
   transient StructField field;
   transient ObjectInspector structFieldObjectInspector;
@@ -44,57 +49,53 @@ public class ExprNodeFieldEvaluator extends ExprNodeEvaluator {
   public ExprNodeFieldEvaluator(exprNodeFieldDesc desc) {
     this.desc = desc;
     leftEvaluator = ExprNodeEvaluatorFactory.get(desc.getDesc());
-    field = null;
-    leftInspectableObject = new InspectableObject();
   }
 
-  public void evaluate(Object row, ObjectInspector rowInspector,
-      InspectableObject result) throws HiveException {
-    
-    assert(result != null);
-    // Get the result in leftInspectableObject
-    leftEvaluator.evaluate(row, rowInspector, leftInspectableObject);
-
-    if (field == null) {
-      evaluateInspector(rowInspector);
-    }
-    result.oi = resultObjectInspector;
-    if (desc.getIsList()) {
-      List<?> list = ((ListObjectInspector)leftInspectableObject.oi).getList(leftInspectableObject.o);
-      if (list == null) {
-        result.o = null;
-      } else {
-        List<Object> r = new ArrayList<Object>(list.size());
-        for(int i=0; i<list.size(); i++) {
-          r.add(structObjectInspector.getStructFieldData(list.get(i), field));
-        }
-        result.o = r;
-      }
-    } else {
-      result.o = structObjectInspector.getStructFieldData(leftInspectableObject.o, field);
-    }
-  }
-
-  public ObjectInspector evaluateInspector(ObjectInspector rowInspector)
+  @Override
+  public ObjectInspector initialize(ObjectInspector rowInspector)
       throws HiveException {
-    // If this is the first row, or the dynamic structure of the evaluatorInspectableObject 
-    // is different from the previous row 
-    leftInspectableObject.oi = leftEvaluator.evaluateInspector(rowInspector);
-    if (field == null) {
-      if (desc.getIsList()) {
-        structObjectInspector = (StructObjectInspector)((ListObjectInspector)leftInspectableObject.oi).getListElementObjectInspector();
-      } else {
-        structObjectInspector = (StructObjectInspector)leftInspectableObject.oi;
-      }
-      field = structObjectInspector.getStructFieldRef(desc.getFieldName());
-      structFieldObjectInspector = field.getFieldObjectInspector();
-    }
+    
+    leftInspector = leftEvaluator.initialize(rowInspector);
     if (desc.getIsList()) {
-      resultObjectInspector = ObjectInspectorFactory.getStandardListObjectInspector(structFieldObjectInspector);
+      structObjectInspector = (StructObjectInspector) ((ListObjectInspector) leftInspector)
+          .getListElementObjectInspector();
+    } else {
+      structObjectInspector = (StructObjectInspector) leftInspector;
+    }
+    field = structObjectInspector.getStructFieldRef(desc.getFieldName());
+    structFieldObjectInspector = field.getFieldObjectInspector();
+
+    if (desc.getIsList()) {
+      resultObjectInspector = ObjectInspectorFactory
+          .getStandardListObjectInspector(structFieldObjectInspector);
     } else {
       resultObjectInspector = structFieldObjectInspector;
     }
     return resultObjectInspector;
   }
+  
+  List<Object> cachedList = new ArrayList<Object>();
+  @Override
+  public Object evaluate(Object row) throws HiveException {
+    
+    // Get the result in leftInspectableObject
+    Object left = leftEvaluator.evaluate(row);
+
+    if (desc.getIsList()) {
+      List<?> list = ((ListObjectInspector)leftInspector).getList(left);
+      if (list == null) {
+        return null;
+      } else {
+        cachedList.clear();
+        for(int i=0; i<list.size(); i++) {
+          cachedList.add(structObjectInspector.getStructFieldData(list.get(i), field));
+        }
+        return cachedList;
+      }
+    } else {
+      return structObjectInspector.getStructFieldData(left, field);
+    }
+  }
+
 
 }

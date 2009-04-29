@@ -64,7 +64,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
    * information for each node is the value which is used while walking the tree by 
    * its parent
    */
-  private Map<String, List<exprNodeFuncDesc>> pushdownPreds;
+  private Map<String, List<exprNodeDesc>> pushdownPreds;
   /**
    *  Values the expression sub-trees (predicates) that can be pushed down for root 
    * expression tree. Since there can be more than one alias in an expression tree, 
@@ -73,7 +73,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
   private Map<exprNodeDesc,ExprInfo> exprInfoMap;
   
   public ExprWalkerInfo() {
-    this.pushdownPreds = new HashMap<String, List<exprNodeFuncDesc>>();
+    this.pushdownPreds = new HashMap<String, List<exprNodeDesc>>();
     this.exprInfoMap   = new HashMap<exprNodeDesc, ExprInfo>();
   }
   
@@ -81,7 +81,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
     this.op = op;
     this.toRR   = toRR;
     
-    this.pushdownPreds = new HashMap<String, List<exprNodeFuncDesc>>();
+    this.pushdownPreds = new HashMap<String, List<exprNodeDesc>>();
     this.exprInfoMap   = new HashMap<exprNodeDesc, ExprInfo>();
   }
   
@@ -179,12 +179,12 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
    * Adds the specified expr as the top-most pushdown expr (ie all its children can be pushed)
    * @param expr
    */
-  public void addFinalCandidate(exprNodeFuncDesc expr) {
+  public void addFinalCandidate(exprNodeDesc expr) {
     String alias = this.getAlias(expr);
     if(pushdownPreds.get(alias) == null) {
-      pushdownPreds.put(alias, new ArrayList<exprNodeFuncDesc>());
+      pushdownPreds.put(alias, new ArrayList<exprNodeDesc>());
     }
-    pushdownPreds.get(alias).add((exprNodeFuncDesc) expr.clone());
+    pushdownPreds.get(alias).add((exprNodeDesc) expr.clone());
   }
 
   /**
@@ -192,7 +192,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
    * RowResolver. The exprs in each list can be combined using conjunction (AND)
    * @return the map of alias to a list of pushdown predicates
    */
-  public Map<String, List<exprNodeFuncDesc>> getFinalCandidates() {
+  public Map<String, List<exprNodeDesc>> getFinalCandidates() {
     return pushdownPreds;
   }
 
@@ -203,8 +203,8 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
   public void merge(ExprWalkerInfo ewi) {
     if(ewi == null)
       return;
-    for(Entry<String, List<exprNodeFuncDesc>> e :  ewi.getFinalCandidates().entrySet()) {
-      List<exprNodeFuncDesc> predList = pushdownPreds.get(e.getKey());
+    for(Entry<String, List<exprNodeDesc>> e :  ewi.getFinalCandidates().entrySet()) {
+      List<exprNodeDesc> predList = pushdownPreds.get(e.getKey());
       if( predList != null ) {
         predList.addAll(e.getValue());
       } else {

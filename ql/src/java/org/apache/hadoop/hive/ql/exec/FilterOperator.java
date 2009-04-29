@@ -39,13 +39,12 @@ public class FilterOperator extends Operator <filterDesc> implements Serializabl
   public static enum Counter {FILTERED, PASSED}
   transient private final LongWritable filtered_count, passed_count;
   transient private ExprNodeEvaluator conditionEvaluator;
-  transient private InspectableObject conditionInspectableObject;  
+  transient private PrimitiveObjectInspector conditionInspector;  
   
   public FilterOperator () {
     super();
     filtered_count = new LongWritable();
     passed_count = new LongWritable();
-    conditionInspectableObject = new InspectableObject();
   }
 
   public void initialize(Configuration hconf, Reporter reporter) throws HiveException {
@@ -54,27 +53,24 @@ public class FilterOperator extends Operator <filterDesc> implements Serializabl
       this.conditionEvaluator = ExprNodeEvaluatorFactory.get(conf.getPredicate());
       statsMap.put(Counter.FILTERED, filtered_count);
       statsMap.put(Counter.PASSED, passed_count);
+      conditionInspector = null;
     } catch (Throwable e) {
       e.printStackTrace();
       throw new RuntimeException(e);
     }
   }
 
-  public void process(Object row, ObjectInspector rowInspector) throws HiveException {
-    try {
-      conditionEvaluator.evaluate(row, rowInspector, conditionInspectableObject);
-      PrimitiveObjectInspector poi = (PrimitiveObjectInspector)conditionInspectableObject.oi;
-      Boolean ret = (Boolean)poi.getPrimitiveJavaObject(conditionInspectableObject.o);
-      if (Boolean.TRUE.equals(ret)) {
-        forward(row, rowInspector);
-        passed_count.set(passed_count.get()+1);
-      } else {
-        filtered_count.set(filtered_count.get()+1);
-      }
-    } catch (ClassCastException e) {
-      e.printStackTrace();
-      throw new HiveException("Non Boolean return Object type: " +
-          conditionInspectableObject.o.getClass().getName());
+  public void process(Object row, ObjectInspector rowInspector, int tag) throws HiveException {
+    if (conditionInspector == null) {
+      conditionInspector = (PrimitiveObjectInspector)conditionEvaluator.initialize(rowInspector);
+    }
+    Object condition = conditionEvaluator.evaluate(row);
+    Boolean ret = (Boolean)conditionInspector.getPrimitiveJavaObject(condition);
+    if (Boolean.TRUE.equals(ret)) {
+      forward(row, rowInspector);
+      passed_count.set(passed_count.get()+1);
+    } else {
+      filtered_count.set(filtered_count.get()+1);
     }
   }
 

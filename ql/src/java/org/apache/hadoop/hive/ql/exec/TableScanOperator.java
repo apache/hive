@@ -44,7 +44,7 @@ public class TableScanOperator extends Operator<tableScanDesc> implements Serial
    * i.e table data is not only read by the mapper, this operator will be enhanced to read the table.
    **/
   @Override
-  public void process(Object row, ObjectInspector rowInspector)
+  public void process(Object row, ObjectInspector rowInspector, int tag)
       throws HiveException {
     forward(row, rowInspector);    
   }

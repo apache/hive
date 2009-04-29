@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Random;
 
 import org.apache.hadoop.conf.Configuration;
@@ -33,8 +32,6 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -105,6 +102,8 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
       tableDesc valueTableDesc = conf.getValueSerializeInfo();
       valueSerializer = (Serializer)valueTableDesc.getDeserializerClass().newInstance();
       valueSerializer.initialize(null, valueTableDesc.getProperties());
+      
+      firstRow = true;
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException(e);
@@ -117,35 +116,33 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
   
   transient ObjectInspector keyObjectInspector;
   transient ObjectInspector valueObjectInspector;
-  transient ArrayList<ObjectInspector> keyFieldsObjectInspectors = new ArrayList<ObjectInspector>();
-  transient ArrayList<ObjectInspector> valueFieldsObjectInspectors = new ArrayList<ObjectInspector>();
+  transient ObjectInspector partitionObjectInspector;
 
   transient Object[] cachedKeys;
   transient Object[] cachedValues;
   
+  boolean firstRow;
+  
   transient Random random;
   
-  public void process(Object row, ObjectInspector rowInspector) throws HiveException {
+  public void process(Object row, ObjectInspector rowInspector, int tag) throws HiveException {
     try {
-      // Evaluate the keys
-      if (cachedKeys == null) {
+      if (firstRow) {
+        firstRow = false;
+        keyObjectInspector = initEvaluatorsAndReturnStruct(keyEval, rowInspector);
+        valueObjectInspector = initEvaluatorsAndReturnStruct(valueEval, rowInspector);
+        partitionObjectInspector = initEvaluatorsAndReturnStruct(partitionEval, rowInspector);
+
         cachedKeys = new Object[keyEval.length];
+        cachedValues = new Object[valueEval.length];
       }
+      
+      
+      // Evaluate the keys
       for (int i=0; i<keyEval.length; i++) {
-        ExprNodeEvaluator e = keyEval[i]; 
-        e.evaluate(row, rowInspector, tempInspectableObject);
-        cachedKeys[i] = tempInspectableObject.o;
-        // Construct the keyObjectInspector from the first row
-        if (keyObjectInspector == null) {
-          keyFieldsObjectInspectors.add(tempInspectableObject.oi);
-        }
+        cachedKeys[i] = keyEval[i].evaluate(row);
       }
-      // Construct the keyObjectInspector from the first row
-      if (keyObjectInspector == null) {
-        keyObjectInspector = ObjectInspectorFactory.getStandardStructObjectInspector(
-            ObjectInspectorUtils.getIntegerArray(keyFieldsObjectInspectors.size()),
-            keyFieldsObjectInspectors);
-      }
+      
       // Serialize the keys and append the tag
       if (keyIsText) {
         Text key = (Text)keySerializer.serialize(cachedKeys, keyObjectInspector);
@@ -169,6 +166,7 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
           keyWritable.get()[keyLength] = tagByte[0];
         }
       }
+      
       // Set the HashCode
       int keyHashCode = 0;
       if (partitionEval.length == 0) {
@@ -182,34 +180,20 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
         keyHashCode = random.nextInt();
       } else {
         for(ExprNodeEvaluator e: partitionEval) {
-          e.evaluate(row, rowInspector, tempInspectableObject);
+          Object o = e.evaluate(row);
           keyHashCode = keyHashCode * 31 
-            + (tempInspectableObject.o == null ? 0 : tempInspectableObject.o.hashCode());
+            + (o == null ? 0 : o.hashCode());
         }
       }
       keyWritable.setHashCode(keyHashCode);
       
       // Evaluate the value
-      if (cachedValues == null) {
-        cachedValues = new Object[valueEval.length];
-      }
       for (int i=0; i<valueEval.length; i++) {
-        ExprNodeEvaluator e = valueEval[i];
-        e.evaluate(row, rowInspector, tempInspectableObject);
-        cachedValues[i] = tempInspectableObject.o;
-        // Construct the valueObjectInspector from the first row
-        if (valueObjectInspector == null) {
-          valueFieldsObjectInspectors.add(tempInspectableObject.oi);
-        }
-      }
-      // Construct the valueObjectInspector from the first row
-      if (valueObjectInspector == null) {
-        valueObjectInspector = ObjectInspectorFactory.getStandardStructObjectInspector(
-            ObjectInspectorUtils.getIntegerArray(valueFieldsObjectInspectors.size()),
-            valueFieldsObjectInspectors);
+        cachedValues[i] = valueEval[i].evaluate(row);
       }
       // Serialize the value
       value = valueSerializer.serialize(cachedValues, valueObjectInspector);
+      
     } catch (SerDeException e) {
       throw new HiveException(e);
     }

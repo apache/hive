@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.exprNodeNullDesc;
-import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
 // This function will not be used currently, since the function expressions
 // change the void to the first matching argument
@@ -33,14 +33,15 @@ public class ExprNodeNullEvaluator extends ExprNodeEvaluator {
     this.expr = expr;
   }
 
-  public void evaluate(Object row, ObjectInspector rowInspector,
-      InspectableObject result) throws HiveException {
-    throw new HiveException("Hive 2 Internal exception: should not reach here.");
+  @Override
+  public ObjectInspector initialize(ObjectInspector rowInspector)
+    throws HiveException {
+    return PrimitiveObjectInspectorFactory.writableVoidObjectInspector;
   }
 
-  public ObjectInspector evaluateInspector(ObjectInspector rowInspector)
-      throws HiveException {
-    throw new HiveException("Hive 2 Internal exception: should not reach here.");
+  @Override
+  public Object evaluate(Object row) throws HiveException {
+    return null;
   }
 
 }

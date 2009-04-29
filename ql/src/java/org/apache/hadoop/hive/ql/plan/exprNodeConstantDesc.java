@@ -24,7 +24,9 @@ import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
-
+/**
+ * A constant expression.
+ */
 public class exprNodeConstantDesc extends exprNodeDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   private Object value;

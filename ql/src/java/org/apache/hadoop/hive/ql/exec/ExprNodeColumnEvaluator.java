@@ -18,61 +18,57 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.util.Arrays;
+
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 /**
- * This class support multi-level fields like "a.b.c" for historical reasons.
+ * This evaluator gets the column from the row object.
  */
 public class ExprNodeColumnEvaluator extends ExprNodeEvaluator {
 
   protected exprNodeColumnDesc expr;
-  transient StructObjectInspector cachedRowInspector;
-  transient String[] fieldNames;
+  
+  transient StructObjectInspector[] inspectors;
   transient StructField[] fields;
-  transient ObjectInspector[] fieldsObjectInspector;
   
   public ExprNodeColumnEvaluator(exprNodeColumnDesc expr) {
     this.expr = expr;
   }
 
-  public void evaluate(Object row, ObjectInspector rowInspector,
-      InspectableObject result) throws HiveException {
+  @Override
+  public ObjectInspector initialize(ObjectInspector rowInspector)
+      throws HiveException {
+
+    // We need to support field names like KEY.0, VALUE.1 between 
+    // map-reduce boundary.
+    String[] names = expr.getColumn().split("\\.");
+    inspectors = new StructObjectInspector[names.length];
+    fields = new StructField[names.length];
     
-    assert(result != null);
-    // If this is the first row, or the dynamic structure of this row 
-    // is different from the previous row 
-    if (fields == null || cachedRowInspector != rowInspector) {
-      evaluateInspector(rowInspector);
+    for(int i=0; i<names.length; i++) {
+      if (i==0) {
+        inspectors[0] = (StructObjectInspector) rowInspector;
+      } else {
+        inspectors[i] = (StructObjectInspector) fields[i-1].getFieldObjectInspector();
+      }
+      fields[i] = inspectors[i].getStructFieldRef(names[i]);
     }
-    result.o = cachedRowInspector.getStructFieldData(row, fields[0]);
-    for(int i=1; i<fields.length; i++) {
-      result.o = ((StructObjectInspector)fieldsObjectInspector[i-1]).getStructFieldData(
-          result.o, fields[i]);
+    return fields[names.length-1].getFieldObjectInspector();
+  }
+  
+  @Override
+  public Object evaluate(Object row) throws HiveException {
+    Object o = row;
+    for(int i=0; i<fields.length; i++) {
+      o = inspectors[i].getStructFieldData(o, fields[i]);
     }
-    result.oi = fieldsObjectInspector[fieldsObjectInspector.length - 1];
+    return o;
   }
 
-  public ObjectInspector evaluateInspector(ObjectInspector rowInspector)
-      throws HiveException {
-    
-    if (fields == null || cachedRowInspector != rowInspector) {
-      cachedRowInspector = (StructObjectInspector)rowInspector;
-      fieldNames = expr.getColumn().split("\\.", -1);
-      fields = new StructField[fieldNames.length];
-      fieldsObjectInspector = new ObjectInspector[fieldNames.length];
-      fields[0] = cachedRowInspector.getStructFieldRef(fieldNames[0]);
-      fieldsObjectInspector[0] = fields[0].getFieldObjectInspector();
-      for (int i=1; i<fieldNames.length; i++) {
-        fields[i] = ((StructObjectInspector)fieldsObjectInspector[i-1]).getStructFieldRef(fieldNames[i]);
-        fieldsObjectInspector[i] = fields[i].getFieldObjectInspector();
-      }
-    }
-    return fieldsObjectInspector[fieldsObjectInspector.length - 1];
-  }
 }

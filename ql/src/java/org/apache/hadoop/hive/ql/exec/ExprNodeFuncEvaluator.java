@@ -24,14 +24,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc;
-import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.util.ReflectionUtils;
@@ -42,12 +40,11 @@ public class ExprNodeFuncEvaluator extends ExprNodeEvaluator {
   
   protected exprNodeFuncDesc expr;
   transient ExprNodeEvaluator[] paramEvaluators;
-  transient InspectableObject[] paramInspectableObjects;
+  transient ObjectInspector[] paramInspectors;
   transient boolean[] paramIsPrimitiveWritable;
   transient Object[] paramValues;
   transient UDF udf;
   transient Method udfMethod;
-  transient ObjectInspector outputObjectInspector;
   
   public ExprNodeFuncEvaluator(exprNodeFuncDesc expr) {
     this.expr = expr;
@@ -59,68 +56,79 @@ public class ExprNodeFuncEvaluator extends ExprNodeEvaluator {
     udf = (UDF)ReflectionUtils.newInstance(expr.getUDFClass(), null);
     int paramNumber = expr.getChildren().size();
     paramEvaluators = new ExprNodeEvaluator[paramNumber];
-    paramInspectableObjects  = new InspectableObject[paramNumber];
+    paramInspectors  = new ObjectInspector[paramNumber];
     paramIsPrimitiveWritable = new boolean[paramNumber];
     for(int i=0; i<paramNumber; i++) {
       paramEvaluators[i] = ExprNodeEvaluatorFactory.get(expr.getChildExprs().get(i));
-      paramInspectableObjects[i] = new InspectableObject();
-      paramIsPrimitiveWritable[i] = PrimitiveObjectInspectorUtils.isPrimitiveWritableClass(udfMethod.getParameterTypes()[i]);
+      paramIsPrimitiveWritable[i] = PrimitiveObjectInspectorUtils
+          .isPrimitiveWritableClass(udfMethod.getParameterTypes()[i]);
     }
     paramValues = new Object[expr.getChildren().size()];
-    // The return type of a function can be of either Java Primitive Type/Class or Writable Class.
-    if (PrimitiveObjectInspectorUtils.isPrimitiveWritableClass(udfMethod.getReturnType())) {
-      outputObjectInspector = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
-          PrimitiveObjectInspectorUtils.getTypeEntryFromPrimitiveWritableClass(udfMethod.getReturnType()).primitiveCategory);
-    } else {
-      outputObjectInspector = PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
-          PrimitiveObjectInspectorUtils.getTypeEntryFromPrimitiveJavaClass(udfMethod.getReturnType()).primitiveCategory);
-    }
   }
 
-  public void evaluate(Object row, ObjectInspector rowInspector,
-      InspectableObject result) throws HiveException {
-    if (result == null) {
-      throw new HiveException("result cannot be null.");
+  @Override
+  public ObjectInspector initialize(ObjectInspector rowInspector)
+    throws HiveException {
+    for (int i=0; i<paramEvaluators.length; i++) {
+      paramInspectors[i] = paramEvaluators[i].initialize(rowInspector);
     }
+    
+    // The return type of a function can be either Java Primitive or Writable.
+    if (PrimitiveObjectInspectorUtils.isPrimitiveWritableClass(
+        udfMethod.getReturnType())) {
+      PrimitiveCategory pc = PrimitiveObjectInspectorUtils
+          .getTypeEntryFromPrimitiveWritableClass(udfMethod.getReturnType())
+          .primitiveCategory;
+      return PrimitiveObjectInspectorFactory
+          .getPrimitiveWritableObjectInspector(pc);
+    } else {
+      PrimitiveCategory pc = PrimitiveObjectInspectorUtils
+          .getTypeEntryFromPrimitiveJavaClass(udfMethod.getReturnType())
+          .primitiveCategory;
+      return PrimitiveObjectInspectorFactory
+          .getPrimitiveJavaObjectInspector(pc);
+    }
+  }
+  
+  @Override
+  public Object evaluate(Object row) throws HiveException {
+
     // Evaluate all children first
     for(int i=0; i<paramEvaluators.length; i++) {
-      paramEvaluators[i].evaluate(row, rowInspector, paramInspectableObjects[i]);
-      Category c = paramInspectableObjects[i].oi.getCategory();
+      
+      Object thisParam = paramEvaluators[i].evaluate(row);
+      Category c = paramInspectors[i].getCategory();
+      
       // TODO: Both getList and getMap are not very efficient.
-      // We should convert them to UDFTemplate - UDFs that accepts Object with 
-      // ObjectInspectors when needed.
+      // We should convert UDFSize and UDFIsNull to ExprNodeEvaluator. 
       switch(c) {
         case LIST: {
           // Need to pass a Java List for List type
-          paramValues[i] = ((ListObjectInspector)paramInspectableObjects[i].oi)
-              .getList(paramInspectableObjects[i].o);
+          paramValues[i] = ((ListObjectInspector)paramInspectors[i])
+              .getList(thisParam);
           break;
         }
         case MAP: {
           // Need to pass a Java Map for Map type
-          paramValues[i] = ((MapObjectInspector)paramInspectableObjects[i].oi)
-              .getMap(paramInspectableObjects[i].o);
+          paramValues[i] = ((MapObjectInspector)paramInspectors[i])
+              .getMap(thisParam);
           break;
         }
         case PRIMITIVE: {
-          PrimitiveObjectInspector poi = (PrimitiveObjectInspector)paramInspectableObjects[i].oi;
+          PrimitiveObjectInspector poi = (PrimitiveObjectInspector)paramInspectors[i];
           paramValues[i] = (paramIsPrimitiveWritable[i]
-              ? poi.getPrimitiveWritableObject(paramInspectableObjects[i].o)
-              : poi.getPrimitiveJavaObject(paramInspectableObjects[i].o));
+              ? poi.getPrimitiveWritableObject(thisParam)
+              : poi.getPrimitiveJavaObject(thisParam));
           break;
         }
         default: {
           // STRUCT
-          paramValues[i] = paramInspectableObjects[i].o;
+          paramValues[i] = thisParam;
         }
       }
     }
-    result.o = FunctionRegistry.invoke(udfMethod, udf, paramValues);
-    result.oi = outputObjectInspector;
+    
+    return FunctionRegistry.invoke(udfMethod, udf, paramValues);
   }
 
-  public ObjectInspector evaluateInspector(ObjectInspector rowInspector)
-      throws HiveException {
-    return outputObjectInspector;
-  }
 }

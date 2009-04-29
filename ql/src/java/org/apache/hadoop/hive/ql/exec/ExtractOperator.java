@@ -34,16 +34,18 @@ import org.apache.hadoop.conf.Configuration;
 public class ExtractOperator extends Operator<extractDesc> implements Serializable {
   private static final long serialVersionUID = 1L;
   transient protected ExprNodeEvaluator eval;
-  transient protected InspectableObject result = new InspectableObject();
 
   public void initialize(Configuration hconf, Reporter reporter) throws HiveException {
     super.initialize(hconf, reporter);
     eval = ExprNodeEvaluatorFactory.get(conf.getCol());
   }
 
-  public void process(Object row, ObjectInspector rowInspector) throws HiveException {
-    eval.evaluate(row, rowInspector, result);
-    forward(result.o, result.oi);
+  ObjectInspector outputRowInspector;
+  public void process(Object row, ObjectInspector rowInspector, int tag) throws HiveException {
+    if (outputRowInspector == null) {
+      outputRowInspector = eval.initialize(rowInspector);
+    }
+    forward(eval.evaluate(row), outputRowInspector);
   }
 
   

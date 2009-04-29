@@ -1,0 +1,1 @@
+FAILED: Error in semantic analysis: line 4:13 Argument Type Mismatch 7: The expression after ELSE should have the same type as those after THEN: "string" is expected but "int" is found

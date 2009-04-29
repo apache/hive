@@ -22,31 +22,37 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 public class ExprNodeConstantEvaluator extends ExprNodeEvaluator {
 
   protected exprNodeConstantDesc expr;
-  transient ObjectInspector objectInspector;
-  transient Object value;
+  transient ObjectInspector writableObjectInspector;
+  transient Object writableValue;
   
   public ExprNodeConstantEvaluator(exprNodeConstantDesc expr) {
     this.expr = expr;
-    objectInspector = PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
-        ((PrimitiveTypeInfo)expr.getTypeInfo()).getPrimitiveCategory());
-    value = expr.getValue();
+    PrimitiveCategory pc = ((PrimitiveTypeInfo)expr.getTypeInfo())
+        .getPrimitiveCategory();
+    writableObjectInspector = PrimitiveObjectInspectorFactory
+        .getPrimitiveWritableObjectInspector(pc);
+    // Convert from Java to Writable 
+    writableValue = PrimitiveObjectInspectorFactory
+        .getPrimitiveJavaObjectInspector(pc)
+        .getPrimitiveWritableObject(expr.getValue());
   }
 
-  public void evaluate(Object row, ObjectInspector rowInspector,
-      InspectableObject result) throws HiveException {
-    assert(result != null);
-    result.o = value;
-    result.oi = objectInspector;
+  @Override
+  public ObjectInspector initialize(ObjectInspector rowInspector)
+    throws HiveException {
+    return writableObjectInspector;
+  }
+  
+  @Override
+  public Object evaluate(Object row) throws HiveException {
+    return writableValue;
   }
 
-  public ObjectInspector evaluateInspector(ObjectInspector rowInspector)
-      throws HiveException {
-    return objectInspector;
-  }
 }

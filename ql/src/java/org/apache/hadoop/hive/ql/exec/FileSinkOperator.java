@@ -164,7 +164,7 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
   }
 
   Writable recordValue; 
-  public void process(Object row, ObjectInspector rowInspector) throws HiveException {
+  public void process(Object row, ObjectInspector rowInspector, int tag) throws HiveException {
     try {
       if (reporter != null)
         reporter.progress();

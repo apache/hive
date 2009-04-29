@@ -63,9 +63,12 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
   private static final int  NUMROWSESTIMATESIZE = 1000;
 
   transient protected ExprNodeEvaluator[] keyFields;
-  transient protected InspectableObject[] keyInspectableObject;
+  transient protected ObjectInspector[] keyObjectInspectors;
+  transient protected Object[] keyObjects;
+  
   transient protected ExprNodeEvaluator[][] aggregationParameterFields;
-  transient protected InspectableObject[][] aggregationParameterInspectableObject;
+  transient protected ObjectInspector[][] aggregationParameterObjectInspectors;
+  transient protected Object[][] aggregationParameterObjects;
   // In the future, we may allow both count(DISTINCT a) and sum(DISTINCT a) in the same SQL clause,
   // so aggregationIsDistinct is a boolean array instead of a single number. 
   transient protected boolean[] aggregationIsDistinct;
@@ -136,23 +139,28 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
 
     // init keyFields
     keyFields = new ExprNodeEvaluator[conf.getKeys().size()];
-    keyInspectableObject = new InspectableObject[conf.getKeys().size()];
+    keyObjectInspectors = new ObjectInspector[conf.getKeys().size()];
+    keyObjects = new Object[conf.getKeys().size()];
     for (int i = 0; i < keyFields.length; i++) {
       keyFields[i] = ExprNodeEvaluatorFactory.get(conf.getKeys().get(i));
-      keyInspectableObject[i] = new InspectableObject();
+      keyObjectInspectors[i] = null;
+      keyObjects[i] = null;
     }
     newKeys = new ArrayList<Object>(keyFields.length);
     
     // init aggregationParameterFields
     aggregationParameterFields = new ExprNodeEvaluator[conf.getAggregators().size()][];
-    aggregationParameterInspectableObject = new InspectableObject[conf.getAggregators().size()][];
+    aggregationParameterObjectInspectors = new ObjectInspector[conf.getAggregators().size()][];
+    aggregationParameterObjects = new Object[conf.getAggregators().size()][];
     for (int i = 0; i < aggregationParameterFields.length; i++) {
       ArrayList<exprNodeDesc> parameters = conf.getAggregators().get(i).getParameters();
       aggregationParameterFields[i] = new ExprNodeEvaluator[parameters.size()];
-      aggregationParameterInspectableObject[i] = new InspectableObject[parameters.size()];
+      aggregationParameterObjectInspectors[i] = new ObjectInspector[parameters.size()];
+      aggregationParameterObjects[i] = new Object[parameters.size()];
       for (int j = 0; j < parameters.size(); j++) {
         aggregationParameterFields[i][j] = ExprNodeEvaluatorFactory.get(parameters.get(j));
-        aggregationParameterInspectableObject[i][j] = new InspectableObject();
+        aggregationParameterObjectInspectors[i][j] = null;
+        aggregationParameterObjects[i][j] = null;
       }
     }
     // init aggregationIsDistinct
@@ -388,16 +396,23 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     return aggs;
   }
 
+  
   protected void updateAggregations(UDAFEvaluator[] aggs, Object row, ObjectInspector rowInspector, boolean hashAggr, boolean newEntry,
                                     Object[][] lastInvoke) throws HiveException {
+    
     for(int ai=0; ai<aggs.length; ai++) {
 
       // Calculate the parameters 
       Object[] o = new Object[aggregationParameterFields[ai].length];
       for(int pi=0; pi<aggregationParameterFields[ai].length; pi++) {
-        aggregationParameterFields[ai][pi].evaluate(row, rowInspector, aggregationParameterInspectableObject[ai][pi]);
-        PrimitiveObjectInspector poi = (PrimitiveObjectInspector)aggregationParameterInspectableObject[ai][pi].oi;
-        o[pi] = poi.getPrimitiveWritableObject(aggregationParameterInspectableObject[ai][pi].o);
+        ObjectInspector oi = aggregationParameterObjectInspectors[ai][pi];
+        if (oi == null) {
+          oi = aggregationParameterFields[ai][pi].initialize(rowInspector);
+          aggregationParameterObjectInspectors[ai][pi] = oi;
+        }
+        PrimitiveObjectInspector poi = (PrimitiveObjectInspector)oi;
+        o[pi] = poi.getPrimitiveWritableObject(
+            aggregationParameterFields[ai][pi].evaluate(row));
       }
 
       // Update the aggregations.
@@ -433,7 +448,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
             }
             for (int pi=0; pi<o.length; pi++) {
               lastInvoke[ai][pi] = ObjectInspectorUtils.copyToStandardObject(o[pi],
-                  aggregationParameterInspectableObject[ai][pi].oi);
+                  aggregationParameterObjectInspectors[ai][pi]);
             }
           }
         }
@@ -444,7 +459,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     }
   }
   
-  public void process(Object row, ObjectInspector rowInspector) throws HiveException {
+  public void process(Object row, ObjectInspector rowInspector, int tag) throws HiveException {
     // Total number of input rows is needed for hash aggregation only
     if (hashAggr) {
       numRowsInput++;
@@ -466,15 +481,19 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
       // Compute the keys
       newKeys.clear();
       for (int i = 0; i < keyFields.length; i++) {
-        keyFields[i].evaluate(row, rowInspector, keyInspectableObject[i]);
-        newKeys.add(keyInspectableObject[i].o);
+        if (keyObjectInspectors[i] == null) {
+          keyObjectInspectors[i] = keyFields[i].initialize(rowInspector);
+        }
+        keyObjects[i] = keyFields[i].evaluate(row);
+        newKeys.add(keyObjects[i]);
         if (firstRow) {
-          objectInspectors.set(i, keyInspectableObject[i].oi);
+          objectInspectors.set(i, keyObjectInspectors[i]);
         }
       }
 
       if (firstRow) {
         firstRow = false;
+        // After first row, we can compute outputObjectInspector based on keyObjectInspectors.
         outputObjectInspector = 
           ObjectInspectorFactory.getStandardStructObjectInspector(fieldNames, objectInspectors);
       }
@@ -490,16 +509,16 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     }
   }
 
-  private static ArrayList<Object> deepCopyElements(InspectableObject[] keys) {
+  private static ArrayList<Object> deepCopyElements(Object[] keys, ObjectInspector[] keyObjectInspectors) {
     ArrayList<Object> result = new ArrayList<Object>(keys.length);
-    deepCopyElements(keys, result);
+    deepCopyElements(keys, keyObjectInspectors, result);
     return result;
   }
   
-  private static void deepCopyElements(InspectableObject[] keys, ArrayList<Object> result) {
+  private static void deepCopyElements(Object[] keys, ObjectInspector[] keyObjectInspectors, ArrayList<Object> result) {
     result.clear();
     for (int i=0; i<keys.length; i++) {
-      result.add(ObjectInspectorUtils.copyToStandardObject(keys[i].o, keys[i].oi));
+      result.add(ObjectInspectorUtils.copyToStandardObject(keys[i], keyObjectInspectors[i]));
     }
   }
   
@@ -512,7 +531,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     aggs = hashAggregations.get(newKeys);
     if (aggs == null) {
       aggs = newAggregations();
-      hashAggregations.put(deepCopyElements(keyInspectableObject), aggs);
+      hashAggregations.put(deepCopyElements(keyObjects, keyObjectInspectors), aggs);
       newEntry = true;
       numRowsHashTbl++;      // new entry in the hash table
     }
@@ -541,7 +560,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
       if (currentKeys == null) {
         currentKeys = new ArrayList<Object>(keyFields.length);
       }
-      deepCopyElements(keyInspectableObject, currentKeys);
+      deepCopyElements(keyObjects, keyObjectInspectors, currentKeys);
       
       // Init aggregations
       for(UDAFEvaluator aggregation: aggregations)

@@ -27,14 +27,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.lang.Void;
 
 import org.apache.hadoop.hive.ql.exec.FunctionInfo.OperatorType;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.groupByDesc;
 import org.apache.hadoop.hive.ql.udf.*;
+import org.apache.hadoop.hive.ql.udf.generic.*;
 import org.apache.hadoop.hive.serde.Constants;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -160,6 +159,11 @@ public class FunctionRegistry {
     registerUDAF("max", UDAFMax.class);
     registerUDAF("min", UDAFMin.class);
     registerUDAF("avg", UDAFAvg.class);
+    
+    // Generic UDFs
+    registerGenericUDF("case", GenericUDFCase.class);
+    registerGenericUDF("when", GenericUDFWhen.class);
+    
   }
 
   public static FunctionInfo getInfo(Class<?> fClass) {
@@ -188,7 +192,7 @@ public class FunctionRegistry {
   public static void registerUDF(String functionName, Class<? extends UDF> UDFClass,
                                  FunctionInfo.OperatorType opt, boolean isOperator) {
     if (UDF.class.isAssignableFrom(UDFClass)) {
-      FunctionInfo fI = new FunctionInfo(functionName.toLowerCase(), UDFClass, null);
+      FunctionInfo fI = new FunctionInfo(functionName.toLowerCase(), UDFClass, null, null);
       fI.setIsOperator(isOperator);
       fI.setOpType(opt);
       mFunctions.put(functionName.toLowerCase(), fI);
@@ -201,7 +205,7 @@ public class FunctionRegistry {
                                  FunctionInfo.OperatorType opt, boolean isOperator,
                                  String displayName) {
     if (UDF.class.isAssignableFrom(UDFClass)) {
-      FunctionInfo fI = new FunctionInfo(displayName, UDFClass, null);
+      FunctionInfo fI = new FunctionInfo(displayName, UDFClass, null, null);
       fI.setIsOperator(isOperator);
       fI.setOpType(opt);
       mFunctions.put(functionName.toLowerCase(), fI);
@@ -210,6 +214,20 @@ public class FunctionRegistry {
     }
   }
 
+  public static void registerGenericUDF(String functionName, Class<? extends GenericUDF> genericUDFClass) {
+    if (GenericUDF.class.isAssignableFrom(genericUDFClass)) {
+      FunctionInfo fI = new FunctionInfo(functionName, null, null, genericUDFClass);
+      mFunctions.put(functionName.toLowerCase(), fI);
+    } else {
+      throw new RuntimeException("Registering GenericUDF Class " + genericUDFClass
+          + " which does not extends " + GenericUDF.class);
+    }
+  }
+  
+  public static FunctionInfo getFunctionInfo(String functionName) {
+    return mFunctions.get(functionName.toLowerCase());
+  }
+  
   public static Class<? extends UDF> getUDFClass(String functionName) {
     LOG.debug("Looking up: " + functionName);
     FunctionInfo finfo = mFunctions.get(functionName.toLowerCase());
@@ -346,13 +364,13 @@ public class FunctionRegistry {
 
     if (UDAF.class.isAssignableFrom(UDAFClass)) {
       mFunctions.put(functionName.toLowerCase(), new FunctionInfo(functionName
-                                                                  .toLowerCase(), null, UDAFClass));
+                                                                  .toLowerCase(), null, UDAFClass, null));
     } else {
       throw new RuntimeException("Registering UDAF Class " + UDAFClass
                                  + " which does not extends " + UDAF.class);
     }
     mFunctions.put(functionName.toLowerCase(), new FunctionInfo(functionName
-                                                                .toLowerCase(), null, UDAFClass));
+                                                                .toLowerCase(), null, UDAFClass, null));
   }
 
   public static Class<? extends UDAF> getUDAF(String functionName) {

@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.io.BooleanWritable;
@@ -36,6 +37,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 
 /**
  * ObjectInspectorFactory is the primary way to create new ObjectInspector instances.
@@ -242,4 +244,159 @@ public class PrimitiveObjectInspectorUtils {
     return typeNameToTypeEntry.get(typeName);
   }
   
+  /**
+   * Compare 2 primitive objects. Conversion not allowed.
+   * Note that NULL does not equal to NULL according to SQL standard.
+   */
+  public static boolean comparePrimitiveObjects(Object o1, PrimitiveObjectInspector oi1,
+      Object o2, PrimitiveObjectInspector oi2) {
+    if (o1 == null || o2 == null) return false;
+    
+    if (oi1.getPrimitiveCategory() != oi2.getPrimitiveCategory()) {
+      return false;
+    }
+    switch (oi1.getPrimitiveCategory()) {
+      case BOOLEAN: {
+        return ((BooleanObjectInspector)oi1).get(o1) == ((BooleanObjectInspector)oi2).get(o2);
+      }
+      case BYTE: {
+        return ((ByteObjectInspector)oi1).get(o1) == ((ByteObjectInspector)oi2).get(o2);
+      }
+      case SHORT: {
+        return ((ShortObjectInspector)oi1).get(o1) == ((ShortObjectInspector)oi2).get(o2);
+      }
+      case INT: {
+        return ((IntObjectInspector)oi1).get(o1) == ((IntObjectInspector)oi2).get(o2);
+      }
+      case LONG: {
+        return ((LongObjectInspector)oi1).get(o1) == ((LongObjectInspector)oi2).get(o2);
+      }
+      case FLOAT: {
+        return ((FloatObjectInspector)oi1).get(o1) == ((FloatObjectInspector)oi2).get(o2);
+      }
+      case DOUBLE: {
+        return ((DoubleObjectInspector)oi1).get(o1) == ((DoubleObjectInspector)oi2).get(o2);
+      }
+      case STRING: {
+        Writable t1 = ((StringObjectInspector)oi1).getPrimitiveWritableObject(o1);
+        Writable t2 = ((StringObjectInspector)oi2).getPrimitiveWritableObject(o2);
+        return t1.equals(t2);
+      }
+      default:
+        return false;
+    }
+  }
+  
+
+  /** Convert a primitive object to double.
+   */
+  public static double convertPrimitiveToDouble(Object o, PrimitiveObjectInspector oi) 
+      throws NumberFormatException {
+    switch (oi.getPrimitiveCategory()) {
+      case BOOLEAN: {
+        return ((BooleanObjectInspector)oi).get(o) ? 1 : 0;
+      }
+      case BYTE: {
+        return ((ByteObjectInspector)oi).get(o);
+      }
+      case SHORT: {
+        return ((ShortObjectInspector)oi).get(o);
+      }
+      case INT: {
+        return ((IntObjectInspector)oi).get(o);
+      }
+      case LONG: {
+        return ((LongObjectInspector)oi).get(o);
+      }
+      case FLOAT: {
+        return ((FloatObjectInspector)oi).get(o);
+      }
+      case DOUBLE: {
+        return ((DoubleObjectInspector)oi).get(o);
+      }
+      case STRING: {
+        return Double.valueOf(((StringObjectInspector)oi).getPrimitiveJavaObject(o));
+      }
+      default:
+        throw new NumberFormatException();
+    }
+  }
+  
+  /**
+   * Compare 2 Primitive Objects with their Object Inspector, conversions allowed.
+   * Note that NULL does not equal to NULL according to SQL standard.
+   */
+  public static boolean comparePrimitiveObjectsWithConversion(Object o1, PrimitiveObjectInspector oi1,
+      Object o2, PrimitiveObjectInspector oi2) {
+    if (o1 == null || o2 == null) return false;
+    
+    if (oi1.getPrimitiveCategory() == oi2.getPrimitiveCategory()) {
+      return comparePrimitiveObjects(o1, oi1, o2, oi2);
+    }
+    
+    // If not equal, convert all to double and compare
+    try {
+      return convertPrimitiveToDouble(o1, oi1) == convertPrimitiveToDouble(o2, oi2);
+    } catch (NumberFormatException e) {
+      return false;
+    }
+  }
+  
+  /**
+   * Get the integer number out of a primitive object. 
+   */
+  public static int getInt(Object o, PrimitiveObjectInspector oi) throws NumberFormatException {
+    int result = 0;
+    switch (oi.getPrimitiveCategory()) {
+      case VOID: {
+        result = 0;
+        break;
+      }
+      case BOOLEAN: {
+        result = (((BooleanObjectInspector)oi).get(o) ? 1 : 0);
+        break;
+      }
+      case BYTE: {
+        result = ((ByteObjectInspector)oi).get(o);
+        break;
+      }
+      case SHORT: {
+        result = ((ShortObjectInspector)oi).get(o);
+        break;
+      }
+      case INT: {
+        result = ((IntObjectInspector)oi).get(o);
+        break;
+      }
+      case LONG: {
+        result = (int)((LongObjectInspector)oi).get(o);
+        break;
+      }
+      case FLOAT: {
+        result = (int)((FloatObjectInspector)oi).get(o);
+        break;
+      }
+      case DOUBLE: {
+        result = (int)((DoubleObjectInspector)oi).get(o);
+        break;
+      }
+      case STRING: {
+        StringObjectInspector soi = (StringObjectInspector)oi;
+        if (soi.isWritable()) {
+          Text t = soi.getPrimitiveWritableObject(o);
+          result = LazyInteger.parseInt(t.getBytes(), 0, t.getLength());
+        } else {
+          String s = soi.getPrimitiveJavaObject(o);
+          result = Integer.parseInt(s);
+        }
+        break;
+      }
+      default: {
+        // Should never happen because we checked this in SemanticAnalyzer.getXpathOrFuncExprNodeDesc
+        throw new RuntimeException("Hive 2 Internal error: index expression is not ordinal types: "
+            + oi.getTypeName());
+      }
+    }
+    return result;
+  }
 }

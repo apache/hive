@@ -165,13 +165,14 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         row.clear();
         row.add(keyObject);
         row.add(valueObject[tag.get()]);
+        // The tag is not used any more, we should remove it.
         row.add(tag);
         cntr++;
         if (cntr == nextCntr) {
           l4j.info("ExecReducer: processing " + cntr + " rows");
           nextCntr = getNextCntr(cntr);
         }
-        reducer.process(row, rowObjectInspector[tag.get()]);
+        reducer.process(row, rowObjectInspector[tag.get()], tag.get());
       }
 
     } catch (HiveException e) {
