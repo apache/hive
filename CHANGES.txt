@@ -1,6 +1,6 @@
 Hive Change Log
 
-Trunk - unreleased changes
+Trunk - Unreleased
 
   INCOMPATIBLE CHANGES
   
@@ -11,15 +11,10 @@ Trunk - unreleased changes
 
     HIVE-354. UDF for length of a string. (Neil Conway via namit).
 
-    HIVE-61. Implement "ORDER BY". (Namit Jain via zshao)
-
     HIVE-402. Implement UDF regexp. (Raghu Murthy via namit)
 
     HIVE-250. Shared memory java dbm for map-side joins.
     (Joydeep Sen Sarma via zshao)
-
-    HIVE-376. In strict mode do not allow join without "ON" condition.
-    (Namit Jain via zshao)
 
     HIVE-164. Use CASE through GenericUDF (Zheng Shao via namit)
 
@@ -30,9 +25,6 @@ Trunk - unreleased changes
     (He Yongqiang via zshao)
 
     HIVE-406. Build file improvements. (Joydeep Sen Sarma via zshao).
-
-    HIVE-440. Reducer and Join to print out number of rows processed.
-    (Namit Jain via zshao)
 
     HIVE-254. Link jobtracker from Hive History in Hive Web Interface.
     (Edward Capriolo via athusoo)
@@ -87,8 +79,6 @@ Trunk - unreleased changes
     HIVE-404. Fix ordering in "SELECT * FROM t SORT BY col1 LIMIT 100" when
     query is a outer-most query.  (Namit Jain via zshao)
 
-    HIVE-416. Fix backtrack in Hive.g. (Namit Jain via zshao)
-
     HIVE-432. Fix "SORT BY" using only one reducer.
     (Zheng Shao via namit)
 
@@ -107,18 +97,40 @@ Trunk - unreleased changes
     HIVE-324. Fix AccessControlException when loading data.
     (Ashish Thusoo via zshao)
 
-    HIVE-442. Move the data before creating the partition.
-    (Prasad Chakka via zshao)
-
     HIVE-395. Fix build problems with eclipse and 0.19 hadoop.
     (Neil Conway via athusoo)
-
-    HIVE-447. Fix tests on hudson. (Ashish Thusoo via zshao)
 
     HIVE-456. Add option to run junit tests in quiet mode. 
     (Zheng Shao via prasadc)
 
-Release 0.3.0 - Unreleased
+Release 0.3.1 - Unreleased
+
+  INCOMPATIBLE CHANGES
+  
+  NEW FEATURES
+
+    HIVE-61. Implement "ORDER BY". (Namit Jain via zshao)
+
+    HIVE-376. In strict mode do not allow join without "ON" condition.
+    (Namit Jain via zshao)
+
+  IMPROVEMENTS
+
+    HIVE-440. Reducer and Join to print out number of rows processed.
+    (Namit Jain via zshao)
+
+  OPTIMIZATIONS
+
+  BUG FIXES
+
+    HIVE-416. Fix backtrack in Hive.g. (Namit Jain via zshao)
+
+    HIVE-442. Move the data before creating the partition.
+    (Prasad Chakka via zshao)
+
+    HIVE-447. Fix tests on hudson. (Ashish Thusoo via zshao)
+
+Release 0.3.0 - 2009-04-20
 
   INCOMPATIBLE CHANGES
 
