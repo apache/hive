@@ -61,7 +61,11 @@ public class MapRedTask extends Task<mapredWork> implements Serializable {
       FileOutputStream out = new FileOutputStream(planFile);
       Utilities.serializeMapRedWork(plan, out);
 
-      String cmdLine = hadoopExec + " jar " + auxJars + " " + hiveJar + " org.apache.hadoop.hive.ql.exec.ExecDriver -plan " + planFile.toString() + " " + hiveConfArgs;
+      String isSilent = "true".equalsIgnoreCase(System.getProperty("test.silent"))
+                        ? "-silent" : "";
+      String cmdLine = hadoopExec + " jar " + auxJars + " " + hiveJar 
+          + " org.apache.hadoop.hive.ql.exec.ExecDriver -plan "
+          + planFile.toString() + " " + isSilent + " " + hiveConfArgs; 
       
       String files = ExecDriver.getRealFiles(conf);
       if(!files.isEmpty()) {

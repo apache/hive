@@ -45,6 +45,10 @@ import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.io.*;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.PropertyConfigurator;
+import org.apache.log4j.varia.NullAppender;
 
 public class ExecDriver extends Task<mapredWork> implements Serializable {
 
@@ -484,6 +488,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
   }
 
   public static void main(String[] args) throws IOException, HiveException {
+
     String planFileName = null;
     ArrayList<String> jobConfArgs = new ArrayList<String>();
     boolean isSilent = false;
@@ -507,6 +512,13 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
       printUsage();
     }
 
+    // If started from main(), and isSilent is on, we should not output
+    // any logs.
+    if (isSilent) {
+      BasicConfigurator.resetConfiguration();
+      BasicConfigurator.configure(new NullAppender());
+    }
+    
     if (planFileName == null) {
       System.err.println("Must specify Plan File Name");
       printUsage();

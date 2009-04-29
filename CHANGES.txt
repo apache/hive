@@ -113,6 +113,9 @@ Trunk - unreleased changes
 
     HIVE-447. Fix tests on hudson. (Ashish Thusoo via zshao)
 
+    HIVE-456. Add option to run junit tests in quiet mode. 
+    (Zheng Shao via prasadc)
+
 Release 0.3.0 - Unreleased
 
   INCOMPATIBLE CHANGES

@@ -57,6 +57,7 @@
   <property name="test.timeout" value="2700000"/>
   <property name="test.junit.output.format" value="xml"/>
   <property name="test.junit.output.usefile" value="true"/>
+  <property name="test.silent" value="true"/>
 
   <path id="test.classpath">
     <pathelement location="${test.build.classes}" />
@@ -256,6 +257,7 @@
       <sysproperty key="ql.test.query.clientpositive.dir" value="${ql.test.query.clientpositive.dir}"/>
       <sysproperty key="ql.test.results.clientpositive.dir" value="${ql.test.results.clientpositive.dir}"/>
       <sysproperty key="test.log.dir" value="${test.log.dir}"/>
+      <sysproperty key="test.silent" value="${test.silent}"/>
 
       <classpath refid="${test.classpath.id}"/>
       <formatter type="${test.junit.output.format}" usefile="${test.junit.output.usefile}" />

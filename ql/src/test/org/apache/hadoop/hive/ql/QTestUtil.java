@@ -371,9 +371,8 @@ public class QTestUtil {
       cleanUp();
       createSources();
     }
-
+    
     CliSessionState ss = new CliSessionState(conf);
-    SessionState.start(ss);
     assert ss!= null;
     ss.in = System.in;
 
