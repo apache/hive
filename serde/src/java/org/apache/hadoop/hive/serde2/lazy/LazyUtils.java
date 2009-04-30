@@ -125,9 +125,17 @@ public class LazyUtils {
         break;
       }
       */
-      default: { 
-        ByteBuffer b = Text.encode(o.toString());
-        out.write(b.array(), 0, b.limit());
+      default: {
+        if (o instanceof Text) {
+          // This piece of code improves the performance because we don't need to
+          // convert Text to String then back to Text.  We should rely on the code
+          // block above when JoinOperator is fixed.
+          Text t = (Text)o;
+          out.write(t.getBytes(), 0, t.getLength());
+        } else {
+          ByteBuffer b = Text.encode(o.toString());
+          out.write(b.array(), 0, b.limit());
+        }
       }
     }
   }
