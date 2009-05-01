@@ -24,6 +24,9 @@ Trunk - Unreleased
     HIVE-352. Column-based storage format RCFile.
     (Yongqiang He via zshao)
 
+    HIVE-420. Support regular expressions for column names
+    (Zheng Shao via namit)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 

@@ -33,6 +33,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.Path;
@@ -1012,7 +1014,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("nls")
-  private Integer genColList(String tabAlias, String alias, ASTNode sel,
+  private Integer genColListRegex(String colRegex, String tabAlias, String alias, ASTNode sel,
     ArrayList<exprNodeDesc> col_list, RowResolver input, Integer pos,
     RowResolver output) throws SemanticException {
 
@@ -1021,7 +1023,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(ErrorMsg.INVALID_TABLE_ALIAS.getMsg(sel));
     
     // TODO: Have to put in the support for AS clause
-
+    Pattern regex = null;
+    try {
+      regex = Pattern.compile(colRegex, Pattern.CASE_INSENSITIVE);
+    } catch (PatternSyntaxException e) {
+      throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(sel, e.getMessage()));
+    }
+    
+    int matched = 0;
     // This is the tab.* case
     // In this case add all the columns to the fieldList
     // from the input schema
@@ -1034,14 +1043,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         continue;
       }
  
+      // Not matching the regex?
+      if (!regex.matcher(tmp[1]).matches()) {
+        continue;
+      }
+      
       exprNodeColumnDesc expr = new exprNodeColumnDesc(colInfo.getType(), name);
       col_list.add(expr);
       output.put(tmp[0], tmp[1], new ColumnInfo(pos.toString(), colInfo.getType()));
       pos = Integer.valueOf(pos.intValue() + 1);
+      matched ++;
+    }
+    if (matched == 0) {
+      throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(sel));
     }
     return pos;
   }
-
+  
   /**
    * If the user script command needs any modifications - do it here
    */
@@ -1194,6 +1212,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return colRef;
   }
   
+  /**
+   * Returns whether the pattern is a regex expression (instead of a normal string).
+   * Normal string is a string with all alphabets/digits and "_".
+   */
+  private static boolean isRegex(String pattern) {
+    for(int i=0; i<pattern.length(); i++) {
+      if (!Character.isLetterOrDigit(pattern.charAt(i))
+          && pattern.charAt(i) != '_') {
+        return true;
+      }
+    }
+    return false;    
+  }
+  
   @SuppressWarnings("nls")
   private Operator genSelectPlan(String dest, QB qb,
     Operator input) throws SemanticException {
@@ -1206,72 +1238,88 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     String alias = qb.getParseInfo().getAlias();
     Integer pos = Integer.valueOf(0);
     RowResolver inputRR = opParseCtx.get(input).getRR();
+    // SELECT * or SELECT TRANSFORM(*)
     boolean selectStar = false;
+
+    boolean isInTransform = (selExprList.getChild(0).getChild(0).getType() 
+        == HiveParser.TOK_TRANSFORM);
+    if (isInTransform) {
+      trfm = (ASTNode) selExprList.getChild(0).getChild(0);
+    }
     
+    // The list of expressions after SELECT or SELECT TRANSFORM.
+    ASTNode exprList = (isInTransform ? (ASTNode) trfm.getChild(0) : selExprList);
+
     LOG.debug("genSelectPlan: input = " + inputRR.toString());
-    // Iterate over the selects
-    for (int i = 0; i < selExprList.getChildCount(); ++i) {
+    // Iterate over all expression (either after SELECT, or in SELECT TRANSFORM)
+    for (int i = 0; i < exprList.getChildCount(); ++i) {
 
-      // list of the columns
-      ASTNode selExpr = (ASTNode) selExprList.getChild(i);
-      String[] colRef = getColAlias(selExpr, "_C" + i, inputRR);
-      String colAlias = colRef[1];
-      String tabAlias = colRef[0];
-      ASTNode sel = (ASTNode)selExpr.getChild(0);
+      // child can be EXPR AS ALIAS, or EXPR.
+      ASTNode child = (ASTNode) exprList.getChild(i);
+      boolean hasAsClause = (!isInTransform) && (child.getChildCount() == 2);
+      // The real expression
+      ASTNode expr;
+      String tabAlias;
+      String colAlias;
       
-      if (sel.getToken().getType() == HiveParser.TOK_ALLCOLREF) {
+      if (isInTransform) {
         tabAlias = null;
-        if (sel.getChildCount() == 1)
-          tabAlias = unescapeIdentifier(sel.getChild(0).getText().toLowerCase());
-        pos = genColList(tabAlias, alias, sel, col_list, inputRR, pos, out_rwsch);
+        colAlias = "_C" + i;
+        expr = child;
+      } else {
+        String[] colRef = getColAlias(child, "_C" + i, inputRR);
+        tabAlias = colRef[0];
+        colAlias = colRef[1];
+        // Get rid of TOK_SELEXPR
+        expr = (ASTNode)child.getChild(0);
+      }
+       
+      if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
+        pos = genColListRegex(".*", 
+            expr.getChildCount() == 0 ? null : unescapeIdentifier(expr.getChild(0).getText().toLowerCase()),
+            alias, expr, col_list, inputRR, pos, out_rwsch);
         selectStar = true;
-      } else if (sel.getToken().getType() == HiveParser.TOK_TRANSFORM) {
-        if (i > 0) {
-          throw new SemanticException(ErrorMsg.INVALID_TRANSFORM.getMsg(sel));
-        }
-        trfm = sel;
-        ASTNode cols = (ASTNode) trfm.getChild(0);
-        for (int j = 0; j < cols.getChildCount(); ++j) {
-          ASTNode expr = (ASTNode) cols.getChild(j);
-          if (expr.getToken().getType() == HiveParser.TOK_ALLCOLREF) {
-            tabAlias = null;
-            if (sel.getChildCount() == 1)
-              tabAlias = unescapeIdentifier(sel.getChild(0).getText().toLowerCase());
-
-            pos = genColList(tabAlias, alias, expr, col_list, inputRR, pos, out_rwsch);
-            selectStar = true;
-          } else {
-            exprNodeDesc exp = genExprNodeDesc(expr, inputRR);
-            col_list.add(exp);
-            if (!StringUtils.isEmpty(alias) &&
-                (out_rwsch.get(null, colAlias) != null)) {
-              throw new SemanticException(ErrorMsg.AMBIGUOUS_COLUMN.getMsg(expr.getChild(1)));
-            }
-
-            out_rwsch.put(tabAlias, unescapeIdentifier(expr.getText()),
-                          new ColumnInfo((Integer.valueOf(pos)).toString(),
-                                         exp.getTypeInfo()));
-          }
-        }
+      } else if (expr.getType() == HiveParser.TOK_TABLE_OR_COL
+          && !hasAsClause
+          && !inputRR.getIsExprResolver()
+          && isRegex(unescapeIdentifier(expr.getChild(0).getText()))) {
+        // In case the expression is a regex COL.
+        // This can only happen without AS clause
+        // We don't allow this for ExprResolver - the Group By case
+        pos = genColListRegex(unescapeIdentifier(expr.getChild(0).getText()),
+            null, alias, expr, col_list, inputRR, pos, out_rwsch);
+      } else if (expr.getType() == HiveParser.DOT
+          && expr.getChild(0).getType() == HiveParser.TOK_TABLE_OR_COL
+          && inputRR.hasTableAlias(unescapeIdentifier(expr.getChild(0).getChild(0).getText().toLowerCase()))
+          && !hasAsClause
+          && !inputRR.getIsExprResolver()
+          && isRegex(unescapeIdentifier(expr.getChild(1).getText()))) {
+        // In case the expression is TABLE.COL (col can be regex).
+        // This can only happen without AS clause
+        // We don't allow this for ExprResolver - the Group By case
+        pos = genColListRegex(unescapeIdentifier(expr.getChild(1).getText()), 
+            unescapeIdentifier(expr.getChild(0).getChild(0).getText().toLowerCase()),
+            alias, expr, col_list, inputRR, pos, out_rwsch);
       } else {
         // Case when this is an expression
-        exprNodeDesc exp = genExprNodeDesc(sel, inputRR);
+        exprNodeDesc exp = genExprNodeDesc(expr, inputRR);
         col_list.add(exp);
         if (!StringUtils.isEmpty(alias) &&
             (out_rwsch.get(null, colAlias) != null)) {
-          throw new SemanticException(ErrorMsg.AMBIGUOUS_COLUMN.getMsg(sel.getChild(1)));
+          throw new SemanticException(ErrorMsg.AMBIGUOUS_COLUMN.getMsg(expr.getChild(1)));
         }
-        // Since the as clause is lacking we just use the text representation
-        // of the expression as the column name
         out_rwsch.put(tabAlias, colAlias,
                       new ColumnInfo((Integer.valueOf(pos)).toString(),
                                      exp.getTypeInfo()));
+        pos = Integer.valueOf(pos.intValue() + 1);
       }
-      pos = Integer.valueOf(pos.intValue() + 1);
     }
+    selectStar = selectStar && exprList.getChildCount() == 1;
 
+    
     Map<String, exprNodeDesc> colExprMap = new HashMap<String, exprNodeDesc>();
     for (int i=0; i<col_list.size(); i++) {
+      // Replace NULL with CAST(NULL AS STRING)
       if (col_list.get(i) instanceof exprNodeNullDesc) {
         col_list.set(i, new exprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, null));
       }
@@ -1279,11 +1327,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     
     Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
-        new selectDesc(col_list, (selExprList.getChildCount() == 1) && selectStar), new RowSchema(out_rwsch.getColumnInfos()),
+        new selectDesc(col_list, selectStar), new RowSchema(out_rwsch.getColumnInfos()),
         input), out_rwsch);
 
     output.setColumnExprMap(colExprMap);
-    if (trfm != null) {
+    if (isInTransform) {
       output = genScriptPlan(trfm, qb, output);
     }
 

@@ -1199,6 +1199,8 @@ LPAREN : '(' ;
 RPAREN : ')' ;
 LSQUARE : '[' ;
 RSQUARE : ']' ;
+LCURLY : '{';
+RCURLY : '}';
 
 EQUAL : '=';
 NOTEQUAL : '<>';
@@ -1217,6 +1219,8 @@ AMPERSAND : '&';
 TILDE : '~';
 BITWISEOR : '|';
 BITWISEXOR : '^';
+QUESTION : '?';
+DOLLAR : '$';
 
 // LITERALS
 fragment
@@ -1241,6 +1245,14 @@ Exponent
     'e' ( PLUS|MINUS )? (Digit)+
     ;
 
+fragment
+RegexComponent
+    : 'a'..'z' | 'A'..'Z' | '0'..'9' | '_'
+    | PLUS | STAR | QUESTION | MINUS | DOT
+    | LPAREN | RPAREN | LSQUARE | RSQUARE | LCURLY | RCURLY
+    | BITWISEXOR | BITWISEOR | DOLLAR
+    ;
+
 StringLiteral
     :
     ( '\'' (~'\'')* '\'' | '\"' (~'\"')* '\"' )+
@@ -1260,7 +1272,7 @@ Number
 Identifier
     :
     (Letter | Digit) (Letter | Digit | '_')*
-    | '`' (Letter | Digit) (Letter | Digit | '_')* '`'
+    | '`' RegexComponent+ '`'
     ;
 
 CharSetName

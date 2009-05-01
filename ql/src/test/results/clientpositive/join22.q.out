@@ -71,11 +71,11 @@ STAGE PLANS:
         $INTNAME 
           Reduce Output Operator
             key expressions:
-                  expr: 3
+                  expr: 2
                   type: string
             sort order: +
             Map-reduce partition columns:
-                  expr: 3
+                  expr: 2
                   type: string
             tag: 1
             value expressions:
@@ -83,9 +83,9 @@ STAGE PLANS:
                   type: string
                   expr: 1
                   type: string
-                  expr: 3
+                  expr: 2
                   type: string
-                  expr: 4
+                  expr: 3
                   type: string
         src5:src4 
             Reduce Output Operator
