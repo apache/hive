@@ -159,4 +159,23 @@ public class LazyFactory {
             columnObjectInspectors, separators[0], nullSequence, lastColumnTakesRest);
   }
   
+  /**
+   * Create a hierarchical ObjectInspector for ColumnarStruct with the given
+   * columnNames and columnTypeInfos.
+   * 
+   * @see LazyFactory#createLazyObjectInspector(TypeInfo, byte[], int, Text)
+   */
+  public static ObjectInspector createColumnarStructInspector(
+      List<String> columnNames, List<TypeInfo> columnTypes, byte[] separators,
+      Text nullSequence) {
+    ArrayList<ObjectInspector> columnObjectInspectors = new ArrayList<ObjectInspector>(
+        columnTypes.size());
+    for (int i = 0; i < columnTypes.size(); i++) {
+      columnObjectInspectors.add(LazyFactory.createLazyObjectInspector(
+          columnTypes.get(i), separators, 1, nullSequence));
+    }
+    return ObjectInspectorFactory.getColumnarStructObjectInspector(columnNames,
+        columnObjectInspectors, nullSequence);
+  }
+  
 }

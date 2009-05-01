@@ -258,5 +258,24 @@ public class ObjectInspectorFactory {
     return result;
   }
   
+
+  static HashMap<ArrayList<Object>, ColumnarStructObjectInspector> cachedColumnarStructObjectInspector = new HashMap<ArrayList<Object>, ColumnarStructObjectInspector>();
+
+  public static ColumnarStructObjectInspector getColumnarStructObjectInspector(
+      List<String> structFieldNames,
+      List<ObjectInspector> structFieldObjectInspectors, Text nullSequence) {
+    ArrayList<Object> signature = new ArrayList<Object>();
+    signature.add(structFieldNames);
+    signature.add(structFieldObjectInspectors);
+    signature.add(nullSequence.toString());
+    ColumnarStructObjectInspector result = cachedColumnarStructObjectInspector
+        .get(signature);
+    if (result == null) {
+      result = new ColumnarStructObjectInspector(structFieldNames,
+          structFieldObjectInspectors, nullSequence);
+      cachedColumnarStructObjectInspector.put(signature, result);
+    }
+    return result;
+  }
   
 }

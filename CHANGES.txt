@@ -21,6 +21,9 @@ Trunk - Unreleased
     HIVE-464. Add alter partition method to the meastore interface.
     (Prasad Chakka via zshao)
 
+    HIVE-352. Column-based storage format RCFile.
+    (Yongqiang He via zshao)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 

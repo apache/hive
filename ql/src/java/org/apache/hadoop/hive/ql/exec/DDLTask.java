@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.ql.plan.showPartitionsDesc;
 import org.apache.hadoop.hive.ql.plan.showTablesDesc;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
+import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.util.StringUtils;
@@ -529,6 +530,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           MetadataTypedColumnsetSerDe.class.getName())
           && !tbl.getSerializationLib().equals(
           LazySimpleSerDe.class.getName())
+          && !tbl.getSerializationLib().equals(
+          ColumnarSerDe.class.getName())
           && !tbl.getSerializationLib().equals(
           DynamicSerDe.class.getName())) {
         console

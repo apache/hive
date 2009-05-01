@@ -43,6 +43,8 @@ import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
+import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
+import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.alterTableDesc;
 import org.apache.hadoop.hive.ql.plan.createTableDesc;
@@ -55,6 +57,7 @@ import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.ql.plan.fetchWork;
 import org.apache.hadoop.hive.ql.plan.tableDesc;
+import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.mapred.TextInputFormat;
@@ -83,7 +86,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private static final String TEXTFILE_OUTPUT = IgnoreKeyTextOutputFormat.class.getName();
   private static final String SEQUENCEFILE_INPUT = SequenceFileInputFormat.class.getName();
   private static final String SEQUENCEFILE_OUTPUT = SequenceFileOutputFormat.class.getName();
+  private static final String RCFILE_INPUT = RCFileInputFormat.class.getName();
+  private static final String RCFILE_OUTPUT = RCFileOutputFormat.class.getName();
 
+  private static final String COLUMNAR_SERDE = ColumnarSerDe.class.getName();
+  
   public static String getTypeName(int token) {
     return TokenToTypeName.get(token);
   }
@@ -234,6 +241,11 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           inputFormat = TEXTFILE_INPUT;
           outputFormat = TEXTFILE_OUTPUT;
           break;
+        case HiveParser.TOK_TBLRCFILE:
+          inputFormat = RCFILE_INPUT;
+          outputFormat = RCFILE_OUTPUT;
+          serde = COLUMNAR_SERDE;
+          break;
         case HiveParser.TOK_TABLEFILEFORMAT:
           inputFormat = unescapeSQLString(child.getChild(0).getText());
           outputFormat = unescapeSQLString(child.getChild(1).getText());
@@ -244,7 +256,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         default: assert false;
       }
     }
-
     createTableDesc crtTblDesc = 
       new createTableDesc(tableName, isExt, cols, partCols, bucketCols, 
                           sortCols, numBuckets,

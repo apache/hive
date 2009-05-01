@@ -65,20 +65,18 @@ public class LazySimpleSerDe implements SerDe {
       LazySimpleSerDe.class.getName());
 
   final public static byte[] DefaultSeparators = {(byte)1, (byte)2, (byte)3};
-  // We need some initial values in case user don't call initialize()
-  private byte[] separators = DefaultSeparators;
 
-  private String nullString;
-  private Text nullSequence;
-  private boolean lastColumnTakesRest;
-  
-  private TypeInfo rowTypeInfo;
   private ObjectInspector cachedObjectInspector;
 
   public String toString() {
-    return getClass().toString() + "[" + Arrays.asList(separators) + ":" 
-        + ((StructTypeInfo)rowTypeInfo).getAllStructFieldNames()
-        + ":" + ((StructTypeInfo)rowTypeInfo).getAllStructFieldTypeInfos() + "]";
+    return getClass().toString()
+        + "["
+        + Arrays.asList(serdeParams.separators)
+        + ":"
+        + ((StructTypeInfo) serdeParams.rowTypeInfo).getAllStructFieldNames()
+        + ":"
+        + ((StructTypeInfo) serdeParams.rowTypeInfo)
+            .getAllStructFieldTypeInfos() + "]";
   }
 
   public LazySimpleSerDe() throws SerDeException {
@@ -90,7 +88,7 @@ public class LazySimpleSerDe implements SerDe {
    * @param defaultVal If the altValue does not represent a number, 
    *                   return the defaultVal.
    */
-  private byte getByte(String altValue, byte defaultVal) {
+  public static byte getByte(String altValue, byte defaultVal) {
     if (altValue != null && altValue.length() > 0) {
       try {
         return Byte.valueOf(altValue).byteValue();
@@ -100,6 +98,46 @@ public class LazySimpleSerDe implements SerDe {
     }
     return defaultVal;
   }
+
+  public static class SerDeParameters {
+    byte[] separators = DefaultSeparators;
+    String nullString;
+    Text nullSequence;
+    TypeInfo rowTypeInfo;
+    boolean lastColumnTakesRest;
+    List<String> columnNames;
+    List<TypeInfo> columnTypes;
+
+    public List<TypeInfo> getColumnTypes() {
+      return columnTypes;
+    }
+
+    public List<String> getColumnNames() {
+      return columnNames;
+    }
+    
+    public byte[] getSeparators() {
+      return separators;
+    }
+
+    public String getNullString() {
+      return nullString;
+    }
+
+    public Text getNullSequence() {
+      return nullSequence;
+    }
+
+    public TypeInfo getRowTypeInfo() {
+      return rowTypeInfo;
+    }
+
+    public boolean isLastColumnTakesRest() {
+      return lastColumnTakesRest;
+    }
+  }
+
+  SerDeParameters serdeParams = null;
 
   /**
    * Initialize the SerDe given the parameters.
@@ -112,77 +150,89 @@ public class LazySimpleSerDe implements SerDe {
   public void initialize(Configuration job, Properties tbl) 
   throws SerDeException {
 
-    // Read the separators: We use 10 levels of separators by default, but we 
-    // should change this when we allow users to specify more than 10 levels 
-    // of separators through DDL.
-    separators = new byte[10];
-    separators[0] = getByte(tbl.getProperty(Constants.FIELD_DELIM, 
-                              tbl.getProperty(Constants.SERIALIZATION_FORMAT)),
-                              DefaultSeparators[0]);
-    separators[1] = getByte(tbl.getProperty(Constants.COLLECTION_DELIM),
-        DefaultSeparators[1]);
-    separators[2] = getByte(tbl.getProperty(Constants.MAPKEY_DELIM),
-        DefaultSeparators[2]);
-    for (int i=3; i<separators.length; i++) {
-      separators[i] = (byte)(i+1);
-    }
-    
-    nullString = tbl.getProperty(Constants.SERIALIZATION_NULL_FORMAT, "\\N");
-    nullSequence = new Text(nullString);
-    
-    String lastColumnTakesRestString = tbl.getProperty(
-        Constants.SERIALIZATION_LAST_COLUMN_TAKES_REST);
-    lastColumnTakesRest = (lastColumnTakesRestString != null 
-        && lastColumnTakesRestString.equalsIgnoreCase("true"));
+    serdeParams = LazySimpleSerDe.initSerdeParams(job, tbl, getClass()
+        .getName());
+    cachedLazyStruct = (LazyStruct) LazyFactory
+        .createLazyObject(serdeParams.rowTypeInfo);
 
+    // Create the ObjectInspectors for the fields
+    cachedObjectInspector = LazyFactory.createLazyStructInspector(
+        serdeParams.columnNames, serdeParams.columnTypes,
+        serdeParams.separators, serdeParams.nullSequence,
+        serdeParams.lastColumnTakesRest);
+
+    LOG.debug("LazySimpleSerDe initialized with: columnNames="
+        + serdeParams.columnNames + " columnTypes=" + serdeParams.columnTypes
+        + " separator=" + Arrays.asList(serdeParams.separators)
+        + " nullstring=" + serdeParams.nullString + " lastColumnTakesRest="
+        + serdeParams.lastColumnTakesRest);
+  }
+
+  public static SerDeParameters initSerdeParams(Configuration job,
+      Properties tbl, String serdeName) throws SerDeException {
+    SerDeParameters serdeParams = new SerDeParameters();
+    // Read the separators: We use 10 levels of separators by default, but we
+    // should change this when we allow users to specify more than 10 levels
+    // of separators through DDL.
+    serdeParams.separators = new byte[10];
+    serdeParams.separators[0] = getByte(tbl.getProperty(Constants.FIELD_DELIM,
+        tbl.getProperty(Constants.SERIALIZATION_FORMAT)), DefaultSeparators[0]);
+    serdeParams.separators[1] = getByte(tbl
+        .getProperty(Constants.COLLECTION_DELIM), DefaultSeparators[1]);
+    serdeParams.separators[2] = getByte(
+        tbl.getProperty(Constants.MAPKEY_DELIM), DefaultSeparators[2]);
+    for (int i = 3; i < serdeParams.separators.length; i++) {
+      serdeParams.separators[i] = (byte) (i + 1);
+    }
+
+    serdeParams.nullString = tbl.getProperty(
+        Constants.SERIALIZATION_NULL_FORMAT, "\\N");
+    serdeParams.nullSequence = new Text(serdeParams.nullString);
+
+    String lastColumnTakesRestString = tbl
+        .getProperty(Constants.SERIALIZATION_LAST_COLUMN_TAKES_REST);
+    serdeParams.lastColumnTakesRest = (lastColumnTakesRestString != null && lastColumnTakesRestString
+        .equalsIgnoreCase("true"));
 
     // Read the configuration parameters
     String columnNameProperty = tbl.getProperty("columns");
     // NOTE: if "columns.types" is missing, all columns will be of String type
     String columnTypeProperty = tbl.getProperty("columns.types");
-    
+
     // Parse the configuration parameters
-    List<String> columnNames;
-    if (columnNameProperty != null && columnNameProperty.length()>0) {
-      columnNames = Arrays.asList(columnNameProperty.split(","));
+
+    if (columnNameProperty != null && columnNameProperty.length() > 0) {
+      serdeParams.columnNames = Arrays.asList(columnNameProperty.split(","));
     } else {
-      columnNames = new ArrayList<String>();
+      serdeParams.columnNames = new ArrayList<String>();
     }
     if (columnTypeProperty == null) {
       // Default type: all string
       StringBuilder sb = new StringBuilder();
-      for (int i = 0; i < columnNames.size(); i++) {
-        if (i>0) sb.append(":");
+      for (int i = 0; i < serdeParams.columnNames.size(); i++) {
+        if (i > 0)
+          sb.append(":");
         sb.append(Constants.STRING_TYPE_NAME);
       }
       columnTypeProperty = sb.toString();
     }
-    
-    List<TypeInfo> columnTypes = 
-      TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
-    
-    if (columnNames.size() != columnTypes.size()) {
-      throw new SerDeException(getClass().toString() 
-          + ": columns has " + columnNames.size() 
-          + " elements while columns.types has " + columnTypes.size()
-          + " elements!");
-    }
-    
-    // Create the LazyObject for storing the rows
-    rowTypeInfo = TypeInfoFactory.getStructTypeInfo(columnNames, columnTypes);
-    cachedLazyStruct = (LazyStruct)LazyFactory.createLazyObject(rowTypeInfo);
 
-    // Create the ObjectInspectors for the fields
-    cachedObjectInspector = LazyFactory.createLazyStructInspector(columnNames,
-            columnTypes, separators, nullSequence, lastColumnTakesRest);
-    
-    
-    LOG.debug("LazySimpleSerDe initialized with: columnNames=" + columnNames
-        + " columnTypes=" + columnTypes + " separator=" 
-        + Arrays.asList(separators) + " nullstring=" + nullString 
-        + " lastColumnTakesRest=" + lastColumnTakesRest);
+    serdeParams.columnTypes = TypeInfoUtils
+        .getTypeInfosFromTypeString(columnTypeProperty);
+
+    if (serdeParams.columnNames.size() != serdeParams.columnTypes.size()) {
+      throw new SerDeException(serdeName + ": columns has "
+          + serdeParams.columnNames.size()
+          + " elements while columns.types has "
+          + serdeParams.columnTypes.size() + " elements!");
+    }
+
+    // Create the LazyObject for storing the rows
+    serdeParams.rowTypeInfo = TypeInfoFactory.getStructTypeInfo(
+        serdeParams.columnNames, serdeParams.columnTypes);
+    return serdeParams;
   }
-  
+
   // The object for storing row data
   LazyStruct cachedLazyStruct;
   
@@ -254,11 +304,11 @@ public class LazySimpleSerDe implements SerDe {
     StructObjectInspector soi = (StructObjectInspector)objInspector;
     List<? extends StructField> fields = soi.getAllStructFieldRefs();
     List<Object> list = soi.getStructFieldsDataAsList(obj);
-    List<? extends StructField> declaredFields = 
-        (rowTypeInfo != null && ((StructTypeInfo)rowTypeInfo).getAllStructFieldNames().size()>0)
-        ? ((StructObjectInspector)getObjectInspector()).getAllStructFieldRefs()
+    List<? extends StructField> declaredFields =(serdeParams.rowTypeInfo != null && ((StructTypeInfo) serdeParams.rowTypeInfo)
+        .getAllStructFieldNames().size()>0)? ((StructObjectInspector)getObjectInspector())
+        .getAllStructFieldRefs()
         : null;
-        
+
     serializeStream.reset();
 
     try {
@@ -266,17 +316,17 @@ public class LazySimpleSerDe implements SerDe {
       for (int i=0; i<fields.size(); i++) {
         // Append the separator if needed.
         if (i>0) {
-          serializeStream.write(separators[0]);
+          serializeStream.write(serdeParams.separators[0]);
         }
         // Get the field objectInspector and the field object.
         ObjectInspector foi = fields.get(i).getFieldObjectInspector();
         Object f = (list == null ? null : list.get(i));
-  
+
         if (declaredFields != null && i >= declaredFields.size()) {
           throw new SerDeException(
               "Error: expecting " + declaredFields.size() 
               + " but asking for field " + i + "\n" + "data=" + obj + "\n"
-              + "tableType=" + rowTypeInfo.toString() + "\n"
+              + "tableType=" + serdeParams.rowTypeInfo.toString() + "\n"
               + "dataType=" 
               + TypeInfoUtils.getTypeInfoFromObjectInspector(objInspector));
         }
@@ -290,11 +340,12 @@ public class LazySimpleSerDe implements SerDe {
             && (declaredFields == null || 
                 declaredFields.get(i).getFieldObjectInspector().getCategory()
                 .equals(Category.PRIMITIVE))) {
-          serialize(serializeStream, SerDeUtils.getJSONString(f, foi), 
+          serialize(serializeStream, SerDeUtils.getJSONString(f, foi),
               PrimitiveObjectInspectorFactory.javaStringObjectInspector,
-              separators, 1, nullSequence);
+              serdeParams.separators, 1, serdeParams.nullSequence);
         } else {
-          serialize(serializeStream, f, foi, separators, 1, nullSequence);
+          serialize(serializeStream, f, foi, serdeParams.separators, 1,
+              serdeParams.nullSequence);
         }
       }
     } catch (IOException e) {
@@ -317,7 +368,7 @@ public class LazySimpleSerDe implements SerDe {
    * @param nullSequence    The byte sequence representing the NULL value.
    * @throws IOException 
    */
-  private void serialize(ByteStream.Output out, Object obj, 
+  public static void serialize(ByteStream.Output out, Object obj, 
       ObjectInspector objInspector, byte[] separators, int level,
       Text nullSequence) throws IOException {
     

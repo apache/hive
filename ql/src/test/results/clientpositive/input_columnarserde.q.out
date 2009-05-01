@@ -1,0 +1,97 @@
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src_thrift)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB input_columnarserde)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src_thrift) lint)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src_thrift) lstring)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src_thrift) mstringstring)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src_thrift) aint)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src_thrift) astring))) (TOK_DISTRIBUTEBY 1)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src_thrift 
+            Select Operator
+              expressions:
+                    expr: lint
+                    type: array<int>
+                    expr: lstring
+                    type: array<string>
+                    expr: mstringstring
+                    type: map<string,string>
+                    expr: aint
+                    type: int
+                    expr: astring
+                    type: string
+              Select Operator
+                expressions:
+                      expr: 0
+                      type: array<int>
+                      expr: 1
+                      type: array<string>
+                      expr: 2
+                      type: map<string,string>
+                      expr: 3
+                      type: int
+                      expr: 4
+                      type: string
+                Reduce Output Operator
+                  sort order: 
+                  Map-reduce partition columns:
+                        expr: 1
+                        type: int
+                  tag: -1
+                  value expressions:
+                        expr: 0
+                        type: array<int>
+                        expr: 1
+                        type: array<string>
+                        expr: 2
+                        type: map<string,string>
+                        expr: 3
+                        type: int
+                        expr: 4
+                        type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 1
+            table:
+                input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+                name: input_columnarserde
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+            replace: true
+            table:
+                input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+                name: input_columnarserde
+
+
+[0,0,0]	["0","0","0"]	{"key_0":"value_0"}	1712634731	record_0
+[1,2,3]	["10","100","1000"]	{"key_1":"value_1"}	465985200	record_1
+[2,4,6]	["20","200","2000"]	{"key_2":"value_2"}	-751827638	record_2
+[3,6,9]	["30","300","3000"]	{"key_3":"value_3"}	477111222	record_3
+[4,8,12]	["40","400","4000"]	{"key_4":"value_4"}	-734328909	record_4
+[5,10,15]	["50","500","5000"]	{"key_5":"value_5"}	-1952710710	record_5
+[6,12,18]	["60","600","6000"]	{"key_6":"value_6"}	1244525190	record_6
+[7,14,21]	["70","700","7000"]	{"key_7":"value_7"}	-1461153973	record_7
+[8,16,24]	["80","800","8000"]	{"key_8":"value_8"}	1638581578	record_8
+[9,18,27]	["90","900","9000"]	{"key_9":"value_9"}	336964413	record_9
+null	null	{}	0	NULL
+0	0	NULL	1712634731	record_0
+1	10	NULL	465985200	record_1
+2	20	NULL	-751827638	record_2
+3	30	NULL	477111222	record_3
+4	40	NULL	-734328909	record_4
+5	50	NULL	-1952710710	record_5
+6	60	NULL	1244525190	record_6
+7	70	NULL	-1461153973	record_7
+8	80	NULL	1638581578	record_8
+9	90	NULL	336964413	record_9
+NULL	NULL	NULL	0	NULL

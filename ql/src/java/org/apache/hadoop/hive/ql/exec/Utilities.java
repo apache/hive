@@ -42,6 +42,7 @@ import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.plan.*;
 import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
+import org.apache.hadoop.hive.ql.io.RCFile;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -500,6 +501,30 @@ public class Utilities {
     return (SequenceFile.createWriter(fs, jc, file,
                                       keyClass, valClass, compressionType, codec));
 
+  }
+  
+  /**
+   * Create a RCFile output stream based on job configuration Uses user supplied
+   * compression flag (rather than obtaining it from the Job Configuration)
+   * 
+   * @param jc
+   *          Job configuration
+   * @param fs
+   *          File System to create file in
+   * @param file
+   *          Path to be created
+   * @return output stream over the created rcfile
+   */
+  public static RCFile.Writer createRCFileWriter(JobConf jc, FileSystem fs,
+      Path file, boolean isCompressed) throws IOException {
+    CompressionCodec codec = null;
+    Class<?> codecClass = null;
+    if (isCompressed) {
+      codecClass = FileOutputFormat.getOutputCompressorClass(jc,
+          DefaultCodec.class);
+      codec = (CompressionCodec) ReflectionUtils.newInstance(codecClass, jc);
+    }
+    return new RCFile.Writer(fs, jc, file, null, codec);
   }
 
   /**
