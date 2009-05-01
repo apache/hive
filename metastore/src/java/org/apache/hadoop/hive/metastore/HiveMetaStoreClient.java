@@ -470,8 +470,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
 
   public List<String> listPartitionNames(String dbName, String tblName, short max)
       throws MetaException, TException {
-    // TODO Auto-generated method stub
     return client.get_partition_names(dbName, tblName, max);
+  }
+
+  public void alter_partition(String dbName, String tblName,
+      Partition newPart) throws InvalidOperationException, MetaException,
+      TException {
+    client.alter_partition(dbName, tblName, newPart);
   }
 
 }

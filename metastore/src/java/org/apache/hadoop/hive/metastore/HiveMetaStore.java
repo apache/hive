@@ -37,7 +37,6 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.api.Type;
@@ -538,27 +537,23 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         return getMS().listPartitionNames(db_name, tbl_name, max_parts);
       }
 
-      public boolean alter_partitions(StorageDescriptor sd, List<String> parts) throws InvalidOperationException,
-          MetaException {
-        this.incrementCounter("alter_partitions");
-        logStartFunction("alter_partitions");
-        // TODO Auto-generated method stub
-        throw new MetaException("Not yet implemented");
+      public void alter_partition(String db_name, String tbl_name,
+          Partition new_part) throws InvalidOperationException, MetaException,
+          TException {
+        this.incrementCounter("alter_partition");
+        logStartFunction("alter_partition", db_name, tbl_name);
+        LOG.info("Partition values:" + new_part.getValues());
+        try {
+          getMS().alterPartition(db_name, tbl_name, new_part);
+        } catch(InvalidObjectException e) {
+          LOG.error(StringUtils.stringifyException(e));
+          throw new InvalidOperationException("alter is not possible");
+        }
       }
-
       
-      public boolean set_partition_parameters(String db_name, String tbl_name, String pname, Map<String, String> params) throws NoSuchObjectException,
-          MetaException {
-        this.incrementCounter("set_partition_parameters");
-        logStartFunction("set_partition_parameters: db=" + db_name + " tbl=" + tbl_name);
-        // TODO Auto-generated method stub
-        throw new MetaException("Not yet implemented");
-      }
-
       public boolean create_index(Index index_def)
           throws IndexAlreadyExistsException, MetaException {
         this.incrementCounter("create_index");
-        logStartFunction("truncate_table: db=" + index_def.getTableName() + " tbl=" + index_def.getTableName() + " name=" + index_def.getIndexName());
         // TODO Auto-generated method stub
         throw new MetaException("Not yet implemented");
       }

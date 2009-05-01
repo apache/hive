@@ -63,9 +63,7 @@ public List<Partition> get_partitions(String db_name, String tbl_name, short max
 
 public List<String> get_partition_names(String db_name, String tbl_name, short max_parts) throws MetaException, TException;
 
-public boolean alter_partitions(StorageDescriptor sd, List<String> parts) throws InvalidOperationException, MetaException, TException;
-
-public boolean create_index(Index index_def) throws IndexAlreadyExistsException, MetaException, TException;
+public void alter_partition(String db_name, String tbl_name, Partition new_part) throws InvalidOperationException, MetaException, TException;
 
 }
 
@@ -863,24 +861,25 @@ if (result.__isset.o2) {
 throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_partition_names failed: unknown result");
 }
 
-public boolean alter_partitions(StorageDescriptor sd, List<String> parts) throws InvalidOperationException, MetaException, TException
+public void alter_partition(String db_name, String tbl_name, Partition new_part) throws InvalidOperationException, MetaException, TException
 {
-send_alter_partitions(sd, parts);
-return recv_alter_partitions();
+send_alter_partition(db_name, tbl_name, new_part);
+recv_alter_partition();
 }
 
-public void send_alter_partitions(StorageDescriptor sd, List<String> parts) throws TException
+public void send_alter_partition(String db_name, String tbl_name, Partition new_part) throws TException
 {
-oprot_.writeMessageBegin(new TMessage("alter_partitions", TMessageType.CALL, seqid_));
-alter_partitions_args args = new alter_partitions_args();
-args.sd = sd;
-args.parts = parts;
+oprot_.writeMessageBegin(new TMessage("alter_partition", TMessageType.CALL, seqid_));
+alter_partition_args args = new alter_partition_args();
+args.db_name = db_name;
+args.tbl_name = tbl_name;
+args.new_part = new_part;
 args.write(oprot_);
 oprot_.writeMessageEnd();
 oprot_.getTransport().flush();
 }
 
-public boolean recv_alter_partitions() throws InvalidOperationException, MetaException, TException
+public void recv_alter_partition() throws InvalidOperationException, MetaException, TException
 {
 TMessage msg = iprot_.readMessageBegin();
 if (msg.type == TMessageType.EXCEPTION) {
@@ -888,58 +887,16 @@ if (msg.type == TMessageType.EXCEPTION) {
   iprot_.readMessageEnd();
   throw x;
 }
-alter_partitions_result result = new alter_partitions_result();
+alter_partition_result result = new alter_partition_result();
 result.read(iprot_);
 iprot_.readMessageEnd();
-if (result.__isset.success) {
-  return result.success;
-}
 if (result.__isset.o1) {
   throw result.o1;
 }
 if (result.__isset.o2) {
   throw result.o2;
 }
-throw new TApplicationException(TApplicationException.MISSING_RESULT, "alter_partitions failed: unknown result");
-}
-
-public boolean create_index(Index index_def) throws IndexAlreadyExistsException, MetaException, TException
-{
-send_create_index(index_def);
-return recv_create_index();
-}
-
-public void send_create_index(Index index_def) throws TException
-{
-oprot_.writeMessageBegin(new TMessage("create_index", TMessageType.CALL, seqid_));
-create_index_args args = new create_index_args();
-args.index_def = index_def;
-args.write(oprot_);
-oprot_.writeMessageEnd();
-oprot_.getTransport().flush();
-}
-
-public boolean recv_create_index() throws IndexAlreadyExistsException, MetaException, TException
-{
-TMessage msg = iprot_.readMessageBegin();
-if (msg.type == TMessageType.EXCEPTION) {
-  TApplicationException x = TApplicationException.read(iprot_);
-  iprot_.readMessageEnd();
-  throw x;
-}
-create_index_result result = new create_index_result();
-result.read(iprot_);
-iprot_.readMessageEnd();
-if (result.__isset.success) {
-  return result.success;
-}
-if (result.__isset.o1) {
-  throw result.o1;
-}
-if (result.__isset.o2) {
-  throw result.o2;
-}
-throw new TApplicationException(TApplicationException.MISSING_RESULT, "create_index failed: unknown result");
+return;
 }
 
 }
@@ -968,8 +925,7 @@ processMap_.put("drop_partition", new drop_partition());
 processMap_.put("get_partition", new get_partition());
 processMap_.put("get_partitions", new get_partitions());
 processMap_.put("get_partition_names", new get_partition_names());
-processMap_.put("alter_partitions", new alter_partitions());
-processMap_.put("create_index", new create_index());
+processMap_.put("alter_partition", new alter_partition());
 }
 
 private Iface iface_;
@@ -1483,16 +1439,15 @@ public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TExcepti
 
 }
 
-private class alter_partitions implements ProcessFunction {
+private class alter_partition implements ProcessFunction {
 public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
 {
-  alter_partitions_args args = new alter_partitions_args();
+  alter_partition_args args = new alter_partition_args();
   args.read(iprot);
   iprot.readMessageEnd();
-  alter_partitions_result result = new alter_partitions_result();
+  alter_partition_result result = new alter_partition_result();
   try {
-    result.success = iface_.alter_partitions(args.sd, args.parts);
-    result.__isset.success = true;
+    iface_.alter_partition(args.db_name, args.tbl_name, args.new_part);
   } catch (InvalidOperationException o1) {
     result.o1 = o1;
     result.__isset.o1 = true;
@@ -1500,32 +1455,7 @@ public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TExcepti
     result.o2 = o2;
     result.__isset.o2 = true;
   }
-  oprot.writeMessageBegin(new TMessage("alter_partitions", TMessageType.REPLY, seqid));
-  result.write(oprot);
-  oprot.writeMessageEnd();
-  oprot.getTransport().flush();
-}
-
-}
-
-private class create_index implements ProcessFunction {
-public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
-{
-  create_index_args args = new create_index_args();
-  args.read(iprot);
-  iprot.readMessageEnd();
-  create_index_result result = new create_index_result();
-  try {
-    result.success = iface_.create_index(args.index_def);
-    result.__isset.success = true;
-  } catch (IndexAlreadyExistsException o1) {
-    result.o1 = o1;
-    result.__isset.o1 = true;
-  } catch (MetaException o2) {
-    result.o2 = o2;
-    result.__isset.o2 = true;
-  }
-  oprot.writeMessageBegin(new TMessage("create_index", TMessageType.REPLY, seqid));
+  oprot.writeMessageBegin(new TMessage("alter_partition", TMessageType.REPLY, seqid));
   result.write(oprot);
   oprot.writeMessageEnd();
   oprot.getTransport().flush();
@@ -8945,101 +8875,111 @@ return sb.toString();
 
 }
 
-public static class alter_partitions_args implements TBase, java.io.Serializable {
-private StorageDescriptor sd;
-private List<String> parts;
+public static class alter_partition_args implements TBase, java.io.Serializable {
+private String db_name;
+private String tbl_name;
+private Partition new_part;
 
 public final Isset __isset = new Isset();
 public static final class Isset implements java.io.Serializable {
-public boolean sd = false;
-public boolean parts = false;
+public boolean db_name = false;
+public boolean tbl_name = false;
+public boolean new_part = false;
 }
 
-public alter_partitions_args() {
+public alter_partition_args() {
 }
 
-public alter_partitions_args(
-StorageDescriptor sd,
-List<String> parts)
+public alter_partition_args(
+String db_name,
+String tbl_name,
+Partition new_part)
 {
 this();
-this.sd = sd;
-this.__isset.sd = true;
-this.parts = parts;
-this.__isset.parts = true;
+this.db_name = db_name;
+this.__isset.db_name = true;
+this.tbl_name = tbl_name;
+this.__isset.tbl_name = true;
+this.new_part = new_part;
+this.__isset.new_part = true;
 }
 
-public StorageDescriptor getSd() {
-return this.sd;
+public String getDb_name() {
+return this.db_name;
 }
 
-public void setSd(StorageDescriptor sd) {
-this.sd = sd;
-this.__isset.sd = true;
+public void setDb_name(String db_name) {
+this.db_name = db_name;
+this.__isset.db_name = true;
 }
 
-public void unsetSd() {
-this.sd = null;
-this.__isset.sd = false;
+public void unsetDb_name() {
+this.__isset.db_name = false;
 }
 
-public int getPartsSize() {
-return (this.parts == null) ? 0 : this.parts.size();
+public String getTbl_name() {
+return this.tbl_name;
 }
 
-public java.util.Iterator<String> getPartsIterator() {
-return (this.parts == null) ? null : this.parts.iterator();
+public void setTbl_name(String tbl_name) {
+this.tbl_name = tbl_name;
+this.__isset.tbl_name = true;
 }
 
-public void addToParts(String elem) {
-if (this.parts == null) {
-  this.parts = new ArrayList<String>();
-}
-this.parts.add(elem);
-this.__isset.parts = true;
+public void unsetTbl_name() {
+this.__isset.tbl_name = false;
 }
 
-public List<String> getParts() {
-return this.parts;
+public Partition getNew_part() {
+return this.new_part;
 }
 
-public void setParts(List<String> parts) {
-this.parts = parts;
-this.__isset.parts = true;
+public void setNew_part(Partition new_part) {
+this.new_part = new_part;
+this.__isset.new_part = true;
 }
 
-public void unsetParts() {
-this.parts = null;
-this.__isset.parts = false;
+public void unsetNew_part() {
+this.new_part = null;
+this.__isset.new_part = false;
 }
 
 public boolean equals(Object that) {
 if (that == null)
   return false;
-if (that instanceof alter_partitions_args)
-  return this.equals((alter_partitions_args)that);
+if (that instanceof alter_partition_args)
+  return this.equals((alter_partition_args)that);
 return false;
 }
 
-public boolean equals(alter_partitions_args that) {
+public boolean equals(alter_partition_args that) {
 if (that == null)
   return false;
 
-boolean this_present_sd = true && (this.sd != null);
-boolean that_present_sd = true && (that.sd != null);
-if (this_present_sd || that_present_sd) {
-  if (!(this_present_sd && that_present_sd))
+boolean this_present_db_name = true && (this.db_name != null);
+boolean that_present_db_name = true && (that.db_name != null);
+if (this_present_db_name || that_present_db_name) {
+  if (!(this_present_db_name && that_present_db_name))
     return false;
-  if (!this.sd.equals(that.sd))
+  if (!this.db_name.equals(that.db_name))
     return false;
 }
 
-boolean this_present_parts = true && (this.parts != null);
-boolean that_present_parts = true && (that.parts != null);
-if (this_present_parts || that_present_parts) {
-  if (!(this_present_parts && that_present_parts))
+boolean this_present_tbl_name = true && (this.tbl_name != null);
+boolean that_present_tbl_name = true && (that.tbl_name != null);
+if (this_present_tbl_name || that_present_tbl_name) {
+  if (!(this_present_tbl_name && that_present_tbl_name))
     return false;
-  if (!this.parts.equals(that.parts))
+  if (!this.tbl_name.equals(that.tbl_name))
+    return false;
+}
+
+boolean this_present_new_part = true && (this.new_part != null);
+boolean that_present_new_part = true && (that.new_part != null);
+if (this_present_new_part || that_present_new_part) {
+  if (!(this_present_new_part && that_present_new_part))
+    return false;
+  if (!this.new_part.equals(that.new_part))
     return false;
 }
 
@@ -9062,28 +9002,26 @@ while (true)
   switch (field.id)
   {
     case 1:
-      if (field.type == TType.STRUCT) {
-        this.sd = new StorageDescriptor();
-        this.sd.read(iprot);
-        this.__isset.sd = true;
+      if (field.type == TType.STRING) {
+        this.db_name = iprot.readString();
+        this.__isset.db_name = true;
       } else { 
         TProtocolUtil.skip(iprot, field.type);
       }
       break;
     case 2:
-      if (field.type == TType.LIST) {
-        {
-          TList _list85 = iprot.readListBegin();
-          this.parts = new ArrayList<String>(_list85.size);
-          for (int _i86 = 0; _i86 < _list85.size; ++_i86)
-          {
-            String _elem87 = null;
-            _elem87 = iprot.readString();
-            this.parts.add(_elem87);
-          }
-          iprot.readListEnd();
-        }
-        this.__isset.parts = true;
+      if (field.type == TType.STRING) {
+        this.tbl_name = iprot.readString();
+        this.__isset.tbl_name = true;
+      } else { 
+        TProtocolUtil.skip(iprot, field.type);
+      }
+      break;
+    case 3:
+      if (field.type == TType.STRUCT) {
+        this.new_part = new Partition();
+        this.new_part.read(iprot);
+        this.__isset.new_part = true;
       } else { 
         TProtocolUtil.skip(iprot, field.type);
       }
@@ -9098,29 +9036,31 @@ iprot.readStructEnd();
 }
 
 public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("alter_partitions_args");
+TStruct struct = new TStruct("alter_partition_args");
 oprot.writeStructBegin(struct);
 TField field = new TField();
-if (this.sd != null) {
-  field.name = "sd";
-  field.type = TType.STRUCT;
+if (this.db_name != null) {
+  field.name = "db_name";
+  field.type = TType.STRING;
   field.id = 1;
   oprot.writeFieldBegin(field);
-  this.sd.write(oprot);
+  oprot.writeString(this.db_name);
   oprot.writeFieldEnd();
 }
-if (this.parts != null) {
-  field.name = "parts";
-  field.type = TType.LIST;
+if (this.tbl_name != null) {
+  field.name = "tbl_name";
+  field.type = TType.STRING;
   field.id = 2;
   oprot.writeFieldBegin(field);
-  {
-    oprot.writeListBegin(new TList(TType.STRING, this.parts.size()));
-    for (String _iter88 : this.parts)    {
-      oprot.writeString(_iter88);
-    }
-    oprot.writeListEnd();
-  }
+  oprot.writeString(this.tbl_name);
+  oprot.writeFieldEnd();
+}
+if (this.new_part != null) {
+  field.name = "new_part";
+  field.type = TType.STRUCT;
+  field.id = 3;
+  oprot.writeFieldBegin(field);
+  this.new_part.write(oprot);
   oprot.writeFieldEnd();
 }
 oprot.writeFieldStop();
@@ -9128,57 +9068,41 @@ oprot.writeStructEnd();
 }
 
 public String toString() {
-StringBuilder sb = new StringBuilder("alter_partitions_args(");
-sb.append("sd:");
-sb.append(this.sd.toString());
-sb.append(",parts:");
-sb.append(this.parts);
+StringBuilder sb = new StringBuilder("alter_partition_args(");
+sb.append("db_name:");
+sb.append(this.db_name);
+sb.append(",tbl_name:");
+sb.append(this.tbl_name);
+sb.append(",new_part:");
+sb.append(this.new_part.toString());
 sb.append(")");
 return sb.toString();
 }
 
 }
 
-public static class alter_partitions_result implements TBase, java.io.Serializable {
-private boolean success;
+public static class alter_partition_result implements TBase, java.io.Serializable {
 private InvalidOperationException o1;
 private MetaException o2;
 
 public final Isset __isset = new Isset();
 public static final class Isset implements java.io.Serializable {
-public boolean success = false;
 public boolean o1 = false;
 public boolean o2 = false;
 }
 
-public alter_partitions_result() {
+public alter_partition_result() {
 }
 
-public alter_partitions_result(
-boolean success,
+public alter_partition_result(
 InvalidOperationException o1,
 MetaException o2)
 {
 this();
-this.success = success;
-this.__isset.success = true;
 this.o1 = o1;
 this.__isset.o1 = true;
 this.o2 = o2;
 this.__isset.o2 = true;
-}
-
-public boolean isSuccess() {
-return this.success;
-}
-
-public void setSuccess(boolean success) {
-this.success = success;
-this.__isset.success = true;
-}
-
-public void unsetSuccess() {
-this.__isset.success = false;
 }
 
 public InvalidOperationException getO1() {
@@ -9212,23 +9136,14 @@ this.__isset.o2 = false;
 public boolean equals(Object that) {
 if (that == null)
   return false;
-if (that instanceof alter_partitions_result)
-  return this.equals((alter_partitions_result)that);
+if (that instanceof alter_partition_result)
+  return this.equals((alter_partition_result)that);
 return false;
 }
 
-public boolean equals(alter_partitions_result that) {
+public boolean equals(alter_partition_result that) {
 if (that == null)
   return false;
-
-boolean this_present_success = true;
-boolean that_present_success = true;
-if (this_present_success || that_present_success) {
-  if (!(this_present_success && that_present_success))
-    return false;
-  if (this.success != that.success)
-    return false;
-}
 
 boolean this_present_o1 = true && (this.o1 != null);
 boolean that_present_o1 = true && (that.o1 != null);
@@ -9266,14 +9181,6 @@ while (true)
   }
   switch (field.id)
   {
-    case 0:
-      if (field.type == TType.BOOL) {
-        this.success = iprot.readBool();
-        this.__isset.success = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
     case 1:
       if (field.type == TType.STRUCT) {
         this.o1 = new InvalidOperationException();
@@ -9302,18 +9209,11 @@ iprot.readStructEnd();
 }
 
 public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("alter_partitions_result");
+TStruct struct = new TStruct("alter_partition_result");
 oprot.writeStructBegin(struct);
 TField field = new TField();
 
-if (this.__isset.success) {
-  field.name = "success";
-  field.type = TType.BOOL;
-  field.id = 0;
-  oprot.writeFieldBegin(field);
-  oprot.writeBool(this.success);
-  oprot.writeFieldEnd();
-} else if (this.__isset.o1) {
+if (this.__isset.o1) {
   if (this.o1 != null) {
     field.name = "o1";
     field.type = TType.STRUCT;
@@ -9337,337 +9237,8 @@ oprot.writeStructEnd();
 }
 
 public String toString() {
-StringBuilder sb = new StringBuilder("alter_partitions_result(");
-sb.append("success:");
-sb.append(this.success);
-sb.append(",o1:");
-sb.append(this.o1.toString());
-sb.append(",o2:");
-sb.append(this.o2.toString());
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class create_index_args implements TBase, java.io.Serializable {
-private Index index_def;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean index_def = false;
-}
-
-public create_index_args() {
-}
-
-public create_index_args(
-Index index_def)
-{
-this();
-this.index_def = index_def;
-this.__isset.index_def = true;
-}
-
-public Index getIndex_def() {
-return this.index_def;
-}
-
-public void setIndex_def(Index index_def) {
-this.index_def = index_def;
-this.__isset.index_def = true;
-}
-
-public void unsetIndex_def() {
-this.index_def = null;
-this.__isset.index_def = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof create_index_args)
-  return this.equals((create_index_args)that);
-return false;
-}
-
-public boolean equals(create_index_args that) {
-if (that == null)
-  return false;
-
-boolean this_present_index_def = true && (this.index_def != null);
-boolean that_present_index_def = true && (that.index_def != null);
-if (this_present_index_def || that_present_index_def) {
-  if (!(this_present_index_def && that_present_index_def))
-    return false;
-  if (!this.index_def.equals(that.index_def))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 1:
-      if (field.type == TType.STRUCT) {
-        this.index_def = new Index();
-        this.index_def.read(iprot);
-        this.__isset.index_def = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("create_index_args");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-if (this.index_def != null) {
-  field.name = "index_def";
-  field.type = TType.STRUCT;
-  field.id = 1;
-  oprot.writeFieldBegin(field);
-  this.index_def.write(oprot);
-  oprot.writeFieldEnd();
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("create_index_args(");
-sb.append("index_def:");
-sb.append(this.index_def.toString());
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class create_index_result implements TBase, java.io.Serializable {
-private boolean success;
-private IndexAlreadyExistsException o1;
-private MetaException o2;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean success = false;
-public boolean o1 = false;
-public boolean o2 = false;
-}
-
-public create_index_result() {
-}
-
-public create_index_result(
-boolean success,
-IndexAlreadyExistsException o1,
-MetaException o2)
-{
-this();
-this.success = success;
-this.__isset.success = true;
-this.o1 = o1;
-this.__isset.o1 = true;
-this.o2 = o2;
-this.__isset.o2 = true;
-}
-
-public boolean isSuccess() {
-return this.success;
-}
-
-public void setSuccess(boolean success) {
-this.success = success;
-this.__isset.success = true;
-}
-
-public void unsetSuccess() {
-this.__isset.success = false;
-}
-
-public IndexAlreadyExistsException getO1() {
-return this.o1;
-}
-
-public void setO1(IndexAlreadyExistsException o1) {
-this.o1 = o1;
-this.__isset.o1 = true;
-}
-
-public void unsetO1() {
-this.o1 = null;
-this.__isset.o1 = false;
-}
-
-public MetaException getO2() {
-return this.o2;
-}
-
-public void setO2(MetaException o2) {
-this.o2 = o2;
-this.__isset.o2 = true;
-}
-
-public void unsetO2() {
-this.o2 = null;
-this.__isset.o2 = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof create_index_result)
-  return this.equals((create_index_result)that);
-return false;
-}
-
-public boolean equals(create_index_result that) {
-if (that == null)
-  return false;
-
-boolean this_present_success = true;
-boolean that_present_success = true;
-if (this_present_success || that_present_success) {
-  if (!(this_present_success && that_present_success))
-    return false;
-  if (this.success != that.success)
-    return false;
-}
-
-boolean this_present_o1 = true && (this.o1 != null);
-boolean that_present_o1 = true && (that.o1 != null);
-if (this_present_o1 || that_present_o1) {
-  if (!(this_present_o1 && that_present_o1))
-    return false;
-  if (!this.o1.equals(that.o1))
-    return false;
-}
-
-boolean this_present_o2 = true && (this.o2 != null);
-boolean that_present_o2 = true && (that.o2 != null);
-if (this_present_o2 || that_present_o2) {
-  if (!(this_present_o2 && that_present_o2))
-    return false;
-  if (!this.o2.equals(that.o2))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 0:
-      if (field.type == TType.BOOL) {
-        this.success = iprot.readBool();
-        this.__isset.success = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 1:
-      if (field.type == TType.STRUCT) {
-        this.o1 = new IndexAlreadyExistsException();
-        this.o1.read(iprot);
-        this.__isset.o1 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 2:
-      if (field.type == TType.STRUCT) {
-        this.o2 = new MetaException();
-        this.o2.read(iprot);
-        this.__isset.o2 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("create_index_result");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-
-if (this.__isset.success) {
-  field.name = "success";
-  field.type = TType.BOOL;
-  field.id = 0;
-  oprot.writeFieldBegin(field);
-  oprot.writeBool(this.success);
-  oprot.writeFieldEnd();
-} else if (this.__isset.o1) {
-  if (this.o1 != null) {
-    field.name = "o1";
-    field.type = TType.STRUCT;
-    field.id = 1;
-    oprot.writeFieldBegin(field);
-    this.o1.write(oprot);
-    oprot.writeFieldEnd();
-  }
-} else if (this.__isset.o2) {
-  if (this.o2 != null) {
-    field.name = "o2";
-    field.type = TType.STRUCT;
-    field.id = 2;
-    oprot.writeFieldBegin(field);
-    this.o2.write(oprot);
-    oprot.writeFieldEnd();
-  }
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("create_index_result(");
-sb.append("success:");
-sb.append(this.success);
-sb.append(",o1:");
+StringBuilder sb = new StringBuilder("alter_partition_result(");
+sb.append("o1:");
 sb.append(this.o1.toString());
 sb.append(",o2:");
 sb.append(this.o2.toString());

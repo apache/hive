@@ -168,6 +168,82 @@ public class TestHiveMetaStore extends TestCase {
       throw e;
     }
   }
+  
+  public void testAlterPartition() throws Throwable {
+    
+    try {
+      String dbName = "compdb";
+      String tblName = "comptbl";
+      List<String> vals = new ArrayList<String>(2);
+      vals.add("2008-07-01");
+      vals.add("14");
+    
+      client.dropTable(dbName, tblName);
+      client.dropDatabase(dbName);
+      boolean ret = client.createDatabase(dbName, "strange_loc");
+      assertTrue("Unable to create the databse " + dbName, ret);
+    
+      ArrayList<FieldSchema> cols = new ArrayList<FieldSchema>(2);
+      cols.add(new FieldSchema("name", Constants.STRING_TYPE_NAME, ""));
+      cols.add(new FieldSchema("income", Constants.INT_TYPE_NAME, ""));
+    
+      Table tbl = new Table();
+      tbl.setDbName(dbName);
+      tbl.setTableName(tblName);
+      StorageDescriptor sd = new StorageDescriptor(); 
+      tbl.setSd(sd);
+      sd.setCols(cols);
+      sd.setCompressed(false);
+      sd.setNumBuckets(1);
+      sd.setParameters(new HashMap<String, String>());
+      sd.getParameters().put("test_param_1", "Use this for comments etc");
+      sd.setBucketCols(new ArrayList<String>(2));
+      sd.getBucketCols().add("name");
+      sd.setSerdeInfo(new SerDeInfo());
+      sd.getSerdeInfo().setName(tbl.getTableName());
+      sd.getSerdeInfo().setParameters(new HashMap<String, String>());
+      sd.getSerdeInfo().getParameters().put(Constants.SERIALIZATION_FORMAT, "1");
+      sd.setSortCols(new ArrayList<Order>());
+    
+      tbl.setPartitionKeys(new ArrayList<FieldSchema>(2));
+      tbl.getPartitionKeys().add(new FieldSchema("ds", Constants.STRING_TYPE_NAME, ""));
+      tbl.getPartitionKeys().add(new FieldSchema("hr", Constants.INT_TYPE_NAME, ""));
+    
+      client.createTable(tbl);
+    
+      Partition part = new Partition();
+      part.setDbName(dbName);
+      part.setTableName(tblName);
+      part.setValues(vals);
+      part.setParameters(new HashMap<String, String>());
+      part.setSd(tbl.getSd());
+      part.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo());
+      part.getSd().setLocation(tbl.getSd().getLocation() + "/part1");
+    
+      client.add_partition(part);
+    
+      Partition part2 = client.getPartition(dbName, tblName, part.getValues());
+      
+      part2.getParameters().put("retention", "10");
+      part2.getSd().setNumBuckets(12);
+      part2.getSd().getSerdeInfo().getParameters().put("abc", "1");
+      client.alter_partition(dbName, tblName, part2);
+    
+      Partition part3 = client.getPartition(dbName, tblName, part.getValues());
+      assertEquals("couldn't alter partition", part3.getParameters().get("retention"), "10");
+      assertEquals("couldn't alter partition", part3.getSd().getSerdeInfo().getParameters().get("abc"), "1");
+      assertEquals("couldn't alter partition", part3.getSd().getNumBuckets(), 12);
+      
+      client.dropTable(dbName, tblName);
+      
+      ret = client.dropDatabase(dbName);
+      assertTrue("Unable to create the databse " + dbName, ret);
+      } catch (Exception e) {
+        System.err.println(StringUtils.stringifyException(e));
+        System.err.println("testPartition() failed.");
+        throw e;
+      }
+  }
 
   public void testDatabase() throws Throwable {
     try {

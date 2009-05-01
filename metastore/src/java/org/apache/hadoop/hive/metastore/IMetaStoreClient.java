@@ -177,4 +177,17 @@ public interface IMetaStoreClient {
    */
   public boolean dropPartition(String db_name, String tbl_name, List<String> part_vals, boolean deleteData)
       throws NoSuchObjectException, MetaException, TException;
+
+  /**
+   * updates a partition to new partition
+   * @param dbName database of the old partition
+   * @param tblName table name of the old partition
+   * @param newPart new partition
+   * @throws InvalidOperationException if the old partition does not exist
+   * @throws MetaException if error in updating metadata
+   * @throws TException if error in communicating with metastore server
+   */
+  public void alter_partition(String dbName, String tblName,
+      Partition newPart) throws InvalidOperationException, MetaException,
+      TException;
 }

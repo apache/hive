@@ -181,12 +181,11 @@ service ThriftHiveMetastore extends fb303.FacebookService
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)
   list<string> get_partition_names(1:string db_name, 2:string tbl_name, 3:i16 max_parts=-1) 
                        throws(1:MetaException o2)
-  // set new storage descriptor. all partitions should belong to the same table
-  bool alter_partitions(1:StorageDescriptor sd, 2:list<string> parts) 
-                       throws(1:InvalidOperationException o1, 2:MetaException o2)
 
-  // index related metadata (may not be in the open source)
-  bool create_index(1:Index index_def) throws(1:IndexAlreadyExistsException o1, 2:MetaException o2)
+  // changes the partition to the new partition object. partition is identified from the part values
+  // in the new_part
+  void alter_partition(1:string db_name, 2:string tbl_name, 3:Partition new_part)
+                       throws(1:InvalidOperationException o1, 2:MetaException o2)
 }
 
 // these should be needed only for backward compatibility with filestore

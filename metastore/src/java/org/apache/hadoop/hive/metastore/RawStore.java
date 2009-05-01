@@ -85,11 +85,14 @@ public interface RawStore extends Configurable {
   public abstract List<Partition> getPartitions(String dbName, String tableName, int max)
       throws MetaException;
 
-  // TODO: add tests
   public abstract void alterTable(String dbname, String name, Table newTable)
       throws InvalidObjectException, MetaException;
 
   public List<String> getTables(String dbName, String pattern) throws MetaException;
 
-  public abstract List<String> listPartitionNames(String db_name, String tbl_name, short max_parts) throws MetaException;
+  public abstract List<String> listPartitionNames(String db_name, String tbl_name, short max_parts)
+    throws MetaException;
+
+  public abstract void alterPartition(String db_name, String tbl_name,
+      Partition new_part) throws InvalidObjectException, MetaException;
 }

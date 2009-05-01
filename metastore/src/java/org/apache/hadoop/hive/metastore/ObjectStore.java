@@ -360,7 +360,6 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       if(!commited) {
         rollbackTransaction();
-        success = false;
       }
     }
     return success;
@@ -417,7 +416,6 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       if(!commited) {
         rollbackTransaction();
-        success = false;
       }
     }
     return success;
@@ -465,7 +463,6 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       if(!commited) {
         rollbackTransaction();
-        success = false;
       }
     }
     return success;
@@ -715,7 +712,6 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       if(!commited) {
         rollbackTransaction();
-        success = false;
       }
     }
     return success;
@@ -799,7 +795,6 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       if(!success) {
         rollbackTransaction();
-        success = false;
       }
     }
     return success;
@@ -842,7 +837,6 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       if(!success) {
         rollbackTransaction();
-        success = false;
       }
     }
     return pns;
@@ -867,13 +861,11 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       if(!success) {
         rollbackTransaction();
-        success = false;
       }
     }
     return mparts;
   }
 
-  // TODO: add tests
   public void alterTable(String dbname, String name, Table newTable) throws InvalidObjectException, MetaException {
     boolean success = false;
     try {
@@ -911,8 +903,47 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       if(!success) {
         rollbackTransaction();
-        success = false;
       }
     }
+  }
+
+  public void alterPartition(String dbname, String name, Partition newPart)
+  throws InvalidObjectException, MetaException {
+    boolean success = false;
+    try {
+      openTransaction();
+      name = name.toLowerCase();
+      dbname = dbname.toLowerCase();
+      MPartition oldp = getMPartition(dbname, name, newPart.getValues());
+      MPartition newp = convertToMPart(newPart);
+      if (oldp == null || newp == null) {
+        throw new InvalidObjectException("partition does not exist.");
+      }
+      oldp.setParameters(newPart.getParameters());
+      copyMSD(newp.getSd(), oldp.getSd());
+      if (newp.getCreateTime() != oldp.getCreateTime())
+        oldp.setCreateTime(newp.getCreateTime());
+      if (newp.getLastAccessTime() != oldp.getLastAccessTime())
+        oldp.setLastAccessTime(newp.getLastAccessTime());
+      // commit the changes
+      success = commitTransaction();
+    } finally {
+      if(!success) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  private void copyMSD(MStorageDescriptor newSd, MStorageDescriptor oldSd) {
+    oldSd.setLocation(newSd.getLocation());
+    oldSd.setCols(newSd.getCols());
+    oldSd.setBucketCols(newSd.getBucketCols());
+    oldSd.setCompressed(newSd.isCompressed());
+    oldSd.setInputFormat(newSd.getInputFormat());
+    oldSd.setOutputFormat(newSd.getOutputFormat());
+    oldSd.setNumBuckets(newSd.getNumBuckets());
+    oldSd.getSerDeInfo().setName(newSd.getSerDeInfo().getName());
+    oldSd.getSerDeInfo().setSerializationLib(newSd.getSerDeInfo().getSerializationLib());
+    oldSd.getSerDeInfo().setParameters(newSd.getSerDeInfo().getParameters());
   }
 }

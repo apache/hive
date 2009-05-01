@@ -18,6 +18,9 @@ Trunk - Unreleased
 
     HIVE-164. Use CASE through GenericUDF (Zheng Shao via namit)
 
+    HIVE-464. Add alter partition method to the meastore interface.
+    (Prasad Chakka via zshao)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 
