@@ -87,15 +87,14 @@ public class TaskFactory {
     
     if(workClass == mapredWork.class) {
 
-      String viachild = conf.getVar(HiveConf.ConfVars.SUBMITVIACHILD);
+      boolean viachild = conf.getBoolVar(HiveConf.ConfVars.SUBMITVIACHILD);
       
       try {
 
         // in local mode - or if otherwise so configured - always submit
         // jobs via separate jvm
         Task<T> ret = null;
-        if(conf.getVar(HiveConf.ConfVars.HADOOPJT).equals("local") ||
-           viachild.equals("true")) {
+        if(conf.getVar(HiveConf.ConfVars.HADOOPJT).equals("local") || viachild) {
           ret = (Task<T>)MapRedTask.class.newInstance();
         } else {
           ret = (Task<T>)ExecDriver.class.newInstance();

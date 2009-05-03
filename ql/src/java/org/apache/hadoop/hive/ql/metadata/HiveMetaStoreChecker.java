@@ -17,6 +17,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.metadata.CheckResult.PartitionResult;
+import org.apache.hadoop.hive.conf.HiveConf;
 
 import com.facebook.thrift.TException;
 
@@ -30,12 +31,12 @@ public class HiveMetaStoreChecker {
   public static final Log LOG = LogFactory.getLog(HiveMetaStoreChecker.class);
 
   private Hive hive;
-  private FileSystem fs;
+  private HiveConf conf;
 
-  public HiveMetaStoreChecker(Hive hive, FileSystem fs) {
+  public HiveMetaStoreChecker(Hive hive) {
     super();
     this.hive = hive;
-    this.fs = fs;
+    this.conf = hive.getConf();
   }
 
   /**
@@ -116,6 +117,7 @@ public class HiveMetaStoreChecker {
     }
 
     for (Path dbPath : dbPaths) {
+      FileSystem fs = dbPath.getFileSystem(conf);
       FileStatus[] statuses = fs.listStatus(dbPath);
       for (FileStatus status : statuses) {
         
@@ -200,6 +202,7 @@ public class HiveMetaStoreChecker {
     throws IOException, HiveException {
 
     Path tablePath = table.getPath();
+    FileSystem fs = tablePath.getFileSystem(conf);
     if (!fs.exists(tablePath)) {
       result.getTablesNotOnFs().add(table.getName());
       return;
@@ -214,6 +217,7 @@ public class HiveMetaStoreChecker {
         continue;
       }
       Path partPath = partition.getPartitionPath();
+      fs = partPath.getFileSystem(conf);
       if (!fs.exists(partPath)) {
         PartitionResult pr = new PartitionResult();
         pr.setPartitionName(partition.getName());
@@ -257,6 +261,7 @@ public class HiveMetaStoreChecker {
     
     // we should now only have the unexpected folders left
     for (Path partPath : allPartDirs) {
+      FileSystem fs = partPath.getFileSystem(conf);
       String partitionName = getPartitionName(fs.makeQualified(tablePath), 
           partPath);
       
@@ -304,7 +309,13 @@ public class HiveMetaStoreChecker {
    * @param allDirs This set will contain the leaf paths at the end.
    * @throws IOException Thrown if we can't get lists from the fs.
    */
+
   private void getAllLeafDirs(Path basePath, Set<Path> allDirs)
+      throws IOException {
+    getAllLeafDirs(basePath, allDirs, basePath.getFileSystem(conf));
+  }
+
+  private void getAllLeafDirs(Path basePath, Set<Path> allDirs, FileSystem fs)
       throws IOException {
     
     FileStatus[] statuses = fs.listStatus(basePath);
@@ -315,7 +326,7 @@ public class HiveMetaStoreChecker {
 
     for (FileStatus status : statuses) {
       if (status.isDir()) {
-        getAllLeafDirs(status.getPath(), allDirs);
+        getAllLeafDirs(status.getPath(), allDirs, fs);
       }
     }
   }

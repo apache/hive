@@ -59,7 +59,7 @@ public class HiveConf extends Configuration {
     SCRIPTWRAPPER("hive.exec.script.wrapper", null),
     PLAN("hive.exec.plan", null),
     SCRATCHDIR("hive.exec.scratchdir", "/tmp/"+System.getProperty("user.name")+"/hive"),
-    SUBMITVIACHILD("hive.exec.submitviachild", "false"),
+    SUBMITVIACHILD("hive.exec.submitviachild", false),
     SCRIPTERRORLIMIT("hive.exec.script.maxerrsize", 100000),
     COMPRESSRESULT("hive.exec.compress.output", false),
     COMPRESSINTERMEDIATE("hive.exec.compress.intermediate", false),
@@ -80,6 +80,9 @@ public class HiveConf extends Configuration {
     METASTOREWAREHOUSE("hive.metastore.warehouse.dir", ""),
     METASTOREURIS("hive.metastore.uris", ""),
     METASTOREPWD("javax.jdo.option.ConnectionPassword", ""),
+
+    // CLI
+    CLIIGNOREERRORS("hive.cli.errors.ignore", false),
 
     // Things we log in the jobconf
 

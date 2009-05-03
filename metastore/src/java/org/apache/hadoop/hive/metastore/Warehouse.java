@@ -43,11 +43,12 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
  */
 public class Warehouse {
   private Path whRoot;
-  private FileSystem fs;
+  private Configuration conf;
 
   public static final Log LOG = LogFactory.getLog("hive.metastore.warehouse");
 
   public Warehouse(Configuration conf) throws MetaException {
+    this.conf = conf;
     String whRootString =  HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREWAREHOUSE);
     if(StringUtils.isBlank(whRootString)) {
       throw new MetaException(HiveConf.ConfVars.METASTOREWAREHOUSE.varname + " is not set in the config or blank");
@@ -55,19 +56,19 @@ public class Warehouse {
     whRoot = new Path(whRootString);
     URI uri = whRoot.toUri();
     // if the METASTOREWAREHOUSE value doesn't have schema and authority specified then inherit
-    // from fs.default.name in hadoop-site.xml 
+    // from fs.default.name in hadoop-site.xml
     if ((uri.getScheme() == null) && (uri.getAuthority() == null)) {
       whRoot = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.HADOOPFS), whRootString);
     }
+  }
+
+  private FileSystem getFs(Path f) throws MetaException {
     try {
-      fs  = whRoot.getFileSystem(conf);
+      return whRoot.getFileSystem(conf);
     } catch (IOException e) {
       MetaStoreUtils.logAndThrowMetaException(e);
     }
-  }
-  
-  public FileSystem getFs() {
-    return fs;
+    return null;
   }
 
   public Path getDefaultDatabasePath(String dbName) {
@@ -76,13 +77,14 @@ public class Warehouse {
     }
     return new Path(this.whRoot, dbName.toLowerCase() + ".db");
   }
-  
+
   public Path getDefaultTablePath(String dbName, String tableName) {
     return new Path(getDefaultDatabasePath(dbName), tableName.toLowerCase());
   }
 
   public boolean mkdirs(Path f) throws MetaException {
     try {
+      FileSystem fs = getFs(f);
       LOG.debug("Creating directory if it doesn't exist: " + f);
       return (fs.mkdirs(f) || fs.getFileStatus(f).isDir());
     } catch (IOException e) {
@@ -90,10 +92,11 @@ public class Warehouse {
     }
     return false;
   }
-  
+
   public boolean deleteDir(Path f, boolean recursive) throws MetaException {
     LOG.info("deleting  " + f);
     try {
+      FileSystem fs = getFs(f);
       if(!fs.exists(f)) {
         return false;
       }
@@ -129,15 +132,16 @@ public class Warehouse {
   }
 
   public Path getPartitionPath(String dbName, String tableName, LinkedHashMap<String, String> pm) throws MetaException {
-    return new Path(getDefaultTablePath(dbName, tableName), makePartName(pm)); 
+    return new Path(getDefaultTablePath(dbName, tableName), makePartName(pm));
   }
-  
+
   public Path getPartitionPath(Path tblPath, LinkedHashMap<String, String> pm) throws MetaException {
-    return new Path(tblPath, makePartName(pm)); 
+    return new Path(tblPath, makePartName(pm));
   }
-  
+
   public boolean isDir(Path f) throws MetaException {
     try {
+      FileSystem fs = getFs(f);
       FileStatus fstatus = fs.getFileStatus(f);
       if(!fstatus.isDir()) {
         return false;

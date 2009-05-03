@@ -191,8 +191,10 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       // that the hive warehouse is also located in the local file system - but that's just a test case.
       URI copyURI;
       try {
+        // extract out the path name only from the scratchdir configuration
+        String scratchPath = (new Path(conf.getVar(HiveConf.ConfVars.SCRATCHDIR))).toUri().getPath();
         copyURI = new URI(toURI.getScheme(), toURI.getAuthority(),
-                          conf.getVar(HiveConf.ConfVars.SCRATCHDIR) + "/" + Utilities.randGen.nextInt(),
+                          scratchPath + "/" + Utilities.randGen.nextInt(),
                           null, null);                          
       } catch (URISyntaxException e) {
         // Has to use full name to make sure it does not conflict with org.apache.commons.lang.StringUtils
