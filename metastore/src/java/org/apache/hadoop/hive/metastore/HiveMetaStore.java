@@ -269,33 +269,49 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       public void create_table(Table tbl) throws AlreadyExistsException, MetaException, InvalidObjectException {
         this.incrementCounter("create_table");
         logStartFunction("create_table: db=" + tbl.getDbName() + " tbl=" + tbl.getTableName());
-        boolean success = false;
+
         if(!MetaStoreUtils.validateName(tbl.getTableName()) ||
             !MetaStoreUtils.validateColNames(tbl.getSd().getCols()) ||
-             (tbl.getPartitionKeys() != null && !MetaStoreUtils.validateColNames(tbl.getPartitionKeys()))) {
+             (tbl.getPartitionKeys() != null &&
+              !MetaStoreUtils.validateColNames(tbl.getPartitionKeys()))) {
             throw new InvalidObjectException(tbl.getTableName() + " is not a valid object name");
         }
+        
+        Path tblPath = null;
+        boolean success = false, madeDir = false;
         try {
           getMS().openTransaction();
-          Path tblPath = null;
           if(tbl.getSd().getLocation() == null || tbl.getSd().getLocation().isEmpty()) {
             tblPath = wh.getDefaultTablePath(tbl.getDbName(), tbl.getTableName());
             tbl.getSd().setLocation(tblPath.toString());
           } else {
+            if (!isExternal(tbl)) {
+              LOG.warn("Location: " + tbl.getSd().getLocation() +
+                       "specified for non-external table:" + tbl.getTableName());
+            }
             tblPath = new Path(tbl.getSd().getLocation());
           }
           // get_table checks whether database exists, it should be moved here
           if(is_table_exists(tbl.getDbName(), tbl.getTableName())) {
             throw new AlreadyExistsException("Table " + tbl.getTableName() + " already exists");
           }
-          getMS().createTable(tbl);
-          if(wh.mkdirs(tblPath)) {
-            success = getMS().commitTransaction();
+
+          if(!wh.isDir(tblPath)) {
+            if(!wh.mkdirs(tblPath)) {
+              throw new MetaException (tblPath + " is not a directory or unable to create one");
+            }
+            madeDir = true;
           }
+
+          getMS().createTable(tbl);
+          success = getMS().commitTransaction();
       
         } finally {
           if(!success) {
             getMS().rollbackTransaction();
+            if(madeDir) {
+              wh.deleteDir(tblPath, true);
+            }
           }
         }
       }
@@ -385,7 +401,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
         }
         Partition part = new Partition();
-        boolean success = false;
+        boolean success = false, madeDir = false;
+        Path partLocation = null;
         try {
           getMS().openTransaction();
           part = new Partition();
@@ -399,14 +416,23 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
 
           part.setSd(tbl.getSd());
-          Path partLocation = new Path(tbl.getSd().getLocation(), Warehouse.makePartName(tbl.getPartitionKeys(), part_vals));
+          partLocation = new Path(tbl.getSd().getLocation(),
+                                  Warehouse.makePartName(tbl.getPartitionKeys(), part_vals));
           part.getSd().setLocation(partLocation.toString());
 
-          Partition old_part = this.get_partition(part.getDbName(), part.getTableName(), part.getValues());
+          Partition old_part = this.get_partition(part.getDbName(),
+                                                  part.getTableName(), part.getValues());
           if( old_part != null) {
             throw new AlreadyExistsException("Partition already exists:" + part);
           }
           
+          if(!wh.isDir(partLocation)) {
+            if(!wh.mkdirs(partLocation)) {
+              throw new MetaException (partLocation + " is not a directory or unable to create one");
+            }
+            madeDir = true;
+          }
+
           success = getMS().addPartition(part);
           if(success) {
             success = getMS().commitTransaction();
@@ -414,9 +440,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         } finally {
           if(!success) {
             getMS().rollbackTransaction();
-          } else {
-            Path path = new Path(part.getSd().getLocation());
-            wh.mkdirs(path);
+            if(madeDir) {
+              wh.deleteDir(partLocation, true);
+            }
           }
         }
         return part;
@@ -450,7 +476,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           AlreadyExistsException, MetaException {
         this.incrementCounter("add_partition");
         logStartFunction("add_partition", part.getDbName(), part.getTableName());
-        boolean success = false;
+        boolean success = false, madeDir = false;
+        Path partLocation = null;
         try {
           getMS().openTransaction();
           Partition old_part = this.get_partition(part.getDbName(), part.getTableName(), part.getValues());
@@ -461,21 +488,29 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           if(tbl == null) {
             throw new InvalidObjectException("Unable to add partition because table or database do not exist");
           }
-          if (part.getSd().getLocation() == null) {
+          partLocation = new Path(part.getSd().getLocation());
+          if (partLocation == null) {
             // set default location if not specified
-            part.getSd().setLocation(Warehouse.makePartName(tbl.getPartitionKeys(), part.getValues()));
+            String partLocStr = Warehouse.makePartName(tbl.getPartitionKeys(), part.getValues());
+            partLocation = new Path(partLocStr);
+            part.getSd().setLocation(partLocStr);
           }
-          // add partition
-          success = getMS().addPartition(part);
-          if(success) {
-            success = getMS().commitTransaction();
+
+          if(!wh.isDir(partLocation)) {
+            if(!wh.mkdirs(partLocation)) {
+              throw new MetaException (partLocation + " is not a directory or unable to create one");
+            }
+            madeDir = true;
           }
+
+          success = getMS().addPartition(part) && getMS().commitTransaction();
+
         } finally {
           if(!success) {
             getMS().rollbackTransaction();
-          } else {
-            Path path = new Path(part.getSd().getLocation());
-            wh.mkdirs(path);
+            if(madeDir) {
+              wh.deleteDir(partLocation, true);
+            }
           }
         }
         return part;

@@ -35,7 +35,7 @@ import java.util.Random;
 public class Context {
   private Path resFile;
   private Path resDir;
-  private FileSystem fs;
+  private FileSystem resFs;
   static final private Log LOG = LogFactory.getLog("hive.ql.Context");
   private Path[] resDirPaths;
   private int    resDirFilesNum;
@@ -44,15 +44,10 @@ public class Context {
   private HiveConf conf;
   
   public Context(HiveConf conf) {
-    try {
-      this.conf = conf;
-      fs = FileSystem.get(conf);
-      initialized = false;
-      resDir = null;
-      resFile = null;
-    } catch (IOException e) {
-      LOG.info("Context creation error: " + StringUtils.stringifyException(e));
-    }
+    this.conf = conf;
+    initialized = false;
+    resDir = null;
+    resFile = null;
   }
 
   public void makeScratchDir() throws Exception {
@@ -60,6 +55,7 @@ public class Context {
     int randomid = Math.abs(rand.nextInt()%rand.nextInt());
     scratchDir = conf.getVar(HiveConf.ConfVars.SCRATCHDIR) + File.separator + randomid;
     Path tmpdir = new Path(scratchDir);
+    FileSystem fs = tmpdir.getFileSystem(conf);
     fs.mkdirs(tmpdir);
   }
 
@@ -69,6 +65,7 @@ public class Context {
 
   public void removeScratchDir() throws Exception {
     Path tmpdir = new Path(scratchDir);
+    FileSystem fs = tmpdir.getFileSystem(conf);
     fs.delete(tmpdir, true);
   }
 
@@ -113,6 +110,7 @@ public class Context {
     {
       try
       {
+        FileSystem fs = resDir.getFileSystem(conf);
         fs.delete(resDir, true);
       } catch (IOException e) {
         LOG.info("Context clear error: " + StringUtils.stringifyException(e));
@@ -123,6 +121,7 @@ public class Context {
     {
       try
       {
+        FileSystem fs = resFile.getFileSystem(conf);
       	fs.delete(resFile, false);
       } catch (IOException e) {
         LOG.info("Context clear error: " + StringUtils.stringifyException(e));
@@ -142,12 +141,14 @@ public class Context {
         initialized = true;
         if ((resFile == null) && (resDir == null)) return null;
       
-        if (resFile != null)
-          return (DataInput)fs.open(resFile);
+        if (resFile != null) {
+          return (DataInput)resFile.getFileSystem(conf).open(resFile);
+        }
         
-        FileStatus status = fs.getFileStatus(resDir);
+        resFs = resDir.getFileSystem(conf);
+        FileStatus status = resFs.getFileStatus(resDir);
         assert status.isDir();
-        FileStatus[] resDirFS = fs.globStatus(new Path(resDir + "/*"));
+        FileStatus[] resDirFS = resFs.globStatus(new Path(resDir + "/*"));
         resDirPaths = new Path[resDirFS.length];
         int pos = 0;
         for (FileStatus resFS: resDirFS)
@@ -155,7 +156,7 @@ public class Context {
             resDirPaths[pos++] = resFS.getPath();
         if (pos == 0) return null;
         
-        return (DataInput)fs.open(resDirPaths[resDirFilesNum++]);
+        return (DataInput)resFs.open(resDirPaths[resDirFilesNum++]);
       }
       else {
         return getNextStream();
@@ -174,7 +175,7 @@ public class Context {
     {
       if (resDir != null && resDirFilesNum < resDirPaths.length && 
           (resDirPaths[resDirFilesNum] != null))
-        return (DataInput)fs.open(resDirPaths[resDirFilesNum++]);
+        return (DataInput)resFs.open(resDirPaths[resDirFilesNum++]);
     } catch (FileNotFoundException e) {
       LOG.info("getNextStream error: " + StringUtils.stringifyException(e));
       return null;

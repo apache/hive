@@ -67,28 +67,26 @@ public class FetchTask extends Task<fetchWork> implements Serializable {
   private int maxRows = 100;
   
   public void initialize (HiveConf conf) {
-   	super.initialize(conf);
+    super.initialize(conf);
     currRecReader = null;
     
-   	try {
-       // Create a file system handle
-       fs = FileSystem.get(conf);   
-       job = new JobConf(conf, ExecDriver.class);
+    try {
+      job = new JobConf(conf, ExecDriver.class);
        
-	 	   mSerde = new LazySimpleSerDe();
-       Properties mSerdeProp = new Properties();
-       mSerdeProp.put(Constants.SERIALIZATION_FORMAT, "" + Utilities.tabCode);
-       mSerdeProp.put(Constants.SERIALIZATION_NULL_FORMAT, ((fetchWork)work).getSerializationNullFormat());
-       mSerde.initialize(job, mSerdeProp);
+      mSerde = new LazySimpleSerDe();
+      Properties mSerdeProp = new Properties();
+      mSerdeProp.put(Constants.SERIALIZATION_FORMAT, "" + Utilities.tabCode);
+      mSerdeProp.put(Constants.SERIALIZATION_NULL_FORMAT, ((fetchWork)work).getSerializationNullFormat());
+      mSerde.initialize(job, mSerdeProp);
        
-       currPath = null;
-       currTbl = null;
-       currPart = null;
-       iterPath = null;
-       iterPartDesc = null;
-       totalRows = 0;
-       tblDataDone = false;
-       rowWithPart = new Object[2];
+      currPath = null;
+      currTbl = null;
+      currPart = null;
+      iterPath = null;
+      iterPartDesc = null;
+      totalRows = 0;
+      tblDataDone = false;
+      rowWithPart = new Object[2];
     } catch (Exception e) {
       // Bail out ungracefully - we should never hit
       // this here - but would have hit it in SemanticAnalyzer
@@ -98,8 +96,8 @@ public class FetchTask extends Task<fetchWork> implements Serializable {
   }
   
   public int execute() {
-  	assert false;
-  	return 0;
+    assert false;
+    return 0;
   }
   /**
    * Return the tableDesc of the fetchWork
@@ -122,23 +120,22 @@ public class FetchTask extends Task<fetchWork> implements Serializable {
         inputFormats.put(inputFormatClass, newInstance);
       } catch (Exception e) {
         throw new IOException("Cannot create an instance of InputFormat class " + inputFormatClass.getName()
-                               + " as specified in mapredWork!");
+                              + " as specified in mapredWork!");
       }
     }
     return inputFormats.get(inputFormatClass);
   }
   
   private int splitNum;
-  private FileSystem fs;  
   private RecordReader<WritableComparable, Writable> currRecReader;
   private InputSplit[] inputSplits;
   private InputFormat  inputFormat;
   private JobConf      job;
-	private WritableComparable key; 
-	private Writable value;
-	private Deserializer  serde;
-	private LazySimpleSerDe mSerde;
-	private int totalRows;
+  private WritableComparable key; 
+  private Writable value;
+  private Deserializer  serde;
+  private LazySimpleSerDe mSerde;
+  private int totalRows;
   private Iterator<Path> iterPath;
   private Iterator<partitionDesc> iterPartDesc; 
   private Path currPath;
@@ -167,7 +164,7 @@ public class FetchTask extends Task<fetchWork> implements Serializable {
     
     rowWithPart[1] = partValues;
     rowObjectInspector = ObjectInspectorFactory.getUnionStructObjectInspector(Arrays.asList(new StructObjectInspector[]{
-                                                                                              rowObjectInspector, partObjectInspector}));
+          rowObjectInspector, partObjectInspector}));
   }
 
   private void getNextPath() throws Exception {
@@ -177,16 +174,17 @@ public class FetchTask extends Task<fetchWork> implements Serializable {
         if (!tblDataDone) {
           currPath = work.getTblDir();
           currTbl = work.getTblDesc();
+          FileSystem fs = currPath.getFileSystem(conf);
           if (fs.exists(currPath)) 
-          {
-            FileStatus[] fStats = fs.listStatus(currPath);
-            for (FileStatus fStat:fStats) {
-              if (fStat.getLen() > 0) {
-                tblDataDone = true;
-                break;
+            {
+              FileStatus[] fStats = fs.listStatus(currPath);
+              for (FileStatus fStat:fStats) {
+                if (fStat.getLen() > 0) {
+                  tblDataDone = true;
+                  break;
+                }
               }
             }
-          }
 
           if (!tblDataDone) currPath = null;
           return;
@@ -195,65 +193,65 @@ public class FetchTask extends Task<fetchWork> implements Serializable {
           currPath = null;
         }
         return;
-      }
-      else {
+      } else {
         iterPath = work.getPartDir().iterator();
         iterPartDesc = work.getPartDesc().iterator();
       }
     }
 
-		while (iterPath.hasNext()) {
-			Path nxt = iterPath.next();
+    while (iterPath.hasNext()) {
+      Path nxt = iterPath.next();
       partitionDesc prt = iterPartDesc.next();
-		  if (fs.exists(nxt)) 
-      {
-        FileStatus[] fStats = fs.listStatus(nxt);
-        for (FileStatus fStat:fStats) {
-          if (fStat.getLen() > 0) {
-            currPath = nxt;
-            currPart = prt;
-            return;
+      FileSystem fs = nxt.getFileSystem(conf);
+      if (fs.exists(nxt)) 
+        {
+          FileStatus[] fStats = fs.listStatus(nxt);
+          for (FileStatus fStat:fStats) {
+            if (fStat.getLen() > 0) {
+              currPath = nxt;
+              currPart = prt;
+              return;
+            }
           }
         }
-      }
-		}
-	}
+    }
+  }
   
- 	private RecordReader<WritableComparable, Writable> getRecordReader() throws Exception {
- 		if (currPath == null) {
- 			getNextPath();
- 			if (currPath == null)
- 				return null;
+  private RecordReader<WritableComparable, Writable> getRecordReader() throws Exception {
+    if (currPath == null) {
+      getNextPath();
+      if (currPath == null)
+        return null;
 
- 			FileInputFormat.setInputPaths(job, currPath);
+      FileInputFormat.setInputPaths(job, currPath);
       tableDesc tmp = currTbl;
       if (tmp == null)
         tmp = currPart.getTableDesc();
- 			inputFormat = getInputFormatFromCache(tmp.getInputFileFormatClass(), job);
- 			inputSplits = inputFormat.getSplits(job, 1); 		
- 			splitNum = 0;
+      inputFormat = getInputFormatFromCache(tmp.getInputFileFormatClass(), job);
+      inputSplits = inputFormat.getSplits(job, 1); 		
+      splitNum = 0;
       serde = tmp.getDeserializerClass().newInstance();
       serde.initialize(job, tmp.getProperties());
       LOG.debug("Creating fetchTask with deserializer typeinfo: " + serde.getObjectInspector().getTypeName());
       LOG.debug("deserializer properties: " + tmp.getProperties());
       if (!tblDataDone)
         setPrtnDesc();
- 		}
+    }
  		
- 		if (splitNum >= inputSplits.length) {
- 			if (currRecReader != null) {
- 				currRecReader.close();
+    if (splitNum >= inputSplits.length) {
+      if (currRecReader != null) {
+        currRecReader.close();
         currRecReader = null;
       }
- 			currPath = null;
- 			return getRecordReader();
- 		}
+      currPath = null;
+      return getRecordReader();
+    }
  		
-		currRecReader = inputFormat.getRecordReader(inputSplits[splitNum++], job, Reporter.NULL);
-		key = currRecReader.createKey();
-		value = currRecReader.createValue();
-		return currRecReader;
-	}
+    currRecReader = inputFormat.getRecordReader(inputSplits[splitNum++], job, Reporter.NULL);
+    key = currRecReader.createKey();
+    value = currRecReader.createValue();
+    return currRecReader;
+  }
  
   /**
    * Return the maximum number of rows returned by fetch
@@ -270,7 +268,7 @@ public class FetchTask extends Task<fetchWork> implements Serializable {
   }
 	
   public boolean fetch(Vector<String> res) {
-  	try {
+    try {
       int numRows = 0;
       int rowsRet = maxRows;
       if ((work.getLimit() >= 0) && ((work.getLimit() - totalRows) < rowsRet))
@@ -283,18 +281,18 @@ public class FetchTask extends Task<fetchWork> implements Serializable {
         return false;
       }
 
-    	while (numRows < rowsRet) {
-  	    if (currRecReader == null) {
-  	  	  currRecReader = getRecordReader();
-  	  		if (currRecReader == null) {
+      while (numRows < rowsRet) {
+        if (currRecReader == null) {
+          currRecReader = getRecordReader();
+          if (currRecReader == null) {
             if (numRows == 0) 
-            	return false;
+              return false;
             totalRows += numRows;
             return true;
-    	    }
-  	    }
+          }
+        }
       	boolean ret = currRecReader.next(key, value);
-   	  	if (ret) {
+        if (ret) {
           if (tblDataDone) {
             Object obj = serde.deserialize(value);
             res.add(((Text)mSerde.serialize(obj, serde.getObjectInspector())).toString());
@@ -302,25 +300,25 @@ public class FetchTask extends Task<fetchWork> implements Serializable {
             rowWithPart[0] = serde.deserialize(value);
             res.add(((Text)mSerde.serialize(rowWithPart, rowObjectInspector)).toString());
           }
-   	  		numRows++;
-   	  	}
-   	  	else {
+          numRows++;
+        }
+        else {
           currRecReader.close();
           currRecReader = null;
-   	  		currRecReader = getRecordReader();
-   	  		if (currRecReader == null) {
+          currRecReader = getRecordReader();
+          if (currRecReader == null) {
             if (numRows == 0) 
-            	return false;
+              return false;
             totalRows += numRows;
             return true;
-    	    }
+          }
           else {
-        		key = currRecReader.createKey();
-        		value = currRecReader.createValue();
+            key = currRecReader.createKey();
+            value = currRecReader.createValue();
           }
       	}
       }
-    	totalRows += numRows;
+      totalRows += numRows;
       return true;
     }
     catch (Exception e) {

@@ -44,12 +44,14 @@ public class CliDriver {
   private Driver qp;
   private FsShell dfs;
   private LogHelper console;
+  private Configuration conf;
 
   public CliDriver() {
     SessionState ss = SessionState.get();
     sp = new SetProcessor();
     qp = new Driver();
-    dfs = new FsShell(ss != null ? ss.getConf() : new Configuration ());
+    conf = (ss != null) ? ss.getConf() : new Configuration ();
+    dfs = new FsShell(conf);
     Log LOG = LogFactory.getLog("CliDriver");
     console = new LogHelper(LOG);
   }
@@ -166,7 +168,7 @@ public class CliDriver {
         ss.delete_resource(t);
       }
 
-    } else if (!cmd_trimmed.equals("")) {
+    } else if (!StringUtils.isBlank(cmd_trimmed)) {
       PrintStream out = ss.out;
 
       long start = System.currentTimeMillis();
@@ -199,18 +201,21 @@ public class CliDriver {
   }
 
   public int processLine(String line) {
-    int ret = 0;
+    int lastRet = 0, ret = 0;
+
     for(String oneCmd: line.split(";")) {
-      if(oneCmd.equals(""))
+
+      if(StringUtils.isBlank(oneCmd))
         continue;
       
       ret = processCmd(removeComments(oneCmd));
-      if(ret != 0) {
-        // ignore anything after the first failed command
+      lastRet = ret;
+      boolean ignoreErrors = HiveConf.getBoolVar(conf, HiveConf.ConfVars.CLIIGNOREERRORS);
+      if(ret != 0 && !ignoreErrors) {
         return ret;
       }
     }
-    return 0;
+    return lastRet;
   }
 
   private String removeComments(String oneCmd) {
@@ -220,18 +225,12 @@ public class CliDriver {
   public int processReader(BufferedReader r) throws IOException {
     String line;
     StringBuffer qsb = new StringBuffer();
-    int ret = 0;
 
     while((line = r.readLine()) != null) {
       qsb.append(line + "\n");
     }
 
-    ret = processLine(qsb.toString());
-    if (ret != 0) {
-      return ret;
-    }
-
-    return 0;
+    return (processLine(qsb.toString()));
   }
 
   public static void main(String[] args) throws IOException {

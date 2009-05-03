@@ -39,6 +39,7 @@
     <pathelement location="${hive.conf.dir}"/>
     <pathelement location="${hive.root}/cli/lib/jline-0.9.94.jar"/>
     <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
+    <fileset dir="${hadoop.root}/lib" includes="*.jar"/>
     <path refid="classpath"/>
   </path>
 

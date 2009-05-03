@@ -39,8 +39,7 @@ public class TestHiveMetaStoreChecker extends TestCase {
   protected void setUp() throws Exception {
     super.setUp();
     hive = Hive.get();
-    fs = FileSystem.getLocal(hive.getConf());
-    checker = new HiveMetaStoreChecker(hive, fs);
+    checker = new HiveMetaStoreChecker(hive);
 
     partCols = new ArrayList<FieldSchema>();
     partCols.add(new FieldSchema(partDateName, Constants.STRING_TYPE_NAME, 
@@ -115,6 +114,7 @@ public class TestHiveMetaStoreChecker extends TestCase {
     assertTrue(result.getPartitionsNotInMs().isEmpty());
 
     // remove the table folder
+    fs = table.getPath().getFileSystem(hive.getConf());
     fs.delete(table.getPath(), true);
 
     // now this shouldn't find the path on the fs
@@ -185,6 +185,7 @@ public class TestHiveMetaStoreChecker extends TestCase {
     assertEquals(2, partitions.size());
     Partition partToRemove = partitions.get(0);
     Path partToRemovePath = new Path(partToRemove.getDataLocation().toString());
+    fs = partToRemovePath.getFileSystem(hive.getConf());
     fs.delete(partToRemovePath, true);
 
     result = new CheckResult();    

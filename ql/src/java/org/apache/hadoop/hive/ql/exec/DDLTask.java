@@ -87,10 +87,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     // Create the db
     Hive db;
-    FileSystem fs;
     try {
       db = Hive.get(conf);
-      fs = FileSystem.get(conf);
 
       createTableDesc crtTbl = work.getCreateTblDesc();
       if (crtTbl != null) {
@@ -114,22 +112,22 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       
       MsckDesc msckDesc = work.getMsckDesc();
       if (msckDesc != null) {
-        return msck(db, fs, msckDesc);
+        return msck(db, msckDesc);
       }      
 
       descTableDesc descTbl = work.getDescTblDesc();
       if (descTbl != null) {
-        return describeTable(db, fs, descTbl);
+        return describeTable(db, descTbl);
       }
 
       showTablesDesc showTbls = work.getShowTblsDesc();
       if (showTbls != null) {
-        return showTables(db, fs, showTbls);
+        return showTables(db, showTbls);
       }
 
       showPartitionsDesc showParts = work.getShowPartsDesc();
       if (showParts != null) {
-        return showPartitions(db, fs, showParts);
+        return showPartitions(db, showParts);
       }
 
     } catch (InvalidTableException e) {
@@ -179,16 +177,15 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * are either missing on disk on in the metastore.
    * 
    * @param db The database in question.
-   * @param fs FileSystem that will contain the file written.
    * @param msckDesc Information about the tables and partitions
    * we want to check for.
    * @return Returns 0 when execution succeeds and above 0 if it fails.
    */
-  private int msck(Hive db, FileSystem fs, MsckDesc msckDesc) {
+  private int msck(Hive db, MsckDesc msckDesc) {
     
     CheckResult result = new CheckResult();
     try {
-      HiveMetaStoreChecker checker = new HiveMetaStoreChecker(db, fs);
+      HiveMetaStoreChecker checker = new HiveMetaStoreChecker(db);
       checker.checkMetastore(
         MetaStoreUtils.DEFAULT_DATABASE_NAME, msckDesc.getTableName(), 
         msckDesc.getPartitionSpec(),
@@ -203,6 +200,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             
       BufferedWriter resultOut = null;
       try {
+        FileSystem fs = msckDesc.getResFile().getFileSystem(conf);
         resultOut = new BufferedWriter(
             new OutputStreamWriter(fs.create(msckDesc.getResFile())));
         
@@ -265,12 +263,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * Write a list of partitions to a file.
    * 
    * @param db The database in question.
-   * @param fs FileSystem that will contain the file written.
    * @param showParts These are the partitions we're interested in.
    * @return Returns 0 when execution succeeds and above 0 if it fails.
    * @throws HiveException Throws this exception if an unexpected error occurs.
    */
-  private int showPartitions(Hive db, FileSystem fs,
+  private int showPartitions(Hive db,
       showPartitionsDesc showParts) throws HiveException {
     // get the partitions for the table and populate the output
     String tabName = showParts.getTabName();
@@ -289,6 +286,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     // write the results in the file
     try {
+      FileSystem fs = showParts.getResFile().getFileSystem(conf);
       DataOutput outStream = (DataOutput) fs.create(showParts.getResFile());
       Iterator<String> iterParts = parts.iterator();
 
@@ -315,12 +313,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * Write a list of the tables in the database to a file.
    * 
    * @param db The database in question.
-   * @param fs FileSystem that will contain the file written.
    * @param showTbls These are the tables we're interested in.
    * @return Returns 0 when execution succeeds and above 0 if it fails.
    * @throws HiveException Throws this exception if an unexpected error occurs.
    */
-  private int showTables(Hive db, FileSystem fs, showTablesDesc showTbls)
+  private int showTables(Hive db, showTablesDesc showTbls)
       throws HiveException {
     // get the tables for the desired pattenn - populate the output stream
     List<String> tbls = null;
@@ -333,6 +330,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     // write the results in the file
     try {
+      FileSystem fs = showTbls.getResFile().getFileSystem(conf);
       DataOutput outStream = (DataOutput)fs.create(showTbls.getResFile());
       SortedSet<String> sortedTbls = new TreeSet<String>(tbls);
       Iterator<String> iterTbls = sortedTbls.iterator();
@@ -359,12 +357,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * Write the description of a table to a file.
    * 
    * @param db The database in question.
-   * @param fs FileSystem that will contain the file written.
    * @param descTbl This is the table we're interested in.
    * @return Returns 0 when execution succeeds and above 0 if it fails.
    * @throws HiveException Throws this exception if an unexpected error occurs.
    */
-  private int describeTable(Hive db, FileSystem fs, descTableDesc descTbl)
+  private int describeTable(Hive db, descTableDesc descTbl)
       throws HiveException {
     String colPath = descTbl.getTableName();
     String tableName = colPath.substring(0,
@@ -375,6 +372,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     Partition part = null;
     try {
       if (tbl == null) {
+        FileSystem fs = descTbl.getResFile().getFileSystem(conf);
         DataOutput outStream = (DataOutput) fs.open(descTbl.getResFile());
         String errMsg = "Table " + tableName + " does not exist";
         outStream.write(errMsg.getBytes("UTF-8"));
@@ -384,6 +382,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (descTbl.getPartSpec() != null) {
         part = db.getPartition(tbl, descTbl.getPartSpec(), false);
         if (part == null) {
+          FileSystem fs = descTbl.getResFile().getFileSystem(conf);
           DataOutput outStream = (DataOutput) fs.open(descTbl.getResFile());
           String errMsg = "Partition " + descTbl.getPartSpec() + " for table "
               + tableName + " does not exist";
@@ -414,6 +413,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       } else {
         cols = Hive.getFieldsFromDeserializer(colPath, tbl.getDeserializer());
       }
+      FileSystem fs = descTbl.getResFile().getFileSystem(conf);
       DataOutput outStream = (DataOutput)fs.create(descTbl.getResFile());
       Iterator<FieldSchema> iterCols = cols.iterator();
       while (iterCols.hasNext()) {

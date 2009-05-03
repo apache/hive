@@ -43,11 +43,12 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
  */
 public class Warehouse {
   private Path whRoot;
-  private FileSystem fs;
+  private Configuration conf;
 
   public static final Log LOG = LogFactory.getLog("hive.metastore.warehouse");
 
   public Warehouse(Configuration conf) throws MetaException {
+    this.conf = conf;
     String whRootString =  HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREWAREHOUSE);
     if(StringUtils.isBlank(whRootString)) {
       throw new MetaException(HiveConf.ConfVars.METASTOREWAREHOUSE.varname + " is not set in the config or blank");
@@ -59,18 +60,12 @@ public class Warehouse {
     // then use the default file system as specified by the Configuration
     try {
       if ((uri.getScheme() == null) && (uri.getAuthority() == null)) {
-        fs = FileSystem.get(conf);
+        FileSystem fs = FileSystem.get(conf);
         whRoot = new Path(fs.getUri().toString(), whRootString);
-      } else {
-        fs  = whRoot.getFileSystem(conf);
       }
     } catch (IOException e) {
       MetaStoreUtils.logAndThrowMetaException(e);
     }
-  }
-  
-  public FileSystem getFs() {
-    return fs;
   }
 
   public Path getDefaultDatabasePath(String dbName) {
@@ -84,8 +79,18 @@ public class Warehouse {
     return new Path(getDefaultDatabasePath(dbName), tableName.toLowerCase());
   }
 
+  private FileSystem getFs(Path f) throws MetaException {
+    try {
+      return f.getFileSystem(conf);
+    } catch (IOException e) {
+      MetaStoreUtils.logAndThrowMetaException(e);
+    }
+    return null;
+  }
+
   public boolean mkdirs(Path f) throws MetaException {
     try {
+      FileSystem fs = getFs(f);
       LOG.debug("Creating directory if it doesn't exist: " + f);
       return (fs.mkdirs(f) || fs.getFileStatus(f).isDir());
     } catch (IOException e) {
@@ -97,6 +102,7 @@ public class Warehouse {
   public boolean deleteDir(Path f, boolean recursive) throws MetaException {
     LOG.info("deleting  " + f);
     try {
+      FileSystem fs = getFs(f);
       if(!fs.exists(f)) {
         return false;
       }
@@ -141,6 +147,7 @@ public class Warehouse {
   
   public boolean isDir(Path f) throws MetaException {
     try {
+      FileSystem fs = getFs(f);
       FileStatus fstatus = fs.getFileStatus(f);
       if(!fstatus.isDir()) {
         return false;

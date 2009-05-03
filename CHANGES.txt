@@ -3,7 +3,7 @@ Hive Change Log
 Trunk - Unreleased
 
   INCOMPATIBLE CHANGES
-  
+
     HIVE-143. Remove the old file based metastore, in favour of the
     RDBMS based metastore. (prasadc via johan)
 
@@ -53,13 +53,13 @@ Trunk - Unreleased
 
     HIVE-381. Fix JDBC HiveResultSet's next function.
     (Kim P via namit)
-    
+
     HIVE-387. Use URI from FileSystem Object instead of from HADOOPFS
     directly. (jssarma)
 
     HIVE-385. Split Driver's run into compile and execute.
     (Neil Conway via namit)
-  
+
     HIVE-393. Remove unnecessary checks in movetask for file type.
     (Zheng Shao via namit)
 
@@ -101,7 +101,7 @@ Trunk - Unreleased
 
     HIVE-366. testParse should not depend on a static field
     (Zheng Shao via namit)
-    
+
     HIVE-433. Fixed union18 and union19 tests.
     (athusoo via johan)
 
@@ -111,13 +111,16 @@ Trunk - Unreleased
     HIVE-395. Fix build problems with eclipse and 0.19 hadoop.
     (Neil Conway via athusoo)
 
-    HIVE-456. Add option to run junit tests in quiet mode. 
+    HIVE-456. Add option to run junit tests in quiet mode.
     (Zheng Shao via prasadc)
+
+    HIVE-453. Use FileSystem derived from user supplied path when present
+    instead of default. (Joydeep Sen Sarma via prasadc)
 
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES
-  
+
   NEW FEATURES
 
     HIVE-61. Implement "ORDER BY". (Namit Jain via zshao)
@@ -183,9 +186,9 @@ Release 0.3.0 - 2009-04-20
 
     HIVE-271. Move test-udfs creation to build-common in order to
     fix broken 0.17 build. (athusoo)
-    
+
     HIVE-286. Use round(xxx,12) to make sure there is no precision
-    matching problem in testCliDriver_udf7. (zshao via johan)    
+    matching problem in testCliDriver_udf7. (zshao via johan)
 
     HIVE-327. Fix row counts printed in hive history to reflect the
     count of rows from the query in the session. (Suresh Anthony via athusoo)
@@ -199,11 +202,11 @@ Release 0.3.0 - 2009-04-20
     HIVE-124. Fix empty aggregations to return 1 row instead of
     nothing. (namit)
 
-    HIVE-347. Fix lot of partition scans in strict mode in case of error in 
+    HIVE-347. Fix lot of partition scans in strict mode in case of error in
     partition specification error. (namit)
 
     HIVE-251. Throw an error to the CLI if a user defined script fails in
-    TRANSFORM, MAP or REDUCE commands. (athusoo) 
+    TRANSFORM, MAP or REDUCE commands. (athusoo)
 
     HIVE-317. Fix HiveServer to accept 1 argument for port.
     (Min Zhou via athusoo)
@@ -217,13 +220,13 @@ Release 0.3.0 - 2009-04-20
     HIVE-350. Fix wrong order of aggregations in explain plan.
     (namit)
 
-    HIVE-347. undo for Fix lot of partition scans in strict mode in case of error in 
+    HIVE-347. undo for Fix lot of partition scans in strict mode in case of error in
     partition specification error. (namit)
 
-    HIVE-319. Add UDF for unix timestamp. 
+    HIVE-319. Add UDF for unix timestamp.
     (Hao Liu via namit)
 
-    HIVE-363. Use 1 reducer in case of aggregations with no grouping keys. 
+    HIVE-363. Use 1 reducer in case of aggregations with no grouping keys.
     (namit)
 
     HIVE-366. Make id a non-bean attribute so that TestParse does not depend on that.
@@ -235,15 +238,15 @@ Release 0.3.0 - 2009-04-20
     HIVE-318. Fix union all queries. (Namit Jain via zshao)
 
     HIVE-367. Null Pointer when some of the files in the table are
-    empty. (Namit Jain via athusoo) 
+    empty. (Namit Jain via athusoo)
 
-    HIVE-278. Add support for Hive History to 
+    HIVE-278. Add support for Hive History to
     Hive Web UI. (Edward Capriolo via athusoo)
 
     HIVE-356. Treat Object[] and List<Object> differently.
     (Zheng Shao via namit)
 
-    HIVE-373. 1 reducer should be used if no grouping key is present in all 
+    HIVE-373. 1 reducer should be used if no grouping key is present in all
     scenarios. (Namit Jain via zshao)
 
     HIVE-375. LazySimpleSerDe directly creates a UTF8 buffer for primitive types.
@@ -308,7 +311,7 @@ Release 0.2.0 - Unreleased
     HIVE-147. Add a tool for extracting lineage info from hive sql.
     (Suresh Antony via zshao)
 
-    HIVE-48.  Support JDBC connections for interoperability between 
+    HIVE-48.  Support JDBC connections for interoperability between
     Hive and RDBMS.  (Raghotham Murthy and Michi Mutsuzaki via dhruba)
 
     HIVE-140. Event Based Infrastructure for Syntax Trees in the compiler.
@@ -379,7 +382,7 @@ Release 0.2.0 - Unreleased
 
     HIVE-69. genMapRedTasks uses tree walker. (Namit through zshao)
 
-    HIVE-249. Give execute permissions to the hive binary 
+    HIVE-249. Give execute permissions to the hive binary
     (Jeff Hammerbacher via athusoo)
 
     HIVE-231. Create junit reports for tests. (Johan Oskarsson via athusoo)
@@ -444,16 +447,16 @@ Release 0.2.0 - Unreleased
 
     HIVE-168. Fixed join on a subquery with a group by. (Namit Jain via zshao)
 
-    HIVE-169. Fixed configuration parameter used for determining join interval 
+    HIVE-169. Fixed configuration parameter used for determining join interval
     in JoinOperator. (Namit Jain via zshao)
 
     HIVE-114. Drop partition does not delete data for external tables now.
     (Johan Oskarsson via zshao)
 
-    HIVE-144. Hive/ql java source copied to build/ql/java to make it work 
+    HIVE-144. Hive/ql java source copied to build/ql/java to make it work
     with eclipse. (Johan Oskarsson via zshao)
 
-    HIVE-129. Fix aux.jar packaging to work properly with 0.17 and 0.18 
+    HIVE-129. Fix aux.jar packaging to work properly with 0.17 and 0.18
     versions of hadoop. (Joydeep Sarma via zshao)
 
     HIVE-162. Fix join0.q test failure with hadoop 0.17. (zshao)
@@ -490,7 +493,7 @@ Release 0.2.0 - Unreleased
     HIVE-60. Fix the build scripts for the new hive tree.
     (Ashish through zshao)
 
-    HIVE-54. Create this file to record the patches going into a 
+    HIVE-54. Create this file to record the patches going into a
     particular release. (dhruba)
 
     HIVE-12. Improve README for Hive.
@@ -501,19 +504,19 @@ Release 0.2.0 - Unreleased
 
     HIVE-70. A configuration variable that limits the amount of data
     writen by a task to its standard error.
-    (Joydeep Sen Sarma via dhruba) 
+    (Joydeep Sen Sarma via dhruba)
 
     HIVE-17. Remove duplicate entries for hive.metastore.uris in config file.
-    (Jeff Hammerbacher via dhruba) 
+    (Jeff Hammerbacher via dhruba)
 
     HIVE-72. Generate correct results when partition pruning is not strict
-    and no map-reduce jobs are needed.  (Namim Jain via dhruba) 
+    and no map-reduce jobs are needed.  (Namim Jain via dhruba)
 
     HIVE-75. Make limit work when applied to outermost block that is not
-    a query.  (Namim Jain via dhruba) 
+    a query.  (Namim Jain via dhruba)
 
     HIVE-76. Fix for column number mismatch between query and destination
-    tables when alias.* expressions are present in the select list of a 
+    tables when alias.* expressions are present in the select list of a
     join. (Ashish Thusoo via dhruba)
 
     HIVE-196. Two test runs can run simultaneously on the same machine.
@@ -530,10 +533,10 @@ Release 0.2.0 - Unreleased
     HIVE-220. Incorrect log directory in TestMTQueries causing null pointer
     exception.  (Prasad Chakka via dhruba)
 
-    HIVE-230.  Fix for a Null Pointer Exception that occured while loading a 
+    HIVE-230.  Fix for a Null Pointer Exception that occured while loading a
     table from a query that returns empty data.  (Prasad Chakka via dhruba)
 
-    HIVE-232. Metastore.warehouse configuration should use inherited 
+    HIVE-232. Metastore.warehouse configuration should use inherited
     hadoop configuration. (Prasad Chakka via dhruba)
 
     HIVE-239. Check that replace columns in alter table does not have names
@@ -566,7 +569,7 @@ Release 0.2.0 - Unreleased
 
     HIVE-256. Fix in map side aggregation wherein we were not including
     private members of the records in calculating the avg size of the
-    rows and we were also not estimating variable length columns 
+    rows and we were also not estimating variable length columns
     properly. (Namit Jain via athusoo)
 
     HIVE-262. Fix for joins wherein a merged join having and outer or

@@ -295,11 +295,12 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
    */
   public long getTotalInputFileSize(JobConf job, mapredWork work) throws IOException {
     long r = 0;
-    FileSystem fs = FileSystem.get(job);
     // For each input path, calculate the total size.
     for (String path: work.getPathToAliases().keySet()) {
       try {
-        ContentSummary cs = fs.getContentSummary(new Path(path));
+        Path p = new Path(path);
+        FileSystem fs = p.getFileSystem(job);
+        ContentSummary cs = fs.getContentSummary(p);
         r += cs.getLength();
       } catch (IOException e) {
         LOG.info("Cannot get size of " + path + ". Safely ignored.");
@@ -336,8 +337,8 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
     }
 
     String hiveScratchDir = HiveConf.getVar(job, HiveConf.ConfVars.SCRATCHDIR);
-    String jobScratchDir = hiveScratchDir + Utilities.randGen.nextInt();
-    FileOutputFormat.setOutputPath(job, new Path(jobScratchDir));
+    Path jobScratchDir = new Path(hiveScratchDir + Utilities.randGen.nextInt());
+    FileOutputFormat.setOutputPath(job, jobScratchDir);
     job.setMapperClass(ExecMapper.class);
 
     job.setMapOutputKeyClass(HiveKey.class);
@@ -361,21 +362,19 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
     }
 
     int returnVal = 0;
-    FileSystem fs = null;
     RunningJob rj = null, orig_rj = null;
     boolean success = false;
 
     try {
-      fs = FileSystem.get(job);
-
       // if the input is empty exit gracefully
       Path[] inputPaths = FileInputFormat.getInputPaths(job);
       boolean emptyInput = true;
       for (Path inputP : inputPaths) {
-        if (!fs.exists(inputP))
+        FileSystem inputFs = inputP.getFileSystem(job);
+        if (!inputFs.exists(inputP))
           continue;
 
-        FileStatus[] fStats = fs.listStatus(inputP);
+        FileStatus[] fStats = inputFs.listStatus(inputP);
         for (FileStatus fStat : fStats) {
           if (fStat.getLen() > 0) {
             emptyInput = false;
@@ -445,7 +444,8 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
     } finally {
       Utilities.clearMapRedWork(job);
       try {
-        fs.delete(new Path(jobScratchDir), true);
+        FileSystem fs = jobScratchDir.getFileSystem(job);
+        fs.delete(jobScratchDir, true);
         if (returnVal != 0 && rj != null) {
           rj.killJob();
         }
