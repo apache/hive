@@ -201,18 +201,21 @@ public class CliDriver {
   }
 
   public int processLine(String line) {
-    int ret = 0;
+    int lastRet = 0, ret = 0;
+
     for(String oneCmd: line.split(";")) {
-      if(oneCmd.equals(""))
+
+      if(StringUtils.isBlank(oneCmd))
         continue;
-      
+       
       ret = processCmd(oneCmd);
-      if(ret != 0) {
-        // ignore anything after the first failed command
+      lastRet = ret;
+      boolean ignoreErrors = HiveConf.getBoolVar(conf, HiveConf.ConfVars.CLIIGNOREERRORS);
+      if(ret != 0 && !ignoreErrors) {
         return ret;
       }
     }
-    return 0;
+    return lastRet;
   }
 
   public int processReader(BufferedReader r) throws IOException {
