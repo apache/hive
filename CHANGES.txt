@@ -78,6 +78,9 @@ Release 0.3.0 - 2009-04-20
     HIVE-440. Reducer and Join to print out number of rows processed.
     (Namit Jain via zshao)
 
+    HIVE-440. Fixed bug in Reducer and Join to print out number of rows processed.
+    (Zheng Shao via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES

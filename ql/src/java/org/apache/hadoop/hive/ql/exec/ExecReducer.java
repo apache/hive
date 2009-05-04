@@ -68,6 +68,8 @@ public class ExecReducer extends MapReduceBase implements Reducer {
 
   public void configure(JobConf job) {
     jc = job;
+    cntr = 0;
+    nextCntr = 1;
     mapredWork gWork = Utilities.getMapRedWork(job);
     reducer = gWork.getReducer();
     reducer.setMapredWork(gWork);
@@ -163,6 +165,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         row.add(keyObject);
         row.add(valueObject[tag]);
         row.add(tag);
+        cntr++;
         if (cntr == nextCntr) {
           l4j.info("ExecReducer: processing " + cntr + " rows");
           nextCntr = getNextCntr(cntr);
