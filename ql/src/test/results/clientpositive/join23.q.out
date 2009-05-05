@@ -1,3 +1,5 @@
+query: EXPLAIN
+SELECT *  FROM src src1 JOIN src src2 WHERE src1.key < 10 and src2.key < 10 SORT BY src1.key, src1.value, src2.key, src2.value
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF src src1) (TOK_TABREF src src2))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (< (. (TOK_TABLE_OR_COL src1) key) 10) (< (. (TOK_TABLE_OR_COL src2) key) 10))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) value)))))
 
@@ -60,7 +62,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/197273567/372508188.10002 
+        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/202047184/593821135.10002 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -96,6 +98,9 @@ STAGE PLANS:
       limit: -1
 
 
+query: SELECT *  FROM src src1 JOIN src src2 WHERE src1.key < 10 and src2.key < 10 SORT BY src1.key, src1.value, src2.key, src2.value
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/43132946/67731968.10000
 0	val_0	0	val_0
 0	val_0	0	val_0
 0	val_0	0	val_0

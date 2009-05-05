@@ -1,3 +1,15 @@
+query: EXPLAIN
+ SELECT a.key, a.value, b.key, b.value
+ FROM 
+  (
+  SELECT src1.key as key, count(src1.value) AS value FROM src src1 group by src1.key
+  ) a
+ FULL OUTER JOIN 
+ (
+  SELECT src2.key as key, count(distinct(src2.value)) AS value 
+  FROM src1 src2 group by src2.key
+ ) b 
+ ON (a.key = b.key)
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_FULLOUTERJOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src src1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) key) key) (TOK_SELEXPR (TOK_FUNCTION count (. (TOK_TABLE_OR_COL src1) value)) value)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL src1) key)))) a) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src1 src2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) key) key) (TOK_SELEXPR (TOK_FUNCTIONDI count (. (TOK_TABLE_OR_COL src2) value)) value)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL src2) key)))) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) value)))))
 
@@ -165,6 +177,20 @@ STAGE PLANS:
       limit: -1
 
 
+query: SELECT a.key, a.value, b.key, b.value
+ FROM 
+  (
+  SELECT src1.key as key, count(src1.value) AS value FROM src src1 group by src1.key
+  ) a
+ FULL OUTER JOIN 
+ (
+  SELECT src2.key as key, count(distinct(src2.value)) AS value 
+  FROM src1 src2 group by src2.key
+ ) b 
+ ON (a.key = b.key)
+Input: default/src1
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/561260734/94732244.10000
 NULL	NULL		6
 0	3	NULL	NULL
 10	1	NULL	NULL

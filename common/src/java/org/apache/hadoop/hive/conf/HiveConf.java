@@ -65,6 +65,7 @@ public class HiveConf extends Configuration {
     COMPRESSINTERMEDIATE("hive.exec.compress.intermediate", false),
     BYTESPERREDUCER("hive.exec.reducers.bytes.per.reducer", (long)(1000*1000*1000)),
     MAXREDUCERS("hive.exec.reducers.max", 999),
+    PREEXECHOOKS("hive.exec.pre.hooks", ""),
 
     // hadoop stuff
     HADOOPBIN("hadoop.bin.path", System.getenv("HADOOP_HOME") + "/bin/hadoop"),

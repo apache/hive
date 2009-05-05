@@ -1,3 +1,6 @@
+query: CREATE TABLE dest_g1(key INT, value DOUBLE) STORED AS TEXTFILE
+query: EXPLAIN
+FROM src INSERT OVERWRITE TABLE dest_g1 SELECT src.key, sum(substr(src.value,5)) GROUP BY src.key
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest_g1)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key)) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) value) 5)))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL src) key))))
 
@@ -42,7 +45,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/169668679/777643789.10001 
+        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/121598851/279205958.10002 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -95,6 +98,12 @@ STAGE PLANS:
                 name: dest_g1
 
 
+query: FROM src INSERT OVERWRITE TABLE dest_g1 SELECT src.key, sum(substr(src.value,5)) GROUP BY src.key
+Input: default/src
+Output: default/dest_g1
+query: SELECT dest_g1.* FROM dest_g1
+Input: default/dest_g1
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/71965672/1050923207.10000
 0	0.0
 10	10.0
 100	200.0

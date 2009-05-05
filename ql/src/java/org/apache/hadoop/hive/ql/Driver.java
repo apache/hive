@@ -40,10 +40,13 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.hooks.PreExecute;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.security.UserGroupInformation;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -209,6 +212,27 @@ public class Driver implements CommandProcessor {
     return execute();
   }
 
+  private List<PreExecute> getPreExecHooks() throws Exception {
+    ArrayList<PreExecute> pehooks = new ArrayList<PreExecute>();
+    String pestr = conf.getVar(HiveConf.ConfVars.PREEXECHOOKS);
+    pestr = pestr.trim();
+    if (pestr.equals(""))
+      return pehooks;
+
+    String[] peClasses = pestr.split(",");
+    
+    for(String peClass: peClasses) {
+      try {
+        pehooks.add((PreExecute)Class.forName(peClass.trim()).newInstance());
+      } catch (ClassNotFoundException e) {
+        console.printError("Pre Exec Hook Class not found:" + e.getMessage());
+        throw e;
+      }
+    }
+    
+    return pehooks;
+  }
+  
   public int execute() {
     boolean noName = StringUtils.isEmpty(conf
         .getVar(HiveConf.ConfVars.HADOOPJOBNAME));
@@ -220,7 +244,7 @@ public class Driver implements CommandProcessor {
     conf.setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
     conf.setVar(HiveConf.ConfVars.HIVEQUERYSTRING, queryStr);
 
-    try {
+    try {      
       LOG.info("Starting command: " + queryStr);
 
       if (SessionState.get() != null)
@@ -229,6 +253,14 @@ public class Driver implements CommandProcessor {
       resStream = null;
 
       BaseSemanticAnalyzer sem = plan.getPlan();
+
+      // Get all the pre execution hooks and execute them.
+      for(PreExecute peh: getPreExecHooks()) {
+        peh.run(SessionState.get(), 
+                sem.getInputs(), sem.getOutputs(),
+                UserGroupInformation.getCurrentUGI());        
+      }
+      
       int jobs = countJobs(sem.getRootTasks());
       if (jobs > 0) {
         console.printInfo("Total MapReduce jobs = " + jobs);

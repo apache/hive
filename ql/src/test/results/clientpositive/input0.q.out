@@ -1,3 +1,5 @@
+query: EXPLAIN
+SELECT * FROM src
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
 
@@ -10,6 +12,9 @@ STAGE PLANS:
       limit: -1
 
 
+query: SELECT * FROM src
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/47962917/505914661.10000
 238	val_238
 86	val_86
 311	val_311

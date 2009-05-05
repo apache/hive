@@ -1,3 +1,5 @@
+query: EXPLAIN
+SELECT x.* FROM SRC x SORT BY key
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF SRC x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF x))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)))))
 
@@ -41,6 +43,9 @@ STAGE PLANS:
       limit: -1
 
 
+query: SELECT x.* FROM SRC x SORT BY key
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/875507913/8639603.10000
 0	val_0
 0	val_0
 0	val_0

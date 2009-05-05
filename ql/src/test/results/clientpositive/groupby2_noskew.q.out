@@ -1,3 +1,7 @@
+query: CREATE TABLE dest_g2(key STRING, c1 INT, c2 STRING) STORED AS TEXTFILE
+query: EXPLAIN
+FROM src
+INSERT OVERWRITE TABLE dest_g2 SELECT substr(src.key,1,1), count(DISTINCT substr(src.value,5)), concat(substr(src.key,1,1),sum(substr(src.value,5))) GROUP BY substr(src.key,1,1)
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest_g2)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) key) 1 1)) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) value) 5))) (TOK_SELEXPR (TOK_FUNCTION concat (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) key) 1 1) (TOK_FUNCTION sum (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) value) 5))))) (TOK_GROUPBY (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) key) 1 1))))
 
@@ -66,6 +70,13 @@ STAGE PLANS:
                 name: dest_g2
 
 
+query: FROM src
+INSERT OVERWRITE TABLE dest_g2 SELECT substr(src.key,1,1), count(DISTINCT substr(src.value,5)), concat(substr(src.key,1,1),sum(substr(src.value,5))) GROUP BY substr(src.key,1,1)
+Input: default/src
+Output: default/dest_g2
+query: SELECT dest_g2.* FROM dest_g2
+Input: default/dest_g2
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/236352888/719349372.10000
 0	1	00.0
 1	71	116414.0
 2	69	225571.0

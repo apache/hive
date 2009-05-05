@@ -1,3 +1,5 @@
+query: EXPLAIN
+SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF SRC x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 10)) (TOK_CLUSTERBY (. (TOK_TABLE_OR_COL x) key))))
 
@@ -52,7 +54,12 @@ STAGE PLANS:
       limit: -1
 
 
+query: SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/500213612/116730221.10000
 10	val_10
+query: EXPLAIN 
+SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key)  where x.key = 20 CLUSTER BY v1
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF SRC x) (TOK_TABREF SRC y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value) v1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) key))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (TOK_TABLE_OR_COL v1))))
 
@@ -131,7 +138,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/184785750/636311536.10002 
+        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/23042782/2223093.10002 
           Reduce Output Operator
             key expressions:
                   expr: 1
@@ -162,4 +169,7 @@ STAGE PLANS:
       limit: -1
 
 
+query: SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/50956604/873637666.10000
 20	val_20	20

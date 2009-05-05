@@ -1,3 +1,7 @@
+query: CREATE TABLE dest1(key INT, value STRING, mapvalue STRING) STORED AS TEXTFILE
+query: EXPLAIN
+FROM src_thrift
+INSERT OVERWRITE TABLE dest1 SELECT src_thrift.lint[1], src_thrift.lintstring[0].mystring, src_thrift.mstringstring['key_2']
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src_thrift)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR ([ (. (TOK_TABLE_OR_COL src_thrift) lint) 1)) (TOK_SELEXPR (. ([ (. (TOK_TABLE_OR_COL src_thrift) lintstring) 0) mystring)) (TOK_SELEXPR ([ (. (TOK_TABLE_OR_COL src_thrift) mstringstring) 'key_2')))))
 
@@ -46,6 +50,13 @@ STAGE PLANS:
                 name: dest1
 
 
+query: FROM src_thrift
+INSERT OVERWRITE TABLE dest1 SELECT src_thrift.lint[1], src_thrift.lintstring[0].mystring, src_thrift.mstringstring['key_2']
+Input: default/src_thrift
+Output: default/dest1
+query: SELECT dest1.* FROM dest1
+Input: default/dest1
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/403047878/395453459.10000
 0	0	NULL
 2	1	NULL
 4	8	value_2

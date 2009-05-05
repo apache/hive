@@ -1,3 +1,8 @@
+query: EXPLAIN
+SELECT src1.c1 
+FROM
+(SELECT src.value as c1, count(src.key) as c2 from src where src.value > 'val_10' group by src.value) src1
+WHERE src1.c1 > 'val_200' and (src1.c2 > 30 or src1.c1 < 'val_400')
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value) c1) (TOK_SELEXPR (TOK_FUNCTION count (. (TOK_TABLE_OR_COL src) key)) c2)) (TOK_WHERE (> (. (TOK_TABLE_OR_COL src) value) 'val_10')) (TOK_GROUPBY (. (TOK_TABLE_OR_COL src) value)))) src1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) c1))) (TOK_WHERE (and (> (. (TOK_TABLE_OR_COL src1) c1) 'val_200') (or (> (. (TOK_TABLE_OR_COL src1) c2) 30) (< (. (TOK_TABLE_OR_COL src1) c1) 'val_400'))))))
 
@@ -71,6 +76,12 @@ STAGE PLANS:
       limit: -1
 
 
+query: SELECT src1.c1 
+FROM
+(SELECT src.value as c1, count(src.key) as c2 from src where src.value > 'val_10' group by src.value) src1
+WHERE src1.c1 > 'val_200' and (src1.c2 > 30 or src1.c1 < 'val_400')
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/149093602/149899687.10000
 val_201
 val_202
 val_203

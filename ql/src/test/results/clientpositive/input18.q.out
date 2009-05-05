@@ -1,3 +1,12 @@
+query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
+query: EXPLAIN
+FROM (
+  FROM src
+  SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
+         USING '/bin/cat'
+  CLUSTER BY key
+) tmap
+INSERT OVERWRITE TABLE dest1 SELECT tmap.key, regexp_replace(tmap.value,'\t','+') WHERE tmap.key < 100
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) value) (+ 1 2) (+ 3 4)) '/bin/cat'))) (TOK_CLUSTERBY (TOK_TABLE_OR_COL key)))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) key)) (TOK_SELEXPR (TOK_FUNCTION regexp_replace (. (TOK_TABLE_OR_COL tmap) value) '\t' '+'))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL tmap) key) 100))))
 
@@ -77,6 +86,18 @@ STAGE PLANS:
                 name: dest1
 
 
+query: FROM (
+  FROM src
+  SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
+         USING '/bin/cat'
+  CLUSTER BY key
+) tmap
+INSERT OVERWRITE TABLE dest1 SELECT tmap.key, regexp_replace(tmap.value,'\t','+') WHERE tmap.key < 100
+Input: default/src
+Output: default/dest1
+query: SELECT dest1.* FROM dest1
+Input: default/dest1
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/543730859/7367833.10000
 0	val_0+3+7
 0	val_0+3+7
 0	val_0+3+7

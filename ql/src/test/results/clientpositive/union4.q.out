@@ -1,3 +1,10 @@
+query: drop table tmptable
+query: create table tmptable(key string, value int)
+query: explain 
+insert overwrite table tmptable
+  select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, count(1) as value from src s1
+                                        UNION  ALL  
+                                            select 'tst2' as key, count(1) as value from src s2) unionsrc
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF src s1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst1' key) (TOK_SELEXPR (TOK_FUNCTION count 1) value)))) (TOK_QUERY (TOK_FROM (TOK_TABREF src s2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst2' key) (TOK_SELEXPR (TOK_FUNCTION count 1) value))))) unionsrc)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB tmptable)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) value)))))
 
@@ -47,7 +54,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/821364331/229014134.10001 
+        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/371236334/463237113.10002 
           Union
             Select Operator
               expressions:
@@ -69,7 +76,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
-        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/821364331/229014134.10002 
+        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/371236334/463237113.10003 
           Union
             Select Operator
               expressions:
@@ -137,5 +144,15 @@ STAGE PLANS:
                   name: binary_table
 
 
+query: insert overwrite table tmptable
+select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, count(1) as value from src s1
+                                        UNION  ALL  
+                                          select 'tst2' as key, count(1) as value from src s2) unionsrc
+Input: default/src
+Output: default/tmptable
+query: select * from tmptable x sort by x.key
+Input: default/tmptable
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/100441451/111422539.10000
 tst1	500
 tst2	500
+query: drop table tmptable

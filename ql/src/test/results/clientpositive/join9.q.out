@@ -1,3 +1,7 @@
+query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
+query: EXPLAIN EXTENDED
+FROM srcpart src1 JOIN src src2 ON (src1.key = src2.key)
+INSERT OVERWRITE TABLE dest1 SELECT src1.key, src2.value where src1.ds = '2008-04-08' and src1.hr = '12'
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF srcpart src1) (TOK_TABREF src src2) (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) value))) (TOK_WHERE (and (= (. (TOK_TABLE_OR_COL src1) ds) '2008-04-08') (= (. (TOK_TABLE_OR_COL src1) hr) '12')))))
 
@@ -51,10 +55,10 @@ STAGE PLANS:
                       type: string
       Needs Tagging: true
       Path -> Alias:
-        file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/src 
-        file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
+        file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/src 
+        file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
       Path -> Partition:
-        file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/src 
+        file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/src 
           Partition
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -69,10 +73,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/src
+                location file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/src
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
-        file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
+        file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
             partition values:
               ds 2008-04-08
@@ -91,7 +95,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
       Reduce Operator Tree:
@@ -120,7 +124,7 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
-                  directory: /data/users/zshao/tools/416-trunk-apache-hive/ql/../build/ql/tmp/795506225.10000.insclause-0
+                  directory: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/93836917.10000.insclause-0
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -134,7 +138,7 @@ STAGE PLANS:
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         file.inputformat org.apache.hadoop.mapred.TextInputFormat
                         file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        location file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/dest1
+                        location file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/dest1
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: dest1
 
@@ -142,7 +146,7 @@ STAGE PLANS:
     Move Operator
       tables:
             replace: true
-            source: /data/users/zshao/tools/416-trunk-apache-hive/ql/../build/ql/tmp/795506225.10000.insclause-0
+            source: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/93836917.10000.insclause-0
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -156,11 +160,20 @@ STAGE PLANS:
                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   file.inputformat org.apache.hadoop.mapred.TextInputFormat
                   file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  location file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/dest1
+                  location file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/dest1
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: dest1
+            tmp directory: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/93836917.10001
 
 
+query: FROM srcpart src1 JOIN src src2 ON (src1.key = src2.key)
+INSERT OVERWRITE TABLE dest1 SELECT src1.key, src2.value where src1.ds = '2008-04-08' and src1.hr = '12'
+Input: default/src
+Input: default/srcpart/ds=2008-04-08/hr=12
+Output: default/dest1
+query: SELECT dest1.* FROM dest1
+Input: default/dest1
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/280910510/328815293.10000
 0	val_0
 0	val_0
 0	val_0

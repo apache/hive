@@ -1,3 +1,11 @@
+query: EXPLAIN
+FROM (
+  FROM src select src.key, src.value WHERE src.key < '100'
+    UNION ALL
+  FROM src SELECT src.* WHERE src.key > '150'
+) unioned_query
+SELECT unioned_query.*
+  WHERE key > '4' and value > 'val_4'
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL src) key) '100')))) (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF src))) (TOK_WHERE (> (. (TOK_TABLE_OR_COL src) key) '150'))))) unioned_query)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF unioned_query))) (TOK_WHERE (and (> (TOK_TABLE_OR_COL key) '4') (> (TOK_TABLE_OR_COL value) 'val_4')))))
 
@@ -79,6 +87,15 @@ STAGE PLANS:
       limit: -1
 
 
+query: FROM (
+  FROM src select src.key, src.value WHERE src.key < '100'
+    UNION ALL
+  FROM src SELECT src.* WHERE src.key > '150'
+) unioned_query
+SELECT unioned_query.*
+  WHERE key > '4' and value > 'val_4'
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/202047284/848303534.10000
 86	val_86
 409	val_409
 98	val_98

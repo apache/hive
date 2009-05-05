@@ -1,3 +1,13 @@
+query: explain 
+SELECT unionsrc1.key, unionsrc1.value, unionsrc2.key, unionsrc2.value
+FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
+                         UNION  ALL  
+      select s2.key as key, s2.value as value from src s2 where s2.key < 10) unionsrc1 
+JOIN 
+     (select 'tst1' as key, cast(count(1) as string) as value from src s3
+                         UNION  ALL  
+      select s4.key as key, s4.value as value from src s4 where s4.key < 10) unionsrc2
+ON (unionsrc1.key = unionsrc2.key)
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF src s1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst1' key) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (TOK_FUNCTION count 1)) value)))) (TOK_QUERY (TOK_FROM (TOK_TABREF src s2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) key) key) (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) value) value)) (TOK_WHERE (< (. (TOK_TABLE_OR_COL s2) key) 10))))) unionsrc1) (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF src s3)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst1' key) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (TOK_FUNCTION count 1)) value)))) (TOK_QUERY (TOK_FROM (TOK_TABREF src s4)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s4) key) key) (TOK_SELEXPR (. (TOK_TABLE_OR_COL s4) value) value)) (TOK_WHERE (< (. (TOK_TABLE_OR_COL s4) key) 10))))) unionsrc2) (= (. (TOK_TABLE_OR_COL unionsrc1) key) (. (TOK_TABLE_OR_COL unionsrc2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc1) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc1) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc2) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc2) value)))))
 
@@ -52,7 +62,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/55154034/326347910.10002 
+        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/172458251/1663645008.10002 
           Union
             Reduce Output Operator
               key expressions:
@@ -68,7 +78,7 @@ STAGE PLANS:
                     type: string
                     expr: 1
                     type: string
-        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/55154034/326347910.10003 
+        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/172458251/1663645008.10003 
           Union
             Reduce Output Operator
               key expressions:
@@ -170,7 +180,7 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/55154034/326347910.10004 
+        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/172458251/1663645008.10004 
           Union
             File Output Operator
               compressed: false
@@ -179,7 +189,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   name: binary_table
-        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/55154034/326347910.10006 
+        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/172458251/1663645008.10006 
           Union
             File Output Operator
               compressed: false
@@ -228,6 +238,17 @@ STAGE PLANS:
       limit: -1
 
 
+query: SELECT unionsrc1.key, unionsrc1.value, unionsrc2.key, unionsrc2.value
+FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
+                         UNION  ALL  
+      select s2.key as key, s2.value as value from src s2 where s2.key < 10) unionsrc1 
+JOIN 
+     (select 'tst1' as key, cast(count(1) as string) as value from src s3
+                         UNION  ALL  
+      select s4.key as key, s4.value as value from src s4 where s4.key < 10) unionsrc2
+ON (unionsrc1.key = unionsrc2.key)
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/1381661483/387712250.10000
 0	val_0	0	val_0
 0	val_0	0	val_0
 0	val_0	0	val_0

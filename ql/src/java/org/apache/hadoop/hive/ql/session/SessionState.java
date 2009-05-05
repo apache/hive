@@ -284,7 +284,7 @@ public class SessionState {
   /**
    * initialize or retrieve console object for SessionState
    */
-  private static LogHelper getConsole() {
+  public static LogHelper getConsole() {
     if(_console == null) {
       Log LOG = LogFactory.getLog("SessionState");
       _console = new LogHelper(LOG);

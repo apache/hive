@@ -1,3 +1,7 @@
+query: CREATE TABLE dest4_sequencefile(key INT, value STRING) STORED AS SEQUENCEFILE
+query: EXPLAIN
+FROM src
+INSERT OVERWRITE TABLE dest4_sequencefile SELECT src.key, src.value
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest4_sequencefile)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value)))))
 
@@ -42,6 +46,13 @@ STAGE PLANS:
                 name: dest4_sequencefile
 
 
+query: FROM src
+INSERT OVERWRITE TABLE dest4_sequencefile SELECT src.key, src.value
+Input: default/src
+Output: default/dest4_sequencefile
+query: SELECT dest4_sequencefile.* FROM dest4_sequencefile
+Input: default/dest4_sequencefile
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/225942313/58999367.10000
 238	val_238
 86	val_86
 311	val_311

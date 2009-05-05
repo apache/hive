@@ -1,7 +1,13 @@
+query: describe src_thrift.lint
 lint	array<int>	from deserializer
+query: describe src_thrift.lint.$elem$
 $elem$	int	from deserializer
+query: describe src_thrift.mStringString.$key$
 $key$	string	from deserializer
+query: describe src_thrift.mStringString.$value$
 $value$	string	from deserializer
+query: describe src_thrift.lintString.$elem$
 myint	int	from deserializer
 mystring	string	from deserializer
+query: describe src_thrift.lintString.$elem$.myint
 myint	int	from deserializer

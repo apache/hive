@@ -1,3 +1,7 @@
+query: CREATE TABLE dest1(value STRING, key INT) STORED AS TEXTFILE
+query: EXPLAIN
+FROM src1
+INSERT OVERWRITE TABLE dest1 SELECT NULL, src1.key where NULL = NULL
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src1)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR TOK_NULL) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) key))) (TOK_WHERE (= TOK_NULL TOK_NULL))))
 
@@ -50,3 +54,10 @@ STAGE PLANS:
                 name: dest1
 
 
+query: FROM src1
+INSERT OVERWRITE TABLE dest1 SELECT NULL, src1.key where NULL = NULL
+Input: default/src1
+Output: default/dest1
+query: SELECT dest1.* FROM dest1
+Input: default/dest1
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/170480320/543316931.10000

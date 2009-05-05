@@ -1,1 +1,5 @@
+query: select count(distinct subq.key) from
+(FROM src MAP src.key USING 'python ../data/scripts/dumpdata_script.py' AS key WHERE src.key = 10) subq
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/56403262/669115083.10000
 1000022

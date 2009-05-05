@@ -112,4 +112,10 @@
   <description>Location of the structured hive logs</description>
 </property>
 
+<property>
+  <name>hive.exec.pre.hooks</name>
+  <value>org.apache.hadoop.hive.ql.hooks.PreExecutePrinter</value>
+  <description>Pre Execute Hook for Tests</description>
+</property>
+
 </configuration>

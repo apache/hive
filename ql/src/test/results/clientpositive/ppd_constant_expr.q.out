@@ -1,3 +1,7 @@
+query: CREATE TABLE ppd_constant_expr(c1 STRING, c2 INT, c3 DOUBLE) STORED AS TEXTFILE
+query: EXPLAIN
+FROM src1 
+INSERT OVERWRITE TABLE ppd_constant_expr SELECT 4 + NULL, src1.key - NULL, NULL + NULL
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src1)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB ppd_constant_expr)) (TOK_SELECT (TOK_SELEXPR (+ 4 TOK_NULL)) (TOK_SELEXPR (- (. (TOK_TABLE_OR_COL src1) key) TOK_NULL)) (TOK_SELEXPR (+ TOK_NULL TOK_NULL)))))
 
@@ -50,6 +54,13 @@ STAGE PLANS:
                 name: ppd_constant_expr
 
 
+query: FROM src1 
+INSERT OVERWRITE TABLE ppd_constant_expr SELECT 4 + NULL, src1.key - NULL, NULL + NULL
+Input: default/src1
+Output: default/ppd_constant_expr
+query: SELECT ppd_constant_expr.* FROM ppd_constant_expr
+Input: default/ppd_constant_expr
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/254664389/264213010.10000
 NULL	NULL	NULL
 NULL	NULL	NULL
 NULL	NULL	NULL
@@ -75,3 +86,4 @@ NULL	NULL	NULL
 NULL	NULL	NULL
 NULL	NULL	NULL
 NULL	NULL	NULL
+query: DROP TABLE ppd_constant_expr

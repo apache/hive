@@ -1,0 +1,8 @@
+query: create table tstnullinut(a string, b string)
+query: select x.* from tstnullinut x
+Input: default/tstnullinut
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/252572061/456825886.10000
+query: select x.a, count(1) from tstnullinut x group by x.a
+Input: default/tstnullinut
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/584851051/141046837.10000
+query: drop table tstnullinut

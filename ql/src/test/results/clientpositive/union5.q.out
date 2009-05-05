@@ -1,3 +1,7 @@
+query: explain 
+  select unionsrc.key, count(1) FROM (select 'tst1' as key, count(1) as value from src s1
+                                    UNION  ALL  
+                                      select 'tst2' as key, count(1) as value from src s2) unionsrc group by unionsrc.key
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF src s1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst1' key) (TOK_SELEXPR (TOK_FUNCTION count 1) value)))) (TOK_QUERY (TOK_FROM (TOK_TABREF src s2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst2' key) (TOK_SELEXPR (TOK_FUNCTION count 1) value))))) unionsrc)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL unionsrc) key))))
 
@@ -46,7 +50,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/1122480073/45739411.10002 
+        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/1649113926/399998151.10002 
           Union
             Group By Operator
               aggregations:
@@ -67,7 +71,7 @@ STAGE PLANS:
                 value expressions:
                       expr: 1
                       type: bigint
-        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/1122480073/45739411.10003 
+        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/1649113926/399998151.10003 
           Union
             Group By Operator
               aggregations:
@@ -148,5 +152,10 @@ STAGE PLANS:
       limit: -1
 
 
+query: select unionsrc.key, count(1) FROM (select 'tst1' as key, count(1) as value from src s1
+                                  UNION  ALL  
+                                    select 'tst2' as key, count(1) as value from src s2) unionsrc group by unionsrc.key
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/1203907479/249233034.10000
 tst1	1
 tst2	1

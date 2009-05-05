@@ -1,3 +1,6 @@
+query: EXPLAIN
+SELECT s.key
+FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF srcbucket (TOK_TABLESAMPLE 1 5 (TOK_TABLE_OR_COL key)) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s) key)))))
 
@@ -34,6 +37,10 @@ STAGE PLANS:
       limit: -1
 
 
+query: SELECT s.key
+FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s SORT BY key
+Input: default/srcbucket
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/785589213/505578835.10000
 100
 100
 100

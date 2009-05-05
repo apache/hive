@@ -1,3 +1,11 @@
+query: DROP TABLE T1
+query: CREATE TABLE T1(key STRING, value STRING) STORED AS TEXTFILE
+query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE T1
+query: LOAD DATA LOCAL INPATH '../data/files/kv2.txt' INTO TABLE T1
+query: DROP TABLE T2
+query: CREATE TABLE T2(key STRING, value STRING)
+query: EXPLAIN 
+INSERT OVERWRITE TABLE T2 SELECT * FROM (SELECT * FROM T1 DISTRIBUTE BY key SORT BY key, value) T LIMIT 20
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF T1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_DISTRIBUTEBY (TOK_TABLE_OR_COL key)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value))))) T)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB T2)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_LIMIT 20)))
 
@@ -53,7 +61,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/349137289/427658357.10001 
+        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/11453942/21576323.10002 
           Reduce Output Operator
             sort order: 
             tag: -1
@@ -85,6 +93,12 @@ STAGE PLANS:
                 name: t2
 
 
+query: INSERT OVERWRITE TABLE T2 SELECT * FROM (SELECT * FROM T1 DISTRIBUTE BY key SORT BY key, value) T LIMIT 20
+Input: default/t1
+Output: default/t2
+query: SELECT * FROM T2 SORT BY key, value
+Input: default/t2
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/177136935/1888963.10000
 0	val_0
 0	val_0
 0	val_0
@@ -105,3 +119,5 @@ STAGE PLANS:
 104	val_104
 104	val_105
 104	val_105
+query: DROP TABLE T1
+query: DROP TABLE T2

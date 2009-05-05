@@ -1,3 +1,7 @@
+query: DROP TABLE src_null
+query: CREATE TABLE src_null(a STRING, b STRING, c STRING, d STRING) STORED AS TEXTFILE
+query: LOAD DATA LOCAL INPATH '../data/files/null.txt' INTO TABLE src_null
+query: EXPLAIN SELECT * FROM src_null DISTRIBUTE BY c SORT BY d
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src_null)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_DISTRIBUTEBY (TOK_TABLE_OR_COL c)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL d)))))
 
@@ -52,6 +56,9 @@ STAGE PLANS:
       limit: -1
 
 
+query: SELECT * FROM src_null DISTRIBUTE BY c SORT BY d
+Input: default/src_null
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/435874957/1843130221.10000
 1.0	1	same	0
 1.0	1	same	1
 1.0	1	same	2
@@ -62,3 +69,4 @@ NULL	NULL	same	6
 1.0	NULL	same	7
 1.0	1	same	8
 1.0	1	same	9
+query: DROP TABLE src_null

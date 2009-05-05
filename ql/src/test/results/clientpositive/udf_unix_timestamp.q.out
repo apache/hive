@@ -1,4 +1,28 @@
+query: SELECT
+  '2009-03-20 11:30:01',
+  unix_timestamp('2009-03-20 11:30:01')
+FROM src LIMIT 1
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/1312227505/619820167.10000
 2009-03-20 11:30:01	1237573801
+query: SELECT
+  '2009-03-20',
+  unix_timestamp('2009-03-20', 'yyyy-MM-dd')
+FROM src LIMIT 1
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/24449050/574490019.10000
 2009-03-20	1237532400
+query: SELECT
+  '2009 Mar 20 11:30:01 am',
+  unix_timestamp('2009 Mar 20 11:30:01 am', 'yyyy MMM dd h:mm:ss a')
+FROM src LIMIT 1
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/113858045/511496819.10000
 2009 Mar 20 11:30:01 am	1237573801
+query: SELECT
+  'random_string',
+  unix_timestamp('random_string')
+FROM src LIMIT 1
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/7890380/263814004.10000
 random_string	NULL

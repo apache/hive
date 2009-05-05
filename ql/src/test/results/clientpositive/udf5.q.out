@@ -1,3 +1,9 @@
+query: CREATE TABLE dest1(c1 STRING) STORED AS TEXTFILE
+query: FROM src INSERT OVERWRITE TABLE dest1 SELECT '  abc  ' WHERE src.key = 86
+Input: default/src
+Output: default/dest1
+query: EXPLAIN
+SELECT from_unixtime(1226446340), to_date(from_unixtime(1226446340)), day('2008-11-01'), month('2008-11-01'), year('2008-11-01'), day('2008-11-01 15:32:20'), month('2008-11-01 15:32:20'), year('2008-11-01 15:32:20') FROM dest1
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF dest1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION from_unixtime 1226446340)) (TOK_SELEXPR (TOK_FUNCTION to_date (TOK_FUNCTION from_unixtime 1226446340))) (TOK_SELEXPR (TOK_FUNCTION day '2008-11-01')) (TOK_SELEXPR (TOK_FUNCTION month '2008-11-01')) (TOK_SELEXPR (TOK_FUNCTION year '2008-11-01')) (TOK_SELEXPR (TOK_FUNCTION day '2008-11-01 15:32:20')) (TOK_SELEXPR (TOK_FUNCTION month '2008-11-01 15:32:20')) (TOK_SELEXPR (TOK_FUNCTION year '2008-11-01 15:32:20')))))
 
@@ -41,4 +47,7 @@ STAGE PLANS:
       limit: -1
 
 
+query: SELECT from_unixtime(1226446340), to_date(from_unixtime(1226446340)), day('2008-11-01'), month('2008-11-01'), year('2008-11-01'), day('2008-11-01 15:32:20'), month('2008-11-01 15:32:20'), year('2008-11-01 15:32:20') FROM dest1
+Input: default/dest1
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/396140468/103691975.10000
 2008-11-11 15:32:20	2008-11-11	1	11	2008	1	11	2008

@@ -142,4 +142,10 @@
   <description>This is the WAR file with the jsp content for Hive Web Interface</description>
 </property>
 
+<property>
+  <name>hive.exec.pre.hooks</name>
+  <value></value>
+  <description>Pre Execute Hook for Tests</description>
+</property>
+
 </configuration>

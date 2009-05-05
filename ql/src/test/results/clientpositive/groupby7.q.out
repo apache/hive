@@ -1,3 +1,14 @@
+query: CREATE TABLE DEST1(key INT, value STRING) STORED AS TEXTFILE
+query: CREATE TABLE DEST2(key INT, value STRING) STORED AS TEXTFILE
+query: FROM SRC
+INSERT OVERWRITE TABLE DEST1 SELECT SRC.key, sum(SUBSTR(SRC.value,5)) GROUP BY SRC.key
+INSERT OVERWRITE TABLE DEST2 SELECT SRC.key, sum(SUBSTR(SRC.value,5)) GROUP BY SRC.key
+Input: default/src
+Output: default/dest1
+Output: default/dest2
+query: SELECT DEST1.* FROM DEST1
+Input: default/dest1
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/533394424/23653585.10000
 0	0.0
 10	10.0
 100	200.0
@@ -307,6 +318,9 @@
 96	96.0
 97	194.0
 98	196.0
+query: SELECT DEST2.* FROM DEST2
+Input: default/dest2
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/1095125127/364198571.10000
 0	0.0
 10	10.0
 100	200.0

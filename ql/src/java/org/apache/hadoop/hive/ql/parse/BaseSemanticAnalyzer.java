@@ -30,7 +30,10 @@ import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 
 public abstract class BaseSemanticAnalyzer {
   protected String scratchDir;
@@ -240,6 +243,14 @@ public abstract class BaseSemanticAnalyzer {
     String taskTmpDir = this.scratchDir + File.separator + this.randomid + '.' + this.pathid;
     this.pathid++;
     return taskTmpDir;
+  }
+  
+  public Set<ReadEntity> getInputs() {
+    return new LinkedHashSet<ReadEntity>();
+  }
+  
+  public Set<WriteEntity> getOutputs() {
+    return new LinkedHashSet<WriteEntity>();
   }
   
   public static class tableSpec {

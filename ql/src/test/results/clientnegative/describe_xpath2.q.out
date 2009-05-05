@@ -1,2 +1,3 @@
+query: describe src_thrift.$key$
 FAILED: Error in metadata: java.lang.RuntimeException: cannot find field $key$ from [public int org.apache.hadoop.hive.serde2.thrift.test.Complex.aint, public java.lang.String org.apache.hadoop.hive.serde2.thrift.test.Complex.aString, public java.util.List org.apache.hadoop.hive.serde2.thrift.test.Complex.lint, public java.util.List org.apache.hadoop.hive.serde2.thrift.test.Complex.lString, public java.util.List org.apache.hadoop.hive.serde2.thrift.test.Complex.lintString, public java.util.Map org.apache.hadoop.hive.serde2.thrift.test.Complex.mStringString]
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

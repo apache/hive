@@ -1,3 +1,5 @@
+query: EXPLAIN
+SELECT * FROM src src1 LEFT OUTER JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10) RIGHT OUTER JOIN src src3 ON (src2.key = src3.key AND src3.key < 10) SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_TABREF src src1) (TOK_TABREF src src2) (AND (AND (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)) (< (. (TOK_TABLE_OR_COL src1) key) 10)) (> (. (TOK_TABLE_OR_COL src2) key) 10))) (TOK_TABREF src src3) (AND (= (. (TOK_TABLE_OR_COL src2) key) (. (TOK_TABLE_OR_COL src3) key)) (< (. (TOK_TABLE_OR_COL src3) key) 10)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) value)))))
 
@@ -101,7 +103,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/218419201/103716512.10002 
+        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/1131318152/340507767.10002 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -145,6 +147,9 @@ STAGE PLANS:
       limit: -1
 
 
+query: SELECT * FROM src src1 LEFT OUTER JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10) RIGHT OUTER JOIN src src3 ON (src2.key = src3.key AND src3.key < 10) SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/851206556/25821787.10000
 NULL	NULL	NULL	NULL	0	val_0
 NULL	NULL	NULL	NULL	0	val_0
 NULL	NULL	NULL	NULL	0	val_0

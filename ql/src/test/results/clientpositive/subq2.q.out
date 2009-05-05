@@ -1,3 +1,7 @@
+query: EXPLAIN
+SELECT a.k, a.c
+FROM (SELECT b.key as k, count(1) as c FROM src b GROUP BY b.key) a
+WHERE a.k >= 90
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src b)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) key) k) (TOK_SELEXPR (TOK_FUNCTION count 1) c)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL b) key)))) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) k)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) c))) (TOK_WHERE (>= (. (TOK_TABLE_OR_COL a) k) 90))))
 
@@ -69,6 +73,11 @@ STAGE PLANS:
       limit: -1
 
 
+query: SELECT a.k, a.c
+FROM (SELECT b.key as k, count(1) as c FROM src b GROUP BY b.key) a
+WHERE a.k >= 90
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/900838886/139366063.10000
 100	2
 103	2
 104	2

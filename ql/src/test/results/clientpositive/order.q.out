@@ -1,3 +1,5 @@
+query: EXPLAIN
+SELECT x.* FROM SRC x ORDER BY key limit 10
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF SRC x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF x))) (TOK_ORDERBY (TOK_TABLE_OR_COL key)) (TOK_LIMIT 10)))
 
@@ -42,6 +44,9 @@ STAGE PLANS:
       limit: 10
 
 
+query: SELECT x.* FROM SRC x ORDER BY key limit 10
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/1564222471/1481411475.10000
 0	val_0
 0	val_0
 0	val_0

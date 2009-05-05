@@ -1,3 +1,9 @@
+query: DROP TABLE INPUT16
+query: CREATE TABLE INPUT16(KEY STRING, VALUE STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.TestSerDe' STORED AS TEXTFILE
+query: LOAD DATA LOCAL INPATH '../data/files/kv1_cb.txt' INTO TABLE INPUT16
+query: SELECT INPUT16.VALUE, INPUT16.KEY FROM INPUT16
+Input: default/input16
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/62593409/1607071713.10000
 val_238	238
 val_86	86
 val_311	311
@@ -498,3 +504,4 @@ val_403	403
 val_400	400
 val_200	200
 val_97	97
+query: DROP TABLE INPUT16

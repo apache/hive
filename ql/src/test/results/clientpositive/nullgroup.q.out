@@ -1,3 +1,5 @@
+query: explain
+select count(1) from src x where x.key > 9999
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (> (. (TOK_TABLE_OR_COL x) key) 9999))))
 
@@ -49,7 +51,12 @@ STAGE PLANS:
       limit: -1
 
 
+query: select count(1) from src x where x.key > 9999
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/207777648/268938083.10000
 0
+query: explain
+select count(1) from src x where x.key > 9999
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (> (. (TOK_TABLE_OR_COL x) key) 9999))))
 
@@ -101,7 +108,12 @@ STAGE PLANS:
       limit: -1
 
 
+query: select count(1) from src x where x.key > 9999
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/7619133/38786.10000
 0
+query: explain
+select count(1) from src x where x.key > 9999
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (> (. (TOK_TABLE_OR_COL x) key) 9999))))
 
@@ -148,7 +160,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/135887310/743300630.10002 
+        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/358258135/421877482.10002 
           Reduce Output Operator
             sort order: 
             tag: -1
@@ -176,7 +188,12 @@ STAGE PLANS:
       limit: -1
 
 
+query: select count(1) from src x where x.key > 9999
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/23717650/593465976.10000
 0
+query: explain
+select count(1) from src x where x.key > 9999
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (> (. (TOK_TABLE_OR_COL x) key) 9999))))
 
@@ -224,4 +241,7 @@ STAGE PLANS:
       limit: -1
 
 
+query: select count(1) from src x where x.key > 9999
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/297371777/298775966.10000
 0

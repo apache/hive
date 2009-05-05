@@ -1,3 +1,8 @@
+query: drop table tmptable
+query: create table tmptable(key string, value string, hr string, ds string)
+query: explain extended 
+insert overwrite table tmptable
+select a.* from srcpart a where rand(1) < 0.1 and a.ds = '2008-04-08'
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart a)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB tmptable)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF a))) (TOK_WHERE (and (< (TOK_FUNCTION rand 1) 0.1) (= (. (TOK_TABLE_OR_COL a) ds) '2008-04-08')))))
 
@@ -27,7 +32,7 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
-                  directory: /data/users/zshao/tools/416-trunk-apache-hive/ql/../build/ql/tmp/433273605/149405965.10000.insclause-0
+                  directory: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/10675457/692984549.10000.insclause-0
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -41,15 +46,15 @@ STAGE PLANS:
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         file.inputformat org.apache.hadoop.mapred.TextInputFormat
                         file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        location file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/tmptable
+                        location file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/tmptable
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
-        file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
+        file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
       Path -> Partition:
-        file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
+        file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
             partition values:
               ds 2008-04-08
@@ -68,10 +73,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
+        file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
             partition values:
               ds 2008-04-08
@@ -90,7 +95,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
 
@@ -98,7 +103,7 @@ STAGE PLANS:
     Move Operator
       tables:
             replace: true
-            source: /data/users/zshao/tools/416-trunk-apache-hive/ql/../build/ql/tmp/433273605/149405965.10000.insclause-0
+            source: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/10675457/692984549.10000.insclause-0
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -112,11 +117,20 @@ STAGE PLANS:
                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   file.inputformat org.apache.hadoop.mapred.TextInputFormat
                   file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  location file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/tmptable
+                  location file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/tmptable
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: tmptable
+            tmp directory: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/10675457/692984549.10001
 
 
+query: insert overwrite table tmptable
+select a.* from srcpart a where rand(1) < 0.1 and a.ds = '2008-04-08'
+Input: default/srcpart/ds=2008-04-08/hr=11
+Input: default/srcpart/ds=2008-04-08/hr=12
+Output: default/tmptable
+query: select * from tmptable x sort by x.key
+Input: default/tmptable
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/215840330/359161528.10000
 103	val_103	2008-04-08	11
 103	val_103	2008-04-08	12
 133	val_133	2008-04-08	12
@@ -229,3 +243,4 @@ STAGE PLANS:
 77	val_77	2008-04-08	11
 78	val_78	2008-04-08	11
 78	val_78	2008-04-08	12
+query: drop table tmptable

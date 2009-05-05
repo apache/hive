@@ -1,0 +1,9 @@
+query: drop table insert1
+query: drop table insert2
+query: create table insert1(key int, value string) stored as textfile
+query: create table insert2(key int, value string) stored as textfile
+query: insert overwrite table insert1 select a.key, a.value from insert2 a WHERE (a.key=-1)
+Input: default/insert2
+Output: default/insert1
+query: drop table insert1
+query: drop table insert2

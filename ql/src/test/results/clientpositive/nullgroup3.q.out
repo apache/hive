@@ -1,3 +1,9 @@
+query: DROP TABLE tstparttbl
+query: CREATE TABLE tstparttbl(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
+query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE tstparttbl PARTITION (ds='2008-04-09')
+query: LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE tstparttbl PARTITION (ds='2008-04-08')
+query: explain
+select count(1) from tstparttbl
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF tstparttbl)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)))))
 
@@ -42,7 +48,17 @@ STAGE PLANS:
       limit: -1
 
 
+query: select count(1) from tstparttbl
+Input: default/tstparttbl/ds=2008-04-09
+Input: default/tstparttbl/ds=2008-04-08
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/1221493083/197971283.10000
 500
+query: DROP TABLE tstparttbl2
+query: CREATE TABLE tstparttbl2(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
+query: LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE tstparttbl2 PARTITION (ds='2008-04-09')
+query: LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE tstparttbl2 PARTITION (ds='2008-04-08')
+query: explain
+select count(1) from tstparttbl2
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF tstparttbl2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)))))
 
@@ -87,6 +103,16 @@ STAGE PLANS:
       limit: -1
 
 
+query: select count(1) from tstparttbl2
+Input: default/tstparttbl2/ds=2008-04-09
+Input: default/tstparttbl2/ds=2008-04-08
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/200536084/27806968.10000
+query: DROP TABLE tstparttbl
+query: CREATE TABLE tstparttbl(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
+query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE tstparttbl PARTITION (ds='2008-04-09')
+query: LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE tstparttbl PARTITION (ds='2008-04-08')
+query: explain
+select count(1) from tstparttbl
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF tstparttbl)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)))))
 
@@ -131,7 +157,17 @@ STAGE PLANS:
       limit: -1
 
 
+query: select count(1) from tstparttbl
+Input: default/tstparttbl/ds=2008-04-09
+Input: default/tstparttbl/ds=2008-04-08
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/1474931838/738960864.10000
 500
+query: DROP TABLE tstparttbl2
+query: CREATE TABLE tstparttbl2(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
+query: LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE tstparttbl2 PARTITION (ds='2008-04-09')
+query: LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE tstparttbl2 PARTITION (ds='2008-04-08')
+query: explain
+select count(1) from tstparttbl2
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF tstparttbl2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)))))
 
@@ -176,3 +212,7 @@ STAGE PLANS:
       limit: -1
 
 
+query: select count(1) from tstparttbl2
+Input: default/tstparttbl2/ds=2008-04-09
+Input: default/tstparttbl2/ds=2008-04-08
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/48371033/920895567.10000

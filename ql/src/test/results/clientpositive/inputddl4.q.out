@@ -1,3 +1,12 @@
+query: DROP TABLE INPUTDDL4
+query: CREATE TABLE INPUTDDL4(viewTime STRING, userid INT,
+                       page_url STRING, referrer_url STRING, 
+                       friends ARRAY<BIGINT>, properties MAP<STRING, STRING>,
+                       ip STRING COMMENT 'IP Address of the User') 
+    COMMENT 'This is the page view table' 
+    PARTITIONED BY(ds DATETIME, country STRING) 
+    CLUSTERED BY(userid) SORTED BY(viewTime) INTO 32 BUCKETS
+query: DESCRIBE INPUTDDL4
 viewtime	string	
 userid	int	
 page_url	string	
@@ -7,6 +16,7 @@ properties	map<string,string>
 ip	string	IP Address of the User
 ds	datetime	
 country	string	
+query: DESCRIBE EXTENDED INPUTDDL4
 viewtime	string	
 userid	int	
 page_url	string	
@@ -17,4 +27,5 @@ ip	string	IP Address of the User
 ds	datetime	
 country	string	
 	 	 
-Detailed Table Information	Table(tableName:inputddl4,dbName:default,owner:rmurthy,createTime:1238030305,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:viewtime,type:string,comment:null), FieldSchema(name:userid,type:int,comment:null), FieldSchema(name:page_url,type:string,comment:null), FieldSchema(name:referrer_url,type:string,comment:null), FieldSchema(name:friends,type:array<bigint>,comment:null), FieldSchema(name:properties,type:map<string,string>,comment:null), FieldSchema(name:ip,type:string,comment:IP Address of the User)],location:file:/mnt/vol/devrs005.snc1/rmurthy/hive/build/ql/test/data/warehouse/inputddl4,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat,compressed:false,numBuckets:32,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[userid],sortCols:[Order(col:viewtime,order:1)],parameters:{}),partitionKeys:[FieldSchema(name:ds,type:datetime,comment:null), FieldSchema(name:country,type:string,comment:null)],parameters:{comment=This is the page view table})	
+Detailed Table Information	Table(tableName:inputddl4,dbName:default,owner:athusoo,createTime:1241278343,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:viewtime,type:string,comment:null), FieldSchema(name:userid,type:int,comment:null), FieldSchema(name:page_url,type:string,comment:null), FieldSchema(name:referrer_url,type:string,comment:null), FieldSchema(name:friends,type:array<bigint>,comment:null), FieldSchema(name:properties,type:map<string,string>,comment:null), FieldSchema(name:ip,type:string,comment:IP Address of the User)],location:file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/inputddl4,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat,compressed:false,numBuckets:32,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[userid],sortCols:[Order(col:viewtime,order:1)],parameters:{}),partitionKeys:[FieldSchema(name:ds,type:datetime,comment:null), FieldSchema(name:country,type:string,comment:null)],parameters:{comment=This is the page view table})	
+query: DROP TABLE INPUTDDL4

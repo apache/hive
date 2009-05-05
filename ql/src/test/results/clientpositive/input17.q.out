@@ -1,3 +1,12 @@
+query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
+query: EXPLAIN
+FROM (
+  FROM src_thrift
+  SELECT TRANSFORM(src_thrift.aint + src_thrift.lint[0], src_thrift.lintstring[0])
+         USING '/bin/cat' AS (tkey, tvalue) 
+  CLUSTER BY tkey 
+) tmap
+INSERT OVERWRITE TABLE dest1 SELECT tmap.tkey, tmap.tvalue
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src_thrift)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (+ (. (TOK_TABLE_OR_COL src_thrift) aint) ([ (. (TOK_TABLE_OR_COL src_thrift) lint) 0)) ([ (. (TOK_TABLE_OR_COL src_thrift) lintstring) 0)) '/bin/cat' (TOK_ALIASLIST tkey tvalue)))) (TOK_CLUSTERBY (TOK_TABLE_OR_COL tkey)))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) tkey)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) tvalue)))))
 
@@ -77,6 +86,18 @@ STAGE PLANS:
                 name: dest1
 
 
+query: FROM (
+  FROM src_thrift
+  SELECT TRANSFORM(src_thrift.aint + src_thrift.lint[0], src_thrift.lintstring[0])
+         USING '/bin/cat' AS (tkey, tvalue) 
+  CLUSTER BY tkey 
+) tmap
+INSERT OVERWRITE TABLE dest1 SELECT tmap.tkey, tmap.tvalue
+Input: default/src_thrift
+Output: default/dest1
+query: SELECT dest1.* FROM dest1
+Input: default/dest1
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/10910343/1742990479.10000
 NULL	{"myint":null,"mystring":null}
 -1461153966	{"myint":49,"mystring":"343"}
 -1952710705	{"myint":25,"mystring":"125"}

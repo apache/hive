@@ -1,3 +1,11 @@
+query: EXPLAIN
+SELECT src1.c1, src2.c4 
+FROM
+(SELECT src.key as c1, src.value as c2 from src where src.key > '1' ) src1
+JOIN
+(SELECT src.key as c3, src.value as c4 from src where src.key > '2' ) src2
+ON src1.c1 = src2.c3 AND src1.c1 < '400'
+WHERE src1.c1 > '20' and (src1.c2 < 'val_50' or src1.c1 > '2') and (src2.c3 > '50' or src1.c1 < '50') and (src2.c3 <> '4')
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key) c1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value) c2)) (TOK_WHERE (> (. (TOK_TABLE_OR_COL src) key) '1')))) src1) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key) c3) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value) c4)) (TOK_WHERE (> (. (TOK_TABLE_OR_COL src) key) '2')))) src2) (AND (= (. (TOK_TABLE_OR_COL src1) c1) (. (TOK_TABLE_OR_COL src2) c3)) (< (. (TOK_TABLE_OR_COL src1) c1) '400')))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) c1)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) c4))) (TOK_WHERE (and (and (and (> (. (TOK_TABLE_OR_COL src1) c1) '20') (or (< (. (TOK_TABLE_OR_COL src1) c2) 'val_50') (> (. (TOK_TABLE_OR_COL src1) c1) '2'))) (or (> (. (TOK_TABLE_OR_COL src2) c3) '50') (< (. (TOK_TABLE_OR_COL src1) c1) '50'))) (<> (. (TOK_TABLE_OR_COL src2) c3) '4')))))
 
@@ -100,6 +108,15 @@ STAGE PLANS:
       limit: -1
 
 
+query: SELECT src1.c1, src2.c4 
+FROM
+(SELECT src.key as c1, src.value as c2 from src where src.key > '1' ) src1
+JOIN
+(SELECT src.key as c3, src.value as c4 from src where src.key > '2' ) src2
+ON src1.c1 = src2.c3 AND src1.c1 < '400'
+WHERE src1.c1 > '20' and (src1.c2 < 'val_50' or src1.c1 > '2') and (src2.c3 > '50' or src1.c1 < '50') and (src2.c3 <> '4')
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/351743825/114158213.10000
 200	val_200
 200	val_200
 200	val_200

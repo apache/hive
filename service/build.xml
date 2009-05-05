@@ -30,6 +30,17 @@
 
   <import file="../build-common.xml"/>
 
+  <path id="test.classpath">
+    <pathelement location="${test.build.classes}" />
+    <pathelement location="" />
+    <pathelement location="${test.data.dir}/conf"/>
+    <pathelement location="${hive.conf.dir}"/>
+    <fileset dir="${test.src.data.dir}" includes="files/*.jar"/>
+    <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
+    <pathelement location="${build.dir.hive}/ql/test/classes"/>
+    <path refid="classpath"/>
+  </path>
+
   <target name="thriftif">
     <echo>Executing thrift (which needs to be in your path) to build java metastore APIs.... </echo>
     <exec executable="thrift"  failonerror="true" dir=".">

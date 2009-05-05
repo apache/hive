@@ -1,3 +1,5 @@
+query: EXPLAIN
+SHOW PARTITIONS srcpart
 ABSTRACT SYNTAX TREE:
   (TOK_SHOWPARTITIONS srcpart)
 
@@ -16,6 +18,7 @@ STAGE PLANS:
       limit: -1
 
 
+query: SHOW PARTITIONS srcpart
 ds=2008-04-08/hr=11
 ds=2008-04-08/hr=12
 ds=2008-04-09/hr=11

@@ -1,3 +1,6 @@
+query: CREATE TABLE dest1(len INT)
+query: EXPLAIN
+FROM src INSERT OVERWRITE TABLE dest1 SELECT length(src.value)
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION length (. (TOK_TABLE_OR_COL src) value))))))
 
@@ -38,6 +41,12 @@ STAGE PLANS:
                 name: dest1
 
 
+query: FROM src INSERT OVERWRITE TABLE dest1 SELECT length(src.value)
+Input: default/src
+Output: default/dest1
+query: SELECT dest1.* FROM dest1
+Input: default/dest1
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/432923810/244566699.10000
 7
 6
 7

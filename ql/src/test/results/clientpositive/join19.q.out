@@ -1,3 +1,60 @@
+query: drop TABLE triples
+query: CREATE TABLE triples (foo string, subject string, predicate string, object string, foo2 string)
+query: EXPLAIN
+SELECT t11.subject, t22.object , t33.subject , t55.object, t66.object
+FROM
+(
+SELECT t1.subject
+FROM triples t1
+WHERE
+t1.predicate='http://sofa.semanticweb.org/sofa/v1.0/system#__INSTANCEOF_REL'
+AND
+t1.object='http://ontos/OntosMiner/Common.English/ontology#Citation'
+) t11
+JOIN
+(
+SELECT t2.subject , t2.object
+FROM triples t2
+WHERE
+t2.predicate='http://sofa.semanticweb.org/sofa/v1.0/system#__LABEL_REL'
+) t22
+ON (t11.subject=t22.subject)
+JOIN
+(
+SELECT t3.subject , t3.object
+FROM triples t3
+WHERE
+t3.predicate='http://www.ontosearch.com/2007/12/ontosofa-ns#_from'
+
+) t33
+ON (t11.subject=t33.object)
+JOIN
+(
+SELECT t4.subject
+FROM triples t4
+WHERE
+t4.predicate='http://sofa.semanticweb.org/sofa/v1.0/system#__INSTANCEOF_REL'
+AND
+t4.object='http://ontos/OntosMiner/Common.English/ontology#Author'
+
+) t44
+ON (t44.subject=t33.subject)
+JOIN
+(
+SELECT t5.subject, t5.object
+FROM triples t5
+WHERE
+t5.predicate='http://www.ontosearch.com/2007/12/ontosofa-ns#_to'
+) t55
+ON (t55.subject=t44.subject)
+JOIN
+(
+SELECT t6.subject, t6.object
+FROM triples t6
+WHERE
+t6.predicate='http://sofa.semanticweb.org/sofa/v1.0/system#__LABEL_REL'
+) t66
+ON (t66.subject=t55.object)
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_JOIN (TOK_JOIN (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF triples t1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL t1) subject))) (TOK_WHERE (AND (= (. (TOK_TABLE_OR_COL t1) predicate) 'http://sofa.semanticweb.org/sofa/v1.0/system#__INSTANCEOF_REL') (= (. (TOK_TABLE_OR_COL t1) object) 'http://ontos/OntosMiner/Common.English/ontology#Citation'))))) t11) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF triples t2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL t2) subject)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL t2) object))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL t2) predicate) 'http://sofa.semanticweb.org/sofa/v1.0/system#__LABEL_REL')))) t22) (= (. (TOK_TABLE_OR_COL t11) subject) (. (TOK_TABLE_OR_COL t22) subject))) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF triples t3)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL t3) subject)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL t3) object))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL t3) predicate) 'http://www.ontosearch.com/2007/12/ontosofa-ns#_from')))) t33) (= (. (TOK_TABLE_OR_COL t11) subject) (. (TOK_TABLE_OR_COL t33) object))) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF triples t4)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL t4) subject))) (TOK_WHERE (AND (= (. (TOK_TABLE_OR_COL t4) predicate) 'http://sofa.semanticweb.org/sofa/v1.0/system#__INSTANCEOF_REL') (= (. (TOK_TABLE_OR_COL t4) object) 'http://ontos/OntosMiner/Common.English/ontology#Author'))))) t44) (= (. (TOK_TABLE_OR_COL t44) subject) (. (TOK_TABLE_OR_COL t33) subject))) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF triples t5)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL t5) subject)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL t5) object))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL t5) predicate) 'http://www.ontosearch.com/2007/12/ontosofa-ns#_to')))) t55) (= (. (TOK_TABLE_OR_COL t55) subject) (. (TOK_TABLE_OR_COL t44) subject))) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF triples t6)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL t6) subject)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL t6) object))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL t6) predicate) 'http://sofa.semanticweb.org/sofa/v1.0/system#__LABEL_REL')))) t66) (= (. (TOK_TABLE_OR_COL t66) subject) (. (TOK_TABLE_OR_COL t55) object)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL t11) subject)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL t22) object)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL t33) subject)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL t55) object)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL t66) object)))))
 
@@ -320,3 +377,4 @@ STAGE PLANS:
       limit: -1
 
 
+query: drop TABLE triples

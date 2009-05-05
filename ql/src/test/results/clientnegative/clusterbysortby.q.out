@@ -1,1 +1,2 @@
+query: CREATE TABLE dest1(key INT, ten INT, one INT, value STRING) STORED AS TEXTFILE
 FAILED: Error in semantic analysis: line 8:8 Cannot have both Cluster By and Sort By Clauses one

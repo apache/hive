@@ -1,3 +1,8 @@
+query: EXPLAIN
+FROM (
+  FROM src select src.* WHERE src.key < 100
+) unioninput
+INSERT OVERWRITE DIRECTORY '../build/ql/test/data/warehouse/union.out' SELECT unioninput.*
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF src))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL src) key) 100)))) unioninput)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR '../build/ql/test/data/warehouse/union.out')) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF unioninput)))))
 
@@ -40,6 +45,12 @@ STAGE PLANS:
             destination: ../build/ql/test/data/warehouse/union.out
 
 
+query: FROM (
+  FROM src select src.* WHERE src.key < 100
+) unioninput
+INSERT OVERWRITE DIRECTORY '../build/ql/test/data/warehouse/union.out' SELECT unioninput.*
+Input: default/src
+Output: ../build/ql/test/data/warehouse/union.out
 86val_86
 27val_27
 98val_98

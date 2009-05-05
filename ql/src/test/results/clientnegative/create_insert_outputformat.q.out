@@ -1,1 +1,2 @@
+query: DROP TABLE table_test_output_fomat
 FAILED: Error in semantic analysis: Output Format must implement HiveOutputFormat, otherwise it should be either IgnoreKeyTextOutputFormat or SequenceFileOutputFormat

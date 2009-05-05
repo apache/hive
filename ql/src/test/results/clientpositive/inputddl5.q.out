@@ -1,3 +1,13 @@
+query: CREATE TABLE INPUTDDL5(name STRING) STORED AS TEXTFILE
+query: LOAD DATA LOCAL INPATH '../data/files/kv4.txt' INTO TABLE INPUTDDL5
+query: DESCRIBE INPUTDDL5
 name	string	
+query: SELECT INPUTDDL5.name from INPUTDDL5
+Input: default/inputddl5
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/15516876/1568818554.10000
 邵铮
+query: SELECT count(1) FROM INPUTDDL5 WHERE INPUTDDL5.name = _UTF-8 0xE982B5E993AE
+Input: default/inputddl5
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/106730807/9468444.10000
 1
+query: DROP TABLE INPUTDDL5

@@ -35,7 +35,9 @@ public class TestHiveServer extends TestCase {
     String dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
     dataFilePath = new Path(dataFileDir, "kv1.txt");
     // See data/conf/hive-site.xml
-    standAloneServer = System.getProperty("test.service.standalone.server").equals("true");
+    String paramStr = System.getProperty("test.service.standalone.server");
+    if (paramStr != null && paramStr.equals("true"))
+      standAloneServer = true;
   }
 
   protected void setUp() throws Exception {

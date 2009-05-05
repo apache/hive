@@ -1,1 +1,8 @@
+query: drop table apachelog
+query: create table apachelog(ipaddress STRING,identd STRING,user STRING,finishtime STRING,requestline string,returncode INT,size INT) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe' WITH SERDEPROPERTIES (  'serialization.format'= 'org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol',  'quote.delim'= '("|\\[|\\])',  'field.delim'=' ',  'serialization.null.format'='-'  ) STORED AS TEXTFILE
+query: LOAD DATA LOCAL INPATH '../data/files/apache.access.log' INTO TABLE apachelog
+query: SELECT a.* FROM apachelog a
+Input: default/apachelog
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/102182399/358987266.10000
 127.0.0.1	NULL	frank	10/Oct/2000:13:55:36 -0700	GET /apache_pb.gif HTTP/1.0	200	2326
+query: drop table apachelog

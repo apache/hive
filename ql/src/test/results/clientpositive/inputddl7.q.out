@@ -1,18 +1,50 @@
+query: DROP TABLE T1
+query: CREATE TABLE T1(name STRING) STORED AS TEXTFILE
+query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE T1
+query: SELECT COUNT(1) FROM T1
+Input: default/t1
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/15999523/83038071.10000
 500
+query: DROP TABLE T2
+query: CREATE TABLE T2(name STRING) STORED AS SEQUENCEFILE
+query: LOAD DATA LOCAL INPATH '../data/files/kv1.seq' INTO TABLE T2
+query: SELECT COUNT(1) FROM T2
+Input: default/t2
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/346849950/36939746.10000
 500
+query: DROP TABLE T3
+query: CREATE TABLE T3(name STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
+query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE T3 PARTITION (ds='2008-04-09')
+query: SELECT COUNT(1) FROM T3 where T3.ds='2008-04-09'
+Input: default/t3/ds=2008-04-09
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/1393596681/420008462.10000
 500
+query: DROP TABLE T4
+query: CREATE TABLE T4(name STRING) PARTITIONED BY(ds STRING) STORED AS SEQUENCEFILE
+query: LOAD DATA LOCAL INPATH '../data/files/kv1.seq' INTO TABLE T4 PARTITION (ds='2008-04-09')
+query: SELECT COUNT(1) FROM T4 where T4.ds='2008-04-09'
+Input: default/t4/ds=2008-04-09
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/1014261192/72527210.10000
 500
+query: DESCRIBE EXTENDED T1
 name	string	
 	 	 
-Detailed Table Information	Table(tableName:t1,dbName:default,owner:rmurthy,createTime:1238030311,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:name,type:string,comment:null)],location:file:/mnt/vol/devrs005.snc1/rmurthy/hive/build/ql/test/data/warehouse/t1,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[],parameters:{})	
+Detailed Table Information	Table(tableName:t1,dbName:default,owner:athusoo,createTime:1241278356,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:name,type:string,comment:null)],location:file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/t1,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[],parameters:{})	
+query: DESCRIBE EXTENDED T2
 name	string	
 	 	 
-Detailed Table Information	Table(tableName:t2,dbName:default,owner:rmurthy,createTime:1238030314,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:name,type:string,comment:null)],location:file:/mnt/vol/devrs005.snc1/rmurthy/hive/build/ql/test/data/warehouse/t2,inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat,outputFormat:org.apache.hadoop.mapred.SequenceFileOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[],parameters:{})	
+Detailed Table Information	Table(tableName:t2,dbName:default,owner:athusoo,createTime:1241278359,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:name,type:string,comment:null)],location:file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/t2,inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[],parameters:{})	
+query: DESCRIBE EXTENDED T3 PARTITION (ds='2008-04-09')
 name	string	
 ds	string	
 	 	 
-Detailed Partition Information	Partition(values:[2008-04-09],dbName:default,tableName:t3,createTime:0,lastAccessTime:0,sd:StorageDescriptor(cols:[FieldSchema(name:name,type:string,comment:null)],location:file:/mnt/vol/devrs005.snc1/rmurthy/hive/build/ql/test/data/warehouse/t3/ds=2008-04-09,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),parameters:{})	
+Detailed Partition Information	Partition(values:[2008-04-09],dbName:default,tableName:t3,createTime:0,lastAccessTime:0,sd:StorageDescriptor(cols:[FieldSchema(name:name,type:string,comment:null)],location:file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/t3/ds=2008-04-09,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),parameters:{})	
+query: DESCRIBE EXTENDED T4 PARTITION (ds='2008-04-09')
 name	string	
 ds	string	
 	 	 
-Detailed Partition Information	Partition(values:[2008-04-09],dbName:default,tableName:t4,createTime:0,lastAccessTime:0,sd:StorageDescriptor(cols:[FieldSchema(name:name,type:string,comment:null)],location:file:/mnt/vol/devrs005.snc1/rmurthy/hive/build/ql/test/data/warehouse/t4/ds=2008-04-09,inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat,outputFormat:org.apache.hadoop.mapred.SequenceFileOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),parameters:{})	
+Detailed Partition Information	Partition(values:[2008-04-09],dbName:default,tableName:t4,createTime:0,lastAccessTime:0,sd:StorageDescriptor(cols:[FieldSchema(name:name,type:string,comment:null)],location:file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/t4/ds=2008-04-09,inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),parameters:{})	
+query: DROP TABLE T1
+query: DROP TABLE T2
+query: DROP TABLE T3
+query: DROP TABLE T4

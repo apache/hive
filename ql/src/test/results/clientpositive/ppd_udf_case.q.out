@@ -1,3 +1,15 @@
+query: EXPLAIN
+SELECT *
+FROM srcpart a JOIN srcpart b
+ON a.key = b.key
+WHERE a.ds = '2008-04-08' AND
+      b.ds = '2008-04-08' AND
+      CASE a.key
+        WHEN '27' THEN TRUE
+        WHEN '38' THEN FALSE
+        ELSE NULL
+       END
+ORDER BY a.key, a.value, a.ds, a.hr, b.key, b.value, b.ds, b.hr
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF srcpart a) (TOK_TABREF srcpart b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (AND (AND (= (. (TOK_TABLE_OR_COL a) ds) '2008-04-08') (= (. (TOK_TABLE_OR_COL b) ds) '2008-04-08')) (TOK_FUNCTION CASE (. (TOK_TABLE_OR_COL a) key) '27' TRUE '38' FALSE TOK_NULL))) (TOK_ORDERBY (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL a) value) (. (TOK_TABLE_OR_COL a) ds) (. (TOK_TABLE_OR_COL a) hr) (. (TOK_TABLE_OR_COL b) key) (. (TOK_TABLE_OR_COL b) value) (. (TOK_TABLE_OR_COL b) ds) (. (TOK_TABLE_OR_COL b) hr))))
 
@@ -96,7 +108,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/zshao/tools/405-trunk-apache-hive/build/ql/tmp/454747503/14473320.10002 
+        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/118249382/1018524322.10002 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -148,6 +160,20 @@ STAGE PLANS:
       limit: -1
 
 
+query: SELECT *
+FROM srcpart a JOIN srcpart b
+ON a.key = b.key
+WHERE a.ds = '2008-04-08' AND
+      b.ds = '2008-04-08' AND
+      CASE a.key
+        WHEN '27' THEN TRUE
+        WHEN '38' THEN FALSE
+        ELSE NULL
+       END
+ORDER BY a.key, a.value, a.ds, a.hr, b.key, b.value, b.ds, b.hr
+Input: default/srcpart/ds=2008-04-08/hr=11
+Input: default/srcpart/ds=2008-04-08/hr=12
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/160403134/1058941051.10000
 27	val_27	2008-04-08	11	27	val_27	2008-04-08	11
 27	val_27	2008-04-08	11	27	val_27	2008-04-08	12
 27	val_27	2008-04-08	12	27	val_27	2008-04-08	11

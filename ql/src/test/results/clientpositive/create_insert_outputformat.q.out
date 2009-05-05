@@ -1,6 +1,36 @@
+query: DROP TABLE table_test_output_format
+query: CREATE TABLE table_test_output_format(key INT, value STRING) STORED AS
+  INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
+  OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'
+query: FROM src
+INSERT OVERWRITE TABLE table_test_output_format SELECT src.key, src.value LIMIT 10
+Input: default/src
+Output: default/table_test_output_format
+query: describe table_test_output_format
 key	int	
 value	string	
+query: DROP TABLE table_test_output_format
+query: DROP TABLE table_test_output_format_sequencefile
+query: CREATE TABLE table_test_output_format_sequencefile(key INT, value STRING) STORED AS
+  INPUTFORMAT 'org.apache.hadoop.mapred.SequenceFileInputFormat'
+  OUTPUTFORMAT 'org.apache.hadoop.mapred.SequenceFileOutputFormat'
+query: FROM src
+INSERT OVERWRITE TABLE table_test_output_format_sequencefile SELECT src.key, src.value LIMIT 10
+Input: default/src
+Output: default/table_test_output_format_sequencefile
+query: describe table_test_output_format_sequencefile
 key	int	
 value	string	
+query: DROP TABLE table_test_output_format_sequencefile
+query: DROP TABLE table_test_output_format_hivesequencefile
+query: CREATE TABLE table_test_output_format_hivesequencefile(key INT, value STRING) STORED AS
+  INPUTFORMAT 'org.apache.hadoop.mapred.SequenceFileInputFormat'
+  OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat'
+query: FROM src
+INSERT OVERWRITE TABLE table_test_output_format_hivesequencefile SELECT src.key, src.value LIMIT 10
+Input: default/src
+Output: default/table_test_output_format_hivesequencefile
+query: describe table_test_output_format_hivesequencefile
 key	int	
 value	string	
+query: DROP TABLE table_test_output_format_hivesequencefile

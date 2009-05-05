@@ -1,3 +1,7 @@
+query: CREATE TABLE dest_j1(key INT, value STRING) STORED AS TEXTFILE
+query: EXPLAIN
+FROM src src1 JOIN src src2 ON (src1.key = src2.key)
+INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF src src1) (TOK_TABREF src src2) (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest_j1)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) value)))))
 
@@ -80,6 +84,13 @@ STAGE PLANS:
                 name: dest_j1
 
 
+query: FROM src src1 JOIN src src2 ON (src1.key = src2.key)
+INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value
+Input: default/src
+Output: default/dest_j1
+query: SELECT dest_j1.* FROM dest_j1
+Input: default/dest_j1
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/476154546/603289343.10000
 0	val_0
 0	val_0
 0	val_0

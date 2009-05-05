@@ -1,3 +1,5 @@
+query: explain
+select x.key, count(1) from src x where x.key > 9999 group by x.key
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (> (. (TOK_TABLE_OR_COL x) key) 9999)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x) key))))
 
@@ -57,7 +59,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/520309707/211312349.10002 
+        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/538828350/1358281988.10002 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -96,6 +98,11 @@ STAGE PLANS:
       limit: -1
 
 
+query: select x.key, count(1) from src x where x.key > 9999 group by x.key
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/324222383/5029306.10000
+query: explain
+select x.key, count(1) from src x where x.key > 9999 group by x.key
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (> (. (TOK_TABLE_OR_COL x) key) 9999)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x) key))))
 
@@ -161,6 +168,11 @@ STAGE PLANS:
       limit: -1
 
 
+query: select x.key, count(1) from src x where x.key > 9999 group by x.key
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/354390972/29453903.10000
+query: explain
+select x.key, count(1) from src x where x.key > 9999 group by x.key
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (> (. (TOK_TABLE_OR_COL x) key) 9999)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x) key))))
 
@@ -213,7 +225,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/1162050685/275319179.10002 
+        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/221557343/272912479.10002 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -252,6 +264,11 @@ STAGE PLANS:
       limit: -1
 
 
+query: select x.key, count(1) from src x where x.key > 9999 group by x.key
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/238392747/257741696.10000
+query: explain
+select x.key, count(1) from src x where x.key > 9999 group by x.key
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (> (. (TOK_TABLE_OR_COL x) key) 9999)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x) key))))
 
@@ -310,3 +327,6 @@ STAGE PLANS:
       limit: -1
 
 
+query: select x.key, count(1) from src x where x.key > 9999 group by x.key
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/865137866/5631075.10000

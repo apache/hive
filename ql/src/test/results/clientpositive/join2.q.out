@@ -1,3 +1,7 @@
+query: CREATE TABLE dest_j2(key INT, value STRING) STORED AS TEXTFILE
+query: EXPLAIN
+FROM src src1 JOIN src src2 ON (src1.key = src2.key) JOIN src src3 ON (src1.key + src2.key = src3.key)
+INSERT OVERWRITE TABLE dest_j2 SELECT src1.key, src3.value
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF src src1) (TOK_TABREF src src2) (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key))) (TOK_TABREF src src3) (= (+ (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)) (. (TOK_TABLE_OR_COL src3) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest_j2)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src3) value)))))
 
@@ -131,6 +135,13 @@ STAGE PLANS:
                 name: dest_j2
 
 
+query: FROM src src1 JOIN src src2 ON (src1.key = src2.key) JOIN src src3 ON (src1.key + src2.key = src3.key)
+INSERT OVERWRITE TABLE dest_j2 SELECT src1.key, src3.value
+Input: default/src
+Output: default/dest_j2
+query: SELECT dest_j2.* FROM dest_j2
+Input: default/dest_j2
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/1281659057/880190123.10000
 0	val_0
 0	val_0
 0	val_0

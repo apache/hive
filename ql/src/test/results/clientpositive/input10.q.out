@@ -1,3 +1,6 @@
+query: CREATE TABLE TEST10(key INT, value STRING) PARTITIONED BY(ds STRING, hr STRING) STORED AS TEXTFILE
+query: EXPLAIN
+DESCRIBE TEST10
 ABSTRACT SYNTAX TREE:
   (TOK_DESCTABLE (TOK_TABTYPE TEST10))
 
@@ -16,7 +19,9 @@ STAGE PLANS:
       limit: -1
 
 
+query: DESCRIBE TEST10
 key	int	
 value	string	
 ds	string	
 hr	string	
+query: DROP TABLE TEST10

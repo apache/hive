@@ -22,12 +22,12 @@ import java.io.File;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -81,12 +81,9 @@ import org.apache.hadoop.hive.ql.optimizer.GenMRUnion1;
 import org.apache.hadoop.hive.ql.optimizer.Optimizer;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
-import org.apache.hadoop.hive.ql.optimizer.GenMRUnion1;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink3;
 import org.apache.hadoop.hive.ql.plan.*;
-import org.apache.hadoop.hive.ql.udf.UDFOPPositive;
 import org.apache.hadoop.hive.ql.exec.*;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.aggregationDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
@@ -117,7 +114,6 @@ import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -125,8 +121,10 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.InputFormat;
-import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
+
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 
 /**
  * Implementation of the semantic analyzer
@@ -145,6 +143,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private int destTableId;
   private UnionProcContext uCtx;
 
+  /**
+   * ReadEntitites that are passed to the hooks.
+   */
+  private Set<ReadEntity> inputs;
+  /**
+   * List of WriteEntities that are passed to the hooks.
+   */
+  private Set<WriteEntity> outputs;
+  
   private static class Phase1Ctx {
     String dest;
     int nextNum;
@@ -163,6 +170,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     opParseCtx = new HashMap<Operator<? extends Serializable>, OpParseContext>();
     this.destTableId = 1;
     this.uCtx = null;
+    
+    inputs = new LinkedHashSet<ReadEntity>();
+    outputs = new LinkedHashSet<WriteEntity>();
   }
   
 
@@ -2256,6 +2266,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         this.loadTableWork.add(new loadTableDesc(queryTmpdir, getTmpFileName(),
                                             table_desc,
                                             new HashMap<String, String>()));
+        outputs.add(new WriteEntity(dest_tab));
         break;
       }
     case QBMetaData.DEST_PARTITION:
@@ -2269,6 +2280,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         this.destTableId ++;
         
         this.loadTableWork.add(new loadTableDesc(queryTmpdir, getTmpFileName(), table_desc, dest_part.getSpec()));
+        outputs.add(new WriteEntity(dest_part));
         break;
       }
     case QBMetaData.DEST_LOCAL_FILE:
@@ -2295,10 +2307,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           currentTableId = this.destTableId;
           this.destTableId ++;
         }
+        boolean isDfsDir = (dest_type.intValue() == QBMetaData.DEST_DFS_FILE);
         this.loadFileWork.add(new loadFileDesc(queryTmpdir, dest_path,
-                                          (dest_type.intValue() == QBMetaData.DEST_DFS_FILE), cols));
+                                          isDfsDir, cols));
         table_desc = PlanUtils.getDefaultTableDesc(Integer.toString(Utilities.ctrlaCode),
             cols);
+        outputs.add(new WriteEntity(dest_path, !isDfsDir));
         break;
     }
     default:
@@ -3460,6 +3474,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (!tab.isPartitioned()) {
         if (qbParseInfo.getDestToWhereExpr().isEmpty())
           fetch = new fetchWork(tab.getPath(), Utilities.getTableDesc(tab), qb.getParseInfo().getOuterQueryLimit()); 
+        inputs.add(new ReadEntity(tab));
       }
       else {
         if (aliasToPruner.size() == 1) {
@@ -3480,6 +3495,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                   Partition part = iterParts.next();
                   listP.add(part.getPartitionPath());
                   partP.add(Utilities.getPartitionDesc(part));
+                  inputs.add(new ReadEntity(part));
                 }
                 fetch = new fetchWork(listP, partP, qb.getParseInfo().getOuterQueryLimit());
               }
@@ -3528,7 +3544,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         new HashMap<Operator<? extends Serializable>, Task<? extends Serializable>>(),
         new ArrayList<Operator<? extends Serializable>>(),
         getParseContext(), mvTask, this.rootTasks, this.scratchDir, this.randomid, this.pathid,
-        new HashMap<Operator<? extends Serializable>, GenMapRedCtx>());
+        new HashMap<Operator<? extends Serializable>, GenMapRedCtx>(),
+        inputs, outputs);
 
     // create a walker which walks the tree in a DFS manner while maintaining the operator stack. 
     // The dispatcher generates the plan from the operator tree
@@ -3799,4 +3816,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return newParameters;
   }
   
+  @Override
+  public Set<ReadEntity> getInputs() {
+    return inputs;
+  }
+  
+  public Set<WriteEntity> getOutputs() {
+    return outputs;
+  }
 }

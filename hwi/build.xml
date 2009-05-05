@@ -11,6 +11,17 @@
     <mkdir dir="${build.dir}/test/src"/>
   </target> 
 
+  <path id="test.classpath">
+    <pathelement location="${test.build.classes}" />
+    <pathelement location="" />
+    <pathelement location="${test.data.dir}/conf"/>
+    <pathelement location="${hive.conf.dir}"/>
+    <fileset dir="${test.src.data.dir}" includes="files/*.jar"/>
+    <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
+    <pathelement location="${build.dir.hive}/ql/test/classes"/>
+    <path refid="classpath"/>
+  </path>
+
   <target name="compile" depends="hwi-init">
     <echo message="Compiling: ${name}"/>
     <javac

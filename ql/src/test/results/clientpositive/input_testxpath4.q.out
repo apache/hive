@@ -1,3 +1,9 @@
+query: EXPLAIN
+FROM src_thrift
+SELECT src_thrift.mstringstring['key_9'], lintstring.myint
+WHERE src_thrift.mstringstring['key_9'] IS NOT NULL
+      AND lintstring.myint IS NOT NULL
+      AND lintstring IS NOT NULL
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src_thrift)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR ([ (. (TOK_TABLE_OR_COL src_thrift) mstringstring) 'key_9')) (TOK_SELEXPR (. (TOK_TABLE_OR_COL lintstring) myint))) (TOK_WHERE (AND (AND (TOK_FUNCTION TOK_ISNOTNULL ([ (. (TOK_TABLE_OR_COL src_thrift) mstringstring) 'key_9')) (TOK_FUNCTION TOK_ISNOTNULL (. (TOK_TABLE_OR_COL lintstring) myint))) (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL lintstring))))))
 
@@ -38,6 +44,13 @@ STAGE PLANS:
       limit: -1
 
 
+query: FROM src_thrift
+SELECT src_thrift.mstringstring['key_9'], lintstring.myint
+WHERE src_thrift.mstringstring['key_9'] IS NOT NULL
+      OR lintstring.myint IS NOT NULL
+      OR lintstring IS NOT NULL
+Input: default/src_thrift
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/9314654/120165410.10000
 NULL	[0]
 NULL	[1]
 NULL	[4]

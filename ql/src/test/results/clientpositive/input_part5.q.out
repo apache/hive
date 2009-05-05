@@ -1,3 +1,8 @@
+query: drop table tmptable
+query: create table tmptable(key string, value string, hr string, ds string)
+query: EXPLAIN
+insert overwrite table tmptable
+SELECT x.* FROM SRCPART x WHERE x.ds = '2008-04-08' and x.key < 100
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF SRCPART x)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB tmptable)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF x))) (TOK_WHERE (and (= (. (TOK_TABLE_OR_COL x) ds) '2008-04-08') (< (. (TOK_TABLE_OR_COL x) key) 100)))))
 
@@ -44,6 +49,14 @@ STAGE PLANS:
                 name: tmptable
 
 
+query: insert overwrite table tmptable
+SELECT x.* FROM SRCPART x WHERE x.ds = '2008-04-08' and x.key < 100
+Input: default/srcpart/ds=2008-04-08/hr=11
+Input: default/srcpart/ds=2008-04-08/hr=12
+Output: default/tmptable
+query: select * from tmptable x sort by x.key
+Input: default/tmptable
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/137438172/765791337.10000
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11
@@ -212,3 +225,4 @@ STAGE PLANS:
 98	val_98	2008-04-08	11
 98	val_98	2008-04-08	12
 98	val_98	2008-04-08	12
+query: drop table tmptable

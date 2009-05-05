@@ -1,1 +1,8 @@
+query: CREATE TABLE dest1(key INT, value STRING) STORED AS
+  INPUTFORMAT 'java.lang.Void'
+  OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'
+query: FROM src
+INSERT OVERWRITE TABLE dest1 SELECT src.key, src.value WHERE src.key < 10
+Input: default/src
+Output: default/dest1
 FAILED: Error in semantic analysis: line 3:20 Input Format must implement InputFormat dest1

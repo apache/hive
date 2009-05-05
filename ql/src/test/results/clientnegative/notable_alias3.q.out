@@ -1,1 +1,2 @@
+query: CREATE TABLE dest1(key INT, value DOUBLE) STORED AS TEXTFILE
 FAILED: Error in semantic analysis: line 4:44 Expression Not In Group By Key src

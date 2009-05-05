@@ -1,3 +1,5 @@
+query: EXPLAIN
+SELECT x.* FROM SRC x WHERE x.key < 300 LIMIT 5
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF SRC x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF x))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL x) key) 300)) (TOK_LIMIT 5)))
 
@@ -33,6 +35,9 @@ STAGE PLANS:
       limit: 5
 
 
+query: SELECT x.* FROM SRC x WHERE x.key < 300 LIMIT 5
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/472205870/117610052.10000
 238	val_238
 86	val_86
 27	val_27

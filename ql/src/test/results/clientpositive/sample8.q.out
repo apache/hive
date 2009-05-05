@@ -1,3 +1,10 @@
+query: EXPLAIN EXTENDED
+SELECT s.*
+FROM srcpart TABLESAMPLE (BUCKET 1 OUT OF 1 ON key) s
+JOIN srcpart TABLESAMPLE (BUCKET 1 OUT OF 10 ON key) t
+WHERE t.key = s.key and t.value = s.value and s.ds='2008-04-08' and s.hr='11' and s.ds='2008-04-08' and s.hr='11'
+DISTRIBUTE BY key, value
+SORT BY key, value
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF srcpart (TOK_TABLESAMPLE 1 1 (TOK_TABLE_OR_COL key)) s) (TOK_TABREF srcpart (TOK_TABLESAMPLE 1 10 (TOK_TABLE_OR_COL key)) t))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF s))) (TOK_WHERE (and (and (and (and (and (= (. (TOK_TABLE_OR_COL t) key) (. (TOK_TABLE_OR_COL s) key)) (= (. (TOK_TABLE_OR_COL t) value) (. (TOK_TABLE_OR_COL s) value))) (= (. (TOK_TABLE_OR_COL s) ds) '2008-04-08')) (= (. (TOK_TABLE_OR_COL s) hr) '11')) (= (. (TOK_TABLE_OR_COL s) ds) '2008-04-08')) (= (. (TOK_TABLE_OR_COL s) hr) '11'))) (TOK_DISTRIBUTEBY (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value)))))
 
@@ -48,12 +55,12 @@ STAGE PLANS:
                       type: string
       Needs Tagging: true
       Path -> Alias:
-        file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
-        file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
-        file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-09 
-        file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-09 
+        file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 
+        file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
       Path -> Partition:
-        file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08 
+        file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
             partition values:
               ds 2008-04-08
@@ -72,10 +79,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-08 
+        file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
             partition values:
               ds 2008-04-08
@@ -94,10 +101,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-09 
+        file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 
           Partition
             partition values:
               ds 2008-04-09
@@ -116,10 +123,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/hr=12/ds=2008-04-09 
+        file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
           Partition
             partition values:
               ds 2008-04-09
@@ -138,7 +145,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/416-trunk-apache-hive/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
       Reduce Operator Tree:
@@ -165,7 +172,7 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
-                directory: /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/87240990/187310002.10002
+                directory: /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/1701195808/498985582.10002
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -178,7 +185,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/87240990/187310002.10002 
+        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/1701195808/498985582.10002 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -203,9 +210,9 @@ STAGE PLANS:
                   type: string
       Needs Tagging: false
       Path -> Alias:
-        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/87240990/187310002.10002 
+        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/1701195808/498985582.10002 
       Path -> Partition:
-        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/87240990/187310002.10002 
+        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/1701195808/498985582.10002 
           Partition
           
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -220,7 +227,7 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: /data/users/zshao/tools/416-trunk-apache-hive/ql/../build/ql/tmp/96085592.10001.insclause-0
+            directory: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/535977627.10001.insclause-0
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -233,6 +240,17 @@ STAGE PLANS:
       limit: -1
 
 
+query: SELECT s.key, s.value
+FROM srcpart TABLESAMPLE (BUCKET 1 OUT OF 1 ON key) s
+JOIN srcpart TABLESAMPLE (BUCKET 1 OUT OF 10 ON key) t
+WHERE s.ds='2008-04-08' and s.hr='11' and s.ds='2008-04-08' and s.hr='11'
+DISTRIBUTE BY key, value
+SORT BY key, value
+Input: default/srcpart/ds=2008-04-08/hr=11
+Input: default/srcpart/ds=2008-04-08/hr=12
+Input: default/srcpart/ds=2008-04-09/hr=11
+Input: default/srcpart/ds=2008-04-09/hr=12
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/1694621949/361708294.10000
 0	val_0
 0	val_0
 0	val_0

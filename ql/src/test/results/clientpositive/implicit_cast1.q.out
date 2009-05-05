@@ -1,3 +1,8 @@
+query: CREATE TABLE implicit_test1(a BIGINT, b STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe' WITH SERDEPROPERTIES('serialization.format'= 'org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol') STORED AS TEXTFILE
+query: EXPLAIN
+SELECT implicit_test1.*
+FROM implicit_test1
+WHERE implicit_test1.a <> 0
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF implicit_test1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF implicit_test1))) (TOK_WHERE (<> (. (TOK_TABLE_OR_COL implicit_test1) a) 0))))
 
@@ -32,3 +37,9 @@ STAGE PLANS:
       limit: -1
 
 
+query: SELECT implicit_test1.*
+FROM implicit_test1
+WHERE implicit_test1.a <> 0
+Input: default/implicit_test1
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/253022585/673360259.10000
+query: DROP TABLE implicit_test1

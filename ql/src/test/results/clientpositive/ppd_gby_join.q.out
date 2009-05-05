@@ -1,3 +1,12 @@
+query: EXPLAIN
+SELECT src1.c1, count(1) 
+FROM
+(SELECT src.key AS c1, src.value AS c2 from src where src.key > '1' ) src1
+JOIN
+(SELECT src.key AS c3, src.value AS c4 from src where src.key > '2' ) src2
+ON src1.c1 = src2.c3 AND src1.c1 < '400'
+WHERE src1.c1 > '20' AND (src1.c2 < 'val_50' OR src1.c1 > '2') AND (src2.c3 > '50' OR src1.c1 < '50') AND (src2.c3 <> '4')
+GROUP BY src1.c1
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key) c1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value) c2)) (TOK_WHERE (> (. (TOK_TABLE_OR_COL src) key) '1')))) src1) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key) c3) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value) c4)) (TOK_WHERE (> (. (TOK_TABLE_OR_COL src) key) '2')))) src2) (AND (= (. (TOK_TABLE_OR_COL src1) c1) (. (TOK_TABLE_OR_COL src2) c3)) (< (. (TOK_TABLE_OR_COL src1) c1) '400')))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) c1)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (AND (AND (AND (> (. (TOK_TABLE_OR_COL src1) c1) '20') (OR (< (. (TOK_TABLE_OR_COL src1) c2) 'val_50') (> (. (TOK_TABLE_OR_COL src1) c1) '2'))) (OR (> (. (TOK_TABLE_OR_COL src2) c3) '50') (< (. (TOK_TABLE_OR_COL src1) c1) '50'))) (<> (. (TOK_TABLE_OR_COL src2) c3) '4'))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL src1) c1))))
 
@@ -101,7 +110,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/409060007/303244387.10002 
+        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/649258693/64817789.10002 
           Reduce Output Operator
             key expressions:
                   expr: 0

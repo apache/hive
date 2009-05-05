@@ -1,3 +1,7 @@
+query: explain 
+  select unionsrc.key, count(1) FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
+                                        UNION  ALL  
+                                            select s2.key as key, s2.value as value from src1 s2) unionsrc group by unionsrc.key
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF src s1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst1' key) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (TOK_FUNCTION count 1)) value)))) (TOK_QUERY (TOK_FROM (TOK_TABREF src1 s2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) key) key) (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) value) value))))) unionsrc)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL unionsrc) key))))
 
@@ -46,7 +50,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/491802115/687421976.10002 
+        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/255905982/946698378.10002 
           Union
             Group By Operator
               aggregations:
@@ -67,7 +71,7 @@ STAGE PLANS:
                 value expressions:
                       expr: 1
                       type: bigint
-        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/491802115/687421976.10003 
+        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/255905982/946698378.10003 
           Union
             Group By Operator
               aggregations:
@@ -132,6 +136,12 @@ STAGE PLANS:
       limit: -1
 
 
+query: select unionsrc.key, count(1) FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
+                                      UNION  ALL  
+                                    select s2.key as key, s2.value as value from src1 s2) unionsrc group by unionsrc.key
+Input: default/src
+Input: default/src1
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/584323767/101489285.10000
 	10
 128	1
 146	1

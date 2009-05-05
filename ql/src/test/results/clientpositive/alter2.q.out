@@ -1,36 +1,57 @@
+query: drop table alter2
+query: create table alter2(a int, b int) partitioned by (insertdate string)
+query: describe extended alter2
 a	int	
 b	int	
 insertdate	string	
 	 	 
-Detailed Table Information	Table(tableName:alter2,dbName:default,owner:rmurthy,createTime:1238029932,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:int,comment:null), FieldSchema(name:b,type:int,comment:null)],location:file:/mnt/vol/devrs005.snc1/rmurthy/hive/build/ql/test/data/warehouse/alter2,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[FieldSchema(name:insertdate,type:string,comment:null)],parameters:{})	
+Detailed Table Information	Table(tableName:alter2,dbName:default,owner:athusoo,createTime:1241277629,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:int,comment:null), FieldSchema(name:b,type:int,comment:null)],location:file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/alter2,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[FieldSchema(name:insertdate,type:string,comment:null)],parameters:{})	
+query: show partitions alter2
+query: alter table alter2 add partition (insertdate='2008-01-01') location '2008/01/01'
+query: describe extended alter2
 a	int	
 b	int	
 insertdate	string	
 	 	 
-Detailed Table Information	Table(tableName:alter2,dbName:default,owner:rmurthy,createTime:1238029932,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:int,comment:null), FieldSchema(name:b,type:int,comment:null)],location:file:/mnt/vol/devrs005.snc1/rmurthy/hive/build/ql/test/data/warehouse/alter2,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[FieldSchema(name:insertdate,type:string,comment:null)],parameters:{})	
+Detailed Table Information	Table(tableName:alter2,dbName:default,owner:athusoo,createTime:1241277629,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:int,comment:null), FieldSchema(name:b,type:int,comment:null)],location:file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/alter2,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[FieldSchema(name:insertdate,type:string,comment:null)],parameters:{})	
+query: show partitions alter2
 insertdate=2008-01-01
+query: alter table alter2 add partition (insertdate='2008-01-02') location '2008/01/02'
+query: describe extended alter2
 a	int	
 b	int	
 insertdate	string	
 	 	 
-Detailed Table Information	Table(tableName:alter2,dbName:default,owner:rmurthy,createTime:1238029932,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:int,comment:null), FieldSchema(name:b,type:int,comment:null)],location:file:/mnt/vol/devrs005.snc1/rmurthy/hive/build/ql/test/data/warehouse/alter2,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[FieldSchema(name:insertdate,type:string,comment:null)],parameters:{})	
-insertdate=2008-01-01
-insertdate=2008-01-02
-a	int	
-b	int	
-insertdate	string	
-	 	 
-Detailed Table Information	Table(tableName:alter2,dbName:default,owner:rmurthy,createTime:1238029932,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:int,comment:null), FieldSchema(name:b,type:int,comment:null)],location:file:/mnt/vol/devrs005.snc1/rmurthy/hive/build/ql/test/data/warehouse/alter2,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[FieldSchema(name:insertdate,type:string,comment:null)],parameters:{EXTERNAL=TRUE})	
-a	int	
-b	int	
-insertdate	string	
-	 	 
-Detailed Table Information	Table(tableName:alter2,dbName:default,owner:rmurthy,createTime:1238029932,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:int,comment:null), FieldSchema(name:b,type:int,comment:null)],location:file:/mnt/vol/devrs005.snc1/rmurthy/hive/build/ql/test/data/warehouse/alter2,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[FieldSchema(name:insertdate,type:string,comment:null)],parameters:{EXTERNAL=TRUE})	
-insertdate=2008-01-01
-a	int	
-b	int	
-insertdate	string	
-	 	 
-Detailed Table Information	Table(tableName:alter2,dbName:default,owner:rmurthy,createTime:1238029932,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:int,comment:null), FieldSchema(name:b,type:int,comment:null)],location:file:/mnt/vol/devrs005.snc1/rmurthy/hive/build/ql/test/data/warehouse/alter2,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[FieldSchema(name:insertdate,type:string,comment:null)],parameters:{EXTERNAL=TRUE})	
+Detailed Table Information	Table(tableName:alter2,dbName:default,owner:athusoo,createTime:1241277629,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:int,comment:null), FieldSchema(name:b,type:int,comment:null)],location:file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/alter2,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[FieldSchema(name:insertdate,type:string,comment:null)],parameters:{})	
+query: show partitions alter2
 insertdate=2008-01-01
 insertdate=2008-01-02
+query: drop table alter2
+query: create external table alter2(a int, b int) partitioned by (insertdate string)
+query: describe extended alter2
+a	int	
+b	int	
+insertdate	string	
+	 	 
+Detailed Table Information	Table(tableName:alter2,dbName:default,owner:athusoo,createTime:1241277629,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:int,comment:null), FieldSchema(name:b,type:int,comment:null)],location:file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/alter2,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[FieldSchema(name:insertdate,type:string,comment:null)],parameters:{EXTERNAL=TRUE})	
+query: show partitions alter2
+query: alter table alter2 add partition (insertdate='2008-01-01') location '2008/01/01'
+query: describe extended alter2
+a	int	
+b	int	
+insertdate	string	
+	 	 
+Detailed Table Information	Table(tableName:alter2,dbName:default,owner:athusoo,createTime:1241277629,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:int,comment:null), FieldSchema(name:b,type:int,comment:null)],location:file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/alter2,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[FieldSchema(name:insertdate,type:string,comment:null)],parameters:{EXTERNAL=TRUE})	
+query: show partitions alter2
+insertdate=2008-01-01
+query: alter table alter2 add partition (insertdate='2008-01-02') location '2008/01/02'
+query: describe extended alter2
+a	int	
+b	int	
+insertdate	string	
+	 	 
+Detailed Table Information	Table(tableName:alter2,dbName:default,owner:athusoo,createTime:1241277629,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:int,comment:null), FieldSchema(name:b,type:int,comment:null)],location:file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/alter2,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[FieldSchema(name:insertdate,type:string,comment:null)],parameters:{EXTERNAL=TRUE})	
+query: show partitions alter2
+insertdate=2008-01-01
+insertdate=2008-01-02
+query: drop table alter2

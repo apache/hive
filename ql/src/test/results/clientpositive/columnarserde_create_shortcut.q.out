@@ -1,3 +1,8 @@
+query: drop table columnarserde_create_shortcut
+query: CREATE TABLE columnarserde_create_shortcut(a array<int>, b array<string>, c map<string,string>, d int, e string) STORED AS RCFILE
+query: EXPLAIN
+FROM src_thrift
+INSERT OVERWRITE TABLE columnarserde_create_shortcut SELECT src_thrift.lint, src_thrift.lstring, src_thrift.mstringstring, src_thrift.aint, src_thrift.astring DISTRIBUTE BY 1
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src_thrift)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB columnarserde_create_shortcut)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src_thrift) lint)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src_thrift) lstring)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src_thrift) mstringstring)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src_thrift) aint)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src_thrift) astring))) (TOK_DISTRIBUTEBY 1)))
 
@@ -73,6 +78,13 @@ STAGE PLANS:
                 name: columnarserde_create_shortcut
 
 
+query: FROM src_thrift
+INSERT OVERWRITE TABLE columnarserde_create_shortcut SELECT src_thrift.lint, src_thrift.lstring, src_thrift.mstringstring, src_thrift.aint, src_thrift.astring DISTRIBUTE BY 1
+Input: default/src_thrift
+Output: default/columnarserde_create_shortcut
+query: SELECT columnarserde_create_shortcut.* FROM columnarserde_create_shortcut DISTRIBUTE BY 1
+Input: default/columnarserde_create_shortcut
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/171037815/113357858.10000
 [0,0,0]	["0","0","0"]	{"key_0":"value_0"}	1712634731	record_0
 [1,2,3]	["10","100","1000"]	{"key_1":"value_1"}	465985200	record_1
 [2,4,6]	["20","200","2000"]	{"key_2":"value_2"}	-751827638	record_2
@@ -84,6 +96,9 @@ STAGE PLANS:
 [8,16,24]	["80","800","8000"]	{"key_8":"value_8"}	1638581578	record_8
 [9,18,27]	["90","900","9000"]	{"key_9":"value_9"}	336964413	record_9
 null	null	{}	0	NULL
+query: SELECT columnarserde_create_shortcut.a[0], columnarserde_create_shortcut.b[0], columnarserde_create_shortcut.c['key2'], columnarserde_create_shortcut.d, columnarserde_create_shortcut.e FROM columnarserde_create_shortcut DISTRIBUTE BY 1
+Input: default/columnarserde_create_shortcut
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/703291409/322213020.10000
 0	0	NULL	1712634731	record_0
 1	10	NULL	465985200	record_1
 2	20	NULL	-751827638	record_2
@@ -95,8 +110,19 @@ null	null	{}	0	NULL
 8	80	NULL	1638581578	record_8
 9	90	NULL	336964413	record_9
 NULL	NULL	NULL	0	NULL
+query: drop table columnarserde_create_shortcut
+query: DROP TABLE columnShortcutTable
+query: CREATE table columnShortcutTable (key STRING, value STRING) STORED AS RCFILE
+query: FROM src
+INSERT OVERWRITE TABLE columnShortcutTable SELECT src.key, src.value LIMIT 10
+Input: default/src
+Output: default/columnshortcuttable
+query: describe columnShortcutTable
 key	string	from deserializer
 value	string	from deserializer
+query: SELECT columnShortcutTable.* FROM columnShortcutTable
+Input: default/columnshortcuttable
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/1270707165/71798862.10000
 238	val_238
 86	val_86
 311	val_311
@@ -107,6 +133,10 @@ value	string	from deserializer
 278	val_278
 98	val_98
 484	val_484
+query: ALTER TABLE columnShortcutTable ADD COLUMNS (c string)
+query: SELECT columnShortcutTable.* FROM columnShortcutTable
+Input: default/columnshortcuttable
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/584823418/366926580.10000
 238	val_238	NULL
 86	val_86	NULL
 311	val_311	NULL
@@ -117,6 +147,10 @@ value	string	from deserializer
 278	val_278	NULL
 98	val_98	NULL
 484	val_484	NULL
+query: ALTER TABLE columnShortcutTable REPLACE COLUMNS (key int)
+query: SELECT columnShortcutTable.* FROM columnShortcutTable
+Input: default/columnshortcuttable
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/420088542/417977156.10000
 238
 86
 311
@@ -127,3 +161,4 @@ value	string	from deserializer
 278
 98
 484
+query: DROP TABLE columnShortcutTable

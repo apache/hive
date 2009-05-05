@@ -1,3 +1,7 @@
+query: EXPLAIN
+CREATE TABLE dest1(key INT, value STRING) STORED AS
+  INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
+  OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'
 ABSTRACT SYNTAX TREE:
   (TOK_CREATETABLE dest1 (TOK_TABCOLLIST (TOK_TABCOL key TOK_INT) (TOK_TABCOL value TOK_STRING)) (TOK_TABLEFILEFORMAT 'org.apache.hadoop.mapred.TextInputFormat' 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'))
 
@@ -17,10 +21,21 @@ STAGE PLANS:
           isExternal: false
 
 
+query: CREATE TABLE dest1(key INT, value STRING) STORED AS
+  INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
+  OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'
+query: DESCRIBE EXTENDED dest1
 key	int	
 value	string	
 	 	 
-Detailed Table Information	Table(tableName:dest1,dbName:default,owner:rmurthy,createTime:1238029992,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:key,type:int,comment:null), FieldSchema(name:value,type:string,comment:null)],location:file:/mnt/vol/devrs005.snc1/rmurthy/hive/build/ql/test/data/warehouse/dest1,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[],parameters:{})	
+Detailed Table Information	Table(tableName:dest1,dbName:default,owner:athusoo,createTime:1241277729,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:key,type:int,comment:null), FieldSchema(name:value,type:string,comment:null)],location:file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/dest1,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[],parameters:{})	
+query: FROM src
+INSERT OVERWRITE TABLE dest1 SELECT src.key, src.value WHERE src.key < 10
+Input: default/src
+Output: default/dest1
+query: SELECT dest1.* FROM dest1
+Input: default/dest1
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/147130074/156865283.10000
 0	val_0
 4	val_4
 8	val_8
@@ -31,3 +46,4 @@ Detailed Table Information	Table(tableName:dest1,dbName:default,owner:rmurthy,cr
 2	val_2
 5	val_5
 9	val_9
+query: DROP TABLE dest1

@@ -1,5 +1,48 @@
+query: SELECT
+  substr(null, 1), substr(null, 1, 1),
+  substr('ABC', null), substr('ABC', null, 1),
+  substr('ABC', 1, null)
+FROM src LIMIT 1
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/273310899/179583241.10000
 NULL	NULL	NULL	NULL	NULL
+query: SELECT
+  substr('ABC', 1, 0), substr('ABC', 1, -1), substr('ABC', 2, -100),
+  substr('ABC', 4), substr('ABC', 4, 100),
+  substr('ABC', -4), substr('ABC', -4, 100),
+  substr('ABC', 100), substr('ABC', 100, 100),
+  substr('ABC', -100), substr('ABC', -100, 100),
+  substr('ABC', 2147483647), substr('ABC', 2147483647, 2147483647)
+FROM src LIMIT 1
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/1187050376/77350002.10000
 												
+query: SELECT
+  substr('ABCDEFG', 3, 4), substr('ABCDEFG', -5, 4),
+  substr('ABCDEFG', 3), substr('ABCDEFG', -5),
+  substr('ABC', 0), substr('ABC', 1), substr('ABC', 2), substr('ABC', 3),
+  substr('ABC', 1, 2147483647), substr('ABC', 2, 2147483647),
+  substr('A', 0), substr('A', 1), substr('A', -1)
+FROM src LIMIT 1
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/663733434/1218000666.10000
 CDEF	CDEF	CDEFG	CDEFG	ABC	ABC	BC	C	ABC	BC	A	A	A
+query: SELECT
+  substr('ABC', 0, 1), substr('ABC', 0, 2), substr('ABC', 0, 3), substr('ABC', 0, 4),
+  substr('ABC', 1, 1), substr('ABC', 1, 2), substr('ABC', 1, 3), substr('ABC', 1, 4),
+  substr('ABC', 2, 1), substr('ABC', 2, 2), substr('ABC', 2, 3), substr('ABC', 2, 4),
+  substr('ABC', 3, 1), substr('ABC', 3, 2), substr('ABC', 3, 3), substr('ABC', 3, 4),
+  substr('ABC', 4, 1)
+FROM src LIMIT 1
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/573014667/1237268671.10000
 A	AB	ABC	ABC	A	AB	ABC	ABC	B	BC	BC	BC	C	C	C	C	
+query: SELECT
+  substr('ABC', -1, 1), substr('ABC', -1, 2), substr('ABC', -1, 3), substr('ABC', -1, 4),
+  substr('ABC', -2, 1), substr('ABC', -2, 2), substr('ABC', -2, 3), substr('ABC', -2, 4),
+  substr('ABC', -3, 1), substr('ABC', -3, 2), substr('ABC', -3, 3), substr('ABC', -3, 4),
+  substr('ABC', -4, 1)
+FROM src LIMIT 1
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/265540324/810313953.10000
 C	C	C	C	B	BC	BC	BC	A	AB	ABC	ABC	

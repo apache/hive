@@ -49,6 +49,8 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.ql.parse.*;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMRUnionCtx;
@@ -237,6 +239,7 @@ public class GenMapRedUtils {
       mapredWork plan, boolean local, GenMRProcContext opProcCtx) 
     throws SemanticException {
     ParseContext parseCtx = opProcCtx.getParseCtx();
+    Set<ReadEntity> inputs = opProcCtx.getInputs();
 
     if (!local) {
       // Generate the map work for this alias_id
@@ -256,6 +259,11 @@ public class GenMapRedUtils {
       SamplePruner samplePruner = parseCtx.getAliasToSamplePruner().get(alias_id);
       
       for (Partition part : parts) {
+        if (part.getTable().isPartitioned())
+          inputs.add(new ReadEntity(part));
+        else
+          inputs.add(new ReadEntity(part.getTable()));
+        
         // Later the properties have to come from the partition as opposed
         // to from the table in order to support versioning.
         Path paths[];

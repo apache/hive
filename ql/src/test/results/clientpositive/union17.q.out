@@ -1,3 +1,13 @@
+query: drop table DEST1
+query: drop table DEST2
+query: CREATE TABLE DEST1(key STRING, value STRING) STORED AS TEXTFILE
+query: CREATE TABLE DEST2(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE
+query: explain 
+FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
+                         UNION  ALL  
+      select s2.key as key, s2.value as value from src s2) unionsrc
+INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
+INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key, unionsrc.value
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF src s1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst1' key) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (TOK_FUNCTION count 1)) value)))) (TOK_QUERY (TOK_FROM (TOK_TABREF src s2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) key) key) (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) value) value))))) unionsrc)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB DEST1)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) key)) (TOK_SELEXPR (TOK_FUNCTIONDI COUNT (TOK_FUNCTION SUBSTR (. (TOK_TABLE_OR_COL unionsrc) value) 5)))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL unionsrc) key))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB DEST2)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) value)) (TOK_SELEXPR (TOK_FUNCTIONDI COUNT (TOK_FUNCTION SUBSTR (. (TOK_TABLE_OR_COL unionsrc) value) 5)))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL unionsrc) key) (. (TOK_TABLE_OR_COL unionsrc) value))))
 
@@ -51,7 +61,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/834591745/194109585.10002 
+        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/130091110/149823007.10004 
           Union
             Group By Operator
               aggregations:
@@ -94,7 +104,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     name: binary_table
-        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/834591745/194109585.10004 
+        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/130091110/149823007.10006 
           Union
             Group By Operator
               aggregations:
@@ -179,7 +189,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/834591745/194109585.10003 
+        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/130091110/149823007.10005 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -244,6 +254,17 @@ STAGE PLANS:
                     name: binary_table
 
 
+query: FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
+                         UNION  ALL  
+      select s2.key as key, s2.value as value from src s2) unionsrc
+INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key
+INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, COUNT(DISTINCT SUBSTR(unionsrc.value,5)) GROUP BY unionsrc.key, unionsrc.value
+Input: default/src
+Output: default/dest1
+Output: default/dest2
+query: SELECT DEST1.* FROM DEST1
+Input: default/dest1
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/415341533/530713652.10000
 0	1
 10	1
 100	1
@@ -554,6 +575,9 @@ STAGE PLANS:
 97	1
 98	1
 tst1	0
+query: SELECT DEST2.* FROM DEST2
+Input: default/dest2
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/1221535477/121161713.10000
 0	val_0	1
 10	val_10	1
 100	val_100	1
@@ -864,3 +888,5 @@ tst1	0
 97	val_97	1
 98	val_98	1
 tst1	500	0
+query: drop table DEST1
+query: drop table DEST2

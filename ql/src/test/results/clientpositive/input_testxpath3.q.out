@@ -1,3 +1,6 @@
+query: EXPLAIN
+FROM src_thrift
+SELECT src_thrift.mstringstring['key_9'], src_thrift.lintstring.myint
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src_thrift)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR ([ (. (TOK_TABLE_OR_COL src_thrift) mstringstring) 'key_9')) (TOK_SELEXPR (. (. (TOK_TABLE_OR_COL src_thrift) lintstring) myint)))))
 
@@ -34,6 +37,10 @@ STAGE PLANS:
       limit: -1
 
 
+query: FROM src_thrift
+SELECT src_thrift.mstringstring['key_9'], src_thrift.lintstring.myint
+Input: default/src_thrift
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/535177843/787258899.10000
 NULL	[0]
 NULL	[1]
 NULL	[4]

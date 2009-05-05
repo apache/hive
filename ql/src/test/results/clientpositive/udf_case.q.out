@@ -1,3 +1,30 @@
+query: EXPLAIN
+SELECT CASE 1
+        WHEN 1 THEN 2
+        WHEN 3 THEN 4
+        ELSE 5
+       END,
+       CASE 2
+        WHEN 1 THEN 2
+        ELSE 5
+       END,
+       CASE 14
+        WHEN 12 THEN 13
+        WHEN 14 THEN 15
+       END,
+       CASE 16
+        WHEN 12 THEN 13
+        WHEN 14 THEN 15
+       END,
+       CASE 17
+        WHEN 18 THEN NULL
+        WHEN 17 THEN 20
+       END,
+       CASE 21
+        WHEN 22 THEN 23
+        WHEN 21 THEN 24
+       END
+FROM src LIMIT 1
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION CASE 1 1 2 3 4 5)) (TOK_SELEXPR (TOK_FUNCTION CASE 2 1 2 5)) (TOK_SELEXPR (TOK_FUNCTION CASE 14 12 13 14 15)) (TOK_SELEXPR (TOK_FUNCTION CASE 16 12 13 14 15)) (TOK_SELEXPR (TOK_FUNCTION CASE 17 18 TOK_NULL 17 20)) (TOK_SELEXPR (TOK_FUNCTION CASE 21 22 23 21 24))) (TOK_LIMIT 1)))
 
@@ -38,4 +65,32 @@ STAGE PLANS:
       limit: 1
 
 
+query: SELECT CASE 1
+        WHEN 1 THEN 2
+        WHEN 3 THEN 4
+        ELSE 5
+       END,
+       CASE 2
+        WHEN 1 THEN 2
+        ELSE 5
+       END,
+       CASE 14
+        WHEN 12 THEN 13
+        WHEN 14 THEN 15
+       END,
+       CASE 16
+        WHEN 12 THEN 13
+        WHEN 14 THEN 15
+       END,
+       CASE 17
+        WHEN 18 THEN NULL
+        WHEN 17 THEN 20
+       END,
+       CASE 21
+        WHEN 22 THEN 23
+        WHEN 21 THEN 24
+       END
+FROM src LIMIT 1
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/116746963/155290781.10000
 2	5	15	NULL	20	24

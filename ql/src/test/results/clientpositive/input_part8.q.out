@@ -1,3 +1,5 @@
+query: EXPLAIN
+SELECT x.* FROM SRCPART x WHERE ds = '2008-04-08' LIMIT 10
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF SRCPART x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF x))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '2008-04-08')) (TOK_LIMIT 10)))
 
@@ -10,6 +12,10 @@ STAGE PLANS:
       limit: 10
 
 
+query: SELECT x.* FROM SRCPART x WHERE ds = '2008-04-08' LIMIT 10
+Input: default/srcpart/ds=2008-04-08/hr=11
+Input: default/srcpart/ds=2008-04-08/hr=12
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/237689677/180894904.10000
 238	val_238	2008-04-08	11
 86	val_86	2008-04-08	11
 311	val_311	2008-04-08	11

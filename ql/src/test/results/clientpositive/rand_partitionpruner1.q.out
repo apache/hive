@@ -1,3 +1,4 @@
+query: explain extended select * from src where rand(1) < 0.1
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (< (TOK_FUNCTION rand 1) 0.1))))
 
@@ -23,7 +24,7 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
-                  directory: /Users/char/Documents/workspace/Hive/ql/../build/ql/tmp/88144648/77454670.10001.insclause-0
+                  directory: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/1633457978/568179219.10001.insclause-0
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -32,9 +33,9 @@ STAGE PLANS:
                         serialization.format 1
       Needs Tagging: false
       Path -> Alias:
-        file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/src 
+        file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/src 
       Path -> Partition:
-        file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/src 
+        file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/src 
           Partition
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -49,7 +50,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/src
+                location file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/src
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
 
@@ -58,6 +59,9 @@ STAGE PLANS:
       limit: -1
 
 
+query: select * from src where rand(1) < 0.1
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/1121250794/356279934.10000
 409	val_409
 429	val_429
 209	val_209

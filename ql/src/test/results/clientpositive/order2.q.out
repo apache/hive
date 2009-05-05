@@ -1,3 +1,7 @@
+query: EXPLAIN
+SELECT subq.key, subq.value FROM 
+(SELECT x.* FROM SRC x ORDER BY key limit 10) subq
+where subq.key < 10
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF SRC x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF x))) (TOK_ORDERBY (TOK_TABLE_OR_COL key)) (TOK_LIMIT 10))) subq)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL subq) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL subq) value))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL subq) key) 10))))
 
@@ -52,6 +56,11 @@ STAGE PLANS:
       limit: -1
 
 
+query: SELECT subq.key, subq.value FROM 
+(SELECT x.* FROM SRC x ORDER BY key limit 10) subq
+where subq.key < 10
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/743790712/1177897584.10000
 0	val_0
 0	val_0
 0	val_0

@@ -1,3 +1,5 @@
+query: explain
+select * from src sort by key limit 10
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key))) (TOK_LIMIT 10)))
 
@@ -42,7 +44,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/532000507/301674559.10002 
+        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/299272091/500299840.10002 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -69,6 +71,9 @@ STAGE PLANS:
       limit: 10
 
 
+query: select * from src sort by key limit 10
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/132764629/1854197962.10000
 0	val_0
 0	val_0
 0	val_0

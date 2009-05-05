@@ -1,3 +1,4 @@
+query: EXPLAIN SELECT subq.key, tab.value FROM (select a.key, a.value from src a where a.key > 10 ) subq JOIN src tab ON (subq.key = tab.key and subq.key > 20 and subq.value = tab.value) where tab.value < 200
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value))) (TOK_WHERE (> (. (TOK_TABLE_OR_COL a) key) 10)))) subq) (TOK_TABREF src tab) (and (and (= (. (TOK_TABLE_OR_COL subq) key) (. (TOK_TABLE_OR_COL tab) key)) (> (. (TOK_TABLE_OR_COL subq) key) 20)) (= (. (TOK_TABLE_OR_COL subq) value) (. (TOK_TABLE_OR_COL tab) value))))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL subq) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL tab) value))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL tab) value) 200))))
 

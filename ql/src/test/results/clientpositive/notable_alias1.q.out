@@ -1,3 +1,7 @@
+query: CREATE TABLE dest1(dummy STRING, key INT, value DOUBLE) STORED AS TEXTFILE
+query: EXPLAIN
+FROM src
+INSERT OVERWRITE TABLE dest1 SELECT '1234', key, count(1) WHERE src.key < 100 group by key
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR '1234') (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL src) key) 100)) (TOK_GROUPBY (TOK_TABLE_OR_COL key))))
 
@@ -81,6 +85,13 @@ STAGE PLANS:
                 name: dest1
 
 
+query: FROM src
+INSERT OVERWRITE TABLE dest1 SELECT '1234', key, count(1) WHERE src.key < 100 group by key
+Input: default/src
+Output: default/dest1
+query: SELECT dest1.* FROM dest1
+Input: default/dest1
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/518865147/140769590.10000
 1234	0	3.0
 1234	10	1.0
 1234	11	1.0

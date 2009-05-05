@@ -1,3 +1,11 @@
+query: EXPLAIN
+ FROM 
+  src a
+ FULL OUTER JOIN 
+  src b 
+ ON (a.key = b.key)
+ SELECT a.key, a.value, b.key, b.value
+ WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25'
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_FULLOUTERJOIN (TOK_TABREF src a) (TOK_TABREF src b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) value))) (TOK_WHERE (AND (AND (AND (> (. (TOK_TABLE_OR_COL a) key) '10') (< (. (TOK_TABLE_OR_COL a) key) '20')) (> (. (TOK_TABLE_OR_COL b) key) '15')) (< (. (TOK_TABLE_OR_COL b) key) '25')))))
 
@@ -72,6 +80,15 @@ STAGE PLANS:
       limit: -1
 
 
+query: FROM 
+  src a
+ FULL OUTER JOIN 
+  src b 
+ ON (a.key = b.key)
+ SELECT a.key, a.value, b.key, b.value
+ WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25'
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/68623657/698316651.10000
 150	val_150	150	val_150
 152	val_152	152	val_152
 152	val_152	152	val_152

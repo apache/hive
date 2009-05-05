@@ -1,2 +1,5 @@
+query: drop table altern1
+query: create table altern1(a int, b int) partitioned by (ds string)
+query: alter table altern1 replace columns(a int, b int, ds string)
 Invalid table columns : Partition column name ds conflicts with table columns.
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

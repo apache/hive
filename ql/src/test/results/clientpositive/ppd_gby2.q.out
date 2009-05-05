@@ -1,3 +1,9 @@
+query: EXPLAIN
+SELECT max(src1.c1), src1.c2 
+FROM
+(SELECT src.value AS c1, count(src.key) AS c2 FROM src WHERE src.value > 'val_10' GROUP BY src.value) src1
+WHERE src1.c1 > 'val_200' AND (src1.c2 > 30 OR src1.c1 < 'val_400')
+GROUP BY src1.c2
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value) c1) (TOK_SELEXPR (TOK_FUNCTION count (. (TOK_TABLE_OR_COL src) key)) c2)) (TOK_WHERE (> (. (TOK_TABLE_OR_COL src) value) 'val_10')) (TOK_GROUPBY (. (TOK_TABLE_OR_COL src) value)))) src1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION max (. (TOK_TABLE_OR_COL src1) c1))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) c2))) (TOK_WHERE (AND (> (. (TOK_TABLE_OR_COL src1) c1) 'val_200') (OR (> (. (TOK_TABLE_OR_COL src1) c2) 30) (< (. (TOK_TABLE_OR_COL src1) c1) 'val_400')))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL src1) c2))))
 
@@ -74,7 +80,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/zshao/tools/416-trunk-apache-hive/build/ql/tmp/51382151/746919794.10002 
+        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/876834044/233635262.10002 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -113,6 +119,13 @@ STAGE PLANS:
       limit: -1
 
 
+query: SELECT max(src1.c1), src1.c2 
+FROM
+(SELECT src.value AS c1, count(src.key) AS c2 FROM src WHERE src.value > 'val_10' GROUP BY src.value) src1
+WHERE src1.c1 > 'val_200' AND (src1.c2 > 30 OR src1.c1 < 'val_400')
+GROUP BY src1.c2
+Input: default/src
+Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/1510230396/496559697.10000
 val_4	1
 val_399	2
 val_396	3

@@ -1,2 +1,5 @@
+query: DROP TABLE T1
+query: CREATE TABLE T1(name STRING) STORED AS SEQUENCEFILE
+query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE T1
 Failed with exception Cannot load text files into a table stored as SequenceFile.
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.MoveTask
