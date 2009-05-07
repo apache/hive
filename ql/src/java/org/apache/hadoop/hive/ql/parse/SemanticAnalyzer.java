@@ -721,7 +721,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ASTNode ast = qbp.getDestForClause(name);
         switch (ast.getToken().getType()) {
         case HiveParser.TOK_TAB: {
-          tableSpec ts = new tableSpec(this.db, ast, true);
+          tableSpec ts = new tableSpec(this.db, ast);
 
           if (!HiveOutputFormat.class.isAssignableFrom(ts.tableHandle.getOutputFormatClass()))
             throw new SemanticException(ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE.getMsg(ast));

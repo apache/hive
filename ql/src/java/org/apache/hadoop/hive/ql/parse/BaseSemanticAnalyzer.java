@@ -25,6 +25,7 @@ import java.io.UnsupportedEncodingException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -259,7 +260,7 @@ public abstract class BaseSemanticAnalyzer {
     public HashMap<String, String> partSpec;
     public Partition partHandle;
 
-    public tableSpec(Hive db, ASTNode ast, boolean forceCreatePartition) throws SemanticException {
+    public tableSpec(Hive db, ASTNode ast) throws SemanticException {
 
       assert(ast.getToken().getType() == HiveParser.TOK_TAB);
       int childIndex = 0;
@@ -267,27 +268,28 @@ public abstract class BaseSemanticAnalyzer {
       try {
         // get table metadata
         tableName = unescapeIdentifier(ast.getChild(0).getText());
-        tableHandle = db.getTable(tableName);
-
-        // get partition metadata if partition specified
-        if (ast.getChildCount() == 2) {
-          childIndex = 1;
-          ASTNode partspec = (ASTNode) ast.getChild(1);
-          partSpec = new LinkedHashMap<String, String>();
-          for (int i = 0; i < partspec.getChildCount(); ++i) {
-            ASTNode partspec_val = (ASTNode) partspec.getChild(i);
-            String val = stripQuotes(partspec_val.getChild(1).getText());
-            partSpec.put(unescapeIdentifier(partspec_val.getChild(0).getText()), val);
-          }
-          partHandle = Hive.get().getPartition(tableHandle, partSpec, forceCreatePartition);
-          if(partHandle == null) {
-            throw new SemanticException(ErrorMsg.INVALID_PARTITION.getMsg(ast.getChild(childIndex)));
-          }
-        }
+        tableHandle = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
       } catch (InvalidTableException ite) {
         throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(ast.getChild(0)), ite);
       } catch (HiveException e) {
         throw new SemanticException(ErrorMsg.GENERIC_ERROR.getMsg(ast.getChild(childIndex), e.getMessage()), e);
+      }
+      // get partition metadata if partition specified
+      if (ast.getChildCount() == 2) {
+        childIndex = 1;
+        ASTNode partspec = (ASTNode) ast.getChild(1);
+        partSpec = new LinkedHashMap<String, String>();
+        for (int i = 0; i < partspec.getChildCount(); ++i) {
+          ASTNode partspec_val = (ASTNode) partspec.getChild(i);
+          String val = stripQuotes(partspec_val.getChild(1).getText());
+          partSpec.put(unescapeIdentifier(partspec_val.getChild(0).getText()), val);
+        }
+        try {
+          // this doesn't create partition. partition is created in MoveTask
+          partHandle = new Partition(tableHandle, partSpec, null);
+        } catch (HiveException e) {
+          throw new SemanticException(ErrorMsg.INVALID_PARTITION.getMsg(ast.getChild(childIndex)));
+        }
       }
     }
 

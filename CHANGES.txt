@@ -120,6 +120,9 @@ Trunk - Unreleased
     HIVE-453. Use FileSystem derived from user supplied path when present
     instead of default. (Joydeep Sen Sarma via prasadc)
 
+    HIVE-442. Create partitions after data is moved in the query
+    in order to close out an inconsistent window. (Prasad Chakka via athusoo)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES
