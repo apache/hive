@@ -30,6 +30,9 @@ Trunk - Unreleased
     HIVE-463. Add a pre execution hook to ql
     (Ashish Thusoo via prasadc)
 
+    HIVE-476. Add getTable and getPartition calls to the ReadEntity and
+     WriteEntity objects in PreExecute hooks. (Ashish Thsoo via prasadc) 
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 

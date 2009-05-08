@@ -118,7 +118,21 @@ public class WriteEntity {
     
     return null;
   }
-  
+ 
+  /**
+   * Get the partition associated with the entity.
+   */
+  public Partition getPartition() {
+    return p;
+  }
+
+  /**
+   * Get the table associated with the entity.
+   */
+  public Table getTable() {
+    return t;
+  }
+
   /**
    * toString function.
    */

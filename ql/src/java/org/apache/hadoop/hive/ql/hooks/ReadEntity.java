@@ -73,7 +73,7 @@ public class ReadEntity {
   /**
    * Get the parameter map of the Entity.
    */
-  public Map<String, String> getParameter() {
+  public Map<String, String> getParameters() {
     if (p != null) {
       return p.getTPartition().getParameters();
     }
@@ -92,6 +92,20 @@ public class ReadEntity {
     else {
       return t.getDataLocation();
     }
+  }
+
+  /**
+   * Get partition entity.
+   */
+  public Partition getPartition() {
+    return p;
+  }
+
+  /**
+   * Get table entity.
+   */
+  public Table getTable() {
+    return t;
   }
   
   /**
