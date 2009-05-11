@@ -1,0 +1,114 @@
+query: explain extended
+ select * from srcpart a join srcpart b where a.ds = '2008-04-08' and a.hr = '11' and b.ds = '2008-04-08' and b.hr = '14' limit 5
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF srcpart a) (TOK_TABREF srcpart b))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (and (and (= (. (TOK_TABLE_OR_COL a) ds) '2008-04-08') (= (. (TOK_TABLE_OR_COL a) hr) '11')) (= (. (TOK_TABLE_OR_COL b) ds) '2008-04-08')) (= (. (TOK_TABLE_OR_COL b) hr) '14'))) (TOK_LIMIT 5)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        b 
+            Reduce Output Operator
+              sort order: 
+              tag: 1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+                    expr: ds
+                    type: string
+                    expr: hr
+                    type: string
+        a 
+            Reduce Output Operator
+              sort order: 
+              tag: 0
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+                    expr: ds
+                    type: string
+                    expr: hr
+                    type: string
+      Needs Tagging: true
+      Path -> Alias:
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+      Path -> Partition:
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+          Partition
+            partition values:
+              ds 2008-04-08
+              hr 11
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                name srcpart
+                columns.types string:string
+                serialization.ddl struct srcpart { string key, string value}
+                serialization.format 1
+                columns key,value
+                partition_columns ds/hr
+                bucket_count -1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: srcpart
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          condition expressions:
+            0 {VALUE.0} {VALUE.1} {VALUE.2} {VALUE.3}
+            1 {VALUE.0} {VALUE.1} {VALUE.2} {VALUE.3}
+          Filter Operator
+            predicate:
+                expr: ((((2 = '2008-04-08') and (3 = '11')) and (6 = '2008-04-08')) and (7 = '14'))
+                type: boolean
+            Select Operator
+              expressions:
+                    expr: 0
+                    type: string
+                    expr: 1
+                    type: string
+                    expr: 2
+                    type: string
+                    expr: 3
+                    type: string
+                    expr: 4
+                    type: string
+                    expr: 5
+                    type: string
+                    expr: 6
+                    type: string
+                    expr: 7
+                    type: string
+              Limit
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  directory: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/57557850/240891616.10001.insclause-0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      properties:
+                        columns a.key,a.value,a.ds,a.hr,b.key,b.value,b.ds,b.hr
+                        serialization.format 1
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 5
+
+
+query: select * from srcpart a join srcpart b where a.ds = '2008-04-08' and a.hr = '11' and b.ds = '2008-04-08' and b.hr = '14' limit 5
+Input: default/srcpart/ds=2008-04-08/hr=11
+Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/738588790/856672066.10000

@@ -28,3 +28,6 @@ LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE tstparttbl2 PARTI
 explain
 select count(1) from tstparttbl2;
 select count(1) from tstparttbl2;
+
+DROP TABLE tstparttbl;
+DROP TABLE tstparttbl2;

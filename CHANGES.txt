@@ -153,6 +153,9 @@ Release 0.3.1 - Unreleased
 
     HIVE-447. Fix tests on hudson. (Ashish Thusoo via zshao)
 
+    HIVE-469. Fix errors for cases where the partition or the
+    table is empty. (Namit Jain via athusoo)
+
 Release 0.3.0 - 2009-04-20
 
   INCOMPATIBLE CHANGES

@@ -179,6 +179,10 @@ public class Driver implements CommandProcessor {
       // Do semantic analysis and plan generation
       sem.analyze(tree, ctx);
       LOG.info("Semantic Analysis Completed");
+      
+      // validate the plan
+      sem.validate();
+
       plan = new QueryPlan(command, sem);
       return (0);
     } catch (SemanticException e) {

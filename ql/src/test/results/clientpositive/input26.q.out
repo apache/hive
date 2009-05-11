@@ -1,0 +1,160 @@
+query: explain
+select * from (
+  select * from srcpart a where a.ds = '2008-04-08' and a.hr = '11' order by a.key limit 5
+    union all
+  select * from srcpart b where b.ds = '2008-04-08' and b.hr = '14' limit 5
+)subq
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (= (. (TOK_TABLE_OR_COL a) ds) '2008-04-08') (= (. (TOK_TABLE_OR_COL a) hr) '11'))) (TOK_ORDERBY (. (TOK_TABLE_OR_COL a) key)) (TOK_LIMIT 5))) (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart b)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (= (. (TOK_TABLE_OR_COL b) ds) '2008-04-08') (= (. (TOK_TABLE_OR_COL b) hr) '14'))) (TOK_LIMIT 5)))) subq)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1, Stage-3
+  Stage-3 is a root stage
+  Stage-2 depends on stages: Stage-1, Stage-3
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        null-subquery1:subq-subquery1:a 
+            Filter Operator
+              predicate:
+                  expr: ((ds = '2008-04-08') and (hr = '11'))
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                      expr: ds
+                      type: string
+                      expr: hr
+                      type: string
+                Reduce Output Operator
+                  key expressions:
+                        expr: 0
+                        type: string
+                  sort order: +
+                  tag: -1
+                  value expressions:
+                        expr: 0
+                        type: string
+                        expr: 1
+                        type: string
+                        expr: 2
+                        type: string
+                        expr: 3
+                        type: string
+      Reduce Operator Tree:
+        Extract
+          Limit
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  name: binary_table
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        /data/users/njain/hive5/hive5/build/ql/tmp/303379567/249444045.10002 
+          Union
+            Select Operator
+              expressions:
+                    expr: 0
+                    type: string
+                    expr: 1
+                    type: string
+                    expr: 2
+                    type: string
+                    expr: 3
+                    type: string
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+        /data/users/njain/hive5/hive5/build/ql/tmp/303379567/249444045.10003 
+          Union
+            Select Operator
+              expressions:
+                    expr: 0
+                    type: string
+                    expr: 1
+                    type: string
+                    expr: 2
+                    type: string
+                    expr: 3
+                    type: string
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+        null-subquery2:subq-subquery2:b 
+            Filter Operator
+              predicate:
+                  expr: ((ds = '2008-04-08') and (hr = '14'))
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                      expr: ds
+                      type: string
+                      expr: hr
+                      type: string
+                Limit
+                  Reduce Output Operator
+                    sort order: 
+                    tag: -1
+                    value expressions:
+                          expr: 0
+                          type: string
+                          expr: 1
+                          type: string
+                          expr: 2
+                          type: string
+                          expr: 3
+                          type: string
+      Reduce Operator Tree:
+        Extract
+          Limit
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  name: binary_table
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+query: select * from (
+  select * from srcpart a where a.ds = '2008-04-08' and a.hr = '11' order by a.key limit 5
+    union all
+  select * from srcpart b where b.ds = '2008-04-08' and b.hr = '14' limit 5
+)subq
+Input: default/srcpart/ds=2008-04-08/hr=11
+Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/11677377/90465736.10000
+0	val_0	2008-04-08	11
+0	val_0	2008-04-08	11
+0	val_0	2008-04-08	11
+10	val_10	2008-04-08	11
+100	val_100	2008-04-08	11

@@ -1,0 +1,61 @@
+query: drop table tst
+query: create table tst(a int, b int) partitioned by (d string)
+query: alter table tst add partition (d='2009-01-01')
+query: explain
+select count(1) from tst x where x.d='2009-01-01'
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF tst x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) d) '2009-01-01'))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        x 
+            Select Operator
+              expressions:
+                    expr: d
+                    type: string
+              Filter Operator
+                predicate:
+                    expr: (0 = '2009-01-01')
+                    type: boolean
+                Group By Operator
+                  aggregations:
+                        expr: count(1)
+                  mode: hash
+                  Reduce Output Operator
+                    sort order: 
+                    tag: -1
+                    value expressions:
+                          expr: 0
+                          type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE.0)
+          mode: mergepartial
+          Select Operator
+            expressions:
+                  expr: 0
+                  type: bigint
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+query: select count(1) from tst x where x.d='2009-01-01'
+Input: default/tst/d=2009-01-01
+Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/321060343/178308884.10000
+0
+query: drop table tst

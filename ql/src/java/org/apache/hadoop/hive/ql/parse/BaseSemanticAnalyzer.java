@@ -83,6 +83,10 @@ public abstract class BaseSemanticAnalyzer {
     scratchDir = ctx.getScratchDir();
     analyzeInternal(ast, ctx);
   }
+
+  public void validate() throws SemanticException {
+    // Implementations may choose to override this
+  }
   
   public List<Task<? extends Serializable>> getRootTasks() {
     return rootTasks;

@@ -40,15 +40,18 @@ import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.plan.mapredWork;
+import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.partitionDesc;
+import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.io.*;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.PropertyConfigurator;
 import org.apache.log4j.varia.NullAppender;
+import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 
 public class ExecDriver extends Task<mapredWork> implements Serializable {
 
@@ -331,11 +334,6 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
 
     Utilities.setMapRedWork(job, work);
 
-    for (String onefile : work.getPathToAliases().keySet()) {
-      LOG.info("Adding input file " + onefile);
-      FileInputFormat.addInputPaths(job, onefile);
-    }
-
     String hiveScratchDir = HiveConf.getVar(job, HiveConf.ConfVars.SCRATCHDIR);
     Path jobScratchDir = new Path(hiveScratchDir + Utilities.randGen.nextInt());
     FileOutputFormat.setOutputPath(job, jobScratchDir);
@@ -366,27 +364,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
     boolean success = false;
 
     try {
-      // if the input is empty exit gracefully
-      Path[] inputPaths = FileInputFormat.getInputPaths(job);
-      boolean emptyInput = true;
-      for (Path inputP : inputPaths) {
-        FileSystem inputFs = inputP.getFileSystem(job);
-        if (!inputFs.exists(inputP))
-          continue;
-
-        FileStatus[] fStats = inputFs.listStatus(inputP);
-        for (FileStatus fStat : fStats) {
-          if (fStat.getLen() > 0) {
-            emptyInput = false;
-            break;
-          }
-        }
-      }
-
-      if (emptyInput) {
-        console.printInfo("Job need not be submitted: no output: Success");
-        return 0;
-      }
+      addInputPaths(job, work, hiveScratchDir);
 
       // remove the pwd from conf file so that job tracker doesn't show this logs
       String pwd = job.get(HiveConf.ConfVars.METASTOREPWD.varname);
@@ -642,5 +620,81 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
   public boolean hasReduce() {
     mapredWork w = getWork();
     return w.getReducer() != null;
+  }
+
+  private void addInputPaths(JobConf job, mapredWork work, String hiveScratchDir) throws Exception {
+    FileSystem inpFs = FileSystem.get(job);
+    int numEmptyPaths = 0;
+    
+    // If the query references non-existent partitions
+    if (work.getPathToAliases().isEmpty() &&
+        !work.getAliasToWork().isEmpty()) {
+      String oneAlias = (String)work.getAliasToWork().keySet().toArray()[0];
+      
+      Class<? extends HiveOutputFormat> outFileFormat = (Class<? extends HiveOutputFormat>)Class.forName("org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat");
+      
+      String newFile = "file:" + hiveScratchDir + File.separator + (++numEmptyPaths);
+      Path newPath = new Path(newFile);
+      LOG.info("Changed input file to " + newPath.toString());
+      
+      // add a dummy work
+      Map<String, ArrayList<String>> pathToAliases = work.getPathToAliases();
+      ArrayList<String> newList = new ArrayList<String>();
+      newList.add(oneAlias);
+      pathToAliases.put(newPath.toString(), newList);
+      
+      Map<String,partitionDesc> pathToPartitionInfo = work.getPathToPartitionInfo();
+      partitionDesc pDesc = new partitionDesc();
+      
+      tableDesc tDesc = new tableDesc(LazySimpleSerDe.class,
+                                      SequenceFileInputFormat.class,
+                                      SequenceFileOutputFormat.class,
+                                      new Properties());
+      
+      pDesc.setTableDesc(tDesc);
+      pathToPartitionInfo.put(newPath.toString(), pDesc);
+      
+      RecordWriter recWriter = outFileFormat.newInstance().getHiveRecordWriter(job, newPath, Text.class, false, new Properties(), null);
+      recWriter.close(false);
+      FileInputFormat.addInputPaths(job, newPath.toString());
+    }
+    else {
+      for (String onefile : work.getPathToAliases().keySet()) {
+        LOG.info("Adding input file " + onefile);
+        
+        // If the input file does not exist, replace it by a empty file
+        Path dirPath = new Path(onefile);
+        boolean emptyInput = true;
+        
+        if (inpFs.exists(dirPath)) {
+          FileStatus[] fStats = inpFs.listStatus(dirPath);
+          if (fStats.length > 0)
+            emptyInput = false;
+        }
+        
+        if (emptyInput) {
+          Class<? extends HiveOutputFormat> outFileFormat = work.getPathToPartitionInfo().get(onefile).getTableDesc().getOutputFileFormatClass();
+          
+          String newFile = "file:" + hiveScratchDir + File.separator + (++numEmptyPaths);
+          Path newPath = new Path(newFile);
+          LOG.info("Changed input file to " + newPath.toString());
+          
+          // toggle the work
+          Map<String, ArrayList<String>> pathToAliases = work.getPathToAliases();
+          pathToAliases.put(newPath.toString(), pathToAliases.get(onefile));
+          pathToAliases.remove(onefile);
+          
+          Map<String,partitionDesc> pathToPartitionInfo = work.getPathToPartitionInfo();
+          pathToPartitionInfo.put(newPath.toString(), pathToPartitionInfo.get(onefile));
+          pathToPartitionInfo.remove(onefile);
+          
+          onefile = newPath.toString();
+          RecordWriter recWriter = outFileFormat.newInstance().getHiveRecordWriter(job, newPath, Text.class, false, new Properties(), null);
+          recWriter.close(false);
+        }
+        
+        FileInputFormat.addInputPaths(job, onefile);
+      }      
+    }
   }
 }

@@ -3816,6 +3816,31 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return newParameters;
   }
   
+  public void validate() throws SemanticException {
+    // Check if the plan contains atleast one path.
+
+    // validate all tasks
+    for(Task<? extends Serializable> rootTask: rootTasks)
+      validate(rootTask);
+  }
+
+  private void validate(Task<? extends Serializable> task) throws SemanticException {
+    if ((task instanceof MapRedTask) || (task instanceof ExecDriver)) {
+      mapredWork work = (mapredWork)task.getWork();
+
+      if (conf.getVar(HiveConf.ConfVars.HIVEMAPREDMODE).equalsIgnoreCase("strict")) {
+        if ((work.getPathToAliases() == null) || (work.getPathToAliases().isEmpty()))
+          throw new SemanticException(ErrorMsg.NO_VALID_PARTN.getMsg());
+      }
+    }
+
+    if (task.getChildTasks() == null)
+      return;
+
+    for (Task<? extends Serializable> childTask :  task.getChildTasks())
+      validate(childTask);
+  }
+
   @Override
   public Set<ReadEntity> getInputs() {
     return inputs;

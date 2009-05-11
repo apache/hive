@@ -174,6 +174,11 @@ public class CliDriver {
       long start = System.currentTimeMillis();
 
       ret = qp.run(cmd);
+      if (ret != 0) {
+        qp.close();
+        return ret;
+      }
+        
       Vector<String> res = new Vector<String>();
       while (qp.getResults(res)) {
       	for (String r:res) {
