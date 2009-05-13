@@ -31,7 +31,7 @@ Trunk - Unreleased
     (Ashish Thusoo via prasadc)
 
     HIVE-476. Add getTable and getPartition calls to the ReadEntity and
-     WriteEntity objects in PreExecute hooks. (Ashish Thsoo via prasadc) 
+     WriteEntity objects in PreExecute hooks. (Ashish Thsoo via prasadc)
 
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
@@ -125,6 +125,9 @@ Trunk - Unreleased
 
     HIVE-442. Create partitions after data is moved in the query
     in order to close out an inconsistent window. (Prasad Chakka via athusoo)
+
+    HIVE-483. Fix incorect handling of comments in middle of a query
+    (Namit Jain via athusoo)
 
 Release 0.3.1 - Unreleased
 

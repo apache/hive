@@ -1,4 +1,6 @@
-query: drop table tmptable
+query: -- union case: both subqueries are map-reduce jobs on same input, followed by filesink
+
+drop table tmptable
 query: create table tmptable(key string, value int)
 query: explain 
 insert overwrite table tmptable
@@ -54,7 +56,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/371236334/463237113.10002 
+        /data/users/njain/hive5/hive5/build/ql/tmp/895788847/820785077.10002 
           Union
             Select Operator
               expressions:
@@ -76,7 +78,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
-        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/371236334/463237113.10003 
+        /data/users/njain/hive5/hive5/build/ql/tmp/895788847/820785077.10003 
           Union
             Select Operator
               expressions:
@@ -152,7 +154,7 @@ Input: default/src
 Output: default/tmptable
 query: select * from tmptable x sort by x.key
 Input: default/tmptable
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/100441451/111422539.10000
+Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/343973554/1495273603.10000
 tst1	500
 tst2	500
 query: drop table tmptable

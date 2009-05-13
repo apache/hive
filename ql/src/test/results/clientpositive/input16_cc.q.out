@@ -1,9 +1,11 @@
-query: DROP TABLE INPUT16_CC
+query: -- TestSerDe is a user defined serde where the default delimiter is Ctrl-B
+-- the user is overwriting it with ctrlC
+DROP TABLE INPUT16_CC
 query: CREATE TABLE INPUT16_CC(KEY STRING, VALUE STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.TestSerDe'  with serdeproperties ('testserde.default.serialization.format'='\003', 'dummy.prop.not.used'='dummyy.val') STORED AS TEXTFILE
 query: LOAD DATA LOCAL INPATH '../data/files/kv1_cc.txt' INTO TABLE INPUT16_CC
 query: SELECT INPUT16_CC.VALUE, INPUT16_CC.KEY FROM INPUT16_CC
 Input: default/input16_cc
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/505022158/998217510.10000
+Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/9032620/482125623.10000
 val_238	238
 val_86	86
 val_311	311

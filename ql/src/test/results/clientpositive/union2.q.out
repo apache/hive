@@ -1,4 +1,6 @@
-query: explain 
+query: -- union case: both subqueries are map-reduce jobs on same input, followed by reduce sink
+
+explain 
   select count(1) FROM (select s1.key as key, s1.value as value from src s1 UNION  ALL  
                         select s2.key as key, s2.value as value from src s2) unionsrc
 ABSTRACT SYNTAX TREE:
@@ -72,5 +74,5 @@ STAGE PLANS:
 query: select count(1) FROM (select s1.key as key, s1.value as value from src s1 UNION  ALL  
                       select s2.key as key, s2.value as value from src s2) unionsrc
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/403137725/387325757.10000
+Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/3487986/87097312.10000
 1000

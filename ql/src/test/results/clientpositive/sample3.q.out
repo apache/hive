@@ -1,4 +1,5 @@
-query: EXPLAIN
+query: -- no input pruning, sample filter
+EXPLAIN
 SELECT s.key
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s
 ABSTRACT SYNTAX TREE:
@@ -40,7 +41,7 @@ STAGE PLANS:
 query: SELECT s.key
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s SORT BY key
 Input: default/srcbucket
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/785589213/505578835.10000
+Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/1055187428/602701590.10000
 100
 100
 100

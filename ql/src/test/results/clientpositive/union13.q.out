@@ -1,4 +1,6 @@
-query: explain 
+query: -- union case: both subqueries are a map-only jobs, same input, followed by filesink
+
+explain 
   select unionsrc.key, unionsrc.value FROM (select s1.key as key, s1.value as value from src s1 UNION  ALL  
                                             select s2.key as key, s2.value as value from src s2) unionsrc
 ABSTRACT SYNTAX TREE:
@@ -61,7 +63,7 @@ STAGE PLANS:
 query: select unionsrc.key, unionsrc.value FROM (select s1.key as key, s1.value as value from src s1 UNION  ALL  
                                           select s2.key as key, s2.value as value from src s2) unionsrc
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/1992052322/24152217.10000
+Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/289566941/188295561.10000
 238	val_238
 238	val_238
 86	val_86

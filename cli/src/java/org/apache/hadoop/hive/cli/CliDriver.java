@@ -213,7 +213,7 @@ public class CliDriver {
       if(StringUtils.isBlank(oneCmd))
         continue;
       
-      ret = processCmd(removeComments(oneCmd));
+      ret = processCmd(oneCmd);
       lastRet = ret;
       boolean ignoreErrors = HiveConf.getBoolVar(conf, HiveConf.ConfVars.CLIIGNOREERRORS);
       if(ret != 0 && !ignoreErrors) {
@@ -221,10 +221,6 @@ public class CliDriver {
       }
     }
     return lastRet;
-  }
-
-  private String removeComments(String oneCmd) {
-    return oneCmd.replaceAll("(?m)--.*\n", "\n");
   }
 
   public int processReader(BufferedReader r) throws IOException {

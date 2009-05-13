@@ -1,4 +1,6 @@
-query: explain 
+query: -- union case: 1 subquery is a map-reduce job, different inputs for sub-queries, followed by reducesink
+
+explain 
   select unionsrc.key, count(1) FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                                         UNION  ALL  
                                             select s2.key as key, s2.value as value from src1 s2) unionsrc group by unionsrc.key
@@ -50,7 +52,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/255905982/946698378.10002 
+        /data/users/njain/hive5/hive5/build/ql/tmp/92765504/90887772.10002 
           Union
             Group By Operator
               aggregations:
@@ -71,7 +73,7 @@ STAGE PLANS:
                 value expressions:
                       expr: 1
                       type: bigint
-        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/255905982/946698378.10003 
+        /data/users/njain/hive5/hive5/build/ql/tmp/92765504/90887772.10003 
           Union
             Group By Operator
               aggregations:
@@ -141,7 +143,7 @@ query: select unionsrc.key, count(1) FROM (select 'tst1' as key, cast(count(1) a
                                     select s2.key as key, s2.value as value from src1 s2) unionsrc group by unionsrc.key
 Input: default/src
 Input: default/src1
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/584323767/101489285.10000
+Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/37845718/185211382.10000
 	10
 128	1
 146	1

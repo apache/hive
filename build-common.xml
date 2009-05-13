@@ -54,7 +54,7 @@
   <property name="test.include" value="Test*"/>
   <property name="test.classpath.id" value="test.classpath"/>
   <property name="test.output" value="true"/>
-  <property name="test.timeout" value="2700000"/>
+  <property name="test.timeout" value="5400000"/>
   <property name="test.junit.output.format" value="xml"/>
   <property name="test.junit.output.usefile" value="true"/>
   <property name="test.silent" value="true"/>
