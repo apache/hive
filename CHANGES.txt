@@ -129,6 +129,9 @@ Trunk - Unreleased
     HIVE-483. Fix incorect handling of comments in middle of a query
     (Namit Jain via athusoo)
 
+    HIVE-486. Fix concurrent modification exception in case of empty partitions
+    (Namit Jain via prasadc)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

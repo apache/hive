@@ -659,6 +659,8 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
       FileInputFormat.addInputPaths(job, newPath.toString());
     }
     else {
+      List<String> emptyPaths = new ArrayList<String>();
+
       for (String onefile : work.getPathToAliases().keySet()) {
         LOG.info("Adding input file " + onefile);
         
@@ -672,29 +674,34 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
             emptyInput = false;
         }
         
-        if (emptyInput) {
-          Class<? extends HiveOutputFormat> outFileFormat = work.getPathToPartitionInfo().get(onefile).getTableDesc().getOutputFileFormatClass();
-          
-          String newFile = "file:" + hiveScratchDir + File.separator + (++numEmptyPaths);
-          Path newPath = new Path(newFile);
-          LOG.info("Changed input file to " + newPath.toString());
-          
-          // toggle the work
-          Map<String, ArrayList<String>> pathToAliases = work.getPathToAliases();
-          pathToAliases.put(newPath.toString(), pathToAliases.get(onefile));
-          pathToAliases.remove(onefile);
-          
-          Map<String,partitionDesc> pathToPartitionInfo = work.getPathToPartitionInfo();
-          pathToPartitionInfo.put(newPath.toString(), pathToPartitionInfo.get(onefile));
-          pathToPartitionInfo.remove(onefile);
-          
-          onefile = newPath.toString();
-          RecordWriter recWriter = outFileFormat.newInstance().getHiveRecordWriter(job, newPath, Text.class, false, new Properties(), null);
-          recWriter.close(false);
-        }
+        if (emptyInput)
+          emptyPaths.add(onefile);
+        else
+          FileInputFormat.addInputPaths(job, onefile);
+      }
+
+      for (String emptyFile : emptyPaths) {
+        Class<? extends HiveOutputFormat> outFileFormat = work.getPathToPartitionInfo().get(emptyFile).getTableDesc().getOutputFileFormatClass();
         
+        String newFile = "file:" + hiveScratchDir + File.separator + (++numEmptyPaths);
+        Path newPath = new Path(newFile);
+        LOG.info("Changed input file to " + newPath.toString());
+        
+        // toggle the work
+        Map<String, ArrayList<String>> pathToAliases = work.getPathToAliases();
+        pathToAliases.put(newPath.toString(), pathToAliases.get(emptyFile));
+        pathToAliases.remove(emptyFile);
+        
+        Map<String,partitionDesc> pathToPartitionInfo = work.getPathToPartitionInfo();
+        pathToPartitionInfo.put(newPath.toString(), pathToPartitionInfo.get(emptyFile));
+        pathToPartitionInfo.remove(emptyFile);
+        
+        String onefile = newPath.toString();
+        RecordWriter recWriter = outFileFormat.newInstance().getHiveRecordWriter(job, newPath, Text.class, false, new Properties(), null);
+        recWriter.close(false);
         FileInputFormat.addInputPaths(job, onefile);
-      }      
+      }
     }
+
   }
 }
