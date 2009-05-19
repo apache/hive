@@ -32,8 +32,8 @@ import org.apache.hadoop.conf.Configuration;
  **/
 public class ForwardOperator extends  Operator<forwardDesc>  implements Serializable {
   private static final long serialVersionUID = 1L;
-  public void initialize(Configuration hconf, Reporter reporter) throws HiveException {
-    super.initialize(hconf, reporter);
+  public void initialize(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
+    super.initialize(hconf, reporter, inputObjInspector);
     // nothing to do really ..
   }
 

@@ -240,7 +240,7 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     return(ret);
   }
 
-  public void initialize (Configuration hconf, Reporter reporter) throws HiveException {
+  public void initialize (Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
     if (state == state.INIT) {
       LOG.info("Already Initialized");
       return;
@@ -254,7 +254,7 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     }
     LOG.info("Initializing children:");
     for(Operator<? extends Serializable> op: childOperators) {
-      op.initialize(hconf, reporter);
+      op.initialize(hconf, reporter, inputObjInspector);
     }    
 
     state = State.INIT;

@@ -64,8 +64,8 @@ public class MapOperator extends Operator <mapredWork> implements Serializable {
   transient private List<ObjectInspector> partObjectInspectors;
   
 
-  public void initialize(Configuration hconf, Reporter reporter) throws HiveException {
-    super.initialize(hconf, reporter);
+  public void initialize(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
+    super.initialize(hconf, reporter, inputObjInspector);
     Path fpath = new Path((new Path (HiveConf.getVar(hconf, HiveConf.ConfVars.HADOOPMAPFILENAME))).toUri().getPath());
     ArrayList<Operator<? extends Serializable>> todo = new ArrayList<Operator<? extends Serializable>> ();
     statsMap.put(Counter.DESERIALIZE_ERRORS, deserialize_error_count);
@@ -171,7 +171,7 @@ public class MapOperator extends Operator <mapredWork> implements Serializable {
     this.setOutputCollector(out);
 
     for(Operator op: todo) {
-      op.initialize(hconf, reporter);
+      op.initialize(hconf, reporter, inputObjInspector);
     }
   }
 

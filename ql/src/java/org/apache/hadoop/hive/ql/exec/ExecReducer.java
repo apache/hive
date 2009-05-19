@@ -116,7 +116,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
       try {
         oc = output;
         reducer.setOutputCollector(oc);
-        reducer.initialize(jc, reporter);
+        reducer.initialize(jc, reporter, rowObjectInspector);
         rp = reporter;
       } catch (HiveException e) {
         abort = true;
@@ -196,7 +196,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
     if(oc == null) {
       try {
         l4j.trace("Close called no row");
-        reducer.initialize(jc, null);
+        reducer.initialize(jc, null, rowObjectInspector);
         rp = null;
       } catch (HiveException e) {
         abort = true;

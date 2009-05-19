@@ -132,6 +132,9 @@ Trunk - Unreleased
     HIVE-486. Fix concurrent modification exception in case of empty partitions
     (Namit Jain via prasadc)
 
+    HIVE-485. Fix join not to assume all columns are strings.
+    (Namit Jain via zshao)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

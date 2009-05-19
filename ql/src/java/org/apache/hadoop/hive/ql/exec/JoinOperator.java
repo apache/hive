@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -120,8 +121,8 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
   int nextSz = 0;
   transient Byte lastAlias = null;
   
-  public void initialize(Configuration hconf, Reporter reporter) throws HiveException {
-    super.initialize(hconf, reporter);
+  public void initialize(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
+    super.initialize(hconf, reporter, inputObjInspector);
     
     totalSz = 0;
     // Map that contains the rows for each alias
@@ -156,10 +157,14 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
 
     ArrayList<ObjectInspector> structFieldObjectInspectors = new ArrayList<ObjectInspector>(
         totalSz);
-    for (int i = 0; i < totalSz; i++) {
-      structFieldObjectInspectors.add(PrimitiveObjectInspectorFactory
-          .writableStringObjectInspector);
+
+    for (Byte alias : order) {
+      int sz = map.get(alias).size();
+      StructObjectInspector fldObjIns = (StructObjectInspector)((StructObjectInspector)inputObjInspector[alias.intValue()]).getStructFieldRef("VALUE").getFieldObjectInspector();
+      for (int i = 0; i < sz; i++)
+        structFieldObjectInspectors.add(fldObjIns.getAllStructFieldRefs().get(i).getFieldObjectInspector());
     }
+    
     joinOutputObjectInspector = ObjectInspectorFactory
         .getStandardStructObjectInspector(ObjectInspectorUtils
             .getIntegerArray(totalSz), structFieldObjectInspectors);

@@ -69,8 +69,8 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
   transient int tag;
   transient byte[] tagByte = new byte[1];
   
-  public void initialize(Configuration hconf, Reporter reporter) throws HiveException {
-    super.initialize(hconf, reporter);
+  public void initialize(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
+    super.initialize(hconf, reporter, inputObjInspector);
     try {
       keyEval = new ExprNodeEvaluator[conf.getKeyCols().size()];
       int i=0;
@@ -182,7 +182,7 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
         for(ExprNodeEvaluator e: partitionEval) {
           Object o = e.evaluate(row);
           keyHashCode = keyHashCode * 31 
-            + (o == null ? 0 : o.hashCode());
+            + (o == null ? 0 : Utilities.hashCode(o, keyObjectInspector));
         }
       }
       keyWritable.setHashCode(keyHashCode);

@@ -39,8 +39,8 @@ public class LimitOperator extends Operator<limitDesc> implements Serializable {
   transient protected int limit;
   transient protected int currCount;
 
-  public void initialize(Configuration hconf, Reporter reporter) throws HiveException {
-    super.initialize(hconf, reporter);
+  public void initialize(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
+    super.initialize(hconf, reporter, inputObjInspector);
     limit = conf.getLimit();
     currCount = 0;
   }

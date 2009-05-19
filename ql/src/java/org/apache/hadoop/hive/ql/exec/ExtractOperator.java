@@ -35,8 +35,8 @@ public class ExtractOperator extends Operator<extractDesc> implements Serializab
   private static final long serialVersionUID = 1L;
   transient protected ExprNodeEvaluator eval;
 
-  public void initialize(Configuration hconf, Reporter reporter) throws HiveException {
-    super.initialize(hconf, reporter);
+  public void initialize(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
+    super.initialize(hconf, reporter, inputObjInspector);
     eval = ExprNodeEvaluatorFactory.get(conf.getCol());
   }
 

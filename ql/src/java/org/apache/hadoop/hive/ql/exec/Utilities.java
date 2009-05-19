@@ -35,7 +35,12 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
+import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.compress.DefaultCodec;
 import org.apache.hadoop.util.ReflectionUtils;
 
@@ -45,6 +50,12 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
 import org.apache.hadoop.hive.ql.io.RCFile;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
@@ -615,4 +626,35 @@ public class Utilities {
     return e.getClass().getName() + "(" +  e.getMessage() + ")";
   }
 
+  public static int hashCode(Object o, ObjectInspector objIns) {
+    if ((objIns.getCategory() == Category.PRIMITIVE) &&
+        ((PrimitiveObjectInspector)objIns).isWritable())
+      return o.hashCode();
+        
+    if (o instanceof String)
+      return (new Text((String)o)).hashCode();
+    
+    if (o instanceof Integer) 
+      return (new IntWritable(((Integer)o).intValue())).hashCode();
+   
+    if (o instanceof Short)
+      return (new ShortWritable(((Short)o).shortValue())).hashCode();
+    
+    if (o instanceof Float)
+      return (new FloatWritable(((Float)o).floatValue())).hashCode();
+    
+    if (o instanceof Long)
+      return (new LongWritable(((Long)o).longValue())).hashCode();
+ 
+    if (o instanceof Boolean)
+      return (new BooleanWritable(((Boolean)o).booleanValue())).hashCode();
+   
+    if (o instanceof Double)
+      return (new DoubleWritable(((Double)o).doubleValue())).hashCode();
+    
+    if (o instanceof Byte)
+      return (new ByteWritable(((Byte)o).byteValue())).hashCode();
+    
+    return o.hashCode();
+  }
 }

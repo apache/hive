@@ -43,8 +43,8 @@ public class SelectOperator extends Operator <selectDesc> implements Serializabl
   
   boolean firstRow;
   
-  public void initialize(Configuration hconf, Reporter reporter) throws HiveException {
-    super.initialize(hconf, reporter);
+  public void initialize(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
+    super.initialize(hconf, reporter, inputObjInspector);
 
     ArrayList<exprNodeDesc> colList = conf.getColList();
     eval = new ExprNodeEvaluator[colList.size()];

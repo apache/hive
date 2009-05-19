@@ -162,8 +162,8 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
     }
   }
 
-  public void initialize(Configuration hconf, Reporter reporter) throws HiveException {
-    super.initialize(hconf, reporter);
+  public void initialize(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
+    super.initialize(hconf, reporter, inputObjInspector);
     statsMap.put(Counter.DESERIALIZE_ERRORS, deserialize_error_count);
     statsMap.put(Counter.SERIALIZE_ERRORS, serialize_error_count);
 

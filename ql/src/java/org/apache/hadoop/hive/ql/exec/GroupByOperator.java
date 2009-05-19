@@ -131,8 +131,8 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
   transient int           numEntriesVarSize;
   transient int           numEntriesHashTable;
 
-  public void initialize(Configuration hconf, Reporter reporter) throws HiveException {
-    super.initialize(hconf, reporter);
+  public void initialize(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
+    super.initialize(hconf, reporter, inputObjInspector);
     totalMemory = Runtime.getRuntime().totalMemory();
     numRowsInput = 0;
     numRowsHashTbl = 0;

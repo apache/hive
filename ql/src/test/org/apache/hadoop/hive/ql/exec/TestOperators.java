@@ -89,7 +89,7 @@ public class TestOperators extends TestCase {
       op.setConf(filterCtx);
 
       // runtime initialization
-      op.initialize(null, null);
+      op.initialize(null, null, null);
 
       for(InspectableObject oner: r) {
         op.process(oner.o, oner.oi, 0);
@@ -139,7 +139,7 @@ public class TestOperators extends TestCase {
                                            Utilities.defaultTd, false);
       Operator<fileSinkDesc> flop = OperatorFactory.getAndMakeChild(fsd, op);
       
-      op.initialize(new JobConf(TestOperators.class), Reporter.NULL);
+      op.initialize(new JobConf(TestOperators.class), Reporter.NULL, null);
 
       // evaluate on row
       for(int i=0; i<5; i++) {
@@ -185,7 +185,7 @@ public class TestOperators extends TestCase {
       collectDesc cd = new collectDesc (Integer.valueOf(10));
       CollectOperator cdop = (CollectOperator) OperatorFactory.getAndMakeChild(cd, sop);
 
-      op.initialize(new JobConf(TestOperators.class), null);
+      op.initialize(new JobConf(TestOperators.class), null, null);
 
       // evaluate on row
       for(int i=0; i<5; i++) {
@@ -257,7 +257,7 @@ public class TestOperators extends TestCase {
       // get map operator and initialize it
       MapOperator mo = new MapOperator();
       mo.setConf(mrwork);
-      mo.initialize(hconf, null);
+      mo.initialize(hconf, null, null);
 
       Text tw = new Text();
       InspectableObject io1 = new InspectableObject();
