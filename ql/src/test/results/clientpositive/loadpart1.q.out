@@ -1,0 +1,31 @@
+query: drop table hive_test_src
+query: drop table hive_test_dst
+query: create table hive_test_src ( col1 string ) stored as textfile
+query: load data local inpath '../data/files/test.dat' overwrite into table hive_test_src
+query: create table hive_test_dst ( col1 string ) partitioned by ( pcol1 string , pcol2 string) stored as sequencefile
+query: insert overwrite table hive_test_dst partition ( pcol1='test_part', pcol2='test_part') select col1 from hive_test_src
+Input: default/hive_test_src
+Output: default/hive_test_dst/pcol1=test_part/pcol2=test_part
+query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_part'
+Input: default/hive_test_dst/pcol1=test_part/pcol2=test_part
+Output: /data/users/pchakka/workspace/oshive/ql/../build/ql/tmp/608894653/647768977.10000
+1	test_part	test_part
+2	test_part	test_part
+3	test_part	test_part
+4	test_part	test_part
+5	test_part	test_part
+6	test_part	test_part
+query: insert overwrite table hive_test_dst partition ( pcol1='test_part', pcol2='test_part') select col1 from hive_test_src
+Input: default/hive_test_src
+Output: default/hive_test_dst/pcol1=test_part/pcol2=test_part
+query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_part'
+Input: default/hive_test_dst/pcol1=test_part/pcol2=test_part
+Output: /data/users/pchakka/workspace/oshive/ql/../build/ql/tmp/255138744/205167628.10000
+1	test_part	test_part
+2	test_part	test_part
+3	test_part	test_part
+4	test_part	test_part
+5	test_part	test_part
+6	test_part	test_part
+query: drop table hive_test_src
+query: drop table hive_test_dst

@@ -243,14 +243,14 @@ public class QTestUtil {
         part_spec.put("ds", ds);
         part_spec.put("hr", hr);
         // System.out.println("Loading partition with spec: " + part_spec);
-        db.createPartition(srcpart, part_spec);
+        //db.createPartition(srcpart, part_spec);
         fpath = new Path(testFiles, "kv1.txt");
         newfpath = new Path(tmppath, "kv1.txt");
         fs.copyFromLocalFile(false, true, fpath, newfpath);
         fpath = newfpath;
         //db.loadPartition(fpath, srcpart.getName(), part_spec, true);
         runLoadCmd("LOAD DATA INPATH '" +  newfpath.toString() +
-                   "' INTO TABLE srcpart PARTITION (ds='" + ds + "',hr='" + hr +"')");
+                   "' OVERWRITE INTO TABLE srcpart PARTITION (ds='" + ds + "',hr='" + hr +"')");
       }
     }
     ArrayList<String> bucketCols = new ArrayList<String>();

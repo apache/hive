@@ -770,7 +770,17 @@ public class Hive {
           // point of no return
           boolean b = fs.delete(destf, true);
           LOG.debug("Deleting:"+destf.toString()+",Status:"+b);
+          // create the parent directory otherwise rename can fail if the parent doesn't exist
+          if (!fs.mkdirs(destf.getParent())) {
+            throw new HiveException("Unable to create destination directory: " 
+                  + destf.getParent().toString());
+          }
+          
           b = fs.rename(tmppath, destf);
+          if (!b) {
+            throw new HiveException("Unable to move results to destination directory: " 
+                + destf.getParent().toString());
+          }
           LOG.debug("Renaming:"+tmppath.toString()+",Status:"+b);
 
       } catch (IOException e) {
