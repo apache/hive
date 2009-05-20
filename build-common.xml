@@ -242,7 +242,7 @@
   <target name="test"
   	depends="test-conditions,gen-test,compile-test,test-jar,test-init">
     <junit showoutput="${test.output}" printsummary="yes" haltonfailure="no"
-           fork="yes" maxmemory="256m" dir="${basedir}" timeout="${test.timeout}"
+           fork="yes" maxmemory="512m" dir="${basedir}" timeout="${test.timeout}"
            errorProperty="tests.failed" failureProperty="tests.failed" filtertrace="off">
       <!--
       <jvmarg value="-Xdebug"/>

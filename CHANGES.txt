@@ -143,6 +143,8 @@ Trunk - Unreleased
     HIVE-498. Fix null pointer exception in UDFRegExp when
     the expression string is empty. (Zheng Shao via athusoo)
 
+    HIVE-410: Heartbeating for streaming jobs should not depend on stdout
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

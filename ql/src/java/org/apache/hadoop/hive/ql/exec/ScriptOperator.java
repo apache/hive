@@ -61,6 +61,10 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
   transient volatile Throwable scriptError = null;
 
   /**
+   * Timer to send periodic reports back to the tracker.
+   */
+  transient Timer rpTimer;
+  /**
    * addJobConfToEnvironment is shamelessly copied from hadoop streaming.
    */
   static String safeEnvVarName(String var) {
@@ -214,6 +218,22 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
                                    (HiveConf.getIntVar(hconf, HiveConf.ConfVars.SCRIPTERRORLIMIT)),
                                    "ErrorProcessor");
       errThread.start();
+      
+      /* Timer that reports every 5 minutes to the jobtracker. This ensures that even if
+         the user script is not returning rows for greater than that duration, a progress
+         report is sent to the tracker so that the tracker does not think that the job 
+         is dead.
+      */
+      Integer exp_interval = null;
+      int exp_int;
+      exp_interval = Integer.decode(hconf.get("mapred.tasktracker.expiry.interval"));
+      if (exp_interval != null)
+        exp_int = exp_interval.intValue() / 2;
+      else
+        exp_int = 300000;
+
+      rpTimer = new Timer(true);
+      rpTimer.scheduleAtFixedRate(new ReporterTask(reporter), 0, exp_interval);
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -256,6 +276,7 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
           new_abort = true;
         };
       } catch (IOException e) {
+        LOG.error("Got ioexception: " + e.getMessage());
         new_abort = true;
       } catch (InterruptedException e) { }
     }
@@ -442,5 +463,26 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
   @Override
   public String getName() {
     return "SCR";
+  }
+  
+  class ReporterTask extends TimerTask {
+    
+    /**
+     * Reporter to report progress to the jobtracker.
+     */
+    private Reporter rp;
+    
+    /**
+     * Constructor.
+     */
+    public ReporterTask(Reporter rp) {
+      if (rp != null)
+        this.rp = rp;
+    }
+    
+    @Override
+    public void run() {
+      rp.progress();
+    }
   }
 }
