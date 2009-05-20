@@ -38,7 +38,7 @@ public class UDFRegExp extends UDF {
     if (s == null || regex == null) {
       return null;
     }
-    if (!regex.equals(lastRegex)) {
+    if (!regex.equals(lastRegex) || p == null) {
       lastRegex.set(regex);
       p = Pattern.compile(regex.toString());
     }

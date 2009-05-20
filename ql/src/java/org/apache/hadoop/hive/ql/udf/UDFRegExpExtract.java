@@ -43,7 +43,7 @@ public class UDFRegExpExtract extends UDF {
     if (s == null || regex == null) {
       return null;
     }
-    if (!regex.equals(lastRegex)) {
+    if (!regex.equals(lastRegex) || p == null) {
       lastRegex = regex;
       p = Pattern.compile(regex);
     }
