@@ -377,7 +377,7 @@ public class TypeCheckProcFactory {
       // not a conversion function 
       if (funcText == null) return false;
       // return true when the child type and the conversion target type is the same
-      return ((PrimitiveTypeInfo)children.get(0).getTypeInfo()).getPrimitiveWritableClass().getName().equals(funcText);
+      return ((PrimitiveTypeInfo)children.get(0).getTypeInfo()).getTypeName().equalsIgnoreCase(funcText);
     }
     
     public static String getFunctionText(ASTNode expr, boolean isFunction) {
