@@ -47,6 +47,10 @@ public class UDFDate extends UDF {
    */
   public Text evaluate(Text dateString)  {
     
+    if (dateString == null) {
+      return null;
+    }
+    
     try {
       Date date = formatter.parse(dateString.toString());
       t.set(formatter.format(date));

@@ -51,6 +51,11 @@ public class UDFDateDiff extends UDF {
    * @return the difference in days.
    */
   public IntWritable evaluate(Text dateString1, Text dateString2)  {
+    
+    if (dateString1 == null || dateString2 == null) {
+      return null;
+    }
+    
     try {
       // NOTE: This implementation avoids the extra-second problem
       // by comparing with UTC epoch and integer division.

@@ -55,6 +55,10 @@ public class UDFDateSub extends UDF {
    */
   public Text evaluate(Text dateString1, IntWritable days)  {
     
+    if (dateString1 == null || days == null) {
+      return null;
+    }
+    
     try {
       calendar.setTime(formatter.parse(dateString1.toString()));
       calendar.add(Calendar.DAY_OF_MONTH, -days.get());

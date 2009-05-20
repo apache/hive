@@ -138,6 +138,8 @@ Trunk - Unreleased
     HIVE-488. Fix load partition for table with multiple partition columns.
     (Prasad Chakka via athusoo)
 
+    HIVE-496. UDFDate fails on null. (Zheng Shao via pchakka)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

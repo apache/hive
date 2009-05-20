@@ -48,7 +48,9 @@ public class UDFMonth extends UDF {
    * @return an int from 1 to 12. null if the dateString is not a valid date string.
    */
   public IntWritable evaluate(Text dateString)  {
-    
+    if (dateString == null) {
+      return null;
+    }
     try {
       Date date = formatter.parse(dateString.toString());
       calendar.setTime(date);

@@ -29,6 +29,9 @@ public class UDFConcat extends UDF {
 
   Text text = new Text();
   public Text evaluate(Text a, Text b) {
+    if (a == null || b == null) {
+      return null;
+    }
     text.clear();
     text.set(a);
     text.append(b.getBytes(), 0, b.getLength());

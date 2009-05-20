@@ -86,7 +86,7 @@ public class GenericUDFWhen extends GenericUDF {
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     for (int i=0; i+1<arguments.length; i+=2) {
       Object caseKey = arguments[i].get();
-      if (((BooleanObjectInspector)argumentOIs[i]).get(caseKey)) {
+      if (caseKey != null && ((BooleanObjectInspector)argumentOIs[i]).get(caseKey)) {
         Object caseValue = arguments[i+1].get();
         return returnOIResolver.convertIfNecessary(caseValue,
             argumentOIs[i+1]);

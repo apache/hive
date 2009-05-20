@@ -33,14 +33,14 @@ public class UDFDefaultSampleHashFn extends UDF {
   }
 
   public IntWritable evaluate(Object o) {
-    result.set(o.hashCode());
+    result.set(o == null ? 0 : o.hashCode());
     return result;
   }
   
   // TODO: For now, only allow up to two columns on which to sample
   // Going forward we will allow sampling on an arbitrary number of columns
   public IntWritable evaluate(Object o1, Object o2) {
-    result.set(o1.hashCode() ^ o2.hashCode());
+    result.set((o1 == null ? 0 : o1.hashCode()) ^ (o2 == null ? 0 : o2.hashCode()));
     return result;
   }
 }

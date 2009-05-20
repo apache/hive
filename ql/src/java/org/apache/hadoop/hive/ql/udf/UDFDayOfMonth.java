@@ -49,6 +49,10 @@ public class UDFDayOfMonth extends UDF {
    */
   public IntWritable evaluate(Text dateString)  {
     
+    if (dateString == null) {
+      return null;
+    }
+    
     try {
       Date date = formatter.parse(dateString.toString());
       calendar.setTime(date);
