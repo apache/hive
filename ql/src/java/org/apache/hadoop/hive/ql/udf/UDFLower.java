@@ -34,7 +34,7 @@ public class UDFLower extends UDF {
     if (s == null) {
       return null;
     }
-    t.set(s.toString().toUpperCase());
+    t.set(s.toString().toLowerCase());
     return t;
   }
 

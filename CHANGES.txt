@@ -148,6 +148,8 @@ Trunk - Unreleased
 
     HIVE-499. Fix for CAST operator on the same type. (Zheng Shao via athusoo)
 
+    HIVE-501. Fix UDFLower() bug. (Zheng Shao via prasadc)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES
