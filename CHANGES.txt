@@ -44,6 +44,9 @@ Trunk - Unreleased
     HIVE-254. Link jobtracker from Hive History in Hive Web Interface.
     (Edward Capriolo via athusoo)
 
+    HIVE-502. Optimize RCFile's performance by removeing all synchronized
+    modifiers. (Yongqiang He via zshao)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).
