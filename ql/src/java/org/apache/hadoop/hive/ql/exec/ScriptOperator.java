@@ -482,7 +482,9 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
     
     @Override
     public void run() {
-      rp.progress();
+      if (rp != null) {
+        rp.progress();
+      }
     }
   }
 }
