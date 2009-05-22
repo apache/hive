@@ -150,6 +150,8 @@ Trunk - Unreleased
 
     HIVE-501. Fix UDFLower() bug. (Zheng Shao via prasadc)
 
+    HIVE-505. console.info prints to stderr. (Raghu Murthy via namit)
+
     HIVE-504. Fix script operator with empty input file.
     (Raghu Murthy via zshao)
 

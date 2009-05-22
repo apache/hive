@@ -265,7 +265,7 @@ public class SessionState {
 
     public void printInfo(String info, String detail) {
       if(!getIsSilent()) {
-        getOutStream().println(info);
+        getErrStream().println(info);
       }
       LOG.info(info + StringUtils.defaultString(detail));
     }
