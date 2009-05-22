@@ -158,6 +158,8 @@ Trunk - Unreleased
     HIVE-504. Fix script operator with empty input file.
     (Raghu Murthy via zshao)
 
+    HIVE-507. Handle empty files properly. (Namit Jain via zshao)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

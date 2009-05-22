@@ -633,7 +633,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
       
       Class<? extends HiveOutputFormat> outFileFormat = (Class<? extends HiveOutputFormat>)Class.forName("org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat");
       
-      String newFile = "file:" + hiveScratchDir + File.separator + (++numEmptyPaths);
+      String newFile = hiveScratchDir + File.separator + (++numEmptyPaths);
       Path newPath = new Path(newFile);
       LOG.info("Changed input file to " + newPath.toString());
       
@@ -683,7 +683,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
       for (String emptyFile : emptyPaths) {
         Class<? extends HiveOutputFormat> outFileFormat = work.getPathToPartitionInfo().get(emptyFile).getTableDesc().getOutputFileFormatClass();
         
-        String newFile = "file:" + hiveScratchDir + File.separator + (++numEmptyPaths);
+        String newFile = hiveScratchDir + File.separator + (++numEmptyPaths);
         Path newPath = new Path(newFile);
         LOG.info("Changed input file to " + newPath.toString());
         
