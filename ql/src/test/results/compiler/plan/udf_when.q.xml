@@ -30,7 +30,7 @@
                         <void property="conf"> 
                          <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                           <void property="dirName"> 
-                           <string>/data/users/zshao/tools/405-trunk-apache-hive/ql/../build/ql/tmp/126639861.10001.insclause-0</string> 
+                           <string>/Users/pchakka/workspace/oshive/ql/../build/ql/tmp/633060483.10001.insclause-0</string> 
                           </void> 
                           <void property="tableInfo"> 
                            <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -435,6 +435,9 @@
               </void> 
              </object> 
             </void> 
+            <void property="columnExprMap"> 
+             <object class="java.util.HashMap"/> 
+            </void> 
             <void property="conf"> 
              <object class="org.apache.hadoop.hive.ql.plan.selectDesc"> 
               <void property="colList"> 
@@ -495,7 +498,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/tools/405-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
+       <string>file:/Users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src</string> 
@@ -507,7 +510,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/tools/405-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
+       <string>file:/Users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"/> 
@@ -563,7 +566,7 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/data/users/zshao/tools/405-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
+             <string>file:/Users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src</string> 
             </void> 
            </object> 
           </void> 

@@ -108,6 +108,7 @@ public class ColumnPruner implements Transform {
     RowResolver inputRR  = pGraphContext.getOpParseCtx().get(input).getRR();
     RowResolver outputRR = new RowResolver();
     ArrayList<exprNodeDesc> col_list = new ArrayList<exprNodeDesc>();
+    Map<String, exprNodeDesc> colExprMap = new HashMap<String, exprNodeDesc>();
     
     // Iterate over the selects
     for (int pos = 0; pos < colNames.size(); pos++) {
@@ -117,11 +118,13 @@ public class ColumnPruner implements Transform {
       outputRR.put(colName[0], colName[1], 
                    new ColumnInfo((Integer.valueOf(pos)).toString(), in.getType()));
       col_list.add(new exprNodeColumnDesc(in.getType(), internalName));
+      colExprMap.put(Integer.toString(pos), col_list.get(pos));
     }
 
     Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
       new selectDesc(col_list), new RowSchema(outputRR.getColumnInfos()), input), outputRR);
 
+    output.setColumnExprMap(colExprMap);
     return output;
   }
 
