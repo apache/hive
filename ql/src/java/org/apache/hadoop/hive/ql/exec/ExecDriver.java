@@ -332,7 +332,6 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
       throw new RuntimeException("Plan invalid, Reason: " + invalidReason);
     }
 
-    Utilities.setMapRedWork(job, work);
 
     String hiveScratchDir = HiveConf.getVar(job, HiveConf.ConfVars.SCRATCHDIR);
     Path jobScratchDir = new Path(hiveScratchDir + Utilities.randGen.nextInt());
@@ -365,6 +364,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
 
     try {
       addInputPaths(job, work, hiveScratchDir);
+      Utilities.setMapRedWork(job, work);
 
       // remove the pwd from conf file so that job tracker doesn't show this logs
       String pwd = job.get(HiveConf.ConfVars.METASTOREPWD.varname);
@@ -688,13 +688,15 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
         LOG.info("Changed input file to " + newPath.toString());
         
         // toggle the work
-        Map<String, ArrayList<String>> pathToAliases = work.getPathToAliases();
-        pathToAliases.put(newPath.toString(), pathToAliases.get(emptyFile));
+        LinkedHashMap<String, ArrayList<String>> pathToAliases = work.getPathToAliases();
+        pathToAliases.put(newPath.toUri().toString(), pathToAliases.get(emptyFile));
         pathToAliases.remove(emptyFile);
+        work.setPathToAliases(pathToAliases);
         
-        Map<String,partitionDesc> pathToPartitionInfo = work.getPathToPartitionInfo();
-        pathToPartitionInfo.put(newPath.toString(), pathToPartitionInfo.get(emptyFile));
+        LinkedHashMap<String,partitionDesc> pathToPartitionInfo = work.getPathToPartitionInfo();
+        pathToPartitionInfo.put(newPath.toUri().toString(), pathToPartitionInfo.get(emptyFile));
         pathToPartitionInfo.remove(emptyFile);
+        work.setPathToPartitionInfo(pathToPartitionInfo);
         
         String onefile = newPath.toString();
         RecordWriter recWriter = outFileFormat.newInstance().getHiveRecordWriter(job, newPath, Text.class, false, new Properties(), null);

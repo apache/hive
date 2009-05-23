@@ -163,6 +163,9 @@ Trunk - Unreleased
     HIVE-497. Fix predicate pushdowns when all the columns are not
     selected in the query. (Prasad Chakka via athusoo)
 
+    HIVE-500. Fix select from newly created table.
+    (Yongqiang He via zshao)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES
