@@ -273,13 +273,19 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
    * @param newPaths
    *          Array of classpath elements
    */
-  private static void addToClassPath(String[] newPaths) throws Exception {
+  private static void addToClassPath(String[] newPaths, boolean local) throws Exception {
     Thread curThread = Thread.currentThread();
     URLClassLoader loader = (URLClassLoader) curThread.getContextClassLoader();
     List<URL> curPath = Arrays.asList(loader.getURLs());
     ArrayList<URL> newPath = new ArrayList<URL>();
 
     for (String onestr : newPaths) {
+      // special processing for hadoop-17. file:// needs to be removed
+      if (local) {
+        if (StringUtils.indexOf(onestr, "file://") == 0)
+          onestr = StringUtils.substring(onestr, 7);
+      }
+
       URL oneurl = (new File(onestr)).toURL();
       if (!curPath.contains(oneurl)) {
         newPath.add(oneurl);
@@ -541,7 +547,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
       String auxJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEAUXJARS);
       if (StringUtils.isNotBlank(auxJars)) {
         try {
-          addToClassPath(StringUtils.split(auxJars, ","));
+          addToClassPath(StringUtils.split(auxJars, ","), true);
         } catch (Exception e) {
           throw new HiveException(e.getMessage(), e);
         }

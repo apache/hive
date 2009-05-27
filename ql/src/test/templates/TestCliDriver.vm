@@ -32,7 +32,11 @@ public class $className extends TestCase {
   @Override
   protected void setUp() {
     try {
-      qt = new QTestUtil("$resultsDir.getCanonicalPath()", "$logDir.getCanonicalPath()");
+      boolean miniMR = false;
+      if ("$clusterMode".equals("miniMR"))
+        miniMR = true;
+
+      qt = new QTestUtil("$resultsDir.getCanonicalPath()", "$logDir.getCanonicalPath()", miniMR);
 
 #foreach ($qf in $qfiles)
       qt.addFile("$qf.getCanonicalPath()");
@@ -43,6 +47,19 @@ public class $className extends TestCase {
       e.printStackTrace();
       System.out.flush();
       fail("Unexpected exception in setup");
+    }
+  }
+
+  @Override
+  protected void tearDown() {
+    try {
+      qt.shutdown();
+    }
+    catch (Exception e) {
+      System.out.println("Exception: " + e.getMessage());
+      e.printStackTrace();
+      System.out.flush();
+      fail("Unexpected exception in tearDown");
     }
   }
 

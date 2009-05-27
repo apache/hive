@@ -47,6 +47,9 @@ Trunk - Unreleased
     HIVE-502. Optimize RCFile's performance by removeing all synchronized
     modifiers. (Yongqiang He via zshao)
 
+    HIVE-204. Provide option to run tests with MiniMRCluster.
+    (Namit Jain via athusoo)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).

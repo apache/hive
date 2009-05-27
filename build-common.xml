@@ -57,6 +57,7 @@
   <property name="test.timeout" value="5400000"/>
   <property name="test.junit.output.format" value="xml"/>
   <property name="test.junit.output.usefile" value="true"/>
+  <property name="minimr.query.files" value="join1.q,groupby1.q"/>
   <property name="test.silent" value="true"/>
 
   <path id="test.classpath">
@@ -205,21 +206,41 @@
   </target>
 
   <target name="test-conditions">
+        
+    <condition property="qfile" value="${minimr.query.files}">
+      <and>
+        <not>
+          <isset property="qfile"/>
+        </not>
+      
+        <equals arg1="${clustermode}" arg2="miniMR" /> 
+      </and>
+    </condition>
+
     <condition property="qfile" value="">
       <not>
         <isset property="qfile"/>
       </not>
     </condition>
+
     <condition property="overwrite" value="false">
       <not>
         <isset property="overwrite"/>
       </not>
     </condition>
+
     <condition property="standalone" value="false">
       <not>
         <isset property="standalone"/>
       </not>
     </condition>
+
+    <condition property="clustermode" value="">
+      <not>
+        <isset property="clustermode"/>
+      </not>
+    </condition>
+
   </target>
 
   <!-- target to deploy anttasks -->
@@ -253,10 +274,11 @@
       <sysproperty key="test.service.standalone.server" value="${standalone}"/>
       <sysproperty key="log4j.configuration" value="file://${test.data.dir}/conf/hive-log4j.properties"/>
       <sysproperty key="derby.stream.error.file" value="${test.build.dir}/derby.log"/>
-      <sysproperty key="hive.aux.jars.path" value="${test.build.dir}/test-udfs.jar,${test.src.data.dir}/files/TestSerDe.jar"/>
+      <sysproperty key="hive.aux.jars.path" value="file://${test.build.dir}/test-udfs.jar,file://${test.src.data.dir}/files/TestSerDe.jar"/>
       <sysproperty key="ql.test.query.clientpositive.dir" value="${ql.test.query.clientpositive.dir}"/>
       <sysproperty key="ql.test.results.clientpositive.dir" value="${ql.test.results.clientpositive.dir}"/>
       <sysproperty key="test.log.dir" value="${test.log.dir}"/>
+      <sysproperty key="hadoop.log.dir" value="${test.log.dir}"/>
       <sysproperty key="test.silent" value="${test.silent}"/>
 
       <classpath refid="${test.classpath.id}"/>

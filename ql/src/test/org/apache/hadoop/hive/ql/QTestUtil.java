@@ -34,10 +34,13 @@ import java.util.List;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.lang.reflect.Method;
+import java.lang.reflect.Constructor;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.cli.CliDriver;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -59,6 +62,7 @@ import org.apache.hadoop.hive.serde2.thrift.test.Complex;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.hadoop.mapred.MiniMRCluster;
 
 import com.facebook.thrift.protocol.TBinaryProtocol;
 
@@ -81,6 +85,10 @@ public class QTestUtil {
   private FileSystem fs;
   private boolean overWrite;
   private CliDriver cliDriver;
+  private MiniMRCluster mr = null;
+  private Object dfs = null;
+  private boolean miniMr = false;
+  private Class<?> dfsClass = null;
   
   public boolean deleteDirectory(File path) {
     if (path.exists()) {
@@ -155,9 +163,50 @@ public class QTestUtil {
   }
 
   public QTestUtil(String outDir, String logDir) throws Exception {
+    this(outDir, logDir, false);
+  }
+
+  public QTestUtil(String outDir, String logDir, boolean miniMr) throws Exception {
     this.outDir = outDir;
     this.logDir = logDir;
     conf = new HiveConf(Driver.class);
+    this.miniMr = miniMr;
+    qMap = new TreeMap<String, String>();
+
+    if (miniMr) {
+      dfsClass = null;
+
+      // The path for MiniDFSCluster has changed, so look in both 17 and 19
+      // In hadoop 17, the path is org.apache.hadoop.dfs.MiniDFSCluster, whereas
+      // it is org.apache.hadoop.hdfs.MiniDFSCluster in hadoop 19. Due to this anamonly,
+      // use reflection to invoke the methods.
+      try {
+        dfsClass = Class.forName("org.apache.hadoop.dfs.MiniDFSCluster");
+      } catch (ClassNotFoundException e) {
+        dfsClass = null;
+      }
+
+      if (dfsClass == null) {
+        dfsClass = Class.forName("org.apache.hadoop.hdfs.MiniDFSCluster");
+      }
+
+      Constructor<?> dfsCons = 
+        dfsClass.getDeclaredConstructor(new Class<?>[] {Configuration.class, Integer.TYPE, 
+                                            Boolean.TYPE, (new String[] {}).getClass()});
+
+      dfs = dfsCons.newInstance(conf, 4, true, null);
+      Method m = dfsClass.getDeclaredMethod("getFileSystem", new Class[]{});
+      FileSystem fs = (FileSystem)m.invoke(dfs, new Object[] {});
+
+      mr = new MiniMRCluster(4, fs.getUri().toString(), 1);
+      
+      // hive.metastore.warehouse.dir needs to be set relative to the jobtracker
+      String fsName = conf.get("fs.default.name");
+      assert fsName != null;
+      conf.set("hive.metastore.warehouse.dir", fsName.concat("/build/ql/test/data/warehouse/"));
+      
+      conf.set("mapred.job.tracker", "localhost:" + mr.getJobTrackerPort());
+    }    
 
     // System.out.println(conf.toString());
     testFiles = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
@@ -168,12 +217,25 @@ public class QTestUtil {
       overWrite = true;
     }
 
-    qMap = new TreeMap<String, String>();
     srcTables = new LinkedList<String>();
     init();
   }
   
+  public void shutdown() throws Exception {
+    cleanUp();
 
+    if (dfs != null) {
+      Method m = dfsClass.getDeclaredMethod("shutdown", new Class[]{});
+      m.invoke(dfs, new Object[]{});
+      dfs = null;
+      dfsClass = null;
+    }
+    
+    if (mr != null) {
+      mr.shutdown();
+      mr = null;
+    }
+  }
 
   public void addFile(String qFile) throws Exception {
 
@@ -367,7 +429,7 @@ public class QTestUtil {
   }
 
   public void cliInit(String tname, boolean recreate) throws Exception {
-    if(recreate) {
+    if (miniMr || recreate) {
       cleanUp();
       createSources();
     }

@@ -56,7 +56,7 @@ public class QTestGenTask extends Task {
   protected String queryDirectory;
  
   protected String queryFile;
- 
+
   protected String resultsDirectory;
 
   protected String logDirectory;
@@ -66,6 +66,16 @@ public class QTestGenTask extends Task {
   protected String className;
 
   protected String logFile;
+
+  protected String clusterMode;
+
+  public void setClusterMode(String clusterMode) {
+    this.clusterMode = clusterMode;
+  }
+
+  public String getClusterMode() {
+    return clusterMode;
+  }
 
   public void setLogFile(String logFile) {
     this.logFile = logFile;
@@ -198,8 +208,13 @@ public class QTestGenTask extends Task {
       }
 
       if (queryFile != null && !queryFile.equals("")) {
-        qFiles = new File[1];
-        qFiles[0] = inpDir != null ? new File(inpDir, queryFile) : new File(queryFile);
+        // The user may have passed a list of files - comma seperated
+        String[] queryFiles = queryFile.split(",");
+        qFiles = new File[queryFiles.length];
+
+        for (int i = 0; i < queryFiles.length; i++) {
+          qFiles[i] = inpDir != null ? new File(inpDir, queryFiles[i]) : new File(queryFiles[i]);
+        }
       }
       else {
         qFiles = inpDir.listFiles(new QFileFilter());
@@ -245,12 +260,16 @@ public class QTestGenTask extends Task {
       ve.init();
       Template t = ve.getTemplate(template);
 
+      if (clusterMode == null) 
+        clusterMode = new String("");
+
       // For each of the qFiles generate the test
       VelocityContext ctx = new VelocityContext();
       ctx.put("className", className);
       ctx.put("qfiles", qFiles);
       ctx.put("resultsDir", resultsDir);
       ctx.put("logDir", logDir);
+      ctx.put("clusterMode", clusterMode);
 
       File outFile = new File(outDir, className + ".java");
       FileWriter writer = new FileWriter(outFile);
