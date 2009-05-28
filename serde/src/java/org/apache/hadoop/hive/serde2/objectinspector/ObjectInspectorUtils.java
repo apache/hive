@@ -29,8 +29,17 @@ import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -309,6 +318,54 @@ public class ObjectInspectorUtils {
       default: {
         throw new RuntimeException("Unknown ObjectInspector category!");
       }
+    }
+  }
+
+  public static int hashCode(Object o, ObjectInspector objIns) {
+    if (o == null) {
+      return 0;
+    }
+    switch (objIns.getCategory()) {
+      case PRIMITIVE: {
+        PrimitiveObjectInspector poi = ((PrimitiveObjectInspector)objIns);
+        switch (poi.getPrimitiveCategory()) {
+          case VOID: return 0;
+          case BOOLEAN: return ((BooleanObjectInspector)poi).get(o) ? 1 : 0;
+          case BYTE: return ((ByteObjectInspector)poi).get(o);
+          case SHORT: return ((ShortObjectInspector)poi).get(o);
+          case INT: return ((IntObjectInspector)poi).get(o);
+          case LONG: {
+            long a = ((LongObjectInspector)poi).get(o);
+            return (int)((a >>> 32) ^ a);
+          }
+          case FLOAT: return Float.floatToIntBits(((FloatObjectInspector)poi).get(o));
+          case DOUBLE: {
+            // This hash function returns the same result as Double.hashCode()
+            // while DoubleWritable.hashCode returns a different result.
+            long a = Double.doubleToLongBits(((DoubleObjectInspector)poi).get(o));
+            return (int)((a >>> 32) ^ a);
+          }
+          case STRING: {
+            // This hash function returns the same result as String.hashCode() when
+            // all characters are ASCII, while Text.hashCode() always returns a
+            // different result.
+            Text t = ((StringObjectInspector)poi).getPrimitiveWritableObject(o);
+            int r = 0;
+            for (int i=0; i<t.getLength(); i++) {
+              r = r * 31 + (int)t.getBytes()[i];
+            }
+            return r;
+          }
+          default: {
+            throw new RuntimeException("Unknown type: " + poi.getPrimitiveCategory());
+          }
+        }
+      }
+      case STRUCT:
+      case LIST: 
+      case MAP: 
+      default:  
+        throw new RuntimeException("Hash code on complex types not supported yet.");
     }
   }
   

@@ -32,10 +32,12 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 
 /**
  * Reduce Sink Operator sends output to the reduce stage
@@ -114,9 +116,9 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
   transient HiveKey keyWritable = new HiveKey();
   transient Writable value;
   
-  transient ObjectInspector keyObjectInspector;
-  transient ObjectInspector valueObjectInspector;
-  transient ObjectInspector partitionObjectInspector;
+  transient StructObjectInspector keyObjectInspector;
+  transient StructObjectInspector valueObjectInspector;
+  transient ObjectInspector[] partitionObjectInspectors;
 
   transient Object[] cachedKeys;
   transient Object[] cachedValues;
@@ -131,7 +133,7 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
         firstRow = false;
         keyObjectInspector = initEvaluatorsAndReturnStruct(keyEval, rowInspector);
         valueObjectInspector = initEvaluatorsAndReturnStruct(valueEval, rowInspector);
-        partitionObjectInspector = initEvaluatorsAndReturnStruct(partitionEval, rowInspector);
+        partitionObjectInspectors = initEvaluators(partitionEval, rowInspector);
 
         cachedKeys = new Object[keyEval.length];
         cachedValues = new Object[valueEval.length];
@@ -179,10 +181,10 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
         }
         keyHashCode = random.nextInt();
       } else {
-        for(ExprNodeEvaluator e: partitionEval) {
-          Object o = e.evaluate(row);
+        for (int i = 0; i < partitionEval.length; i++) {
+          Object o = partitionEval[i].evaluate(row);
           keyHashCode = keyHashCode * 31 
-            + (o == null ? 0 : Utilities.hashCode(o, keyObjectInspector));
+            + ObjectInspectorUtils.hashCode(o, partitionObjectInspectors[i]);
         }
       }
       keyWritable.setHashCode(keyHashCode);

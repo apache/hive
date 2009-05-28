@@ -30,7 +30,7 @@
                         <void property="conf"> 
                          <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                           <void property="dirName"> 
-                           <string>/data/users/zshao/tools/deploy-trunk-apache-hive/ql/../build/ql/tmp/699353582/704180056.10001.insclause-0</string> 
+                           <string>/data/users/zshao/tools/495-trunk-apache-hive/ql/../build/ql/tmp/876735944/588596206.10001.insclause-0</string> 
                           </void> 
                           <void property="tableInfo"> 
                            <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -462,20 +462,7 @@
                         <void property="childExprs"> 
                          <object class="java.util.ArrayList"> 
                           <void method="add"> 
-                           <object class="org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc"> 
-                            <void property="UDFClass"> 
-                             <class>org.apache.hadoop.hive.ql.udf.UDFDefaultSampleHashFn</class> 
-                            </void> 
-                            <void property="UDFMethod"> 
-                             <object class="org.apache.hadoop.hive.ql.udf.UDFDefaultSampleHashFn" method="getMethod"> 
-                              <string>evaluate</string> 
-                              <array class="java.lang.Class" length="1"> 
-                               <void index="0"> 
-                                <class>java.lang.Object</class> 
-                               </void> 
-                              </array> 
-                             </object> 
-                            </void> 
+                           <object class="org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc"> 
                             <void property="childExprs"> 
                              <object class="java.util.ArrayList"> 
                               <void method="add"> 
@@ -502,6 +489,9 @@
                                </object> 
                               </void> 
                              </object> 
+                            </void> 
+                            <void property="genericUDFClass"> 
+                             <class>org.apache.hadoop.hive.ql.udf.generic.GenericUDFHash</class> 
                             </void> 
                             <void property="typeInfo"> 
                              <object id="PrimitiveTypeInfo2" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
@@ -590,7 +580,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08</string> 
+       <string>file:/data/users/zshao/tools/495-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>s</string> 
@@ -602,7 +592,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/hr=11/ds=2008-04-08</string> 
+       <string>file:/data/users/zshao/tools/495-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"> 
@@ -671,7 +661,7 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/test/data/warehouse/srcpart</string> 
+             <string>file:/data/users/zshao/tools/495-trunk-apache-hive/build/ql/test/data/warehouse/srcpart</string> 
             </void> 
            </object> 
           </void> 

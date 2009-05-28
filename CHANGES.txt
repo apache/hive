@@ -50,6 +50,9 @@ Trunk - Unreleased
     HIVE-204. Provide option to run tests with MiniMRCluster.
     (Namit Jain via athusoo)
 
+    HIVE-511. Make DoubleWritable's hashCode more uniform.
+    (Zheng Shao via rmurthy)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).

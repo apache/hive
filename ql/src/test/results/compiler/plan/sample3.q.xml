@@ -31,7 +31,7 @@
              <boolean>true</boolean> 
             </void> 
             <void property="sourceDir"> 
-             <string>/data/users/zshao/tools/deploy-trunk-apache-hive/ql/../build/ql/tmp/636268945/66220949.10000.insclause-0</string> 
+             <string>/data/users/zshao/tools/495-trunk-apache-hive/ql/../build/ql/tmp/1100474640/428587611.10000.insclause-0</string> 
             </void> 
             <void property="table"> 
              <object id="tableDesc0" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -84,7 +84,7 @@
                 </void> 
                 <void method="put"> 
                  <string>location</string> 
-                 <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/test/data/warehouse/dest1</string> 
+                 <string>file:/data/users/zshao/tools/495-trunk-apache-hive/build/ql/test/data/warehouse/dest1</string> 
                 </void> 
                </object> 
               </void> 
@@ -94,7 +94,7 @@
              </object> 
             </void> 
             <void property="tmpDir"> 
-             <string>/data/users/athusoo/commits/hive_trunk_ws9/ql/../build/ql/tmp/285088828/920051529.10001</string> 
+             <string>/data/users/zshao/tools/495-trunk-apache-hive/ql/../build/ql/tmp/1100474640/428587611.10001</string> 
             </void> 
            </object> 
           </void> 
@@ -134,7 +134,7 @@
                        <int>1</int> 
                       </void> 
                       <void property="dirName"> 
-                       <string>/data/users/zshao/tools/deploy-trunk-apache-hive/ql/../build/ql/tmp/636268945/66220949.10000.insclause-0</string> 
+                       <string>/data/users/zshao/tools/495-trunk-apache-hive/ql/../build/ql/tmp/1100474640/428587611.10000.insclause-0</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object idref="tableDesc0"/> 
@@ -308,23 +308,7 @@
                         <void property="childExprs"> 
                          <object class="java.util.ArrayList"> 
                           <void method="add"> 
-                           <object class="org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc"> 
-                            <void property="UDFClass"> 
-                             <class>org.apache.hadoop.hive.ql.udf.UDFDefaultSampleHashFn</class> 
-                            </void> 
-                            <void property="UDFMethod"> 
-                             <object class="org.apache.hadoop.hive.ql.udf.UDFDefaultSampleHashFn" method="getMethod"> 
-                              <string>evaluate</string> 
-                              <array class="java.lang.Class" length="2"> 
-                               <void index="0"> 
-                                <class>java.lang.Object</class> 
-                               </void> 
-                               <void index="1"> 
-                                <class>java.lang.Object</class> 
-                               </void> 
-                              </array> 
-                             </object> 
-                            </void> 
+                           <object class="org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc"> 
                             <void property="childExprs"> 
                              <object class="java.util.ArrayList"> 
                               <void method="add"> 
@@ -348,6 +332,9 @@
                                </object> 
                               </void> 
                              </object> 
+                            </void> 
+                            <void property="genericUDFClass"> 
+                             <class>org.apache.hadoop.hive.ql.udf.generic.GenericUDFHash</class> 
                             </void> 
                             <void property="typeInfo"> 
                              <object id="PrimitiveTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
@@ -461,7 +448,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/test/data/warehouse/srcbucket</string> 
+       <string>file:/data/users/zshao/tools/495-trunk-apache-hive/build/ql/test/data/warehouse/srcbucket</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>s</string> 
@@ -473,7 +460,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/test/data/warehouse/srcbucket</string> 
+       <string>file:/data/users/zshao/tools/495-trunk-apache-hive/build/ql/test/data/warehouse/srcbucket</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object class="java.util.LinkedHashMap"/> 
@@ -533,7 +520,7 @@
             </void> 
             <void method="put"> 
              <string>location</string> 
-             <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/test/data/warehouse/srcbucket</string> 
+             <string>file:/data/users/zshao/tools/495-trunk-apache-hive/build/ql/test/data/warehouse/srcbucket</string> 
             </void> 
            </object> 
           </void> 

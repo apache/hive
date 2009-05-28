@@ -109,6 +109,7 @@ import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.ql.plan.tableScanDesc;
 import org.apache.hadoop.hive.ql.plan.unionDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFHash;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -3200,7 +3201,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * clause and the table has clustering columns defined in it's metadata.
    * The predicate created has the following structure:
    * 
-   *     ((default_sample_hashfn(expressions) & Integer.MAX_VALUE) % denominator) == numerator
+   *     ((hash(expressions) & Integer.MAX_VALUE) % denominator) == numerator
    * 
    * @param ts TABLESAMPLE clause information
    * @param bucketCols The clustering columns of the table
@@ -3244,8 +3245,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     exprNodeDesc equalsExpr = null;
-    try {
-      exprNodeDesc hashfnExpr = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("default_sample_hashfn", args);
+    {
+      exprNodeDesc hashfnExpr = new exprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
+          GenericUDFHash.class, args);
       assert(hashfnExpr != null);
       LOG.info("hashfnExpr = " + hashfnExpr);
       exprNodeDesc andExpr = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("&", hashfnExpr, intMaxExpr);
@@ -3258,8 +3260,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       equalsExpr = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("==", modExpr, numeratorExpr);
       LOG.info("equalsExpr = " + equalsExpr);
       assert(equalsExpr != null);
-    } catch (UDFArgumentTypeException e) {
-      throw new RuntimeException("Hive 2 internal exception", e);
     }
     return equalsExpr;
   }

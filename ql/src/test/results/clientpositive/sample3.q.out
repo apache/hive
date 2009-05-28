@@ -20,7 +20,7 @@ STAGE PLANS:
                     type: string
               Filter Operator
                 predicate:
-                    expr: (((default_sample_hashfn(0) & 2147483647) % 5) = 0)
+                    expr: (((hash(0) & 2147483647) % 5) = 0)
                     type: boolean
                 Select Operator
                   expressions:
@@ -41,7 +41,7 @@ STAGE PLANS:
 query: SELECT s.key
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s SORT BY key
 Input: default/srcbucket
-Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/1055187428/602701590.10000
+Output: /data/users/zshao/tools/495-trunk-apache-hive/ql/../build/ql/tmp/336730571/201032975.10000
 100
 100
 100

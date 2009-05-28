@@ -498,7 +498,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
 
     // If started from main(), and isSilent is on, we should not output
     // any logs.
-    if (isSilent) {
+    if (!isSilent) {
       BasicConfigurator.resetConfiguration();
       BasicConfigurator.configure(new NullAppender());
     }

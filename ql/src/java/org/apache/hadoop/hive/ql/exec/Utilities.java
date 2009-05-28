@@ -56,6 +56,14 @@ import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
@@ -626,35 +634,4 @@ public class Utilities {
     return e.getClass().getName() + "(" +  e.getMessage() + ")";
   }
 
-  public static int hashCode(Object o, ObjectInspector objIns) {
-    if ((objIns.getCategory() == Category.PRIMITIVE) &&
-        ((PrimitiveObjectInspector)objIns).isWritable())
-      return o.hashCode();
-        
-    if (o instanceof String)
-      return (new Text((String)o)).hashCode();
-    
-    if (o instanceof Integer) 
-      return (new IntWritable(((Integer)o).intValue())).hashCode();
-   
-    if (o instanceof Short)
-      return (new ShortWritable(((Short)o).shortValue())).hashCode();
-    
-    if (o instanceof Float)
-      return (new FloatWritable(((Float)o).floatValue())).hashCode();
-    
-    if (o instanceof Long)
-      return (new LongWritable(((Long)o).longValue())).hashCode();
- 
-    if (o instanceof Boolean)
-      return (new BooleanWritable(((Boolean)o).booleanValue())).hashCode();
-   
-    if (o instanceof Double)
-      return (new DoubleWritable(((Double)o).doubleValue())).hashCode();
-    
-    if (o instanceof Byte)
-      return (new ByteWritable(((Byte)o).byteValue())).hashCode();
-    
-    return o.hashCode();
-  }
 }

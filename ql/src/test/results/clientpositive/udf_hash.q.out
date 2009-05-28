@@ -1,0 +1,66 @@
+query: EXPLAIN
+SELECT hash(CAST(1 AS TINYINT)), hash(CAST(2 AS SMALLINT)),
+       hash(3), hash(CAST('123456789012' AS BIGINT)),
+       hash(CAST(1.25 AS FLOAT)), hash(CAST(16.0 AS DOUBLE)),
+       hash('400'), hash('abc'), hash(TRUE), hash(FALSE),
+       hash(1, 2, 3)
+FROM src LIMIT 1
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION hash (TOK_FUNCTION TOK_TINYINT 1))) (TOK_SELEXPR (TOK_FUNCTION hash (TOK_FUNCTION TOK_SMALLINT 2))) (TOK_SELEXPR (TOK_FUNCTION hash 3)) (TOK_SELEXPR (TOK_FUNCTION hash (TOK_FUNCTION TOK_BIGINT '123456789012'))) (TOK_SELEXPR (TOK_FUNCTION hash (TOK_FUNCTION TOK_FLOAT 1.25))) (TOK_SELEXPR (TOK_FUNCTION hash (TOK_FUNCTION TOK_DOUBLE 16.0))) (TOK_SELEXPR (TOK_FUNCTION hash '400')) (TOK_SELEXPR (TOK_FUNCTION hash 'abc')) (TOK_SELEXPR (TOK_FUNCTION hash TRUE)) (TOK_SELEXPR (TOK_FUNCTION hash FALSE)) (TOK_SELEXPR (TOK_FUNCTION hash 1 2 3))) (TOK_LIMIT 1)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src 
+            Select Operator
+              Select Operator
+                expressions:
+                      expr: hash(UDFToByte(1))
+                      type: int
+                      expr: hash(UDFToShort(2))
+                      type: int
+                      expr: hash(3)
+                      type: int
+                      expr: hash(UDFToLong('123456789012'))
+                      type: int
+                      expr: hash(UDFToFloat(1.25))
+                      type: int
+                      expr: hash(16.0)
+                      type: int
+                      expr: hash('400')
+                      type: int
+                      expr: hash('abc')
+                      type: int
+                      expr: hash(true)
+                      type: int
+                      expr: hash(false)
+                      type: int
+                      expr: hash(1,2,3)
+                      type: int
+                Limit
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+
+
+query: SELECT hash(CAST(1 AS TINYINT)), hash(CAST(2 AS SMALLINT)),
+       hash(3), hash(CAST('123456789012' AS BIGINT)),
+       hash(CAST(1.25 AS FLOAT)), hash(CAST(16.0 AS DOUBLE)),
+       hash('400'), hash('abc'), hash(TRUE), hash(FALSE),
+       hash(1, 2, 3)
+FROM src LIMIT 1
+Input: default/src
+Output: /data/users/zshao/tools/495-trunk-apache-hive/ql/../build/ql/tmp/347375001/1065831137.10000
+1	2	3	-1097262584	1067450368	1076887552	51508	96354	1	0	1026

@@ -49,8 +49,6 @@ public class FunctionRegistry {
   static HashMap<String, FunctionInfo> mFunctions;
   static {
     mFunctions = new HashMap<String, FunctionInfo>();
-    registerUDF("default_sample_hashfn", UDFDefaultSampleHashFn.class,
-                OperatorType.PREFIX, false);
     registerUDF("concat", UDFConcat.class, OperatorType.PREFIX, false);
     registerUDF("substr", UDFSubstr.class, OperatorType.PREFIX, false);
 
@@ -163,7 +161,7 @@ public class FunctionRegistry {
     // Generic UDFs
     registerGenericUDF("case", GenericUDFCase.class);
     registerGenericUDF("when", GenericUDFWhen.class);
-    
+    registerGenericUDF("hash", GenericUDFHash.class);
   }
 
   public static FunctionInfo getInfo(Class<?> fClass) {
