@@ -22,6 +22,10 @@ import java.io.File;
 import java.io.DataInput;
 import java.io.IOException;
 import java.io.FileNotFoundException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Random;
+import java.util.ArrayList;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -30,8 +34,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.util.StringUtils;
-import java.util.Random;
 
+import org.apache.hadoop.hive.common.FileUtils;
+
+/**
+ * Context for Semantic Analyzers.
+ * Usage:
+ * not reusable - construct a new one for each query
+ * should call clear() at end of use to remove temporary folders
+ */
 public class Context {
   private Path resFile;
   private Path resDir;
@@ -40,33 +51,219 @@ public class Context {
   private Path[] resDirPaths;
   private int    resDirFilesNum;
   boolean initialized;
-  private String scratchDir;
+  private String scratchPath;
+  private Path MRScratchDir;
+  private Path localScratchDir;
+  private ArrayList<Path> allScratchDirs = new ArrayList<Path> ();
   private HiveConf conf;
-  
+  Random rand = new Random ();
+  protected int randomid = Math.abs(rand.nextInt());
+  protected int pathid = 10000;
+  protected boolean explain = false;
+
   public Context(HiveConf conf) {
     this.conf = conf;
-    initialized = false;
-    resDir = null;
-    resFile = null;
+    Path tmpPath = new Path(conf.getVar(HiveConf.ConfVars.SCRATCHDIR));
+    scratchPath = tmpPath.toUri().getPath();
   }
 
-  public void makeScratchDir() throws Exception {
-    Random rand = new Random();
-    int randomid = Math.abs(rand.nextInt()%rand.nextInt());
-    scratchDir = conf.getVar(HiveConf.ConfVars.SCRATCHDIR) + File.separator + randomid;
-    Path tmpdir = new Path(scratchDir);
-    FileSystem fs = tmpdir.getFileSystem(conf);
-    fs.mkdirs(tmpdir);
+  /**
+   * Set the context on whether the current query is an explain query
+   * @param value true if the query is an explain query, false if not
+   */
+  public void setExplain(boolean value) {
+    explain = value;
   }
 
-  public String getScratchDir() {
-    return scratchDir;
+  /**
+   * Find out whether the current query is an explain query
+   * @return true if the query is an explain query, false if not
+   */
+  public boolean getExplain() {
+    return explain;
   }
 
-  public void removeScratchDir() throws Exception {
-    Path tmpdir = new Path(scratchDir);
-    FileSystem fs = tmpdir.getFileSystem(conf);
-    fs.delete(tmpdir, true);
+  /**
+   * Make a tmp directory on the local filesystem
+   */
+  private void makeLocalScratchDir() throws IOException {
+    while (true) {
+      localScratchDir = new Path(System.getProperty("java.io.tmpdir")
+                                 + File.separator + Math.abs(rand.nextInt()));
+      FileSystem fs = FileSystem.getLocal(conf);
+      if (fs.mkdirs(localScratchDir)) {
+        localScratchDir = fs.makeQualified(localScratchDir);
+        allScratchDirs.add(localScratchDir);
+        break;
+      }
+    }
+  }
+
+  /**
+   * Make a tmp directory for MR intermediate data
+   * If URI/Scheme are not supplied - those implied by the default filesystem
+   * will be used (which will typically correspond to hdfs instance on hadoop cluster)
+   */
+  private void makeMRScratchDir() throws IOException {
+    while(true) {
+      MRScratchDir = FileUtils.makeQualified
+        (new Path(conf.getVar(HiveConf.ConfVars.SCRATCHDIR),
+                  Integer.toString(Math.abs(rand.nextInt()))), conf);
+
+      if (explain) {
+        allScratchDirs.add(MRScratchDir);
+        return;
+      }
+
+      FileSystem fs = MRScratchDir.getFileSystem(conf);
+      if (fs.mkdirs(MRScratchDir)) {
+        allScratchDirs.add(MRScratchDir);
+        return;
+      }
+    }
+  }
+  
+  /**
+   * Make a tmp directory on specified URI
+   * Currently will use the same path as implied by SCRATCHDIR config variable
+   */
+  private Path makeExternalScratchDir(URI extURI) throws IOException {
+    while(true) {
+      String extPath = scratchPath + File.separator + 
+        Integer.toString(Math.abs(rand.nextInt()));
+      Path extScratchDir = new Path(extURI.getScheme(), extURI.getAuthority(),
+                                    extPath);
+
+      if (explain) {
+        allScratchDirs.add(extScratchDir);        
+        return extScratchDir;
+      }
+
+      FileSystem fs = extScratchDir.getFileSystem(conf);
+      if (fs.mkdirs(extScratchDir)) {
+        allScratchDirs.add(extScratchDir);
+        return extScratchDir;
+      }
+    }
+  }
+
+  /**
+   * Get a tmp directory on specified URI
+   * Will check if this has already been made
+   * (either via MR or Local FileSystem or some other external URI
+   */
+  private String getExternalScratchDir(URI extURI) {
+    try {
+      // first check if we already made a scratch dir on this URI
+      for (Path p: allScratchDirs) {
+        URI pURI = p.toUri();
+        if (strEquals(pURI.getScheme(), extURI.getScheme()) &&
+            strEquals(pURI.getAuthority(), extURI.getAuthority())) {
+          return p.toString();
+        }
+      }
+      return makeExternalScratchDir(extURI).toString();
+    } catch (IOException e) {
+      throw new RuntimeException (e);
+    }
+  }
+  
+  /**
+   * Create a map-reduce scratch directory on demand and return it
+   */
+  private String getMRScratchDir() {
+    if (MRScratchDir == null) {
+      try {
+        makeMRScratchDir();
+      } catch (IOException e) {
+        throw new RuntimeException (e);
+      }
+    }
+    return MRScratchDir.toString();
+  }
+
+  /**
+   * Create a local scratch directory on demand and return it
+   */
+  private String getLocalScratchDir() {
+    if (localScratchDir == null) {
+      try {
+        makeLocalScratchDir();
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return localScratchDir.toString();
+  }
+
+  /**
+   * Remove any created scratch directories
+   */
+  private void removeScratchDir() {
+    if (explain) {
+      try {
+        if (localScratchDir != null)
+          FileSystem.getLocal(conf).delete(localScratchDir);
+      } catch (Exception e) {
+        LOG.warn("Error Removing Scratch: " + StringUtils.stringifyException(e));
+      }
+    } else {
+      for (Path p: allScratchDirs) {
+        try {
+          p.getFileSystem(conf).delete(p);
+        } catch (Exception e) {
+          LOG.warn("Error Removing Scratch: " + StringUtils.stringifyException(e));
+        }
+      }
+    }
+    MRScratchDir = null;
+    localScratchDir = null;
+  }
+
+  /**
+   * Return the next available path in the current scratch dir
+   */
+  private String nextPath(String base) {
+    return base + File.separator + Integer.toString(pathid++);
+  }
+  
+  /**
+   * check if path is tmp path. the assumption is that all uri's relative
+   * to scratchdir are temporary
+   * @return true if a uri is a temporary uri for map-reduce intermediate
+   *         data, false otherwise
+   */
+  public boolean isMRTmpFileURI(String uriStr) {
+    return (uriStr.indexOf(scratchPath) != -1);
+  }
+
+  /**
+   * Get a path to store map-reduce intermediate data in
+   * @return next available path for map-red intermediate data
+   */
+  public String getMRTmpFileURI() {
+    return nextPath(getMRScratchDir());
+  }
+
+
+  /**
+   * Get a tmp path on local host to store intermediate data
+   * @return next available tmp path on local fs
+   */
+  public String getLocalTmpFileURI() {
+    return nextPath(getLocalScratchDir());
+  }
+  
+
+  /**
+   * Get a path to store tmp data destined for external URI
+   * @param extURI external URI to which the tmp data has to be 
+   *               eventually moved
+   * @return next available tmp path on the file system corresponding
+   *              extURI
+   */
+  public String getExternalTmpFileURI(URI extURI) {
+    return nextPath(getExternalScratchDir(extURI));
   }
 
   /**
@@ -104,8 +301,7 @@ public class Context {
     resDirPaths = null;
   }  
   
-  public void clear() {
-    initialized = false;
+  public void clear() throws IOException {
     if (resDir != null)
     {
       try
@@ -127,11 +323,7 @@ public class Context {
         LOG.info("Context clear error: " + StringUtils.stringifyException(e));
       }
     }
-
-    resDir = null;
-    resFile = null;
-    resDirFilesNum = 0;
-    resDirPaths = null;
+    removeScratchDir();
   }
 
   public DataInput getStream() {
@@ -185,6 +377,13 @@ public class Context {
     }
     
     return null;
+  }
+
+  /**
+   * Little abbreviation for StringUtils
+   */
+  private static boolean strEquals(String str1, String str2) {
+    return org.apache.commons.lang.StringUtils.equals(str1, str2);
   }
 }
 

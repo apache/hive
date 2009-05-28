@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.ql.plan.partitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
@@ -117,14 +118,8 @@ public class GenMRUnion1 implements NodeProcessor {
       PlanUtils.getBinaryTableDesc(PlanUtils.getFieldSchemasFromRowSchema(parent.getSchema(), "temporarycol")); 
     
     // generate the temporary file
-    String scratchDir = ctx.getScratchDir();
-    int randomid = ctx.getRandomId();
-    int pathid   = ctx.getPathId();
-    
-    String taskTmpDir = (new Path(scratchDir + File.separator + randomid + '.' + pathid)).toString();
-    
-    pathid++;
-    ctx.setPathId(pathid);
+    Context baseCtx = parseCtx.getContext();
+    String taskTmpDir = baseCtx.getMRTmpFileURI();
     
     // Add the path to alias mapping
     uCtxTask.addTaskTmpDir(taskTmpDir);

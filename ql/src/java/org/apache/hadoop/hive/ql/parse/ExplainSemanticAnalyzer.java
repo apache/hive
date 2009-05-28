@@ -36,8 +36,9 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     super(conf);
   }
 
-  public void analyzeInternal(ASTNode ast, Context ctx) throws SemanticException {
-    
+  public void analyzeInternal(ASTNode ast) throws SemanticException {
+    ctx.setExplain(true);
+
     // Create a semantic analyzer for the query
     BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(conf, (ASTNode)ast.getChild(0));
     sem.analyze((ASTNode)ast.getChild(0), ctx);
@@ -47,7 +48,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
       extended = true;
     }
     
-    ctx.setResFile(new Path(getTmpFileName()));
+    ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
     List<Task<? extends Serializable>> tasks = sem.getRootTasks();
     Task<? extends Serializable> fetchTask = sem.getFetchTask();
     if (tasks == null) {

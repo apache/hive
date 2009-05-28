@@ -37,6 +37,7 @@ import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.common.FileUtils;
 
 /**
  * This class represents a warehouse where data of Hive tables is stored
@@ -44,41 +45,22 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 public class Warehouse {
   private Path whRoot;
   private Configuration conf;
+  String whRootString;
 
   public static final Log LOG = LogFactory.getLog("hive.metastore.warehouse");
 
   public Warehouse(Configuration conf) throws MetaException {
     this.conf = conf;
-    String whRootString =  HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREWAREHOUSE);
+    whRootString =  HiveConf.getVar(conf, HiveConf.ConfVars.METASTOREWAREHOUSE);
     if(StringUtils.isBlank(whRootString)) {
-      throw new MetaException(HiveConf.ConfVars.METASTOREWAREHOUSE.varname + " is not set in the config or blank");
-    }
-    whRoot = new Path(whRootString);
-    URI uri = whRoot.toUri();
-
-    // if the METASTOREWAREHOUSE value does not specify the schema and the authority
-    // then use the default file system as specified by the Configuration
-    try {
-      if ((uri.getScheme() == null) && (uri.getAuthority() == null)) {
-        FileSystem fs = FileSystem.get(conf);
-        whRoot = new Path(fs.getUri().toString(), whRootString);
-      }
-    } catch (IOException e) {
-      MetaStoreUtils.logAndThrowMetaException(e);
+      throw new MetaException(HiveConf.ConfVars.METASTOREWAREHOUSE.varname
+                              + " is not set in the config or blank");
     }
   }
 
-  public Path getDefaultDatabasePath(String dbName) {
-    if(dbName.equalsIgnoreCase(MetaStoreUtils.DEFAULT_DATABASE_NAME)) {
-      return whRoot;
-    }
-    return new Path(this.whRoot, dbName.toLowerCase() + ".db");
-  }
-  
-  public Path getDefaultTablePath(String dbName, String tableName) {
-    return new Path(getDefaultDatabasePath(dbName), tableName.toLowerCase());
-  }
-
+  /**
+   * Helper function to convert IOException to MetaException
+   */
   private FileSystem getFs(Path f) throws MetaException {
     try {
       return f.getFileSystem(conf);
@@ -86,6 +68,51 @@ public class Warehouse {
       MetaStoreUtils.logAndThrowMetaException(e);
     }
     return null;
+  }
+
+  /**
+   * Hadoop File System reverse lookups paths with raw ip addresses
+   * The File System URI always contains the canonical DNS name of the
+   * Namenode. Subsequently, operations on paths with raw ip addresses
+   * cause an exception since they don't match the file system URI.
+   *
+   * This routine solves this problem by replacing the scheme and authority
+   * of a path with the scheme and authority of the FileSystem that it
+   * maps to.
+   *
+   * @param path Path to be canonicalized
+   * @return Path with canonical scheme and authority
+   */
+  public Path getDnsPath(Path path) throws MetaException {
+    FileSystem fs  = getFs(path);
+    return (new Path(fs.getUri().getScheme(), fs.getUri().getAuthority(),
+                     path.toUri().getPath()));
+  }
+
+
+  /**
+   * Resolve the configured warehouse root dir with respect to the configuration
+   * This involves opening the FileSystem corresponding to the warehouse root dir
+   * (but that should be ok given that this is only called during DDL statements
+   * for non-external tables).
+   */
+  private Path getWhRoot() throws MetaException {
+    if (whRoot != null) {
+      return whRoot;
+    }
+    whRoot = getDnsPath(new Path(whRootString));
+    return whRoot;
+  }
+
+  public Path getDefaultDatabasePath(String dbName) throws MetaException {
+    if (dbName.equalsIgnoreCase(MetaStoreUtils.DEFAULT_DATABASE_NAME)) {
+      return getWhRoot();
+    }
+    return new Path(getWhRoot(), dbName.toLowerCase() + ".db");
+  }
+  
+  public Path getDefaultTablePath(String dbName, String tableName) throws MetaException {
+    return new Path(getDefaultDatabasePath(dbName), tableName.toLowerCase());
   }
 
   public boolean mkdirs(Path f) throws MetaException {
@@ -106,7 +133,14 @@ public class Warehouse {
       if(!fs.exists(f)) {
         return false;
       }
-      Trash trashTmp = new Trash(fs.getConf());
+
+      // older versions of Hadoop don't have a Trash constructor based on the 
+      // Path or FileSystem. So need to achieve this by creating a dummy conf.
+      // this needs to be filtered out based on version
+      Configuration dupConf = new Configuration(conf);
+      FileSystem.setDefaultUri(dupConf, fs.getUri());
+
+      Trash trashTmp = new Trash(dupConf);
       if (trashTmp.moveToTrash(f)) {
         LOG.info("Moved to trash: " + f);
         return true;

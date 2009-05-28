@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.util.*;
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 
@@ -37,10 +38,6 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 
 public abstract class BaseSemanticAnalyzer {
-  protected String scratchDir;
-  protected int randomid;
-  protected int pathid;
-
   protected final Hive db;
   protected final HiveConf conf;
   protected List<Task<? extends Serializable>> rootTasks;
@@ -60,11 +57,6 @@ public abstract class BaseSemanticAnalyzer {
       rootTasks = new ArrayList<Task<? extends Serializable>>();
       LOG = LogFactory.getLog(this.getClass().getName());
       console = new LogHelper(LOG);
-
-      this.scratchDir = this.db.getConf().getVar(HiveConf.ConfVars.SCRATCHDIR);
-      Random rand = new Random();
-      this.randomid = Math.abs(rand.nextInt()%rand.nextInt());
-      this.pathid = 10000;
       this.idToTableNameMap = new  HashMap<String, String>();
     } catch (Exception e) {
       throw new SemanticException (e);
@@ -77,11 +69,11 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   
-  public abstract void analyzeInternal(ASTNode ast, Context ctx) throws SemanticException;
+  public abstract void analyzeInternal(ASTNode ast) throws SemanticException;
 
   public void analyze(ASTNode ast, Context ctx) throws SemanticException {
-    scratchDir = ctx.getScratchDir();
-    analyzeInternal(ast, ctx);
+    this.ctx = ctx;
+    analyzeInternal(ast);
   }
 
   public void validate() throws SemanticException {
@@ -93,34 +85,34 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   /**
-	 * @return the fetchTask
-	 */
-	public Task<? extends Serializable> getFetchTask() {
-		return fetchTask;
-	}
+   * @return the fetchTask
+   */
+  public Task<? extends Serializable> getFetchTask() {
+    return fetchTask;
+  }
 
-	/**
-	 * @param fetchTask the fetchTask to set
-	 */
-	public void setFetchTask(Task<? extends Serializable> fetchTask) {
-		this.fetchTask = fetchTask;
-	}
+  /**
+   * @param fetchTask the fetchTask to set
+   */
+  public void setFetchTask(Task<? extends Serializable> fetchTask) {
+    this.fetchTask = fetchTask;
+  }
 
-	public boolean getFetchTaskInit() {
-		return fetchTaskInit;
-	}
+  public boolean getFetchTaskInit() {
+    return fetchTaskInit;
+  }
 
-	public void setFetchTaskInit(boolean fetchTaskInit) {
-		this.fetchTaskInit = fetchTaskInit;
-	}
+  public void setFetchTaskInit(boolean fetchTaskInit) {
+    this.fetchTaskInit = fetchTaskInit;
+  }
 
-	protected void reset() {
+  protected void reset() {
     rootTasks = new ArrayList<Task<? extends Serializable>>();
   }
 
   public static String stripQuotes(String val) throws SemanticException {
     if ((val.charAt(0) == '\'' && val.charAt(val.length() - 1) == '\'')
-      || (val.charAt(0) == '\"' && val.charAt(val.length() - 1) == '\"')) {
+        || (val.charAt(0) == '\"' && val.charAt(val.length() - 1) == '\"')) {
       val = val.substring(1, val.length() - 1);
     } 
     return val;
@@ -129,31 +121,31 @@ public abstract class BaseSemanticAnalyzer {
   public static String charSetString(String charSetName, String charSetString) 
     throws SemanticException {
     try
-    {
-      // The character set name starts with a _, so strip that
-      charSetName = charSetName.substring(1);
-      if (charSetString.charAt(0) == '\'')
-        return new String(unescapeSQLString(charSetString).getBytes(), charSetName);
-      else                                       // hex input is also supported
       {
-        assert charSetString.charAt(0) == '0';
-        assert charSetString.charAt(1) == 'x';
-        charSetString = charSetString.substring(2);
+        // The character set name starts with a _, so strip that
+        charSetName = charSetName.substring(1);
+        if (charSetString.charAt(0) == '\'')
+          return new String(unescapeSQLString(charSetString).getBytes(), charSetName);
+        else                                       // hex input is also supported
+          {
+            assert charSetString.charAt(0) == '0';
+            assert charSetString.charAt(1) == 'x';
+            charSetString = charSetString.substring(2);
         
-        byte[] bArray = new byte[charSetString.length()/2];
-        int j = 0;
-        for (int i = 0; i < charSetString.length(); i += 2)
-        {
-          int val = Character.digit(charSetString.charAt(i), 16) * 16 + Character.digit(charSetString.charAt(i+1), 16);
-          if (val > 127)
-            val = val - 256;
-          bArray[j++] = new Integer(val).byteValue();
-        }
+            byte[] bArray = new byte[charSetString.length()/2];
+            int j = 0;
+            for (int i = 0; i < charSetString.length(); i += 2)
+              {
+                int val = Character.digit(charSetString.charAt(i), 16) * 16 + Character.digit(charSetString.charAt(i+1), 16);
+                if (val > 127)
+                  val = val - 256;
+                bArray[j++] = new Integer(val).byteValue();
+              }
 
-        String res = new String(bArray, charSetName);
-        return res;
-      } 
-    } catch (UnsupportedEncodingException e) {
+            String res = new String(bArray, charSetName);
+            return res;
+          } 
+      } catch (UnsupportedEncodingException e) {
       throw new SemanticException(e);
     }
   }
@@ -175,7 +167,7 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("nls")
-  public static String unescapeSQLString(String b) {
+    public static String unescapeSQLString(String b) {
 
     Character enclosure = null;
 
@@ -206,15 +198,15 @@ public abstract class BaseSemanticAnalyzer {
         if ((i1 >= '0' && i1 <= '1') &&
             (i2 >= '0' && i2 <= '7') &&
             (i3 >= '0' && i3 <= '7'))
-        {
-          byte bVal = (byte)((i3 - '0') + ((i2 - '0') * 8 ) + ((i1 - '0') * 8 * 8));
-          byte[] bValArr = new byte[1];
-          bValArr[0] = bVal;
-          String tmp = new String(bValArr);
-          sb.append(tmp);
-          i += 3;
-          continue;
-        }
+          {
+            byte bVal = (byte)((i3 - '0') + ((i2 - '0') * 8 ) + ((i1 - '0') * 8 * 8));
+            byte[] bValArr = new byte[1];
+            bValArr[0] = bVal;
+            String tmp = new String(bValArr);
+            sb.append(tmp);
+            i += 3;
+            continue;
+          }
       }
 
       if (currentChar == '\\' && (i+2 < b.length())) {
@@ -229,7 +221,7 @@ public abstract class BaseSemanticAnalyzer {
         case 't': sb.append("\t"); break;
         case 'Z': sb.append("\u001A"); break;
         case '\\': sb.append("\\"); break;
-        // The following 2 lines are exactly what MySQL does
+          // The following 2 lines are exactly what MySQL does
         case '%': sb.append("\\%"); break;
         case '_': sb.append("\\_"); break;
         default: sb.append(n);
@@ -240,14 +232,6 @@ public abstract class BaseSemanticAnalyzer {
       }
     }
     return sb.toString();
-  }
-  
-  public String getTmpFileName() 
-  {
-    // generate the temporary file
-    String taskTmpDir = this.scratchDir + File.separator + this.randomid + '.' + this.pathid;
-    this.pathid++;
-    return taskTmpDir;
   }
   
   public Set<ReadEntity> getInputs() {

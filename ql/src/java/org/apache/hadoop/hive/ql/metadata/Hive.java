@@ -505,28 +505,47 @@ public class Hive {
   throws HiveException {
     Table tbl = getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
     try {
-      FileSystem fs = FileSystem.get(tbl.getDataLocation(), getConf());
-      Path partPath = new Path(tbl.getDataLocation().getPath(), Warehouse.makePartName(partSpec));
       /** Move files before creating the partition since down stream processes check 
        *  for existence of partition in metadata before accessing the data. If partition
        *  is created before data is moved, downstream waiting processes might move forward
        *  with partial data
        */
+
+      FileSystem fs;
+      Path partPath;
+
+      // check if partition exists without creating it
+      Partition part = getPartition (tbl, partSpec, false);
+      if (part == null) {
+        // Partition does not exist currently. The partition name is extrapolated from
+        // the table's location (even if the table is marked external)
+        fs = FileSystem.get(tbl.getDataLocation(), getConf());
+        partPath = new Path(tbl.getDataLocation().getPath(), Warehouse.makePartName(partSpec));
+      } else {
+        // Partition exists already. Get the path from the partition. This will
+        // get the default path for Hive created partitions or the external path
+        // when directly created by user
+        partPath = part.getPath()[0];
+        fs = partPath.getFileSystem(getConf());
+      }
       if(replace) {
         Hive.replaceFiles(loadPath, partPath, fs, tmpDirPath);
       } else {
         Hive.copyFiles(loadPath, partPath, fs);
       }
-      // create a partition if it doesn't exist
-      getPartition(tbl, partSpec, true);
+
+      if (part == null) {
+        // create the partition if it didn't exist before
+        getPartition(tbl, partSpec, true);
+      }
     } catch (IOException e) {
       LOG.error(StringUtils.stringifyException(e));
       throw new HiveException(e);
     } catch (MetaException e) {
       LOG.error(StringUtils.stringifyException(e));
       throw new HiveException(e);
-    } 
-  }
+    }
+}
 
   /**
    * Load a directory into a Hive Table.
@@ -762,14 +781,18 @@ public class Hive {
           for(int i=0; i<srcs.length; i++) {
               FileStatus[] items = fs.listStatus(srcs[i].getPath());
               for(int j=0; j<items.length; j++) {
-                  boolean b = fs.rename(items[j].getPath(), new Path(tmppath, items[j].getPath().getName()));
-                  LOG.debug("Renaming:"+items[j]+",Status:"+b);
+                if (!fs.rename(items[j].getPath(),
+                               new Path(tmppath, items[j].getPath().getName()))) {
+                  throw new HiveException ("Error moving: " + items[j].getPath()
+                                           + " into: " + tmppath);
+                }
               }
           }
 
           // point of no return
           boolean b = fs.delete(destf, true);
           LOG.debug("Deleting:"+destf.toString()+",Status:"+b);
+
           // create the parent directory otherwise rename can fail if the parent doesn't exist
           if (!fs.mkdirs(destf.getParent())) {
             throw new HiveException("Unable to create destination directory: " 

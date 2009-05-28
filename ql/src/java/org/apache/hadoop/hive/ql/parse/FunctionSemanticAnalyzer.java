@@ -34,7 +34,7 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
     super(conf);
   }
   
-  public void analyzeInternal(ASTNode ast, Context ctx) throws SemanticException {
+  public void analyzeInternal(ASTNode ast) throws SemanticException {
     String functionName = ast.getChild(0).getText();
     String className = unescapeSQLString(ast.getChild(1).getText());
     createFunctionDesc desc = new createFunctionDesc(functionName, className);

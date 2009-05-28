@@ -140,14 +140,12 @@ public class Driver implements CommandProcessor {
   public Driver(HiveConf conf) {
     console = new LogHelper(LOG);
     this.conf = conf;
-    ctx = new Context(conf);
   }
 
   public Driver() {
     console = new LogHelper(LOG);
     if (SessionState.get() != null) {
       conf = SessionState.get().getConf();
-      ctx = new Context(conf);
     }
   }
 
@@ -165,8 +163,7 @@ public class Driver implements CommandProcessor {
     TaskFactory.resetId();
 
     try {
-      ctx.clear();
-      ctx.makeScratchDir();
+      ctx = new Context (conf);
 
       ParseDriver pd = new ParseDriver();
       ASTNode tree = pd.parse(command);
@@ -415,8 +412,6 @@ public class Driver implements CommandProcessor {
 
   public int close() {
     try {
-      // Delete the scratch directory from the context
-      ctx.removeScratchDir();
       ctx.clear();
     } catch (Exception e) {
       console.printError("FAILED: Unknown exception : " + e.getMessage(), "\n"

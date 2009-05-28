@@ -76,8 +76,9 @@ public class HiveIgnoreKeyTextOutputFormat<K extends WritableComparable, V exten
     }
 
     final int finalRowSeparator = rowSeparator;
+    FileSystem fs = outPath.getFileSystem(jc);
     final OutputStream outStream = Utilities.createCompressedStream(jc,
-        FileSystem.get(jc).create(outPath), isCompressed);
+        fs.create(outPath), isCompressed);
     return new RecordWriter() {
       public void write(Writable r) throws IOException {
         if (r instanceof Text) {

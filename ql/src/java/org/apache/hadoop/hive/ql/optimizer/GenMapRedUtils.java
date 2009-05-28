@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.ql.plan.fileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.ql.parse.*;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -376,13 +377,8 @@ public class GenMapRedUtils {
       rootTasks.remove(childTask);
 
     // generate the temporary file
-    String scratchDir = opProcCtx.getScratchDir();
-    int randomid = opProcCtx.getRandomId();
-    int pathid   = opProcCtx.getPathId();
-      
-    String taskTmpDir = (new Path(scratchDir + File.separator + randomid + '.' + pathid)).toString();
-    pathid++;
-    opProcCtx.setPathId(pathid);
+    Context baseCtx = parseCtx.getContext();
+    String taskTmpDir = baseCtx.getMRTmpFileURI();
     
     Operator<? extends Serializable> parent = op.getParentOperators().get(0);
     tableDesc tt_desc = 

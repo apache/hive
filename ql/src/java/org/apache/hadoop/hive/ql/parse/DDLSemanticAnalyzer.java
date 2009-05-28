@@ -100,8 +100,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @Override
-  public void analyzeInternal(ASTNode ast, Context ctx) throws SemanticException {
-    this.ctx = ctx;
+  public void analyzeInternal(ASTNode ast) throws SemanticException {
     if (ast.getToken().getType() == HiveParser.TOK_CREATETABLE)
        analyzeCreateTable(ast, false);
     else if (ast.getToken().getType() == HiveParser.TOK_CREATEEXTTABLE)
@@ -110,15 +109,15 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
        analyzeDropTable(ast);
     else if (ast.getToken().getType() == HiveParser.TOK_DESCTABLE)
     {
-      ctx.setResFile(new Path(getTmpFileName()));
+      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeDescribeTable(ast);
     }
     else if (ast.getToken().getType() == HiveParser.TOK_SHOWTABLES)
     {
-      ctx.setResFile(new Path(getTmpFileName()));
+      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeShowTables(ast);
     } else if (ast.getToken().getType() == HiveParser.TOK_MSCK) {
-      ctx.setResFile(new Path(getTmpFileName()));
+      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeMetastoreCheck(ast);    
     } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_RENAME)
       analyzeAlterTableRename(ast);
@@ -138,7 +137,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       analyzeAlterTableSerde(ast);
     else if (ast.getToken().getType() == HiveParser.TOK_SHOWPARTITIONS)
     {
-      ctx.setResFile(new Path(getTmpFileName()));
+      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeShowPartitions(ast);
     }
     else {

@@ -38,6 +38,8 @@ import java.util.regex.PatternSyntaxException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -744,7 +746,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             if ((!qb.getParseInfo().getIsSubQ()) &&
                 (((ASTNode)ast.getChild(0)).getToken().getType() == HiveParser.TOK_TMP_FILE))
             {
-              fname = getTmpFileName();
+              fname = ctx.getMRTmpFileURI();
               ctx.setResDir(new Path(fname));
               qb.setIsQuery(true);
             }
@@ -761,39 +763,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
       throw new SemanticException(e.getMessage(), e);
     }
-  }
-
-  @SuppressWarnings("nls")
-  public static String getJEXLOpName(String name) {
-    if (name.equalsIgnoreCase("AND")) {
-      return "&&";
-    }
-    else if (name.equalsIgnoreCase("OR")) {
-      return "||";
-    }
-    else if (name.equalsIgnoreCase("NOT")) {
-      return "!";
-    }
-    else if (name.equalsIgnoreCase("=")) {
-      return "==";
-    }
-    else if (name.equalsIgnoreCase("<>")) {
-      return "!=";
-    }
-    else if (name.equalsIgnoreCase("NULL")) {
-      return "== NULL";
-    }
-    else if (name.equalsIgnoreCase("NOT NULL")) {
-      return "!= NULL";
-    }
-    else {
-      return name;
-    }
-  }
-
-  @SuppressWarnings("nls")
-  public static String getJEXLFuncName(String name) {
-    return "__udf__" + name;
   }
 
   private boolean isPresent(String[] list, String elem) {
@@ -2236,84 +2205,109 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private Operator genFileSinkPlan(String dest, QB qb,
       Operator input) throws SemanticException {
 
-  	RowResolver inputRR = opParseCtx.get(input).getRR();
-    // Generate the destination file
-    String queryTmpdir = this.scratchDir + File.separator + this.randomid + '.' + this.pathid + '.' + dest ;
-    this.pathid ++;
-
-    // Next for the destination tables, fetch the information
-    // create a temporary directory name and chain it to the plan
-    String dest_path = null;
-    tableDesc table_desc = null;
+    RowResolver inputRR = opParseCtx.get(input).getRR();
+    QBMetaData qbm = qb.getMetaData();
+    Integer dest_type = qbm.getDestTypeForAlias(dest);
     
+    Table dest_tab;     // destination table if any
+    String queryTmpdir; // the intermediate destination directory
+    Path dest_path;     // the final destination directory
+    tableDesc table_desc = null;
     int currentTableId = 0;
-
-    Integer dest_type = qb.getMetaData().getDestTypeForAlias(dest);
+    boolean isLocal = false;
 
     switch (dest_type.intValue()) {
-    case QBMetaData.DEST_TABLE:
-      {
-        
-       
-        Table dest_tab = qb.getMetaData().getDestTableForAlias(dest);
+    case QBMetaData.DEST_TABLE: {
+
+        dest_tab = qbm.getDestTableForAlias(dest);
+        dest_path = dest_tab.getPath();
+        queryTmpdir = ctx.getExternalTmpFileURI(dest_path.toUri());
         table_desc = Utilities.getTableDesc(dest_tab);
         
         this.idToTableNameMap.put( String.valueOf(this.destTableId), dest_tab.getName());
         currentTableId = this.destTableId;
         this.destTableId ++;
 
-        dest_path = dest_tab.getPath().toString();
         // Create the work for moving the table
-        this.loadTableWork.add(new loadTableDesc(queryTmpdir, getTmpFileName(),
-                                            table_desc,
-                                            new HashMap<String, String>()));
+        this.loadTableWork.add
+          (new loadTableDesc(queryTmpdir,
+                             ctx.getExternalTmpFileURI(dest_path.toUri()),
+                             table_desc,
+                             new HashMap<String, String>()));
         outputs.add(new WriteEntity(dest_tab));
         break;
       }
-    case QBMetaData.DEST_PARTITION:
-      {
-        Partition dest_part = qb.getMetaData().getDestPartitionForAlias(dest);
-        Table dest_tab = dest_part.getTable();
+    case QBMetaData.DEST_PARTITION: {
+
+        Partition dest_part = qbm.getDestPartitionForAlias(dest);
+        dest_tab = dest_part.getTable();
+        dest_path = dest_part.getPath()[0];
+        queryTmpdir = ctx.getExternalTmpFileURI(dest_path.toUri());
         table_desc = Utilities.getTableDesc(dest_tab);
-        dest_path = dest_part.getPath()[0].toString();
-        this.idToTableNameMap.put( String.valueOf(this.destTableId), dest_tab.getName());
+
+        this.idToTableNameMap.put(String.valueOf(this.destTableId), dest_tab.getName());
         currentTableId = this.destTableId;
         this.destTableId ++;
         
-        this.loadTableWork.add(new loadTableDesc(queryTmpdir, getTmpFileName(), table_desc, dest_part.getSpec()));
+        this.loadTableWork.add
+          (new loadTableDesc(queryTmpdir,
+                             ctx.getExternalTmpFileURI(dest_path.toUri()),
+                             table_desc, dest_part.getSpec()));
         outputs.add(new WriteEntity(dest_part));
         break;
       }
     case QBMetaData.DEST_LOCAL_FILE:
+        isLocal = true;
+        // fall through
     case QBMetaData.DEST_DFS_FILE: {
-        dest_path = qb.getMetaData().getDestFileForAlias(dest);
+        dest_path = new Path(qbm.getDestFileForAlias(dest));
+        String destStr = dest_path.toString();
+
+        if (isLocal) {
+          // for local directory - we always write to map-red intermediate
+          // store and then copy to local fs
+          queryTmpdir = ctx.getMRTmpFileURI();
+        } else {
+          // otherwise write to the file system implied by the directory
+          // no copy is required. we may want to revisit this policy in future
+
+          try {
+            Path qPath = FileUtils.makeQualified(dest_path, conf);
+            queryTmpdir = ctx.getExternalTmpFileURI(qPath.toUri());
+          } catch (Exception e) {
+            throw new SemanticException("Error creating temporary folder on: "
+                                        + dest_path, e);
+          }
+        }
         String cols = new String();
         Vector<ColumnInfo> colInfos = inputRR.getColumnInfos();
     
         boolean first = true;
         for (ColumnInfo colInfo:colInfos) {
-        	String[] nm = inputRR.reverseLookup(colInfo.getInternalName());
+          String[] nm = inputRR.reverseLookup(colInfo.getInternalName());
           if (!first)
             cols = cols.concat(",");
           
           first = false;
           if (nm[0] == null) 
-          	cols = cols.concat(nm[1]);
+            cols = cols.concat(nm[1]);
           else
-          	cols = cols.concat(nm[0] + "." + nm[1]);
+            cols = cols.concat(nm[0] + "." + nm[1]);
         }
-        if (!dest_path.startsWith(this.scratchDir+File.separator))
-        {
-          this.idToTableNameMap.put( String.valueOf(this.destTableId), dest_path);
+
+        if (!ctx.isMRTmpFileURI(destStr)) {
+          this.idToTableNameMap.put( String.valueOf(this.destTableId), destStr);
           currentTableId = this.destTableId;
           this.destTableId ++;
         }
+
         boolean isDfsDir = (dest_type.intValue() == QBMetaData.DEST_DFS_FILE);
-        this.loadFileWork.add(new loadFileDesc(queryTmpdir, dest_path,
-                                          isDfsDir, cols));
+        this.loadFileWork.add(new loadFileDesc(queryTmpdir, destStr,
+                                               isDfsDir, cols));
+
         table_desc = PlanUtils.getDefaultTableDesc(Integer.toString(Utilities.ctrlaCode),
-            cols);
-        outputs.add(new WriteEntity(dest_path, !isDfsDir));
+                                                   cols);
+        outputs.add(new WriteEntity(destStr, !isDfsDir));
         break;
     }
     default:
@@ -3583,7 +3577,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       new GenMRProcContext(
         new HashMap<Operator<? extends Serializable>, Task<? extends Serializable>>(),
         new ArrayList<Operator<? extends Serializable>>(),
-        getParseContext(), mvTask, this.rootTasks, this.scratchDir, this.randomid, this.pathid,
+        getParseContext(), mvTask, this.rootTasks,
         new HashMap<Operator<? extends Serializable>, GenMapRedCtx>(),
         inputs, outputs);
 
@@ -3675,8 +3669,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   @SuppressWarnings("nls")
-  public void analyzeInternal(ASTNode ast, Context ctx) throws SemanticException {
-    this.ctx = ctx;
+  public void analyzeInternal(ASTNode ast) throws SemanticException {
     reset();
 
     QB qb = new QB(null, null, false);

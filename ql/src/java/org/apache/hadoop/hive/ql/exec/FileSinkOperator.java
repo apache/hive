@@ -68,7 +68,7 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
   transient protected boolean autoDelete = false;
 
   private void commit() throws IOException {
-    if(!fs.rename(outPath, finalPath)) {
+   if (!fs.rename(outPath, finalPath)) {
       throw new IOException ("Unable to rename output to: " + finalPath);
     }
     LOG.info("Committed to output file: " + finalPath);
@@ -120,9 +120,12 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
         statsMap.put(tabIdEnum, row_count);
         
       }
-      fs = FileSystem.get(hconf);
-      finalPath = new Path(Utilities.toTempPath(conf.getDirName()), Utilities.getTaskId(hconf));
-      outPath = new Path(Utilities.toTempPath(conf.getDirName()), Utilities.toTempPath(Utilities.getTaskId(hconf)));
+      String specPath = conf.getDirName();
+      Path tmpPath = Utilities.toTempPath(specPath);
+      String taskId =  Utilities.getTaskId(hconf);
+      fs =(new Path(specPath)).getFileSystem(hconf);
+      finalPath = new Path(tmpPath, taskId);
+      outPath = new Path(tmpPath, Utilities.toTempPath(taskId));
 
       LOG.info("Writing to temp file: " + outPath);
 
@@ -134,7 +137,7 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
       // OutputFormat.getRecordWriter() is that
       // getRecordWriter does not give us enough control over the file name that
       // we create.
-      Path parent = Utilities.toTempPath(conf.getDirName());
+      Path parent = Utilities.toTempPath(specPath);
       finalPath = HiveFileFormatUtils.getOutputFormatFinalPath(parent, jc, hiveOutputFormat, isCompressed, finalPath);
       tableDesc tableInfo = conf.getTableInfo();
 
@@ -195,9 +198,10 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
   public void jobClose(Configuration hconf, boolean success) throws HiveException { 
     try {
       if(conf != null) {
-        fs = FileSystem.get(hconf);
-        Path tmpPath = Utilities.toTempPath(conf.getDirName());
-        Path finalPath = new Path(conf.getDirName());
+        String specPath = conf.getDirName();
+        fs = (new Path(specPath)).getFileSystem(hconf);
+        Path tmpPath = Utilities.toTempPath(specPath);
+        Path finalPath = new Path(specPath);
         if(success) {
           if(fs.exists(tmpPath)) {
             // Step1: rename tmp output folder to final path. After this point, 
@@ -227,9 +231,12 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
    * @param dst the target directory
    * @throws IOException 
    */
-  static public void renameOrMoveFiles(FileSystem fs, Path src, Path dst) throws IOException {
+  static public void renameOrMoveFiles(FileSystem fs, Path src, Path dst)
+    throws IOException, HiveException {
     if (!fs.exists(dst)) {
-      fs.rename(src, dst);
+      if (!fs.rename(src, dst)) {
+        throw new HiveException ("Unable to move: " + src + " to: " + dst);
+      }
     } else {
       // move file by file
       FileStatus[] files = fs.listStatus(src);
@@ -244,7 +251,9 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
             dstFilePath = new Path(dst, fileName + "_" + suffix);
           } while (fs.exists(dstFilePath));
         }
-        fs.rename(srcFilePath, dstFilePath);
+        if (!fs.rename(srcFilePath, dstFilePath)) {
+          throw new HiveException ("Unable to move: " + src + " to: " + dst);
+        }
       }
     }
   }

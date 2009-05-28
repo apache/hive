@@ -148,7 +148,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @Override
-  public void analyzeInternal(ASTNode ast, Context ctx) throws SemanticException {
+  public void analyzeInternal(ASTNode ast) throws SemanticException {
     isLocal = isOverWrite = false;
     Tree from_t = ast.getChild(0);
     Tree table_t = ast.getChild(1);
@@ -189,29 +189,22 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     if(isLocal) {
       // if the local keyword is specified - we will always make a copy. this might seem redundant in the case 
       // that the hive warehouse is also located in the local file system - but that's just a test case.
-      URI copyURI;
-      try {
-        // extract out the path name only from the scratchdir configuration
-        String scratchPath = (new Path(conf.getVar(HiveConf.ConfVars.SCRATCHDIR))).toUri().getPath();
-        copyURI = new URI(toURI.getScheme(), toURI.getAuthority(),
-                          scratchPath + "/" + Utilities.randGen.nextInt(),
-                          null, null);                          
-      } catch (URISyntaxException e) {
-        // Has to use full name to make sure it does not conflict with org.apache.commons.lang.StringUtils
-        LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
-        LOG.error("Invalid URI. Check value of variable: " + HiveConf.ConfVars.SCRATCHDIR.toString());
-        throw new SemanticException("Cannot initialize temporary destination URI");
-      }
-      rTask = TaskFactory.get(new copyWork(fromURI.toString(), copyURI.toString()), this.conf);
+      String copyURIStr = ctx.getExternalTmpFileURI(toURI);
+      URI copyURI = URI.create(copyURIStr);
+      rTask = TaskFactory.get(new copyWork(fromURI.toString(), copyURIStr), this.conf);
       fromURI = copyURI;
     }
-
+    
     // create final load/move work
     List<loadTableDesc> loadTableWork =  new ArrayList<loadTableDesc>();
     List<loadFileDesc> loadFileWork = new ArrayList<loadFileDesc>();
 
-    loadTableWork.add(new loadTableDesc(fromURI.toString(), getTmpFileName(), Utilities.getTableDesc(ts.tableHandle),
-                                        (ts.partSpec != null) ? ts.partSpec : new HashMap<String, String> (),
+    String loadTmpPath;
+    loadTmpPath = ctx.getExternalTmpFileURI(toURI);
+    loadTableWork.add(new loadTableDesc(fromURI.toString(), loadTmpPath,
+                                        Utilities.getTableDesc(ts.tableHandle),
+                                        (ts.partSpec != null) ? ts.partSpec :
+                                        new HashMap<String, String> (),
                                         isOverWrite));
 
     if(rTask != null) {

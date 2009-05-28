@@ -49,16 +49,14 @@ public class MoveTask extends Task<moveWork> implements Serializable {
   public int execute() {
 
     try {
-      // Create a file system handle
-      FileSystem fs = FileSystem.get(conf);
-
       // Do any hive related operations like moving tables and files
       // to appropriate locations
       for(loadFileDesc lfd: work.getLoadFileWork()) {
         Path targetPath = new Path(lfd.getTargetDir());
         Path sourcePath = new Path(lfd.getSourceDir());
+        FileSystem fs = sourcePath.getFileSystem(conf);
         if (lfd.getIsDfsDir()) {
-          // Just do a rename on the URIs
+          // Just do a rename on the URIs, they belong to the same FS
           String mesg = "Moving data to: " + lfd.getTargetDir();
           String mesg_detail = " from " +  lfd.getSourceDir();
           console.printInfo(mesg, mesg_detail);
@@ -66,10 +64,13 @@ public class MoveTask extends Task<moveWork> implements Serializable {
           // delete the output directory if it already exists
           fs.delete(targetPath, true);
           // if source exists, rename. Otherwise, create a empty directory
-          if (fs.exists(sourcePath))
-            fs.rename(sourcePath, targetPath);
-          else
-            fs.mkdirs(targetPath);
+          if (fs.exists(sourcePath)) {
+            if (!fs.rename(sourcePath, targetPath))
+              throw new HiveException ("Unable to rename: " + sourcePath + " to: "
+                                       + targetPath);
+          } else
+            if (!fs.mkdirs(targetPath))
+              throw new HiveException ("Unable to make directory: " + targetPath);
         } else {
           // This is a local file
           String mesg = "Copying data to local directory " + lfd.getTargetDir();
@@ -77,15 +78,17 @@ public class MoveTask extends Task<moveWork> implements Serializable {
           console.printInfo(mesg, mesg_detail);
 
           // delete the existing dest directory
-          LocalFileSystem dstFs = FileSystem.getLocal(fs.getConf());
+          LocalFileSystem dstFs = FileSystem.getLocal(conf);
 
           if(dstFs.delete(targetPath, true) || !dstFs.exists(targetPath)) {
             console.printInfo(mesg, mesg_detail);
             // if source exists, rename. Otherwise, create a empty directory
             if (fs.exists(sourcePath))
               fs.copyToLocalFile(sourcePath, targetPath);
-            else
-              dstFs.mkdirs(targetPath);
+            else {
+              if (!dstFs.mkdirs(targetPath)) 
+                throw new HiveException ("Unable to make local directory: " + targetPath);
+            }
           } else {
             console.printInfo("Unable to delete the existing destination directory: " + targetPath);
           }
@@ -105,9 +108,10 @@ public class MoveTask extends Task<moveWork> implements Serializable {
           // Get all files from the src directory
           FileStatus [] dirs;
           ArrayList<FileStatus> files;
+          FileSystem fs;
           try {
-            fs = FileSystem.get(db.getTable(tbd.getTable().getTableName()).getDataLocation(),
-                Hive.get().getConf());
+            fs = FileSystem.get
+              (db.getTable(tbd.getTable().getTableName()).getDataLocation(),conf);
             dirs = fs.globStatus(new Path(tbd.getSourceDir()));
             files = new ArrayList<FileStatus>();
             for (int i=0; (dirs != null && i<dirs.length); i++) {

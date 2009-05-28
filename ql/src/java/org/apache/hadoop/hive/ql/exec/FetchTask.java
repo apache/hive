@@ -223,7 +223,12 @@ public class FetchTask extends Task<fetchWork> implements Serializable {
       if (currPath == null)
         return null;
 
-      FileInputFormat.setInputPaths(job, currPath);
+      // not using FileInputFormat.setInputPaths() here because it forces a connection
+      // to the default file system - which may or may not be online during pure metadata
+      // operations
+      job.set("mapred.input.dir",
+              org.apache.hadoop.util.StringUtils.escapeString(currPath.toString()));
+
       tableDesc tmp = currTbl;
       if (tmp == null)
         tmp = currPart.getTableDesc();
@@ -322,7 +327,7 @@ public class FetchTask extends Task<fetchWork> implements Serializable {
       return true;
     }
     catch (Exception e) {
-      console.printError("Failed with exception " +   e.getMessage(), "\n" + StringUtils.stringifyException(e));
+      console.printError("Failed with exception " + e.getClass().getName() + ":" +   e.getMessage(), "\n" + StringUtils.stringifyException(e));
       return false;
     }
   }

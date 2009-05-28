@@ -629,7 +629,6 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
   }
 
   private void addInputPaths(JobConf job, mapredWork work, String hiveScratchDir) throws Exception {
-    FileSystem inpFs = FileSystem.get(job);
     int numEmptyPaths = 0;
     
     // If the query references non-existent partitions
@@ -672,6 +671,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
         
         // If the input file does not exist, replace it by a empty file
         Path dirPath = new Path(onefile);
+        FileSystem inpFs = dirPath.getFileSystem(job);
         boolean emptyInput = true;
         
         if (inpFs.exists(dirPath)) {

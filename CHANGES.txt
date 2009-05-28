@@ -11,7 +11,7 @@ Trunk - Unreleased
 
     HIVE-354. UDF for length of a string. (Neil Conway via namit).
 
-    HIVE-402. Implement UDF regexp. (Raghu Murthy via namit)
+    HIVE-402. Implement UDF regexp. (Raghotham Murthy via namit)
 
     HIVE-250. Shared memory java dbm for map-side joins.
     (Joydeep Sen Sarma via zshao)
@@ -162,10 +162,10 @@ Trunk - Unreleased
 
     HIVE-501. Fix UDFLower() bug. (Zheng Shao via prasadc)
 
-    HIVE-505. console.info prints to stderr. (Raghu Murthy via namit)
+    HIVE-505. console.info prints to stderr. (Raghotham Murthy via namit)
 
     HIVE-504. Fix script operator with empty input file.
-    (Raghu Murthy via zshao)
+    (Raghotham Murthy via zshao)
 
     HIVE-507. Handle empty files properly. (Namit Jain via zshao)
 
@@ -176,6 +176,9 @@ Trunk - Unreleased
     (Yongqiang He via zshao)
 
     HIVE-451. Fix ORDER BY xxx DESC (He Yongqiang via njain)
+
+    HIVE-467. Scratch data location should be on different filesystems for
+    different types of intermediate data. (Joydeep Sen Sarma via rmurthy)
 
 Release 0.3.1 - Unreleased
 
@@ -383,7 +386,7 @@ Release 0.2.0 - Unreleased
     HIVE-98. Dependency management with hadoop core using ivy.
     (Ashish Thusoo through zshao)
 
-    HIVE-73. Thrift Server and Client for Hive (Raghu through zshao)
+    HIVE-73. Thrift Server and Client for Hive (Raghotham Murthy through zshao)
 
     HIVE-113. Distribute by and sort by support. (zshao)
 

@@ -47,8 +47,8 @@ public class ExplainTask extends Task<explainWork> implements Serializable {
   public int execute() {
     
     try {
-    	OutputStream outS = FileSystem.get(conf).create(work.getResFile());
-    	PrintStream out = new PrintStream(outS);
+      OutputStream outS = work.getResFile().getFileSystem(conf).create(work.getResFile());
+      PrintStream out = new PrintStream(outS);
     	
       // Print out the parse AST
       outputAST(work.getAstStringTree(), out, 0);

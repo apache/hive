@@ -283,14 +283,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           getMS().openTransaction();
           if(tbl.getSd().getLocation() == null || tbl.getSd().getLocation().isEmpty()) {
             tblPath = wh.getDefaultTablePath(tbl.getDbName(), tbl.getTableName());
-            tbl.getSd().setLocation(tblPath.toString());
           } else {
             if (!isExternal(tbl)) {
               LOG.warn("Location: " + tbl.getSd().getLocation() +
                        "specified for non-external table:" + tbl.getTableName());
             }
-            tblPath = new Path(tbl.getSd().getLocation());
+            tblPath = wh.getDnsPath(new Path(tbl.getSd().getLocation()));
           }
+
+          tbl.getSd().setLocation(tblPath.toString());
+
           // get_table checks whether database exists, it should be moved here
           if(is_table_exists(tbl.getDbName(), tbl.getTableName())) {
             throw new AlreadyExistsException("Table " + tbl.getTableName() + " already exists");
@@ -488,13 +490,18 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           if(tbl == null) {
             throw new InvalidObjectException("Unable to add partition because table or database do not exist");
           }
-          partLocation = new Path(part.getSd().getLocation());
-          if (partLocation == null) {
+
+          String partLocationStr = part.getSd().getLocation();
+          if (partLocationStr == null || partLocationStr.isEmpty()) {
             // set default location if not specified
-            String partLocStr = Warehouse.makePartName(tbl.getPartitionKeys(), part.getValues());
-            partLocation = new Path(partLocStr);
-            part.getSd().setLocation(partLocStr);
+            partLocation = new Path(tbl.getSd().getLocation(),
+                                    Warehouse.makePartName(tbl.getPartitionKeys(), part.getValues()));
+            
+          } else {
+            partLocation = wh.getDnsPath(new Path(partLocationStr));
           }
+
+          part.getSd().setLocation(partLocation.toString());
 
           if(!wh.isDir(partLocation)) {
             if(!wh.mkdirs(partLocation)) {
