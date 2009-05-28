@@ -131,6 +131,12 @@ public class HiveConf extends Configuration {
     // mapper/reducer memory in local mode
     HIVEHADOOPMAXMEM("hive.mapred.local.mem", 0),
 
+    // test mode in hive mode
+    HIVETESTMODE("hive.test.mode", false),
+    HIVETESTMODEPREFIX("hive.test.mode.prefix", "test_"),
+    HIVETESTMODESAMPLEFREQ("hive.test.mode.samplefreq", 32),
+    HIVETESTMODENOSAMPLE("hive.test.mode.nosamplelist", ""),
+
     // Optimizer
     HIVEOPTPPD("hive.optimize.ppd", false); // predicate pushdown
     

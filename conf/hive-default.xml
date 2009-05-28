@@ -17,6 +17,37 @@
 </property>
 
 <property>
+  <name>hive.test.mode</name>
+  <value>false</value>
+  <description>whether hive is running in test mode. If yes, it turns on sampling and prefixes the output tablename</description>
+</property>
+
+<property>
+  <name>hive.test.mode.prefix</name>
+  <value>test_</value>
+  <description>if hive is running in test mode, prefixes the output table by this string</description>
+</property>
+
+<!-- If the input table is not bucketed, the denominator of the tablesample is determinied by the parameter below   -->
+<!-- For example, the following query:                                                                              -->
+<!--   INSERT OVERWRITE TABLE dest                                                                                  -->
+<!--   SELECT col1 from src                                                                                         -->
+<!-- would be converted to                                                                                          -->
+<!--   INSERT OVERWRITE TABLE test_dest                                                                             -->
+<!--   SELECT col1 from src TABLESAMPLE (BUCKET 1 out of 32 on rand(1))                                             -->
+<property>
+  <name>hive.test.mode.samplefreq</name>
+  <value>32</value>
+  <description>if hive is running in test mode and table is not bucketed, sampling frequency</description>
+</property>
+
+<property>
+  <name>hive.test.mode.nosamplelist</name>
+  <value></value>
+  <description>if hive is running in test mode, dont sample the above comma seperated list of tables</description>
+</property>
+
+<property>
   <name>hive.metastore.local</name>
   <value>true</value>
   <description>controls whether to connect to remove metastore server or open a new metastore server in Hive Client JVM</description>

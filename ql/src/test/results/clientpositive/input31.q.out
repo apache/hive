@@ -1,0 +1,73 @@
+query: drop table tst_dest31
+query: drop table dest31
+query: create table tst_dest31(a int)
+query: create table dest31(a int)
+query: explain 
+insert overwrite table dest31
+select count(1) from srcbucket
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF srcbucket)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest31)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        srcbucket 
+            Select Operator
+              Group By Operator
+                aggregations:
+                      expr: count(1)
+                mode: hash
+                Reduce Output Operator
+                  sort order: 
+                  tag: -1
+                  value expressions:
+                        expr: 0
+                        type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE.0)
+          mode: mergepartial
+          Select Operator
+            expressions:
+                  expr: 0
+                  type: bigint
+            Select Operator
+              expressions:
+                    expr: UDFToInteger(0)
+                    type: int
+              File Output Operator
+                compressed: false
+                GlobalTableId: 1
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: tst_dest31
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+            replace: true
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: tst_dest31
+
+
+query: insert overwrite table dest31
+select count(1) from srcbucket
+Input: default/srcbucket
+Output: default/tst_dest31
+query: select * from tst_dest31
+Input: default/tst_dest31
+Output: /mnt/vol/devrs005.snc1/rmurthy/hive-committer/ql/../build/ql/tmp/614253361/1040799242.10000
+500
+query: drop table tst_dest31
+query: drop table dest31

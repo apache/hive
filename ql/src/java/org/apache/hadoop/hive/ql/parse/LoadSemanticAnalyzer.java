@@ -177,7 +177,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // initialize destination table/partition
-    tableSpec ts = new tableSpec(db, (ASTNode) table_t);
+    tableSpec ts = new tableSpec(db, conf, (ASTNode) table_t);
     URI toURI = (ts.partHandle != null) ? ts.partHandle.getDataLocation() : ts.tableHandle.getDataLocation();
 
     // make sure the arguments make sense

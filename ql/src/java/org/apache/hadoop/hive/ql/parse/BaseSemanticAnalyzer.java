@@ -264,7 +264,7 @@ public abstract class BaseSemanticAnalyzer {
     public HashMap<String, String> partSpec;
     public Partition partHandle;
 
-    public tableSpec(Hive db, ASTNode ast) throws SemanticException {
+    public tableSpec(Hive db, HiveConf conf, ASTNode ast) throws SemanticException {
 
       assert(ast.getToken().getType() == HiveParser.TOK_TAB);
       int childIndex = 0;
@@ -272,6 +272,10 @@ public abstract class BaseSemanticAnalyzer {
       try {
         // get table metadata
         tableName = unescapeIdentifier(ast.getChild(0).getText());
+        boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE);
+        if (testMode) 
+          tableName = conf.getVar(HiveConf.ConfVars.HIVETESTMODEPREFIX) + tableName;
+
         tableHandle = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
       } catch (InvalidTableException ite) {
         throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(ast.getChild(0)), ite);

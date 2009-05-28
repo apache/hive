@@ -722,7 +722,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ASTNode ast = qbp.getDestForClause(name);
         switch (ast.getToken().getType()) {
         case HiveParser.TOK_TAB: {
-          tableSpec ts = new tableSpec(this.db, ast);
+          tableSpec ts = new tableSpec(this.db, conf, ast);
 
           if (!HiveOutputFormat.class.isAssignableFrom(ts.tableHandle.getOutputFormatClass()))
             throw new SemanticException(ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE.getMsg(ast));
@@ -3210,12 +3210,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @param alias The alias used for the table in the row resolver
    * @param rwsch The row resolver used to resolve column references
    * @param qbm The metadata information for the query block which is used to resolve unaliased columns
+   * @param planExpr The plan tree for the expression. If the user specified this, the parse expressions are not used
    * @return exprNodeDesc
    * @exception SemanticException
    */
   private exprNodeDesc genSamplePredicate(TableSample ts, List<String> bucketCols,
 		                                  boolean useBucketCols, String alias,
-		                                  RowResolver rwsch, QBMetaData qbm) 
+		                                  RowResolver rwsch, QBMetaData qbm, exprNodeDesc planExpr) 
     throws SemanticException {
 	  
     exprNodeDesc numeratorExpr = new exprNodeConstantDesc(
@@ -3231,7 +3232,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         Integer.valueOf(Integer.MAX_VALUE));
     
     ArrayList<exprNodeDesc> args = new ArrayList<exprNodeDesc>();
-    if (useBucketCols) {
+    if (planExpr != null)
+      args.add(planExpr);
+    else if (useBucketCols) {
       for (String col : bucketCols) {
         ColumnInfo ci = rwsch.get(alias, col);
         // TODO: change type to the one in the table schema
@@ -3358,15 +3361,52 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           && (num == den || den <= numBuckets && numBuckets % den == 0)) { 
         // input pruning is enough; no need for filter
         LOG.info("No need for sample filter");
-      } 
+      }
       else {
         // need to add filter
         // create tableOp to be filterDesc and set as child to 'top'
         LOG.info("Need sample filter");
-        exprNodeDesc samplePredicate = genSamplePredicate(ts, tabBucketCols, colsEqual, alias, rwsch, qb.getMetaData());
+        exprNodeDesc samplePredicate = genSamplePredicate(ts, tabBucketCols, colsEqual, alias, rwsch, qb.getMetaData(), null);
         tableOp = OperatorFactory.getAndMakeChild(
             new filterDesc(samplePredicate), 
             top);
+      }
+    } 
+    else {
+      boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE);
+      if (testMode) {
+        String tabName = tab.getName();
+        
+        // has the user explicitly asked not to sample this table
+        String   unSampleTblList = conf.getVar(HiveConf.ConfVars.HIVETESTMODENOSAMPLE);
+        String[] unSampleTbls    = unSampleTblList.split(",");
+        boolean unsample = false;
+        for (String unSampleTbl : unSampleTbls) 
+          if (tabName.equalsIgnoreCase(unSampleTbl))
+            unsample = true;
+        
+        if (!unsample) {
+          int numBuckets = tab.getNumBuckets();
+        
+          // If the input table is bucketed, choose the first bucket
+          if (numBuckets > 0) {
+            TableSample tsSample = new TableSample(1, numBuckets);
+            tsSample.setInputPruning(true);
+            qb.getParseInfo().setTabSample(alias, tsSample);
+            LOG.info("No need for sample filter");
+          }
+          // The table is not bucketed, add a dummy filter :: rand()
+          else {
+            int freq = conf.getIntVar(HiveConf.ConfVars.HIVETESTMODESAMPLEFREQ);
+            TableSample tsSample = new TableSample(1, freq);
+            tsSample.setInputPruning(false);
+            qb.getParseInfo().setTabSample(alias, tsSample);
+            LOG.info("Need sample filter");
+            exprNodeDesc randFunc = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("rand", new exprNodeConstantDesc(Integer.valueOf(460476415)));
+            exprNodeDesc samplePred = genSamplePredicate(tsSample, null, false, alias, rwsch, qb.getMetaData(), randFunc);
+            tableOp = OperatorFactory.getAndMakeChild(new filterDesc(samplePred), top);
+          }
+        }
       }
     }
     

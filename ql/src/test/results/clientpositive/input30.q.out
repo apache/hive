@@ -1,0 +1,77 @@
+query: drop table tst_dest30
+query: drop table dest30
+query: create table dest30(a int)
+query: create table tst_dest30(a int)
+query: explain 
+insert overwrite table dest30
+select count(1) from src
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest30)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src 
+            Select Operator
+              Filter Operator
+                predicate:
+                    expr: (((hash(rand(UDFToLong(460476415))) & 2147483647) % 32) = 0)
+                    type: boolean
+                Group By Operator
+                  aggregations:
+                        expr: count(1)
+                  mode: hash
+                  Reduce Output Operator
+                    sort order: 
+                    tag: -1
+                    value expressions:
+                          expr: 0
+                          type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE.0)
+          mode: mergepartial
+          Select Operator
+            expressions:
+                  expr: 0
+                  type: bigint
+            Select Operator
+              expressions:
+                    expr: UDFToInteger(0)
+                    type: int
+              File Output Operator
+                compressed: false
+                GlobalTableId: 1
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: tst_dest30
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+            replace: true
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: tst_dest30
+
+
+query: insert overwrite table dest30
+select count(1) from src
+Input: default/src
+Output: default/tst_dest30
+query: select * from tst_dest30
+Input: default/tst_dest30
+Output: /data/users/njain/hive3/hive3/ql/../build/ql/tmp/193236256/1067571802.10000
+18
+query: drop table tst_dest30
+query: drop table dest30

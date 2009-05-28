@@ -55,7 +55,7 @@ public class TableSample {
    * Flag to indicate that input files can be pruned
    */
   private boolean inputPruning;
-  
+
   /**
    * Constructs the TableSample given the numerator, denominator and the list of
    * ON clause expressions
@@ -68,6 +68,12 @@ public class TableSample {
     this.numerator = Integer.valueOf(num).intValue();
     this.denominator = Integer.valueOf(den).intValue();
     this.exprs = exprs;
+  }
+  
+  public TableSample(int num, int den) {
+    this.numerator = num;
+    this.denominator = den;
+    this.exprs = null;
   }
   
   /**
