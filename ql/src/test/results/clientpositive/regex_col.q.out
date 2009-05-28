@@ -182,7 +182,7 @@ SELECT b.`..` FROM srcpart a JOIN srcpart b
 ON a.key = b.key AND a.hr = b.hr AND a.ds = b.ds AND a.key = 103
 ORDER BY ds, hr
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF srcpart a) (TOK_TABREF srcpart b) (AND (AND (AND (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)) (= (. (TOK_TABLE_OR_COL a) hr) (. (TOK_TABLE_OR_COL b) hr))) (= (. (TOK_TABLE_OR_COL a) ds) (. (TOK_TABLE_OR_COL b) ds))) (= (. (TOK_TABLE_OR_COL a) key) 103)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) `..`))) (TOK_ORDERBY (TOK_TABLE_OR_COL ds) (TOK_TABLE_OR_COL hr))))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF srcpart a) (TOK_TABREF srcpart b) (AND (AND (AND (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)) (= (. (TOK_TABLE_OR_COL a) hr) (. (TOK_TABLE_OR_COL b) hr))) (= (. (TOK_TABLE_OR_COL a) ds) (. (TOK_TABLE_OR_COL b) ds))) (= (. (TOK_TABLE_OR_COL a) key) 103)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) `..`))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL ds)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL hr)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -287,7 +287,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/1152442165/1952398334.10002 
+        /Users/char/Documents/workspace/Hive-Clean/build/ql/tmp/295385744/494669655.10002 
           Reduce Output Operator
             key expressions:
                   expr: 1
@@ -322,7 +322,7 @@ Input: default/srcpart/ds=2008-04-08/hr=11
 Input: default/srcpart/ds=2008-04-08/hr=12
 Input: default/srcpart/ds=2008-04-09/hr=11
 Input: default/srcpart/ds=2008-04-09/hr=12
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/262624913/157338940.10000
+Output: /Users/char/Documents/workspace/Hive-Clean/ql/../build/ql/tmp/1506691/256346663.10000
 11	2008-04-08
 11	2008-04-08
 11	2008-04-08
@@ -452,7 +452,7 @@ STAGE PLANS:
 query: EXPLAIN
 SELECT `(ds|hr)?+.+` FROM srcpart ORDER BY key, value LIMIT 10
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL `(ds|hr)?+.+`))) (TOK_ORDERBY (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value)) (TOK_LIMIT 10)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL `(ds|hr)?+.+`))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value))) (TOK_LIMIT 10)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -508,7 +508,7 @@ Input: default/srcpart/ds=2008-04-08/hr=11
 Input: default/srcpart/ds=2008-04-08/hr=12
 Input: default/srcpart/ds=2008-04-09/hr=11
 Input: default/srcpart/ds=2008-04-09/hr=12
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/214261044/468258867.10000
+Output: /Users/char/Documents/workspace/Hive-Clean/ql/../build/ql/tmp/69766043/636823504.10000
 0	val_0
 0	val_0
 0	val_0

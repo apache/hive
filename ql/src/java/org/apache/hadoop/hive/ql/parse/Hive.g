@@ -789,17 +789,8 @@ orderByClause
 @after { msgs.pop(); }
     :
     KW_ORDER KW_BY
-    orderByExpression
-    ( COMMA orderByExpression )*
-    -> ^(TOK_ORDERBY orderByExpression+)
-    ;
-
-orderByExpression
-@init { msgs.push("order by expression"); }
-@after { msgs.pop(); }
-    :
-    expression
-    (KW_ASC | KW_DESC)?
+    columnRefOrder
+    ( COMMA columnRefOrder)* -> ^(TOK_ORDERBY columnRefOrder+)
     ;
 
 clusterByClause

@@ -175,6 +175,8 @@ Trunk - Unreleased
     HIVE-500. Fix select from newly created table.
     (Yongqiang He via zshao)
 
+    HIVE-451. Fix ORDER BY xxx DESC (He Yongqiang via njain)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

@@ -8,7 +8,7 @@ FROM src a JOIN src b
 ON a.key = b.key
 ORDER BY key LIMIT 10
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF src a) (TOK_TABREF src b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION CASE (. (TOK_TABLE_OR_COL a) key) '1' 2 '3' 4 5) key)) (TOK_ORDERBY (TOK_TABLE_OR_COL key)) (TOK_LIMIT 10)))
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF src a) (TOK_TABREF src b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION CASE (. (TOK_TABLE_OR_COL a) key) '1' 2 '3' 4 5) key)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key))) (TOK_LIMIT 10)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -75,7 +75,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/1482529671/5422982.10002 
+        /Users/char/Documents/workspace/Hive-Clean/build/ql/tmp/565291106/450207723.10002 
           Reduce Output Operator
             key expressions:
                   expr: 0
@@ -109,7 +109,7 @@ FROM src a JOIN src b
 ON a.key = b.key
 ORDER BY key LIMIT 10
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/265668502/1080404523.10000
+Output: /Users/char/Documents/workspace/Hive-Clean/ql/../build/ql/tmp/408789837/236141927.10000
 5
 5
 5

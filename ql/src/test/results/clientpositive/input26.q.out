@@ -5,7 +5,7 @@ select * from (
   select * from srcpart b where b.ds = '2008-04-08' and b.hr = '14' limit 5
 )subq
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (= (. (TOK_TABLE_OR_COL a) ds) '2008-04-08') (= (. (TOK_TABLE_OR_COL a) hr) '11'))) (TOK_ORDERBY (. (TOK_TABLE_OR_COL a) key)) (TOK_LIMIT 5))) (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart b)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (= (. (TOK_TABLE_OR_COL b) ds) '2008-04-08') (= (. (TOK_TABLE_OR_COL b) hr) '14'))) (TOK_LIMIT 5)))) subq)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (= (. (TOK_TABLE_OR_COL a) ds) '2008-04-08') (= (. (TOK_TABLE_OR_COL a) hr) '11'))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL a) key))) (TOK_LIMIT 5))) (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart b)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (= (. (TOK_TABLE_OR_COL b) ds) '2008-04-08') (= (. (TOK_TABLE_OR_COL b) hr) '14'))) (TOK_LIMIT 5)))) subq)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -62,7 +62,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive5/hive5/build/ql/tmp/303379567/249444045.10002 
+        /Users/char/Documents/workspace/Hive-Clean/build/ql/tmp/604361087/3711964.10002 
           Union
             Select Operator
               expressions:
@@ -80,7 +80,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        /data/users/njain/hive5/hive5/build/ql/tmp/303379567/249444045.10003 
+        /Users/char/Documents/workspace/Hive-Clean/build/ql/tmp/604361087/3711964.10003 
           Union
             Select Operator
               expressions:
@@ -152,7 +152,7 @@ query: select * from (
   select * from srcpart b where b.ds = '2008-04-08' and b.hr = '14' limit 5
 )subq
 Input: default/srcpart/ds=2008-04-08/hr=11
-Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/11677377/90465736.10000
+Output: /Users/char/Documents/workspace/Hive-Clean/ql/../build/ql/tmp/171937392/70987593.10000
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11
