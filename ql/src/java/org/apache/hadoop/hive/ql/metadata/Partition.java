@@ -87,7 +87,11 @@ public class Partition {
 
     List<String> pvals = new ArrayList<String>();
     for (FieldSchema field : tbl.getPartCols()) {
-      pvals.add(partSpec.get(field.getName()));
+      String val = partSpec.get(field.getName());
+      if (val == null) {
+        throw new HiveException("partition spec is invalid. field.getName() does not exist in input.");
+      }
+      pvals.add(val);
     }
     
     org.apache.hadoop.hive.metastore.api.Partition tpart = 

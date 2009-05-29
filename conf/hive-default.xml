@@ -11,6 +11,16 @@
 
 <!-- Hive Execution Parameters -->
 <property>
+  <name>mapred.reduce.tasks</name>
+  <value>-1</value>
+    <description>The default number of reduce tasks per job.  Typically set
+  to a prime close to the number of available hosts.  Ignored when
+  mapred.job.tracker is "local". Hadoop set this to 1 by default, whereas hive uses -1 as its default value.
+  By setting this property to -1, Hive will automatically figure out what should be the number of reducers.
+  </description>
+</property>
+
+<property>
   <name>hive.exec.scratchdir</name>
   <value>/tmp/hive-${user.name}</value>
   <description>Scratch space for Hive jobs</description>

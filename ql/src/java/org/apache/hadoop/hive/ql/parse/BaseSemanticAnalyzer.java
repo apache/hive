@@ -274,7 +274,7 @@ public abstract class BaseSemanticAnalyzer {
         for (int i = 0; i < partspec.getChildCount(); ++i) {
           ASTNode partspec_val = (ASTNode) partspec.getChild(i);
           String val = stripQuotes(partspec_val.getChild(1).getText());
-          partSpec.put(unescapeIdentifier(partspec_val.getChild(0).getText()), val);
+          partSpec.put(unescapeIdentifier(partspec_val.getChild(0).getText().toLowerCase()), val);
         }
         try {
           // this doesn't create partition. partition is created in MoveTask

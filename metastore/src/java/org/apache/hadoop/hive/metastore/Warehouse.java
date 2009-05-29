@@ -203,7 +203,7 @@ public class Warehouse {
       if(i > 0) {
         name.append(Path.SEPARATOR);
       }
-      name.append((partCols.get(i)).getName());
+      name.append((partCols.get(i)).getName().toLowerCase());
       name.append('=');
       name.append(vals.get(i));
     }

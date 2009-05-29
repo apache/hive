@@ -180,6 +180,9 @@ Trunk - Unreleased
     HIVE-467. Scratch data location should be on different filesystems for
     different types of intermediate data. (Joydeep Sen Sarma via rmurthy)
 
+    HIVE-514. Partition key names should be case insensitive in alter table add
+    partition statement. (Prasad Chakka via zshao)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES
