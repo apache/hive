@@ -33,8 +33,11 @@ Trunk - Unreleased
     HIVE-476. Add getTable and getPartition calls to the ReadEntity and
      WriteEntity objects in PreExecute hooks. (Ashish Thusoo via prasadc)
 
-    HIVE-518. Add test mode to hive where input tables are sampled. This
+    HIVE-518. Add test mode to hive where input tables are sampled.
     (Namit Jain via rmurthy)
+
+    HIVE-509. Add create table like.
+    (Zheng Shao via namit)
 
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)

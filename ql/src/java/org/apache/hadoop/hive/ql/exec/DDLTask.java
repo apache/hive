@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.alterTableDesc;
 import org.apache.hadoop.hive.ql.plan.createTableDesc;
+import org.apache.hadoop.hive.ql.plan.createTableLikeDesc;
 import org.apache.hadoop.hive.ql.plan.descTableDesc;
 import org.apache.hadoop.hive.ql.plan.dropTableDesc;
 import org.apache.hadoop.hive.ql.plan.showPartitionsDesc;
@@ -93,6 +94,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       createTableDesc crtTbl = work.getCreateTblDesc();
       if (crtTbl != null) {
         return createTable(db, crtTbl);
+      }
+
+      createTableLikeDesc crtTblLike = work.getCreateTblLikeDesc();
+      if (crtTblLike != null) {
+        return createTableLike(db, crtTblLike);
       }
 
       dropTableDesc dropTbl = work.getDropTblDesc();
@@ -742,4 +748,39 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     db.createTable(tbl, crtTbl.getIfNotExists());
     return 0;
   }
+  
+  
+  /**
+   * Create a new table like an existing table.
+   * 
+   * @param db The database in question.
+   * @param crtTbl This is the table we're creating.
+   * @return Returns 0 when execution succeeds and above 0 if it fails.
+   * @throws HiveException Throws this exception if an unexpected error occurs.
+   */
+  private int createTableLike(Hive db, createTableLikeDesc crtTbl) throws HiveException {
+    // Get the existing table
+    Table tbl = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, crtTbl.getLikeTableName());
+    StorageDescriptor tblStorDesc = tbl.getTTable().getSd();
+
+    tbl.getTTable().setTableName(crtTbl.getTableName());
+    
+    if (crtTbl.isExternal()) {
+      tbl.setProperty("EXTERNAL", "TRUE");
+    } else {
+      tbl.setProperty("EXTERNAL", "FALSE");
+    }
+    
+    if (crtTbl.getLocation() != null) {
+      tblStorDesc.setLocation(crtTbl.getLocation());
+    } else {
+      tblStorDesc.setLocation(null);
+      tblStorDesc.unsetLocation();
+    }
+    
+    // create the table
+    db.createTable(tbl, crtTbl.getIfNotExists());
+    return 0;
+  }
+  
 }

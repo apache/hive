@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.alterTableDesc;
 import org.apache.hadoop.hive.ql.plan.createTableDesc;
+import org.apache.hadoop.hive.ql.plan.createTableLikeDesc;
 import org.apache.hadoop.hive.ql.plan.descTableDesc;
 import org.apache.hadoop.hive.ql.plan.dropTableDesc;
 import org.apache.hadoop.hive.ql.plan.showPartitionsDesc;
@@ -102,9 +103,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   @Override
   public void analyzeInternal(ASTNode ast) throws SemanticException {
     if (ast.getToken().getType() == HiveParser.TOK_CREATETABLE)
-       analyzeCreateTable(ast, false);
-    else if (ast.getToken().getType() == HiveParser.TOK_CREATEEXTTABLE)
-       analyzeCreateTable(ast, true);
+       analyzeCreateTable(ast);
     else if (ast.getToken().getType() == HiveParser.TOK_DROPTABLE)
        analyzeDropTable(ast);
     else if (ast.getToken().getType() == HiveParser.TOK_DESCTABLE)
@@ -145,9 +144,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private void analyzeCreateTable(ASTNode ast, boolean isExt) 
+  private void analyzeCreateTable(ASTNode ast) 
     throws SemanticException {
     String            tableName     = unescapeIdentifier(ast.getChild(0).getText());
+    String            likeTableName = null;
     List<FieldSchema> cols          = null;
     List<FieldSchema> partCols      = null;
     List<String>      bucketCols    = null;
@@ -164,6 +164,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String            serde         = null;
     Map<String, String> mapProp     = null;
     boolean           ifNotExists   = false;
+    boolean           isExt         = false;
 
     if ("SequenceFile".equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.HIVEDEFAULTFILEFORMAT))) {
       inputFormat = SEQUENCEFILE_INPUT;
@@ -178,6 +179,14 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       switch (child.getToken().getType()) {
         case HiveParser.TOK_IFNOTEXISTS:
           ifNotExists = true;
+          break;
+        case HiveParser.KW_EXTERNAL:
+          isExt = true;
+          break;
+        case HiveParser.TOK_LIKETABLE:
+          if (child.getChildCount() > 0) {
+            likeTableName = unescapeIdentifier(child.getChild(0).getText());
+          }
           break;
         case HiveParser.TOK_TABCOLLIST:
           cols = getColumns(child);
@@ -255,15 +264,21 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         default: assert false;
       }
     }
-    createTableDesc crtTblDesc = 
-      new createTableDesc(tableName, isExt, cols, partCols, bucketCols, 
-                          sortCols, numBuckets,
-                          fieldDelim, collItemDelim, mapKeyDelim, lineDelim,
-                          comment, inputFormat, outputFormat, location, serde, 
-                          mapProp, ifNotExists);
-
-    validateCreateTable(crtTblDesc);
-    rootTasks.add(TaskFactory.get(new DDLWork(crtTblDesc), conf));
+    if (likeTableName == null) {
+      createTableDesc crtTblDesc = 
+        new createTableDesc(tableName, isExt, cols, partCols, bucketCols, 
+                            sortCols, numBuckets,
+                            fieldDelim, collItemDelim, mapKeyDelim, lineDelim,
+                            comment, inputFormat, outputFormat, location, serde, 
+                            mapProp, ifNotExists);
+  
+      validateCreateTable(crtTblDesc);
+      rootTasks.add(TaskFactory.get(new DDLWork(crtTblDesc), conf));
+    } else {
+      createTableLikeDesc crtTblLikeDesc = 
+        new createTableLikeDesc(tableName, isExt, location, ifNotExists, likeTableName);
+      rootTasks.add(TaskFactory.get(new DDLWork(crtTblLikeDesc), conf));
+    }
     
   }
 

@@ -23,6 +23,7 @@ import java.io.Serializable;
 public class DDLWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private createTableDesc      createTblDesc;
+  private createTableLikeDesc  createTblLikeDesc;
   private dropTableDesc        dropTblDesc;
   private alterTableDesc       alterTblDesc;
   private showTablesDesc       showTblsDesc;
@@ -45,6 +46,13 @@ public class DDLWork implements Serializable {
    */
   public DDLWork(createTableDesc createTblDesc) {
     this.createTblDesc = createTblDesc;
+  }
+
+  /**
+   * @param createTblLikeDesc create table dlike escriptor
+   */
+  public DDLWork(createTableLikeDesc createTblLikeDesc) {
+    this.createTblLikeDesc = createTblLikeDesc;
   }
 
   /**
@@ -100,6 +108,21 @@ public class DDLWork implements Serializable {
    */
   public void setCreateTblDesc(createTableDesc createTblDesc) {
     this.createTblDesc = createTblDesc;
+  }
+
+  /**
+   * @return the createTblDesc
+   */
+  @explain(displayName="Create Table Operator")
+  public createTableLikeDesc getCreateTblLikeDesc() {
+    return createTblLikeDesc;
+  }
+
+  /**
+   * @param createTblDesc the createTblDesc to set
+   */
+  public void setCreateTblLikeDesc(createTableLikeDesc createTblLikeDesc) {
+    this.createTblLikeDesc = createTblLikeDesc;
   }
 
   /**

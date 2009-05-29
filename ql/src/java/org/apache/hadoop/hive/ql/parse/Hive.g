@@ -80,6 +80,7 @@ TOK_STRING;
 TOK_LIST;
 TOK_MAP;
 TOK_CREATETABLE;
+TOK_LIKETABLE;
 TOK_DESCTABLE;
 TOK_ALTERTABLE_RENAME;
 TOK_ALTERTABLE_ADDCOLS;
@@ -92,7 +93,6 @@ TOK_ALTERTABLE_PROPERTIES;
 TOK_MSCK;
 TOK_SHOWTABLES;
 TOK_SHOWPARTITIONS;
-TOK_CREATEEXTTABLE;
 TOK_DROPTABLE;
 TOK_TABCOLLIST;
 TOK_TABCOL;
@@ -195,9 +195,9 @@ ifNotExists
 createStatement
 @init { msgs.push("create statement"); }
 @after { msgs.pop(); }
-    : KW_CREATE (ext=KW_EXTERNAL)? KW_TABLE ifNotExists? name=Identifier (LPAREN columnNameTypeList RPAREN)? tableComment? tablePartition? tableBuckets? tableRowFormat? tableFileFormat? tableLocation?
-    -> {$ext == null}? ^(TOK_CREATETABLE $name ifNotExists? columnNameTypeList? tableComment? tablePartition? tableBuckets? tableRowFormat? tableFileFormat? tableLocation?)
-    ->                 ^(TOK_CREATEEXTTABLE $name ifNotExists? columnNameTypeList? tableComment? tablePartition? tableBuckets? tableRowFormat? tableFileFormat? tableLocation?)
+    : KW_CREATE (ext=KW_EXTERNAL)? KW_TABLE ifNotExists? name=Identifier
+      ( like=KW_LIKE likeName=Identifier | (LPAREN columnNameTypeList RPAREN)? tableComment? tablePartition? tableBuckets? tableRowFormat? tableFileFormat? ) tableLocation?
+    -> ^(TOK_CREATETABLE $name $ext? ifNotExists? ^(TOK_LIKETABLE $likeName?) columnNameTypeList? tableComment? tablePartition? tableBuckets? tableRowFormat? tableFileFormat? tableLocation?)
     ;
 
 dropStatement
