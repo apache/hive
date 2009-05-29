@@ -20,10 +20,15 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.util.*;
 
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
-import org.apache.hadoop.hive.ql.metadata.*;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
@@ -469,54 +474,57 @@ public class PartitionPruner {
     try {
       StructObjectInspector rowObjectInspector = (StructObjectInspector)this.tab.getDeserializer().getObjectInspector();
       Object[] rowWithPart = new Object[2];
-      
-      for(Partition part: Hive.get().getPartitions(this.tab)) {
-        // Set all the variables here
-        LinkedHashMap<String, String> partSpec = part.getSpec();
 
-        // Create the row object
-        ArrayList<String> partNames = new ArrayList<String>();
-        ArrayList<String> partValues = new ArrayList<String>();
-        ArrayList<ObjectInspector> partObjectInspectors = new ArrayList<ObjectInspector>();
-        for(Map.Entry<String,String>entry : partSpec.entrySet()) {
-          partNames.add(entry.getKey());
-          partValues.add(entry.getValue());
-          partObjectInspectors.add(PrimitiveObjectInspectorFactory.javaStringObjectInspector); 
-        }
-        StructObjectInspector partObjectInspector = ObjectInspectorFactory.getStandardStructObjectInspector(partNames, partObjectInspectors);
-        
-        rowWithPart[1] = partValues;
-        ArrayList<StructObjectInspector> ois = new ArrayList<StructObjectInspector>(2);
-        ois.add(rowObjectInspector);
-        ois.add(partObjectInspector);
-        StructObjectInspector rowWithPartObjectInspector = ObjectInspectorFactory.getUnionStructObjectInspector(ois);
-        
-        // evaluate the expression tree
-        if (this.prunerExpr != null) {
-          ExprNodeEvaluator evaluator = ExprNodeEvaluatorFactory.get(this.prunerExpr);
-          ObjectInspector evaluateResultOI = evaluator.initialize(rowWithPartObjectInspector);
-          Object evaluateResultO = evaluator.evaluate(rowWithPart);
-          Boolean r = (Boolean) ((PrimitiveObjectInspector)evaluateResultOI).getPrimitiveJavaObject(evaluateResultO);
-          LOG.trace("prune result for partition " + partSpec + ": " + r);
-          if (Boolean.TRUE.equals(r)) {
-            LOG.debug("retained partition: " + partSpec);
-            true_parts.add(part);
-          } 
-          else if (Boolean.FALSE.equals(r)) {
-            LOG.trace("pruned partition: " + partSpec);
-          } 
-          else {
-            LOG.debug("unknown partition: " + partSpec);
-            unkn_parts.add(part);
+      if(tab.isPartitioned()) {
+        for(String partName: Hive.get().getPartitionNames(MetaStoreUtils.DEFAULT_DATABASE_NAME, tab.getName(), (short) -1)) {
+          // Set all the variables here
+          LinkedHashMap<String, String> partSpec = Warehouse.makeSpecFromName(partName);
+          LOG.debug("part name: " + partName);
+          // Create the row object
+          ArrayList<String> partNames = new ArrayList<String>();
+          ArrayList<String> partValues = new ArrayList<String>();
+          ArrayList<ObjectInspector> partObjectInspectors = new ArrayList<ObjectInspector>();
+          for(Map.Entry<String,String>entry : partSpec.entrySet()) {
+            partNames.add(entry.getKey());
+            partValues.add(entry.getValue());
+            partObjectInspectors.add(PrimitiveObjectInspectorFactory.javaStringObjectInspector); 
+          }
+          StructObjectInspector partObjectInspector = ObjectInspectorFactory.getStandardStructObjectInspector(partNames, partObjectInspectors);
+
+          rowWithPart[1] = partValues;
+          ArrayList<StructObjectInspector> ois = new ArrayList<StructObjectInspector>(2);
+          ois.add(rowObjectInspector);
+          ois.add(partObjectInspector);
+          StructObjectInspector rowWithPartObjectInspector = ObjectInspectorFactory.getUnionStructObjectInspector(ois);
+
+          // evaluate the expression tree
+          if (this.prunerExpr != null) {
+            ExprNodeEvaluator evaluator = ExprNodeEvaluatorFactory.get(this.prunerExpr);
+            ObjectInspector evaluateResultOI = evaluator.initialize(rowWithPartObjectInspector);
+            Object evaluateResultO = evaluator.evaluate(rowWithPart);
+            Boolean r = (Boolean) ((PrimitiveObjectInspector)evaluateResultOI).getPrimitiveJavaObject(evaluateResultO);
+            LOG.trace("prune result for partition " + partSpec + ": " + r);
+            if (Boolean.FALSE.equals(r)) {
+              LOG.trace("pruned partition: " + partSpec);
+            } else {
+              Partition part = Hive.get().getPartition(tab, partSpec, Boolean.FALSE);
+              if (Boolean.TRUE.equals(r)) {
+                LOG.debug("retained partition: " + partSpec);
+                true_parts.add(part);
+              } else {             
+                LOG.debug("unknown partition: " + partSpec);
+                unkn_parts.add(part);
+              }
+            }
+          } else {
+            // is there is no parition pruning, all of them are needed
+            true_parts.add(Hive.get().getPartition(tab, partSpec, Boolean.FALSE));
           }
         }
-        else {
-          // is there is no parition pruning, all of them are needed
-          true_parts.add(part);
-        }
+      } else {
+        true_parts.addAll(Hive.get().getPartitions(tab));
       }
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       throw new HiveException(e);
     }
 

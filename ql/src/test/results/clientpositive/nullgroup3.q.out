@@ -49,9 +49,9 @@ STAGE PLANS:
 
 
 query: select count(1) from tstparttbl
-Input: default/tstparttbl/ds=2008-04-09
 Input: default/tstparttbl/ds=2008-04-08
-Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/94234533/163827544.10000
+Input: default/tstparttbl/ds=2008-04-09
+Output: file:/Users/pchakka/workspace/oshive/build/ql/tmp/1242360371/10000
 500
 query: DROP TABLE tstparttbl2
 query: CREATE TABLE tstparttbl2(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
@@ -104,9 +104,9 @@ STAGE PLANS:
 
 
 query: select count(1) from tstparttbl2
-Input: default/tstparttbl2/ds=2008-04-09
 Input: default/tstparttbl2/ds=2008-04-08
-Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/726239292/465785380.10000
+Input: default/tstparttbl2/ds=2008-04-09
+Output: file:/Users/pchakka/workspace/oshive/build/ql/tmp/361074813/10000
 0
 query: DROP TABLE tstparttbl
 query: CREATE TABLE tstparttbl(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
@@ -159,9 +159,9 @@ STAGE PLANS:
 
 
 query: select count(1) from tstparttbl
-Input: default/tstparttbl/ds=2008-04-09
 Input: default/tstparttbl/ds=2008-04-08
-Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/115674074/219051439.10000
+Input: default/tstparttbl/ds=2008-04-09
+Output: file:/Users/pchakka/workspace/oshive/build/ql/tmp/813815719/10000
 500
 query: DROP TABLE tstparttbl2
 query: CREATE TABLE tstparttbl2(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
@@ -214,9 +214,9 @@ STAGE PLANS:
 
 
 query: select count(1) from tstparttbl2
-Input: default/tstparttbl2/ds=2008-04-09
 Input: default/tstparttbl2/ds=2008-04-08
-Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/702539461/654313985.10000
+Input: default/tstparttbl2/ds=2008-04-09
+Output: file:/Users/pchakka/workspace/oshive/build/ql/tmp/18671157/10000
 0
 query: DROP TABLE tstparttbl
 query: DROP TABLE tstparttbl2

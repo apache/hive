@@ -20,11 +20,13 @@ package org.apache.hadoop.hive.metastore;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URI;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -37,7 +39,6 @@ import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.common.FileUtils;
 
 /**
  * This class represents a warehouse where data of Hive tables is stored
@@ -170,6 +171,43 @@ public class Warehouse {
     }
     return suffixBuf.toString();
   }
+  
+  static final Pattern pat = Pattern.compile("([^/]+)=([^/]+)");
+  public static LinkedHashMap<String, String> makeSpecFromName(String name) throws MetaException {
+    LinkedHashMap<String, String> partSpec = new LinkedHashMap<String, String>();
+    if (name == null || name.isEmpty()) {
+      throw new MetaException("Partition name is invalid. " + name);
+    }
+    List<String[]> kvs = new ArrayList<String[]>();
+    Path currPath = new Path(name);
+    do {
+      String component = currPath.getName();
+      Matcher m = pat.matcher(component);
+      if (m.matches()) {
+        String k = m.group(1);
+        String v = m.group(2);
+
+        if (partSpec.containsKey(k)) {
+          throw new MetaException("Partition name is invalid. Key " + k + " defined at two levels");
+        }
+        String[] kv = new String[2];
+        kv[0] = k;
+        kv[1] = v;
+        kvs.add(kv);
+      }
+      else {
+        throw new MetaException("Partition name is invalid. " + name);
+      }
+      currPath = currPath.getParent();
+    } while(currPath != null && !currPath.getName().isEmpty());
+    
+    // reverse the list since we checked the part from leaf dir to table's base dir
+    for(int i = kvs.size(); i > 0; i--) { 
+      partSpec.put(kvs.get(i-1)[0], kvs.get(i-1)[1]);
+    }
+    return partSpec;
+  }
+
 
   public Path getPartitionPath(String dbName, String tableName, LinkedHashMap<String, String> pm) throws MetaException {
     return new Path(getDefaultTablePath(dbName, tableName), makePartName(pm)); 
