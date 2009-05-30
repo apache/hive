@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 import java.io.IOException;
+import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -90,7 +91,7 @@ public class MoveTask extends Task<moveWork> implements Serializable {
                 throw new HiveException ("Unable to make local directory: " + targetPath);
             }
           } else {
-            console.printInfo("Unable to delete the existing destination directory: " + targetPath);
+            throw new AccessControlException("Unable to delete the existing destination directory: " + targetPath);
           }
         }
       }

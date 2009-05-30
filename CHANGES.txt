@@ -186,8 +186,11 @@ Trunk - Unreleased
     HIVE-514. Partition key names should be case insensitive in alter table add
     partition statement. (Prasad Chakka via zshao)
 
-    HIVE-523. FIx PartitionPruner not to fetch all partitions at once.
+    HIVE-523. Fix PartitionPruner not to fetch all partitions at once.
     (Prasad Chakka via zshao)
+
+    HIVE-506. MoveTask should fail if target path cannot be deleted.
+    (Yongqiang He via zshao)
 
 Release 0.3.1 - Unreleased
 
