@@ -21,6 +21,21 @@
 </property>
 
 <property>
+  <name>hive.exec.reducers.bytes.per.reducer</name>
+  <value>1000000000</value>
+  <description>size per reducer.The default is 1G, i.e if the input size is 10G, it will use 10 reducers.</description>
+</property>
+
+<property>
+  <name>hive.exec.reducers.max</name>
+  <value>999</value>
+  <description>max number of reducers will be used. If the one
+	specified in the configuration parameter mapred.reduce.tasks is
+	negative, hive will use this one as the max number of reducers when
+	automatically determine number of reducers.</description>
+</property>
+
+<property>
   <name>hive.exec.scratchdir</name>
   <value>/tmp/hive-${user.name}</value>
   <description>Scratch space for Hive jobs</description>

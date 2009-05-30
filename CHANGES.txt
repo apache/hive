@@ -59,6 +59,9 @@ Trunk - Unreleased
     HIVE-511. Make DoubleWritable's hashCode more uniform.
     (Zheng Shao via rmurthy)
 
+    HIVE-490. Add missing configuration variables to hive-default.xml.
+    (Yongqiang He via zshao)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).
