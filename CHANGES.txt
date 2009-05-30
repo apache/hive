@@ -192,6 +192,8 @@ Trunk - Unreleased
     HIVE-506. MoveTask should fail if target path cannot be deleted.
     (Yongqiang He via zshao)
 
+    HIVE-520. Fix TestTCTLSeparatedProtocol. (Johan Oskarsson via zshao)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

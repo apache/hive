@@ -19,18 +19,19 @@
 package org.apache.hadoop.hive.serde2;
 
 
-import org.apache.hadoop.hive.serde.Constants;
+import java.util.Properties;
 
 import junit.framework.TestCase;
-import java.io.*;
-import org.apache.hadoop.hive.serde2.*;
-import org.apache.hadoop.hive.serde2.thrift.*;
-import java.util.*;
-import com.facebook.thrift.TException;
-import com.facebook.thrift.transport.*;
-import com.facebook.thrift.*;
-import com.facebook.thrift.protocol.*;
+
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol;
+
+import com.facebook.thrift.protocol.TField;
+import com.facebook.thrift.protocol.TList;
+import com.facebook.thrift.protocol.TMap;
+import com.facebook.thrift.protocol.TStruct;
+import com.facebook.thrift.transport.TMemoryBuffer;
 
 public class TestTCTLSeparatedProtocol extends TestCase {
 
@@ -38,7 +39,6 @@ public class TestTCTLSeparatedProtocol extends TestCase {
   }
 
   public void testReads() throws Exception {
-    try {
     TMemoryBuffer trans = new TMemoryBuffer(1024);
     String foo = "Hello";
     String bar = "World!";
@@ -76,6 +76,7 @@ public class TestTCTLSeparatedProtocol extends TestCase {
 
     // use 3 as the row buffer size to force lots of re-buffering.
     TCTLSeparatedProtocol prot = new TCTLSeparatedProtocol(trans, 1024);
+    prot.initialize(new Configuration(), new Properties());
 
     prot.readStructBegin();
 
@@ -107,18 +108,13 @@ public class TestTCTLSeparatedProtocol extends TestCase {
     prot.readFieldBegin();
     hello = prot.readString();
     prot.readFieldEnd();
-    assertTrue(hello.length() == 0);
+    assertNull(hello);
 
     prot.readStructEnd();
-
-    } catch(Exception e) {
-      e.printStackTrace();
-    }
   }
 
 
   public void testWrites() throws Exception {
-    try {
     TMemoryBuffer trans = new TMemoryBuffer(1024);
     TCTLSeparatedProtocol prot = new TCTLSeparatedProtocol(trans, 1024);
 
@@ -178,7 +174,8 @@ public class TestTCTLSeparatedProtocol extends TestCase {
     //
 
     prot = new TCTLSeparatedProtocol(trans, 10);
-
+    prot.initialize(new Configuration(), new Properties());
+    
     // 100 is the start
     prot.readStructBegin();
     prot.readFieldBegin();
@@ -228,24 +225,18 @@ public class TestTCTLSeparatedProtocol extends TestCase {
 
     // shouldl return nulls at end
     prot.readFieldBegin();
-    assertTrue(prot.readString().equals(""));
+    assertNull(prot.readString());
     prot.readFieldEnd();
 
     // shouldl return nulls at end
     prot.readFieldBegin();
-    assertTrue(prot.readString().equals(""));
+    assertNull(prot.readString());
     prot.readFieldEnd();
 
     prot.readStructEnd();
-
-
-    } catch(Exception e) {
-      e.printStackTrace();
-    }
   }
 
   public void testQuotedWrites() throws Exception {
-    try {
     TMemoryBuffer trans = new TMemoryBuffer(4096);
     TCTLSeparatedProtocol prot = new TCTLSeparatedProtocol(trans, 4096);
     Properties schema = new Properties();
@@ -303,20 +294,15 @@ public class TestTCTLSeparatedProtocol extends TestCase {
 
     // shouldl return nulls at end
     prot.readFieldBegin();
-    assertTrue(prot.readString().equals(""));
+    assertNull(prot.readString());
     prot.readFieldEnd();
 
     // shouldl return nulls at end
     prot.readFieldBegin();
-    assertTrue(prot.readString().equals(""));
+    assertNull(prot.readString());
     prot.readFieldEnd();
 
     prot.readStructEnd();
-
-
-    } catch(Exception e) {
-      e.printStackTrace();
-    }
   }
 
 
@@ -325,88 +311,83 @@ public class TestTCTLSeparatedProtocol extends TestCase {
    * case, TCTLSeparatedProtocol can do it. 
    */
   public void test1ApacheLogFormat() throws Exception {
-    try {
-      final String sample = "127.0.0.1 - frank [10/Oct/2000:13:55:36 -0700] \"GET /apache_pb.gif HTTP/1.0\" 200 2326";
+    final String sample = "127.0.0.1 - frank [10/Oct/2000:13:55:36 -0700] \"GET /apache_pb.gif HTTP/1.0\" 200 2326";
 
-      TMemoryBuffer trans = new TMemoryBuffer(4096);
-      trans.write(sample.getBytes(), 0, sample.getBytes().length);
-      trans.flush();
+    TMemoryBuffer trans = new TMemoryBuffer(4096);
+    trans.write(sample.getBytes(), 0, sample.getBytes().length);
+    trans.flush();
 
-      TCTLSeparatedProtocol prot = new TCTLSeparatedProtocol(trans, 4096);
-      Properties schema = new Properties();
+    TCTLSeparatedProtocol prot = new TCTLSeparatedProtocol(trans, 4096);
+    Properties schema = new Properties();
 
-      // this is a hacky way of doing the quotes since it will match any 2 of these, so
-      // "[ hello this is something to split [" would be considered to be quoted.
-      schema.setProperty(Constants.QUOTE_CHAR, "(\"|\\[|\\])");
+    // this is a hacky way of doing the quotes since it will match any 2 of these, so
+    // "[ hello this is something to split [" would be considered to be quoted.
+    schema.setProperty(Constants.QUOTE_CHAR, "(\"|\\[|\\])");
 
-      schema.setProperty(Constants.FIELD_DELIM, " ");
-      schema.setProperty(Constants.SERIALIZATION_NULL_FORMAT, "-");
-      prot.initialize(new Configuration(), schema);
+    schema.setProperty(Constants.FIELD_DELIM, " ");
+    schema.setProperty(Constants.SERIALIZATION_NULL_FORMAT, "-");
+    prot.initialize(new Configuration(), schema);
 
-      prot.readStructBegin();
+    prot.readStructBegin();
 
-      // ip address
-      prot.readFieldBegin();
-      final String ip = prot.readString();
-      prot.readFieldEnd();
+    // ip address
+    prot.readFieldBegin();
+    final String ip = prot.readString();
+    prot.readFieldEnd();
 
-      assertEquals("127.0.0.1", ip);
+    assertEquals("127.0.0.1", ip);
 
-      //  identd
-      prot.readFieldBegin();
-      final String identd = prot.readString();
-      prot.readFieldEnd();
+    //  identd
+    prot.readFieldBegin();
+    final String identd = prot.readString();
+    prot.readFieldEnd();
 
-      assertEquals("", identd);
+    assertNull(identd);
 
-      //  user
-      prot.readFieldBegin();
-      final String user = prot.readString();
-      prot.readFieldEnd();
+    //  user
+    prot.readFieldBegin();
+    final String user = prot.readString();
+    prot.readFieldEnd();
 
-      assertEquals("frank",user);
+    assertEquals("frank",user);
 
-      //  finishTime
-      prot.readFieldBegin();
-      final String finishTime = prot.readString();
-      prot.readFieldEnd();
+    //  finishTime
+    prot.readFieldBegin();
+    final String finishTime = prot.readString();
+    prot.readFieldEnd();
 
-      assertEquals("10/Oct/2000:13:55:36 -0700",finishTime);
+    assertEquals("10/Oct/2000:13:55:36 -0700",finishTime);
 
-      //  requestLine
-      prot.readFieldBegin();
-      final String requestLine = prot.readString();
-      prot.readFieldEnd();
+    //  requestLine
+    prot.readFieldBegin();
+    final String requestLine = prot.readString();
+    prot.readFieldEnd();
 
-      assertEquals("GET /apache_pb.gif HTTP/1.0",requestLine);
+    assertEquals("GET /apache_pb.gif HTTP/1.0",requestLine);
 
-      //  returncode
-      prot.readFieldBegin();
-      final int returnCode = prot.readI32();
-      prot.readFieldEnd();
+    //  returncode
+    prot.readFieldBegin();
+    final int returnCode = prot.readI32();
+    prot.readFieldEnd();
 
-      assertEquals(200, returnCode);
+    assertEquals(200, returnCode);
 
-      //  return size
-      prot.readFieldBegin();
-      final int returnSize = prot.readI32();
-      prot.readFieldEnd();
+    //  return size
+    prot.readFieldBegin();
+    final int returnSize = prot.readI32();
+    prot.readFieldEnd();
 
-      assertEquals(2326, returnSize);
+    assertEquals(2326, returnSize);
 
-      prot.readStructEnd();
-
-    } catch(Exception e) {
-      e.printStackTrace();
-    }
+    prot.readStructEnd();
   }
 
 
 
   public void testNulls() throws Exception {
-    try {
     TMemoryBuffer trans = new TMemoryBuffer(1024);
     TCTLSeparatedProtocol prot = new TCTLSeparatedProtocol(trans, 10);
+    prot.initialize(new Configuration(), new Properties());
 
     prot.writeStructBegin(new TStruct());
 
@@ -451,6 +432,7 @@ public class TestTCTLSeparatedProtocol extends TestCase {
     trans.write(b, 0, len);
 
     prot = new TCTLSeparatedProtocol(trans, 3);
+    prot.initialize(new Configuration(), new Properties());
     
     prot.readStructBegin();
 
@@ -458,13 +440,13 @@ public class TestTCTLSeparatedProtocol extends TestCase {
     String ret = prot.readString();
     prot.readFieldEnd();
 
-    assertTrue(ret.equals(""));
+    assertNull(ret);
 
     prot.readFieldBegin();
     ret = prot.readString();
     prot.readFieldEnd();
     
-    assertTrue(ret.equals(""));
+    assertNull(ret);
 
     prot.readFieldBegin();
     int ret1 = prot.readI32();
@@ -482,25 +464,19 @@ public class TestTCTLSeparatedProtocol extends TestCase {
 
     assertTrue(map.size == 3);
 
-    assertTrue(prot.readString().isEmpty());
-    assertTrue(prot.readString().isEmpty());
+    assertNull(prot.readString());
+    assertNull(prot.readString());
 
     assertTrue(prot.readString().equals("key2"));
-    assertTrue(prot.readString().isEmpty());
+    assertNull(prot.readString());
 
-    assertTrue(prot.readString().isEmpty());
+    assertNull(prot.readString());
     assertTrue(prot.readString().equals("val3"));
     
     prot.readMapEnd();
     prot.readFieldEnd();
 
     assertTrue(ret1 == 0);
-
-    } catch(Exception e) {
-      e.printStackTrace();
-    }
   }
-
-
 
 }

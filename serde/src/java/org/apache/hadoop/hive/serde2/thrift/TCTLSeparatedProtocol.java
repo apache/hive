@@ -307,8 +307,6 @@ public class TCTLSeparatedProtocol extends TProtocol
     this.innerTransport = trans;
     this.bufferSize = bufferSize;
     this.nullString  = "\\N";
-
-    internalInitialize();
   }
 
 
