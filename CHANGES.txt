@@ -196,6 +196,9 @@ Trunk - Unreleased
     (Yongqiang He via zshao)
 
     HIVE-520. Fix TestTCTLSeparatedProtocol. (Johan Oskarsson via zshao)
+    
+    HIVE-525. Fix Eclipse classpath by adding Hadoop test jar. 
+    (Prasad Chakka via johan)
 
 Release 0.3.1 - Unreleased
 
