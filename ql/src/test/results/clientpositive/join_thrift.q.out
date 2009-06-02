@@ -1,0 +1,103 @@
+query: DESCRIBE src_thrift
+aint	int	from deserializer
+astring	string	from deserializer
+lint	array<int>	from deserializer
+lstring	array<string>	from deserializer
+lintstring	array<org.apache.hadoop.hive.serde2.thrift.test.IntString>	from deserializer
+mstringstring	map<string,string>	from deserializer
+query: EXPLAIN
+SELECT s1.aint, s2.lintstring
+FROM src_thrift s1
+JOIN src_thrift s2
+ON s1.aint = s2.aint
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF src_thrift s1) (TOK_TABREF src_thrift s2) (= (. (TOK_TABLE_OR_COL s1) aint) (. (TOK_TABLE_OR_COL s2) aint)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s1) aint)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) lintstring)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        s2 
+            Select Operator
+              expressions:
+                    expr: aint
+                    type: int
+                    expr: lintstring
+                    type: array<struct<myint:int,mystring:string,underscore_int:int>>
+              Reduce Output Operator
+                key expressions:
+                      expr: 0
+                      type: int
+                sort order: +
+                Map-reduce partition columns:
+                      expr: 0
+                      type: int
+                tag: 1
+                value expressions:
+                      expr: 0
+                      type: int
+                      expr: 1
+                      type: array<struct<myint:int,mystring:string,underscore_int:int>>
+        s1 
+            Select Operator
+              expressions:
+                    expr: aint
+                    type: int
+              Reduce Output Operator
+                key expressions:
+                      expr: 0
+                      type: int
+                sort order: +
+                Map-reduce partition columns:
+                      expr: 0
+                      type: int
+                tag: 0
+                value expressions:
+                      expr: 0
+                      type: int
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          condition expressions:
+            0 {VALUE.0}
+            1 {VALUE.0} {VALUE.1}
+          Select Operator
+            expressions:
+                  expr: 0
+                  type: int
+                  expr: 2
+                  type: array<struct<myint:int,mystring:string,underscore_int:int>>
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+query: SELECT s1.aint, s2.lintstring
+FROM src_thrift s1
+JOIN src_thrift s2
+ON s1.aint = s2.aint
+Input: default/src_thrift
+Output: /data/users/zshao/tools/495-trunk-apache-hive/ql/../build/ql/tmp/1611059524/151199080.10000
+-1952710710	[{"myint":25,"mystring":"125","underscore_int":5}]
+-1461153973	[{"myint":49,"mystring":"343","underscore_int":7}]
+-751827638	[{"myint":4,"mystring":"8","underscore_int":2}]
+-734328909	[{"myint":16,"mystring":"64","underscore_int":4}]
+0	null
+336964413	[{"myint":81,"mystring":"729","underscore_int":9}]
+465985200	[{"myint":1,"mystring":"1","underscore_int":1}]
+477111222	[{"myint":9,"mystring":"27","underscore_int":3}]
+1244525190	[{"myint":36,"mystring":"216","underscore_int":6}]
+1638581578	[{"myint":64,"mystring":"512","underscore_int":8}]
+1712634731	[{"myint":0,"mystring":"0","underscore_int":0}]

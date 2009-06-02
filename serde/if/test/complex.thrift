@@ -3,6 +3,7 @@ namespace java org.apache.hadoop.hive.serde2.thrift.test
 struct IntString {
   1: i32  myint;
   2: string myString;
+  3: i32  underscore_int;
 }
 
 struct Complex {

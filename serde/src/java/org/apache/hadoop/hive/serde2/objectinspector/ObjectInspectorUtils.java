@@ -113,7 +113,7 @@ public class ObjectInspectorUtils {
   }
   
   /**
-   * Get the standard ObjectInspector for an ObjectInspector.
+   * Get the corresponding standard ObjectInspector for an ObjectInspector.
    * 
    * The returned ObjectInspector can be used to inspect the standard object.
    */
@@ -144,14 +144,15 @@ public class ObjectInspectorUtils {
       }
       case LIST: {
         ListObjectInspector loi = (ListObjectInspector)oi;
-        result = ObjectInspectorFactory.getStandardListObjectInspector(loi.getListElementObjectInspector());
+        result = ObjectInspectorFactory.getStandardListObjectInspector(
+            getStandardObjectInspector(loi.getListElementObjectInspector(), objectInspectorOption));
         break;
       }
       case MAP: {
         MapObjectInspector moi = (MapObjectInspector)oi;
         result = ObjectInspectorFactory.getStandardMapObjectInspector(
-            moi.getMapKeyObjectInspector(),
-            moi.getMapValueObjectInspector());
+            getStandardObjectInspector(moi.getMapKeyObjectInspector(), objectInspectorOption),
+            getStandardObjectInspector(moi.getMapValueObjectInspector(), objectInspectorOption));
         break;
       }
       case STRUCT: {
@@ -161,7 +162,7 @@ public class ObjectInspectorUtils {
         List<ObjectInspector> fieldObjectInspectors = new ArrayList<ObjectInspector>(fields.size());
         for(StructField f : fields) {
           fieldNames.add(f.getFieldName());
-          fieldObjectInspectors.add(f.getFieldObjectInspector());
+          fieldObjectInspectors.add(getStandardObjectInspector(f.getFieldObjectInspector(), objectInspectorOption));
         }
         result = ObjectInspectorFactory.getStandardStructObjectInspector(fieldNames, fieldObjectInspectors);
         break;

@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.plan.joinCond;
 import org.apache.hadoop.hive.ql.plan.joinDesc;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
+import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -44,6 +45,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.Text;
@@ -161,8 +163,12 @@ public class JoinOperator extends Operator<joinDesc> implements Serializable {
     for (Byte alias : order) {
       int sz = map.get(alias).size();
       StructObjectInspector fldObjIns = (StructObjectInspector)((StructObjectInspector)inputObjInspector[alias.intValue()]).getStructFieldRef("VALUE").getFieldObjectInspector();
-      for (int i = 0; i < sz; i++)
-        structFieldObjectInspectors.add(fldObjIns.getAllStructFieldRefs().get(i).getFieldObjectInspector());
+      for (int i = 0; i < sz; i++) {
+        structFieldObjectInspectors.add(
+            ObjectInspectorUtils.getStandardObjectInspector(
+                fldObjIns.getAllStructFieldRefs().get(i).getFieldObjectInspector(),
+                ObjectInspectorCopyOption.KEEP));
+      }
     }
     
     joinOutputObjectInspector = ObjectInspectorFactory

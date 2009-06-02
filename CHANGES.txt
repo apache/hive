@@ -162,7 +162,7 @@ Trunk - Unreleased
     the expression string is empty. (Zheng Shao via athusoo)
 
     HIVE-410: Heartbeating for streaming jobs should not depend on stdout.
-    (Ashish Thusoo via njain)
+    (Ashish Thusoo via namit)
 
     HIVE-499. Fix for CAST operator on the same type. (Zheng Shao via athusoo)
 
@@ -181,7 +181,7 @@ Trunk - Unreleased
     HIVE-500. Fix select from newly created table.
     (Yongqiang He via zshao)
 
-    HIVE-451. Fix ORDER BY xxx DESC (He Yongqiang via njain)
+    HIVE-451. Fix ORDER BY xxx DESC (He Yongqiang via namit)
 
     HIVE-467. Scratch data location should be on different filesystems for
     different types of intermediate data. (Joydeep Sen Sarma via rmurthy)
@@ -199,6 +199,9 @@ Trunk - Unreleased
     
     HIVE-525. Fix Eclipse classpath by adding Hadoop test jar. 
     (Prasad Chakka via johan)
+
+    HIVE-495. Fix join of a table of ThriftSerDe with complex columns
+    (Zheng Shao via namit)
 
 Release 0.3.1 - Unreleased
 

@@ -18,7 +18,7 @@ STAGE PLANS:
                     expr: mstringstring
                     type: map<string,string>
                     expr: lintstring
-                    type: array<struct<myint:int,mystring:string>>
+                    type: array<struct<myint:int,mystring:string,underscore_int:int>>
               Select Operator
                 expressions:
                       expr: 0['key_9']
@@ -40,7 +40,7 @@ STAGE PLANS:
 query: FROM src_thrift
 SELECT src_thrift.mstringstring['key_9'], src_thrift.lintstring.myint
 Input: default/src_thrift
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/535177843/787258899.10000
+Output: /data/users/zshao/tools/495-trunk-apache-hive/ql/../build/ql/tmp/47313672/383253534.10000
 NULL	[0]
 NULL	[1]
 NULL	[4]

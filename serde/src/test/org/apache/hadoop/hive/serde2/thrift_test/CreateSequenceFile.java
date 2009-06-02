@@ -106,7 +106,7 @@ public class CreateSequenceFile {
       ArrayList<String> slist = new ArrayList<String>();
       slist.add("" + i*10); slist.add("" + i*100); slist.add("" + i*1000);
       ArrayList<IntString> islist = new ArrayList<IntString>();
-      islist.add(new IntString(i*i, ""+ i*i*i));
+      islist.add(new IntString(i*i, ""+ i*i*i, i));
       HashMap<String,String> hash = new HashMap<String,String>();
       hash.put("key_" + i, "value_" + i);
       

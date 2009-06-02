@@ -85,9 +85,10 @@ public class TestObjectInspectorUtils extends TestCase {
       assertEquals(ObjectInspectorFactory.getStandardListObjectInspector(
           PrimitiveObjectInspectorFactory.javaStringObjectInspector),
           fields.get(3).getFieldObjectInspector());
-      assertEquals(ObjectInspectorFactory.getStandardListObjectInspector(
-          ObjectInspectorFactory.getReflectionObjectInspector(IntString.class, 
-              ObjectInspectorFactory.ObjectInspectorOptions.THRIFT)),
+      assertEquals(ObjectInspectorUtils.getStandardObjectInspector(
+              ObjectInspectorFactory.getStandardListObjectInspector(
+              ObjectInspectorFactory.getReflectionObjectInspector(IntString.class, 
+              ObjectInspectorFactory.ObjectInspectorOptions.THRIFT))),
           fields.get(4).getFieldObjectInspector());
       assertEquals(ObjectInspectorFactory.getStandardMapObjectInspector(
           PrimitiveObjectInspectorFactory.javaStringObjectInspector,

@@ -21,7 +21,7 @@ STAGE PLANS:
                     expr: mstringstring
                     type: map<string,string>
                     expr: lintstring
-                    type: array<struct<myint:int,mystring:string>>
+                    type: array<struct<myint:int,mystring:string,underscore_int:int>>
               Filter Operator
                 predicate:
                     expr: ((0['key_9'] is not null and 1.myint is not null) and 1 is not null)
@@ -50,7 +50,7 @@ WHERE src_thrift.mstringstring['key_9'] IS NOT NULL
       OR lintstring.myint IS NOT NULL
       OR lintstring IS NOT NULL
 Input: default/src_thrift
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/9314654/120165410.10000
+Output: /data/users/zshao/tools/495-trunk-apache-hive/ql/../build/ql/tmp/115422682/57144029.10000
 NULL	[0]
 NULL	[1]
 NULL	[4]

@@ -59,16 +59,20 @@ public class TypeInfoUtils {
     private static class Token {
       public int position;
       public String text;
-      public boolean isAlphaDigit;
+      public boolean isType;
       public String toString() {
         return "" + position + ":" + text;
       }
     };
     
+    private static boolean isTypeChar(char c) {
+      return Character.isLetterOrDigit(c) || c == '_' || c == '.';
+    }
+    
     /**
      * Tokenize the typeInfoString.
-     * The rule is simple: all consecutive alphadigits are in one token, and all 
-     * other characters are one character per token.
+     * The rule is simple: all consecutive alphadigits and '_', '.' are in one
+     * token, and all other characters are one character per token.
      * 
      * tokenize("map<int,string>") should return ["map","<","int",",","string",">"]
      */
@@ -79,12 +83,12 @@ public class TypeInfoUtils {
       while (end <= typeInfoString.length()) {
         // last character ends a token? 
         if (end == typeInfoString.length() 
-            || !Character.isLetterOrDigit(typeInfoString.charAt(end-1))
-            || !Character.isLetterOrDigit(typeInfoString.charAt(end))) {
+            || !isTypeChar(typeInfoString.charAt(end-1))
+            || !isTypeChar(typeInfoString.charAt(end))) {
           Token t = new Token();
           t.position = begin;
           t.text = typeInfoString.substring(begin, end);
-          t.isAlphaDigit = Character.isLetterOrDigit(typeInfoString.charAt(begin));
+          t.isType = isTypeChar(typeInfoString.charAt(begin));
           tokens.add(t);
           begin = end;
         }          
@@ -138,17 +142,17 @@ public class TypeInfoUtils {
             && null == PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(t.text)
             && !t.text.equals(alternative)) {
           throw new IllegalArgumentException("Error: " + item + " expected at the position "
-              + t.position + " of '" + typeInfoString + "'" );
+              + t.position + " of '" + typeInfoString + "' but '" + t.text + "' is found." );
         }
       } else if (item.equals("name")) {
-        if (!t.isAlphaDigit && !t.text.equals(alternative)) {
+        if (!t.isType && !t.text.equals(alternative)) {
           throw new IllegalArgumentException("Error: " + item + " expected at the position "
-              + t.position + " of '" + typeInfoString + "'" );
+              + t.position + " of '" + typeInfoString + "' but '" + t.text + "' is found." );
         }
       } else {
         if (!item.equals(t.text) && !t.text.equals(alternative)) {
           throw new IllegalArgumentException("Error: " + item + " expected at the position "
-              + t.position + " of '" + typeInfoString + "'" );
+              + t.position + " of '" + typeInfoString + "' but '" + t.text + "' is found." );
         }
       }
       iToken ++;

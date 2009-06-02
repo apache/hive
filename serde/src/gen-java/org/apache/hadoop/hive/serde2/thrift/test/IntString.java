@@ -19,11 +19,13 @@ import com.facebook.thrift.transport.*;
 public class IntString implements TBase, java.io.Serializable {
   public int myint;
   public String myString;
+  public int underscore_int;
 
   public final Isset __isset = new Isset();
   public static final class Isset implements java.io.Serializable {
     public boolean myint = false;
     public boolean myString = false;
+    public boolean underscore_int = false;
   }
 
   public IntString() {
@@ -31,13 +33,16 @@ public class IntString implements TBase, java.io.Serializable {
 
   public IntString(
     int myint,
-    String myString)
+    String myString,
+    int underscore_int)
   {
     this();
     this.myint = myint;
     this.__isset.myint = true;
     this.myString = myString;
     this.__isset.myString = true;
+    this.underscore_int = underscore_int;
+    this.__isset.underscore_int = true;
   }
 
   public boolean equals(Object that) {
@@ -67,6 +72,15 @@ public class IntString implements TBase, java.io.Serializable {
       if (!(this_present_myString && that_present_myString))
         return false;
       if (!this.myString.equals(that.myString))
+        return false;
+    }
+
+    boolean this_present_underscore_int = true;
+    boolean that_present_underscore_int = true;
+    if (this_present_underscore_int || that_present_underscore_int) {
+      if (!(this_present_underscore_int && that_present_underscore_int))
+        return false;
+      if (this.underscore_int != that.underscore_int)
         return false;
     }
 
@@ -104,6 +118,14 @@ public class IntString implements TBase, java.io.Serializable {
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 3:
+          if (field.type == TType.I32) {
+            this.underscore_int = iprot.readI32();
+            this.__isset.underscore_int = true;
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           TProtocolUtil.skip(iprot, field.type);
           break;
@@ -131,6 +153,12 @@ public class IntString implements TBase, java.io.Serializable {
       oprot.writeString(this.myString);
       oprot.writeFieldEnd();
     }
+    field.name = "underscore_int";
+    field.type = TType.I32;
+    field.id = 3;
+    oprot.writeFieldBegin(field);
+    oprot.writeI32(this.underscore_int);
+    oprot.writeFieldEnd();
     oprot.writeFieldStop();
     oprot.writeStructEnd();
   }
@@ -141,6 +169,8 @@ public class IntString implements TBase, java.io.Serializable {
     sb.append(this.myint);
     sb.append(",myString:");
     sb.append(this.myString);
+    sb.append(",underscore_int:");
+    sb.append(this.underscore_int);
     sb.append(")");
     return sb.toString();
   }

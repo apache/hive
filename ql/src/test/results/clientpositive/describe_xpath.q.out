@@ -14,6 +14,7 @@ query: -- Describe a complex element of a list
 describe src_thrift.lintString.$elem$
 myint	int	from deserializer
 mystring	string	from deserializer
+underscore_int	int	from deserializer
 query: -- Describe a member of an element of a list
 describe src_thrift.lintString.$elem$.myint
 myint	int	from deserializer
