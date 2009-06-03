@@ -39,7 +39,7 @@ import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.ReflectionUtils;
 
 public class RCFileOutputFormat extends
-    FileOutputFormat<Void, BytesRefArrayWritable> implements
+    FileOutputFormat<WritableComparable, BytesRefArrayWritable> implements
     HiveOutputFormat<WritableComparable, Writable> {
 
   /**
@@ -67,14 +67,14 @@ public class RCFileOutputFormat extends
   }
 
   /** {@inheritDoc} */
-  public RecordWriter<Void, BytesRefArrayWritable> getRecordWriter(
+  public RecordWriter<WritableComparable, BytesRefArrayWritable> getRecordWriter(
       FileSystem ignored, JobConf job, String name, Progressable progress)
       throws IOException {
 
     Path outputPath = getWorkOutputPath(job);
     FileSystem fs = outputPath.getFileSystem(job);
     if (!fs.exists(outputPath)) {
-      throw new IOException("Output directory doesnt exist");
+      fs.mkdirs(outputPath);
     }
     Path file = new Path(outputPath, name);
     CompressionCodec codec = null;
@@ -84,7 +84,7 @@ public class RCFileOutputFormat extends
     }
     final RCFile.Writer out = new RCFile.Writer(fs, job, file, progress, codec);
 
-    return new RecordWriter<Void, BytesRefArrayWritable>() {
+    return new RecordWriter<WritableComparable, BytesRefArrayWritable>() {
 
       @Override
       public void close(Reporter reporter) throws IOException {
@@ -92,7 +92,7 @@ public class RCFileOutputFormat extends
       }
 
       @Override
-      public void write(Void key, BytesRefArrayWritable value)
+      public void write(WritableComparable key, BytesRefArrayWritable value)
           throws IOException {
         out.append(value);
       }

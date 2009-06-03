@@ -212,6 +212,9 @@ Trunk - Unreleased
     HIVE-443. Remove deprecated functions from metastore.
     (Prasad Chaaka via athusoo)
 
+    HIVE-479. Change RCFileOutputFormat's generic signatute.
+    (Yongqiang He via zshao)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES
