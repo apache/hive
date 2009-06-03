@@ -90,6 +90,7 @@ public class PredicatePushDown implements Transform {
     opRules.put(new RuleRegExp("R4", "RS%"), OpProcFactory.getRSProc());
     opRules.put(new RuleRegExp("R5", "TS%"), OpProcFactory.getTSProc());
     opRules.put(new RuleRegExp("R6", "SCR%"), OpProcFactory.getSCRProc());
+    opRules.put(new RuleRegExp("R6", "LIM%"), OpProcFactory.getLIMProc());
 
     // The dispatcher fires the processor corresponding to the closest matching rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(OpProcFactory.getDefaultProc(), opRules, opWalkerInfo);

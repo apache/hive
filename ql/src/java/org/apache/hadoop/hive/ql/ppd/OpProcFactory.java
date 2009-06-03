@@ -77,6 +77,7 @@ public class OpProcFactory {
       LOG.info("Processing for " +  nd.getName() + "(" + ((Operator)nd).getIdentifier() + ")");
       // script operator is a black-box to hive so no optimization here
       // assuming that nothing can be pushed above the script op
+      // same with LIMIT op
       return null;
     }
 
@@ -349,6 +350,10 @@ public class OpProcFactory {
   }
 
   public static NodeProcessor getSCRProc() {
+    return new ScriptPPD();
+  }
+
+  public static NodeProcessor getLIMProc() {
     return new ScriptPPD();
   }
 

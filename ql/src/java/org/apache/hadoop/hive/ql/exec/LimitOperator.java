@@ -54,4 +54,8 @@ public class LimitOperator extends Operator<limitDesc> implements Serializable {
       setDone(true);
   }
 
+  public String getName() {
+    return "LIM";
+  }
+  
 }
