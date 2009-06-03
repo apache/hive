@@ -259,17 +259,6 @@ public class Hive {
   }
 
   /**
-   * Drops table along with the data in it. If the table doesn't exist then it is a no-op
-   * @param tableName
-   * @throws HiveException
-   * @deprecated Use {@link #dropTable(String, String)} instead
-   */
-  public void dropTable(String tableName) throws HiveException {
-    dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName, true, true);
-  }
-
-  
-  /**
    * Drops table along with the data in it. If the table doesn't exist
    * then it is a no-op
    * @param dbName database where the table lives
@@ -280,22 +269,6 @@ public class Hive {
     dropTable(dbName, tableName, true, true);
   }  
   
-  /**
-   * Drops the table. 
-   * @param tableName
-   * @param deleteData deletes the underlying data along with metadata
-   * @param ignoreUnknownTab an exception if thrown if this is falser
-   * and table doesn't exist
-   * @throws HiveException
-   * @deprecated Use {@link #dropTable(String, String, boolean, boolean)} instead
-   */
-  public void dropTable(String tableName, boolean deleteData, 
-      boolean ignoreUnknownTab) throws HiveException {
-    
-    dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName,
-        deleteData, ignoreUnknownTab);
-  }
-
   /**
    * Drops the table. 
    * @param tableName
@@ -324,18 +297,6 @@ public class Hive {
   
   /**
    * Returns metadata of the table. 
-   * @param tableName the name of the table
-   * @return the table
-   * @exception HiveException if there's an internal error or if the 
-   * table doesn't exist 
-   * @deprecated Use {@link #getTable(String, String)} instead
-   */
-  public Table getTable(final String tableName) throws HiveException {
-    return this.getTable(tableName, true);
-  }
-  
-  /**
-   * Returns metadata of the table. 
    * @param dbName the name of the database
    * @param tableName the name of the table
    * @return the table
@@ -347,22 +308,6 @@ public class Hive {
     
     return this.getTable(dbName, tableName, true);
   }  
-  
-  /**
-   * Returns metadata of the table
-   * @param tableName the name of the table
-   * @param throwException controls whether an exception is 
-   * thrown or a null returned
-   * @return the table or if something false and 
-   * throwException is false a null value.
-   * @throws HiveException
-   * @deprecated Use {@link #getTable(String, String, boolean)} instead
-   */
-  public Table getTable(final String tableName, boolean throwException) 
-    throws HiveException {
-    return getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName, 
-        throwException);
-  }
   
   /**
    * Returns metadata of the table

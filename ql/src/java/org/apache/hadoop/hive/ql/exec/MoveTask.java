@@ -18,26 +18,22 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.Serializable;
 import java.io.IOException;
+import java.io.Serializable;
 import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.loadFileDesc;
 import org.apache.hadoop.hive.ql.plan.loadTableDesc;
 import org.apache.hadoop.hive.ql.plan.moveWork;
-import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.io.SequenceFile;
-import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.util.StringUtils;
 
 /**
@@ -112,7 +108,7 @@ public class MoveTask extends Task<moveWork> implements Serializable {
           FileSystem fs;
           try {
             fs = FileSystem.get
-              (db.getTable(tbd.getTable().getTableName()).getDataLocation(),conf);
+              (db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tbd.getTable().getTableName()).getDataLocation(),conf);
             dirs = fs.globStatus(new Path(tbd.getSourceDir()));
             files = new ArrayList<FileStatus>();
             for (int i=0; (dirs != null && i<dirs.length); i++) {

@@ -44,6 +44,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.cli.CliDriver;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.Utilities.StreamPrinter;
@@ -264,7 +265,7 @@ public class QTestUtil {
                                  "srcpart", "srcbucket", "dest1", "dest2", 
                                  "dest3", "dest4", "dest4_sequencefile",
                                  "dest_j1", "dest_j2", "dest_g1", "dest_g2"}) {
-      db.dropTable(s);
+      db.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, s);
     }
     for(String s: new String [] {"dest4.out", "union.out"}) {
       deleteDirectory(new File(warehousePath, s));
@@ -293,12 +294,10 @@ public class QTestUtil {
     part_cols.add("hr");
     db.createTable("srcpart", cols, part_cols, TextInputFormat.class, IgnoreKeyTextOutputFormat.class);
     srcTables.add("srcpart");
-    Table srcpart = db.getTable("srcpart");
     
     Path fpath;
     Path newfpath;
     HashMap<String, String> part_spec = new HashMap<String, String>();
-    String loadCmd;
     for (String ds: new String[]{"2008-04-08", "2008-04-09"}) {
       for (String hr: new String[]{"11", "12"}) {
         part_spec.clear();
@@ -413,7 +412,7 @@ public class QTestUtil {
     db.createTable("dest2", cols, null, TextInputFormat.class, IgnoreKeyTextOutputFormat.class);
    
     db.createTable("dest3", cols, part_cols, TextInputFormat.class, IgnoreKeyTextOutputFormat.class);
-    Table dest3 = db.getTable("dest3");
+    Table dest3 = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, "dest3");
 
     HashMap<String, String> part_spec = new HashMap<String, String>();
     part_spec.put("ds", "2008-04-08");
@@ -485,7 +484,7 @@ public class QTestUtil {
     drv.run("FROM dest4_sequencefile INSERT OVERWRITE TABLE dest4 SELECT dest4_sequencefile.*");
     
     // Drop dest4_sequencefile
-    db.dropTable("dest4_sequencefile", true, true);
+    db.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, "dest4_sequencefile", true, true);
   }
 
   public int checkNegativeResults(String tname, Exception e) throws Exception {

@@ -18,32 +18,39 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.util.ArrayList;
+import java.util.LinkedList;
+
 import junit.framework.TestCase;
 
-import java.io.*;
-import java.util.*;
-
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.mapred.TextInputFormat;
-
-import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.metadata.*;
-import org.apache.hadoop.hive.ql.exec.ExecDriver;
-import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.OperatorFactory;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities.StreamPrinter;
-import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
-import org.apache.hadoop.hive.ql.plan.*;
+import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
+import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc;
+import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.exprNodeFieldDesc;
+import org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc;
+import org.apache.hadoop.hive.ql.plan.extractDesc;
+import org.apache.hadoop.hive.ql.plan.fileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.filterDesc;
+import org.apache.hadoop.hive.ql.plan.mapredWork;
+import org.apache.hadoop.hive.ql.plan.reduceSinkDesc;
+import org.apache.hadoop.hive.ql.plan.scriptDesc;
+import org.apache.hadoop.hive.ql.plan.selectDesc;
 import org.apache.hadoop.hive.serde.Constants;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-
-import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.mapred.TextInputFormat;
 
 
 /**
@@ -103,7 +110,7 @@ public class TestExecDriver extends TestCase {
       cols.add("key");
       cols.add("value");
       for(String src: srctables) {
-        db.dropTable(src, true, true);
+        db.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, src, true, true);
         db.createTable(src, cols, null, TextInputFormat.class, IgnoreKeyTextOutputFormat.class);
         db.loadTable(hadoopDataFile[i], src, false, null);
         i++;
@@ -465,7 +472,7 @@ public class TestExecDriver extends TestCase {
     System.out.println("Beginning testMapPlan1");
     
     try {
-      populateMapPlan1(db.getTable("src"));
+      populateMapPlan1(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, "src"));
       File planFile = generatePlanFile();
       executePlan(planFile);
       fileDiff("lt100.txt.deflate", "mapplan1.out");
@@ -480,7 +487,7 @@ public class TestExecDriver extends TestCase {
     System.out.println("Beginning testMapPlan2");
 
     try {
-      populateMapPlan2(db.getTable("src"));
+      populateMapPlan2(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, "src"));
       File planFile = generatePlanFile();
       executePlan(planFile);
       fileDiff("lt100.txt", "mapplan2.out");
@@ -495,7 +502,7 @@ public class TestExecDriver extends TestCase {
     System.out.println("Beginning testMapRedPlan1");
 
     try {
-      populateMapRedPlan1(db.getTable("src"));
+      populateMapRedPlan1(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, "src"));
       File planFile = generatePlanFile();
       executePlan(planFile);
       fileDiff("kv1.val.sorted.txt", "mapredplan1.out");
@@ -510,7 +517,7 @@ public class TestExecDriver extends TestCase {
     System.out.println("Beginning testMapPlan2");
 
     try {
-      populateMapRedPlan2(db.getTable("src"));
+      populateMapRedPlan2(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, "src"));
       File planFile = generatePlanFile();
       executePlan(planFile);
       fileDiff("lt100.sorted.txt", "mapredplan2.out");
@@ -525,7 +532,8 @@ public class TestExecDriver extends TestCase {
     System.out.println("Beginning testMapPlan3");
 
     try {
-      populateMapRedPlan3(db.getTable("src"), db.getTable("src2"));
+      populateMapRedPlan3(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, "src"),
+          db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, "src2"));
       File planFile = generatePlanFile();
       executePlan(planFile);
       fileDiff("kv1kv2.cogroup.txt", "mapredplan3.out");
@@ -541,7 +549,7 @@ public class TestExecDriver extends TestCase {
     System.out.println("Beginning testMapPlan4");
 
     try {
-      populateMapRedPlan4(db.getTable("src"));
+      populateMapRedPlan4(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, "src"));
       File planFile = generatePlanFile();
       executePlan(planFile);
       fileDiff("kv1.string-sorted.txt", "mapredplan4.out");
@@ -556,7 +564,7 @@ public class TestExecDriver extends TestCase {
     System.out.println("Beginning testMapPlan5");
 
     try {
-      populateMapRedPlan5(db.getTable("src"));
+      populateMapRedPlan5(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, "src"));
       File planFile = generatePlanFile();
       executePlan(planFile);
       fileDiff("kv1.string-sorted.txt", "mapredplan5.out");
@@ -571,7 +579,7 @@ public class TestExecDriver extends TestCase {
     System.out.println("Beginning testMapPlan6");
 
     try {
-      populateMapRedPlan6(db.getTable("src"));
+      populateMapRedPlan6(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, "src"));
       File planFile = generatePlanFile();
       executePlan(planFile);
       fileDiff("lt100.sorted.txt", "mapredplan6.out");

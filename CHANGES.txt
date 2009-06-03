@@ -209,6 +209,9 @@ Trunk - Unreleased
     HIVE-534. Fix in the cli so that it does not ignore the first 
     newline character. (Raghotham Murthy via athusoo)
 
+    HIVE-443. Remove deprecated functions from metastore.
+    (Prasad Chaaka via athusoo)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES
