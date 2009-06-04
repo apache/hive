@@ -31,7 +31,6 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc;
 
 /**
  * Context for Expression Walker for determining predicate pushdown candidates
@@ -71,6 +70,7 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
    * this is a map from the alias to predicates.
    */
   private Map<exprNodeDesc,ExprInfo> exprInfoMap;
+  private boolean isDeterministic = true;
   
   public ExprWalkerInfo() {
     this.pushdownPreds = new HashMap<String, List<exprNodeDesc>>();
@@ -211,5 +211,20 @@ public class ExprWalkerInfo implements NodeProcessorCtx {
         pushdownPreds.put(e.getKey(), e.getValue());
       }
     }
+  }
+
+  /**
+   * sets the deterministic flag for this expression 
+   * @param b deterministic or not
+   */
+  public void setDeterministic(boolean b) {
+    isDeterministic = b;
+  }
+  
+  /**
+   * @return whether this expression is deterministic or not
+   */
+  public boolean isDeterministic() {
+    return isDeterministic;
   }
 }

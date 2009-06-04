@@ -217,6 +217,9 @@ Trunk - Unreleased
     HIVE-479. Change RCFileOutputFormat's generic signatute.
     (Yongqiang He via zshao)
 
+    HIVE-532. Predicates containing rand() not pushed above
+    (Prasad Chakka via namit)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

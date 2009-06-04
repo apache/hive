@@ -106,6 +106,7 @@ public class ExprWalkerProcFactory {
       if(note != null && !note.deterministic()) {
         // this UDF can't be pushed down
         ctx.setIsCandidate(expr, false);
+        ctx.setDeterministic(false);
         return false;
       }
       
@@ -157,6 +158,7 @@ public class ExprWalkerProcFactory {
       if(note != null && !note.deterministic()) {
         // this GenericUDF can't be pushed down
         ctx.setIsCandidate(expr, false);
+        ctx.setDeterministic(false);
         return false;
       }
       

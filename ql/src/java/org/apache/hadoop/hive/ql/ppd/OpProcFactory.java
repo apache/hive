@@ -167,6 +167,11 @@ public class OpProcFactory {
       exprNodeFuncDesc predicate = (exprNodeFuncDesc) (((FilterOperator)nd).getConf()).getPredicate();
       // get pushdown predicates for this operato's predicate
       ExprWalkerInfo ewi = ExprWalkerProcFactory.extractPushdownPreds(owi, op, predicate);
+      if (!ewi.isDeterministic()) {
+        /* predicate is not deterministic */
+        return null;
+      }
+
       logExpr(nd, ewi);
       owi.putPrunedPreds(op, ewi);
       // merge it with children predicates
