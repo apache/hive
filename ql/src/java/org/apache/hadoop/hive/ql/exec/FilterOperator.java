@@ -47,13 +47,14 @@ public class FilterOperator extends Operator <filterDesc> implements Serializabl
     passed_count = new LongWritable();
   }
 
-  public void initialize(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
-    super.initialize(hconf, reporter, inputObjInspector);
+  public void initializeOp(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
+ 
     try {
       this.conditionEvaluator = ExprNodeEvaluatorFactory.get(conf.getPredicate());
       statsMap.put(Counter.FILTERED, filtered_count);
       statsMap.put(Counter.PASSED, passed_count);
       conditionInspector = null;
+      initializeChildren(hconf, reporter, inputObjInspector);
     } catch (Throwable e) {
       e.printStackTrace();
       throw new RuntimeException(e);

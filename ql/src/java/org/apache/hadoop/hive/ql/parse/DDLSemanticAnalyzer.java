@@ -507,7 +507,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     prop.setProperty("columns.types", colTypes[1]);
 
     fetchWork fetch = new fetchWork(
-      ctx.getResFile(),
+      ctx.getResFile().toString(),
       new tableDesc(LazySimpleSerDe.class, TextInputFormat.class, IgnoreKeyTextOutputFormat.class, prop),
       -1
     );    

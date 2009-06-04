@@ -85,24 +85,24 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
-          Reduce Output Operator
-            key expressions:
-                  expr: (UDFToDouble(0) + UDFToDouble(2))
-                  type: double
-            sort order: +
-            Map-reduce partition columns:
-                  expr: (UDFToDouble(0) + UDFToDouble(2))
-                  type: double
-            tag: 0
-            value expressions:
-                  expr: 2
-                  type: string
-                  expr: 3
-                  type: string
-                  expr: 0
-                  type: string
-                  expr: 1
-                  type: string
+            Reduce Output Operator
+              key expressions:
+                    expr: (UDFToDouble(0) + UDFToDouble(2))
+                    type: double
+              sort order: +
+              Map-reduce partition columns:
+                    expr: (UDFToDouble(0) + UDFToDouble(2))
+                    type: double
+              tag: 0
+              value expressions:
+                    expr: 2
+                    type: string
+                    expr: 3
+                    type: string
+                    expr: 0
+                    type: string
+                    expr: 1
+                    type: string
         src3:src 
             Select Operator
               expressions:
@@ -163,7 +163,7 @@ JOIN
 (SELECT src.key as c5, src.value as c6 from src) src3
 ON src1.c1 + src2.c3 = src3.c5 AND src3.c5 < 200
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/419446929/1272003304.10000
+Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/1730548937/139213957.10000
 0	val_0
 0	val_0
 0	val_0

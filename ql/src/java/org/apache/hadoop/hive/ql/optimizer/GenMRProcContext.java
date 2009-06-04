@@ -27,6 +27,7 @@ import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -121,8 +122,81 @@ public class GenMRProcContext implements NodeProcessorCtx {
     }
   }
 
+  public static class GenMRMapJoinCtx {
+    String                            taskTmpDir;
+    tableDesc                         tt_desc; 
+    Operator<? extends Serializable>  rootMapJoinOp;
+    MapJoinOperator                   oldMapJoin;   
+    
+    public GenMRMapJoinCtx() { 
+      taskTmpDir    = null;
+      tt_desc       = null;
+      rootMapJoinOp = null;
+      oldMapJoin    = null;
+    }
+
+    /**
+     * @param taskTmpDir
+     * @param tt_desc
+     * @param childSelect
+     * @param oldMapJoin
+     */
+    public GenMRMapJoinCtx(String taskTmpDir, tableDesc tt_desc, 
+        Operator<? extends Serializable> rootMapJoinOp, MapJoinOperator oldMapJoin) {
+      this.taskTmpDir    = taskTmpDir;
+      this.tt_desc       = tt_desc;
+      this.rootMapJoinOp = rootMapJoinOp;
+      this.oldMapJoin    = oldMapJoin;
+    }
+    
+    public void setTaskTmpDir(String taskTmpDir) {
+      this.taskTmpDir = taskTmpDir;
+    }
+
+    public String getTaskTmpDir() {
+      return taskTmpDir;
+    }
+
+    public void setTTDesc(tableDesc tt_desc) {
+      this.tt_desc = tt_desc;
+    }
+
+    public tableDesc getTTDesc() {
+      return tt_desc;
+    }
+
+    /**
+     * @return the childSelect
+     */
+    public Operator<? extends Serializable> getRootMapJoinOp() {
+      return rootMapJoinOp;
+    }
+
+    /**
+     * @param rootMapJoinOp the rootMapJoinOp to set
+     */
+    public void setRootMapJoinOp(Operator<? extends Serializable> rootMapJoinOp) {
+      this.rootMapJoinOp = rootMapJoinOp;
+    }
+
+    /**
+     * @return the oldMapJoin
+     */
+    public MapJoinOperator getOldMapJoin() {
+      return oldMapJoin;
+    }
+
+    /**
+     * @param oldMapJoin the oldMapJoin to set
+     */
+    public void setOldMapJoin(MapJoinOperator oldMapJoin) {
+      this.oldMapJoin = oldMapJoin;
+    }
+  }
+
   private HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap;
-  private HashMap<UnionOperator, GenMRUnionCtx>  unionTaskMap;
+  private HashMap<UnionOperator, GenMRUnionCtx>      unionTaskMap;
+  private HashMap<MapJoinOperator, GenMRMapJoinCtx>  mapJoinTaskMap;
   private List<Operator<? extends Serializable>> seenOps;
 
   private ParseContext                          parseCtx;
@@ -133,6 +207,7 @@ public class GenMRProcContext implements NodeProcessorCtx {
   private Task<? extends Serializable>         currTask;
   private Operator<? extends Serializable>     currTopOp;
   private UnionOperator                        currUnionOp;
+  private MapJoinOperator                      currMapJoinOp;
   private String                               currAliasId;
   private List<Operator<? extends Serializable>> rootOps;
   
@@ -179,10 +254,12 @@ public class GenMRProcContext implements NodeProcessorCtx {
     currTask        = null;
     currTopOp       = null;
     currUnionOp     = null;
+    currMapJoinOp   = null;
     currAliasId     = null;
     rootOps         = new ArrayList<Operator<? extends Serializable>>();
     rootOps.addAll(parseCtx.getTopOps().values());
     unionTaskMap = new HashMap<UnionOperator, GenMRUnionCtx>();
+    mapJoinTaskMap = new HashMap<MapJoinOperator, GenMRMapJoinCtx>();
   }
 
   /**
@@ -322,6 +399,17 @@ public class GenMRProcContext implements NodeProcessorCtx {
     this.currUnionOp = currUnionOp;
   }      
 
+  public MapJoinOperator getCurrMapJoinOp() {
+    return currMapJoinOp;
+  }   
+   
+  /**
+   * @param currMapJoinOp current map join operator
+   */
+  public void setCurrMapJoinOp(MapJoinOperator currMapJoinOp) {
+    this.currMapJoinOp = currMapJoinOp;
+  }      
+
   /**
    * @return current top alias
    */
@@ -343,7 +431,15 @@ public class GenMRProcContext implements NodeProcessorCtx {
   public void setUnionTask(UnionOperator op, GenMRUnionCtx uTask) {
     unionTaskMap.put(op, uTask);
   }
-  
+
+  public GenMRMapJoinCtx getMapJoinCtx(MapJoinOperator op) {
+    return mapJoinTaskMap.get(op);
+  }
+
+  public void setMapJoinCtx(MapJoinOperator op, GenMRMapJoinCtx mjCtx) {
+    mapJoinTaskMap.put(op, mjCtx);
+  }
+
   /**
    * Get the input set.
    */

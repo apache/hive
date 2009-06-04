@@ -34,6 +34,7 @@ public class QBParseInfo {
   private boolean isSubQ;
   private String alias;
   private ASTNode joinExpr;
+  private ASTNode hints;
   private HashMap<String, ASTNode> aliasToSrc;
   private HashMap<String, ASTNode> nameToDest;
   private HashMap<String, TableSample> nameToSample;
@@ -331,5 +332,12 @@ public class QBParseInfo {
 
     return true;
   }
-  
+
+  public void setHints(ASTNode hint) {
+    this.hints = hint;
+  }
+
+  public ASTNode getHints() {
+    return hints;
+  }
 }

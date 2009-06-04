@@ -78,6 +78,9 @@ public enum ErrorMsg {
   INVALID_INPUT_FORMAT_TYPE("Input Format must implement InputFormat"),
   INVALID_OUTPUT_FORMAT_TYPE("Output Format must implement HiveOutputFormat, otherwise it should be either IgnoreKeyTextOutputFormat or SequenceFileOutputFormat"),
   NO_VALID_PARTN("The query does not reference any valid partition. To run this query, set hive.mapred.mode=nonstrict"),
+  NO_OUTER_MAPJOIN("Map Join cannot be performed with Outer join"),
+  INVALID_MAPJOIN_HINT("neither table specified as map-table"),
+  INVALID_MAPJOIN_TABLE("result of a union cannot be a map table"),
   NON_BUCKETED_TABLE("Sampling Expression Needed for Non-Bucketed Table");
 
   private String mesg;
@@ -110,7 +113,7 @@ public enum ErrorMsg {
     return getText((ASTNode)tree.getChild(tree.getChildCount() - 1));
   }
 
-  String getMsg(ASTNode tree) {
+  public String getMsg(ASTNode tree) {
     return "line " + getLine(tree) + ":" + getCharPositionInLine(tree) + " " + mesg + " " + getText(tree);
   }
 
@@ -126,7 +129,7 @@ public enum ErrorMsg {
     return getMsg((ASTNode)tree, reason);
   }
 
-  String getMsg() {
+  public String getMsg() {
     return mesg;
   }
 

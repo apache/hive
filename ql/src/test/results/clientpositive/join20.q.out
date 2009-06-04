@@ -100,36 +100,36 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/630857851/137120091.10002 
-          Reduce Output Operator
-            key expressions:
-                  expr: 0
-                  type: string
-                  expr: 1
-                  type: string
-                  expr: 2
-                  type: string
-                  expr: 3
-                  type: string
-                  expr: 4
-                  type: string
-                  expr: 5
-                  type: string
-            sort order: ++++++
-            tag: -1
-            value expressions:
-                  expr: 0
-                  type: string
-                  expr: 1
-                  type: string
-                  expr: 2
-                  type: string
-                  expr: 3
-                  type: string
-                  expr: 4
-                  type: string
-                  expr: 5
-                  type: string
+        /data/users/njain/hive2/hive2/build/ql/tmp/476463155/205865751.10002 
+            Reduce Output Operator
+              key expressions:
+                    expr: 0
+                    type: string
+                    expr: 1
+                    type: string
+                    expr: 2
+                    type: string
+                    expr: 3
+                    type: string
+                    expr: 4
+                    type: string
+                    expr: 5
+                    type: string
+              sort order: ++++++
+              tag: -1
+              value expressions:
+                    expr: 0
+                    type: string
+                    expr: 1
+                    type: string
+                    expr: 2
+                    type: string
+                    expr: 3
+                    type: string
+                    expr: 4
+                    type: string
+                    expr: 5
+                    type: string
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -147,7 +147,7 @@ STAGE PLANS:
 query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/536132976/391377613.10000
+Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/1205211471/304438397.10000
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	11	val_11
 NULL	NULL	NULL	NULL	12	val_12
@@ -322,36 +322,36 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/328986890/804935253.10002 
-          Reduce Output Operator
-            key expressions:
-                  expr: 0
-                  type: string
-                  expr: 1
-                  type: string
-                  expr: 2
-                  type: string
-                  expr: 3
-                  type: string
-                  expr: 4
-                  type: string
-                  expr: 5
-                  type: string
-            sort order: ++++++
-            tag: -1
-            value expressions:
-                  expr: 0
-                  type: string
-                  expr: 1
-                  type: string
-                  expr: 2
-                  type: string
-                  expr: 3
-                  type: string
-                  expr: 4
-                  type: string
-                  expr: 5
-                  type: string
+        /data/users/njain/hive2/hive2/build/ql/tmp/112521398/618050553.10002 
+            Reduce Output Operator
+              key expressions:
+                    expr: 0
+                    type: string
+                    expr: 1
+                    type: string
+                    expr: 2
+                    type: string
+                    expr: 3
+                    type: string
+                    expr: 4
+                    type: string
+                    expr: 5
+                    type: string
+              sort order: ++++++
+              tag: -1
+              value expressions:
+                    expr: 0
+                    type: string
+                    expr: 1
+                    type: string
+                    expr: 2
+                    type: string
+                    expr: 3
+                    type: string
+                    expr: 4
+                    type: string
+                    expr: 5
+                    type: string
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -369,7 +369,7 @@ STAGE PLANS:
 query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key < 15) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/1108426053/828542659.10000
+Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/272950277/29892482.10000
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	11	val_11
 NULL	NULL	NULL	NULL	12	val_12

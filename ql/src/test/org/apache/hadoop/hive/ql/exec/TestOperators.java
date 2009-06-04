@@ -89,7 +89,7 @@ public class TestOperators extends TestCase {
       op.setConf(filterCtx);
 
       // runtime initialization
-      op.initialize(null, null, null);
+      op.initialize(null, null, new ObjectInspector[]{r[0].oi});
 
       for(InspectableObject oner: r) {
         op.process(oner.o, oner.oi, 0);
@@ -139,7 +139,7 @@ public class TestOperators extends TestCase {
                                            Utilities.defaultTd, false);
       Operator<fileSinkDesc> flop = OperatorFactory.getAndMakeChild(fsd, op);
       
-      op.initialize(new JobConf(TestOperators.class), Reporter.NULL, null);
+      op.initialize(new JobConf(TestOperators.class), Reporter.NULL, new ObjectInspector[]{r[0].oi});
 
       // evaluate on row
       for(int i=0; i<5; i++) {
@@ -185,7 +185,7 @@ public class TestOperators extends TestCase {
       collectDesc cd = new collectDesc (Integer.valueOf(10));
       CollectOperator cdop = (CollectOperator) OperatorFactory.getAndMakeChild(cd, sop);
 
-      op.initialize(new JobConf(TestOperators.class), null, null);
+      op.initialize(new JobConf(TestOperators.class), null, new ObjectInspector[]{r[0].oi});
 
       // evaluate on row
       for(int i=0; i<5; i++) {

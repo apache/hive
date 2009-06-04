@@ -74,35 +74,35 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
-          Reduce Output Operator
-            key expressions:
-                  expr: 0
-                  type: string
-            sort order: +
-            Map-reduce partition columns:
-                  expr: 0
-                  type: string
-            tag: 1
-            value expressions:
-                  expr: 0
-                  type: string
-                  expr: 1
-                  type: bigint
+            Reduce Output Operator
+              key expressions:
+                    expr: 0
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: 0
+                    type: string
+              tag: 1
+              value expressions:
+                    expr: 0
+                    type: string
+                    expr: 1
+                    type: bigint
         $INTNAME1 
-          Reduce Output Operator
-            key expressions:
-                  expr: 0
-                  type: string
-            sort order: +
-            Map-reduce partition columns:
-                  expr: 0
-                  type: string
-            tag: 0
-            value expressions:
-                  expr: 0
-                  type: string
-                  expr: 1
-                  type: bigint
+            Reduce Output Operator
+              key expressions:
+                    expr: 0
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: 0
+                    type: string
+              tag: 0
+              value expressions:
+                    expr: 0
+                    type: string
+                    expr: 1
+                    type: bigint
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -190,7 +190,7 @@ query: SELECT a.key, a.value, b.key, b.value
  ON (a.key = b.key)
 Input: default/src1
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/561260734/94732244.10000
+Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/1189387054/402013918.10000
 NULL	NULL		6
 0	3	NULL	NULL
 10	1	NULL	NULL

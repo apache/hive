@@ -63,7 +63,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive5/hive5/build/ql/tmp/594528383/398601416.10004 
+        /data/users/njain/hive2/hive2/build/ql/tmp/228745454/662810932.10004 
           Union
             Group By Operator
               aggregations:
@@ -106,7 +106,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     name: binary_table
-        /data/users/njain/hive5/hive5/build/ql/tmp/594528383/398601416.10006 
+        /data/users/njain/hive2/hive2/build/ql/tmp/228745454/662810932.10006 
           Union
             Group By Operator
               aggregations:
@@ -191,25 +191,25 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive5/hive5/build/ql/tmp/594528383/398601416.10005 
-          Reduce Output Operator
-            key expressions:
-                  expr: 0
-                  type: string
-                  expr: 1
-                  type: string
-                  expr: 2
-                  type: string
-            sort order: +++
-            Map-reduce partition columns:
-                  expr: 0
-                  type: string
-                  expr: 1
-                  type: string
-            tag: -1
-            value expressions:
-                  expr: 3
-                  type: bigint
+        /data/users/njain/hive2/hive2/build/ql/tmp/228745454/662810932.10005 
+            Reduce Output Operator
+              key expressions:
+                    expr: 0
+                    type: string
+                    expr: 1
+                    type: string
+                    expr: 2
+                    type: string
+              sort order: +++
+              Map-reduce partition columns:
+                    expr: 0
+                    type: string
+                    expr: 1
+                    type: string
+              tag: -1
+              value expressions:
+                    expr: 3
+                    type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -266,7 +266,7 @@ Output: default/dest1
 Output: default/dest2
 query: SELECT DEST1.* FROM DEST1
 Input: default/dest1
-Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/846588920/478082672.10000
+Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/749088409/416496611.10000
 0	1
 10	1
 100	1
@@ -579,7 +579,7 @@ Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/846588920/478082672.100
 tst1	0
 query: SELECT DEST2.* FROM DEST2
 Input: default/dest2
-Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/513377833/130813712.10000
+Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/1754259258/1425212586.10000
 0	val_0	1
 10	val_10	1
 100	val_100	1

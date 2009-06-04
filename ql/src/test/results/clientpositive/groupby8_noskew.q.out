@@ -84,18 +84,18 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/280831989/373656.10004 
-          Reduce Output Operator
-            key expressions:
-                  expr: key
-                  type: string
-                  expr: substr(value, 5)
-                  type: string
-            sort order: ++
-            Map-reduce partition columns:
-                  expr: key
-                  type: string
-            tag: -1
+        /data/users/njain/hive2/hive2/build/ql/tmp/8527497/734265590.10004 
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+                    expr: substr(value, 5)
+                    type: string
+              sort order: ++
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: -1
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -134,7 +134,7 @@ Output: default/dest1
 Output: default/dest2
 query: SELECT DEST1.* FROM DEST1
 Input: default/dest1
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/14233066/985088079.10000
+Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/66885571/152113333.10000
 0	1
 10	1
 100	1
@@ -446,7 +446,7 @@ Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/14233066/9
 98	1
 query: SELECT DEST2.* FROM DEST2
 Input: default/dest2
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/1779608708/316437586.10000
+Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/10910469/133549655.10000
 0	1
 10	1
 100	1

@@ -71,8 +71,9 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
   transient int tag;
   transient byte[] tagByte = new byte[1];
   
-  public void initialize(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
-    super.initialize(hconf, reporter, inputObjInspector);
+  public void initializeOp(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
+    LOG.info("Initializing Self");
+
     try {
       keyEval = new ExprNodeEvaluator[conf.getKeyCols().size()];
       int i=0;
@@ -106,6 +107,8 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
       valueSerializer.initialize(null, valueTableDesc.getProperties());
       
       firstRow = true;
+      initializeChildren(hconf, reporter, inputObjInspector);
+      LOG.info("Initialization Done");
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException(e);

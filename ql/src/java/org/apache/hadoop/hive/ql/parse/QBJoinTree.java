@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.util.Vector;
+import java.util.List;
 
 /**
  * Internal representation of the join tree
@@ -40,6 +41,10 @@ public class QBJoinTree
 
   // filters
   private Vector<Vector<ASTNode>> filters;
+
+  // user asked for map-side join
+  private  boolean        mapSideJoin;
+  private  List<String>   mapAliases;
   
   /**
    * constructor 
@@ -140,6 +145,33 @@ public class QBJoinTree
 		this.filters = filters;
 	}
 
+  /**
+   * @return the mapSidejoin
+   */
+  public boolean isMapSideJoin() {
+    return mapSideJoin;
+  }
+
+  /**
+   * @param mapSidejoin the mapSidejoin to set
+   */
+  public void setMapSideJoin(boolean mapSideJoin) {
+    this.mapSideJoin = mapSideJoin;
+  }
+
+  /**
+   * @return the mapAliases
+   */
+  public List<String> getMapAliases() {
+    return mapAliases;
+  }
+
+  /**
+   * @param mapAliases the mapAliases to set
+   */
+  public void setMapAliases(List<String> mapAliases) {
+    this.mapAliases = mapAliases;
+  }
 }
 
 

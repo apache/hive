@@ -117,7 +117,7 @@ public final class RecordManagerFactory
         RecordManagerProvider  factory;
 
         provider = options.getProperty( RecordManagerOptions.PROVIDER_FACTORY,
-                                        "jdbm.recman.Provider" );
+                                        "org.apache.hadoop.hive.ql.util.jdbm.recman.Provider" );
 
         try {
             clazz = Class.forName( provider );

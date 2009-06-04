@@ -137,6 +137,8 @@ public class ColumnPruner implements Transform {
     pctx.getAliasToSamplePruner().clear();
     pctx.getLoadTableWork().clear();
     pctx.getLoadFileWork().clear();
+    pctx.getJoinContext().clear();
+
     Iterator<Operator<? extends Serializable>> iter = pctx.getOpParseCtx().keySet().iterator();
     while (iter.hasNext()) {
       Operator<? extends Serializable> op = iter.next();
@@ -200,8 +202,9 @@ public class ColumnPruner implements Transform {
       SemanticAnalyzer sem = (SemanticAnalyzer)SemanticAnalyzerFactory.get(pGraphContext.getConf(), pGraphContext.getParseTree());
 
       resetParseContext(pGraphContext);
-      sem.init(pGraphContext);
       QB qb = new QB(null, null, false);
+      pGraphContext.setQB(qb);
+      sem.init(pGraphContext);
 
       sem.doPhase1(pGraphContext.getParseTree(), qb, sem.initPhase1Ctx());
       sem.getMetaData(qb);

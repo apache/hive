@@ -50,6 +50,7 @@ public class Optimizer {
     if (hiveConf.getBoolean("hive.optimize.ppd", false))
       transformations.add(new PredicatePushDown());
     transformations.add(new UnionProcessor());
+		transformations.add(new MapJoinProcessor());
 	}
 	
 	/**

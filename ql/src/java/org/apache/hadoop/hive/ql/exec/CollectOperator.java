@@ -39,10 +39,10 @@ public class CollectOperator extends Operator <collectDesc> implements Serializa
   transient protected ObjectInspector standardRowInspector;
   transient int maxSize;
 
-  public void initialize(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
-    super.initialize(hconf, reporter, inputObjInspector);
+  public void initializeOp(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
     rowList = new ArrayList<Object> ();
     maxSize = conf.getBufferSize().intValue();
+    initializeChildren(hconf, reporter, inputObjInspector);
   }
 
   boolean firstRow = true;

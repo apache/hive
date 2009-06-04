@@ -1,0 +1,392 @@
+query: drop table dest_j1
+query: CREATE TABLE dest_j1(key STRING, value STRING, val2 INT) STORED AS TEXTFILE
+query: EXPLAIN EXTENDED
+INSERT OVERWRITE TABLE dest_j1
+SELECT /*+ MAPJOIN(x) */ x.key, x.value, subq1.cnt
+FROM 
+( SELECT x.key as key, count(1) as cnt from src x where x.key < 20 group by x.key
+     UNION ALL
+  SELECT x1.key as key, count(1) as cnt from src x1 where x1.key > 100 group by x1.key
+) subq1
+JOIN src1 x ON (x.key = subq1.key)
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF src x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key) key) (TOK_SELEXPR (TOK_FUNCTION count 1) cnt)) (TOK_WHERE (< (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x) key)))) (TOK_QUERY (TOK_FROM (TOK_TABREF src x1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x1) key) key) (TOK_SELEXPR (TOK_FUNCTION count 1) cnt)) (TOK_WHERE (> (. (TOK_TABLE_OR_COL x1) key) 100)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x1) key))))) subq1) (TOK_TABREF src1 x) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL subq1) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest_j1)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST x))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL subq1) cnt)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1, Stage-4
+  Stage-3 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-3
+  Stage-4 is a root stage
+  Stage-2 depends on stages: Stage-1, Stage-4
+  Stage-3 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        null-subquery1:subq1-subquery1:x 
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(0) < UDFToDouble(20))
+                    type: boolean
+                Group By Operator
+                  aggregations:
+                        expr: count(1)
+                  keys:
+                        expr: 0
+                        type: string
+                  mode: hash
+                  Reduce Output Operator
+                    key expressions:
+                          expr: 0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: 0
+                          type: string
+                    tag: -1
+                    value expressions:
+                          expr: 1
+                          type: bigint
+      Needs Tagging: false
+      Path -> Alias:
+        file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/src 
+      Path -> Partition:
+        file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/src 
+          Partition
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                name src
+                columns.types string:string
+                serialization.ddl struct src { string key, string value}
+                serialization.format 1
+                columns key,value
+                bucket_count -1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                location file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/src
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: src
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE.0)
+          keys:
+                expr: KEY.0
+                type: string
+          mode: mergepartial
+          Select Operator
+            expressions:
+                  expr: 0
+                  type: string
+                  expr: 1
+                  type: bigint
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              directory: file:/data/users/njain/hive2/hive2/build/ql/tmp/226015867/10004
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  properties:
+                    name binary_table
+                    serialization.ddl struct binary_table { string temporarycol0, i64 temporarycol1}
+                    serialization.format com.facebook.thrift.protocol.TBinaryProtocol
+                  name: binary_table
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/njain/hive2/hive2/build/ql/tmp/226015867/10004 
+          Union
+            Common Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {0} {1}
+                1 {key} {value}
+              keys:
+                0 
+                1 
+              Position of Big Table: 0
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                directory: file:/data/users/njain/hive2/hive2/build/ql/tmp/226015867/10005
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    properties:
+                      columns temporarycol0,temporarycol1,temporarycol2,temporarycol3
+                      columns.types string,bigint,string,string
+        file:/data/users/njain/hive2/hive2/build/ql/tmp/226015867/10006 
+          Union
+            Common Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {0} {1}
+                1 {key} {value}
+              keys:
+                0 
+                1 
+              Position of Big Table: 0
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                directory: file:/data/users/njain/hive2/hive2/build/ql/tmp/226015867/10005
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    properties:
+                      columns temporarycol0,temporarycol1,temporarycol2,temporarycol3
+                      columns.types string,bigint,string,string
+      Local Work:
+        Map Reduce Local Work
+          Alias -> Map Local Tables:
+            x 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            x 
+                Common Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  condition expressions:
+                    0 {0} {1}
+                    1 {key} {value}
+                  keys:
+                    0 
+                    1 
+                  Position of Big Table: 0
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    directory: file:/data/users/njain/hive2/hive2/build/ql/tmp/226015867/10005
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        properties:
+                          columns temporarycol0,temporarycol1,temporarycol2,temporarycol3
+                          columns.types string,bigint,string,string
+      Needs Tagging: false
+      Path -> Alias:
+        file:/data/users/njain/hive2/hive2/build/ql/tmp/226015867/10004 
+        file:/data/users/njain/hive2/hive2/build/ql/tmp/226015867/10006 
+      Path -> Partition:
+        file:/data/users/njain/hive2/hive2/build/ql/tmp/226015867/10004 
+          Partition
+          
+              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+              properties:
+                name binary_table
+                serialization.ddl struct binary_table { string temporarycol0, i64 temporarycol1}
+                serialization.format com.facebook.thrift.protocol.TBinaryProtocol
+              name: binary_table
+        file:/data/users/njain/hive2/hive2/build/ql/tmp/226015867/10006 
+          Partition
+          
+              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+              properties:
+                name binary_table
+                serialization.ddl struct binary_table { string temporarycol0, i64 temporarycol1}
+                serialization.format com.facebook.thrift.protocol.TBinaryProtocol
+              name: binary_table
+
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/njain/hive2/hive2/build/ql/tmp/226015867/10005 
+          Select Operator
+            Select Operator
+              expressions:
+                    expr: 2
+                    type: string
+                    expr: 3
+                    type: string
+                    expr: 1
+                    type: bigint
+              Select Operator
+                expressions:
+                      expr: 0
+                      type: string
+                      expr: 1
+                      type: string
+                      expr: UDFToInteger(2)
+                      type: int
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 1
+                  directory: file:/data/users/njain/hive2/hive2/build/ql/tmp/933155217/10002
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      properties:
+                        name dest_j1
+                        columns.types string:string:int
+                        serialization.ddl struct dest_j1 { string key, string value, i32 val2}
+                        serialization.format 1
+                        columns key,value,val2
+                        bucket_count -1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                        file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        location file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/dest_j1
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: dest_j1
+      Needs Tagging: false
+      Path -> Alias:
+        file:/data/users/njain/hive2/hive2/build/ql/tmp/226015867/10005 
+      Path -> Partition:
+        file:/data/users/njain/hive2/hive2/build/ql/tmp/226015867/10005 
+          Partition
+          
+              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+              properties:
+                columns temporarycol0,temporarycol1,temporarycol2,temporarycol3
+                columns.types string,bigint,string,string
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+            replace: true
+            source: file:/data/users/njain/hive2/hive2/build/ql/tmp/933155217/10002
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                properties:
+                  name dest_j1
+                  columns.types string:string:int
+                  serialization.ddl struct dest_j1 { string key, string value, i32 val2}
+                  serialization.format 1
+                  columns key,value,val2
+                  bucket_count -1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                  file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  location file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/dest_j1
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: dest_j1
+            tmp directory: file:/data/users/njain/hive2/hive2/build/ql/tmp/933155217/10003
+
+  Stage: Stage-4
+    Map Reduce
+      Alias -> Map Operator Tree:
+        null-subquery2:subq1-subquery2:x1 
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(0) > UDFToDouble(100))
+                    type: boolean
+                Group By Operator
+                  aggregations:
+                        expr: count(1)
+                  keys:
+                        expr: 0
+                        type: string
+                  mode: hash
+                  Reduce Output Operator
+                    key expressions:
+                          expr: 0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: 0
+                          type: string
+                    tag: -1
+                    value expressions:
+                          expr: 1
+                          type: bigint
+      Needs Tagging: false
+      Path -> Alias:
+        file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/src 
+      Path -> Partition:
+        file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/src 
+          Partition
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                name src
+                columns.types string:string
+                serialization.ddl struct src { string key, string value}
+                serialization.format 1
+                columns key,value
+                bucket_count -1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                location file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/src
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: src
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE.0)
+          keys:
+                expr: KEY.0
+                type: string
+          mode: mergepartial
+          Select Operator
+            expressions:
+                  expr: 0
+                  type: string
+                  expr: 1
+                  type: bigint
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              directory: file:/data/users/njain/hive2/hive2/build/ql/tmp/226015867/10006
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  properties:
+                    name binary_table
+                    serialization.ddl struct binary_table { string temporarycol0, i64 temporarycol1}
+                    serialization.format com.facebook.thrift.protocol.TBinaryProtocol
+                  name: binary_table
+
+
+query: INSERT OVERWRITE TABLE dest_j1
+SELECT /*+ MAPJOIN(x) */ x.key, x.value, subq1.cnt
+FROM 
+( SELECT x.key as key, count(1) as cnt from src x where x.key < 20 group by x.key
+     UNION ALL
+  SELECT x1.key as key, count(1) as cnt from src x1 where x1.key > 100 group by x1.key
+) subq1
+JOIN src1 x ON (x.key = subq1.key)
+Input: default/src
+Input: default/src1
+Output: default/dest_j1
+query: select * from dest_j1 x order by x.key
+Input: default/dest_j1
+Output: file:/data/users/njain/hive2/hive2/build/ql/tmp/247016879/10000
+128		3
+146	val_146	2
+150	val_150	1
+213	val_213	2
+224		2
+238	val_238	2
+255	val_255	2
+273	val_273	3
+278	val_278	2
+311	val_311	3
+369		3
+401	val_401	5
+406	val_406	4
+query: drop table dest_j1

@@ -21,7 +21,9 @@ package org.apache.hadoop.hive.ql.parse;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.plan.loadFileDesc;
 import org.apache.hadoop.hive.ql.plan.loadTableDesc;
@@ -47,6 +49,7 @@ public class ParseContext {
   private HashMap<String, Operator<? extends Serializable>> topOps;
   private HashMap<String, Operator<? extends Serializable>> topSelOps;
   private HashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx;
+  private Map<JoinOperator, QBJoinTree> joinContext;
   private List<loadTableDesc> loadTableWork;
   private List<loadFileDesc> loadFileWork;
   private Context ctx;
@@ -82,6 +85,7 @@ public class ParseContext {
       HashMap<String, Operator<? extends Serializable>> topOps,
       HashMap<String, Operator<? extends Serializable>> topSelOps,
       HashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx,
+      Map<JoinOperator, QBJoinTree> joinContext,
       List<loadTableDesc> loadTableWork, List<loadFileDesc> loadFileWork,
       Context ctx, HashMap<String, String> idToTableNameMap, int destTableId, UnionProcContext uCtx) {
     this.conf = conf;
@@ -89,6 +93,7 @@ public class ParseContext {
     this.ast = ast;
     this.aliasToPruner = aliasToPruner;
     this.aliasToSamplePruner = aliasToSamplePruner;
+    this.joinContext = joinContext;
     this.loadFileWork = loadFileWork;
     this.loadTableWork = loadTableWork;
     this.opParseCtx = opParseCtx;
@@ -290,6 +295,20 @@ public class ParseContext {
 
   public void setUCtx(UnionProcContext uCtx) {
     this.uCtx = uCtx;
+  }
+
+  /**
+   * @return the joinContext
+   */
+  public Map<JoinOperator, QBJoinTree> getJoinContext() {
+    return joinContext;
+  }
+
+  /**
+   * @param joinContext the joinContext to set
+   */
+  public void setJoinContext(Map<JoinOperator, QBJoinTree> joinContext) {
+    this.joinContext = joinContext;
   }
 
 }

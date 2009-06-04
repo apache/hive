@@ -27,24 +27,61 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.apache.hadoop.hive.ql.plan.mapredWork;
+import org.apache.hadoop.hive.ql.plan.mapredLocalWork;
+import org.apache.hadoop.hive.ql.plan.fetchWork;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 public class ExecMapper extends MapReduceBase implements Mapper {
 
   private MapOperator mo;
+  private Map<String, FetchOperator> fetchOperators;
   private OutputCollector oc;
   private JobConf jc;
   private boolean abort = false;
   private Reporter rp;
   public static final Log l4j = LogFactory.getLog("ExecMapper");
   private static boolean done;
+
+  private void init() {
+    mo = null;
+    fetchOperators = null;
+    oc = null;
+    jc = null;
+    abort = false;
+    rp = null;
+  }
   
   public void configure(JobConf job) {
-    jc = job;
-    mapredWork mrwork = Utilities.getMapRedWork(job);
-    mo = new MapOperator ();
-    mo.setConf(mrwork);
-    // we don't initialize the operator until we have set the output collector
+    try {
+      init();
+      jc = job;
+      mapredWork mrwork = Utilities.getMapRedWork(job);
+      mo = new MapOperator();
+      mo.setConf(mrwork);
+      mapredLocalWork mlo = mrwork.getMapLocalWork();
+      if (mlo != null) {
+        fetchOperators = new HashMap<String, FetchOperator>();
+        Map<String, fetchWork> aliasToFetchWork = mlo.getAliasToFetchWork();
+        Iterator<Map.Entry<String, fetchWork>> fetchWorkSet = aliasToFetchWork
+            .entrySet().iterator();
+        while (fetchWorkSet.hasNext()) {
+          Map.Entry<String, fetchWork> entry = fetchWorkSet.next();
+          String alias = entry.getKey();
+          fetchWork fWork = entry.getValue();
+          fetchOperators.put(alias, new FetchOperator(fWork, job));
+          l4j.info("fetchoperator for " + alias + " initialized");
+        }
+      }
+
+      // we don't initialize the operator until we have set the output collector
+    } catch (Exception e) {
+      // Bail out ungracefully - we should never hit
+      // this here - but would have hit it in SemanticAnalyzer
+      throw new RuntimeException(e);
+    }
   }
 
   public void map(Object key, Object value,
@@ -55,6 +92,37 @@ public class ExecMapper extends MapReduceBase implements Mapper {
         oc = output;
         mo.setOutputCollector(oc);
         mo.initialize(jc, reporter, null);
+        if (fetchOperators != null) {
+          mapredWork mrwork = Utilities.getMapRedWork(jc);
+          mapredLocalWork localWork = mrwork.getMapLocalWork();
+          Iterator<Map.Entry<String, FetchOperator>> fetchOps = fetchOperators.entrySet().iterator();
+          while (fetchOps.hasNext()) {
+            Map.Entry<String, FetchOperator> entry = fetchOps.next();
+            String alias = entry.getKey();
+            FetchOperator fetchOp = entry.getValue();
+            Operator<? extends Serializable> forwardOp = localWork.getAliasToWork().get(alias); 
+            // All the operators need to be initialized before process
+            forwardOp.initialize(jc, reporter, new ObjectInspector[]{fetchOp.getOutputObjectInspector()});
+          }
+
+          fetchOps = fetchOperators.entrySet().iterator();
+          while (fetchOps.hasNext()) {
+            Map.Entry<String, FetchOperator> entry = fetchOps.next();
+            String alias = entry.getKey();
+            FetchOperator fetchOp = entry.getValue();
+            Operator<? extends Serializable> forwardOp = localWork.getAliasToWork().get(alias); 
+
+            while (true) {
+              InspectableObject row = fetchOp.getNextRow();
+              if (row == null) {
+                break;
+              }
+
+              forwardOp.process(row.o, row.oi, 0);
+            }
+          }
+        }
+
         rp = reporter;
       } catch (HiveException e) {
         abort = true;
@@ -94,6 +162,18 @@ public class ExecMapper extends MapReduceBase implements Mapper {
     // ideally hadoop should let us know whether map execution failed or not
     try {
       mo.close(abort);
+      if (fetchOperators != null) {
+        mapredWork mrwork = Utilities.getMapRedWork(jc);
+        mapredLocalWork localWork = mrwork.getMapLocalWork();
+        Iterator<Map.Entry<String, FetchOperator>> fetchOps = fetchOperators.entrySet().iterator();
+        while (fetchOps.hasNext()) {
+          Map.Entry<String, FetchOperator> entry = fetchOps.next();
+          String alias = entry.getKey();
+          Operator<? extends Serializable> forwardOp = localWork.getAliasToWork().get(alias); 
+          forwardOp.close(abort);
+        }
+      }
+
       reportStats rps = new reportStats (rp);
       mo.preorderMap(rps);
       return;

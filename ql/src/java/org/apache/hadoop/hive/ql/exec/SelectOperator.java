@@ -25,9 +25,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.selectDesc;
-import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.mapred.Reporter;
 
 /**
@@ -41,26 +40,34 @@ public class SelectOperator extends Operator <selectDesc> implements Serializabl
   transient Object[] output;
   transient ObjectInspector outputObjectInspector;
   
-  boolean firstRow;
-  
-  public void initialize(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
-    super.initialize(hconf, reporter, inputObjInspector);
-
+  public void initializeOp(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {    
+    // Just forward the row as is
+    if (conf.isSelStarNoCompute()) {
+      initializeChildren(hconf, reporter, inputObjInspector);
+      return;
+    }
+    
     ArrayList<exprNodeDesc> colList = conf.getColList();
     eval = new ExprNodeEvaluator[colList.size()];
     for(int i=0; i<colList.size(); i++) {
       assert(colList.get(i) != null);
       eval[i] = ExprNodeEvaluatorFactory.get(colList.get(i));
     }
-    firstRow = true;
+   
+    assert inputObjInspector.length == 1;
+    output = new Object[eval.length];
+    LOG.info("SELECT " + ((StructObjectInspector)inputObjInspector[0]).getTypeName());
+    outputObjectInspector = initEvaluatorsAndReturnStruct(eval, inputObjInspector[0]); 
+    initializeChildren(hconf, reporter, new ObjectInspector[]{outputObjectInspector});
   }
 
   public void process(Object row, ObjectInspector rowInspector, int tag)
       throws HiveException {
-    if (firstRow) {
-      firstRow = false;
-      output = new Object[eval.length];
-      outputObjectInspector = initEvaluatorsAndReturnStruct(eval, rowInspector);
+
+    // Just forward the row as is
+    if (conf.isSelStarNoCompute()) {
+      forward(row, rowInspector);
+      return;
     }
     
     for(int i=0; i<eval.length; i++) {

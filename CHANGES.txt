@@ -39,6 +39,8 @@ Trunk - Unreleased
     HIVE-509. Add create table like.
     (Zheng Shao via namit)
 
+    HIVE-195. Map-side join. (Namit Jain via zshao)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 

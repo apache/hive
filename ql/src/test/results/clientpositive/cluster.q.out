@@ -52,7 +52,7 @@ STAGE PLANS:
 
 query: SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/415464870/184820352.10000
+Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/214678633/80263680.10000
 10	val_10
 query: EXPLAIN
 SELECT * FROM SRC x  where x.key = 20 CLUSTER BY key
@@ -108,7 +108,7 @@ STAGE PLANS:
 
 query: SELECT * FROM SRC x where x.key = 20 CLUSTER BY key
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/483996565/25535146.10000
+Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/216341669/198536245.10000
 20	val_20
 query: EXPLAIN
 SELECT x.* FROM SRC x where x.key = 20 CLUSTER BY key
@@ -164,7 +164,7 @@ STAGE PLANS:
 
 query: SELECT x.* FROM SRC x where x.key = 20 CLUSTER BY key
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/67500406/610168339.10000
+Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/323533340/5794695.10000
 20	val_20
 query: EXPLAIN
 SELECT x.*  FROM SRC x where x.key = 20 CLUSTER BY x.key
@@ -220,7 +220,7 @@ STAGE PLANS:
 
 query: SELECT x.*  FROM SRC x where x.key = 20 CLUSTER BY x.key
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/1062209591/78302640.10000
+Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/1217098935/331281713.10000
 20	val_20
 query: EXPLAIN
 SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY key
@@ -276,7 +276,7 @@ STAGE PLANS:
 
 query: SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY key
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/14719539/136351528.10000
+Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/31096986/775877790.10000
 20	val_20
 query: EXPLAIN
 SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY x.key
@@ -332,7 +332,7 @@ STAGE PLANS:
 
 query: SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY x.key
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/168361199/328930285.10000
+Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/1311539054/408350350.10000
 20	val_20
 query: EXPLAIN
 SELECT x.key, x.value as v1  FROM SRC x where x.key = 20 CLUSTER BY v1
@@ -388,7 +388,7 @@ STAGE PLANS:
 
 query: SELECT x.key, x.value as v1  FROM SRC x where x.key = 20 CLUSTER BY v1
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/218669889/821061905.10000
+Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/410641125/337645701.10000
 20	val_20
 query: EXPLAIN
 SELECT y.* from (SELECT x.* FROM SRC x CLUSTER BY x.key) y where y.key = 20
@@ -450,7 +450,7 @@ STAGE PLANS:
 
 query: SELECT y.* from (SELECT x.* FROM SRC x CLUSTER BY x.key) y where y.key = 20
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/1411175272/114925452.10000
+Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/20608200/132489807.10000
 20	val_20
 query: EXPLAIN 
 SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key)  where x.key = 20 CLUSTER BY v1
@@ -528,23 +528,23 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/213518946/254574448.10002 
-          Reduce Output Operator
-            key expressions:
-                  expr: 1
-                  type: string
-            sort order: +
-            Map-reduce partition columns:
-                  expr: 1
-                  type: string
-            tag: -1
-            value expressions:
-                  expr: 0
-                  type: string
-                  expr: 1
-                  type: string
-                  expr: 2
-                  type: string
+        /data/users/njain/hive2/hive2/build/ql/tmp/180519365/1223155.10002 
+            Reduce Output Operator
+              key expressions:
+                    expr: 1
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: 1
+                    type: string
+              tag: -1
+              value expressions:
+                    expr: 0
+                    type: string
+                    expr: 1
+                    type: string
+                    expr: 2
+                    type: string
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -561,7 +561,7 @@ STAGE PLANS:
 
 query: SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/115523540/275557180.10000
+Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/304705152/1520883527.10000
 20	val_20	20
 query: EXPLAIN 
 SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
@@ -639,25 +639,25 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/1145795613/25764450.10002 
-          Reduce Output Operator
-            key expressions:
-                  expr: 1
-                  type: string
-            sort order: +
-            Map-reduce partition columns:
-                  expr: 1
-                  type: string
-            tag: -1
-            value expressions:
-                  expr: 0
-                  type: string
-                  expr: 1
-                  type: string
-                  expr: 2
-                  type: string
-                  expr: 3
-                  type: string
+        /data/users/njain/hive2/hive2/build/ql/tmp/273445284/1259872115.10002 
+            Reduce Output Operator
+              key expressions:
+                    expr: 1
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: 1
+                    type: string
+              tag: -1
+              value expressions:
+                    expr: 0
+                    type: string
+                    expr: 1
+                    type: string
+                    expr: 2
+                    type: string
+                    expr: 3
+                    type: string
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -674,7 +674,7 @@ STAGE PLANS:
 
 query: SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/1597231071/54379941.10000
+Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/224961014/306327097.10000
 20	val_20	20	val_20
 query: EXPLAIN
 SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY x.key
@@ -752,25 +752,25 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/186086163/372716927.10002 
-          Reduce Output Operator
-            key expressions:
-                  expr: 0
-                  type: string
-            sort order: +
-            Map-reduce partition columns:
-                  expr: 0
-                  type: string
-            tag: -1
-            value expressions:
-                  expr: 0
-                  type: string
-                  expr: 1
-                  type: string
-                  expr: 2
-                  type: string
-                  expr: 3
-                  type: string
+        /data/users/njain/hive2/hive2/build/ql/tmp/389423102/202869602.10002 
+            Reduce Output Operator
+              key expressions:
+                    expr: 0
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: 0
+                    type: string
+              tag: -1
+              value expressions:
+                    expr: 0
+                    type: string
+                    expr: 1
+                    type: string
+                    expr: 2
+                    type: string
+                    expr: 3
+                    type: string
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -787,7 +787,7 @@ STAGE PLANS:
 
 query: SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY x.key
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/895988628/1557073804.10000
+Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/171221765/388816243.10000
 20	val_20	20	val_20
 query: EXPLAIN
 SELECT x.key, x.value as v1, y.key as yk  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY key
@@ -865,23 +865,23 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/173489852/1494704235.10002 
-          Reduce Output Operator
-            key expressions:
-                  expr: 0
-                  type: string
-            sort order: +
-            Map-reduce partition columns:
-                  expr: 0
-                  type: string
-            tag: -1
-            value expressions:
-                  expr: 0
-                  type: string
-                  expr: 1
-                  type: string
-                  expr: 2
-                  type: string
+        /data/users/njain/hive2/hive2/build/ql/tmp/399836187/1625046097.10002 
+            Reduce Output Operator
+              key expressions:
+                    expr: 0
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: 0
+                    type: string
+              tag: -1
+              value expressions:
+                    expr: 0
+                    type: string
+                    expr: 1
+                    type: string
+                    expr: 2
+                    type: string
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -898,7 +898,7 @@ STAGE PLANS:
 
 query: SELECT x.key, x.value as v1, y.key as yk  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY key
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/144828791/434522525.10000
+Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/667900999/93186085.10000
 20	val_20	20
 query: EXPLAIN
 SELECT unioninput.*
@@ -1005,7 +1005,7 @@ FROM (
 ) unioninput
 CLUSTER BY unioninput.key
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/247260620/164962735.10000
+Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/730558416/61341521.10000
 0	val_0
 0	val_0
 0	val_0

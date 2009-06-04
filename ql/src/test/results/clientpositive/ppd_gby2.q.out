@@ -80,19 +80,19 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/876834044/233635262.10002 
-          Reduce Output Operator
-            key expressions:
-                  expr: 0
-                  type: bigint
-            sort order: +
-            Map-reduce partition columns:
-                  expr: 0
-                  type: bigint
-            tag: -1
-            value expressions:
-                  expr: 1
-                  type: string
+        /data/users/njain/hive2/hive2/build/ql/tmp/204855157/1634833894.10002 
+            Reduce Output Operator
+              key expressions:
+                    expr: 0
+                    type: bigint
+              sort order: +
+              Map-reduce partition columns:
+                    expr: 0
+                    type: bigint
+              tag: -1
+              value expressions:
+                    expr: 1
+                    type: string
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -125,7 +125,7 @@ FROM
 WHERE src1.c1 > 'val_200' AND (src1.c2 > 30 OR src1.c1 < 'val_400')
 GROUP BY src1.c2
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/1510230396/496559697.10000
+Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/326957820/25191908.10000
 val_4	1
 val_399	2
 val_396	3

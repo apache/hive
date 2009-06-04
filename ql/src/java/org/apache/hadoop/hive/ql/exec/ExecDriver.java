@@ -649,14 +649,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
       pathToAliases.put(newPath.toString(), newList);
       
       Map<String,partitionDesc> pathToPartitionInfo = work.getPathToPartitionInfo();
-      partitionDesc pDesc = new partitionDesc();
-      
-      tableDesc tDesc = new tableDesc(LazySimpleSerDe.class,
-                                      SequenceFileInputFormat.class,
-                                      SequenceFileOutputFormat.class,
-                                      new Properties());
-      
-      pDesc.setTableDesc(tDesc);
+      partitionDesc pDesc = work.getAliasToPartnInfo().get(oneAlias);
       pathToPartitionInfo.put(newPath.toString(), pDesc);
       
       RecordWriter recWriter = outFileFormat.newInstance().getHiveRecordWriter(job, newPath, Text.class, false, new Properties(), null);

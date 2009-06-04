@@ -131,8 +131,8 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
   transient int           numEntriesVarSize;
   transient int           numEntriesHashTable;
 
-  public void initialize(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
-    super.initialize(hconf, reporter, inputObjInspector);
+  public void initializeOp(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
+
     totalMemory = Runtime.getRuntime().totalMemory();
     numRowsInput = 0;
     numRowsHashTbl = 0;
@@ -245,6 +245,14 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     for(int i=0; i<objectInspectors.size(); i++) {
       fieldNames.add(Integer.valueOf(i).toString());
     }
+
+    for (int i = 0; i < keyFields.length; i++) {
+      if (keyObjectInspectors[i] == null) {
+        keyObjectInspectors[i] = keyFields[i].initialize(inputObjInspector[0]);
+      }
+      objectInspectors.set(i, keyObjectInspectors[i]);
+    }
+    
     outputObjectInspector = 
       ObjectInspectorFactory.getStandardStructObjectInspector(fieldNames, objectInspectors);
     
@@ -253,6 +261,8 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     // is not known, estimate that based on the number of entries
     if (conf.getMode() == groupByDesc.Mode.HASH)
       computeMaxEntriesHashAggr(hconf);
+    
+    initializeChildren(hconf, reporter, new ObjectInspector[]{outputObjectInspector});
   }
 
   /**
@@ -460,6 +470,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
   }
   
   public void process(Object row, ObjectInspector rowInspector, int tag) throws HiveException {
+    firstRow = false;
     // Total number of input rows is needed for hash aggregation only
     if (hashAggr) {
       numRowsInput++;
@@ -486,16 +497,6 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
         }
         keyObjects[i] = keyFields[i].evaluate(row);
         newKeys.add(keyObjects[i]);
-        if (firstRow) {
-          objectInspectors.set(i, keyObjectInspectors[i]);
-        }
-      }
-
-      if (firstRow) {
-        firstRow = false;
-        // After first row, we can compute outputObjectInspector based on keyObjectInspectors.
-        outputObjectInspector = 
-          ObjectInspectorFactory.getStandardStructObjectInspector(fieldNames, objectInspectors);
       }
 
       if (hashAggr)

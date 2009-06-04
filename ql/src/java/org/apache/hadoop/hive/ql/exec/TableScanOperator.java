@@ -33,8 +33,8 @@ import org.apache.hadoop.conf.Configuration;
  **/
 public class TableScanOperator extends Operator<tableScanDesc> implements Serializable {
   private static final long serialVersionUID = 1L;
-  public void initialize(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
-    super.initialize(hconf, reporter, inputObjInspector);
+  public void initializeOp(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
+    initializeChildren(hconf, reporter, inputObjInspector);
     // nothing to do really ..
   }
 

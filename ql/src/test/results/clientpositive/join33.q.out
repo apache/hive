@@ -1,0 +1,338 @@
+query: CREATE TABLE dest_j1(key STRING, value STRING, val2 STRING) STORED AS TEXTFILE
+query: EXPLAIN EXTENDED
+INSERT OVERWRITE TABLE dest_j1
+SELECT /*+ MAPJOIN(x) */ x.key, z.value, y.value
+FROM src1 x JOIN src y ON (x.key = y.key) 
+JOIN srcpart z ON (x.value = z.value and z.ds='2008-04-08' and z.hr=11)
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF src1 x) (TOK_TABREF src y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key))) (TOK_TABREF srcpart z) (and (and (= (. (TOK_TABLE_OR_COL x) value) (. (TOK_TABLE_OR_COL z) value)) (= (. (TOK_TABLE_OR_COL z) ds) '2008-04-08')) (= (. (TOK_TABLE_OR_COL z) hr) 11)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest_j1)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST x))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL z) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) value)))))
+
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-1 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        y 
+            Common Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {key} {value}
+                1 {key} {value}
+              keys:
+                0 
+                1 
+              Position of Big Table: 1
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                directory: file:/data/users/njain/hive2/hive2/build/ql/tmp/872232858/10004
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    properties:
+                      columns temporarycol0,temporarycol1,temporarycol2,temporarycol3
+                      columns.types string,string,string,string
+      Local Work:
+        Map Reduce Local Work
+          Alias -> Map Local Tables:
+            x 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            x 
+                Common Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  condition expressions:
+                    0 {key} {value}
+                    1 {key} {value}
+                  keys:
+                    0 
+                    1 
+                  Position of Big Table: 1
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    directory: file:/data/users/njain/hive2/hive2/build/ql/tmp/872232858/10004
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        properties:
+                          columns temporarycol0,temporarycol1,temporarycol2,temporarycol3
+                          columns.types string,string,string,string
+      Needs Tagging: false
+      Path -> Alias:
+        file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/src 
+      Path -> Partition:
+        file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/src 
+          Partition
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                name src
+                columns.types string:string
+                serialization.ddl struct src { string key, string value}
+                serialization.format 1
+                columns key,value
+                bucket_count -1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                location file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/src
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: src
+
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        z 
+            Select Operator
+              expressions:
+                    expr: value
+                    type: string
+                    expr: hr
+                    type: string
+                    expr: ds
+                    type: string
+              Filter Operator
+                predicate:
+                    expr: (2 = '2008-04-08')
+                    type: boolean
+                Filter Operator
+                  predicate:
+                      expr: (UDFToDouble(1) = UDFToDouble(11))
+                      type: boolean
+                  Reduce Output Operator
+                    key expressions:
+                          expr: 0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: 0
+                          type: string
+                    tag: 1
+                    value expressions:
+                          expr: 0
+                          type: string
+                          expr: 1
+                          type: string
+                          expr: 2
+                          type: string
+        file:/data/users/njain/hive2/hive2/build/ql/tmp/872232858/10004 
+          Select Operator
+            Reduce Output Operator
+              key expressions:
+                    expr: 1
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: 1
+                    type: string
+              tag: 0
+              value expressions:
+                    expr: 2
+                    type: string
+                    expr: 3
+                    type: string
+                    expr: 0
+                    type: string
+                    expr: 1
+                    type: string
+      Needs Tagging: true
+      Path -> Alias:
+        file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/njain/hive2/hive2/build/ql/tmp/872232858/10004 
+      Path -> Partition:
+        file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+          Partition
+            partition values:
+              ds 2008-04-08
+              hr 11
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                name srcpart
+                columns.types string:string
+                serialization.ddl struct srcpart { string key, string value}
+                serialization.format 1
+                columns key,value
+                partition_columns ds/hr
+                bucket_count -1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                location file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/srcpart
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: srcpart
+        file:/data/users/njain/hive2/hive2/build/ql/tmp/872232858/10004 
+          Partition
+          
+              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+              properties:
+                columns temporarycol0,temporarycol1,temporarycol2,temporarycol3
+                columns.types string,string,string,string
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          condition expressions:
+            0 {VALUE.0} {VALUE.1} {VALUE.2} {VALUE.3}
+            1 {VALUE.0} {VALUE.1} {VALUE.2}
+          Select Operator
+            expressions:
+                  expr: 2
+                  type: string
+                  expr: 4
+                  type: string
+                  expr: 1
+                  type: string
+            File Output Operator
+              compressed: false
+              GlobalTableId: 1
+              directory: file:/data/users/njain/hive2/hive2/build/ql/tmp/181195113/10002
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    name dest_j1
+                    columns.types string:string:string
+                    serialization.ddl struct dest_j1 { string key, string value, string val2}
+                    serialization.format 1
+                    columns key,value,val2
+                    bucket_count -1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                    file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    location file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/dest_j1
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: dest_j1
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+            replace: true
+            source: file:/data/users/njain/hive2/hive2/build/ql/tmp/181195113/10002
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                properties:
+                  name dest_j1
+                  columns.types string:string:string
+                  serialization.ddl struct dest_j1 { string key, string value, string val2}
+                  serialization.format 1
+                  columns key,value,val2
+                  bucket_count -1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                  file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  location file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/dest_j1
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: dest_j1
+            tmp directory: file:/data/users/njain/hive2/hive2/build/ql/tmp/181195113/10003
+
+
+query: INSERT OVERWRITE TABLE dest_j1
+SELECT /*+ MAPJOIN(x) */ x.key, z.value, y.value
+FROM src1 x JOIN src y ON (x.key = y.key) 
+JOIN srcpart z ON (x.value = z.value and z.ds='2008-04-08' and z.hr=11)
+Input: default/srcpart/ds=2008-04-08/hr=11
+Input: default/src
+Input: default/src1
+Output: default/dest_j1
+query: select * from dest_j1 x order by x.key
+Input: default/dest_j1
+Output: file:/data/users/njain/hive2/hive2/build/ql/tmp/700555840/10000
+146	val_146	val_146
+146	val_146	val_146
+146	val_146	val_146
+146	val_146	val_146
+150	val_150	val_150
+213	val_213	val_213
+213	val_213	val_213
+213	val_213	val_213
+213	val_213	val_213
+238	val_238	val_238
+238	val_238	val_238
+238	val_238	val_238
+238	val_238	val_238
+255	val_255	val_255
+255	val_255	val_255
+255	val_255	val_255
+255	val_255	val_255
+273	val_273	val_273
+273	val_273	val_273
+273	val_273	val_273
+273	val_273	val_273
+273	val_273	val_273
+273	val_273	val_273
+273	val_273	val_273
+273	val_273	val_273
+273	val_273	val_273
+278	val_278	val_278
+278	val_278	val_278
+278	val_278	val_278
+278	val_278	val_278
+311	val_311	val_311
+311	val_311	val_311
+311	val_311	val_311
+311	val_311	val_311
+311	val_311	val_311
+311	val_311	val_311
+311	val_311	val_311
+311	val_311	val_311
+311	val_311	val_311
+401	val_401	val_401
+401	val_401	val_401
+401	val_401	val_401
+401	val_401	val_401
+401	val_401	val_401
+401	val_401	val_401
+401	val_401	val_401
+401	val_401	val_401
+401	val_401	val_401
+401	val_401	val_401
+401	val_401	val_401
+401	val_401	val_401
+401	val_401	val_401
+401	val_401	val_401
+401	val_401	val_401
+401	val_401	val_401
+401	val_401	val_401
+401	val_401	val_401
+401	val_401	val_401
+401	val_401	val_401
+401	val_401	val_401
+401	val_401	val_401
+401	val_401	val_401
+401	val_401	val_401
+401	val_401	val_401
+406	val_406	val_406
+406	val_406	val_406
+406	val_406	val_406
+406	val_406	val_406
+406	val_406	val_406
+406	val_406	val_406
+406	val_406	val_406
+406	val_406	val_406
+406	val_406	val_406
+406	val_406	val_406
+406	val_406	val_406
+406	val_406	val_406
+406	val_406	val_406
+406	val_406	val_406
+406	val_406	val_406
+406	val_406	val_406
+66	val_66	val_66
+98	val_98	val_98
+98	val_98	val_98
+98	val_98	val_98
+98	val_98	val_98
+query: drop table dest_j1

@@ -70,21 +70,21 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/97967328/397511110.10002 
-          Reduce Output Operator
-            sort order: 
-            tag: -1
-            value expressions:
-                  expr: 0
-                  type: double
-                  expr: 1
-                  type: string
-                  expr: 2
-                  type: string
-                  expr: 3
-                  type: string
-                  expr: 4
-                  type: string
+        /data/users/njain/hive2/hive2/build/ql/tmp/250385923/119575383.10002 
+            Reduce Output Operator
+              sort order: 
+              tag: -1
+              value expressions:
+                    expr: 0
+                    type: double
+                    expr: 1
+                    type: string
+                    expr: 2
+                    type: string
+                    expr: 3
+                    type: string
+                    expr: 4
+                    type: string
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -144,5 +144,5 @@ Input: default/src
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/200485216/757320674.10000
+Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/483439487/1053812433.10000
 130091.0	260.182	256.10355987055016	98.0	0.0

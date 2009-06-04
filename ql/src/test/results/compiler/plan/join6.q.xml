@@ -6,6 +6,144 @@
   </void> 
   <void property="work"> 
    <object class="org.apache.hadoop.hive.ql.plan.mapredWork"> 
+    <void property="aliasToPartnInfo"> 
+     <void method="put"> 
+      <string>c:a:src1</string> 
+      <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
+       <void property="partSpec"> 
+        <object class="java.util.LinkedHashMap"/> 
+       </void> 
+       <void property="tableDesc"> 
+        <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
+         <void property="deserializerClass"> 
+          <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
+         </void> 
+         <void property="inputFileFormatClass"> 
+          <class>org.apache.hadoop.mapred.TextInputFormat</class> 
+         </void> 
+         <void property="outputFileFormatClass"> 
+          <class>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</class> 
+         </void> 
+         <void property="properties"> 
+          <object class="java.util.Properties"> 
+           <void method="put"> 
+            <string>name</string> 
+            <string>src</string> 
+           </void> 
+           <void method="put"> 
+            <string>columns.types</string> 
+            <string>string:string</string> 
+           </void> 
+           <void method="put"> 
+            <string>serialization.ddl</string> 
+            <string>struct src { string key, string value}</string> 
+           </void> 
+           <void method="put"> 
+            <string>serialization.format</string> 
+            <string>1</string> 
+           </void> 
+           <void method="put"> 
+            <string>columns</string> 
+            <string>key,value</string> 
+           </void> 
+           <void method="put"> 
+            <string>bucket_count</string> 
+            <string>-1</string> 
+           </void> 
+           <void method="put"> 
+            <string>serialization.lib</string> 
+            <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
+           </void> 
+           <void method="put"> 
+            <string>file.inputformat</string> 
+            <string>org.apache.hadoop.mapred.TextInputFormat</string> 
+           </void> 
+           <void method="put"> 
+            <string>file.outputformat</string> 
+            <string>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</string> 
+           </void> 
+           <void method="put"> 
+            <string>location</string> 
+            <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src</string> 
+           </void> 
+          </object> 
+         </void> 
+         <void property="serdeClassName"> 
+          <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
+         </void> 
+        </object> 
+       </void> 
+      </object> 
+     </void> 
+     <void method="put"> 
+      <string>c:b:src2</string> 
+      <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
+       <void property="partSpec"> 
+        <object id="LinkedHashMap0" class="java.util.LinkedHashMap"/> 
+       </void> 
+       <void property="tableDesc"> 
+        <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
+         <void property="deserializerClass"> 
+          <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
+         </void> 
+         <void property="inputFileFormatClass"> 
+          <class>org.apache.hadoop.mapred.TextInputFormat</class> 
+         </void> 
+         <void property="outputFileFormatClass"> 
+          <class>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</class> 
+         </void> 
+         <void property="properties"> 
+          <object id="Properties0" class="java.util.Properties"> 
+           <void method="put"> 
+            <string>name</string> 
+            <string>src</string> 
+           </void> 
+           <void method="put"> 
+            <string>columns.types</string> 
+            <string>string:string</string> 
+           </void> 
+           <void method="put"> 
+            <string>serialization.ddl</string> 
+            <string>struct src { string key, string value}</string> 
+           </void> 
+           <void method="put"> 
+            <string>serialization.format</string> 
+            <string>1</string> 
+           </void> 
+           <void method="put"> 
+            <string>columns</string> 
+            <string>key,value</string> 
+           </void> 
+           <void method="put"> 
+            <string>bucket_count</string> 
+            <string>-1</string> 
+           </void> 
+           <void method="put"> 
+            <string>serialization.lib</string> 
+            <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
+           </void> 
+           <void method="put"> 
+            <string>file.inputformat</string> 
+            <string>org.apache.hadoop.mapred.TextInputFormat</string> 
+           </void> 
+           <void method="put"> 
+            <string>file.outputformat</string> 
+            <string>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</string> 
+           </void> 
+           <void method="put"> 
+            <string>location</string> 
+            <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src</string> 
+           </void> 
+          </object> 
+         </void> 
+         <void property="serdeClassName"> 
+          <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
+         </void> 
+        </object> 
+       </void> 
+      </object> 
+     </void> 
+    </void> 
     <void property="aliasToWork"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
@@ -1081,7 +1219,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>c:a:src1</string> 
@@ -1096,10 +1234,10 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
-         <object class="java.util.LinkedHashMap"/> 
+         <object idref="LinkedHashMap0"/> 
         </void> 
         <void property="tableDesc"> 
          <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -1113,48 +1251,7 @@
            <class>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</class> 
           </void> 
           <void property="properties"> 
-           <object class="java.util.Properties"> 
-            <void method="put"> 
-             <string>name</string> 
-             <string>src</string> 
-            </void> 
-            <void method="put"> 
-             <string>columns.types</string> 
-             <string>string:string</string> 
-            </void> 
-            <void method="put"> 
-             <string>serialization.ddl</string> 
-             <string>struct src { string key, string value}</string> 
-            </void> 
-            <void method="put"> 
-             <string>serialization.format</string> 
-             <string>1</string> 
-            </void> 
-            <void method="put"> 
-             <string>columns</string> 
-             <string>key,value</string> 
-            </void> 
-            <void method="put"> 
-             <string>bucket_count</string> 
-             <string>-1</string> 
-            </void> 
-            <void method="put"> 
-             <string>serialization.lib</string> 
-             <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
-            </void> 
-            <void method="put"> 
-             <string>file.inputformat</string> 
-             <string>org.apache.hadoop.mapred.TextInputFormat</string> 
-            </void> 
-            <void method="put"> 
-             <string>file.outputformat</string> 
-             <string>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</string> 
-            </void> 
-            <void method="put"> 
-             <string>location</string> 
-             <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
-            </void> 
-           </object> 
+           <object idref="Properties0"/> 
           </void> 
           <void property="serdeClassName"> 
            <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
@@ -1182,7 +1279,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>/data/users/zshao/tools/deploy-trunk-apache-hive/ql/../build/ql/tmp/1572027676/910596138.10001.insclause-0</string> 
+                     <string>/data/users/njain/hive3/hive3/ql/../build/ql/tmp/104742044/487871181.10001.insclause-0</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 

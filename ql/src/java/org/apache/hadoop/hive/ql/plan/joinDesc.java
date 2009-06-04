@@ -38,35 +38,35 @@ public class joinDesc implements Serializable {
   public static final int RIGHT_OUTER_JOIN = 2;
   public static final int FULL_OUTER_JOIN = 3;
 
-  // alias to columns mapping
-  private Map<Byte, ArrayList<exprNodeDesc>> exprs;
+  // alias to key mapping
+  private Map<Byte, List<exprNodeDesc>> exprs;
   
   // No outer join involved
-  private boolean noOuterJoin;
+  protected boolean noOuterJoin;
 
-  private joinCond[] conds;
-
+  protected joinCond[] conds;
+  
   public joinDesc() { }
   
-  public joinDesc(final Map<Byte, ArrayList<exprNodeDesc>> exprs, final boolean noOuterJoin, final joinCond[] conds) {
+  public joinDesc(final Map<Byte, List<exprNodeDesc>> exprs, final boolean noOuterJoin, final joinCond[] conds) {
     this.exprs = exprs;
     this.noOuterJoin = noOuterJoin;
     this.conds = conds;
   }
   
-  public joinDesc(final Map<Byte, ArrayList<exprNodeDesc>> exprs) {
+  public joinDesc(final Map<Byte, List<exprNodeDesc>> exprs) {
     this.exprs = exprs;
     this.noOuterJoin = true;
     this.conds = null;
   }
 
-  public joinDesc(final Map<Byte, ArrayList<exprNodeDesc>> exprs, final joinCond[] conds) {
+  public joinDesc(final Map<Byte, List<exprNodeDesc>> exprs, final joinCond[] conds) {
     this.exprs = exprs;
     this.noOuterJoin = false;
     this.conds = conds;
   }
   
-  public Map<Byte, ArrayList<exprNodeDesc>> getExprs() {
+  public Map<Byte, List<exprNodeDesc>> getExprs() {
     return this.exprs;
   }
 
@@ -78,7 +78,7 @@ public class joinDesc implements Serializable {
     
     LinkedHashMap<Byte, String> ret = new LinkedHashMap<Byte, String>();
     
-    for(Map.Entry<Byte, ArrayList<exprNodeDesc>> ent: getExprs().entrySet()) {
+    for(Map.Entry<Byte, List<exprNodeDesc>> ent: getExprs().entrySet()) {
       StringBuilder sb = new StringBuilder();
       boolean first = true;
       if (ent.getValue() != null) {
@@ -99,7 +99,7 @@ public class joinDesc implements Serializable {
     return ret;
   }
   
-  public void setExprs(final Map<Byte, ArrayList<exprNodeDesc>> exprs) {
+  public void setExprs(final Map<Byte, List<exprNodeDesc>> exprs) {
     this.exprs = exprs;
   }
 

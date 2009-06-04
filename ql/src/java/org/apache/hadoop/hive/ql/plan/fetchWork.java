@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
@@ -28,10 +29,10 @@ import org.apache.hadoop.hive.ql.plan.tableDesc;
 public class fetchWork implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  private Path tblDir;
+  private String    tblDir;
   private tableDesc tblDesc;
 
-  private List<Path> partDir;
+  private List<String>        partDir;
   private List<partitionDesc> partDesc;
 
   private int limit;
@@ -43,13 +44,21 @@ public class fetchWork implements Serializable {
 
   public fetchWork() { }
 
-	public fetchWork(Path tblDir, tableDesc tblDesc, int limit) {
+  public fetchWork(String tblDir, tableDesc tblDesc) {
+    this(tblDir, tblDesc, -1);
+  }
+
+	public fetchWork(String tblDir, tableDesc tblDesc, int limit) {
 		this.tblDir = tblDir;
 		this.tblDesc = tblDesc;
 		this.limit = limit;
 	}
 
-	public fetchWork(List<Path> partDir, List<partitionDesc> partDesc, int limit) {
+	public fetchWork(List<String> partDir, List<partitionDesc> partDesc) {
+	  this(partDir, partDesc, -1);
+	}
+	 
+	public fetchWork(List<String> partDir, List<partitionDesc> partDesc, int limit) {
 		this.partDir = partDir;
 		this.partDesc = partDesc;
 		this.limit = limit;
@@ -66,14 +75,21 @@ public class fetchWork implements Serializable {
 	/**
 	 * @return the tblDir
 	 */
-	public Path getTblDir() {
+	public String getTblDir() {
 		return tblDir;
 	}
+
+	 /**
+   * @return the tblDir
+   */
+  public Path getTblDirPath() {
+    return new Path(tblDir);
+  }
 
 	/**
 	 * @param tblDir the tblDir to set
 	 */
-	public void setTblDir(Path tblDir) {
+	public void setTblDir(String tblDir) {
 		this.tblDir = tblDir;
 	}
 
@@ -94,14 +110,41 @@ public class fetchWork implements Serializable {
 	/**
 	 * @return the partDir
 	 */
-	public List<Path> getPartDir() {
+	public List<String> getPartDir() {
 		return partDir;
 	}
+
+
+	public List<Path> getPartDirPath() {
+	  return fetchWork.convertStringToPathArray(partDir);
+	}
+	
+	public static List<String> convertPathToStringArray(List<Path> paths) {
+	   if (paths == null)
+	      return null;
+	    
+	   List<String> pathsStr = new ArrayList<String>();
+	   for (Path path : paths)
+	     pathsStr.add(path.toString());
+	    
+	   return pathsStr;
+	}
+	
+	 public static List<Path> convertStringToPathArray(List<String> paths) {
+     if (paths == null)
+        return null;
+      
+     List<Path> pathsStr = new ArrayList<Path>();
+     for (String path : paths)
+       pathsStr.add(new Path(path));
+      
+     return pathsStr;
+  }
 
 	/**
 	 * @param partDir the partDir to set
 	 */
-	public void setPartDir(List<Path> partDir) {
+	public void setPartDir(List<String> partDir) {
 		this.partDir = partDir;
 	}
 
@@ -133,4 +176,18 @@ public class fetchWork implements Serializable {
 	public void setLimit(int limit) {
 		this.limit = limit;
 	}
+	
+	public String toString() {
+    if (tblDir != null)
+	    return new String ("table = " + tblDir);
+	  
+	  if (partDir == null) 
+	    return "null fetchwork";
+	  	  
+	  String ret = new String("partition = ");
+    for (String part : partDir)
+     ret = ret.concat(part);
+	  
+    return ret;
+  }
 }

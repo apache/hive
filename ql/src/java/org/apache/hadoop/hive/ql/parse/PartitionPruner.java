@@ -416,13 +416,17 @@ public class PartitionPruner {
     // unknown partitions - may/may not satisfy the partition criteria
     private Set<Partition>  unknownPartns;
 
+    // denied partitions - do not satisfy the partition criteria
+    private Set<Partition> deniedPartns;
+
     /**
      * @param confirmedPartns  confirmed paritions
      * @param unknownPartns    unknown partitions
      */
-    public PrunedPartitionList(Set<Partition> confirmedPartns, Set<Partition> unknownPartns) {
+    public PrunedPartitionList(Set<Partition> confirmedPartns, Set<Partition> unknownPartns, Set<Partition> deniedPartns) {
       this.confirmedPartns  = confirmedPartns;
       this.unknownPartns    = unknownPartns;
+      this.deniedPartns     = deniedPartns;
     }
 
     /**
@@ -439,6 +443,14 @@ public class PartitionPruner {
      */
     public Set<Partition>  getUnknownPartns() {
       return unknownPartns;
+    }
+
+    /**
+     * get denied partitions
+     * @return deniedPartns  denied paritions
+     */
+    public Set<Partition>  getDeniedPartns() {
+      return deniedPartns;
     }
 
     /**
@@ -470,6 +482,7 @@ public class PartitionPruner {
 
     LinkedHashSet<Partition> true_parts = new LinkedHashSet<Partition>();
     LinkedHashSet<Partition> unkn_parts = new LinkedHashSet<Partition>();
+    LinkedHashSet<Partition> denied_parts = new LinkedHashSet<Partition>();
 
     try {
       StructObjectInspector rowObjectInspector = (StructObjectInspector)this.tab.getDeserializer().getObjectInspector();
@@ -505,6 +518,10 @@ public class PartitionPruner {
             Boolean r = (Boolean) ((PrimitiveObjectInspector)evaluateResultOI).getPrimitiveJavaObject(evaluateResultO);
             LOG.trace("prune result for partition " + partSpec + ": " + r);
             if (Boolean.FALSE.equals(r)) {
+              if (denied_parts.isEmpty()) {
+                Partition part = Hive.get().getPartition(tab, partSpec, Boolean.FALSE);
+                denied_parts.add(part);
+              }
               LOG.trace("pruned partition: " + partSpec);
             } else {
               Partition part = Hive.get().getPartition(tab, partSpec, Boolean.FALSE);
@@ -529,7 +546,7 @@ public class PartitionPruner {
     }
 
     // Now return the set of partitions
-    return new PrunedPartitionList(true_parts, unkn_parts);
+    return new PrunedPartitionList(true_parts, unkn_parts, denied_parts);
   }
 
   public Table getTable() {

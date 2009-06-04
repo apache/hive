@@ -1,0 +1,231 @@
+query: drop TABLE dest_j1
+query: CREATE TABLE dest_j1(key STRING, cnt1 INT, cnt2 INT)
+query: EXPLAIN 
+INSERT OVERWRITE TABLE dest_j1 
+SELECT /*+ MAPJOIN(subq1) */ subq1.key, subq1.cnt, subq2.cnt
+FROM (select x.key, count(1) as cnt from src1 x group by x.key) subq1 JOIN 
+     (select y.key, count(1) as cnt from src y group by y.key) subq2 ON (subq1.key = subq2.key)
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src1 x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (TOK_FUNCTION count 1) cnt)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x) key)))) subq1) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src y)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) key)) (TOK_SELEXPR (TOK_FUNCTION count 1) cnt)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL y) key)))) subq2) (= (. (TOK_TABLE_OR_COL subq1) key) (. (TOK_TABLE_OR_COL subq2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest_j1)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST subq1))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL subq1) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL subq1) cnt)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL subq2) cnt)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1, Stage-4
+  Stage-3 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-3
+  Stage-4 is a root stage
+  Stage-2 depends on stages: Stage-1, Stage-4
+  Stage-3 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        subq2:y 
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              Group By Operator
+                aggregations:
+                      expr: count(1)
+                keys:
+                      expr: 0
+                      type: string
+                mode: hash
+                Reduce Output Operator
+                  key expressions:
+                        expr: 0
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: 0
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: 1
+                        type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE.0)
+          keys:
+                expr: KEY.0
+                type: string
+          mode: mergepartial
+          Select Operator
+            expressions:
+                  expr: 0
+                  type: string
+                  expr: 1
+                  type: bigint
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  name: binary_table
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/njain/hive2/hive2/build/ql/tmp/1697527534/10004 
+            Common Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {0} {1}
+                1 {0} {1}
+              keys:
+                0 
+                1 
+              Position of Big Table: 1
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+      Local Work:
+        Map Reduce Local Work
+          Alias -> Map Local Tables:
+            file:/data/users/njain/hive2/hive2/build/ql/tmp/1697527534/10006 
+              Fetch Operator
+                limit: -1
+          Alias -> Map Local Operator Tree:
+            file:/data/users/njain/hive2/hive2/build/ql/tmp/1697527534/10006 
+                Common Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  condition expressions:
+                    0 {0} {1}
+                    1 {0} {1}
+                  keys:
+                    0 
+                    1 
+                  Position of Big Table: 1
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/njain/hive2/hive2/build/ql/tmp/1697527534/10005 
+          Select Operator
+            Select Operator
+              expressions:
+                    expr: 0
+                    type: string
+                    expr: 1
+                    type: bigint
+                    expr: 3
+                    type: bigint
+              Select Operator
+                expressions:
+                      expr: 0
+                      type: string
+                      expr: UDFToInteger(1)
+                      type: int
+                      expr: UDFToInteger(2)
+                      type: int
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 1
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: dest_j1
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+            replace: true
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: dest_j1
+
+  Stage: Stage-4
+    Map Reduce
+      Alias -> Map Operator Tree:
+        subq1:x 
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              Group By Operator
+                aggregations:
+                      expr: count(1)
+                keys:
+                      expr: 0
+                      type: string
+                mode: hash
+                Reduce Output Operator
+                  key expressions:
+                        expr: 0
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: 0
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: 1
+                        type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE.0)
+          keys:
+                expr: KEY.0
+                type: string
+          mode: mergepartial
+          Select Operator
+            expressions:
+                  expr: 0
+                  type: string
+                  expr: 1
+                  type: bigint
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  name: binary_table
+
+
+query: INSERT OVERWRITE TABLE dest_j1 
+SELECT /*+ MAPJOIN(subq1) */ subq1.key, subq1.cnt, subq2.cnt
+FROM (select x.key, count(1) as cnt from src1 x group by x.key) subq1 JOIN 
+     (select y.key, count(1) as cnt from src y group by y.key) subq2 ON (subq1.key = subq2.key)
+Input: default/src
+Input: default/src1
+Output: default/dest_j1
+query: select * from dest_j1 x order by x.key
+Input: default/dest_j1
+Output: file:/data/users/njain/hive2/hive2/build/ql/tmp/1884185174/10000
+128	1	3
+146	1	2
+150	1	1
+213	1	2
+224	1	2
+238	1	2
+255	1	2
+273	1	3
+278	1	2
+311	1	3
+369	1	3
+401	1	5
+406	1	4
+66	1	1
+98	1	2
+query: drop TABLE dest_j1

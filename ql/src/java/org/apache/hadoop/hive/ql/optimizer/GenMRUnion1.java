@@ -97,7 +97,6 @@ public class GenMRUnion1 implements NodeProcessor {
     GenMRUnionCtx uCtxTask = ctx.getUnionTask(union);
     Task<? extends Serializable> uTask = null;
 
-    pos = UnionProcFactory.getPositionParent(union, stack);
     Operator<? extends Serializable> parent = union.getParentOperators().get(pos);   
     mapredWork uPlan = null;
 

@@ -36,6 +36,8 @@ public class mapredWork implements Serializable {
   private LinkedHashMap<String,partitionDesc> pathToPartitionInfo;
   
   private LinkedHashMap<String,Operator<? extends Serializable>> aliasToWork;
+  
+  private LinkedHashMap<String, partitionDesc> aliasToPartnInfo;
 
   // map<->reduce interface
   // schema of the map-reduce 'key' object - this is homogeneous
@@ -49,8 +51,12 @@ public class mapredWork implements Serializable {
   private Integer numReduceTasks;
   
   private boolean needsTagging;
+  private mapredLocalWork mapLocalWork;
 
-  public mapredWork() { }
+  public mapredWork() { 
+    this.aliasToPartnInfo = new LinkedHashMap<String, partitionDesc>();
+  }
+
   public mapredWork(
     final String command,
     final LinkedHashMap<String,ArrayList<String>> pathToAliases,
@@ -59,16 +65,20 @@ public class mapredWork implements Serializable {
     final tableDesc keyDesc,
     List<tableDesc> tagToValueDesc,
     final Operator<?> reducer,
-    final Integer numReduceTasks) {
-    this.command = command;
-    this.pathToAliases = pathToAliases;
-    this.pathToPartitionInfo = pathToPartitionInfo;
-    this.aliasToWork = aliasToWork;
-    this.keyDesc = keyDesc;
-    this.tagToValueDesc = tagToValueDesc;
-    this.reducer = reducer;
-    this.numReduceTasks = numReduceTasks;
+    final Integer numReduceTasks,
+    final mapredLocalWork mapLocalWork) {
+      this.command = command;
+      this.pathToAliases = pathToAliases;
+      this.pathToPartitionInfo = pathToPartitionInfo;
+      this.aliasToWork = aliasToWork;
+      this.keyDesc = keyDesc;
+      this.tagToValueDesc = tagToValueDesc;
+      this.reducer = reducer;
+      this.numReduceTasks = numReduceTasks;
+      this.mapLocalWork = mapLocalWork;
+      this.aliasToPartnInfo = new LinkedHashMap<String, partitionDesc>();
   }
+
   public String getCommand() {
     return this.command;
   }
@@ -92,6 +102,21 @@ public class mapredWork implements Serializable {
     this.pathToPartitionInfo = pathToPartitionInfo;
   }
   
+  /**
+   * @return the aliasToPartnInfo
+   */
+  public LinkedHashMap<String, partitionDesc> getAliasToPartnInfo() {
+    return aliasToPartnInfo;
+  }
+  
+  /**
+   * @param aliasToPartnInfo the aliasToPartnInfo to set
+   */
+  public void setAliasToPartnInfo(
+      LinkedHashMap<String, partitionDesc> aliasToPartnInfo) {
+    this.aliasToPartnInfo = aliasToPartnInfo;
+  }
+  
   @explain(displayName="Alias -> Map Operator Tree")
   public LinkedHashMap<String, Operator<? extends Serializable>> getAliasToWork() {
     return this.aliasToWork;
@@ -99,6 +124,23 @@ public class mapredWork implements Serializable {
   public void setAliasToWork(final LinkedHashMap<String,Operator<? extends Serializable>> aliasToWork) {
     this.aliasToWork=aliasToWork;
   }
+
+
+  /**
+   * @return the mapredLocalWork
+   */
+  @explain(displayName="Local Work")
+  public mapredLocalWork getMapLocalWork() {
+    return mapLocalWork;
+  }
+
+  /**
+   * @param mapredLocalWork the mapredLocalWork to set
+   */
+  public void setMapLocalWork(final mapredLocalWork mapLocalWork) {
+    this.mapLocalWork = mapLocalWork;
+  }
+
   public tableDesc getKeyDesc() {
     return this.keyDesc;
   }

@@ -74,7 +74,7 @@ public class GenMRRedSink1 implements NodeProcessor {
     // This will happen in case of joins. The current plan can be thrown away after being merged with the
     // original plan
     else {
-      GenMapRedUtils.joinPlan(op, null, opMapTask, ctx);
+      GenMapRedUtils.joinPlan(op, null, opMapTask, ctx, -1, false, false, false);
       currTask = opMapTask;
       ctx.setCurrTask(currTask);
     }

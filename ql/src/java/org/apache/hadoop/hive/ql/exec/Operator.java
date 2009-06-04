@@ -60,7 +60,7 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   // initializing the whole tree in all the mappers (which might be required for mappers
   // spanning multiple files anyway, in future)
   public static enum State { UNINIT, INIT, CLOSE };
-  transient private State state = State.UNINIT;
+  transient protected State state = State.UNINIT;
 
   static {
     seqId = 0;
@@ -112,6 +112,16 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     return parentOperators;
   }
 
+  public void allocateParentOperatorsInitArray() {
+    if ((parentOperators == null) || (parentsObjectInspector != null))
+      return;
+    parentsObjectInspector = new ParentInit[parentOperators.size()];
+    for (int pos = 0; pos < parentOperators.size(); pos++) {
+      parentsObjectInspector[pos] = new ParentInit();
+      parentsObjectInspector[pos].done = false;
+    }
+  }
+  
   protected T conf;
   protected boolean done;
 
@@ -240,26 +250,86 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     return(ret);
   }
 
-  public void initialize (Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
+  public abstract void initializeOp (Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException;
+
+  public void initialize(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
     if (state == state.INIT) {
       LOG.info("Already Initialized");
       return;
     }
 
-    LOG.info("Initializing Self");
+    LOG.info("Initializing Self " + id);
     this.reporter = reporter;
     
-    if(childOperators == null) {
-      return;
-    }
-    LOG.info("Initializing children:");
-    for(Operator<? extends Serializable> op: childOperators) {
-      op.initialize(hconf, reporter, inputObjInspector);
-    }    
-
+    initializeOp(hconf, reporter, inputObjInspector);
     state = State.INIT;
 
-    LOG.info("Initialization Done");
+    LOG.info("Initialization Done " + id);
+  }
+
+  /** 
+   * The default implementation assumes that the first inspector in the array is the output inspector as well. Specific operators can override this
+   * to pass their own output object inspectors. 
+   */
+  public void initializeChildren (Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
+    if (childOperators == null) {
+      return;
+    }
+
+    LOG.info("Initializing children:");
+    // Copy operators from List to Array for faster access
+    if (childOperatorsArray == null && childOperators != null) {
+      childOperatorsArray = new Operator[childOperators.size()];
+      for (int i=0; i<childOperatorsArray.length; i++) {
+        childOperatorsArray[i] = childOperators.get(i); 
+        childOperatorsArray[i].allocateParentOperatorsInitArray();
+      }
+      childOperatorsTag = new int[childOperatorsArray.length];
+      for (int i=0; i<childOperatorsArray.length; i++) {
+        List<Operator<? extends Serializable>> parentOperators = 
+            childOperatorsArray[i].getParentOperators();
+        if (parentOperators == null) {
+          throw new HiveException("Hive internal error: parent is null in " 
+              + childOperatorsArray[i].getClass() + "!");
+        }
+        childOperatorsTag[i] = parentOperators.indexOf(this);
+        if (childOperatorsTag[i] == -1) {
+          throw new HiveException("Hive internal error: cannot find parent in the child operator!");
+        }
+      }
+    }
+    
+    for (int i = 0; i < childOperatorsArray.length; i++) {
+      Operator<? extends Serializable> op = childOperatorsArray[i];
+      op.initialize(hconf, reporter, inputObjInspector == null ? null : inputObjInspector[0], childOperatorsTag[i]);
+    }    
+  }
+
+  static private class ParentInit {
+    boolean           done;
+    ObjectInspector   parIns;
+  }
+  
+  transient protected ParentInit[] parentsObjectInspector = null; 
+
+  public void initialize(Configuration hconf, Reporter reporter, ObjectInspector inputObjInspector, int parentId) throws HiveException {
+    parentsObjectInspector[parentId].parIns = inputObjInspector;
+    parentsObjectInspector[parentId].done = true;
+
+    LOG.info("parent " + parentId + " initialized");
+    
+    // If all the parents have been initialied, go ahead
+    for (ParentInit par : parentsObjectInspector)
+      if (par.done == false)
+        return;
+
+    LOG.info("start Initializing " + id);
+    
+    ObjectInspector[] par = new ObjectInspector[parentsObjectInspector.length];
+    for (int pos = 0; pos < par.length; pos++)
+      par[pos] = parentsObjectInspector[pos].parIns;
+    initialize(hconf, reporter, par);    
+    LOG.info("done Initializing " + id);
   }
 
   /**
@@ -312,8 +382,9 @@ public abstract class Operator <T extends Serializable> implements Serializable,
       for(Operator<? extends Serializable> op: childOperators) {
         op.close(abort);
       }
-
       state = State.CLOSE;
+
+      LOG.info("Close done");
     } catch (HiveException e) {
       e.printStackTrace();
       throw e;
@@ -342,7 +413,40 @@ public abstract class Operator <T extends Serializable> implements Serializable,
    */
   transient protected Operator<? extends Serializable>[] childOperatorsArray;
   transient protected int[] childOperatorsTag; 
-                          
+
+   /**
+   * Replace one child with another at the same position.
+   * @param child     the old child
+   * @param newChild  the new child
+   */
+  public void  replaceChild(Operator<? extends Serializable> child, Operator<? extends Serializable> newChild) {
+    int childIndex = childOperators.indexOf(child);
+    assert childIndex != -1;
+    childOperators.set(childIndex, newChild);
+    // TODO: set parent for newChild
+  }
+
+  public void  removeChild(Operator<? extends Serializable> child) {
+    int childIndex = childOperators.indexOf(child);
+    assert childIndex != -1;
+    if (childOperators.size() == 1) 
+      childOperators = null;
+    else
+      childOperators.remove(childIndex);
+  }
+
+  /**
+   * Replace one parent with another at the same position.
+   * @param parent     the old parent
+   * @param newParent  the new parent
+   */
+  public void  replaceParent(Operator<? extends Serializable> parent, Operator<? extends Serializable> newParent) {
+    int parentIndex = parentOperators.indexOf(parent);
+    assert parentIndex != -1;
+    parentOperators.set(parentIndex, newParent);
+    // TODO: set the child in newParent correctly
+  }
+
   protected void forward(Object row, ObjectInspector rowInspector) throws HiveException {
     
     // For debugging purposes:

@@ -19,11 +19,15 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Stack;
 import java.io.Serializable;
 
+import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMRMapJoinCtx;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.plan.mapredWork;
@@ -31,6 +35,8 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.tableDesc;
+import org.apache.hadoop.hive.ql.plan.partitionDesc;
 
 /**
  * Processor for the rule - table scan followed by reduce sink
@@ -46,13 +52,17 @@ public class GenMRFileSink1 implements NodeProcessor {
    * @param opProcCtx context
    */
   public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx opProcCtx, Object... nodeOutputs) throws SemanticException {
+    // Is it the dummy file sink after the mapjoin
+    FileSinkOperator fsOp = (FileSinkOperator)nd;
+    if ((fsOp.getParentOperators().size() == 1) && (fsOp.getParentOperators().get(0) instanceof MapJoinOperator))
+      return null;
+    
     GenMRProcContext ctx = (GenMRProcContext)opProcCtx;
     boolean ret = false;
 
     Task<? extends Serializable> mvTask = ctx.getMvTask();
     Task<? extends Serializable> currTask = ctx.getCurrTask();
     Operator<? extends Serializable> currTopOp = ctx.getCurrTopOp();
-    UnionOperator currUnionOp = ctx.getCurrUnionOp();
     String currAliasId = ctx.getCurrAliasId();
     HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = ctx.getOpTaskMap();
     List<Operator<? extends Serializable>> seenOps = ctx.getSeenOps();
@@ -82,12 +92,36 @@ public class GenMRFileSink1 implements NodeProcessor {
         if (ret)
           currTask.removeDependentTask(mvTask);
       }
-    }
-    else if (currUnionOp != null) {
-      opTaskMap.put(null, currTask);
-      GenMapRedUtils.initUnionPlan(ctx, currTask);
+
+      return null;
+
     }
 
+    UnionOperator currUnionOp = ctx.getCurrUnionOp();
+    
+    if  (currUnionOp != null) {
+      opTaskMap.put(null, currTask);
+      GenMapRedUtils.initUnionPlan(ctx, currTask, false);
+      return null;
+    }
+    
+    MapJoinOperator currMapJoinOp = ctx.getCurrMapJoinOp();
+    
+    if  (currMapJoinOp != null) {
+      opTaskMap.put(null, currTask);
+      GenMRMapJoinCtx mjCtx = ctx.getMapJoinCtx(currMapJoinOp);
+      mapredWork plan = (mapredWork) currTask.getWork();
+
+      String taskTmpDir = mjCtx.getTaskTmpDir();
+      tableDesc tt_desc = mjCtx.getTTDesc(); 
+      assert plan.getPathToAliases().get(taskTmpDir) == null;
+      plan.getPathToAliases().put(taskTmpDir, new ArrayList<String>());
+      plan.getPathToAliases().get(taskTmpDir).add(taskTmpDir);
+      plan.getPathToPartitionInfo().put(taskTmpDir, new partitionDesc(tt_desc, null));
+      plan.getAliasToWork().put(taskTmpDir, mjCtx.getRootMapJoinOp());
+      return null;
+    }
+    
     return null;
   }
 }

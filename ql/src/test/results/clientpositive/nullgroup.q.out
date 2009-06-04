@@ -53,7 +53,7 @@ STAGE PLANS:
 
 query: select count(1) from src x where x.key > 9999
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/207777648/268938083.10000
+Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/336665491/172016340.10000
 0
 query: explain
 select count(1) from src x where x.key > 9999
@@ -110,7 +110,7 @@ STAGE PLANS:
 
 query: select count(1) from src x where x.key > 9999
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/7619133/38786.10000
+Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/11054297/1508397372.10000
 0
 query: explain
 select count(1) from src x where x.key > 9999
@@ -160,13 +160,13 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/358258135/421877482.10002 
-          Reduce Output Operator
-            sort order: 
-            tag: -1
-            value expressions:
-                  expr: 0
-                  type: bigint
+        /data/users/njain/hive2/hive2/build/ql/tmp/321579646/257985577.10002 
+            Reduce Output Operator
+              sort order: 
+              tag: -1
+              value expressions:
+                    expr: 0
+                    type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -190,7 +190,7 @@ STAGE PLANS:
 
 query: select count(1) from src x where x.key > 9999
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/23717650/593465976.10000
+Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/453183166/223236193.10000
 0
 query: explain
 select count(1) from src x where x.key > 9999
@@ -243,5 +243,5 @@ STAGE PLANS:
 
 query: select count(1) from src x where x.key > 9999
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/297371777/298775966.10000
+Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/42852040/39442442.10000
 0

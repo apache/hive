@@ -56,12 +56,12 @@ STAGE PLANS:
                       type: string
       Needs Tagging: true
       Path -> Alias:
-        file:/data/users/zshao/tools/495-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
-        file:/data/users/zshao/tools/495-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
-        file:/data/users/zshao/tools/495-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 
-        file:/data/users/zshao/tools/495-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
+        file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 
+        file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
       Path -> Partition:
-        file:/data/users/zshao/tools/495-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
             partition values:
               ds 2008-04-08
@@ -80,10 +80,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/495-trunk-apache-hive/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/zshao/tools/495-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
             partition values:
               ds 2008-04-08
@@ -102,10 +102,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/495-trunk-apache-hive/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/zshao/tools/495-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 
+        file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 
           Partition
             partition values:
               ds 2008-04-09
@@ -124,10 +124,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/495-trunk-apache-hive/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/zshao/tools/495-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
+        file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
           Partition
             partition values:
               ds 2008-04-09
@@ -146,7 +146,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/495-trunk-apache-hive/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
       Reduce Operator Tree:
@@ -173,7 +173,7 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
-                directory: /data/users/zshao/tools/495-trunk-apache-hive/build/ql/tmp/172500705/271052336.10002
+                directory: file:/data/users/njain/hive2/hive2/build/ql/tmp/1443892627/10004
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -186,34 +186,34 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/zshao/tools/495-trunk-apache-hive/build/ql/tmp/172500705/271052336.10002 
-          Reduce Output Operator
-            key expressions:
-                  expr: 0
-                  type: string
-                  expr: 1
-                  type: string
-            sort order: ++
-            Map-reduce partition columns:
-                  expr: 0
-                  type: string
-                  expr: 1
-                  type: string
-            tag: -1
-            value expressions:
-                  expr: 0
-                  type: string
-                  expr: 1
-                  type: string
-                  expr: 2
-                  type: string
-                  expr: 3
-                  type: string
+        file:/data/users/njain/hive2/hive2/build/ql/tmp/1443892627/10004 
+            Reduce Output Operator
+              key expressions:
+                    expr: 0
+                    type: string
+                    expr: 1
+                    type: string
+              sort order: ++
+              Map-reduce partition columns:
+                    expr: 0
+                    type: string
+                    expr: 1
+                    type: string
+              tag: -1
+              value expressions:
+                    expr: 0
+                    type: string
+                    expr: 1
+                    type: string
+                    expr: 2
+                    type: string
+                    expr: 3
+                    type: string
       Needs Tagging: false
       Path -> Alias:
-        /data/users/zshao/tools/495-trunk-apache-hive/build/ql/tmp/172500705/271052336.10002 
+        file:/data/users/njain/hive2/hive2/build/ql/tmp/1443892627/10004 
       Path -> Partition:
-        /data/users/zshao/tools/495-trunk-apache-hive/build/ql/tmp/172500705/271052336.10002 
+        file:/data/users/njain/hive2/hive2/build/ql/tmp/1443892627/10004 
           Partition
           
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -228,7 +228,7 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: /data/users/zshao/tools/495-trunk-apache-hive/ql/../build/ql/tmp/55560660.10001.insclause-0
+            directory: file:/data/users/njain/hive2/hive2/build/ql/tmp/1443892627/10003
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -251,7 +251,7 @@ Input: default/srcpart/ds=2008-04-08/hr=11
 Input: default/srcpart/ds=2008-04-08/hr=12
 Input: default/srcpart/ds=2008-04-09/hr=11
 Input: default/srcpart/ds=2008-04-09/hr=12
-Output: /data/users/zshao/tools/495-trunk-apache-hive/ql/../build/ql/tmp/314649852/697371331.10000
+Output: file:/data/users/njain/hive2/hive2/build/ql/tmp/1318003535/10000
 0	val_0
 0	val_0
 0	val_0

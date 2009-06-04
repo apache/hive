@@ -25,7 +25,13 @@ public class selectDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   private java.util.ArrayList<org.apache.hadoop.hive.ql.plan.exprNodeDesc> colList;
   private boolean selectStar;
+  private boolean selStarNoCompute;
   public selectDesc() { }
+
+  public selectDesc(final boolean selStarNoCompute) {
+    this.selStarNoCompute = selStarNoCompute;
+  }
+
   public selectDesc(final java.util.ArrayList<org.apache.hadoop.hive.ql.plan.exprNodeDesc> colList) {
     this(colList, false);
   }
@@ -34,6 +40,14 @@ public class selectDesc implements Serializable {
     final java.util.ArrayList<org.apache.hadoop.hive.ql.plan.exprNodeDesc> colList, final boolean selectStar) {
     this.colList = colList;
     this.selectStar = selectStar;
+  }
+
+  public selectDesc(
+    final java.util.ArrayList<org.apache.hadoop.hive.ql.plan.exprNodeDesc> colList, final boolean selectStar,
+    final boolean selStarNoCompute) {
+    this.colList = colList;
+    this.selectStar = selectStar;
+    this.selStarNoCompute = selStarNoCompute;
   }
   
   @explain(displayName="expressions")
@@ -55,5 +69,19 @@ public class selectDesc implements Serializable {
    */
   public void setSelectStar(boolean selectStar) {
     this.selectStar = selectStar;
+  }
+
+  /**
+   * @return the selStarNoCompute
+   */
+  public boolean isSelStarNoCompute() {
+    return selStarNoCompute;
+  }
+
+  /**
+   * @param selStarNoCompute the selStarNoCompute to set
+   */
+  public void setSelStarNoCompute(boolean selStarNoCompute) {
+    this.selStarNoCompute = selStarNoCompute;
   }
 }

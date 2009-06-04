@@ -35,16 +35,14 @@ public class ExtractOperator extends Operator<extractDesc> implements Serializab
   private static final long serialVersionUID = 1L;
   transient protected ExprNodeEvaluator eval;
 
-  public void initialize(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
-    super.initialize(hconf, reporter, inputObjInspector);
+  public void initializeOp(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
     eval = ExprNodeEvaluatorFactory.get(conf.getCol());
+    outputRowInspector = eval.initialize(inputObjInspector[0]);
+    initializeChildren(hconf, reporter, new ObjectInspector[]{outputRowInspector});
   }
 
   ObjectInspector outputRowInspector;
   public void process(Object row, ObjectInspector rowInspector, int tag) throws HiveException {
-    if (outputRowInspector == null) {
-      outputRowInspector = eval.initialize(rowInspector);
-    }
     forward(eval.evaluate(row), outputRowInspector);
   }
 

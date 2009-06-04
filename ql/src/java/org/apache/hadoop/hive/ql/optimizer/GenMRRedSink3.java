@@ -40,7 +40,7 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.plan.reduceSinkDesc;
 
 /**
- * Processor for the rule - table scan followed by reduce sink
+ * Processor for the rule - union followed by reduce sink
  */
 public class GenMRRedSink3 implements NodeProcessor {
 
@@ -90,8 +90,8 @@ public class GenMRRedSink3 implements NodeProcessor {
     // There is a join after union. One of the branches of union has already been initialized.
     // Initialize the current branch, and join with the original plan.
     else {
-      GenMapRedUtils.initUnionPlan(ctx, currTask);
-      GenMapRedUtils.joinPlan(op, currTask, opMapTask, ctx);
+      GenMapRedUtils.initUnionPlan(ctx, currTask, false);
+      GenMapRedUtils.joinPlan(op, currTask, opMapTask, ctx, -1, true, false, false);
     }
 
     mapCurrCtx.put(op, new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrTopOp(), ctx.getCurrAliasId()));

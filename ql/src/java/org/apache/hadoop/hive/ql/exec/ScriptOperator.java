@@ -166,8 +166,8 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
     }
   }
 
-  public void initialize(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
-    super.initialize(hconf, reporter, inputObjInspector);
+  public void initializeOp(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
+
     statsMap.put(Counter.DESERIALIZE_ERRORS, deserialize_error_count);
     statsMap.put(Counter.SERIALIZE_ERRORS, serialize_error_count);
 
@@ -179,6 +179,8 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
 
       scriptInputSerializer = (Serializer)conf.getScriptInputInfo().getDeserializerClass().newInstance();
       scriptInputSerializer.initialize(hconf, conf.getScriptInputInfo().getProperties());
+
+      initializeChildren(hconf, reporter, new ObjectInspector[]{scriptOutputDeserializer.getObjectInspector()});
 
       String [] cmdArgs = splitArgs(conf.getScriptCmd());
 
@@ -234,7 +236,6 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
 
       rpTimer = new Timer(true);
       rpTimer.scheduleAtFixedRate(new ReporterTask(reporter), 0, exp_interval);
-
     } catch (Exception e) {
       e.printStackTrace();
       throw new HiveException ("Cannot initialize ScriptOperator", e);
@@ -277,6 +278,7 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
         };
       } catch (IOException e) {
         LOG.error("Got ioexception: " + e.getMessage());
+        e.printStackTrace();
         new_abort = true;
       } catch (InterruptedException e) { }
     }

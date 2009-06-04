@@ -53,7 +53,7 @@ public class PlanUtils {
                           new tableDesc(),
                           new ArrayList<tableDesc> (),
                           null,
-                          Integer.valueOf (1));
+                          Integer.valueOf (1), null);
   }
   
   /** 
@@ -155,7 +155,7 @@ public class PlanUtils {
   /** 
    * Convert the ColumnList to FieldSchema list.
    */
-  public static List<FieldSchema> getFieldSchemasFromColumnList(ArrayList<exprNodeDesc> cols, 
+  public static List<FieldSchema> getFieldSchemasFromColumnList(List<exprNodeDesc> cols, 
       String fieldPrefix) {
     List<FieldSchema> schemas = new ArrayList<FieldSchema>(cols.size());
     for (int i=0; i<cols.size(); i++) {
@@ -205,9 +205,9 @@ public class PlanUtils {
                                                  int numReducers) {
     
     return new reduceSinkDesc(keyCols, valueCols, tag, partitionCols, numReducers, 
-        getBinarySortableTableDesc(getFieldSchemasFromColumnList(keyCols, "reducesinkkey"), order),
-        // Revert to DynamicSerDe: getBinaryTableDesc(getFieldSchemasFromColumnList(valueCols, "reducesinkvalue")));
-        getLazySimpleSerDeTableDesc(getFieldSchemasFromColumnList(valueCols, "reducesinkvalue")));
+      getBinarySortableTableDesc(getFieldSchemasFromColumnList(keyCols, "reducesinkkey"), order),
+      // Revert to DynamicSerDe: getBinaryTableDesc(getFieldSchemasFromColumnList(valueCols, "reducesinkvalue")));
+      getLazySimpleSerDeTableDesc(getFieldSchemasFromColumnList(valueCols, "reducesinkvalue")));
   }
 
   /**

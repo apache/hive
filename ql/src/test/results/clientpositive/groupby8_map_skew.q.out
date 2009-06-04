@@ -80,19 +80,19 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/274046296/767130723.10004 
-          Reduce Output Operator
-            key expressions:
-                  expr: 0
-                  type: string
-            sort order: +
-            Map-reduce partition columns:
-                  expr: 0
-                  type: string
-            tag: -1
-            value expressions:
-                  expr: 1
-                  type: bigint
+        /data/users/njain/hive2/hive2/build/ql/tmp/409785616/966909649.10004 
+            Reduce Output Operator
+              key expressions:
+                    expr: 0
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: 0
+                    type: string
+              tag: -1
+              value expressions:
+                    expr: 1
+                    type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -141,23 +141,23 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/274046296/767130723.10005 
-          Reduce Output Operator
-            key expressions:
-                  expr: 0
-                  type: string
-                  expr: 1
-                  type: string
-            sort order: ++
-            Map-reduce partition columns:
-                  expr: 0
-                  type: string
-                  expr: 1
-                  type: string
-            tag: -1
-            value expressions:
-                  expr: 2
-                  type: bigint
+        /data/users/njain/hive2/hive2/build/ql/tmp/409785616/966909649.10005 
+            Reduce Output Operator
+              key expressions:
+                    expr: 0
+                    type: string
+                    expr: 1
+                    type: string
+              sort order: ++
+              Map-reduce partition columns:
+                    expr: 0
+                    type: string
+                    expr: 1
+                    type: string
+              tag: -1
+              value expressions:
+                    expr: 2
+                    type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -177,19 +177,19 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/athusoo/commits/hive_trunk_ws8/build/ql/tmp/274046296/767130723.10006 
-          Reduce Output Operator
-            key expressions:
-                  expr: 0
-                  type: string
-            sort order: +
-            Map-reduce partition columns:
-                  expr: 0
-                  type: string
-            tag: -1
-            value expressions:
-                  expr: 1
-                  type: bigint
+        /data/users/njain/hive2/hive2/build/ql/tmp/409785616/966909649.10006 
+            Reduce Output Operator
+              key expressions:
+                    expr: 0
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: 0
+                    type: string
+              tag: -1
+              value expressions:
+                    expr: 1
+                    type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -228,7 +228,7 @@ Output: default/dest1
 Output: default/dest2
 query: SELECT DEST1.* FROM DEST1
 Input: default/dest1
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/589113181/576499023.10000
+Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/76628135/665663173.10000
 0	1
 10	1
 100	1
@@ -540,7 +540,7 @@ Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/589113181/
 98	1
 query: SELECT DEST2.* FROM DEST2
 Input: default/dest2
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/989060991/1124156593.10000
+Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/694888471/362559158.10000
 0	1
 10	1
 100	1

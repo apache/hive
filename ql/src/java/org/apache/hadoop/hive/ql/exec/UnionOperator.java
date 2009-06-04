@@ -32,7 +32,12 @@ import org.apache.hadoop.conf.Configuration;
  **/
 public class UnionOperator extends  Operator<unionDesc>  implements Serializable {
   private static final long serialVersionUID = 1L;
-
+  
+  @Override
+  public void initializeOp(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
+    initializeChildren(hconf, reporter, inputObjInspector);
+  }
+  
   @Override
   public void process(Object row, ObjectInspector rowInspector, int tag)
       throws HiveException {

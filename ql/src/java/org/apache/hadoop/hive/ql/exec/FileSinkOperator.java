@@ -75,6 +75,10 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
   }
 
   public void close(boolean abort) throws HiveException {
+    if (state == state.CLOSE) 
+      return;
+
+    state = state.CLOSE;
     if(!abort) {
       if (outWriter != null) {
         try {
@@ -96,9 +100,7 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
     }
   }
 
-  public void initialize(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
-    super.initialize(hconf, reporter, inputObjInspector);
-    
+  public void initializeOp(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
     try {
       serializer = (Serializer)conf.getTableInfo().getDeserializerClass().newInstance();
       serializer.initialize(null, conf.getTableInfo().getProperties());
@@ -157,6 +159,8 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
       e.printStackTrace();
       throw new HiveException(e);
     }
+    
+    initializeChildren(hconf, reporter, inputObjInspector);
   }
 
   public static RecordWriter getRecordWriter(JobConf jc, HiveOutputFormat<?, ?> hiveOutputFormat,

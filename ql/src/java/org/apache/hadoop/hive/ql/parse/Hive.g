@@ -125,6 +125,10 @@ TOK_TABTYPE;
 TOK_LIMIT;
 TOK_TABLEPROPERTY;
 TOK_IFNOTEXISTS;
+TOK_HINTLIST;
+TOK_HINT;
+TOK_MAPJOIN;
+TOK_HINTARGLIST;
 }
 
 
@@ -624,7 +628,49 @@ selectList
 @init { msgs.push("select list"); }
 @after { msgs.pop(); }
     :
-    selectItem ( COMMA  selectItem )* -> selectItem+
+    hintClause? selectItem ( COMMA  selectItem )* -> hintClause? selectItem+
+    ;
+
+hintClause
+@init { msgs.push("hint clause"); }
+@after { msgs.pop(); }
+    :
+    DIVIDE STAR PLUS hintList STAR DIVIDE -> ^(TOK_HINTLIST hintList)
+    ;
+
+hintList
+@init { msgs.push("hint list"); }
+@after { msgs.pop(); }
+    :
+    hintItem (COMMA hintItem)* -> hintItem+
+    ;
+
+hintItem
+@init { msgs.push("hint item"); }
+@after { msgs.pop(); }
+    :
+    hintName (LPAREN hintArgs RPAREN)? -> ^(TOK_HINT hintName hintArgs)
+    ;
+
+hintName
+@init { msgs.push("hint name"); }
+@after { msgs.pop(); }
+    :
+    KW_MAPJOIN -> TOK_MAPJOIN
+    ;
+
+hintArgs
+@init { msgs.push("hint arguments"); }
+@after { msgs.pop(); }
+    :
+    hintArgName (COMMA hintArgName)* -> ^(TOK_HINTARGLIST hintArgName+)
+    ;
+
+hintArgName
+@init { msgs.push("hint argument name"); }
+@after { msgs.pop(); }
+    :
+    Identifier
     ;
 
 selectItem
@@ -1178,6 +1224,7 @@ KW_WHEN: 'WHEN';
 KW_THEN: 'THEN';
 KW_ELSE: 'ELSE';
 KW_END: 'END';
+KW_MAPJOIN: 'MAPJOIN';
 
 // Operators
 
