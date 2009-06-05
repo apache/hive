@@ -141,6 +141,43 @@ public class ExprWalkerProcFactory {
 
   }
 
+  public static class FieldExprProcessor implements NodeProcessor {
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+        Object... nodeOutputs) throws SemanticException {
+      ExprWalkerInfo ctx = (ExprWalkerInfo) procCtx;
+      String alias = null;
+      exprNodeFieldDesc expr = (exprNodeFieldDesc) nd;
+
+      boolean isCandidate = true;
+      assert(nd.getChildren().size() == 1);
+      exprNodeDesc ch = (exprNodeDesc) nd.getChildren().get(0);
+      exprNodeDesc newCh = ctx.getConvertedNode(ch);
+      if (newCh != null) {
+        expr.setDesc(newCh);
+        ch = newCh;
+      }
+      String chAlias = ctx.getAlias(ch);
+
+      isCandidate = isCandidate && ctx.isCandidate(ch);
+      // need to iterate through all children even if one is found to be not a candidate
+      // in case if the other children could be individually pushed up
+      if (isCandidate && chAlias != null) {
+        if (alias == null) {
+          alias = chAlias;
+        } else if (!chAlias.equalsIgnoreCase(alias)) {
+          isCandidate = false;
+        }
+      }
+
+      ctx.addAlias(expr, alias);
+      ctx.setIsCandidate(expr, isCandidate);
+      return isCandidate;
+    }
+
+  }
+
   /**
    * If all children are candidates and refer only to one table alias then this expr is a candidate
    * else it is not a candidate but its children could be final candidates
@@ -271,6 +308,10 @@ public class ExprWalkerProcFactory {
     return new ColumnExprProcessor();
   }
 
+  private static NodeProcessor getFieldProcessor() {
+    return new FieldExprProcessor();
+  }
+
   public static ExprWalkerInfo extractPushdownPreds(OpWalkerInfo opContext, 
       Operator<? extends Serializable> op,
       exprNodeDesc pred) throws SemanticException {
@@ -297,7 +338,7 @@ public class ExprWalkerProcFactory {
     // generates the plan from the operator tree
     Map<Rule, NodeProcessor> exprRules = new LinkedHashMap<Rule, NodeProcessor>();
     exprRules.put(new RuleRegExp("R1", exprNodeColumnDesc.class.getName() + "%"), getColumnProcessor());
-    exprRules.put(new RuleRegExp("R2", exprNodeFieldDesc.class.getName() + "%"), getFuncProcessor());
+    exprRules.put(new RuleRegExp("R2", exprNodeFieldDesc.class.getName() + "%"), getFieldProcessor());
     exprRules.put(new RuleRegExp("R3", exprNodeFuncDesc.class.getName() + "%"), getFuncProcessor());
     exprRules.put(new RuleRegExp("R4", exprNodeIndexDesc.class.getName() + "%"), getIndexProcessor());
     exprRules.put(new RuleRegExp("R5", exprNodeGenericFuncDesc.class.getName() + "%"), getGenericFuncProcessor());

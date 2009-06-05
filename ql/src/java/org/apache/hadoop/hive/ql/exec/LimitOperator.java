@@ -53,7 +53,7 @@ public class LimitOperator extends Operator<limitDesc> implements Serializable {
     else
       setDone(true);
   }
-
+  
   public String getName() {
     return "LIM";
   }

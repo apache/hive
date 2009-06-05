@@ -223,6 +223,9 @@ Trunk - Unreleased
     HIVE-540. Restore test.silent setting
     (Zheng Shao via namit)
 
+    HIVE-544. Fix predicate push for exprFieldNodeDesc.
+    (Prasad Chakka via zshao)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES
