@@ -415,7 +415,7 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   transient protected int[] childOperatorsTag; 
 
    /**
-   * Replace one child with another at the same position.
+   * Replace one child with another at the same position. The parent of the child is not changed
    * @param child     the old child
    * @param newChild  the new child
    */
@@ -423,7 +423,6 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     int childIndex = childOperators.indexOf(child);
     assert childIndex != -1;
     childOperators.set(childIndex, newChild);
-    // TODO: set parent for newChild
   }
 
   public void  removeChild(Operator<? extends Serializable> child) {
@@ -433,10 +432,17 @@ public abstract class Operator <T extends Serializable> implements Serializable,
       childOperators = null;
     else
       childOperators.remove(childIndex);
+    
+    int parentIndex = child.getParentOperators().indexOf(this);
+    assert parentIndex != -1;
+    if (child.getParentOperators().size() == 1)
+      child.setParentOperators(null);
+    else
+      child.getParentOperators().remove(parentIndex);
   }
 
   /**
-   * Replace one parent with another at the same position.
+   * Replace one parent with another at the same position. Chilren of the new parent are not updated
    * @param parent     the old parent
    * @param newParent  the new parent
    */
@@ -444,7 +450,6 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     int parentIndex = parentOperators.indexOf(parent);
     assert parentIndex != -1;
     parentOperators.set(parentIndex, newParent);
-    // TODO: set the child in newParent correctly
   }
 
   protected void forward(Object row, ObjectInspector rowInspector) throws HiveException {

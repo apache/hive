@@ -256,22 +256,19 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
         }
         
         HTree hashTable = mapJoinTables.get(alias);
-        MapJoinObject keyMap = new MapJoinObject(metadataKeyTag, 1, key);
-        MapJoinObject o = (MapJoinObject)hashTable.get(keyMap);
+        MapJoinObjectKey keyMap = new MapJoinObjectKey(metadataKeyTag, key);
+        MapJoinObjectValue o = (MapJoinObjectValue)hashTable.get(keyMap);
         Vector<ArrayList<Object>> res = null;
         
         if (o == null) {
           res = new Vector<ArrayList<Object>>();
         }
         else {
-          res = (Vector<ArrayList<Object>>)o.getObj();
+          res = o.getObj();
         }
         
         res.add(value);
-
-        // TODO: put some warning if the size of res exceeds a given threshold
   
-
         if (metadataValueTag[tag] == -1) {
           metadataValueTag[tag] = nextVal++;
                     
@@ -294,40 +291,34 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
         }
         
         // Construct externalizable objects for key and value
-        MapJoinObject keyObj = new MapJoinObject();
-        
-        // currently, key is always byteswritable and value is text - TODO: generalize this
-        keyObj.setMetadataTag(metadataKeyTag);
-        keyObj.setObjectTypeTag(1);
-        keyObj.setObj(key);
-        
-        MapJoinObject valueObj = new MapJoinObject();
-        
-        valueObj.setMetadataTag(metadataValueTag[tag]);
-        valueObj.setObjectTypeTag(2);
-        valueObj.setObj(res);
+        MapJoinObjectKey keyObj = new MapJoinObjectKey(metadataKeyTag, key);
+        MapJoinObjectValue valueObj = new MapJoinObjectValue(metadataValueTag[tag], res);
 
         if (res.size() > 1)
           hashTable.remove(keyObj);
 
+        // This may potentially increase the size of the hashmap on the mapper
+        if (res.size() > mapJoinRowsKey) {
+          LOG.warn("Number of values for a given key " + keyObj + " are " + res.size());
+        }
+        
         hashTable.put(keyObj, valueObj);
         return;
       }
-
 
       // Add the value to the vector
       storage.get(alias).add(value);
 
       for (Byte pos : order) {
         if (pos.intValue() != tag) {
-          MapJoinObject keyMap = new MapJoinObject(metadataKeyTag, 1, key);
-          MapJoinObject o = (MapJoinObject)mapJoinTables.get(pos).get(keyMap);
+          MapJoinObjectKey keyMap = new MapJoinObjectKey(metadataKeyTag, key);
+          MapJoinObjectValue o = (MapJoinObjectValue)mapJoinTables.get(pos).get(keyMap);
 
           if (o == null) {
             storage.put(pos, new Vector<ArrayList<Object>>());
           }
           else {
-            storage.put(pos, (Vector<ArrayList<Object>>)o.getObj());
+            storage.put(pos, o.getObj());
           }
         }
       }
@@ -363,7 +354,7 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
     super.close(abort);
   }
   
-  public static void deleteDir(File dir) {
+  private void deleteDir(File dir) {
     if (dir.isDirectory()) {
       String[] children = dir.list();
       for (int i = 0; i < children.length; i++) {

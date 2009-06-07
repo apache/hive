@@ -242,7 +242,6 @@ public class MapJoinProcessor implements Transform {
     for (Operator<? extends Serializable> childOp : childOps) 
       childOp.replaceParent(op, mapJoinOp);
     
-    // TODO: do as part of replaceParent
     mapJoinOp.setChildOperators(childOps);
     mapJoinOp.setParentOperators(newParentOps);
     op.setChildOperators(null);

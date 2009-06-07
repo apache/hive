@@ -64,6 +64,9 @@ Trunk - Unreleased
     HIVE-490. Add missing configuration variables to hive-default.xml.
     (Yongqiang He via zshao)
 
+    HIVE-528. Map Join followup: split MapJoinObject into MapJoinObjectKey and
+    MapJoinObjectValue. (Namit Jain via zshao)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).
