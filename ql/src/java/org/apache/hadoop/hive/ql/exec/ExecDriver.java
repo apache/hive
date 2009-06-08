@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -183,6 +185,8 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
    */
   public RunningJob jobProgress(JobClient jc, RunningJob rj) throws IOException {
     String lastReport = "";
+    SimpleDateFormat dateFormat
+        = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss,SSS");
     while (!rj.isComplete()) {
       try {
         Thread.sleep(1000);
@@ -190,7 +194,8 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
       }
       rj = jc.getJob(rj.getJobID());
       String report = null;
-      report = " map = " + Math.round(rj.mapProgress() * 100) + "%,  reduce ="
+      report = dateFormat.format(Calendar.getInstance().getTime())
+          + " map = " + Math.round(rj.mapProgress() * 100) + "%,  reduce ="
           + Math.round(rj.reduceProgress() * 100) + "%";
 
       if (!report.equals(lastReport)) {
