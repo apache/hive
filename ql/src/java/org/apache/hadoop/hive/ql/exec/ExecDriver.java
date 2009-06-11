@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.*;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.net.URI;
@@ -187,31 +186,34 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
     String lastReport = "";
     SimpleDateFormat dateFormat
         = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss,SSS");
+    long reportTime = System.currentTimeMillis();
+    long maxReportInterval = 60 * 1000; // One minute
     while (!rj.isComplete()) {
       try {
         Thread.sleep(1000);
       } catch (InterruptedException e) {
       }
       rj = jc.getJob(rj.getJobID());
-      String report = null;
-      report = dateFormat.format(Calendar.getInstance().getTime())
-          + " map = " + Math.round(rj.mapProgress() * 100) + "%,  reduce ="
+      String report = " map = " + Math.round(rj.mapProgress() * 100) + "%,  reduce ="
           + Math.round(rj.reduceProgress() * 100) + "%";
 
-      if (!report.equals(lastReport)) {
+      if (!report.equals(lastReport)
+          || System.currentTimeMillis() >= reportTime + maxReportInterval) {
 
+        String output = dateFormat.format(Calendar.getInstance().getTime()) + report;
         SessionState ss = SessionState.get();
         if (ss != null) {
           ss.getHiveHistory().setTaskCounters(
               SessionState.get().getQueryId(), getId(), rj);
           ss.getHiveHistory().setTaskProperty(
               SessionState.get().getQueryId(), getId(),
-              Keys.TASK_HADOOP_PROGRESS, report);
+              Keys.TASK_HADOOP_PROGRESS, output);
           ss.getHiveHistory().progressTask(
               SessionState.get().getQueryId(), this);
         }
-        console.printInfo(report);
+        console.printInfo(output);
         lastReport = report;
+        reportTime = System.currentTimeMillis();
       }
     }
     return rj;
