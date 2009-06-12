@@ -162,6 +162,7 @@ public class FunctionRegistry {
     registerGenericUDF("case", GenericUDFCase.class);
     registerGenericUDF("when", GenericUDFWhen.class);
     registerGenericUDF("hash", GenericUDFHash.class);
+    registerGenericUDF("coalesce", GenericUDFCoalesce.class);
   }
 
   public static FunctionInfo getInfo(Class<?> fClass) {

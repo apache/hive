@@ -41,6 +41,8 @@ Trunk - Unreleased
 
     HIVE-195. Map-side join. (Namit Jain via zshao)
 
+    HIVE-470. Add COALESCE. (Zheng Shao via namit)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 
