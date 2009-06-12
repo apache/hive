@@ -124,7 +124,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
         }
 
         rp = reporter;
-      } catch (HiveException e) {
+      } catch (Exception e) {
         abort = true;
         e.printStackTrace();
         throw new RuntimeException ("Map operator initialization failed", e);
@@ -137,10 +137,10 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       else
         // Since there is no concept of a group, we don't invoke startGroup/endGroup for a mapper
         mo.process((Writable)value);
-    } catch (HiveException e) {
+    } catch (Exception e) {
       abort = true;
       e.printStackTrace();
-      throw new RuntimeException (e.getMessage(), e);
+      throw new RuntimeException ("Map operator process failed", e);
     }
   }
 
@@ -151,7 +151,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
         l4j.trace("Close called no row");
         mo.initialize(jc, null, null);
         rp = null;
-      } catch (HiveException e) {
+      } catch (Exception e) {
         abort = true;
         e.printStackTrace();
         throw new RuntimeException ("Map operator close failed during initialize", e);
@@ -177,11 +177,11 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       reportStats rps = new reportStats (rp);
       mo.preorderMap(rps);
       return;
-    } catch (HiveException e) {
+    } catch (Exception e) {
       if(!abort) {
         // signal new failure to map-reduce
         l4j.error("Hit error while closing operators - failing tree");
-        throw new RuntimeException ("Error while closing operators");
+        throw new RuntimeException ("Error while closing operators", e);
       }
     }
   }

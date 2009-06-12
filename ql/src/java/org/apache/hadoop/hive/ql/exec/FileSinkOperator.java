@@ -79,17 +79,18 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
       return;
 
     state = state.CLOSE;
-    if(!abort) {
+    if (!abort) {
       if (outWriter != null) {
         try {
           outWriter.close(abort);
           commit();
         } catch (IOException e) {
-          // Don't throw an exception, just ignore and return
-          return;
+          throw new HiveException(e);
         }
       }
     } else {
+      // Will come here if an Exception was thrown in map() or reduce().
+      // Hadoop always call close() even if an Exception was thrown in map() or reduce(). 
       try {
         outWriter.close(abort);
         if(!autoDelete)

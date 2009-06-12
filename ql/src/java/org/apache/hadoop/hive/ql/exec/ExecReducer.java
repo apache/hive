@@ -93,7 +93,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         rowObjectInspector[tag] = ObjectInspectorFactory.getStandardStructObjectInspector(
             Arrays.asList(fieldNames), ois);
       }
-    } catch (SerDeException e) {
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }    
   }
@@ -118,10 +118,10 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         reducer.setOutputCollector(oc);
         reducer.initialize(jc, reporter, rowObjectInspector);
         rp = reporter;
-      } catch (HiveException e) {
+      } catch (Exception e) {
         abort = true;
         e.printStackTrace();
-        throw new RuntimeException ("Reduce operator initialization failed");
+        throw new RuntimeException ("Reduce operator process failed", e);
       }
     }
 
@@ -150,7 +150,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
       }
       try {
         keyObject = inputKeyDeserializer.deserialize(keyWritable);
-      } catch (SerDeException e) {
+      } catch (Exception e) {
         throw new HiveException(e);
       }
       // System.err.print(keyObject.toString());
@@ -175,7 +175,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         reducer.process(row, rowObjectInspector[tag.get()], tag.get());
       }
 
-    } catch (HiveException e) {
+    } catch (Exception e) {
       abort = true;
       throw new IOException (e);
     }
@@ -198,7 +198,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         l4j.trace("Close called no row");
         reducer.initialize(jc, null, rowObjectInspector);
         rp = null;
-      } catch (HiveException e) {
+      } catch (Exception e) {
         abort = true;
         e.printStackTrace();
         throw new RuntimeException ("Reduce operator close failed during initialize", e);
@@ -216,7 +216,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
       reportStats rps = new reportStats (rp);
       reducer.preorderMap(rps);
       return;
-    } catch (HiveException e) {
+    } catch (Exception e) {
       if(!abort) {
         // signal new failure to map-reduce
         l4j.error("Hit error while closing operators - failing tree");
