@@ -25,16 +25,16 @@ STAGE PLANS:
                   sort order: 
                   tag: -1
                   value expressions:
-                        expr: 0
+                        expr: _col0
                         type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
+                expr: count(VALUE._col0)
           mode: mergepartial
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: bigint
             File Output Operator
               compressed: false
@@ -51,7 +51,7 @@ STAGE PLANS:
 query: select count(1) from tstparttbl
 Input: default/tstparttbl/ds=2008-04-08
 Input: default/tstparttbl/ds=2008-04-09
-Output: file:/Users/pchakka/workspace/oshive/build/ql/tmp/1242360371/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/869080729/10000
 500
 query: DROP TABLE tstparttbl2
 query: CREATE TABLE tstparttbl2(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
@@ -80,16 +80,16 @@ STAGE PLANS:
                   sort order: 
                   tag: -1
                   value expressions:
-                        expr: 0
+                        expr: _col0
                         type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
+                expr: count(VALUE._col0)
           mode: mergepartial
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: bigint
             File Output Operator
               compressed: false
@@ -106,7 +106,7 @@ STAGE PLANS:
 query: select count(1) from tstparttbl2
 Input: default/tstparttbl2/ds=2008-04-08
 Input: default/tstparttbl2/ds=2008-04-09
-Output: file:/Users/pchakka/workspace/oshive/build/ql/tmp/361074813/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/317850076/10000
 0
 query: DROP TABLE tstparttbl
 query: CREATE TABLE tstparttbl(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
@@ -135,16 +135,16 @@ STAGE PLANS:
                   sort order: 
                   tag: -1
                   value expressions:
-                        expr: 0
+                        expr: _col0
                         type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
+                expr: count(VALUE._col0)
           mode: mergepartial
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: bigint
             File Output Operator
               compressed: false
@@ -161,7 +161,7 @@ STAGE PLANS:
 query: select count(1) from tstparttbl
 Input: default/tstparttbl/ds=2008-04-08
 Input: default/tstparttbl/ds=2008-04-09
-Output: file:/Users/pchakka/workspace/oshive/build/ql/tmp/813815719/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1944930089/10000
 500
 query: DROP TABLE tstparttbl2
 query: CREATE TABLE tstparttbl2(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
@@ -190,16 +190,16 @@ STAGE PLANS:
                   sort order: 
                   tag: -1
                   value expressions:
-                        expr: 0
+                        expr: _col0
                         type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
+                expr: count(VALUE._col0)
           mode: mergepartial
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: bigint
             File Output Operator
               compressed: false
@@ -216,7 +216,7 @@ STAGE PLANS:
 query: select count(1) from tstparttbl2
 Input: default/tstparttbl2/ds=2008-04-08
 Input: default/tstparttbl2/ds=2008-04-09
-Output: file:/Users/pchakka/workspace/oshive/build/ql/tmp/18671157/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/768347306/10000
 0
 query: DROP TABLE tstparttbl
 query: DROP TABLE tstparttbl2

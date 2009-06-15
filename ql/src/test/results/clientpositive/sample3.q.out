@@ -14,24 +14,20 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         s 
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-              Filter Operator
-                predicate:
-                    expr: (((hash(0) & 2147483647) % 5) = 0)
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: 0
-                        type: string
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            Filter Operator
+              predicate:
+                  expr: (((hash(key) & 2147483647) % 5) = 0)
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -41,7 +37,7 @@ STAGE PLANS:
 query: SELECT s.key
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s SORT BY key
 Input: default/srcbucket
-Output: /data/users/zshao/tools/495-trunk-apache-hive/ql/../build/ql/tmp/336730571/201032975.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/341548043/10000
 100
 100
 100

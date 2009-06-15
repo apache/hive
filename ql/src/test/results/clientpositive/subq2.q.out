@@ -22,44 +22,44 @@ STAGE PLANS:
                 aggregations:
                       expr: count(1)
                 keys:
-                      expr: 0
+                      expr: key
                       type: string
                 mode: hash
                 Reduce Output Operator
                   key expressions:
-                        expr: 0
+                        expr: _col0
                         type: string
                   sort order: +
                   Map-reduce partition columns:
-                        expr: 0
+                        expr: _col0
                         type: string
                   tag: -1
                   value expressions:
-                        expr: 1
+                        expr: _col1
                         type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
+                expr: count(VALUE._col0)
           keys:
-                expr: KEY.0
+                expr: KEY._col0
                 type: string
           mode: mergepartial
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: string
-                  expr: 1
+                  expr: _col1
                   type: bigint
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(0) >= UDFToDouble(90))
+                  expr: (UDFToDouble(_col0) >= UDFToDouble(90))
                   type: boolean
               Select Operator
                 expressions:
-                      expr: 0
+                      expr: _col0
                       type: string
-                      expr: 1
+                      expr: _col1
                       type: bigint
                 File Output Operator
                   compressed: false
@@ -77,7 +77,7 @@ query: SELECT a.k, a.c
 FROM (SELECT b.key as k, count(1) as c FROM src b GROUP BY b.key) a
 WHERE a.k >= 90
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/900838886/139366063.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/2044684588/10000
 100	2
 103	2
 104	2

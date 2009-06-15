@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.plan.joinCond;
 import org.apache.hadoop.hive.ql.plan.joinDesc;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -155,7 +156,6 @@ public class CommonJoinOperator<T extends joinDesc> extends Operator<T> implemen
 
       for (int j = 0; j < sz; j++)
         nr.add(null);
-
       dummyObj[pos] = nr;
       Vector<ArrayList<Object>> values = new Vector<ArrayList<Object>>();
       values.add((ArrayList<Object>) dummyObj[pos]);

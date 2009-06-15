@@ -25,42 +25,48 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         b:src2 
-            Group By Operator
-              aggregations:
-                    expr: count(DISTINCT value)
-              keys:
+            Select Operator
+              expressions:
                     expr: key
                     type: string
                     expr: value
                     type: string
-              mode: hash
-              Reduce Output Operator
-                key expressions:
-                      expr: 0
+              Group By Operator
+                aggregations:
+                      expr: count(DISTINCT value)
+                keys:
+                      expr: key
                       type: string
-                      expr: 1
+                      expr: value
                       type: string
-                sort order: ++
-                Map-reduce partition columns:
-                      expr: 0
-                      type: string
-                tag: -1
-                value expressions:
-                      expr: 2
-                      type: bigint
+                mode: hash
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: string
+                  sort order: ++
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: _col2
+                        type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(DISTINCT KEY.1)
+                expr: count(DISTINCT KEY._col1)
           keys:
-                expr: KEY.0
+                expr: KEY._col0
                 type: string
           mode: mergepartial
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: string
-                  expr: 1
+                  expr: _col1
                   type: bigint
             File Output Operator
               compressed: false
@@ -76,49 +82,49 @@ STAGE PLANS:
         $INTNAME 
             Reduce Output Operator
               key expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
               sort order: +
               Map-reduce partition columns:
-                    expr: 0
+                    expr: _col0
                     type: string
               tag: 1
               value expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: bigint
         $INTNAME1 
             Reduce Output Operator
               key expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
               sort order: +
               Map-reduce partition columns:
-                    expr: 0
+                    expr: _col0
                     type: string
               tag: 0
               value expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: bigint
       Reduce Operator Tree:
         Join Operator
           condition map:
                Outer Join 0 to 1
           condition expressions:
-            0 {VALUE.0} {VALUE.1}
-            1 {VALUE.0} {VALUE.1}
+            0 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col0} {VALUE._col1}
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: string
-                  expr: 1
+                  expr: _col1
                   type: bigint
-                  expr: 2
+                  expr: _col2
                   type: string
-                  expr: 3
+                  expr: _col3
                   type: bigint
             File Output Operator
               compressed: false
@@ -131,38 +137,44 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         a:src1 
-            Group By Operator
-              aggregations:
-                    expr: count(value)
-              keys:
+            Select Operator
+              expressions:
                     expr: key
                     type: string
-              mode: hash
-              Reduce Output Operator
-                key expressions:
-                      expr: 0
+                    expr: value
+                    type: string
+              Group By Operator
+                aggregations:
+                      expr: count(value)
+                keys:
+                      expr: key
                       type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: 0
-                      type: string
-                tag: -1
-                value expressions:
-                      expr: 1
-                      type: bigint
+                mode: hash
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: _col1
+                        type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
+                expr: count(VALUE._col0)
           keys:
-                expr: KEY.0
+                expr: KEY._col0
                 type: string
           mode: mergepartial
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: string
-                  expr: 1
+                  expr: _col1
                   type: bigint
             File Output Operator
               compressed: false
@@ -190,7 +202,7 @@ query: SELECT a.key, a.value, b.key, b.value
  ON (a.key = b.key)
 Input: default/src1
 Input: default/src
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/1189387054/402013918.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/724709493/10000
 NULL	NULL		6
 0	3	NULL	NULL
 10	1	NULL	NULL

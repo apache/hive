@@ -56,21 +56,21 @@ STAGE PLANS:
           condition map:
                Left Outer Join0 to 1
           condition expressions:
-            0 {VALUE.0} {VALUE.1}
-            1 {VALUE.0} {VALUE.1}
+            0 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col0} {VALUE._col1}
           Filter Operator
             predicate:
-                expr: ((((UDFToDouble(0) > UDFToDouble(10)) and (UDFToDouble(0) < UDFToDouble(20))) and (UDFToDouble(2) > UDFToDouble(15))) and (UDFToDouble(2) < UDFToDouble(25)))
+                expr: ((((UDFToDouble(_col0) > UDFToDouble(10)) and (UDFToDouble(_col0) < UDFToDouble(20))) and (UDFToDouble(_col2) > UDFToDouble(15))) and (UDFToDouble(_col2) < UDFToDouble(25)))
                 type: boolean
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
-                    expr: 2
+                    expr: _col2
                     type: string
-                    expr: 3
+                    expr: _col3
                     type: string
               File Output Operator
                 compressed: false
@@ -92,7 +92,7 @@ query: FROM
  SELECT a.key, a.value, b.key, b.value
  WHERE a.key > 10 AND a.key < 20 AND b.key > 15 AND b.key < 25
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/966386723/732369971.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1519468277/10000
 17	val_17	17	val_17
 18	val_18	18	val_18
 18	val_18	18	val_18

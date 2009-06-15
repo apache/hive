@@ -37,17 +37,17 @@ STAGE PLANS:
                       type: string
                 Reduce Output Operator
                   key expressions:
-                        expr: 0
+                        expr: _col0
                         type: string
                   sort order: +
                   Map-reduce partition columns:
-                        expr: 0
+                        expr: _col0
                         type: string
                   tag: 0
                   value expressions:
-                        expr: 0
+                        expr: _col0
                         type: string
-                        expr: 1
+                        expr: _col1
                         type: string
         c:b:src2 
             Filter Operator
@@ -62,58 +62,58 @@ STAGE PLANS:
                       type: string
                 Reduce Output Operator
                   key expressions:
-                        expr: 0
+                        expr: _col0
                         type: string
                   sort order: +
                   Map-reduce partition columns:
-                        expr: 0
+                        expr: _col0
                         type: string
                   tag: 1
                   value expressions:
-                        expr: 0
+                        expr: _col0
                         type: string
-                        expr: 1
+                        expr: _col1
                         type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
                Left Outer Join0 to 1
           condition expressions:
-            0 {VALUE.0} {VALUE.1}
-            1 {VALUE.0} {VALUE.1}
+            0 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col0} {VALUE._col1}
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: string
-                  expr: 1
+                  expr: _col1
                   type: string
-                  expr: 2
+                  expr: _col2
                   type: string
-                  expr: 3
+                  expr: _col3
                   type: string
             Filter Operator
               predicate:
-                  expr: (2 is null and 0 is not null)
+                  expr: (_col2 is null and _col0 is not null)
                   type: boolean
               Select Operator
                 expressions:
-                      expr: 0
+                      expr: _col0
                       type: string
-                      expr: 1
+                      expr: _col1
                       type: string
-                      expr: 2
+                      expr: _col2
                       type: string
-                      expr: 3
+                      expr: _col3
                       type: string
                 Select Operator
                   expressions:
-                        expr: UDFToInteger(0)
+                        expr: UDFToInteger(_col0)
                         type: int
-                        expr: 1
+                        expr: _col1
                         type: string
-                        expr: UDFToInteger(2)
+                        expr: UDFToInteger(_col2)
                         type: int
-                        expr: 3
+                        expr: _col3
                         type: string
                   File Output Operator
                     compressed: false
@@ -152,7 +152,7 @@ Input: default/src
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/106779552/293157937.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1676684235/10000
 11	val_11	NULL	NULL
 12	val_12	NULL	NULL
 12	val_12	NULL	NULL

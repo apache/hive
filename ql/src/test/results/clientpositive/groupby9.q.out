@@ -20,66 +20,78 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
-            Group By Operator
-              aggregations:
-                    expr: count(DISTINCT substr(value, 5))
-              keys:
-                    expr: key
-                    type: string
-                    expr: substr(value, 5)
-                    type: string
-              mode: hash
-              Reduce Output Operator
-                key expressions:
-                      expr: 0
-                      type: string
-                      expr: 1
-                      type: string
-                sort order: ++
-                Map-reduce partition columns:
-                      expr: 0
-                      type: string
-                tag: -1
-                value expressions:
-                      expr: 2
-                      type: bigint
-            Group By Operator
-              aggregations:
-                    expr: count(DISTINCT substr(value, 5))
-              keys:
+            Select Operator
+              expressions:
                     expr: key
                     type: string
                     expr: value
                     type: string
-                    expr: substr(value, 5)
+              Group By Operator
+                aggregations:
+                      expr: count(DISTINCT substr(value, 5))
+                keys:
+                      expr: key
+                      type: string
+                      expr: substr(value, 5)
+                      type: string
+                mode: hash
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: string
+                  sort order: ++
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: _col2
+                        type: bigint
+            Select Operator
+              expressions:
+                    expr: key
                     type: string
-              mode: hash
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    name: binary_table
+                    expr: value
+                    type: string
+              Group By Operator
+                aggregations:
+                      expr: count(DISTINCT substr(value, 5))
+                keys:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                      expr: substr(value, 5)
+                      type: string
+                mode: hash
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      name: binary_table
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(DISTINCT KEY.1)
+                expr: count(DISTINCT KEY._col1)
           keys:
-                expr: KEY.0
+                expr: KEY._col0
                 type: string
           mode: mergepartial
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: string
-                  expr: 1
+                  expr: _col1
                   type: bigint
             Select Operator
               expressions:
-                    expr: UDFToInteger(0)
+                    expr: UDFToInteger(_col0)
                     type: int
-                    expr: 1
+                    expr: _col1
                     type: bigint
               File Output Operator
                 compressed: false
@@ -109,50 +121,50 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive2/hive2/build/ql/tmp/244148358/29883298.10004 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/676678496/10004 
             Reduce Output Operator
               key expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
-                    expr: 2
+                    expr: _col2
                     type: string
               sort order: +++
               Map-reduce partition columns:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
               tag: -1
               value expressions:
-                    expr: 3
+                    expr: _col3
                     type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(DISTINCT KEY.2)
+                expr: count(DISTINCT KEY._col2)
           keys:
-                expr: KEY.0
+                expr: KEY._col0
                 type: string
-                expr: KEY.1
+                expr: KEY._col1
                 type: string
           mode: mergepartial
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: string
-                  expr: 1
+                  expr: _col1
                   type: string
-                  expr: 2
+                  expr: _col2
                   type: bigint
             Select Operator
               expressions:
-                    expr: UDFToInteger(0)
+                    expr: UDFToInteger(_col0)
                     type: int
-                    expr: 1
+                    expr: _col1
                     type: string
-                    expr: 2
+                    expr: _col2
                     type: bigint
               File Output Operator
                 compressed: false
@@ -172,7 +184,7 @@ Output: default/dest1
 Output: default/dest2
 query: SELECT DEST1.* FROM DEST1
 Input: default/dest1
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/177100375/256795261.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1435826183/10000
 0	1
 10	1
 100	1
@@ -484,7 +496,7 @@ Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/177100375/256795261.100
 98	1
 query: SELECT DEST2.* FROM DEST2
 Input: default/dest2
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/1144493189/1946891094.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/590286601/10000
 0	val_0	1
 10	val_10	1
 100	val_100	1

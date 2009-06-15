@@ -53,9 +53,9 @@ STAGE PLANS:
                         type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/src 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/src 
       Path -> Partition:
-        file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/src 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/src 
           Partition
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -70,25 +70,25 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/src
+                location file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/src
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
       Reduce Operator Tree:
         Extract
           Filter Operator
             predicate:
-                expr: (UDFToDouble(0) < UDFToDouble(100))
+                expr: (UDFToDouble(_col0) < UDFToDouble(100))
                 type: boolean
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: regexp_extract(1, 'val_(\d+\t\d+)', 1)
+                    expr: regexp_extract(_col1, 'val_(\d+\t\d+)', 1)
                     type: string
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
-                directory: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/289894559/857914755.10001.insclause-0
+                directory: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/377939618/10001
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -109,7 +109,7 @@ query: FROM (
 ) tmap
 SELECT tmap.key, regexp_extract(tmap.value, 'val_(\\d+\\t\\d+)',1) WHERE tmap.key < 100
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/144466930/88930188.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1157716176/10000
 0	0	3
 0	0	3
 0	0	3
@@ -249,9 +249,9 @@ STAGE PLANS:
                         type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/src 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/src 
       Path -> Partition:
-        file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/src 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/src 
           Partition
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -266,25 +266,25 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/src
+                location file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/src
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
       Reduce Operator Tree:
         Extract
           Filter Operator
             predicate:
-                expr: (UDFToDouble(0) < UDFToDouble(100))
+                expr: (UDFToDouble(_col0) < UDFToDouble(100))
                 type: boolean
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: regexp_extract(1, 'val_(\d+\t\d+)')
+                    expr: regexp_extract(_col1, 'val_(\d+\t\d+)')
                     type: string
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
-                directory: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/20317412/1521268487.10001.insclause-0
+                directory: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1112689500/10001
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -305,7 +305,7 @@ query: FROM (
 ) tmap
 SELECT tmap.key, regexp_extract(tmap.value, 'val_(\\d+\\t\\d+)') WHERE tmap.key < 100
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/1101380073/31319980.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1926471082/10000
 0	0	3
 0	0	3
 0	0	3

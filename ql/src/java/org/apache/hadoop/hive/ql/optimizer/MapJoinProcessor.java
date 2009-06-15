@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -50,6 +51,7 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.mapJoinDesc;
+import org.apache.hadoop.hive.ql.plan.reduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.selectDesc;
 import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.ql.plan.joinDesc;
@@ -77,6 +79,7 @@ public class MapJoinProcessor implements Transform {
     return op;
   }
   
+  
   /**
    * convert a regular join to a a map-side join. 
    * @param op join operator
@@ -95,8 +98,10 @@ public class MapJoinProcessor implements Transform {
       if ((condn.getType() == joinDesc.RIGHT_OUTER_JOIN) && (condn.getRight() != mapJoinPos))
         throw new SemanticException(ErrorMsg.NO_OUTER_MAPJOIN.getMsg());
     }
-
+    
+    RowResolver oldOutputRS = pctx.getOpParseCtx().get(op).getRR();
     RowResolver outputRS = new RowResolver();
+    ArrayList<String> outputColumnNames = new ArrayList<String>();
     Map<Byte, List<exprNodeDesc>> keyExprMap   = new HashMap<Byte, List<exprNodeDesc>>();
     Map<Byte, List<exprNodeDesc>> valueExprMap = new HashMap<Byte, List<exprNodeDesc>>();
 
@@ -106,6 +111,7 @@ public class MapJoinProcessor implements Transform {
 
     List<Operator<? extends Serializable>> parentOps = op.getParentOperators();
     List<Operator<? extends Serializable>> newParentOps = new ArrayList<Operator<? extends Serializable>>();
+    List<Operator<? extends Serializable>> oldReduceSinkParentOps = new ArrayList<Operator<? extends Serializable>>();
     
     // found a source which is not to be stored in memory
     if (leftSrc != null) {
@@ -113,7 +119,7 @@ public class MapJoinProcessor implements Transform {
       Operator<? extends Serializable> parentOp = parentOps.get(0);
       assert parentOp.getParentOperators().size() == 1;
       Operator<? extends Serializable> grandParentOp = parentOp.getParentOperators().get(0);
-      
+      oldReduceSinkParentOps.add(parentOp);
       grandParentOp.removeChild(parentOp);
       newParentOps.add(grandParentOp);
     }
@@ -127,35 +133,28 @@ public class MapJoinProcessor implements Transform {
         Operator<? extends Serializable> grandParentOp = parentOp.getParentOperators().get(0);
         
         grandParentOp.removeChild(parentOp);
-
+        oldReduceSinkParentOps.add(parentOp);
         newParentOps.add(grandParentOp);
       }
       pos++;
     }
 
     int keyLength = 0;
-    int outputPos = 0;
-
+    
+    //get the join keys from old parent ReduceSink operators
+    for (pos = 0; pos < newParentOps.size(); pos++) {
+      ReduceSinkOperator oldPar = (ReduceSinkOperator)oldReduceSinkParentOps.get(pos);
+      reduceSinkDesc rsconf = oldPar.getConf();
+      Byte tag = (byte)rsconf.getTag();
+      List<exprNodeDesc> keys = rsconf.getKeyCols();
+      keyExprMap.put(tag, keys);
+    }
+    
     // create the map-join operator
     for (pos = 0; pos < newParentOps.size(); pos++) {
       RowResolver inputRS = pGraphContext.getOpParseCtx().get(newParentOps.get(pos)).getRR();
     
-      List<exprNodeDesc> keys   = new ArrayList<exprNodeDesc>();
       List<exprNodeDesc> values = new ArrayList<exprNodeDesc>();
-
-      // Compute join keys and store in reduceKeys
-      Vector<ASTNode> exprs = joinTree.getExpressions().get(pos);
-      for (int i = 0; i < exprs.size(); i++) {
-        ASTNode expr = exprs.get(i);
-        keys.add(SemanticAnalyzer.genExprNodeDesc(expr, inputRS));
-      }
-
-      if (pos == 0)
-        keyLength = keys.size();
-      else
-        assert (keyLength == keys.size());
-    
-      keyExprMap.put(new Byte((byte)pos), keys);
 
       Iterator<String> keysIter = inputRS.getTableNames().iterator();
       while (keysIter.hasNext())
@@ -168,9 +167,15 @@ public class MapJoinProcessor implements Transform {
           String field = fNamesIter.next();
           ColumnInfo valueInfo = inputRS.get(key, field);
           values.add(new exprNodeColumnDesc(valueInfo.getType(), valueInfo.getInternalName()));
-          if (outputRS.get(key, field) == null)
-            outputRS.put(key, field, new ColumnInfo((Integer.valueOf(outputPos++)).toString(), 
-                                                    valueInfo.getType()));
+          ColumnInfo oldValueInfo = oldOutputRS.get(key, field);
+          String col = field;
+          if(oldValueInfo != null)
+            col = oldValueInfo.getInternalName();
+          if (outputRS.get(key, col) == null) {
+            outputColumnNames.add(col);
+            outputRS.put(key, col, new ColumnInfo(col, 
+                valueInfo.getType()));
+          }
         }
       }
       
@@ -198,11 +203,7 @@ public class MapJoinProcessor implements Transform {
       }
     }
     
-    org.apache.hadoop.hive.ql.plan.joinCond[] joinCondns = new org.apache.hadoop.hive.ql.plan.joinCond[joinTree.getJoinCond().length];
-    for (int i = 0; i < joinTree.getJoinCond().length; i++) {
-      joinCond condn = joinTree.getJoinCond()[i];
-      joinCondns[i] = new org.apache.hadoop.hive.ql.plan.joinCond(condn);
-    }
+    org.apache.hadoop.hive.ql.plan.joinCond[] joinCondns = op.getConf().getConds();
 
     Operator[] newPar = new Operator[newParentOps.size()];
     pos = 0;
@@ -234,7 +235,7 @@ public class MapJoinProcessor implements Transform {
     }
       
     MapJoinOperator mapJoinOp = (MapJoinOperator)putOpInsertMap(OperatorFactory.getAndMakeChild(
-      new mapJoinDesc(keyExprMap, keyTableDesc, valueExprMap, valueTableDescs, mapJoinPos, joinCondns),
+      new mapJoinDesc(keyExprMap, keyTableDesc, valueExprMap, valueTableDescs, outputColumnNames, mapJoinPos, joinCondns),
       new RowSchema(outputRS.getColumnInfos()), newPar), outputRS);
     
     // change the children of the original join operator to point to the map join operator

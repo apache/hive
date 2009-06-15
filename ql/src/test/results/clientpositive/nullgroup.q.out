@@ -12,14 +12,11 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         x 
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-              Filter Operator
-                predicate:
-                    expr: (UDFToDouble(0) > UDFToDouble(9999))
-                    type: boolean
+            Filter Operator
+              predicate:
+                  expr: (UDFToDouble(key) > UDFToDouble(9999))
+                  type: boolean
+              Select Operator
                 Group By Operator
                   aggregations:
                         expr: count(1)
@@ -28,16 +25,16 @@ STAGE PLANS:
                     sort order: 
                     tag: -1
                     value expressions:
-                          expr: 0
+                          expr: _col0
                           type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
+                expr: count(VALUE._col0)
           mode: final
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: bigint
             File Output Operator
               compressed: false
@@ -53,7 +50,7 @@ STAGE PLANS:
 
 query: select count(1) from src x where x.key > 9999
 Input: default/src
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/336665491/172016340.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/147597218/10000
 0
 query: explain
 select count(1) from src x where x.key > 9999
@@ -69,14 +66,11 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         x 
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-              Filter Operator
-                predicate:
-                    expr: (UDFToDouble(0) > UDFToDouble(9999))
-                    type: boolean
+            Filter Operator
+              predicate:
+                  expr: (UDFToDouble(key) > UDFToDouble(9999))
+                  type: boolean
+              Select Operator
                 Group By Operator
                   aggregations:
                         expr: count(1)
@@ -85,16 +79,16 @@ STAGE PLANS:
                     sort order: 
                     tag: -1
                     value expressions:
-                          expr: 0
+                          expr: _col0
                           type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
+                expr: count(VALUE._col0)
           mode: mergepartial
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: bigint
             File Output Operator
               compressed: false
@@ -110,7 +104,7 @@ STAGE PLANS:
 
 query: select count(1) from src x where x.key > 9999
 Input: default/src
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/11054297/1508397372.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/533131483/10000
 0
 query: explain
 select count(1) from src x where x.key > 9999
@@ -127,27 +121,21 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         x 
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-              Filter Operator
-                predicate:
-                    expr: (UDFToDouble(0) > UDFToDouble(9999))
-                    type: boolean
+            Filter Operator
+              predicate:
+                  expr: (UDFToDouble(key) > UDFToDouble(9999))
+                  type: boolean
+              Select Operator
                 Reduce Output Operator
                   sort order: 
                   Map-reduce partition columns:
                         expr: rand()
                         type: double
                   tag: -1
-                  value expressions:
-                        expr: 1
-                        type: int
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
+                expr: count(VALUE._col0)
           mode: partial1
           File Output Operator
             compressed: false
@@ -160,21 +148,21 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive2/hive2/build/ql/tmp/321579646/257985577.10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1010806267/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
               value expressions:
-                    expr: 0
+                    expr: _col0
                     type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
+                expr: count(VALUE._col0)
           mode: final
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: bigint
             File Output Operator
               compressed: false
@@ -190,7 +178,7 @@ STAGE PLANS:
 
 query: select count(1) from src x where x.key > 9999
 Input: default/src
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/453183166/223236193.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1089737871/10000
 0
 query: explain
 select count(1) from src x where x.key > 9999
@@ -206,28 +194,22 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         x 
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-              Filter Operator
-                predicate:
-                    expr: (UDFToDouble(0) > UDFToDouble(9999))
-                    type: boolean
+            Filter Operator
+              predicate:
+                  expr: (UDFToDouble(key) > UDFToDouble(9999))
+                  type: boolean
+              Select Operator
                 Reduce Output Operator
                   sort order: 
                   tag: -1
-                  value expressions:
-                        expr: 1
-                        type: int
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
+                expr: count(VALUE._col0)
           mode: complete
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: bigint
             File Output Operator
               compressed: false
@@ -243,5 +225,5 @@ STAGE PLANS:
 
 query: select count(1) from src x where x.key > 9999
 Input: default/src
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/42852040/39442442.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1646500951/10000
 0

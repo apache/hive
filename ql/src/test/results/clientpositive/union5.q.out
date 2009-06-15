@@ -28,18 +28,18 @@ STAGE PLANS:
                   sort order: 
                   tag: -1
                   value expressions:
-                        expr: 0
+                        expr: _col0
                         type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
+                expr: count(VALUE._col0)
           mode: mergepartial
           Select Operator
             expressions:
                   expr: 'tst1'
                   type: string
-                  expr: 0
+                  expr: _col0
                   type: bigint
             File Output Operator
               compressed: false
@@ -52,61 +52,69 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive5/hive5/build/ql/tmp/446100647/396265268.10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/788110677/10002 
           Union
-            Group By Operator
-              aggregations:
-                    expr: count(1)
-              keys:
-                    expr: 0
+            Select Operator
+              expressions:
+                    expr: _col0
                     type: string
-              mode: hash
-              Reduce Output Operator
-                key expressions:
-                      expr: 0
+              Group By Operator
+                aggregations:
+                      expr: count(1)
+                keys:
+                      expr: _col0
                       type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: 0
-                      type: string
-                tag: -1
-                value expressions:
-                      expr: 1
-                      type: bigint
-        /data/users/njain/hive5/hive5/build/ql/tmp/446100647/396265268.10003 
+                mode: hash
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: _col1
+                        type: bigint
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/788110677/10003 
           Union
-            Group By Operator
-              aggregations:
-                    expr: count(1)
-              keys:
-                    expr: 0
+            Select Operator
+              expressions:
+                    expr: _col0
                     type: string
-              mode: hash
-              Reduce Output Operator
-                key expressions:
-                      expr: 0
+              Group By Operator
+                aggregations:
+                      expr: count(1)
+                keys:
+                      expr: _col0
                       type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: 0
-                      type: string
-                tag: -1
-                value expressions:
-                      expr: 1
-                      type: bigint
+                mode: hash
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: _col1
+                        type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
+                expr: count(VALUE._col0)
           keys:
-                expr: KEY.0
+                expr: KEY._col0
                 type: string
           mode: mergepartial
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: string
-                  expr: 1
+                  expr: _col1
                   type: bigint
             File Output Operator
               compressed: false
@@ -128,18 +136,18 @@ STAGE PLANS:
                   sort order: 
                   tag: -1
                   value expressions:
-                        expr: 0
+                        expr: _col0
                         type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
+                expr: count(VALUE._col0)
           mode: mergepartial
           Select Operator
             expressions:
                   expr: 'tst2'
                   type: string
-                  expr: 0
+                  expr: _col0
                   type: bigint
             File Output Operator
               compressed: false
@@ -158,6 +166,6 @@ query: select unionsrc.key, count(1) FROM (select 'tst1' as key, count(1) as val
                                   UNION  ALL  
                                     select 'tst2' as key, count(1) as value from src s2) unionsrc group by unionsrc.key
 Input: default/src
-Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/140939267/753633250.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/428835180/10000
 tst1	1
 tst2	1

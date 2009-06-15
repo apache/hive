@@ -35,18 +35,18 @@ STAGE PLANS:
                       type: string
                 Reduce Output Operator
                   key expressions:
-                        expr: 0
+                        expr: _col0
                         type: string
                   sort order: +
                   tag: -1
                   value expressions:
-                        expr: 0
+                        expr: _col0
                         type: string
-                        expr: 1
+                        expr: _col1
                         type: string
-                        expr: 2
+                        expr: _col2
                         type: string
-                        expr: 3
+                        expr: _col3
                         type: string
       Reduce Operator Tree:
         Extract
@@ -62,17 +62,17 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /Users/char/Documents/workspace/Hive-Clean/build/ql/tmp/604361087/3711964.10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1762363316/10002 
           Union
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
-                    expr: 2
+                    expr: _col2
                     type: string
-                    expr: 3
+                    expr: _col3
                     type: string
               File Output Operator
                 compressed: false
@@ -80,17 +80,17 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        /Users/char/Documents/workspace/Hive-Clean/build/ql/tmp/604361087/3711964.10003 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1762363316/10003 
           Union
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
-                    expr: 2
+                    expr: _col2
                     type: string
-                    expr: 3
+                    expr: _col3
                     type: string
               File Output Operator
                 compressed: false
@@ -122,13 +122,13 @@ STAGE PLANS:
                     sort order: 
                     tag: -1
                     value expressions:
-                          expr: 0
+                          expr: _col0
                           type: string
-                          expr: 1
+                          expr: _col1
                           type: string
-                          expr: 2
+                          expr: _col2
                           type: string
-                          expr: 3
+                          expr: _col3
                           type: string
       Reduce Operator Tree:
         Extract
@@ -152,7 +152,7 @@ query: select * from (
   select * from srcpart b where b.ds = '2008-04-08' and b.hr = '14' limit 5
 )subq
 Input: default/srcpart/ds=2008-04-08/hr=11
-Output: /Users/char/Documents/workspace/Hive-Clean/ql/../build/ql/tmp/171937392/70987593.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/987288914/10000
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11

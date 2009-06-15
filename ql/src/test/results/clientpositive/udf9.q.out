@@ -20,54 +20,50 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-              Filter Operator
-                predicate:
-                    expr: (UDFToDouble(0) = UDFToDouble(86))
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: datediff('2008-12-31', '2009-01-01')
-                        type: int
-                        expr: datediff('2008-03-01', '2008-02-28')
-                        type: int
-                        expr: datediff('2007-03-01', '2007-01-28')
-                        type: int
-                        expr: datediff('2008-03-01 23:59:59', '2008-03-02 00:00:00')
-                        type: int
-                        expr: date_add('2008-12-31', 1)
-                        type: string
-                        expr: date_add('2008-12-31', 365)
-                        type: string
-                        expr: date_add('2008-02-28', 2)
-                        type: string
-                        expr: date_add('2009-02-28', 2)
-                        type: string
-                        expr: date_add('2007-02-28', 365)
-                        type: string
-                        expr: date_add('2007-02-28 23:59:59', 730)
-                        type: string
-                        expr: date_sub('2009-01-01', 1)
-                        type: string
-                        expr: date_sub('2009-01-01', 365)
-                        type: string
-                        expr: date_sub('2008-02-28', 2)
-                        type: string
-                        expr: date_sub('2009-02-28', 2)
-                        type: string
-                        expr: date_sub('2007-02-28', 365)
-                        type: string
-                        expr: date_sub('2007-02-28 01:12:34', 730)
-                        type: string
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            Filter Operator
+              predicate:
+                  expr: (UDFToDouble(key) = UDFToDouble(86))
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: datediff('2008-12-31', '2009-01-01')
+                      type: int
+                      expr: datediff('2008-03-01', '2008-02-28')
+                      type: int
+                      expr: datediff('2007-03-01', '2007-01-28')
+                      type: int
+                      expr: datediff('2008-03-01 23:59:59', '2008-03-02 00:00:00')
+                      type: int
+                      expr: date_add('2008-12-31', 1)
+                      type: string
+                      expr: date_add('2008-12-31', 365)
+                      type: string
+                      expr: date_add('2008-02-28', 2)
+                      type: string
+                      expr: date_add('2009-02-28', 2)
+                      type: string
+                      expr: date_add('2007-02-28', 365)
+                      type: string
+                      expr: date_add('2007-02-28 23:59:59', 730)
+                      type: string
+                      expr: date_sub('2009-01-01', 1)
+                      type: string
+                      expr: date_sub('2009-01-01', 365)
+                      type: string
+                      expr: date_sub('2008-02-28', 2)
+                      type: string
+                      expr: date_sub('2009-02-28', 2)
+                      type: string
+                      expr: date_sub('2007-02-28', 365)
+                      type: string
+                      expr: date_sub('2007-02-28 01:12:34', 730)
+                      type: string
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -84,5 +80,5 @@ query: SELECT DATEDIFF('2008-12-31', '2009-01-01'), DATEDIFF('2008-03-01', '2008
        DATE_SUB('2007-02-28', 365), DATE_SUB('2007-02-28 01:12:34', 730)
        FROM src WHERE src.key = 86
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/804319999/376709074.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/2099135137/10000
 -1	2	32	-1	2009-01-01	2009-12-31	2008-03-01	2009-03-02	2008-02-28	2009-02-27	2008-12-31	2008-01-02	2008-02-28	2009-02-27	2006-02-28	2005-02-28

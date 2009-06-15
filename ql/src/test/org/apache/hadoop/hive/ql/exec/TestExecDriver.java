@@ -223,11 +223,14 @@ public class TestExecDriver extends TestCase {
   private void populateMapRedPlan1(Table src) {
     mr.setNumReduceTasks(Integer.valueOf(1));
     
+    ArrayList<String> outputColumns = new ArrayList<String>();
+    for (int i = 0; i < 2; i++)
+      outputColumns.add("_col" + i);
     // map-side work
     Operator<reduceSinkDesc> op1 = OperatorFactory.get
       (PlanUtils.getReduceSinkDesc
        (Utilities.makeList(getStringColumn("key")),
-        Utilities.makeList(getStringColumn("value")), -1, 1, -1));
+        Utilities.makeList(getStringColumn("value")), outputColumns, true, -1, 1, -1));
 
     Utilities.addMapWork(mr, src, "a", op1);
     mr.setKeyDesc(op1.getConf().getKeySerializeInfo());
@@ -247,13 +250,15 @@ public class TestExecDriver extends TestCase {
   @SuppressWarnings("unchecked")
   private void populateMapRedPlan2(Table src) {
     mr.setNumReduceTasks(Integer.valueOf(1));
-
+    ArrayList<String> outputColumns = new ArrayList<String>();
+    for (int i = 0; i < 2; i++)
+      outputColumns.add("_col" + i);
     // map-side work
     Operator<reduceSinkDesc> op1 = OperatorFactory.get
       (PlanUtils.getReduceSinkDesc
        (Utilities.makeList(getStringColumn("key")),
         Utilities.makeList(getStringColumn("key"),
-                           getStringColumn("value")), -1, 1, -1));
+                           getStringColumn("value")), outputColumns, false, -1, 1, -1));
 
     Utilities.addMapWork(mr, src, "a", op1);
     mr.setKeyDesc(op1.getConf().getKeySerializeInfo());
@@ -280,13 +285,15 @@ public class TestExecDriver extends TestCase {
     private void populateMapRedPlan3(Table src, Table src2) {
     mr.setNumReduceTasks(Integer.valueOf(5));
     mr.setNeedsTagging(true);
-
+    ArrayList<String> outputColumns = new ArrayList<String>();
+    for (int i = 0; i < 2; i++)
+      outputColumns.add("_col" + i);
     // map-side work
     Operator<reduceSinkDesc> op1 = OperatorFactory.get
       (PlanUtils.getReduceSinkDesc
        (Utilities.makeList(getStringColumn("key")),
         Utilities.makeList
-        (getStringColumn("value")), Byte.valueOf((byte)0), 1, -1));
+        (getStringColumn("value")), outputColumns, true, Byte.valueOf((byte)0), 1, -1));
 
     Utilities.addMapWork(mr, src, "a", op1);
     mr.setKeyDesc(op1.getConf().getKeySerializeInfo());
@@ -296,6 +303,7 @@ public class TestExecDriver extends TestCase {
       (PlanUtils.getReduceSinkDesc
        (Utilities.makeList(getStringColumn("key")),
         Utilities.makeList(getStringColumn("key")),
+        outputColumns, true,
         Byte.valueOf((byte)1),
         Integer.MAX_VALUE, -1));
 
@@ -316,7 +324,7 @@ public class TestExecDriver extends TestCase {
                  TypeInfoFactory.stringTypeInfo),
                  Utilities.ReduceField.VALUE.toString()),
              "0",
-             false))), op4);
+             false)), outputColumns), op4);
 
     mr.setReducer(op5);
   }
@@ -326,12 +334,15 @@ public class TestExecDriver extends TestCase {
     mr.setNumReduceTasks(Integer.valueOf(1));
 
     // map-side work
-
+    ArrayList<String> outputColumns = new ArrayList<String>();
+    for (int i = 0; i < 2; i++)
+      outputColumns.add("_col" + i);
     Operator<reduceSinkDesc> op1 = OperatorFactory.get
       (PlanUtils.getReduceSinkDesc
        (Utilities.makeList(getStringColumn("tkey")),
         Utilities.makeList(getStringColumn("tkey"),
                            getStringColumn("tvalue")),
+                           outputColumns, false,
         -1, 1, -1));
 
     Operator<scriptDesc> op0 = OperatorFactory.get
@@ -342,7 +353,7 @@ public class TestExecDriver extends TestCase {
 
     Operator<selectDesc> op4 = OperatorFactory.get(new selectDesc(
                                      Utilities.makeList(getStringColumn("key"),
-                                                        getStringColumn("value"))), op0);
+                                                        getStringColumn("value")), outputColumns), op0);
 
     Utilities.addMapWork(mr, src, "a", op4);
     mr.setKeyDesc(op1.getConf().getKeySerializeInfo());
@@ -368,17 +379,20 @@ public class TestExecDriver extends TestCase {
     mr.setNumReduceTasks(Integer.valueOf(1));
 
     // map-side work
-
+    ArrayList<String> outputColumns = new ArrayList<String>();
+    for (int i = 0; i < 2; i++)
+      outputColumns.add("_col" + i);
     Operator<reduceSinkDesc> op0 = OperatorFactory.get
       (PlanUtils.getReduceSinkDesc
        (Utilities.makeList(getStringColumn("0")),
         Utilities.makeList(getStringColumn("0"),
                            getStringColumn("1")),
+                           outputColumns, false,
         -1, 1, -1));
 
     Operator<selectDesc> op4 = OperatorFactory.get(new selectDesc(
                                      Utilities.makeList(getStringColumn("key"),
-                                                        getStringColumn("value"))), op0);
+                                                        getStringColumn("value")), outputColumns), op0);
 
     Utilities.addMapWork(mr, src, "a", op4);
     mr.setKeyDesc(op0.getConf().getKeySerializeInfo());
@@ -400,12 +414,15 @@ public class TestExecDriver extends TestCase {
     mr.setNumReduceTasks(Integer.valueOf(1));
 
     // map-side work
-
+    ArrayList<String> outputColumns = new ArrayList<String>();
+    for (int i = 0; i < 2; i++)
+      outputColumns.add("_col" + i);
     Operator<reduceSinkDesc> op1 = OperatorFactory.get
       (PlanUtils.getReduceSinkDesc(
         Utilities.makeList(getStringColumn("tkey")),
         Utilities.makeList(getStringColumn("tkey"),
                            getStringColumn("tvalue")),
+                           outputColumns, false,
         -1, 1, -1));
 
     Operator<scriptDesc> op0 = OperatorFactory.get
@@ -416,7 +433,7 @@ public class TestExecDriver extends TestCase {
 
     Operator<selectDesc> op4 = OperatorFactory.get(new selectDesc(
                                      Utilities.makeList(getStringColumn("key"),
-                                                        getStringColumn("value"))), op0);
+                                                        getStringColumn("value")), outputColumns), op0);
 
     Utilities.addMapWork(mr, src, "a", op4);
     mr.setKeyDesc(op1.getConf().getKeySerializeInfo());

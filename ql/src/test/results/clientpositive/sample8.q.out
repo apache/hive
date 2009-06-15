@@ -19,24 +19,22 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         t 
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              Filter Operator
-                predicate:
-                    expr: (((hash(0) & 2147483647) % 10) = 0)
-                    type: boolean
-                Reduce Output Operator
-                  sort order: 
-                  tag: 1
-                  value expressions:
-                        expr: 0
-                        type: string
-                        expr: 1
-                        type: string
+            Filter Operator
+              predicate:
+                  expr: (((hash(key) & 2147483647) % 10) = 0)
+                  type: boolean
+              Reduce Output Operator
+                sort order: 
+                tag: 1
+                value expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                      expr: ds
+                      type: string
+                      expr: hr
+                      type: string
         s 
             Filter Operator
               predicate:
@@ -56,12 +54,12 @@ STAGE PLANS:
                       type: string
       Needs Tagging: true
       Path -> Alias:
-        file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
-        file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
-        file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 
-        file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
       Path -> Partition:
-        file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
             partition values:
               ds 2008-04-08
@@ -80,10 +78,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/srcpart
+                location file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
             partition values:
               ds 2008-04-08
@@ -102,10 +100,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/srcpart
+                location file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 
           Partition
             partition values:
               ds 2008-04-09
@@ -124,10 +122,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/srcpart
+                location file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
           Partition
             partition values:
               ds 2008-04-09
@@ -146,7 +144,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/hive2/hive2/build/ql/test/data/warehouse/srcpart
+                location file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
       Reduce Operator Tree:
@@ -154,73 +152,73 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE.0} {VALUE.1} {VALUE.2} {VALUE.3}
-            1 {VALUE.0} {VALUE.1}
+            0 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3}
+            1 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3}
           Filter Operator
             predicate:
-                expr: ((((((4 = 0) and (5 = 1)) and (2 = '2008-04-08')) and (3 = '11')) and (2 = '2008-04-08')) and (3 = '11'))
+                expr: ((((((_col4 = _col0) and (_col5 = _col1)) and (_col2 = '2008-04-08')) and (_col3 = '11')) and (_col2 = '2008-04-08')) and (_col3 = '11'))
                 type: boolean
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
-                    expr: 2
+                    expr: _col2
                     type: string
-                    expr: 3
+                    expr: _col3
                     type: string
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
-                directory: file:/data/users/njain/hive2/hive2/build/ql/tmp/1443892627/10004
+                directory: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1858927587/10002
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     properties:
                       name binary_table
-                      serialization.ddl struct binary_table { string temporarycol0, string temporarycol1, string temporarycol2, string temporarycol3}
+                      serialization.ddl struct binary_table { string _col0, string _col1, string _col2, string _col3}
                       serialization.format com.facebook.thrift.protocol.TBinaryProtocol
                     name: binary_table
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive2/hive2/build/ql/tmp/1443892627/10004 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1858927587/10002 
             Reduce Output Operator
               key expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
               sort order: ++
               Map-reduce partition columns:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
               tag: -1
               value expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
-                    expr: 2
+                    expr: _col2
                     type: string
-                    expr: 3
+                    expr: _col3
                     type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/njain/hive2/hive2/build/ql/tmp/1443892627/10004 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1858927587/10002 
       Path -> Partition:
-        file:/data/users/njain/hive2/hive2/build/ql/tmp/1443892627/10004 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1858927587/10002 
           Partition
           
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
               properties:
                 name binary_table
-                serialization.ddl struct binary_table { string temporarycol0, string temporarycol1, string temporarycol2, string temporarycol3}
+                serialization.ddl struct binary_table { string _col0, string _col1, string _col2, string _col3}
                 serialization.format com.facebook.thrift.protocol.TBinaryProtocol
               name: binary_table
       Reduce Operator Tree:
@@ -228,7 +226,7 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/data/users/njain/hive2/hive2/build/ql/tmp/1443892627/10003
+            directory: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1858927587/10001
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -251,7 +249,7 @@ Input: default/srcpart/ds=2008-04-08/hr=11
 Input: default/srcpart/ds=2008-04-08/hr=12
 Input: default/srcpart/ds=2008-04-09/hr=11
 Input: default/srcpart/ds=2008-04-09/hr=12
-Output: file:/data/users/njain/hive2/hive2/build/ql/tmp/1318003535/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/587483226/10000
 0	val_0
 0	val_0
 0	val_0

@@ -73,15 +73,15 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive1/hive1/build/ql/tmp/1050118775/10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/596423728/10002 
           Select Operator
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: int
-                    expr: 1
+                    expr: _col1
                     type: int
-                    expr: 3
+                    expr: _col3
                     type: int
               File Output Operator
                 compressed: false
@@ -111,7 +111,7 @@ Input: default/tmp1
 Output: default/dest_j1
 query: select * from dest_j1 x order by x.key
 Input: default/dest_j1
-Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/912828284/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/976050144/10000
 0	3	3
 2	1	1
 4	1	1

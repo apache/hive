@@ -26,21 +26,21 @@ STAGE PLANS:
                     type: string
               Reduce Output Operator
                 key expressions:
-                      expr: 3
+                      expr: _col3
                       type: string
                 sort order: +
                 Map-reduce partition columns:
-                      expr: 2
+                      expr: _col2
                       type: string
                 tag: -1
                 value expressions:
-                      expr: 0
+                      expr: _col0
                       type: string
-                      expr: 1
+                      expr: _col1
                       type: string
-                      expr: 2
+                      expr: _col2
                       type: string
-                      expr: 3
+                      expr: _col3
                       type: string
       Reduce Operator Tree:
         Extract
@@ -58,7 +58,7 @@ STAGE PLANS:
 
 query: SELECT * FROM src_null DISTRIBUTE BY c SORT BY d
 Input: default/src_null
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/435874957/1843130221.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/828690607/10000
 1.0	1	same	0
 1.0	1	same	1
 1.0	1	same	2

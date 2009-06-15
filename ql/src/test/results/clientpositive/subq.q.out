@@ -27,9 +27,9 @@ STAGE PLANS:
                       type: string
                 Select Operator
                   expressions:
-                        expr: 0
+                        expr: _col0
                         type: string
-                        expr: 1
+                        expr: _col1
                         type: string
                   File Output Operator
                     compressed: false

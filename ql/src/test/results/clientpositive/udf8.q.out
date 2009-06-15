@@ -19,36 +19,40 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         dest1 
-            Group By Operator
-              aggregations:
-                    expr: avg(UDFToDouble(c1))
-                    expr: sum(UDFToDouble(c1))
-                    expr: count(c1)
-              mode: hash
-              Reduce Output Operator
-                sort order: 
-                tag: -1
-                value expressions:
-                      expr: 0
-                      type: string
-                      expr: 1
-                      type: double
-                      expr: 2
-                      type: bigint
+            Select Operator
+              expressions:
+                    expr: c1
+                    type: string
+              Group By Operator
+                aggregations:
+                      expr: avg(UDFToDouble(c1))
+                      expr: sum(UDFToDouble(c1))
+                      expr: count(c1)
+                mode: hash
+                Reduce Output Operator
+                  sort order: 
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: double
+                        expr: _col2
+                        type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: avg(VALUE.0)
-                expr: sum(VALUE.1)
-                expr: count(VALUE.2)
+                expr: avg(VALUE._col0)
+                expr: sum(VALUE._col1)
+                expr: count(VALUE._col2)
           mode: mergepartial
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: double
-                  expr: 1
+                  expr: _col1
                   type: double
-                  expr: 2
+                  expr: _col2
                   type: bigint
             File Output Operator
               compressed: false
@@ -64,5 +68,5 @@ STAGE PLANS:
 
 query: SELECT avg(c1), sum(c1), count(c1) FROM dest1
 Input: default/dest1
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/148346145/763466676.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1344361217/10000
 1.0	1.0	1

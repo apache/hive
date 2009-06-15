@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -44,9 +46,10 @@ public class mapJoinDesc extends joinDesc implements Serializable {
                      final tableDesc keyTblDesc, 
                      final Map<Byte, List<exprNodeDesc>> values,
                      final List<tableDesc> valueTblDescs,
+                     ArrayList<String> outputColumnNames,
                      final int posBigTable,
                      final joinCond[] conds) {
-    super(values, conds);
+    super(values, outputColumnNames, conds);
     this.keys        = keys;
     this.keyTblDesc  = keyTblDesc;
     this.valueTblDescs = valueTblDescs;

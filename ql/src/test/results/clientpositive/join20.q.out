@@ -72,22 +72,22 @@ STAGE PLANS:
                Inner Join 0 to 1
                Right Outer Join0 to 2
           condition expressions:
-            0 {VALUE.0} {VALUE.1}
-            1 {VALUE.0} {VALUE.1}
-            2 {VALUE.0} {VALUE.1}
+            0 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col0} {VALUE._col1}
+            2 {VALUE._col0} {VALUE._col1}
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: string
-                  expr: 1
+                  expr: _col1
                   type: string
-                  expr: 2
+                  expr: _col2
                   type: string
-                  expr: 3
+                  expr: _col3
                   type: string
-                  expr: 4
+                  expr: _col4
                   type: string
-                  expr: 5
+                  expr: _col5
                   type: string
             File Output Operator
               compressed: false
@@ -100,35 +100,35 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive2/hive2/build/ql/tmp/476463155/205865751.10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/692540423/10002 
             Reduce Output Operator
               key expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
-                    expr: 2
+                    expr: _col2
                     type: string
-                    expr: 3
+                    expr: _col3
                     type: string
-                    expr: 4
+                    expr: _col4
                     type: string
-                    expr: 5
+                    expr: _col5
                     type: string
               sort order: ++++++
               tag: -1
               value expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
-                    expr: 2
+                    expr: _col2
                     type: string
-                    expr: 3
+                    expr: _col3
                     type: string
-                    expr: 4
+                    expr: _col4
                     type: string
-                    expr: 5
+                    expr: _col5
                     type: string
       Reduce Operator Tree:
         Extract
@@ -147,7 +147,7 @@ STAGE PLANS:
 query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 Input: default/src
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/1205211471/304438397.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/354547535/10000
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	11	val_11
 NULL	NULL	NULL	NULL	12	val_12
@@ -294,22 +294,22 @@ STAGE PLANS:
                Inner Join 0 to 1
                Right Outer Join0 to 2
           condition expressions:
-            0 {VALUE.0} {VALUE.1}
-            1 {VALUE.0} {VALUE.1}
-            2 {VALUE.0} {VALUE.1}
+            0 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col0} {VALUE._col1}
+            2 {VALUE._col0} {VALUE._col1}
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: string
-                  expr: 1
+                  expr: _col1
                   type: string
-                  expr: 2
+                  expr: _col2
                   type: string
-                  expr: 3
+                  expr: _col3
                   type: string
-                  expr: 4
+                  expr: _col4
                   type: string
-                  expr: 5
+                  expr: _col5
                   type: string
             File Output Operator
               compressed: false
@@ -322,35 +322,35 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive2/hive2/build/ql/tmp/112521398/618050553.10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1426415485/10002 
             Reduce Output Operator
               key expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
-                    expr: 2
+                    expr: _col2
                     type: string
-                    expr: 3
+                    expr: _col3
                     type: string
-                    expr: 4
+                    expr: _col4
                     type: string
-                    expr: 5
+                    expr: _col5
                     type: string
               sort order: ++++++
               tag: -1
               value expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
-                    expr: 2
+                    expr: _col2
                     type: string
-                    expr: 3
+                    expr: _col3
                     type: string
-                    expr: 4
+                    expr: _col4
                     type: string
-                    expr: 5
+                    expr: _col5
                     type: string
       Reduce Operator Tree:
         Extract
@@ -369,7 +369,7 @@ STAGE PLANS:
 query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key < 15) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 Input: default/src
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/272950277/29892482.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/996575325/10000
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	11	val_11
 NULL	NULL	NULL	NULL	12	val_12

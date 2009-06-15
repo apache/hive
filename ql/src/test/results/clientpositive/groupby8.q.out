@@ -11,7 +11,7 @@ STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
   Stage-0 depends on stages: Stage-2, Stage-4
-  Stage-3 depends on stages: Stage-1
+  Stage-3 depends on stages: Stage-2
   Stage-4 depends on stages: Stage-3
   Stage-0 depends on stages: Stage-2, Stage-4
 
@@ -20,32 +20,44 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
-            Reduce Output Operator
-              key expressions:
+            Select Operator
+              expressions:
                     expr: key
                     type: string
-                    expr: substr(value, 5)
+                    expr: value
                     type: string
-              sort order: ++
-              Map-reduce partition columns:
+              Reduce Output Operator
+                key expressions:
+                      expr: key
+                      type: string
+                      expr: substr(value, 5)
+                      type: string
+                sort order: ++
+                Map-reduce partition columns:
+                      expr: key
+                      type: string
+                      expr: substr(value, 5)
+                      type: string
+                tag: -1
+            Select Operator
+              expressions:
                     expr: key
                     type: string
-                    expr: substr(value, 5)
+                    expr: value
                     type: string
-              tag: -1
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  name: binary_table
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    name: binary_table
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(DISTINCT KEY.1)
+                expr: count(DISTINCT KEY._col1)
           keys:
-                expr: KEY.0
+                expr: KEY._col0
                 type: string
           mode: partial1
           File Output Operator
@@ -59,38 +71,38 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive2/hive2/build/ql/tmp/140111117/49441246.10004 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/691145829/10004 
             Reduce Output Operator
               key expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
               sort order: +
               Map-reduce partition columns:
-                    expr: 0
+                    expr: _col0
                     type: string
               tag: -1
               value expressions:
-                    expr: 1
+                    expr: _col1
                     type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
+                expr: count(VALUE._col0)
           keys:
-                expr: KEY.0
+                expr: KEY._col0
                 type: string
           mode: final
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: string
-                  expr: 1
+                  expr: _col1
                   type: bigint
             Select Operator
               expressions:
-                    expr: UDFToInteger(0)
+                    expr: UDFToInteger(_col0)
                     type: int
-                    expr: 1
+                    expr: _col1
                     type: bigint
               File Output Operator
                 compressed: false
@@ -120,7 +132,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive2/hive2/build/ql/tmp/140111117/49441246.10005 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/691145829/10005 
             Reduce Output Operator
               key expressions:
                     expr: key
@@ -137,9 +149,9 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(DISTINCT KEY.1)
+                expr: count(DISTINCT KEY._col1)
           keys:
-                expr: KEY.0
+                expr: KEY._col0
                 type: string
           mode: partial1
           File Output Operator
@@ -153,38 +165,38 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive2/hive2/build/ql/tmp/140111117/49441246.10006 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/691145829/10006 
             Reduce Output Operator
               key expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
               sort order: +
               Map-reduce partition columns:
-                    expr: 0
+                    expr: _col0
                     type: string
               tag: -1
               value expressions:
-                    expr: 1
+                    expr: _col1
                     type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
+                expr: count(VALUE._col0)
           keys:
-                expr: KEY.0
+                expr: KEY._col0
                 type: string
           mode: final
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: string
-                  expr: 1
+                  expr: _col1
                   type: bigint
             Select Operator
               expressions:
-                    expr: UDFToInteger(0)
+                    expr: UDFToInteger(_col0)
                     type: int
-                    expr: 1
+                    expr: _col1
                     type: bigint
               File Output Operator
                 compressed: false
@@ -204,7 +216,7 @@ Output: default/dest1
 Output: default/dest2
 query: SELECT DEST1.* FROM DEST1
 Input: default/dest1
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/1852150935/396027054.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1572497614/10000
 0	1
 10	1
 100	1
@@ -516,7 +528,7 @@ Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/1852150935/396027054.10
 98	1
 query: SELECT DEST2.* FROM DEST2
 Input: default/dest2
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/17802714/1443308332.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/811451790/10000
 0	1
 10	1
 100	1

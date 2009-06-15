@@ -32,6 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.mapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.tableDesc;
@@ -192,11 +193,10 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
           structFieldObjectInspectors.add(fld.getFieldObjectInspector());
         }
       }
-
-      joinOutputObjectInspector = ObjectInspectorFactory
-          .getStandardStructObjectInspector(ObjectInspectorUtils
-              .getIntegerArray(totalSz), structFieldObjectInspectors);
       
+      joinOutputObjectInspector = ObjectInspectorFactory
+      .getStandardStructObjectInspector(conf.getOutputColumnNames(), structFieldObjectInspectors);
+
       initializeChildren(hconf, reporter, new ObjectInspector[]{joinOutputObjectInspector});
     } catch (Exception e) {
       e.printStackTrace();
@@ -244,8 +244,12 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
           for (exprNodeDesc e: conf.getKeys().get(new Byte((byte)tag))) {
             keyEval[i++] = ExprNodeEvaluatorFactory.get(e);
           }
-
-          ObjectInspector keyObjectInspector = initEvaluatorsAndReturnStruct(keyEval, rowInspector);
+          
+          List<String> keyOutputCols = new ArrayList<String>();
+          for (int k = 0; k < keyEval.length; k++) {
+            keyOutputCols.add(HiveConf.getColumnInternalName(k));
+          }
+          ObjectInspector keyObjectInspector = initEvaluatorsAndReturnStruct(keyEval, keyOutputCols, rowInspector);
 
           Deserializer deserializer = (Deserializer)ReflectionUtils.newInstance(keyTableDesc.getDeserializerClass(), null);
           deserializer.initialize(null, keyTableDesc.getProperties());
@@ -281,8 +285,13 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
           for (exprNodeDesc e: conf.getExprs().get(new Byte((byte)tag))) {
             valueEval[i++] = ExprNodeEvaluatorFactory.get(e);
           }
-
-          ObjectInspector valueObjectInspector = initEvaluatorsAndReturnStruct(valueEval, rowInspector);
+          List<String> tagOutputCols = new ArrayList<String>(); 
+          int start = 0;
+          for (int k = 0; k < tag; k++)
+            start+=conf.getExprs().get(new Byte((byte)k)).size();
+          for (int k=0;k<conf.getExprs().get(new Byte((byte)tag)).size();k++)
+            tagOutputCols.add(HiveConf.getColumnInternalName(k));
+          ObjectInspector valueObjectInspector = initEvaluatorsAndReturnStruct(valueEval, tagOutputCols, rowInspector);
  
           Deserializer deserializer = (Deserializer)ReflectionUtils.newInstance(valueTableDesc.getDeserializerClass(), null);
           deserializer.initialize(null, valueTableDesc.getProperties());

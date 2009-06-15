@@ -22,55 +22,63 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         s2 
-            Select Operator
-              expressions:
+            Reduce Output Operator
+              key expressions:
                     expr: aint
                     type: int
+              sort order: +
+              Map-reduce partition columns:
+                    expr: aint
+                    type: int
+              tag: 1
+              value expressions:
+                    expr: aint
+                    type: int
+                    expr: astring
+                    type: string
+                    expr: lint
+                    type: array<int>
+                    expr: lstring
+                    type: array<string>
                     expr: lintstring
                     type: array<struct<myint:int,mystring:string,underscore_int:int>>
-              Reduce Output Operator
-                key expressions:
-                      expr: 0
-                      type: int
-                sort order: +
-                Map-reduce partition columns:
-                      expr: 0
-                      type: int
-                tag: 1
-                value expressions:
-                      expr: 0
-                      type: int
-                      expr: 1
-                      type: array<struct<myint:int,mystring:string,underscore_int:int>>
+                    expr: mstringstring
+                    type: map<string,string>
         s1 
-            Select Operator
-              expressions:
+            Reduce Output Operator
+              key expressions:
                     expr: aint
                     type: int
-              Reduce Output Operator
-                key expressions:
-                      expr: 0
-                      type: int
-                sort order: +
-                Map-reduce partition columns:
-                      expr: 0
-                      type: int
-                tag: 0
-                value expressions:
-                      expr: 0
-                      type: int
+              sort order: +
+              Map-reduce partition columns:
+                    expr: aint
+                    type: int
+              tag: 0
+              value expressions:
+                    expr: aint
+                    type: int
+                    expr: astring
+                    type: string
+                    expr: lint
+                    type: array<int>
+                    expr: lstring
+                    type: array<string>
+                    expr: lintstring
+                    type: array<struct<myint:int,mystring:string,underscore_int:int>>
+                    expr: mstringstring
+                    type: map<string,string>
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE.0}
-            1 {VALUE.0} {VALUE.1}
+            0 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5}
+            1 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5}
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: int
-                  expr: 2
+                  expr: _col10
                   type: array<struct<myint:int,mystring:string,underscore_int:int>>
             File Output Operator
               compressed: false
@@ -89,7 +97,7 @@ FROM src_thrift s1
 JOIN src_thrift s2
 ON s1.aint = s2.aint
 Input: default/src_thrift
-Output: /data/users/zshao/tools/495-trunk-apache-hive/ql/../build/ql/tmp/1611059524/151199080.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1473150956/10000
 -1952710710	[{"myint":25,"mystring":"125","underscore_int":5}]
 -1461153973	[{"myint":49,"mystring":"343","underscore_int":7}]
 -751827638	[{"myint":4,"mystring":"8","underscore_int":2}]

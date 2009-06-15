@@ -16,24 +16,20 @@ STAGE PLANS:
               predicate:
                   expr: (key > '2')
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                Filter Operator
-                  predicate:
-                      expr: (0 > '2')
-                      type: boolean
-                  Select Operator
-                    expressions:
-                          expr: 0
-                          type: string
-                    File Output Operator
-                      compressed: false
-                      GlobalTableId: 0
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              Filter Operator
+                predicate:
+                    expr: (key > '2')
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
+                        type: string
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -42,7 +38,7 @@ STAGE PLANS:
 
 query: SELECT src.key as c3 from src where src.key > '2'
 Input: default/src
-Output: /Users/pchakka/workspace/oshive/ql/../build/ql/tmp/589686678/45664239.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/529404035/10000
 238
 86
 311

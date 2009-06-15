@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.Reporter;
 
+
 /**
  * Join operator implementation.
  */
@@ -57,10 +58,9 @@ public class JoinOperator extends CommonJoinOperator<joinDesc> implements Serial
                 ObjectInspectorCopyOption.KEEP));
       }
     }
-
+    
     joinOutputObjectInspector = ObjectInspectorFactory
-        .getStandardStructObjectInspector(ObjectInspectorUtils
-            .getIntegerArray(totalSz), structFieldObjectInspectors);
+    .getStandardStructObjectInspector(conf.getOutputColumnNames(), structFieldObjectInspectors);
     LOG.info("JOIN " + ((StructObjectInspector)joinOutputObjectInspector).getTypeName() + " totalsz = " + totalSz);
 
     initializeChildren(hconf, reporter, new ObjectInspector[]{joinOutputObjectInspector});

@@ -26,20 +26,20 @@ STAGE PLANS:
                   sort order: 
                   tag: -1
                   value expressions:
-                        expr: 0
+                        expr: _col0
                         type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
+                expr: count(VALUE._col0)
           mode: mergepartial
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: bigint
             Select Operator
               expressions:
-                    expr: UDFToInteger(0)
+                    expr: UDFToInteger(_col0)
                     type: int
               File Output Operator
                 compressed: false
@@ -67,7 +67,7 @@ Input: default/srcbucket
 Output: default/tst_dest31
 query: select * from tst_dest31
 Input: default/tst_dest31
-Output: /mnt/vol/devrs005.snc1/rmurthy/hive-committer/ql/../build/ql/tmp/614253361/1040799242.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/500549894/10000
 500
 query: drop table tst_dest31
 query: drop table dest31

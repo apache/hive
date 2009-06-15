@@ -43,6 +43,8 @@ Trunk - Unreleased
 
     HIVE-470. Add COALESCE. (Zheng Shao via namit)
 
+    HIVE-460. Improve Column Pruning. (He Yongqiang via namit)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 

@@ -32,18 +32,18 @@ STAGE PLANS:
                       type: string
                 Select Operator
                   expressions:
-                        expr: UDFToInteger(0)
+                        expr: UDFToInteger(_col0)
                         type: int
-                        expr: 1
+                        expr: _col1
                         type: string
-                        expr: 2
+                        expr: _col2
                         type: string
-                        expr: 3
+                        expr: _col3
                         type: string
                   File Output Operator
                     compressed: false
                     GlobalTableId: 1
-                    directory: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/207197850/1525735017.10000.insclause-0
+                    directory: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1525759137/10000
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -57,7 +57,7 @@ STAGE PLANS:
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           file.inputformat org.apache.hadoop.mapred.TextInputFormat
                           file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          location file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/dest1
+                          location file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/dest1
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: dest1
             Filter Operator
@@ -76,18 +76,18 @@ STAGE PLANS:
                       type: string
                 Select Operator
                   expressions:
-                        expr: UDFToInteger(0)
+                        expr: UDFToInteger(_col0)
                         type: int
-                        expr: 1
+                        expr: _col1
                         type: string
-                        expr: 2
+                        expr: _col2
                         type: string
-                        expr: 3
+                        expr: _col3
                         type: string
                   File Output Operator
                     compressed: false
                     GlobalTableId: 2
-                    directory: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/207197850/1525735017.10002.insclause-1
+                    directory: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1525759137/10002
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -101,15 +101,15 @@ STAGE PLANS:
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           file.inputformat org.apache.hadoop.mapred.TextInputFormat
                           file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          location file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/dest2
+                          location file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/dest2
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: dest2
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
-        file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
       Path -> Partition:
-        file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
             partition values:
               ds 2008-04-08
@@ -128,10 +128,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart
+                location file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
           Partition
             partition values:
               ds 2008-04-09
@@ -150,7 +150,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart
+                location file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
 
@@ -158,7 +158,7 @@ STAGE PLANS:
     Move Operator
       tables:
             replace: true
-            source: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/207197850/1525735017.10000.insclause-0
+            source: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1525759137/10000
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -172,12 +172,12 @@ STAGE PLANS:
                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   file.inputformat org.apache.hadoop.mapred.TextInputFormat
                   file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  location file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/dest1
+                  location file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/dest1
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: dest1
-            tmp directory: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/207197850/1525735017.10001
+            tmp directory: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1525759137/10001
             replace: true
-            source: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/207197850/1525735017.10002.insclause-1
+            source: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1525759137/10002
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -191,10 +191,10 @@ STAGE PLANS:
                   serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   file.inputformat org.apache.hadoop.mapred.TextInputFormat
                   file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  location file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/dest2
+                  location file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/dest2
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: dest2
-            tmp directory: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/207197850/1525735017.10003
+            tmp directory: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1525759137/10003
 
 
 query: FROM srcpart
@@ -206,7 +206,7 @@ Output: default/dest1
 Output: default/dest2
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/70176811/211325652.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/376262491/10000
 86	val_86	12	2008-04-08
 27	val_27	12	2008-04-08
 98	val_98	12	2008-04-08
@@ -293,7 +293,7 @@ Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/70176811/2
 97	val_97	12	2008-04-08
 query: SELECT dest2.* FROM dest2
 Input: default/dest2
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/683955421/596380888.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1553316848/10000
 86	val_86	12	2008-04-09
 27	val_27	12	2008-04-09
 98	val_98	12	2008-04-09

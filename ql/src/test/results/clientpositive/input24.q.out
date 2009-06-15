@@ -15,14 +15,11 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         x 
-            Select Operator
-              expressions:
-                    expr: d
-                    type: string
-              Filter Operator
-                predicate:
-                    expr: (0 = '2009-01-01')
-                    type: boolean
+            Filter Operator
+              predicate:
+                  expr: (d = '2009-01-01')
+                  type: boolean
+              Select Operator
                 Group By Operator
                   aggregations:
                         expr: count(1)
@@ -31,16 +28,16 @@ STAGE PLANS:
                     sort order: 
                     tag: -1
                     value expressions:
-                          expr: 0
+                          expr: _col0
                           type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
+                expr: count(VALUE._col0)
           mode: mergepartial
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: bigint
             File Output Operator
               compressed: false
@@ -56,6 +53,6 @@ STAGE PLANS:
 
 query: select count(1) from tst x where x.d='2009-01-01'
 Input: default/tst/d=2009-01-01
-Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/321060343/178308884.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/826416972/10000
 0
 query: drop table tst

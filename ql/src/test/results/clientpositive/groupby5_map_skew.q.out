@@ -19,26 +19,26 @@ STAGE PLANS:
                     type: string
               Group By Operator
                 aggregations:
-                      expr: sum(UDFToDouble(0))
+                      expr: sum(UDFToDouble(key))
                 mode: hash
                 Reduce Output Operator
                   sort order: 
                   tag: -1
                   value expressions:
-                        expr: 0
+                        expr: _col0
                         type: double
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: sum(VALUE.0)
+                expr: sum(VALUE._col0)
           mode: final
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: double
             Select Operator
               expressions:
-                    expr: UDFToInteger(0)
+                    expr: UDFToInteger(_col0)
                     type: int
               File Output Operator
                 compressed: false
@@ -65,5 +65,5 @@ Input: default/src
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/207636079/315601969.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1683454230/10000
 130091

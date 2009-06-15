@@ -118,6 +118,9 @@ public class StandardStructObjectInspector implements StructObjectInspector {
     // We support both List<Object> and Object[]
     // so we have to do differently.
     boolean isArray = data.getClass().isArray();
+    if(!isArray && !(data instanceof List)) {
+      return data;
+    }
     int listSize = (isArray
         ? ((Object[])data).length
         : ((List<Object>)data).size());

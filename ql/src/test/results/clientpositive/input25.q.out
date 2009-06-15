@@ -40,11 +40,11 @@ STAGE PLANS:
                     sort order: 
                     tag: -1
                     value expressions:
-                          expr: 0
+                          expr: _col0
                           type: int
-                          expr: 1
+                          expr: _col1
                           type: int
-                          expr: 2
+                          expr: _col2
                           type: string
       Reduce Operator Tree:
         Extract
@@ -60,15 +60,15 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive5/hive5/build/ql/tmp/221582197/417273265.10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/905940285/10002 
           Union
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: int
-                    expr: 1
+                    expr: _col1
                     type: int
-                    expr: 2
+                    expr: _col2
                     type: string
               File Output Operator
                 compressed: false
@@ -76,15 +76,15 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        /data/users/njain/hive5/hive5/build/ql/tmp/221582197/417273265.10003 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/905940285/10003 
           Union
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: int
-                    expr: 1
+                    expr: _col1
                     type: int
-                    expr: 2
+                    expr: _col2
                     type: string
               File Output Operator
                 compressed: false
@@ -114,11 +114,11 @@ STAGE PLANS:
                     sort order: 
                     tag: -1
                     value expressions:
-                          expr: 0
+                          expr: _col0
                           type: int
-                          expr: 1
+                          expr: _col1
                           type: int
-                          expr: 2
+                          expr: _col2
                           type: string
       Reduce Operator Tree:
         Extract
@@ -143,5 +143,5 @@ query: select * from (
 ) subq
 Input: default/tst/d=2009-01-01
 Input: default/tst/d=2009-02-02
-Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/128845781/511626368.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/2079633835/10000
 query: drop table tst

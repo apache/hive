@@ -13,37 +13,43 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
-            Reduce Output Operator
-              key expressions:
+            Select Operator
+              expressions:
                     expr: key
                     type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
+                    expr: value
                     type: string
-              tag: -1
-              value expressions:
-                    expr: substr(value, 5)
-                    type: string
+              Reduce Output Operator
+                key expressions:
+                      expr: key
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: key
+                      type: string
+                tag: -1
+                value expressions:
+                      expr: substr(value, 5)
+                      type: string
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: sum(UDFToDouble(VALUE.0))
+                expr: sum(UDFToDouble(VALUE._col0))
           keys:
-                expr: KEY.0
+                expr: KEY._col0
                 type: string
           mode: complete
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: string
-                  expr: 1
+                  expr: _col1
                   type: double
             Select Operator
               expressions:
-                    expr: UDFToInteger(0)
+                    expr: UDFToInteger(_col0)
                     type: int
-                    expr: 1
+                    expr: _col1
                     type: double
               File Output Operator
                 compressed: false
@@ -70,7 +76,7 @@ Input: default/src
 Output: default/dest_g1
 query: SELECT dest_g1.* FROM dest_g1
 Input: default/dest_g1
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/36429349/823891391.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1415508787/10000
 0	0.0
 10	10.0
 100	200.0

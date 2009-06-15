@@ -34,14 +34,17 @@ public class groupByDesc implements java.io.Serializable {
   private java.util.ArrayList<org.apache.hadoop.hive.ql.plan.aggregationDesc> aggregators;
   private java.util.ArrayList<String> evalMethods;
   private java.util.ArrayList<String> aggMethods;
+  private java.util.ArrayList<java.lang.String> outputColumnNames;
   public groupByDesc() { }
   public groupByDesc(
     final Mode mode,
+    final java.util.ArrayList<java.lang.String> outputColumnNames,
     final java.util.ArrayList<exprNodeDesc> keys,
     final java.util.ArrayList<org.apache.hadoop.hive.ql.plan.aggregationDesc> aggregators,
     final java.util.ArrayList<String> evalMethods,
     final java.util.ArrayList<String> aggMethods) {
     this.mode = mode;
+    this.outputColumnNames = outputColumnNames;
     this.keys = keys;
     this.aggregators = aggregators;
     this.evalMethods = evalMethods;
@@ -78,6 +81,14 @@ public class groupByDesc implements java.io.Serializable {
   }
   public void setKeys(final java.util.ArrayList<exprNodeDesc> keys) {
     this.keys = keys;
+  }
+  
+  public java.util.ArrayList<java.lang.String> getOutputColumnNames() {
+    return outputColumnNames;
+  }
+  public void setOutputColumnNames(
+      java.util.ArrayList<java.lang.String> outputColumnNames) {
+    this.outputColumnNames = outputColumnNames;
   }
   
   @explain(displayName="aggregations")

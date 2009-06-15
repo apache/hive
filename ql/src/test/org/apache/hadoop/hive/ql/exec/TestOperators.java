@@ -130,7 +130,10 @@ public class TestOperators extends TestCase {
       ArrayList<exprNodeDesc> earr = new ArrayList<exprNodeDesc> ();
       earr.add(exprDesc1);
       earr.add(exprDesc2);
-      selectDesc selectCtx = new selectDesc(earr);
+      ArrayList<String> outputCols = new ArrayList<String>();
+      for (int i = 0; i < earr.size(); i++)
+        outputCols.add("_col"+i);
+      selectDesc selectCtx = new selectDesc(earr, outputCols);
       Operator<selectDesc> op = OperatorFactory.get(selectDesc.class);
       op.setConf(selectCtx);
 
@@ -171,7 +174,10 @@ public class TestOperators extends TestCase {
       ArrayList<exprNodeDesc> earr = new ArrayList<exprNodeDesc> ();
       earr.add(exprDesc1);
       earr.add(exprDesc2);
-      selectDesc selectCtx = new selectDesc(earr);
+      ArrayList<String> outputCols = new ArrayList<String>();
+      for (int i = 0; i < earr.size(); i++)
+        outputCols.add("_col"+i);
+      selectDesc selectCtx = new selectDesc(earr, outputCols);
       Operator<selectDesc> op = OperatorFactory.get(selectDesc.class);
       op.setConf(selectCtx);
 

@@ -134,8 +134,8 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
     try {
       if (firstRow) {
         firstRow = false;
-        keyObjectInspector = initEvaluatorsAndReturnStruct(keyEval, rowInspector);
-        valueObjectInspector = initEvaluatorsAndReturnStruct(valueEval, rowInspector);
+        keyObjectInspector = initEvaluatorsAndReturnStruct(keyEval, conf.getOutputKeyColumnNames(), rowInspector);
+        valueObjectInspector = initEvaluatorsAndReturnStruct(valueEval, conf.getOutputValueColumnNames(), rowInspector);
         partitionObjectInspectors = initEvaluators(partitionEval, rowInspector);
 
         cachedKeys = new Object[keyEval.length];

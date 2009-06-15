@@ -155,6 +155,18 @@ public class PlanUtils {
   /** 
    * Convert the ColumnList to FieldSchema list.
    */
+  public static List<FieldSchema> getFieldSchemasFromColumnList(List<exprNodeDesc> cols, List<String> outputColumnNames, int start,
+      String fieldPrefix) {
+    List<FieldSchema> schemas = new ArrayList<FieldSchema>(cols.size());
+    for (int i=0; i<cols.size(); i++) {
+      schemas.add(MetaStoreUtils.getFieldSchemaFromTypeInfo(fieldPrefix + outputColumnNames.get(i+start), cols.get(i).getTypeInfo()));
+    }
+    return schemas;
+  }
+  
+  /** 
+   * Convert the ColumnList to FieldSchema list.
+   */
   public static List<FieldSchema> getFieldSchemasFromColumnList(List<exprNodeDesc> cols, 
       String fieldPrefix) {
     List<FieldSchema> schemas = new ArrayList<FieldSchema>(cols.size());
@@ -187,10 +199,23 @@ public class PlanUtils {
     return schemas;
   }
   
+  public static List<FieldSchema> sortFieldSchemas(List<FieldSchema> schema) {
+    Collections.sort(schema, new Comparator<FieldSchema>(){
+
+      @Override
+      public int compare(FieldSchema o1, FieldSchema o2) {
+        return o1.getName().compareTo(o2.getName());
+      }
+      
+    });
+    return schema;
+  }
+  
   /**
    * Create the reduce sink descriptor.
    * @param keyCols   The columns to be stored in the key
    * @param valueCols The columns to be stored in the value
+   * @param outputColumnNames The output columns names
    * @param tag       The tag for this reducesink
    * @param partitionCols The columns for partitioning.
    * @param numReducers  The number of reducers, set to -1 for automatic inference 
@@ -198,22 +223,45 @@ public class PlanUtils {
    * @return The reduceSinkDesc object.
    */
   public static reduceSinkDesc getReduceSinkDesc(ArrayList<exprNodeDesc> keyCols, 
-                                                 ArrayList<exprNodeDesc> valueCols, 
+                                                 ArrayList<exprNodeDesc> valueCols,
+                                                 List<String> outputColumnNames,
+                                                 boolean includeKeyCols,
                                                  int tag, 
                                                  ArrayList<exprNodeDesc> partitionCols,
                                                  String order,
                                                  int numReducers) {
-    
-    return new reduceSinkDesc(keyCols, valueCols, tag, partitionCols, numReducers, 
-      getBinarySortableTableDesc(getFieldSchemasFromColumnList(keyCols, "reducesinkkey"), order),
-      // Revert to DynamicSerDe: getBinaryTableDesc(getFieldSchemasFromColumnList(valueCols, "reducesinkvalue")));
-      getLazySimpleSerDeTableDesc(getFieldSchemasFromColumnList(valueCols, "reducesinkvalue")));
+    tableDesc keyTable = null;
+    tableDesc valueTable = null;
+    ArrayList<String> outputKeyCols = new ArrayList<String>();
+    ArrayList<String> outputValCols = new ArrayList<String>();
+    if (includeKeyCols) {
+      keyTable = getBinarySortableTableDesc(getFieldSchemasFromColumnList(
+          keyCols, outputColumnNames, 0, ""), order);
+      outputKeyCols.addAll(outputColumnNames.subList(0, keyCols.size()));
+      valueTable = getLazySimpleSerDeTableDesc(getFieldSchemasFromColumnList(
+          valueCols, outputColumnNames, keyCols.size(), ""));
+      outputValCols.addAll(outputColumnNames.subList(keyCols.size(), outputColumnNames.size()));
+    } else {
+      keyTable = getBinarySortableTableDesc(getFieldSchemasFromColumnList(
+          keyCols, "reducesinkkey"), order);
+      for (int i = 0; i < keyCols.size(); i++) {
+        outputKeyCols.add("reducesinkkey"+i);
+      }
+      valueTable = getLazySimpleSerDeTableDesc(getFieldSchemasFromColumnList(
+          valueCols, outputColumnNames, 0, ""));
+      outputValCols.addAll(outputColumnNames);
+    }
+    return new reduceSinkDesc(keyCols, valueCols, outputKeyCols, outputValCols, tag, partitionCols, numReducers, 
+        keyTable,
+        // Revert to DynamicSerDe: getBinaryTableDesc(getFieldSchemasFromColumnList(valueCols, "reducesinkvalue")));
+        valueTable);
   }
 
   /**
    * Create the reduce sink descriptor.
    * @param keyCols   The columns to be stored in the key
    * @param valueCols The columns to be stored in the value
+   * @param outputColumnNames The output columns names
    * @param tag       The tag for this reducesink
    * @param numPartitionFields  The first numPartitionFields of keyCols will be partition columns.
    *                  If numPartitionFields=-1, then partition randomly.
@@ -221,11 +269,10 @@ public class PlanUtils {
    *                     based on input data size.
    * @return The reduceSinkDesc object.
    */
-  public static reduceSinkDesc getReduceSinkDesc(ArrayList<exprNodeDesc> keyCols, 
-                                                 ArrayList<exprNodeDesc> valueCols, 
-                                                 int tag, 
-                                                 int numPartitionFields, 
-                                                 int numReducers) {
+  public static reduceSinkDesc getReduceSinkDesc(
+      ArrayList<exprNodeDesc> keyCols, ArrayList<exprNodeDesc> valueCols,
+      List<String> outputColumnNames, boolean includeKey, int tag, int numPartitionFields,
+      int numReducers) {
     ArrayList<exprNodeDesc> partitionCols = null;
 
     if (numPartitionFields >= keyCols.size()) {
@@ -245,10 +292,9 @@ public class PlanUtils {
     for (int i=0; i<keyCols.size(); i++) {
       order.append("+");
     }
-    return getReduceSinkDesc(keyCols, valueCols, tag, partitionCols, order.toString(),
-        numReducers);
+    return getReduceSinkDesc(keyCols, valueCols, outputColumnNames, includeKey, tag, partitionCols, order.toString(),
+         numReducers);
   }
-  
   
 }
   

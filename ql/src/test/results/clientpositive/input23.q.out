@@ -39,9 +39,9 @@ STAGE PLANS:
                     type: string
       Needs Tagging: true
       Path -> Alias:
-        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
       Path -> Partition:
-        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
             partition values:
               ds 2008-04-08
@@ -60,7 +60,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart
+                location file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
       Reduce Operator Tree:
@@ -68,35 +68,35 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE.0} {VALUE.1} {VALUE.2} {VALUE.3}
-            1 {VALUE.0} {VALUE.1} {VALUE.2} {VALUE.3}
+            0 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3}
+            1 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3}
           Filter Operator
             predicate:
-                expr: ((((2 = '2008-04-08') and (3 = '11')) and (6 = '2008-04-08')) and (7 = '14'))
+                expr: ((((_col2 = '2008-04-08') and (_col3 = '11')) and (_col6 = '2008-04-08')) and (_col7 = '14'))
                 type: boolean
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
-                    expr: 2
+                    expr: _col2
                     type: string
-                    expr: 3
+                    expr: _col3
                     type: string
-                    expr: 4
+                    expr: _col4
                     type: string
-                    expr: 5
+                    expr: _col5
                     type: string
-                    expr: 6
+                    expr: _col6
                     type: string
-                    expr: 7
+                    expr: _col7
                     type: string
               Limit
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
-                  directory: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/57557850/240891616.10001.insclause-0
+                  directory: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/987896879/10001
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -111,4 +111,4 @@ STAGE PLANS:
 
 query: select * from srcpart a join srcpart b where a.ds = '2008-04-08' and a.hr = '11' and b.ds = '2008-04-08' and b.hr = '14' limit 5
 Input: default/srcpart/ds=2008-04-08/hr=11
-Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/738588790/856672066.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1484665177/10000

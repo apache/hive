@@ -47,13 +47,13 @@ STAGE PLANS:
         Extract
           Filter Operator
             predicate:
-                expr: (UDFToDouble(0) < UDFToDouble(100))
+                expr: (UDFToDouble(_col0) < UDFToDouble(100))
                 type: boolean
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
               File Output Operator
                 compressed: false
@@ -75,7 +75,7 @@ query: FROM (
 ) tmap
 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/872181982/534231229.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/882148885/10000
 0	val_0
 0	val_0
 0	val_0

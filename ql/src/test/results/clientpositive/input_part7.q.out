@@ -34,28 +34,28 @@ STAGE PLANS:
                 Union
                   Select Operator
                     expressions:
-                          expr: 0
+                          expr: _col0
                           type: string
-                          expr: 1
+                          expr: _col1
                           type: string
-                          expr: 2
+                          expr: _col2
                           type: string
-                          expr: 3
+                          expr: _col3
                           type: string
                     Reduce Output Operator
                       key expressions:
-                            expr: 0
+                            expr: _col0
                             type: string
                       sort order: +
                       tag: -1
                       value expressions:
-                            expr: 0
+                            expr: _col0
                             type: string
-                            expr: 1
+                            expr: _col1
                             type: string
-                            expr: 2
+                            expr: _col2
                             type: string
-                            expr: 3
+                            expr: _col3
                             type: string
         null-subquery2:a-subquery2:y 
             Filter Operator
@@ -75,35 +75,35 @@ STAGE PLANS:
                 Union
                   Select Operator
                     expressions:
-                          expr: 0
+                          expr: _col0
                           type: string
-                          expr: 1
+                          expr: _col1
                           type: string
-                          expr: 2
+                          expr: _col2
                           type: string
-                          expr: 3
+                          expr: _col3
                           type: string
                     Reduce Output Operator
                       key expressions:
-                            expr: 0
+                            expr: _col0
                             type: string
                       sort order: +
                       tag: -1
                       value expressions:
-                            expr: 0
+                            expr: _col0
                             type: string
-                            expr: 1
+                            expr: _col1
                             type: string
-                            expr: 2
+                            expr: _col2
                             type: string
-                            expr: 3
+                            expr: _col3
                             type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
-        file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
       Path -> Partition:
-        file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
             partition values:
               ds 2008-04-08
@@ -122,10 +122,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart
+                location file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
             partition values:
               ds 2008-04-08
@@ -144,7 +144,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/srcpart
+                location file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
       Reduce Operator Tree:
@@ -152,7 +152,7 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/1008455822/140279174.10001.insclause-0
+            directory: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/12007688/10001
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -173,7 +173,7 @@ query: SELECT * FROM (
 SORT BY A.key
 Input: default/srcpart/ds=2008-04-08/hr=11
 Input: default/srcpart/ds=2008-04-08/hr=12
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/293202813/2015995.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/257008920/10000
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11

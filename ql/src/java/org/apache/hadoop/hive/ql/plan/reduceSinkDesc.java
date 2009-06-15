@@ -27,10 +27,12 @@ public class reduceSinkDesc implements Serializable {
    * Key columns are passed to reducer in the "key". 
    */
   private java.util.ArrayList<exprNodeDesc> keyCols;
+  private java.util.ArrayList<java.lang.String> outputKeyColumnNames;
   /**
    * Value columns are passed to reducer in the "value". 
    */
   private java.util.ArrayList<exprNodeDesc> valueCols;
+  private java.util.ArrayList<java.lang.String> outputValueColumnNames;
   /** 
    * Describe how to serialize the key.
    */
@@ -59,6 +61,8 @@ public class reduceSinkDesc implements Serializable {
   public reduceSinkDesc
     (java.util.ArrayList<exprNodeDesc> keyCols,
      java.util.ArrayList<exprNodeDesc> valueCols,
+     java.util.ArrayList<java.lang.String> outputKeyColumnNames,
+     java.util.ArrayList<java.lang.String> outputValueolumnNames,
      int tag,
      java.util.ArrayList<exprNodeDesc> partitionCols,
      int numReducers,
@@ -66,11 +70,31 @@ public class reduceSinkDesc implements Serializable {
      final tableDesc valueSerializeInfo) {
     this.keyCols = keyCols;
     this.valueCols = valueCols;
+    this.outputKeyColumnNames = outputKeyColumnNames;
+    this.outputValueColumnNames = outputValueolumnNames;
     this.tag = tag;
     this.numReducers = numReducers;
     this.partitionCols = partitionCols;
     this.keySerializeInfo = keySerializeInfo;
     this.valueSerializeInfo = valueSerializeInfo;
+  }
+
+  public java.util.ArrayList<java.lang.String> getOutputKeyColumnNames() {
+    return outputKeyColumnNames;
+  }
+
+  public void setOutputKeyColumnNames(
+      java.util.ArrayList<java.lang.String> outputKeyColumnNames) {
+    this.outputKeyColumnNames = outputKeyColumnNames;
+  }
+
+  public java.util.ArrayList<java.lang.String> getOutputValueColumnNames() {
+    return outputValueColumnNames;
+  }
+
+  public void setOutputValueColumnNames(
+      java.util.ArrayList<java.lang.String> outputValueColumnNames) {
+    this.outputValueColumnNames = outputValueColumnNames;
   }
 
   @explain(displayName="key expressions")

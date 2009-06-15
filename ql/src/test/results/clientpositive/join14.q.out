@@ -14,73 +14,65 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         srcpart 
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-                    expr: ds
-                    type: string
-              Filter Operator
-                predicate:
-                    expr: (2 = '2008-04-08')
-                    type: boolean
-                Reduce Output Operator
-                  key expressions:
-                        expr: 0
-                        type: string
-                  sort order: +
-                  Map-reduce partition columns:
-                        expr: 0
-                        type: string
-                  tag: 1
-                  value expressions:
-                        expr: 0
-                        type: string
-                        expr: 1
-                        type: string
-                        expr: 2
-                        type: string
+            Filter Operator
+              predicate:
+                  expr: (ds = '2008-04-08')
+                  type: boolean
+              Reduce Output Operator
+                key expressions:
+                      expr: key
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: key
+                      type: string
+                tag: 1
+                value expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                      expr: ds
+                      type: string
+                      expr: hr
+                      type: string
         src 
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-              Filter Operator
-                predicate:
-                    expr: (UDFToDouble(0) > UDFToDouble(100))
-                    type: boolean
-                Reduce Output Operator
-                  key expressions:
-                        expr: 0
-                        type: string
-                  sort order: +
-                  Map-reduce partition columns:
-                        expr: 0
-                        type: string
-                  tag: 0
-                  value expressions:
-                        expr: 0
-                        type: string
+            Filter Operator
+              predicate:
+                  expr: (UDFToDouble(key) > UDFToDouble(100))
+                  type: boolean
+              Reduce Output Operator
+                key expressions:
+                      expr: key
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: key
+                      type: string
+                tag: 0
+                value expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE.0}
-            1 {VALUE.0} {VALUE.1} {VALUE.2}
+            0 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3}
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: string
-                  expr: 2
+                  expr: _col3
                   type: string
             Select Operator
               expressions:
-                    expr: UDFToInteger(0)
+                    expr: UDFToInteger(_col0)
                     type: int
-                    expr: 1
+                    expr: _col1
                     type: string
               File Output Operator
                 compressed: false
@@ -110,7 +102,7 @@ Input: default/src
 Output: default/dest1
 query: select dest1.* from dest1
 Input: default/dest1
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/176918026/1246507933.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1317798740/10000
 103	val_103
 103	val_103
 103	val_103

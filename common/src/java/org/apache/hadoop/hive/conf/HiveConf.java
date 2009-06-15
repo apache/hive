@@ -395,6 +395,8 @@ public class HiveConf extends Configuration {
       throw (IOException)new IOException().initCause(e);
     }
   }
-
-
+  
+  public static String getColumnInternalName(int pos){
+    return "_col"+pos;
+  }
 }

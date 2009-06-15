@@ -24,6 +24,7 @@ import java.io.Serializable;
 public class selectDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   private java.util.ArrayList<org.apache.hadoop.hive.ql.plan.exprNodeDesc> colList;
+  private java.util.ArrayList<java.lang.String> outputColumnNames;
   private boolean selectStar;
   private boolean selStarNoCompute;
   public selectDesc() { }
@@ -32,14 +33,15 @@ public class selectDesc implements Serializable {
     this.selStarNoCompute = selStarNoCompute;
   }
 
-  public selectDesc(final java.util.ArrayList<org.apache.hadoop.hive.ql.plan.exprNodeDesc> colList) {
-    this(colList, false);
+  public selectDesc(final java.util.ArrayList<org.apache.hadoop.hive.ql.plan.exprNodeDesc> colList, final java.util.ArrayList<java.lang.String> outputColumnNames) {
+    this(colList, outputColumnNames, false);
   }
   
   public selectDesc(
-    final java.util.ArrayList<org.apache.hadoop.hive.ql.plan.exprNodeDesc> colList, final boolean selectStar) {
+    final java.util.ArrayList<org.apache.hadoop.hive.ql.plan.exprNodeDesc> colList,java.util.ArrayList<java.lang.String> outputColumnNames, final boolean selectStar) {
     this.colList = colList;
     this.selectStar = selectStar;
+    this.outputColumnNames = outputColumnNames;
   }
 
   public selectDesc(
@@ -56,6 +58,14 @@ public class selectDesc implements Serializable {
   }
   public void setColList(final java.util.ArrayList<org.apache.hadoop.hive.ql.plan.exprNodeDesc> colList) {
     this.colList=colList;
+  }
+  
+  public java.util.ArrayList<java.lang.String> getOutputColumnNames() {
+    return outputColumnNames;
+  }
+  public void setOutputColumnNames(
+      java.util.ArrayList<java.lang.String> outputColumnNames) {
+    this.outputColumnNames = outputColumnNames;
   }
   
   /**

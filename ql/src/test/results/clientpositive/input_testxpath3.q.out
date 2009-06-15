@@ -15,22 +15,16 @@ STAGE PLANS:
         src_thrift 
             Select Operator
               expressions:
-                    expr: mstringstring
-                    type: map<string,string>
-                    expr: lintstring
-                    type: array<struct<myint:int,mystring:string,underscore_int:int>>
-              Select Operator
-                expressions:
-                      expr: 0['key_9']
-                      type: string
-                      expr: 1.myint
-                      type: array<int>
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    expr: mstringstring['key_9']
+                    type: string
+                    expr: lintstring.myint
+                    type: array<int>
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -40,7 +34,7 @@ STAGE PLANS:
 query: FROM src_thrift
 SELECT src_thrift.mstringstring['key_9'], src_thrift.lintstring.myint
 Input: default/src_thrift
-Output: /data/users/zshao/tools/495-trunk-apache-hive/ql/../build/ql/tmp/47313672/383253534.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/91336275/10000
 NULL	[0]
 NULL	[1]
 NULL	[4]

@@ -16,32 +16,28 @@ STAGE PLANS:
         src1 
             Select Operator
               expressions:
-                    expr: key
-                    type: string
+                    expr: (UDFToDouble(4) + null)
+                    type: double
+                    expr: (UDFToDouble(key) - null)
+                    type: double
+                    expr: (null + null)
+                    type: double
               Select Operator
                 expressions:
-                      expr: (UDFToDouble(4) + null)
+                      expr: _col0
                       type: double
-                      expr: (UDFToDouble(0) - null)
+                      expr: UDFToInteger(_col1)
+                      type: int
+                      expr: _col2
                       type: double
-                      expr: (null + null)
-                      type: double
-                Select Operator
-                  expressions:
-                        expr: 0
-                        type: double
-                        expr: UDFToInteger(1)
-                        type: int
-                        expr: 2
-                        type: double
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 1
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: ppd_constant_expr
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 1
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: ppd_constant_expr
 
   Stage: Stage-0
     Move Operator
@@ -60,7 +56,7 @@ Input: default/src1
 Output: default/ppd_constant_expr
 query: SELECT ppd_constant_expr.* FROM ppd_constant_expr
 Input: default/ppd_constant_expr
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/254664389/264213010.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1781694301/10000
 NULL	NULL	NULL
 NULL	NULL	NULL
 NULL	NULL	NULL

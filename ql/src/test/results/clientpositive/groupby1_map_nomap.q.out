@@ -13,44 +13,50 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
-            Group By Operator
-              aggregations:
-                    expr: sum(UDFToDouble(substr(value, 5)))
-              keys:
+            Select Operator
+              expressions:
                     expr: key
                     type: string
-              mode: hash
-              Reduce Output Operator
-                key expressions:
-                      expr: 0
+                    expr: value
+                    type: string
+              Group By Operator
+                aggregations:
+                      expr: sum(UDFToDouble(substr(value, 5)))
+                keys:
+                      expr: key
                       type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: 0
-                      type: string
-                tag: -1
-                value expressions:
-                      expr: 1
-                      type: double
+                mode: hash
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: _col1
+                        type: double
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: sum(VALUE.0)
+                expr: sum(VALUE._col0)
           keys:
-                expr: KEY.0
+                expr: KEY._col0
                 type: string
           mode: mergepartial
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: string
-                  expr: 1
+                  expr: _col1
                   type: double
             Select Operator
               expressions:
-                    expr: UDFToInteger(0)
+                    expr: UDFToInteger(_col0)
                     type: int
-                    expr: 1
+                    expr: _col1
                     type: double
               File Output Operator
                 compressed: false
@@ -77,7 +83,7 @@ Input: default/src
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/146895803/933309003.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/476967695/10000
 0	0.0
 10	10.0
 100	200.0

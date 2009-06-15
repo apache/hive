@@ -21,12 +21,12 @@ STAGE PLANS:
                     type: string
               Group By Operator
                 keys:
-                      expr: substr(0, 5, 1)
+                      expr: substr(value, 5, 1)
                       type: string
                 mode: hash
                 Reduce Output Operator
                   key expressions:
-                        expr: 0
+                        expr: _col0
                         type: string
                   sort order: +
                   Map-reduce partition columns:
@@ -36,7 +36,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           keys:
-                expr: KEY.0
+                expr: KEY._col0
                 type: string
           mode: partial2
           File Output Operator
@@ -50,25 +50,25 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive2/hive2/build/ql/tmp/341443584/940777218.10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/554277999/10002 
             Reduce Output Operator
               key expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
               sort order: +
               Map-reduce partition columns:
-                    expr: 0
+                    expr: _col0
                     type: string
               tag: -1
       Reduce Operator Tree:
         Group By Operator
           keys:
-                expr: KEY.0
+                expr: KEY._col0
                 type: string
           mode: final
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: string
             File Output Operator
               compressed: false
@@ -96,7 +96,7 @@ Input: default/src
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/1048827/342876636.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/596970169/10000
 0
 1
 2

@@ -587,11 +587,11 @@ public abstract class Operator <T extends Serializable> implements Serializable,
    * StructObjectInspector with integer field names.
    */  
   protected static StructObjectInspector initEvaluatorsAndReturnStruct(
-      ExprNodeEvaluator[] evals, ObjectInspector rowInspector) 
+      ExprNodeEvaluator[] evals, List<String> outputColName, ObjectInspector rowInspector) 
       throws HiveException {
     ObjectInspector[] fieldObjectInspectors = initEvaluators(evals, rowInspector);
     return ObjectInspectorFactory.getStandardStructObjectInspector(
-        ObjectInspectorUtils.getIntegerArray(fieldObjectInspectors.length),
+        outputColName,
         Arrays.asList(fieldObjectInspectors));
   }
   

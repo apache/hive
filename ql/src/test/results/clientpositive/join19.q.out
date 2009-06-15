@@ -69,109 +69,85 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         t22:t2 
-            Select Operator
-              expressions:
-                    expr: subject
-                    type: string
-                    expr: object
-                    type: string
-                    expr: predicate
-                    type: string
-              Filter Operator
-                predicate:
-                    expr: (2 = 'http://sofa.semanticweb.org/sofa/v1.0/system#__LABEL_REL')
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: 0
+            Filter Operator
+              predicate:
+                  expr: (predicate = 'http://sofa.semanticweb.org/sofa/v1.0/system#__LABEL_REL')
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: subject
+                      type: string
+                      expr: object
+                      type: string
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
                         type: string
-                        expr: 1
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
                         type: string
-                  Reduce Output Operator
-                    key expressions:
-                          expr: 0
-                          type: string
-                    sort order: +
-                    Map-reduce partition columns:
-                          expr: 0
-                          type: string
-                    tag: 1
-                    value expressions:
-                          expr: 0
-                          type: string
-                          expr: 1
-                          type: string
+                  tag: 1
+                  value expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: string
         t33:t3 
-            Select Operator
-              expressions:
-                    expr: subject
-                    type: string
-                    expr: object
-                    type: string
-                    expr: predicate
-                    type: string
-              Filter Operator
-                predicate:
-                    expr: (2 = 'http://www.ontosearch.com/2007/12/ontosofa-ns#_from')
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: 0
+            Filter Operator
+              predicate:
+                  expr: (predicate = 'http://www.ontosearch.com/2007/12/ontosofa-ns#_from')
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: subject
+                      type: string
+                      expr: object
+                      type: string
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col1
                         type: string
-                        expr: 1
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col1
                         type: string
-                  Reduce Output Operator
-                    key expressions:
-                          expr: 1
-                          type: string
-                    sort order: +
-                    Map-reduce partition columns:
-                          expr: 1
-                          type: string
-                    tag: 2
-                    value expressions:
-                          expr: 0
-                          type: string
-                          expr: 1
-                          type: string
+                  tag: 2
+                  value expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: string
         t11:t1 
-            Select Operator
-              expressions:
-                    expr: subject
-                    type: string
-                    expr: predicate
-                    type: string
-                    expr: object
-                    type: string
-              Filter Operator
-                predicate:
-                    expr: ((1 = 'http://sofa.semanticweb.org/sofa/v1.0/system#__INSTANCEOF_REL') and (2 = 'http://ontos/OntosMiner/Common.English/ontology#Citation'))
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: 0
+            Filter Operator
+              predicate:
+                  expr: ((predicate = 'http://sofa.semanticweb.org/sofa/v1.0/system#__INSTANCEOF_REL') and (object = 'http://ontos/OntosMiner/Common.English/ontology#Citation'))
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: subject
+                      type: string
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
                         type: string
-                  Reduce Output Operator
-                    key expressions:
-                          expr: 0
-                          type: string
-                    sort order: +
-                    Map-reduce partition columns:
-                          expr: 0
-                          type: string
-                    tag: 0
-                    value expressions:
-                          expr: 0
-                          type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: 0
+                  value expressions:
+                        expr: _col0
+                        type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
                Inner Join 0 to 2
           condition expressions:
-            0 {VALUE.0}
-            1 {VALUE.0} {VALUE.1}
-            2 {VALUE.0} {VALUE.1}
+            0 {VALUE._col0}
+            1 {VALUE._col0} {VALUE._col1}
+            2 {VALUE._col0} {VALUE._col1}
           File Output Operator
             compressed: false
             GlobalTableId: 0
@@ -186,95 +162,79 @@ STAGE PLANS:
         $INTNAME 
             Reduce Output Operator
               key expressions:
-                    expr: 3
+                    expr: _col3
                     type: string
               sort order: +
               Map-reduce partition columns:
-                    expr: 3
+                    expr: _col3
                     type: string
               tag: 0
               value expressions:
-                    expr: 3
+                    expr: _col3
                     type: string
-                    expr: 4
+                    expr: _col4
                     type: string
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
-                    expr: 2
+                    expr: _col2
                     type: string
         t55:t5 
-            Select Operator
-              expressions:
-                    expr: subject
-                    type: string
-                    expr: object
-                    type: string
-                    expr: predicate
-                    type: string
-              Filter Operator
-                predicate:
-                    expr: (2 = 'http://www.ontosearch.com/2007/12/ontosofa-ns#_to')
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: 0
+            Filter Operator
+              predicate:
+                  expr: (predicate = 'http://www.ontosearch.com/2007/12/ontosofa-ns#_to')
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: subject
+                      type: string
+                      expr: object
+                      type: string
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
                         type: string
-                        expr: 1
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
                         type: string
-                  Reduce Output Operator
-                    key expressions:
-                          expr: 0
-                          type: string
-                    sort order: +
-                    Map-reduce partition columns:
-                          expr: 0
-                          type: string
-                    tag: 2
-                    value expressions:
-                          expr: 0
-                          type: string
-                          expr: 1
-                          type: string
+                  tag: 2
+                  value expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: string
         t44:t4 
-            Select Operator
-              expressions:
-                    expr: subject
-                    type: string
-                    expr: predicate
-                    type: string
-                    expr: object
-                    type: string
-              Filter Operator
-                predicate:
-                    expr: ((1 = 'http://sofa.semanticweb.org/sofa/v1.0/system#__INSTANCEOF_REL') and (2 = 'http://ontos/OntosMiner/Common.English/ontology#Author'))
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: 0
+            Filter Operator
+              predicate:
+                  expr: ((predicate = 'http://sofa.semanticweb.org/sofa/v1.0/system#__INSTANCEOF_REL') and (object = 'http://ontos/OntosMiner/Common.English/ontology#Author'))
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: subject
+                      type: string
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
                         type: string
-                  Reduce Output Operator
-                    key expressions:
-                          expr: 0
-                          type: string
-                    sort order: +
-                    Map-reduce partition columns:
-                          expr: 0
-                          type: string
-                    tag: 1
-                    value expressions:
-                          expr: 0
-                          type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: 1
+                  value expressions:
+                        expr: _col0
+                        type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
                Inner Join 1 to 2
           condition expressions:
-            0 {VALUE.0} {VALUE.1} {VALUE.2} {VALUE.3} {VALUE.4}
-            1 {VALUE.0}
-            2 {VALUE.0} {VALUE.1}
+            0 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4}
+            1 {VALUE._col0}
+            2 {VALUE._col0} {VALUE._col1}
           File Output Operator
             compressed: false
             GlobalTableId: 0
@@ -287,83 +247,75 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         t66:t6 
-            Select Operator
-              expressions:
-                    expr: subject
-                    type: string
-                    expr: object
-                    type: string
-                    expr: predicate
-                    type: string
-              Filter Operator
-                predicate:
-                    expr: (2 = 'http://sofa.semanticweb.org/sofa/v1.0/system#__LABEL_REL')
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: 0
+            Filter Operator
+              predicate:
+                  expr: (predicate = 'http://sofa.semanticweb.org/sofa/v1.0/system#__LABEL_REL')
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: subject
+                      type: string
+                      expr: object
+                      type: string
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
                         type: string
-                        expr: 1
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
                         type: string
-                  Reduce Output Operator
-                    key expressions:
-                          expr: 0
-                          type: string
-                    sort order: +
-                    Map-reduce partition columns:
-                          expr: 0
-                          type: string
-                    tag: 1
-                    value expressions:
-                          expr: 0
-                          type: string
-                          expr: 1
-                          type: string
+                  tag: 1
+                  value expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: string
         $INTNAME 
             Reduce Output Operator
               key expressions:
-                    expr: 7
+                    expr: _col7
                     type: string
               sort order: +
               Map-reduce partition columns:
-                    expr: 7
+                    expr: _col7
                     type: string
               tag: 0
               value expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
-                    expr: 5
+                    expr: _col5
                     type: string
-                    expr: 2
+                    expr: _col2
                     type: string
-                    expr: 3
+                    expr: _col3
                     type: string
-                    expr: 4
+                    expr: _col4
                     type: string
-                    expr: 6
+                    expr: _col6
                     type: string
-                    expr: 7
+                    expr: _col7
                     type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE.0} {VALUE.1} {VALUE.2} {VALUE.3} {VALUE.4} {VALUE.5} {VALUE.6} {VALUE.7}
-            1 {VALUE.0} {VALUE.1}
+            0 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5} {VALUE._col6} {VALUE._col7}
+            1 {VALUE._col0} {VALUE._col1}
           Select Operator
             expressions:
-                  expr: 3
+                  expr: _col3
                   type: string
-                  expr: 5
+                  expr: _col5
                   type: string
-                  expr: 0
+                  expr: _col0
                   type: string
-                  expr: 7
+                  expr: _col7
                   type: string
-                  expr: 9
+                  expr: _col9
                   type: string
             File Output Operator
               compressed: false

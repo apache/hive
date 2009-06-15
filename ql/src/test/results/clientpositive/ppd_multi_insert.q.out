@@ -22,22 +22,20 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         b 
-            Select Operator
-              expressions:
+            Reduce Output Operator
+              key expressions:
                     expr: key
                     type: string
-              Reduce Output Operator
-                key expressions:
-                      expr: 0
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: 0
-                      type: string
-                tag: 1
-                value expressions:
-                      expr: 0
-                      type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
         a 
             Reduce Output Operator
               key expressions:
@@ -58,23 +56,23 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE.0} {VALUE.1}
-            1 {VALUE.0}
+            0 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col0} {VALUE._col1}
           Filter Operator
             predicate:
-                expr: (UDFToDouble(0) < UDFToDouble(100))
+                expr: (UDFToDouble(_col0) < UDFToDouble(100))
                 type: boolean
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
               Select Operator
                 expressions:
-                      expr: UDFToInteger(0)
+                      expr: UDFToInteger(_col0)
                       type: int
-                      expr: 1
+                      expr: _col1
                       type: string
                 File Output Operator
                   compressed: false
@@ -86,19 +84,19 @@ STAGE PLANS:
                       name: mi1
           Filter Operator
             predicate:
-                expr: ((UDFToDouble(0) >= UDFToDouble(100)) and (UDFToDouble(0) < UDFToDouble(200)))
+                expr: ((UDFToDouble(_col0) >= UDFToDouble(100)) and (UDFToDouble(_col0) < UDFToDouble(200)))
                 type: boolean
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
               Select Operator
                 expressions:
-                      expr: UDFToInteger(0)
+                      expr: UDFToInteger(_col0)
                       type: int
-                      expr: 1
+                      expr: _col1
                       type: string
                 File Output Operator
                   compressed: false
@@ -110,15 +108,15 @@ STAGE PLANS:
                       name: mi2
           Filter Operator
             predicate:
-                expr: ((UDFToDouble(0) >= UDFToDouble(200)) and (UDFToDouble(0) < UDFToDouble(300)))
+                expr: ((UDFToDouble(_col0) >= UDFToDouble(200)) and (UDFToDouble(_col0) < UDFToDouble(300)))
                 type: boolean
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
               Select Operator
                 expressions:
-                      expr: UDFToInteger(0)
+                      expr: UDFToInteger(_col0)
                       type: int
                 File Output Operator
                   compressed: false
@@ -130,11 +128,11 @@ STAGE PLANS:
                       name: mi3
           Filter Operator
             predicate:
-                expr: (UDFToDouble(0) >= UDFToDouble(300))
+                expr: (UDFToDouble(_col0) >= UDFToDouble(300))
                 type: boolean
             Select Operator
               expressions:
-                    expr: 1
+                    expr: _col1
                     type: string
               File Output Operator
                 compressed: false
@@ -184,7 +182,7 @@ Output: default/mi3/ds=2008-04-08/hr=12
 Output: ../build/ql/test/data/warehouse/mi4.out
 query: SELECT mi1.* FROM mi1
 Input: default/mi1
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/215104815/940509330.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1570869193/10000
 0	val_0
 0	val_0
 0	val_0
@@ -335,7 +333,7 @@ Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/215104815/
 98	val_98
 query: SELECT mi2.* FROM mi2
 Input: default/mi2
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/196639737/1385053697.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1383174916/10000
 100	val_100
 100	val_100
 100	val_100
@@ -549,7 +547,7 @@ Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/196639737/
 199	val_199
 query: SELECT mi3.* FROM mi3
 Input: default/mi3/ds=2008-04-08/hr=12
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/1010810299/559593156.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/851984137/10000
 200	2008-04-08	12
 200	2008-04-08	12
 200	2008-04-08	12

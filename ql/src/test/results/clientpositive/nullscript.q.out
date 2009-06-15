@@ -20,21 +20,17 @@ STAGE PLANS:
               expressions:
                     expr: key
                     type: string
-              Select Operator
-                expressions:
-                      expr: 0
-                      type: string
-                Transform Operator
-                  command: /bin/cat
-                  output info:
+              Transform Operator
+                command: /bin/cat
+                output info:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -43,7 +39,7 @@ STAGE PLANS:
 
 query: select transform(key) using '/bin/cat' as key1 from nullscript
 Input: default/nullscript
-Output: /mnt/vol/devrs005.snc1/rmurthy/hadoop_tools/trunk-trunk-apache-hive/ql/../build/ql/tmp/681152477/759590347.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/318391745/10000
 238
 86
 311

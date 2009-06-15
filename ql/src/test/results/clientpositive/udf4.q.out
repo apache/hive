@@ -17,52 +17,51 @@ STAGE PLANS:
       Alias -> Map Operator Tree:
         dest1 
             Select Operator
-              Select Operator
-                expressions:
-                      expr: round(1.0)
-                      type: bigint
-                      expr: round(1.5)
-                      type: bigint
-                      expr: round(- 1.5)
-                      type: bigint
-                      expr: floor(1.0)
-                      type: bigint
-                      expr: floor(1.5)
-                      type: bigint
-                      expr: floor(- 1.5)
-                      type: bigint
-                      expr: sqrt(1.0)
-                      type: double
-                      expr: sqrt(- 1.0)
-                      type: double
-                      expr: sqrt(0.0)
-                      type: double
-                      expr: ceiling(1.0)
-                      type: bigint
-                      expr: ceiling(1.5)
-                      type: bigint
-                      expr: ceiling(- 1.5)
-                      type: bigint
-                      expr: ceiling(1.0)
-                      type: bigint
-                      expr: rand(UDFToLong(3))
-                      type: double
-                      expr: 3
-                      type: int
-                      expr: - 3
-                      type: int
-                      expr: (1 + 2)
-                      type: int
-                      expr: (1 + - 2)
-                      type: int
-                      expr: ~ 1
-                      type: int
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              expressions:
+                    expr: round(1.0)
+                    type: bigint
+                    expr: round(1.5)
+                    type: bigint
+                    expr: round(- 1.5)
+                    type: bigint
+                    expr: floor(1.0)
+                    type: bigint
+                    expr: floor(1.5)
+                    type: bigint
+                    expr: floor(- 1.5)
+                    type: bigint
+                    expr: sqrt(1.0)
+                    type: double
+                    expr: sqrt(- 1.0)
+                    type: double
+                    expr: sqrt(0.0)
+                    type: double
+                    expr: ceiling(1.0)
+                    type: bigint
+                    expr: ceiling(1.5)
+                    type: bigint
+                    expr: ceiling(- 1.5)
+                    type: bigint
+                    expr: ceiling(1.0)
+                    type: bigint
+                    expr: rand(UDFToLong(3))
+                    type: double
+                    expr: 3
+                    type: int
+                    expr: - 3
+                    type: int
+                    expr: (1 + 2)
+                    type: int
+                    expr: (1 + - 2)
+                    type: int
+                    expr: ~ 1
+                    type: int
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -71,5 +70,5 @@ STAGE PLANS:
 
 query: SELECT round(1.0), round(1.5), round(-1.5), floor(1.0), floor(1.5), floor(-1.5), sqrt(1.0), sqrt(-1.0), sqrt(0.0), ceil(1.0), ceil(1.5), ceil(-1.5), ceiling(1.0), rand(3), +3, -3, 1++2, 1+-2, ~1 FROM dest1
 Input: default/dest1
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/29787657/1016730635.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1468603599/10000
 1	2	-2	1	1	-2	1.0	NULL	0.0	1	2	-1	1	0.731057369148862	3	-3	3	-1	-2

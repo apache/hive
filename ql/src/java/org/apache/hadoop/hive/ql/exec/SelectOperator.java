@@ -40,7 +40,7 @@ public class SelectOperator extends Operator <selectDesc> implements Serializabl
   transient Object[] output;
   transient ObjectInspector outputObjectInspector;
   
-  public void initializeOp(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {    
+  public void initializeOp(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
     // Just forward the row as is
     if (conf.isSelStarNoCompute()) {
       initializeChildren(hconf, reporter, inputObjInspector);
@@ -57,7 +57,8 @@ public class SelectOperator extends Operator <selectDesc> implements Serializabl
     assert inputObjInspector.length == 1;
     output = new Object[eval.length];
     LOG.info("SELECT " + ((StructObjectInspector)inputObjInspector[0]).getTypeName());
-    outputObjectInspector = initEvaluatorsAndReturnStruct(eval, inputObjInspector[0]); 
+    outputObjectInspector = initEvaluatorsAndReturnStruct(eval, conf
+          .getOutputColumnNames(), inputObjInspector[0]);
     initializeChildren(hconf, reporter, new ObjectInspector[]{outputObjectInspector});
   }
 

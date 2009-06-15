@@ -23,20 +23,26 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
+import java.util.Vector;
 
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
+import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.ScriptOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
+import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcessor;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -202,7 +208,9 @@ public class ColumnPrunerProcFactory {
           // If one of my children is a FileSink or Script, return all columns.
           // Without this break, a bug in ReduceSink to Extract edge column pruning will manifest
           // which should be fixed before remove this
-          if ((child instanceof FileSinkOperator) || (child instanceof ScriptOperator)) {
+          if ((child instanceof FileSinkOperator)
+              || (child instanceof ScriptOperator)
+              || (child instanceof LimitOperator) || (child instanceof UnionOperator)) {
             cppCtx.getPrunedColLists().put(op, cppCtx.getColsFromSelectExpr(op));
             return null;
           }
@@ -211,15 +219,97 @@ public class ColumnPrunerProcFactory {
       }
 
       selectDesc conf = op.getConf();
-      if (conf.isSelectStar() && !cols.isEmpty()) {
-        // The input to the select does not matter. Go over the expressions 
-        // and return the ones which have a marked column
-        cppCtx.getPrunedColLists().put(op, cppCtx.getSelectColsFromChildren(op, cols));
-        return null;
+      // The input to the select does not matter. Go over the expressions 
+      // and return the ones which have a marked column
+      cppCtx.getPrunedColLists().put(op, cppCtx.getSelectColsFromChildren(op, cols));
+      
+      // do we need to prune the select operator?
+      List<exprNodeDesc> originalColList = op.getConf().getColList();
+      List<String> columns = new ArrayList<String>();
+      for (exprNodeDesc expr : originalColList)
+        Utilities.mergeUniqElems(columns, expr.getCols());
+      // by now, 'prunedCols' are columns used by child operators, and 'columns'
+      // are columns used by this select operator.
+      ArrayList<String> originalOutputColumnNames = conf.getOutputColumnNames();
+      if (cols.size() < originalOutputColumnNames.size()) {
+        ArrayList<exprNodeDesc> newColList = new ArrayList<exprNodeDesc>();
+        ArrayList<String> newOutputColumnNames = new ArrayList<String>();
+        Vector<ColumnInfo> rs_oldsignature = op.getSchema().getSignature();
+        Vector<ColumnInfo> rs_newsignature = new Vector<ColumnInfo>();
+        RowResolver old_rr = cppCtx.getOpToParseCtxMap().get(op).getRR();
+        RowResolver new_rr = new RowResolver();
+        for(String col : cols){
+          int index = originalOutputColumnNames.indexOf(col);
+          newOutputColumnNames.add(col);
+          newColList.add(originalColList.get(index));
+          rs_newsignature.add(rs_oldsignature.get(index));
+          String[] tabcol = old_rr.reverseLookup(col);
+          ColumnInfo columnInfo = old_rr.get(tabcol[0], tabcol[1]);
+          new_rr.put(tabcol[0], tabcol[1], columnInfo);
+        }
+        cppCtx.getOpToParseCtxMap().get(op).setRR(new_rr);
+        op.getSchema().setSignature(rs_newsignature);
+        conf.setColList(newColList);
+        conf.setOutputColumnNames(newOutputColumnNames);
+        handleChildren(op, cols);
       }
-      cppCtx.getPrunedColLists().put(op, cppCtx.getColsFromSelectExpr(op));
       return null;
     }
+
+    /**
+     * since we pruned the select operator, we should let its children operator
+     * know that. ReduceSinkOperator may send out every output columns of its
+     * parent select. When the select operator is pruned, its child reduce
+     * sink(direct child) operator should also be pruned.
+     * 
+     * @param op
+     * @param retainedSelOutputCols
+     */
+    private void handleChildren(SelectOperator op,
+        List<String> retainedSelOutputCols) {
+      for(Operator<? extends Serializable> child: op.getChildOperators()) {
+        if (child instanceof ReduceSinkOperator) {
+          pruneReduceSinkOperator(retainedSelOutputCols, (ReduceSinkOperator)child);
+        }else if (child instanceof FilterOperator){
+          //filter operator has the same output columns as its parent
+          for(Operator<? extends Serializable> filterChild: child.getChildOperators()){
+            if (filterChild instanceof ReduceSinkOperator)
+              pruneReduceSinkOperator(retainedSelOutputCols, (ReduceSinkOperator)filterChild);
+          }
+        }
+      }
+    }
+
+    private void pruneReduceSinkOperator(List<String> retainedSelOpOutputCols,
+        ReduceSinkOperator child) {
+      ReduceSinkOperator reduce = (ReduceSinkOperator) child;
+      reduceSinkDesc reduceConf = reduce.getConf();
+      ArrayList<String> originalValueOutputColNames = reduceConf
+          .getOutputValueColumnNames();
+      java.util.ArrayList<exprNodeDesc> originalValueEval = reduceConf
+          .getValueCols();
+      ArrayList<String> newOutputColNames = new ArrayList<String>();
+      java.util.ArrayList<exprNodeDesc> newValueEval = new ArrayList<exprNodeDesc>();
+      for (int i = 0; i < originalValueEval.size(); i++) {
+        boolean retain = false;
+        List<String> current = originalValueEval.get(i).getCols();
+        if (current != null) {
+          for (int j = 0; j < current.size(); j++) {
+            if (retainedSelOpOutputCols.contains(current.get(j))) {
+              retain = true;
+              break;
+            }
+          }
+        }
+        if (retain) {
+          newOutputColNames.add(originalValueOutputColNames.get(i));
+          newValueEval.add(originalValueEval.get(i));
+        }
+      }
+      reduceConf.setOutputValueColumnNames(newOutputColNames);
+      reduceConf.setValueCols(newValueEval);
+    }
+
   }
 
   /**

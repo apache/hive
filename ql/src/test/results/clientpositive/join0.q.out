@@ -32,9 +32,9 @@ STAGE PLANS:
                   sort order: 
                   tag: 1
                   value expressions:
-                        expr: 0
+                        expr: _col0
                         type: string
-                        expr: 1
+                        expr: _col1
                         type: string
         src1:src 
             Filter Operator
@@ -51,26 +51,26 @@ STAGE PLANS:
                   sort order: 
                   tag: 0
                   value expressions:
-                        expr: 0
+                        expr: _col0
                         type: string
-                        expr: 1
+                        expr: _col1
                         type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE.0} {VALUE.1}
-            1 {VALUE.0} {VALUE.1}
+            0 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col0} {VALUE._col1}
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: string
-                  expr: 1
+                  expr: _col1
                   type: string
-                  expr: 2
+                  expr: _col2
                   type: string
-                  expr: 3
+                  expr: _col3
                   type: string
             File Output Operator
               compressed: false
@@ -83,27 +83,27 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive2/hive2/build/ql/tmp/842577492/412431294.10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1169065671/10002 
             Reduce Output Operator
               key expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
-                    expr: 2
+                    expr: _col2
                     type: string
-                    expr: 3
+                    expr: _col3
                     type: string
               sort order: ++++
               tag: -1
               value expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
-                    expr: 2
+                    expr: _col2
                     type: string
-                    expr: 3
+                    expr: _col3
                     type: string
       Reduce Operator Tree:
         Extract
@@ -126,7 +126,7 @@ query: SELECT src1.key as k1, src1.value as v1,
   (SELECT * FROM src WHERE src.key < 10) src2
   SORT BY k1, v1, k2, v2
 Input: default/src
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/450108646/356249297.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1831934555/10000
 0	val_0	0	val_0
 0	val_0	0	val_0
 0	val_0	0	val_0

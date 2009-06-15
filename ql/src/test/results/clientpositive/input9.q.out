@@ -14,34 +14,30 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src1 
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-              Filter Operator
-                predicate:
-                    expr: (null = null)
-                    type: boolean
+            Filter Operator
+              predicate:
+                  expr: (null = null)
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: null
+                      type: string
+                      expr: key
+                      type: string
                 Select Operator
                   expressions:
-                        expr: null
-                        type: string
-                        expr: 0
-                        type: string
-                  Select Operator
-                    expressions:
-                          expr: 0
-                          type: void
-                          expr: UDFToInteger(1)
-                          type: int
-                    File Output Operator
-                      compressed: false
-                      GlobalTableId: 1
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          name: dest1
+                        expr: _col0
+                        type: void
+                        expr: UDFToInteger(_col1)
+                        type: int
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 1
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: dest1
 
   Stage: Stage-0
     Move Operator
@@ -60,4 +56,4 @@ Input: default/src1
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/170480320/543316931.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/116842121/10000

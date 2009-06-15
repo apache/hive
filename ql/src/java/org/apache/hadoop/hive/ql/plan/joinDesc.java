@@ -41,6 +41,8 @@ public class joinDesc implements Serializable {
   // alias to key mapping
   private Map<Byte, List<exprNodeDesc>> exprs;
   
+  protected java.util.ArrayList<java.lang.String> outputColumnNames;
+  
   // No outer join involved
   protected boolean noOuterJoin;
 
@@ -48,20 +50,23 @@ public class joinDesc implements Serializable {
   
   public joinDesc() { }
   
-  public joinDesc(final Map<Byte, List<exprNodeDesc>> exprs, final boolean noOuterJoin, final joinCond[] conds) {
+  public joinDesc(final Map<Byte, List<exprNodeDesc>> exprs, ArrayList<String> outputColumnNames, final boolean noOuterJoin, final joinCond[] conds) {
     this.exprs = exprs;
+    this.outputColumnNames = outputColumnNames;
     this.noOuterJoin = noOuterJoin;
     this.conds = conds;
   }
   
-  public joinDesc(final Map<Byte, List<exprNodeDesc>> exprs) {
+  public joinDesc(final Map<Byte, List<exprNodeDesc>> exprs, ArrayList<String> outputColumnNames) {
     this.exprs = exprs;
+    this.outputColumnNames = outputColumnNames;
     this.noOuterJoin = true;
     this.conds = null;
   }
 
-  public joinDesc(final Map<Byte, List<exprNodeDesc>> exprs, final joinCond[] conds) {
+  public joinDesc(final Map<Byte, List<exprNodeDesc>> exprs, ArrayList<String> outputColumnNames, final joinCond[] conds) {
     this.exprs = exprs;
+    this.outputColumnNames = outputColumnNames;
     this.noOuterJoin = false;
     this.conds = conds;
   }
@@ -101,6 +106,15 @@ public class joinDesc implements Serializable {
   
   public void setExprs(final Map<Byte, List<exprNodeDesc>> exprs) {
     this.exprs = exprs;
+  }
+  
+  public java.util.ArrayList<java.lang.String> getOutputColumnNames() {
+    return outputColumnNames;
+  }
+
+  public void setOutputColumnNames(
+      java.util.ArrayList<java.lang.String> outputColumnNames) {
+    this.outputColumnNames = outputColumnNames;
   }
 
   public boolean getNoOuterJoin() {

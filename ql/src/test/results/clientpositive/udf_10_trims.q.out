@@ -16,26 +16,22 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-              Filter Operator
-                predicate:
-                    expr: (UDFToDouble(0) = UDFToDouble(86))
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: trim(trim(trim(trim(trim(trim(trim(trim(trim(trim('  abc  '))))))))))
-                        type: string
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 1
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: dest1
+            Filter Operator
+              predicate:
+                  expr: (UDFToDouble(key) = UDFToDouble(86))
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: trim(trim(trim(trim(trim(trim(trim(trim(trim(trim('  abc  '))))))))))
+                      type: string
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 1
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: dest1
 
   Stage: Stage-0
     Move Operator

@@ -33,9 +33,9 @@ STAGE PLANS:
                     sort order: 
                     tag: -1
                     value expressions:
-                          expr: 0
+                          expr: _col0
                           type: string
-                          expr: 1
+                          expr: _col1
                           type: string
             Filter Operator
               predicate:
@@ -60,9 +60,9 @@ STAGE PLANS:
           Limit
             Select Operator
               expressions:
-                    expr: UDFToInteger(0)
+                    expr: UDFToInteger(_col0)
                     type: int
-                    expr: 1
+                    expr: _col1
                     type: string
               File Output Operator
                 compressed: false
@@ -92,23 +92,23 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive2/hive2/build/ql/tmp/695306607/98961335.10004 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1617651183/10004 
             Reduce Output Operator
               sort order: 
               tag: -1
               value expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
       Reduce Operator Tree:
         Extract
           Limit
             Select Operator
               expressions:
-                    expr: UDFToInteger(0)
+                    expr: UDFToInteger(_col0)
                     type: int
-                    expr: 1
+                    expr: _col1
                     type: string
               File Output Operator
                 compressed: false
@@ -128,7 +128,7 @@ Output: default/dest1
 Output: default/dest2
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/897368906/5413858.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1306289056/10000
 86	val_86
 27	val_27
 98	val_98
@@ -141,7 +141,7 @@ Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/897368906/5413858.10000
 57	val_57
 query: SELECT dest2.* FROM dest2
 Input: default/dest2
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/532706806/260883385.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1013942873/10000
 86	val_86
 27	val_27
 98	val_98

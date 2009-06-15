@@ -65,23 +65,17 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive2/hive2/build/ql/tmp/1070437488/10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/808962627/10002 
           Select Operator
             Select Operator
               expressions:
-                    expr: 0
-                    type: string
-                    expr: 1
-                    type: string
-                    expr: 2
-                    type: string
-                    expr: 3
+                    expr: _col0
                     type: string
               Common Join Operator
                 condition map:
                      Inner Join 0 to 1
                 condition expressions:
-                  0 {0} {1} {2} {3}
+                  0 {_col0}
                   1 {key} {value} {ds} {hr}
                 keys:
                   0 
@@ -113,7 +107,7 @@ STAGE PLANS:
                       condition map:
                            Inner Join 0 to 1
                       condition expressions:
-                        0 {0} {1} {2} {3}
+                        0 {_col0}
                         1 {key} {value} {ds} {hr}
                       keys:
                         0 
@@ -129,13 +123,13 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive2/hive2/build/ql/tmp/1070437488/10003 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/808962627/10003 
           Select Operator
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 5
+                    expr: _col5
                     type: string
               File Output Operator
                 compressed: false
@@ -169,7 +163,7 @@ Input: default/srcpart/ds=2008-04-08/hr=11
 Output: default/dest_j1
 query: select * from dest_j1 x order by x.key
 Input: default/dest_j1
-Output: file:/data/users/njain/hive2/hive2/build/ql/tmp/1405385308/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/418632889/10000
 128	val_128
 128	val_128
 128	val_128

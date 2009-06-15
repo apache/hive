@@ -53,8 +53,6 @@ public class GenMRProcContext implements NodeProcessorCtx {
      * @param currTask    the current task
      * @param currTopOp   the current top operator being traversed
      * @param currAliasId the current alias for the to operator
-     * @param inputs      the list of read entities
-     * @param outputs     the list of write entities
      */
     public GenMapRedCtx (Task<? extends Serializable>         currTask,
                          Operator<? extends Serializable>     currTopOp,

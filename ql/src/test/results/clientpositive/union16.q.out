@@ -48,16 +48,17 @@ STAGE PLANS:
                     expr: value
                     type: string
               Union
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  mode: hash
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: 0
-                          type: bigint
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    mode: hash
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
             Select Operator
               expressions:
@@ -66,16 +67,17 @@ STAGE PLANS:
                     expr: value
                     type: string
               Union
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  mode: hash
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: 0
-                          type: bigint
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    mode: hash
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery2:src 
             Select Operator
               expressions:
@@ -84,16 +86,17 @@ STAGE PLANS:
                     expr: value
                     type: string
               Union
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  mode: hash
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: 0
-                          type: bigint
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    mode: hash
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
             Select Operator
               expressions:
@@ -102,16 +105,17 @@ STAGE PLANS:
                     expr: value
                     type: string
               Union
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  mode: hash
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: 0
-                          type: bigint
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    mode: hash
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
             Select Operator
               expressions:
@@ -120,16 +124,17 @@ STAGE PLANS:
                     expr: value
                     type: string
               Union
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  mode: hash
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: 0
-                          type: bigint
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    mode: hash
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
             Select Operator
               expressions:
@@ -138,16 +143,17 @@ STAGE PLANS:
                     expr: value
                     type: string
               Union
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  mode: hash
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: 0
-                          type: bigint
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    mode: hash
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
             Select Operator
               expressions:
@@ -156,16 +162,17 @@ STAGE PLANS:
                     expr: value
                     type: string
               Union
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  mode: hash
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: 0
-                          type: bigint
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    mode: hash
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
         null-subquery2:src-subquery2:src 
             Select Operator
               expressions:
@@ -174,16 +181,17 @@ STAGE PLANS:
                     expr: value
                     type: string
               Union
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  mode: hash
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: 0
-                          type: bigint
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    mode: hash
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
             Select Operator
               expressions:
@@ -192,16 +200,17 @@ STAGE PLANS:
                     expr: value
                     type: string
               Union
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  mode: hash
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: 0
-                          type: bigint
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    mode: hash
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
             Select Operator
               expressions:
@@ -210,16 +219,17 @@ STAGE PLANS:
                     expr: value
                     type: string
               Union
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  mode: hash
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: 0
-                          type: bigint
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    mode: hash
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
             Select Operator
               expressions:
@@ -228,16 +238,17 @@ STAGE PLANS:
                     expr: value
                     type: string
               Union
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  mode: hash
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: 0
-                          type: bigint
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    mode: hash
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
             Select Operator
               expressions:
@@ -246,16 +257,17 @@ STAGE PLANS:
                     expr: value
                     type: string
               Union
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  mode: hash
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: 0
-                          type: bigint
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    mode: hash
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
         null-subquery1-subquery2:src-subquery1-subquery2:src 
             Select Operator
               expressions:
@@ -264,16 +276,17 @@ STAGE PLANS:
                     expr: value
                     type: string
               Union
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  mode: hash
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: 0
-                          type: bigint
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    mode: hash
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
             Select Operator
               expressions:
@@ -282,16 +295,17 @@ STAGE PLANS:
                     expr: value
                     type: string
               Union
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  mode: hash
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: 0
-                          type: bigint
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    mode: hash
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
             Select Operator
               expressions:
@@ -300,16 +314,17 @@ STAGE PLANS:
                     expr: value
                     type: string
               Union
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  mode: hash
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: 0
-                          type: bigint
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    mode: hash
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
             Select Operator
               expressions:
@@ -318,16 +333,17 @@ STAGE PLANS:
                     expr: value
                     type: string
               Union
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  mode: hash
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: 0
-                          type: bigint
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    mode: hash
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
             Select Operator
               expressions:
@@ -336,16 +352,17 @@ STAGE PLANS:
                     expr: value
                     type: string
               Union
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  mode: hash
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: 0
-                          type: bigint
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    mode: hash
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1:src 
             Select Operator
               expressions:
@@ -354,16 +371,17 @@ STAGE PLANS:
                     expr: value
                     type: string
               Union
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  mode: hash
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: 0
-                          type: bigint
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    mode: hash
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
             Select Operator
               expressions:
@@ -372,16 +390,17 @@ STAGE PLANS:
                     expr: value
                     type: string
               Union
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  mode: hash
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: 0
-                          type: bigint
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    mode: hash
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
         null-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery2:src 
             Select Operator
               expressions:
@@ -390,16 +409,17 @@ STAGE PLANS:
                     expr: value
                     type: string
               Union
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  mode: hash
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: 0
-                          type: bigint
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    mode: hash
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
             Select Operator
               expressions:
@@ -408,16 +428,17 @@ STAGE PLANS:
                     expr: value
                     type: string
               Union
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  mode: hash
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: 0
-                          type: bigint
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    mode: hash
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
             Select Operator
               expressions:
@@ -426,16 +447,17 @@ STAGE PLANS:
                     expr: value
                     type: string
               Union
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  mode: hash
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: 0
-                          type: bigint
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    mode: hash
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
             Select Operator
               expressions:
@@ -444,16 +466,17 @@ STAGE PLANS:
                     expr: value
                     type: string
               Union
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  mode: hash
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: 0
-                          type: bigint
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    mode: hash
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
             Select Operator
               expressions:
@@ -462,16 +485,17 @@ STAGE PLANS:
                     expr: value
                     type: string
               Union
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  mode: hash
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: 0
-                          type: bigint
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    mode: hash
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
         null-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery2:src 
             Select Operator
               expressions:
@@ -480,24 +504,25 @@ STAGE PLANS:
                     expr: value
                     type: string
               Union
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  mode: hash
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: 0
-                          type: bigint
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    mode: hash
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
+                expr: count(VALUE._col0)
           mode: mergepartial
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: bigint
             File Output Operator
               compressed: false
@@ -542,5 +567,5 @@ query: SELECT count(1) FROM (
   SELECT key, value FROM src UNION ALL
   SELECT key, value FROM src) src
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/378068546/1140440760.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1260154385/10000
 12500

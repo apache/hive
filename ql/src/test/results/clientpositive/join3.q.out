@@ -14,22 +14,20 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src2 
-            Select Operator
-              expressions:
+            Reduce Output Operator
+              key expressions:
                     expr: key
                     type: string
-              Reduce Output Operator
-                key expressions:
-                      expr: 0
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: 0
-                      type: string
-                tag: 1
-                value expressions:
-                      expr: 0
-                      type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
         src3 
             Reduce Output Operator
               key expressions:
@@ -46,42 +44,40 @@ STAGE PLANS:
                     expr: value
                     type: string
         src1 
-            Select Operator
-              expressions:
+            Reduce Output Operator
+              key expressions:
                     expr: key
                     type: string
-              Reduce Output Operator
-                key expressions:
-                      expr: 0
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: 0
-                      type: string
-                tag: 0
-                value expressions:
-                      expr: 0
-                      type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 0
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
                Inner Join 0 to 2
           condition expressions:
-            0 {VALUE.0}
-            1 {VALUE.0}
-            2 {VALUE.0} {VALUE.1}
+            0 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col0} {VALUE._col1}
+            2 {VALUE._col0} {VALUE._col1}
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: string
-                  expr: 3
+                  expr: _col5
                   type: string
             Select Operator
               expressions:
-                    expr: UDFToInteger(0)
+                    expr: UDFToInteger(_col0)
                     type: int
-                    expr: 1
+                    expr: _col1
                     type: string
               File Output Operator
                 compressed: false
@@ -102,13 +98,14 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: dest1
 
+
 query: FROM src src1 JOIN src src2 ON (src1.key = src2.key) JOIN src src3 ON (src1.key = src3.key)
 INSERT OVERWRITE TABLE dest1 SELECT src1.key, src3.value
 Input: default/src
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/436759319/410489049.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/574651295/10000
 0	val_0
 0	val_0
 0	val_0

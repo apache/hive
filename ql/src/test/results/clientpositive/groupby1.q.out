@@ -14,24 +14,30 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
-            Reduce Output Operator
-              key expressions:
+            Select Operator
+              expressions:
                     expr: key
                     type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: rand()
-                    type: double
-              tag: -1
-              value expressions:
-                    expr: substr(value, 5)
+                    expr: value
                     type: string
+              Reduce Output Operator
+                key expressions:
+                      expr: key
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: rand()
+                      type: double
+                tag: -1
+                value expressions:
+                      expr: substr(value, 5)
+                      type: string
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: sum(UDFToDouble(VALUE.0))
+                expr: sum(UDFToDouble(VALUE._col0))
           keys:
-                expr: KEY.0
+                expr: KEY._col0
                 type: string
           mode: partial1
           File Output Operator
@@ -45,38 +51,38 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive2/hive2/build/ql/tmp/3613518/365997197.10002 
+        invalidscheme:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/937548090/10002 
             Reduce Output Operator
               key expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
               sort order: +
               Map-reduce partition columns:
-                    expr: 0
+                    expr: _col0
                     type: string
               tag: -1
               value expressions:
-                    expr: 1
+                    expr: _col1
                     type: double
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: sum(VALUE.0)
+                expr: sum(VALUE._col0)
           keys:
-                expr: KEY.0
+                expr: KEY._col0
                 type: string
           mode: final
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: string
-                  expr: 1
+                  expr: _col1
                   type: double
             Select Operator
               expressions:
-                    expr: UDFToInteger(0)
+                    expr: UDFToInteger(_col0)
                     type: int
-                    expr: 1
+                    expr: _col1
                     type: double
               File Output Operator
                 compressed: false
@@ -103,7 +109,7 @@ Input: default/src
 Output: default/dest_g1
 query: SELECT dest_g1.* FROM dest_g1
 Input: default/dest_g1
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/233907446/231615542.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/88746984/10000
 0	0.0
 10	10.0
 100	200.0

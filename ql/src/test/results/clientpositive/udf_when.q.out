@@ -38,27 +38,26 @@ STAGE PLANS:
       Alias -> Map Operator Tree:
         src 
             Select Operator
-              Select Operator
-                expressions:
-                      expr: CASE WHEN ((1 = 1)) THEN (2) WHEN ((1 = 3)) THEN (4) ELSE (5) END
-                      type: int
-                      expr: CASE WHEN ((6 = 7)) THEN (8) ELSE (9) END
-                      type: int
-                      expr: CASE WHEN ((10 = 11)) THEN (12) WHEN ((13 = 13)) THEN (14) END
-                      type: int
-                      expr: CASE WHEN ((15 = 16)) THEN (17) WHEN ((18 = 19)) THEN (20) END
-                      type: int
-                      expr: CASE WHEN ((21 = 22)) THEN (null) WHEN ((23 = 23)) THEN (24) END
-                      type: int
-                      expr: CASE WHEN ((25 = 26)) THEN (27) WHEN ((28 = 28)) THEN (null) END
-                      type: int
-                Limit
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              expressions:
+                    expr: CASE WHEN ((1 = 1)) THEN (2) WHEN ((1 = 3)) THEN (4) ELSE (5) END
+                    type: int
+                    expr: CASE WHEN ((6 = 7)) THEN (8) ELSE (9) END
+                    type: int
+                    expr: CASE WHEN ((10 = 11)) THEN (12) WHEN ((13 = 13)) THEN (14) END
+                    type: int
+                    expr: CASE WHEN ((15 = 16)) THEN (17) WHEN ((18 = 19)) THEN (20) END
+                    type: int
+                    expr: CASE WHEN ((21 = 22)) THEN (null) WHEN ((23 = 23)) THEN (24) END
+                    type: int
+                    expr: CASE WHEN ((25 = 26)) THEN (27) WHEN ((28 = 28)) THEN (null) END
+                    type: int
+              Limit
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -92,5 +91,5 @@ query: SELECT CASE
        END
 FROM src LIMIT 1
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/262454053/648350622.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/855982416/10000
 2	9	14	NULL	24	NULL

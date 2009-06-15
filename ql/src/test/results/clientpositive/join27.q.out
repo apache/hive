@@ -17,26 +17,22 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         y 
-            Select Operator
-              expressions:
-                    expr: value
-                    type: string
-              Common Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                condition expressions:
-                  0 {key} {value}
-                  1 {0}
-                keys:
-                  0 
-                  1 
-                Position of Big Table: 1
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+            Common Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {key} {value}
+                1 {key} {value}
+              keys:
+                0 
+                1 
+              Position of Big Table: 1
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
@@ -50,7 +46,7 @@ STAGE PLANS:
                        Inner Join 0 to 1
                   condition expressions:
                     0 {key} {value}
-                    1 {0}
+                    1 {key} {value}
                   keys:
                     0 
                     1 
@@ -65,23 +61,23 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive2/hive2/build/ql/tmp/972496484/10004 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1533119508/10002 
           Select Operator
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
-                    expr: 2
+                    expr: _col3
                     type: string
               Select Operator
                 expressions:
-                      expr: UDFToInteger(0)
+                      expr: UDFToInteger(_col0)
                       type: int
-                      expr: 1
+                      expr: _col1
                       type: string
-                      expr: 2
+                      expr: _col2
                       type: string
                 File Output Operator
                   compressed: false
@@ -111,7 +107,7 @@ Input: default/src1
 Output: default/dest_j1
 query: select * from dest_j1 x order by x.key, x.value
 Input: default/dest_j1
-Output: file:/data/users/njain/hive2/hive2/build/ql/tmp/1547052154/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/2137545463/10000
 NULL	val_165	val_165
 NULL	val_165	val_165
 NULL	val_193	val_193

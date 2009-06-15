@@ -21,14 +21,14 @@ STAGE PLANS:
                     type: string
               Reduce Output Operator
                 key expressions:
-                      expr: 0
+                      expr: _col0
                       type: string
                 sort order: +
                 tag: -1
                 value expressions:
-                      expr: 0
+                      expr: _col0
                       type: string
-                      expr: 1
+                      expr: _col1
                       type: string
       Reduce Operator Tree:
         Extract
@@ -44,17 +44,17 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive2/hive2/build/ql/tmp/777531825/8374423.10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/2049580485/10002 
             Reduce Output Operator
               key expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
               sort order: +
               tag: -1
               value expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
       Reduce Operator Tree:
         Extract
@@ -73,7 +73,7 @@ STAGE PLANS:
 
 query: select * from src sort by key limit 10
 Input: default/src
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/781039993/138503313.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/83498755/10000
 0	val_0
 0	val_0
 0	val_0

@@ -31,51 +31,50 @@ STAGE PLANS:
       Alias -> Map Operator Tree:
         src 
             Select Operator
-              Select Operator
-                expressions:
-                      expr: COALESCE(1)
-                      type: int
-                      expr: COALESCE(1,2)
-                      type: int
-                      expr: COALESCE(null,2)
-                      type: int
-                      expr: COALESCE(1,null)
-                      type: int
-                      expr: COALESCE(null,null,3)
-                      type: int
-                      expr: COALESCE(4,null,null,null)
-                      type: int
-                      expr: COALESCE('1')
-                      type: string
-                      expr: COALESCE('1','2')
-                      type: string
-                      expr: COALESCE(null,'2')
-                      type: string
-                      expr: COALESCE('1',null)
-                      type: string
-                      expr: COALESCE(null,null,'3')
-                      type: string
-                      expr: COALESCE('4',null,null,null)
-                      type: string
-                      expr: COALESCE(1.0)
-                      type: double
-                      expr: COALESCE(1.0,2.0)
-                      type: double
-                      expr: COALESCE(null,2.0)
-                      type: double
-                      expr: COALESCE(null,2.0,3.0)
-                      type: double
-                      expr: COALESCE(2.0,null,3.0)
-                      type: double
-                      expr: COALESCE(if true, null, 0,null)
-                      type: int
-                Limit
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              expressions:
+                    expr: COALESCE(1)
+                    type: int
+                    expr: COALESCE(1,2)
+                    type: int
+                    expr: COALESCE(null,2)
+                    type: int
+                    expr: COALESCE(1,null)
+                    type: int
+                    expr: COALESCE(null,null,3)
+                    type: int
+                    expr: COALESCE(4,null,null,null)
+                    type: int
+                    expr: COALESCE('1')
+                    type: string
+                    expr: COALESCE('1','2')
+                    type: string
+                    expr: COALESCE(null,'2')
+                    type: string
+                    expr: COALESCE('1',null)
+                    type: string
+                    expr: COALESCE(null,null,'3')
+                    type: string
+                    expr: COALESCE('4',null,null,null)
+                    type: string
+                    expr: COALESCE(1.0)
+                    type: double
+                    expr: COALESCE(1.0,2.0)
+                    type: double
+                    expr: COALESCE(null,2.0)
+                    type: double
+                    expr: COALESCE(null,2.0,3.0)
+                    type: double
+                    expr: COALESCE(2.0,null,3.0)
+                    type: double
+                    expr: COALESCE(if true, null, 0,null)
+                    type: int
+              Limit
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -102,7 +101,7 @@ query: SELECT COALESCE(1),
        COALESCE(IF(TRUE, NULL, 0), NULL)
 FROM src LIMIT 1
 Input: default/src
-Output: file:/data/users/zshao/tools/495-trunk-apache-hive/build/ql/tmp/64965527/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1424226650/10000
 1	1	2	1	3	4	1	1	2	1	3	4	1.0	1.0	2.0	2.0	2.0	NULL
 query: EXPLAIN
 SELECT COALESCE(src_thrift.lint[1], 999),
@@ -123,26 +122,18 @@ STAGE PLANS:
         src_thrift 
             Select Operator
               expressions:
-                    expr: lint
-                    type: array<int>
-                    expr: lintstring
-                    type: array<struct<myint:int,mystring:string,underscore_int:int>>
-                    expr: mstringstring
-                    type: map<string,string>
-              Select Operator
-                expressions:
-                      expr: COALESCE(0[1],999)
-                      type: int
-                      expr: COALESCE(1[0].mystring,'999')
-                      type: string
-                      expr: COALESCE(2['key_2'],'999')
-                      type: string
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    expr: COALESCE(lint[1],999)
+                    type: int
+                    expr: COALESCE(lintstring[0].mystring,'999')
+                    type: string
+                    expr: COALESCE(mstringstring['key_2'],'999')
+                    type: string
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -154,7 +145,7 @@ query: SELECT COALESCE(src_thrift.lint[1], 999),
        COALESCE(src_thrift.mstringstring['key_2'], '999')
 FROM src_thrift
 Input: default/src_thrift
-Output: file:/data/users/zshao/tools/495-trunk-apache-hive/build/ql/tmp/2056249139/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/300664928/10000
 0	0	999
 2	1	999
 4	8	value_2

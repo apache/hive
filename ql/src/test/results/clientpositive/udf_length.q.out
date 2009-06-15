@@ -15,20 +15,16 @@ STAGE PLANS:
         src 
             Select Operator
               expressions:
-                    expr: value
-                    type: string
-              Select Operator
-                expressions:
-                      expr: length(0)
-                      type: int
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 1
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: dest1
+                    expr: length(value)
+                    type: int
+              File Output Operator
+                compressed: false
+                GlobalTableId: 1
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: dest1
 
   Stage: Stage-0
     Move Operator
@@ -46,7 +42,7 @@ Input: default/src
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/432923810/244566699.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/423777377/10000
 7
 6
 7

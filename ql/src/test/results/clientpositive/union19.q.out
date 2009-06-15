@@ -35,18 +35,18 @@ STAGE PLANS:
                   sort order: 
                   tag: -1
                   value expressions:
-                        expr: 0
+                        expr: _col0
                         type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
+                expr: count(VALUE._col0)
           mode: mergepartial
           Select Operator
             expressions:
                   expr: 'tst1'
                   type: string
-                  expr: UDFToString(0)
+                  expr: UDFToString(_col0)
                   type: string
             File Output Operator
               compressed: false
@@ -59,34 +59,40 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive5/hive5/build/ql/tmp/72371652/101013737.10004 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1903045669/10004 
           Union
-            Group By Operator
-              aggregations:
-                    expr: count(1)
-              keys:
-                    expr: 0
-                    type: string
-              mode: hash
-              Reduce Output Operator
-                key expressions:
-                      expr: 0
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: 0
-                      type: string
-                tag: -1
-                value expressions:
-                      expr: 1
-                      type: bigint
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
-                    expr: 1
+              Group By Operator
+                aggregations:
+                      expr: count(_col1)
+                keys:
+                      expr: _col0
+                      type: string
+                mode: hash
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: _col1
+                        type: bigint
+            Select Operator
+              expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: string
+                    expr: _col1
                     type: string
               File Output Operator
                 compressed: false
@@ -96,34 +102,40 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: dest2
-        /data/users/njain/hive5/hive5/build/ql/tmp/72371652/101013737.10005 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1903045669/10005 
           Union
-            Group By Operator
-              aggregations:
-                    expr: count(1)
-              keys:
-                    expr: 0
-                    type: string
-              mode: hash
-              Reduce Output Operator
-                key expressions:
-                      expr: 0
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: 0
-                      type: string
-                tag: -1
-                value expressions:
-                      expr: 1
-                      type: bigint
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
-                    expr: 1
+              Group By Operator
+                aggregations:
+                      expr: count(_col1)
+                keys:
+                      expr: _col0
+                      type: string
+                mode: hash
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: _col1
+                        type: bigint
+            Select Operator
+              expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: string
+                    expr: _col1
                     type: string
               File Output Operator
                 compressed: false
@@ -136,16 +148,16 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
+                expr: count(VALUE._col0)
           keys:
-                expr: KEY.0
+                expr: KEY._col0
                 type: string
           mode: mergepartial
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: string
-                  expr: 1
+                  expr: _col1
                   type: bigint
             File Output Operator
               compressed: false
@@ -201,7 +213,7 @@ Output: default/dest1
 Output: default/dest2
 query: SELECT DEST1.* FROM DEST1 SORT BY DEST1.key, DEST1.value
 Input: default/dest1
-Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/118273074/1158900774.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/680471893/10000
 0	3
 10	1
 100	2
@@ -514,7 +526,7 @@ Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/118273074/1158900774.10
 tst1	1
 query: SELECT DEST2.* FROM DEST2 SORT BY DEST2.key, DEST2.val1, DEST2.val2
 Input: default/dest2
-Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/159391428/263926633.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/974291291/10000
 0	val_0	val_0
 0	val_0	val_0
 0	val_0	val_0

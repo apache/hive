@@ -241,10 +241,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
           aggregationsEvaluateMethods[i].getReturnType()).primitiveCategory));
     }
 
-    fieldNames = new ArrayList<String>(objectInspectors.size());
-    for(int i=0; i<objectInspectors.size(); i++) {
-      fieldNames.add(Integer.valueOf(i).toString());
-    }
+    fieldNames = conf.getOutputColumnNames();
 
     for (int i = 0; i < keyFields.length; i++) {
       if (keyObjectInspectors[i] == null) {
@@ -255,7 +252,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     
     outputObjectInspector = 
       ObjectInspectorFactory.getStandardStructObjectInspector(fieldNames, objectInspectors);
-    
+	
     firstRow = true;
     // estimate the number of hash table entries based on the size of each entry. Since the size of a entry
     // is not known, estimate that based on the number of entries

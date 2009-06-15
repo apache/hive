@@ -27,35 +27,23 @@ STAGE PLANS:
                     type: int
                     expr: astring
                     type: string
-              Select Operator
-                expressions:
-                      expr: 0
-                      type: array<int>
+              Reduce Output Operator
+                sort order: 
+                Map-reduce partition columns:
                       expr: 1
-                      type: array<string>
-                      expr: 2
-                      type: map<string,string>
-                      expr: 3
                       type: int
-                      expr: 4
+                tag: -1
+                value expressions:
+                      expr: _col0
+                      type: array<int>
+                      expr: _col1
+                      type: array<string>
+                      expr: _col2
+                      type: map<string,string>
+                      expr: _col3
+                      type: int
+                      expr: _col4
                       type: string
-                Reduce Output Operator
-                  sort order: 
-                  Map-reduce partition columns:
-                        expr: 1
-                        type: int
-                  tag: -1
-                  value expressions:
-                        expr: 0
-                        type: array<int>
-                        expr: 1
-                        type: array<string>
-                        expr: 2
-                        type: map<string,string>
-                        expr: 3
-                        type: int
-                        expr: 4
-                        type: string
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -84,7 +72,7 @@ Input: default/src_thrift
 Output: default/columnarserde_create_shortcut
 query: SELECT columnarserde_create_shortcut.* FROM columnarserde_create_shortcut DISTRIBUTE BY 1
 Input: default/columnarserde_create_shortcut
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/171037815/113357858.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/761844554/10000
 [0,0,0]	["0","0","0"]	{"key_0":"value_0"}	1712634731	record_0
 [1,2,3]	["10","100","1000"]	{"key_1":"value_1"}	465985200	record_1
 [2,4,6]	["20","200","2000"]	{"key_2":"value_2"}	-751827638	record_2
@@ -98,7 +86,7 @@ Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/171037815/
 null	null	{}	0	NULL
 query: SELECT columnarserde_create_shortcut.a[0], columnarserde_create_shortcut.b[0], columnarserde_create_shortcut.c['key2'], columnarserde_create_shortcut.d, columnarserde_create_shortcut.e FROM columnarserde_create_shortcut DISTRIBUTE BY 1
 Input: default/columnarserde_create_shortcut
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/703291409/322213020.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1537792942/10000
 0	0	NULL	1712634731	record_0
 1	10	NULL	465985200	record_1
 2	20	NULL	-751827638	record_2
@@ -122,7 +110,7 @@ key	string	from deserializer
 value	string	from deserializer
 query: SELECT columnShortcutTable.* FROM columnShortcutTable
 Input: default/columnshortcuttable
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/1270707165/71798862.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1192618903/10000
 238	val_238
 86	val_86
 311	val_311
@@ -136,7 +124,7 @@ Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/1270707165
 query: ALTER TABLE columnShortcutTable ADD COLUMNS (c string)
 query: SELECT columnShortcutTable.* FROM columnShortcutTable
 Input: default/columnshortcuttable
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/584823418/366926580.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/811310101/10000
 238	val_238	NULL
 86	val_86	NULL
 311	val_311	NULL
@@ -150,7 +138,7 @@ Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/584823418/
 query: ALTER TABLE columnShortcutTable REPLACE COLUMNS (key int)
 query: SELECT columnShortcutTable.* FROM columnShortcutTable
 Input: default/columnshortcuttable
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/420088542/417977156.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1699900771/10000
 238
 86
 311

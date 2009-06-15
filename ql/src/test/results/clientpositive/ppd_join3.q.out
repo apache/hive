@@ -37,17 +37,17 @@ STAGE PLANS:
                         type: string
                   Reduce Output Operator
                     key expressions:
-                          expr: 0
+                          expr: _col0
                           type: string
                     sort order: +
                     Map-reduce partition columns:
-                          expr: 0
+                          expr: _col0
                           type: string
                     tag: 1
                     value expressions:
-                          expr: 0
+                          expr: _col0
                           type: string
-                          expr: 1
+                          expr: _col1
                           type: string
         src1:src 
             Filter Operator
@@ -66,21 +66,21 @@ STAGE PLANS:
                         type: string
                   Filter Operator
                     predicate:
-                        expr: (0 < '400')
+                        expr: (_col0 < '400')
                         type: boolean
                     Reduce Output Operator
                       key expressions:
-                            expr: 0
+                            expr: _col0
                             type: string
                       sort order: +
                       Map-reduce partition columns:
-                            expr: 0
+                            expr: _col0
                             type: string
                       tag: 0
                       value expressions:
-                            expr: 0
+                            expr: _col0
                             type: string
-                            expr: 1
+                            expr: _col1
                             type: string
         src3:src 
             Filter Operator
@@ -95,21 +95,17 @@ STAGE PLANS:
                   expressions:
                         expr: key
                         type: string
-                        expr: value
-                        type: string
                   Reduce Output Operator
                     key expressions:
-                          expr: 0
+                          expr: _col0
                           type: string
                     sort order: +
                     Map-reduce partition columns:
-                          expr: 0
+                          expr: _col0
                           type: string
                     tag: 2
                     value expressions:
-                          expr: 0
-                          type: string
-                          expr: 1
+                          expr: _col0
                           type: string
       Reduce Operator Tree:
         Join Operator
@@ -117,18 +113,18 @@ STAGE PLANS:
                Inner Join 0 to 1
                Inner Join 0 to 2
           condition expressions:
-            0 {VALUE.0} {VALUE.1}
-            1 {VALUE.0} {VALUE.1}
-            2 {VALUE.0} {VALUE.1}
+            0 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col0} {VALUE._col1}
+            2 {VALUE._col0} {VALUE._col1}
           Filter Operator
             predicate:
-                expr: (((((0 > '0') and ((1 <> 'val_500') or (0 > '1'))) and ((2 > '10') or (0 <> '10'))) and (2 <> '4')) and (4 <> '1'))
+                expr: (((((_col0 > '0') and ((_col1 <> 'val_500') or (_col0 > '1'))) and ((_col2 > '10') or (_col0 <> '10'))) and (_col2 <> '4')) and (_col4 <> '1'))
                 type: boolean
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 3
+                    expr: _col3
                     type: string
               File Output Operator
                 compressed: false
@@ -153,7 +149,7 @@ JOIN
 ON src1.c1 = src3.c5
 WHERE src1.c1 > '0' and (src1.c2 <> 'val_500' or src1.c1 > '1') and (src2.c3 > '10' or src1.c1 <> '10') and (src2.c3 <> '4') and (src3.c5 <> '1')
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/860297500/296667267.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1778414382/10000
 100	val_100
 100	val_100
 100	val_100

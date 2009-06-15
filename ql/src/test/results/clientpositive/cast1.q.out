@@ -13,38 +13,34 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-              Filter Operator
-                predicate:
-                    expr: (UDFToDouble(0) = UDFToDouble(86))
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: (3 + 2)
-                        type: int
-                        expr: (3.0 + UDFToDouble(2))
-                        type: double
-                        expr: (UDFToDouble(3) + 2.0)
-                        type: double
-                        expr: (3.0 + 2.0)
-                        type: double
-                        expr: ((3 + UDFToInteger(2.0)) + UDFToInteger(UDFToShort(0)))
-                        type: int
-                        expr: UDFToBoolean(1)
-                        type: boolean
-                        expr: UDFToInteger(true)
-                        type: int
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 1
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: dest1
+            Filter Operator
+              predicate:
+                  expr: (UDFToDouble(key) = UDFToDouble(86))
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: (3 + 2)
+                      type: int
+                      expr: (3.0 + UDFToDouble(2))
+                      type: double
+                      expr: (UDFToDouble(3) + 2.0)
+                      type: double
+                      expr: (3.0 + 2.0)
+                      type: double
+                      expr: ((3 + UDFToInteger(2.0)) + UDFToInteger(UDFToShort(0)))
+                      type: int
+                      expr: UDFToBoolean(1)
+                      type: boolean
+                      expr: UDFToInteger(true)
+                      type: int
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 1
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: dest1
 
   Stage: Stage-0
     Move Operator
@@ -62,5 +58,5 @@ Input: default/src
 Output: default/dest1
 query: select dest1.* FROM dest1
 Input: default/dest1
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/351550201/345617503.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1835720350/10000
 5	5.0	5.0	5.0	5	true	1

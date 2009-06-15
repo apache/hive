@@ -38,9 +38,9 @@ public class MetadataListStructObjectInspector extends StandardStructObjectInspe
 
   static HashMap<List<String>, MetadataListStructObjectInspector> cached
      = new HashMap<List<String>, MetadataListStructObjectInspector>();
-  public static MetadataListStructObjectInspector getInstance(int fields) {
-    return getInstance(ObjectInspectorUtils.getIntegerArray(fields));
-  }
+//  public static MetadataListStructObjectInspector getInstance(int fields) {
+//    return getInstance(ObjectInspectorUtils.getIntegerArray(fields));
+//  }
   public static MetadataListStructObjectInspector getInstance(List<String> columnNames) {
     MetadataListStructObjectInspector result = cached.get(columnNames);
     if (result == null) {

@@ -16,28 +16,22 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src_thrift 
-            Select Operator
-              expressions:
-                    expr: mstringstring
-                    type: map<string,string>
-                    expr: lintstring
-                    type: array<struct<myint:int,mystring:string,underscore_int:int>>
-              Filter Operator
-                predicate:
-                    expr: ((0['key_9'] is not null and 1.myint is not null) and 1 is not null)
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: 0['key_9']
-                        type: string
-                        expr: 1.myint
-                        type: array<int>
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            Filter Operator
+              predicate:
+                  expr: ((mstringstring['key_9'] is not null and lintstring.myint is not null) and lintstring is not null)
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: mstringstring['key_9']
+                      type: string
+                      expr: lintstring.myint
+                      type: array<int>
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -50,7 +44,7 @@ WHERE src_thrift.mstringstring['key_9'] IS NOT NULL
       OR lintstring.myint IS NOT NULL
       OR lintstring IS NOT NULL
 Input: default/src_thrift
-Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/249993417/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/691052389/10000
 NULL	[0]
 NULL	[1]
 NULL	[4]
@@ -83,28 +77,22 @@ STAGE PLANS:
               predicate:
                   expr: ((mstringstring['key_9'] is not null and lintstring.myint is not null) and lintstring is not null)
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: mstringstring
-                      type: map<string,string>
-                      expr: lintstring
-                      type: array<struct<myint:int,mystring:string,underscore_int:int>>
-                Filter Operator
-                  predicate:
-                      expr: ((0['key_9'] is not null and 1.myint is not null) and 1 is not null)
-                      type: boolean
-                  Select Operator
-                    expressions:
-                          expr: 0['key_9']
-                          type: string
-                          expr: 1.myint
-                          type: array<int>
-                    File Output Operator
-                      compressed: false
-                      GlobalTableId: 0
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              Filter Operator
+                predicate:
+                    expr: ((mstringstring['key_9'] is not null and lintstring.myint is not null) and lintstring is not null)
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: mstringstring['key_9']
+                        type: string
+                        expr: lintstring.myint
+                        type: array<int>
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -117,7 +105,7 @@ WHERE src_thrift.mstringstring['key_9'] IS NOT NULL
       OR lintstring.myint IS NOT NULL
       OR lintstring IS NOT NULL
 Input: default/src_thrift
-Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1189169528/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/390073057/10000
 NULL	[0]
 NULL	[1]
 NULL	[4]

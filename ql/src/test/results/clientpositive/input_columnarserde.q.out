@@ -32,35 +32,23 @@ STAGE PLANS:
                     type: int
                     expr: astring
                     type: string
-              Select Operator
-                expressions:
-                      expr: 0
-                      type: array<int>
+              Reduce Output Operator
+                sort order: 
+                Map-reduce partition columns:
                       expr: 1
-                      type: array<string>
-                      expr: 2
-                      type: map<string,string>
-                      expr: 3
                       type: int
-                      expr: 4
+                tag: -1
+                value expressions:
+                      expr: _col0
+                      type: array<int>
+                      expr: _col1
+                      type: array<string>
+                      expr: _col2
+                      type: map<string,string>
+                      expr: _col3
+                      type: int
+                      expr: _col4
                       type: string
-                Reduce Output Operator
-                  sort order: 
-                  Map-reduce partition columns:
-                        expr: 1
-                        type: int
-                  tag: -1
-                  value expressions:
-                        expr: 0
-                        type: array<int>
-                        expr: 1
-                        type: array<string>
-                        expr: 2
-                        type: map<string,string>
-                        expr: 3
-                        type: int
-                        expr: 4
-                        type: string
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -89,7 +77,7 @@ Input: default/src_thrift
 Output: default/input_columnarserde
 query: SELECT input_columnarserde.* FROM input_columnarserde DISTRIBUTE BY 1
 Input: default/input_columnarserde
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/156914955/60209819.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/545096986/10000
 [0,0,0]	["0","0","0"]	{"key_0":"value_0"}	1712634731	record_0
 [1,2,3]	["10","100","1000"]	{"key_1":"value_1"}	465985200	record_1
 [2,4,6]	["20","200","2000"]	{"key_2":"value_2"}	-751827638	record_2
@@ -103,7 +91,7 @@ Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/156914955/
 null	null	{}	0	NULL
 query: SELECT input_columnarserde.a[0], input_columnarserde.b[0], input_columnarserde.c['key2'], input_columnarserde.d, input_columnarserde.e FROM input_columnarserde DISTRIBUTE BY 1
 Input: default/input_columnarserde
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/92131046/797096690.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/795399832/10000
 0	0	NULL	1712634731	record_0
 1	10	NULL	465985200	record_1
 2	20	NULL	-751827638	record_2

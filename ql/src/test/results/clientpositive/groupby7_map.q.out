@@ -18,58 +18,70 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
-            Group By Operator
-              aggregations:
-                    expr: sum(UDFToDouble(substr(value, 5)))
-              keys:
+            Select Operator
+              expressions:
                     expr: key
                     type: string
-              mode: hash
-              Reduce Output Operator
-                key expressions:
-                      expr: 0
+                    expr: value
+                    type: string
+              Group By Operator
+                aggregations:
+                      expr: sum(UDFToDouble(substr(value, 5)))
+                keys:
+                      expr: key
                       type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: 0
-                      type: string
-                tag: -1
-                value expressions:
-                      expr: 1
-                      type: double
-            Group By Operator
-              aggregations:
-                    expr: sum(UDFToDouble(substr(value, 5)))
-              keys:
+                mode: hash
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: _col1
+                        type: double
+            Select Operator
+              expressions:
                     expr: key
                     type: string
-              mode: hash
-              File Output Operator
-                compressed: true
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    name: binary_table
+                    expr: value
+                    type: string
+              Group By Operator
+                aggregations:
+                      expr: sum(UDFToDouble(substr(value, 5)))
+                keys:
+                      expr: key
+                      type: string
+                mode: hash
+                File Output Operator
+                  compressed: true
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      name: binary_table
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: sum(VALUE.0)
+                expr: sum(VALUE._col0)
           keys:
-                expr: KEY.0
+                expr: KEY._col0
                 type: string
           mode: mergepartial
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: string
-                  expr: 1
+                  expr: _col1
                   type: double
             Select Operator
               expressions:
-                    expr: UDFToInteger(0)
+                    expr: UDFToInteger(_col0)
                     type: int
-                    expr: 1
+                    expr: _col1
                     type: double
               File Output Operator
                 compressed: true
@@ -99,38 +111,38 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive2/hive2/build/ql/tmp/267196387/57369739.10004 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/809118109/10004 
             Reduce Output Operator
               key expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
               sort order: +
               Map-reduce partition columns:
-                    expr: 0
+                    expr: _col0
                     type: string
               tag: -1
               value expressions:
-                    expr: 1
+                    expr: _col1
                     type: double
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: sum(VALUE.0)
+                expr: sum(VALUE._col0)
           keys:
-                expr: KEY.0
+                expr: KEY._col0
                 type: string
           mode: mergepartial
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: string
-                  expr: 1
+                  expr: _col1
                   type: double
             Select Operator
               expressions:
-                    expr: UDFToInteger(0)
+                    expr: UDFToInteger(_col0)
                     type: int
-                    expr: 1
+                    expr: _col1
                     type: double
               File Output Operator
                 compressed: true
@@ -150,7 +162,7 @@ Output: default/dest1
 Output: default/dest2
 query: SELECT DEST1.* FROM DEST1
 Input: default/dest1
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/1043668036/332712287.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1257848129/10000
 0	0.0
 10	10.0
 100	200.0
@@ -462,7 +474,7 @@ Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/1043668036/332712287.10
 98	196.0
 query: SELECT DEST2.* FROM DEST2
 Input: default/dest2
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/473793334/1186860826.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/957563514/10000
 0	0.0
 10	10.0
 100	200.0

@@ -60,24 +60,6 @@ public class ObjectInspectorUtils {
   
   
   static ArrayList<ArrayList<String>> integerArrayCache = new ArrayList<ArrayList<String>>();
-  /**
-   * Returns an array of Integer strings, starting from "0".
-   * This function caches the arrays to provide a better performance. 
-   */
-  public static ArrayList<String> getIntegerArray(int size) {
-    while (integerArrayCache.size() <= size) {
-      integerArrayCache.add(null);
-    }
-    ArrayList<String> result = integerArrayCache.get(size);
-    if (result == null) {
-      result = new ArrayList<String>();
-      for (int i=0; i<size; i++) {
-        result.add(Integer.valueOf(i).toString());
-      }
-      integerArrayCache.set(size, result);
-    }
-    return result;
-  }
 
   static ArrayList<String> integerCSVCache = new ArrayList<String>(); 
   public static String getIntegerCSV(int size) {

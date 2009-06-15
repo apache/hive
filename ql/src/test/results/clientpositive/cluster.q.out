@@ -24,17 +24,17 @@ STAGE PLANS:
                       type: string
                 Reduce Output Operator
                   key expressions:
-                        expr: 0
+                        expr: _col0
                         type: string
                   sort order: +
                   Map-reduce partition columns:
-                        expr: 0
+                        expr: _col0
                         type: string
                   tag: -1
                   value expressions:
-                        expr: 0
+                        expr: _col0
                         type: string
-                        expr: 1
+                        expr: _col1
                         type: string
       Reduce Operator Tree:
         Extract
@@ -52,7 +52,7 @@ STAGE PLANS:
 
 query: SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
 Input: default/src
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/214678633/80263680.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/775179415/10000
 10	val_10
 query: EXPLAIN
 SELECT * FROM SRC x  where x.key = 20 CLUSTER BY key
@@ -80,17 +80,17 @@ STAGE PLANS:
                       type: string
                 Reduce Output Operator
                   key expressions:
-                        expr: 0
+                        expr: _col0
                         type: string
                   sort order: +
                   Map-reduce partition columns:
-                        expr: 0
+                        expr: _col0
                         type: string
                   tag: -1
                   value expressions:
-                        expr: 0
+                        expr: _col0
                         type: string
-                        expr: 1
+                        expr: _col1
                         type: string
       Reduce Operator Tree:
         Extract
@@ -108,7 +108,7 @@ STAGE PLANS:
 
 query: SELECT * FROM SRC x where x.key = 20 CLUSTER BY key
 Input: default/src
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/216341669/198536245.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1647829108/10000
 20	val_20
 query: EXPLAIN
 SELECT x.* FROM SRC x where x.key = 20 CLUSTER BY key
@@ -136,17 +136,17 @@ STAGE PLANS:
                       type: string
                 Reduce Output Operator
                   key expressions:
-                        expr: 0
+                        expr: _col0
                         type: string
                   sort order: +
                   Map-reduce partition columns:
-                        expr: 0
+                        expr: _col0
                         type: string
                   tag: -1
                   value expressions:
-                        expr: 0
+                        expr: _col0
                         type: string
-                        expr: 1
+                        expr: _col1
                         type: string
       Reduce Operator Tree:
         Extract
@@ -164,7 +164,7 @@ STAGE PLANS:
 
 query: SELECT x.* FROM SRC x where x.key = 20 CLUSTER BY key
 Input: default/src
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/323533340/5794695.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/365690364/10000
 20	val_20
 query: EXPLAIN
 SELECT x.*  FROM SRC x where x.key = 20 CLUSTER BY x.key
@@ -192,17 +192,17 @@ STAGE PLANS:
                       type: string
                 Reduce Output Operator
                   key expressions:
-                        expr: 0
+                        expr: _col0
                         type: string
                   sort order: +
                   Map-reduce partition columns:
-                        expr: 0
+                        expr: _col0
                         type: string
                   tag: -1
                   value expressions:
-                        expr: 0
+                        expr: _col0
                         type: string
-                        expr: 1
+                        expr: _col1
                         type: string
       Reduce Operator Tree:
         Extract
@@ -220,7 +220,7 @@ STAGE PLANS:
 
 query: SELECT x.*  FROM SRC x where x.key = 20 CLUSTER BY x.key
 Input: default/src
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/1217098935/331281713.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1392867261/10000
 20	val_20
 query: EXPLAIN
 SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY key
@@ -248,17 +248,17 @@ STAGE PLANS:
                       type: string
                 Reduce Output Operator
                   key expressions:
-                        expr: 0
+                        expr: _col0
                         type: string
                   sort order: +
                   Map-reduce partition columns:
-                        expr: 0
+                        expr: _col0
                         type: string
                   tag: -1
                   value expressions:
-                        expr: 0
+                        expr: _col0
                         type: string
-                        expr: 1
+                        expr: _col1
                         type: string
       Reduce Operator Tree:
         Extract
@@ -276,7 +276,7 @@ STAGE PLANS:
 
 query: SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY key
 Input: default/src
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/31096986/775877790.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1057006857/10000
 20	val_20
 query: EXPLAIN
 SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY x.key
@@ -304,17 +304,17 @@ STAGE PLANS:
                       type: string
                 Reduce Output Operator
                   key expressions:
-                        expr: 0
+                        expr: _col0
                         type: string
                   sort order: +
                   Map-reduce partition columns:
-                        expr: 0
+                        expr: _col0
                         type: string
                   tag: -1
                   value expressions:
-                        expr: 0
+                        expr: _col0
                         type: string
-                        expr: 1
+                        expr: _col1
                         type: string
       Reduce Operator Tree:
         Extract
@@ -332,7 +332,7 @@ STAGE PLANS:
 
 query: SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY x.key
 Input: default/src
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/1311539054/408350350.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1855630481/10000
 20	val_20
 query: EXPLAIN
 SELECT x.key, x.value as v1  FROM SRC x where x.key = 20 CLUSTER BY v1
@@ -360,17 +360,17 @@ STAGE PLANS:
                       type: string
                 Reduce Output Operator
                   key expressions:
-                        expr: 1
+                        expr: _col1
                         type: string
                   sort order: +
                   Map-reduce partition columns:
-                        expr: 1
+                        expr: _col1
                         type: string
                   tag: -1
                   value expressions:
-                        expr: 0
+                        expr: _col0
                         type: string
-                        expr: 1
+                        expr: _col1
                         type: string
       Reduce Operator Tree:
         Extract
@@ -388,7 +388,7 @@ STAGE PLANS:
 
 query: SELECT x.key, x.value as v1  FROM SRC x where x.key = 20 CLUSTER BY v1
 Input: default/src
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/410641125/337645701.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1870112839/10000
 20	val_20
 query: EXPLAIN
 SELECT y.* from (SELECT x.* FROM SRC x CLUSTER BY x.key) y where y.key = 20
@@ -412,29 +412,29 @@ STAGE PLANS:
                     type: string
               Reduce Output Operator
                 key expressions:
-                      expr: 0
+                      expr: _col0
                       type: string
                 sort order: +
                 Map-reduce partition columns:
-                      expr: 0
+                      expr: _col0
                       type: string
                 tag: -1
                 value expressions:
-                      expr: 0
+                      expr: _col0
                       type: string
-                      expr: 1
+                      expr: _col1
                       type: string
       Reduce Operator Tree:
         Extract
           Filter Operator
             predicate:
-                expr: (UDFToDouble(0) = UDFToDouble(20))
+                expr: (UDFToDouble(_col0) = UDFToDouble(20))
                 type: boolean
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
               File Output Operator
                 compressed: false
@@ -450,7 +450,7 @@ STAGE PLANS:
 
 query: SELECT y.* from (SELECT x.* FROM SRC x CLUSTER BY x.key) y where y.key = 20
 Input: default/src
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/20608200/132489807.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/980077979/10000
 20	val_20
 query: EXPLAIN 
 SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key)  where x.key = 20 CLUSTER BY v1
@@ -467,22 +467,20 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         y 
-            Select Operator
-              expressions:
+            Reduce Output Operator
+              key expressions:
                     expr: key
                     type: string
-              Reduce Output Operator
-                key expressions:
-                      expr: 0
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: 0
-                      type: string
-                tag: 1
-                value expressions:
-                      expr: 0
-                      type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
         x 
             Reduce Output Operator
               key expressions:
@@ -503,19 +501,19 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE.0} {VALUE.1}
-            1 {VALUE.0}
+            0 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col0} {VALUE._col1}
           Filter Operator
             predicate:
-                expr: (UDFToDouble(0) = UDFToDouble(20))
+                expr: (UDFToDouble(_col0) = UDFToDouble(20))
                 type: boolean
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
-                    expr: 2
+                    expr: _col2
                     type: string
               File Output Operator
                 compressed: false
@@ -528,22 +526,22 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive2/hive2/build/ql/tmp/180519365/1223155.10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/666021615/10002 
             Reduce Output Operator
               key expressions:
-                    expr: 1
+                    expr: _col1
                     type: string
               sort order: +
               Map-reduce partition columns:
-                    expr: 1
+                    expr: _col1
                     type: string
               tag: -1
               value expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
-                    expr: 2
+                    expr: _col2
                     type: string
       Reduce Operator Tree:
         Extract
@@ -561,7 +559,7 @@ STAGE PLANS:
 
 query: SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
 Input: default/src
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/304705152/1520883527.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1347314676/10000
 20	val_20	20
 query: EXPLAIN 
 SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
@@ -612,21 +610,21 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE.0} {VALUE.1}
-            1 {VALUE.0} {VALUE.1}
+            0 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col0} {VALUE._col1}
           Filter Operator
             predicate:
-                expr: (UDFToDouble(0) = UDFToDouble(20))
+                expr: (UDFToDouble(_col0) = UDFToDouble(20))
                 type: boolean
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
-                    expr: 2
+                    expr: _col2
                     type: string
-                    expr: 3
+                    expr: _col3
                     type: string
               File Output Operator
                 compressed: false
@@ -639,24 +637,24 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive2/hive2/build/ql/tmp/273445284/1259872115.10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/37635850/10002 
             Reduce Output Operator
               key expressions:
-                    expr: 1
+                    expr: _col1
                     type: string
               sort order: +
               Map-reduce partition columns:
-                    expr: 1
+                    expr: _col1
                     type: string
               tag: -1
               value expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
-                    expr: 2
+                    expr: _col2
                     type: string
-                    expr: 3
+                    expr: _col3
                     type: string
       Reduce Operator Tree:
         Extract
@@ -674,7 +672,7 @@ STAGE PLANS:
 
 query: SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
 Input: default/src
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/224961014/306327097.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/954552739/10000
 20	val_20	20	val_20
 query: EXPLAIN
 SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY x.key
@@ -725,21 +723,21 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE.0} {VALUE.1}
-            1 {VALUE.0} {VALUE.1}
+            0 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col0} {VALUE._col1}
           Filter Operator
             predicate:
-                expr: (UDFToDouble(0) = UDFToDouble(20))
+                expr: (UDFToDouble(_col0) = UDFToDouble(20))
                 type: boolean
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
-                    expr: 2
+                    expr: _col2
                     type: string
-                    expr: 3
+                    expr: _col3
                     type: string
               File Output Operator
                 compressed: false
@@ -752,24 +750,24 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive2/hive2/build/ql/tmp/389423102/202869602.10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/950425430/10002 
             Reduce Output Operator
               key expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
               sort order: +
               Map-reduce partition columns:
-                    expr: 0
+                    expr: _col0
                     type: string
               tag: -1
               value expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
-                    expr: 2
+                    expr: _col2
                     type: string
-                    expr: 3
+                    expr: _col3
                     type: string
       Reduce Operator Tree:
         Extract
@@ -787,7 +785,7 @@ STAGE PLANS:
 
 query: SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY x.key
 Input: default/src
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/171221765/388816243.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/245227185/10000
 20	val_20	20	val_20
 query: EXPLAIN
 SELECT x.key, x.value as v1, y.key as yk  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY key
@@ -804,22 +802,20 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         y 
-            Select Operator
-              expressions:
+            Reduce Output Operator
+              key expressions:
                     expr: key
                     type: string
-              Reduce Output Operator
-                key expressions:
-                      expr: 0
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: 0
-                      type: string
-                tag: 1
-                value expressions:
-                      expr: 0
-                      type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
         x 
             Reduce Output Operator
               key expressions:
@@ -840,19 +836,19 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE.0} {VALUE.1}
-            1 {VALUE.0}
+            0 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col0} {VALUE._col1}
           Filter Operator
             predicate:
-                expr: (UDFToDouble(0) = UDFToDouble(20))
+                expr: (UDFToDouble(_col0) = UDFToDouble(20))
                 type: boolean
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
-                    expr: 2
+                    expr: _col2
                     type: string
               File Output Operator
                 compressed: false
@@ -865,22 +861,22 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive2/hive2/build/ql/tmp/399836187/1625046097.10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1181511478/10002 
             Reduce Output Operator
               key expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
               sort order: +
               Map-reduce partition columns:
-                    expr: 0
+                    expr: _col0
                     type: string
               tag: -1
               value expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
-                    expr: 2
+                    expr: _col2
                     type: string
       Reduce Operator Tree:
         Extract
@@ -898,7 +894,7 @@ STAGE PLANS:
 
 query: SELECT x.key, x.value as v1, y.key as yk  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY key
 Input: default/src
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/667900999/93186085.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/350754453/10000
 20	val_20	20
 query: EXPLAIN
 SELECT unioninput.*
@@ -933,23 +929,23 @@ STAGE PLANS:
                 Union
                   Select Operator
                     expressions:
-                          expr: 0
+                          expr: _col0
                           type: string
-                          expr: 1
+                          expr: _col1
                           type: string
                     Reduce Output Operator
                       key expressions:
-                            expr: 0
+                            expr: _col0
                             type: string
                       sort order: +
                       Map-reduce partition columns:
-                            expr: 0
+                            expr: _col0
                             type: string
                       tag: -1
                       value expressions:
-                            expr: 0
+                            expr: _col0
                             type: string
-                            expr: 1
+                            expr: _col1
                             type: string
         null-subquery2:unioninput-subquery2:src 
             Filter Operator
@@ -965,23 +961,23 @@ STAGE PLANS:
                 Union
                   Select Operator
                     expressions:
-                          expr: 0
+                          expr: _col0
                           type: string
-                          expr: 1
+                          expr: _col1
                           type: string
                     Reduce Output Operator
                       key expressions:
-                            expr: 0
+                            expr: _col0
                             type: string
                       sort order: +
                       Map-reduce partition columns:
-                            expr: 0
+                            expr: _col0
                             type: string
                       tag: -1
                       value expressions:
-                            expr: 0
+                            expr: _col0
                             type: string
-                            expr: 1
+                            expr: _col1
                             type: string
       Reduce Operator Tree:
         Extract
@@ -1005,7 +1001,7 @@ FROM (
 ) unioninput
 CLUSTER BY unioninput.key
 Input: default/src
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/730558416/61341521.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1288179627/10000
 0	val_0
 0	val_0
 0	val_0

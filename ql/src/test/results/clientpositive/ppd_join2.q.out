@@ -38,17 +38,17 @@ STAGE PLANS:
                         type: string
                   Reduce Output Operator
                     key expressions:
-                          expr: 0
+                          expr: _col0
                           type: string
                     sort order: +
                     Map-reduce partition columns:
-                          expr: 0
+                          expr: _col0
                           type: string
                     tag: 1
                     value expressions:
-                          expr: 0
+                          expr: _col0
                           type: string
-                          expr: 1
+                          expr: _col1
                           type: string
         src1:src 
             Filter Operator
@@ -67,29 +67,29 @@ STAGE PLANS:
                         type: string
                   Filter Operator
                     predicate:
-                        expr: (0 < '400')
+                        expr: (_col0 < '400')
                         type: boolean
                     Reduce Output Operator
                       key expressions:
-                            expr: 0
+                            expr: _col0
                             type: string
                       sort order: +
                       Map-reduce partition columns:
-                            expr: 0
+                            expr: _col0
                             type: string
                       tag: 0
                       value expressions:
-                            expr: 0
+                            expr: _col0
                             type: string
-                            expr: 1
+                            expr: _col1
                             type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE.0} {VALUE.1}
-            1 {VALUE.0} {VALUE.1}
+            0 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col0} {VALUE._col1}
           File Output Operator
             compressed: false
             GlobalTableId: 0
@@ -104,21 +104,21 @@ STAGE PLANS:
         $INTNAME 
             Reduce Output Operator
               key expressions:
-                    expr: 1
+                    expr: _col1
                     type: string
               sort order: +
               Map-reduce partition columns:
-                    expr: 1
+                    expr: _col1
                     type: string
               tag: 0
               value expressions:
-                    expr: 2
+                    expr: _col2
                     type: string
-                    expr: 3
+                    expr: _col3
                     type: string
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
         src3:src 
             Filter Operator
@@ -137,34 +137,34 @@ STAGE PLANS:
                         type: string
                   Reduce Output Operator
                     key expressions:
-                          expr: 1
+                          expr: _col1
                           type: string
                     sort order: +
                     Map-reduce partition columns:
-                          expr: 1
+                          expr: _col1
                           type: string
                     tag: 1
                     value expressions:
-                          expr: 0
+                          expr: _col0
                           type: string
-                          expr: 1
+                          expr: _col1
                           type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE.0} {VALUE.1} {VALUE.2} {VALUE.3}
-            1 {VALUE.0} {VALUE.1}
+            0 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3}
+            1 {VALUE._col0} {VALUE._col1}
           Filter Operator
             predicate:
-                expr: (((((2 <> '311') and ((3 <> 'val_50') or (2 > '1'))) and ((0 <> '10') or (2 <> '10'))) and (0 <> '14')) and (sqrt(UDFToDouble(4)) <> UDFToDouble(13)))
+                expr: (((((_col2 <> '311') and ((_col3 <> 'val_50') or (_col2 > '1'))) and ((_col0 <> '10') or (_col2 <> '10'))) and (_col0 <> '14')) and (sqrt(UDFToDouble(_col4)) <> UDFToDouble(13)))
                 type: boolean
             Select Operator
               expressions:
-                    expr: 2
+                    expr: _col2
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
               File Output Operator
                 compressed: false
@@ -189,7 +189,7 @@ JOIN
 ON src1.c2 = src3.c6
 WHERE src1.c1 <> '311' and (src1.c2 <> 'val_50' or src1.c1 > '1') and (src2.c3 <> '10' or src1.c1 <> '10') and (src2.c3 <> '14') and (sqrt(src3.c5) <> 13)
 Input: default/src
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/1894395229/1010812470.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1480187717/10000
 0	val_0
 0	val_0
 0	val_0

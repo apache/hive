@@ -52,21 +52,21 @@ STAGE PLANS:
           condition map:
                Outer Join 0 to 1
           condition expressions:
-            0 {VALUE.0} {VALUE.1}
-            1 {VALUE.0} {VALUE.1}
+            0 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col0} {VALUE._col1}
           Filter Operator
             predicate:
-                expr: ((((0 > '10') and (0 < '20')) and (2 > '15')) and (2 < '25'))
+                expr: ((((_col0 > '10') and (_col0 < '20')) and (_col2 > '15')) and (_col2 < '25'))
                 type: boolean
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
-                    expr: 2
+                    expr: _col2
                     type: string
-                    expr: 3
+                    expr: _col3
                     type: string
               File Output Operator
                 compressed: false
@@ -88,7 +88,7 @@ query: FROM
  SELECT a.key, a.value, b.key, b.value
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25'
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/68623657/698316651.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1943171207/10000
 150	val_150	150	val_150
 152	val_152	152	val_152
 152	val_152	152	val_152

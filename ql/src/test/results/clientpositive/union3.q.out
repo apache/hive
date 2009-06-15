@@ -47,9 +47,9 @@ STAGE PLANS:
                   sort order: 
                   tag: -1
                   value expressions:
-                        expr: 0
+                        expr: _col0
                         type: string
-                        expr: 1
+                        expr: _col1
                         type: string
       Reduce Operator Tree:
         Extract
@@ -69,11 +69,11 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive2/hive2/build/ql/tmp/555043680/260595107.10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/578553835/10002 
           Union
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: int
               File Output Operator
                 compressed: false
@@ -81,11 +81,11 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        /data/users/njain/hive2/hive2/build/ql/tmp/555043680/260595107.10003 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/578553835/10003 
           Union
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: int
               File Output Operator
                 compressed: false
@@ -93,11 +93,11 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        /data/users/njain/hive2/hive2/build/ql/tmp/555043680/260595107.10005 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/578553835/10005 
           Union
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: int
               File Output Operator
                 compressed: false
@@ -105,11 +105,11 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        /data/users/njain/hive2/hive2/build/ql/tmp/555043680/260595107.10007 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/578553835/10007 
           Union
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: int
               File Output Operator
                 compressed: false
@@ -133,9 +133,9 @@ STAGE PLANS:
                   sort order: 
                   tag: -1
                   value expressions:
-                        expr: 0
+                        expr: _col0
                         type: string
-                        expr: 1
+                        expr: _col1
                         type: string
       Reduce Operator Tree:
         Extract
@@ -167,9 +167,9 @@ STAGE PLANS:
                   sort order: 
                   tag: -1
                   value expressions:
-                        expr: 0
+                        expr: _col0
                         type: string
-                        expr: 1
+                        expr: _col1
                         type: string
       Reduce Operator Tree:
         Extract
@@ -189,18 +189,18 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive2/hive2/build/ql/tmp/555043680/260595107.10004 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/578553835/10004 
             Reduce Output Operator
               key expressions:
-                    expr: 0
+                    expr: _col0
                     type: int
               sort order: +
               Map-reduce partition columns:
-                    expr: 0
+                    expr: _col0
                     type: int
               tag: -1
               value expressions:
-                    expr: 0
+                    expr: _col0
                     type: int
       Reduce Operator Tree:
         Extract
@@ -227,9 +227,9 @@ STAGE PLANS:
                   sort order: 
                   tag: -1
                   value expressions:
-                        expr: 0
+                        expr: _col0
                         type: string
-                        expr: 1
+                        expr: _col1
                         type: string
       Reduce Operator Tree:
         Extract
@@ -249,18 +249,18 @@ STAGE PLANS:
   Stage: Stage-7
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive2/hive2/build/ql/tmp/555043680/260595107.10006 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/578553835/10006 
             Reduce Output Operator
               key expressions:
-                    expr: 0
+                    expr: _col0
                     type: int
               sort order: +
               Map-reduce partition columns:
-                    expr: 0
+                    expr: _col0
                     type: int
               tag: -1
               value expressions:
-                    expr: 0
+                    expr: _col0
                     type: int
       Reduce Operator Tree:
         Extract
@@ -300,7 +300,7 @@ Input: default/src
 Output: default/union_out
 query: select * from union_out cluster by id
 Input: default/union_out
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/218470726/361929366.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1563122271/10000
 1
 2
 3

@@ -35,21 +35,21 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE.0} {VALUE.1}
-            1 {VALUE.0} {VALUE.1}
+            0 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col0} {VALUE._col1}
           Filter Operator
             predicate:
-                expr: ((UDFToDouble(0) < UDFToDouble(10)) and (UDFToDouble(2) < UDFToDouble(10)))
+                expr: ((UDFToDouble(_col0) < UDFToDouble(10)) and (UDFToDouble(_col2) < UDFToDouble(10)))
                 type: boolean
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
-                    expr: 2
+                    expr: _col2
                     type: string
-                    expr: 3
+                    expr: _col3
                     type: string
               File Output Operator
                 compressed: false
@@ -62,27 +62,27 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive2/hive2/build/ql/tmp/872589019/322144448.10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/30533864/10002 
             Reduce Output Operator
               key expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
-                    expr: 2
+                    expr: _col2
                     type: string
-                    expr: 3
+                    expr: _col3
                     type: string
               sort order: ++++
               tag: -1
               value expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
-                    expr: 2
+                    expr: _col2
                     type: string
-                    expr: 3
+                    expr: _col3
                     type: string
       Reduce Operator Tree:
         Extract
@@ -100,7 +100,7 @@ STAGE PLANS:
 
 query: SELECT *  FROM src src1 JOIN src src2 WHERE src1.key < 10 and src2.key < 10 SORT BY src1.key, src1.value, src2.key, src2.value
 Input: default/src
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/405919902/905413263.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/872178280/10000
 0	val_0	0	val_0
 0	val_0	0	val_0
 0	val_0	0	val_0

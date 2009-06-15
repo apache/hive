@@ -23,16 +23,17 @@ STAGE PLANS:
                     expr: value
                     type: string
               Union
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  mode: hash
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: 0
-                          type: bigint
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    mode: hash
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
         null-subquery1-subquery2:unionsrc-subquery1-subquery2:s2 
             Select Operator
               expressions:
@@ -41,16 +42,17 @@ STAGE PLANS:
                     expr: value
                     type: string
               Union
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  mode: hash
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: 0
-                          type: bigint
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    mode: hash
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
         null-subquery2:unionsrc-subquery2:s3 
             Select Operator
               expressions:
@@ -59,24 +61,25 @@ STAGE PLANS:
                     expr: value
                     type: string
               Union
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  mode: hash
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: 0
-                          type: bigint
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    mode: hash
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
+                expr: count(VALUE._col0)
           mode: mergepartial
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: bigint
             File Output Operator
               compressed: false
@@ -94,5 +97,5 @@ query: select count(1) FROM (select s1.key as key, s1.value as value from src s1
                         select s2.key as key, s2.value as value from src s2 UNION ALL
                         select s3.key as key, s3.value as value from src s3) unionsrc
 Input: default/src
-Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/280070880/627311455.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1321381431/10000
 1500

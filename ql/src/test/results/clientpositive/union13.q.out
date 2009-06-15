@@ -24,9 +24,9 @@ STAGE PLANS:
               Union
                 Select Operator
                   expressions:
-                        expr: 0
+                        expr: _col0
                         type: string
-                        expr: 1
+                        expr: _col1
                         type: string
                   File Output Operator
                     compressed: false
@@ -44,9 +44,9 @@ STAGE PLANS:
               Union
                 Select Operator
                   expressions:
-                        expr: 0
+                        expr: _col0
                         type: string
-                        expr: 1
+                        expr: _col1
                         type: string
                   File Output Operator
                     compressed: false
@@ -63,7 +63,7 @@ STAGE PLANS:
 query: select unionsrc.key, unionsrc.value FROM (select s1.key as key, s1.value as value from src s1 UNION  ALL  
                                           select s2.key as key, s2.value as value from src s2) unionsrc
 Input: default/src
-Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/289566941/188295561.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/302836026/10000
 238	val_238
 238	val_238
 86	val_86

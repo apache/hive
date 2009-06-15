@@ -17,33 +17,37 @@ STAGE PLANS:
               predicate:
                   expr: (UDFToDouble(key) = UDFToDouble(9999))
                   type: boolean
-              Group By Operator
-                aggregations:
-                      expr: count(1)
-                      expr: count(DISTINCT value)
-                keys:
+              Select Operator
+                expressions:
                       expr: value
                       type: string
-                mode: hash
-                Reduce Output Operator
-                  key expressions:
-                        expr: 0
+                Group By Operator
+                  aggregations:
+                        expr: count(1)
+                        expr: count(DISTINCT value)
+                  keys:
+                        expr: value
                         type: string
-                  sort order: +
-                  Map-reduce partition columns:
-                        expr: 0
-                        type: string
-                  tag: -1
-                  value expressions:
-                        expr: 1
-                        type: bigint
-                        expr: 2
-                        type: bigint
+                  mode: hash
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: -1
+                    value expressions:
+                          expr: _col1
+                          type: bigint
+                          expr: _col2
+                          type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
-                expr: count(DISTINCT KEY.0)
+                expr: count(VALUE._col0)
+                expr: count(DISTINCT KEY._col0)
           mode: partial2
           File Output Operator
             compressed: false
@@ -56,26 +60,26 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive2/hive2/build/ql/tmp/239528358/1642297313.10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1897268457/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
               value expressions:
-                    expr: 0
+                    expr: _col0
                     type: bigint
-                    expr: 1
+                    expr: _col1
                     type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
-                expr: count(VALUE.1)
+                expr: count(VALUE._col0)
+                expr: count(VALUE._col1)
           mode: final
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: bigint
-                  expr: 1
+                  expr: _col1
                   type: bigint
             File Output Operator
               compressed: false
@@ -91,7 +95,7 @@ STAGE PLANS:
 
 query: select count(1), count(distinct x.value) from src x where x.key = 9999
 Input: default/src
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/325692617/1828692774.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1722609002/10000
 0	0
 query: explain
 select count(1), count(distinct x.value) from src x where x.key = 9999
@@ -111,36 +115,40 @@ STAGE PLANS:
               predicate:
                   expr: (UDFToDouble(key) = UDFToDouble(9999))
                   type: boolean
-              Group By Operator
-                aggregations:
-                      expr: count(1)
-                      expr: count(DISTINCT value)
-                keys:
+              Select Operator
+                expressions:
                       expr: value
                       type: string
-                mode: hash
-                Reduce Output Operator
-                  key expressions:
-                        expr: 0
+                Group By Operator
+                  aggregations:
+                        expr: count(1)
+                        expr: count(DISTINCT value)
+                  keys:
+                        expr: value
                         type: string
-                  sort order: +
-                  tag: -1
-                  value expressions:
-                        expr: 1
-                        type: bigint
-                        expr: 2
-                        type: bigint
+                  mode: hash
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    tag: -1
+                    value expressions:
+                          expr: _col1
+                          type: bigint
+                          expr: _col2
+                          type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
-                expr: count(DISTINCT KEY.0)
+                expr: count(VALUE._col0)
+                expr: count(DISTINCT KEY._col0)
           mode: mergepartial
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: bigint
-                  expr: 1
+                  expr: _col1
                   type: bigint
             File Output Operator
               compressed: false
@@ -156,7 +164,7 @@ STAGE PLANS:
 
 query: select count(1), count(distinct x.value) from src x where x.key = 9999
 Input: default/src
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/335823350/278031676.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/767488780/10000
 0	0
 query: explain
 select count(1), count(distinct x.value) from src x where x.key = 9999
@@ -177,23 +185,24 @@ STAGE PLANS:
               predicate:
                   expr: (UDFToDouble(key) = UDFToDouble(9999))
                   type: boolean
-              Reduce Output Operator
-                key expressions:
+              Select Operator
+                expressions:
                       expr: value
                       type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: value
-                      type: string
-                tag: -1
-                value expressions:
-                      expr: 1
-                      type: int
+                Reduce Output Operator
+                  key expressions:
+                        expr: value
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: value
+                        type: string
+                  tag: -1
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
-                expr: count(DISTINCT KEY.0)
+                expr: count(VALUE._col0)
+                expr: count(DISTINCT KEY._col0)
           mode: partial1
           File Output Operator
             compressed: false
@@ -206,26 +215,26 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive2/hive2/build/ql/tmp/1692279252/140064107.10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/366816975/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
               value expressions:
-                    expr: 0
+                    expr: _col0
                     type: bigint
-                    expr: 1
+                    expr: _col1
                     type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
-                expr: count(VALUE.1)
+                expr: count(VALUE._col0)
+                expr: count(VALUE._col1)
           mode: final
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: bigint
-                  expr: 1
+                  expr: _col1
                   type: bigint
             File Output Operator
               compressed: false
@@ -241,7 +250,7 @@ STAGE PLANS:
 
 query: select count(1), count(distinct x.value) from src x where x.key = 9999
 Input: default/src
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/610656938/142519338.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/449391495/10000
 0	0
 query: explain
 select count(1), count(distinct x.value) from src x where x.key = 9999
@@ -261,26 +270,27 @@ STAGE PLANS:
               predicate:
                   expr: (UDFToDouble(key) = UDFToDouble(9999))
                   type: boolean
-              Reduce Output Operator
-                key expressions:
+              Select Operator
+                expressions:
                       expr: value
                       type: string
-                sort order: +
-                tag: -1
-                value expressions:
-                      expr: 1
-                      type: int
+                Reduce Output Operator
+                  key expressions:
+                        expr: value
+                        type: string
+                  sort order: +
+                  tag: -1
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
-                expr: count(DISTINCT KEY.0)
+                expr: count(VALUE._col0)
+                expr: count(DISTINCT KEY._col0)
           mode: complete
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: bigint
-                  expr: 1
+                  expr: _col1
                   type: bigint
             File Output Operator
               compressed: false
@@ -296,5 +306,5 @@ STAGE PLANS:
 
 query: select count(1), count(distinct x.value) from src x where x.key = 9999
 Input: default/src
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/196703351/357121241.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1178763568/10000
 0	0

@@ -40,18 +40,18 @@ STAGE PLANS:
                   sort order: 
                   tag: -1
                   value expressions:
-                        expr: 0
+                        expr: _col0
                         type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
+                expr: count(VALUE._col0)
           mode: mergepartial
           Select Operator
             expressions:
                   expr: 'tst1'
                   type: string
-                  expr: UDFToString(0)
+                  expr: UDFToString(_col0)
                   type: string
             File Output Operator
               compressed: false
@@ -64,69 +64,69 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive2/hive2/build/ql/tmp/560748110/176868755.10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1399413755/10002 
           Union
             Reduce Output Operator
               key expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
               sort order: +
               Map-reduce partition columns:
-                    expr: 0
+                    expr: _col0
                     type: string
               tag: 1
               value expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
-        /data/users/njain/hive2/hive2/build/ql/tmp/560748110/176868755.10003 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1399413755/10003 
           Union
             Reduce Output Operator
               key expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
               sort order: +
               Map-reduce partition columns:
-                    expr: 0
+                    expr: _col0
                     type: string
               tag: 1
               value expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
         $INTNAME 
             Reduce Output Operator
               key expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
               sort order: +
               Map-reduce partition columns:
-                    expr: 0
+                    expr: _col0
                     type: string
               tag: 0
               value expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE.0} {VALUE.1}
-            1 {VALUE.0} {VALUE.1}
+            0 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col0} {VALUE._col1}
           Select Operator
             expressions:
-                  expr: 0
+                  expr: _col0
                   type: string
-                  expr: 1
+                  expr: _col1
                   type: string
-                  expr: 2
+                  expr: _col2
                   type: string
-                  expr: 3
+                  expr: _col3
                   type: string
             File Output Operator
               compressed: false
@@ -182,7 +182,7 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive2/hive2/build/ql/tmp/560748110/176868755.10004 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1399413755/10004 
           Union
             File Output Operator
               compressed: false
@@ -191,7 +191,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   name: binary_table
-        /data/users/njain/hive2/hive2/build/ql/tmp/560748110/176868755.10006 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1399413755/10006 
           Union
             File Output Operator
               compressed: false
@@ -214,18 +214,18 @@ STAGE PLANS:
                   sort order: 
                   tag: -1
                   value expressions:
-                        expr: 0
+                        expr: _col0
                         type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
+                expr: count(VALUE._col0)
           mode: mergepartial
           Select Operator
             expressions:
                   expr: 'tst1'
                   type: string
-                  expr: UDFToString(0)
+                  expr: UDFToString(_col0)
                   type: string
             File Output Operator
               compressed: false
@@ -250,7 +250,7 @@ JOIN
       select s4.key as key, s4.value as value from src s4 where s4.key < 10) unionsrc2
 ON (unionsrc1.key = unionsrc2.key)
 Input: default/src
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/770450655/797974891.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/572515511/10000
 0	val_0	0	val_0
 0	val_0	0	val_0
 0	val_0	0	val_0

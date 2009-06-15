@@ -15,46 +15,42 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src2 
-            Select Operator
-              expressions:
+            Reduce Output Operator
+              key expressions:
                     expr: key
                     type: string
-              Reduce Output Operator
-                key expressions:
-                      expr: 0
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: 0
-                      type: string
-                tag: 1
-                value expressions:
-                      expr: 0
-                      type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 1
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
         src1 
-            Select Operator
-              expressions:
+            Reduce Output Operator
+              key expressions:
                     expr: key
                     type: string
-              Reduce Output Operator
-                key expressions:
-                      expr: 0
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: 0
-                      type: string
-                tag: 0
-                value expressions:
-                      expr: 0
-                      type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 0
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE.0}
-            1 {VALUE.0}
+            0 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col0} {VALUE._col1}
           File Output Operator
             compressed: false
             GlobalTableId: 0
@@ -69,17 +65,21 @@ STAGE PLANS:
         $INTNAME 
             Reduce Output Operator
               key expressions:
-                    expr: (UDFToDouble(0) + UDFToDouble(1))
+                    expr: (UDFToDouble(_col0) + UDFToDouble(_col2))
                     type: double
               sort order: +
               Map-reduce partition columns:
-                    expr: (UDFToDouble(0) + UDFToDouble(1))
+                    expr: (UDFToDouble(_col0) + UDFToDouble(_col2))
                     type: double
               tag: 0
               value expressions:
-                    expr: 1
+                    expr: _col2
                     type: string
-                    expr: 0
+                    expr: _col3
+                    type: string
+                    expr: _col0
+                    type: string
+                    expr: _col1
                     type: string
         src3 
             Reduce Output Operator
@@ -101,19 +101,19 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE.0} {VALUE.1}
-            1 {VALUE.0} {VALUE.1}
+            0 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3}
+            1 {VALUE._col0} {VALUE._col1}
           Select Operator
             expressions:
-                  expr: 1
+                  expr: _col2
                   type: string
-                  expr: 3
+                  expr: _col5
                   type: string
             Select Operator
               expressions:
-                    expr: UDFToInteger(0)
+                    expr: UDFToInteger(_col0)
                     type: int
-                    expr: 1
+                    expr: _col1
                     type: string
               File Output Operator
                 compressed: false
@@ -141,7 +141,7 @@ Input: default/src
 Output: default/dest_j2
 query: SELECT dest_j2.* FROM dest_j2
 Input: default/dest_j2
-Output: /data/users/njain/hive2/hive2/ql/../build/ql/tmp/1422762997/933821001.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/171725060/10000
 0	val_0
 0	val_0
 0	val_0

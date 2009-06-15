@@ -17,16 +17,15 @@ STAGE PLANS:
       Alias -> Map Operator Tree:
         dest1 
             Select Operator
-              Select Operator
-                expressions:
-                      expr: if true, 1, 2
-                      type: int
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              expressions:
+                    expr: if true, 1, 2
+                    type: int
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -35,7 +34,7 @@ STAGE PLANS:
 
 query: SELECT IF(TRUE, 1, 2) FROM dest1
 Input: default/dest1
-Output: /data/users/zshao/tools/495-trunk-apache-hive/ql/../build/ql/tmp/185617439/895542101.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/923424840/10000
 1
 query: EXPLAIN
 SELECT IF(TRUE, 1, 2), IF(FALSE, 1, 2), IF(NULL, 1, 2), IF(TRUE, "a", "b"),
@@ -56,36 +55,35 @@ STAGE PLANS:
       Alias -> Map Operator Tree:
         dest1 
             Select Operator
-              Select Operator
-                expressions:
-                      expr: if true, 1, 2
-                      type: int
-                      expr: if false, 1, 2
-                      type: int
-                      expr: if null, 1, 2
-                      type: int
-                      expr: if true, 'a', 'b'
-                      type: string
-                      expr: if true, 0.1, 0.2
-                      type: double
-                      expr: if false, UDFToLong(1), UDFToLong(2)
-                      type: bigint
-                      expr: if false, UDFToInteger(UDFToByte(127)), 128
-                      type: int
-                      expr: if false, UDFToShort(UDFToByte(127)), UDFToShort(128)
-                      type: smallint
-                      expr: 128
-                      type: int
-                      expr: 1.0
-                      type: double
-                      expr: '128'
-                      type: string
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              expressions:
+                    expr: if true, 1, 2
+                    type: int
+                    expr: if false, 1, 2
+                    type: int
+                    expr: if null, 1, 2
+                    type: int
+                    expr: if true, 'a', 'b'
+                    type: string
+                    expr: if true, 0.1, 0.2
+                    type: double
+                    expr: if false, UDFToLong(1), UDFToLong(2)
+                    type: bigint
+                    expr: if false, UDFToInteger(UDFToByte(127)), 128
+                    type: int
+                    expr: if false, UDFToShort(UDFToByte(127)), UDFToShort(128)
+                    type: smallint
+                    expr: 128
+                    type: int
+                    expr: 1.0
+                    type: double
+                    expr: '128'
+                    type: string
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -98,5 +96,5 @@ query: SELECT IF(TRUE, 1, 2), IF(FALSE, 1, 2), IF(NULL, 1, 2), IF(TRUE, "a", "b"
        CAST(128 AS SMALLINT)), CAST(128 AS INT), CAST(1.0 AS DOUBLE),
        CAST('128' AS STRING) FROM dest1
 Input: default/dest1
-Output: /data/users/zshao/tools/495-trunk-apache-hive/ql/../build/ql/tmp/238198611/144848990.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1340342481/10000
 1	2	2	a	0.1	2	128	128	128	1.0	128

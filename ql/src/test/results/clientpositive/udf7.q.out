@@ -22,64 +22,63 @@ STAGE PLANS:
       Alias -> Map Operator Tree:
         dest1 
             Select Operator
-              Select Operator
-                expressions:
-                      expr: round(ln(3.0), 12)
-                      type: double
-                      expr: ln(0.0)
-                      type: double
-                      expr: ln(UDFToDouble(- 1))
-                      type: double
-                      expr: round(log(3.0), 12)
-                      type: double
-                      expr: log(0.0)
-                      type: double
-                      expr: log(UDFToDouble(- 1))
-                      type: double
-                      expr: round(log2(3.0), 12)
-                      type: double
-                      expr: log2(0.0)
-                      type: double
-                      expr: log2(UDFToDouble(- 1))
-                      type: double
-                      expr: round(log10(3.0), 12)
-                      type: double
-                      expr: log10(0.0)
-                      type: double
-                      expr: log10(UDFToDouble(- 1))
-                      type: double
-                      expr: round(log(UDFToDouble(2), 3.0), 12)
-                      type: double
-                      expr: log(UDFToDouble(2), 0.0)
-                      type: double
-                      expr: log(UDFToDouble(2), UDFToDouble(- 1))
-                      type: double
-                      expr: log(0.5, UDFToDouble(2))
-                      type: double
-                      expr: log(UDFToDouble(2), 0.5)
-                      type: double
-                      expr: round(exp(2.0), 12)
-                      type: double
-                      expr: pow(UDFToDouble(2), UDFToDouble(3))
-                      type: double
-                      expr: pow(UDFToDouble(2), UDFToDouble(3))
-                      type: double
-                      expr: pow(UDFToDouble(2), UDFToDouble(- 3))
-                      type: double
-                      expr: pow(0.5, UDFToDouble(- 3))
-                      type: double
-                      expr: pow(UDFToDouble(4), 0.5)
-                      type: double
-                      expr: pow(UDFToDouble(- 1), 0.5)
-                      type: double
-                      expr: pow(UDFToDouble(- 1), UDFToDouble(2))
-                      type: double
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              expressions:
+                    expr: round(ln(3.0), 12)
+                    type: double
+                    expr: ln(0.0)
+                    type: double
+                    expr: ln(UDFToDouble(- 1))
+                    type: double
+                    expr: round(log(3.0), 12)
+                    type: double
+                    expr: log(0.0)
+                    type: double
+                    expr: log(UDFToDouble(- 1))
+                    type: double
+                    expr: round(log2(3.0), 12)
+                    type: double
+                    expr: log2(0.0)
+                    type: double
+                    expr: log2(UDFToDouble(- 1))
+                    type: double
+                    expr: round(log10(3.0), 12)
+                    type: double
+                    expr: log10(0.0)
+                    type: double
+                    expr: log10(UDFToDouble(- 1))
+                    type: double
+                    expr: round(log(UDFToDouble(2), 3.0), 12)
+                    type: double
+                    expr: log(UDFToDouble(2), 0.0)
+                    type: double
+                    expr: log(UDFToDouble(2), UDFToDouble(- 1))
+                    type: double
+                    expr: log(0.5, UDFToDouble(2))
+                    type: double
+                    expr: log(UDFToDouble(2), 0.5)
+                    type: double
+                    expr: round(exp(2.0), 12)
+                    type: double
+                    expr: pow(UDFToDouble(2), UDFToDouble(3))
+                    type: double
+                    expr: pow(UDFToDouble(2), UDFToDouble(3))
+                    type: double
+                    expr: pow(UDFToDouble(2), UDFToDouble(- 3))
+                    type: double
+                    expr: pow(0.5, UDFToDouble(- 3))
+                    type: double
+                    expr: pow(UDFToDouble(4), 0.5)
+                    type: double
+                    expr: pow(UDFToDouble(- 1), 0.5)
+                    type: double
+                    expr: pow(UDFToDouble(- 1), UDFToDouble(2))
+                    type: double
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -93,5 +92,5 @@ query: SELECT ROUND(LN(3.0),12), LN(0.0), LN(-1), ROUND(LOG(3.0),12), LOG(0.0),
        POW(2,3), POWER(2,3), POWER(2,-3), POWER(0.5, -3), POWER(4, 0.5),
        POWER(-1, 0.5), POWER(-1, 2) FROM dest1
 Input: default/dest1
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/323872951/193616753.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/987082819/10000
 1.098612288668	NULL	NULL	1.098612288668	NULL	NULL	1.584962500721	NULL	NULL	0.47712125472	NULL	NULL	1.584962500721	NULL	NULL	NULL	-1.0	7.389056098931	8.0	8.0	0.125	8.0	2.0	NaN	1.0

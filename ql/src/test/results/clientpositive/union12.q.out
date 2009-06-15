@@ -37,18 +37,18 @@ STAGE PLANS:
                   sort order: 
                   tag: -1
                   value expressions:
-                        expr: 0
+                        expr: _col0
                         type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
+                expr: count(VALUE._col0)
           mode: mergepartial
           Select Operator
             expressions:
                   expr: 'tst1'
                   type: string
-                  expr: 0
+                  expr: _col0
                   type: bigint
             File Output Operator
               compressed: false
@@ -61,19 +61,19 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        /data/users/njain/hive5/hive5/build/ql/tmp/57759680/470566404.10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/289651574/10002 
           Union
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: bigint
               Select Operator
                 expressions:
-                      expr: 0
+                      expr: _col0
                       type: string
-                      expr: UDFToInteger(1)
+                      expr: UDFToInteger(_col1)
                       type: int
                 File Output Operator
                   compressed: false
@@ -83,19 +83,19 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
-        /data/users/njain/hive5/hive5/build/ql/tmp/57759680/470566404.10003 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/289651574/10003 
           Union
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: bigint
               Select Operator
                 expressions:
-                      expr: 0
+                      expr: _col0
                       type: string
-                      expr: UDFToInteger(1)
+                      expr: UDFToInteger(_col1)
                       type: int
                 File Output Operator
                   compressed: false
@@ -105,19 +105,19 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
-        /data/users/njain/hive5/hive5/build/ql/tmp/57759680/470566404.10004 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/289651574/10004 
           Union
             Select Operator
               expressions:
-                    expr: 0
+                    expr: _col0
                     type: string
-                    expr: 1
+                    expr: _col1
                     type: bigint
               Select Operator
                 expressions:
-                      expr: 0
+                      expr: _col0
                       type: string
-                      expr: UDFToInteger(1)
+                      expr: UDFToInteger(_col1)
                       type: int
                 File Output Operator
                   compressed: false
@@ -151,18 +151,18 @@ STAGE PLANS:
                   sort order: 
                   tag: -1
                   value expressions:
-                        expr: 0
+                        expr: _col0
                         type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
+                expr: count(VALUE._col0)
           mode: mergepartial
           Select Operator
             expressions:
                   expr: 'tst2'
                   type: string
-                  expr: 0
+                  expr: _col0
                   type: bigint
             File Output Operator
               compressed: false
@@ -185,18 +185,18 @@ STAGE PLANS:
                   sort order: 
                   tag: -1
                   value expressions:
-                        expr: 0
+                        expr: _col0
                         type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: count(VALUE.0)
+                expr: count(VALUE._col0)
           mode: mergepartial
           Select Operator
             expressions:
                   expr: 'tst3'
                   type: string
-                  expr: 0
+                  expr: _col0
                   type: bigint
             File Output Operator
               compressed: false
@@ -219,7 +219,7 @@ Input: default/srcbucket
 Output: default/tmptable
 query: select * from tmptable x sort by x.key
 Input: default/tmptable
-Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/270230554/696358836.10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/714730334/10000
 tst1	500
 tst2	25
 tst3	1000
