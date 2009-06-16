@@ -124,10 +124,15 @@ public class ExecMapper extends MapReduceBase implements Mapper {
         }
 
         rp = reporter;
-      } catch (Exception e) {
+      } catch (Throwable e) {
         abort = true;
         e.printStackTrace();
-        throw new RuntimeException ("Map operator initialization failed", e);
+        if (e instanceof OutOfMemoryError) {
+          // Don't create a new object if we are already out of memory 
+          throw (OutOfMemoryError) e; 
+        } else {
+          throw new RuntimeException ("Map operator initialization failed", e);
+        }
       }
     }
 
@@ -137,10 +142,15 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       else
         // Since there is no concept of a group, we don't invoke startGroup/endGroup for a mapper
         mo.process((Writable)value);
-    } catch (Exception e) {
+    } catch (Throwable e) {
       abort = true;
       e.printStackTrace();
-      throw new RuntimeException ("Map operator process failed", e);
+      if (e instanceof OutOfMemoryError) {
+        // Don't create a new object if we are already out of memory 
+        throw (OutOfMemoryError) e; 
+      } else {
+        throw new RuntimeException (e.getMessage(), e);
+      }
     }
   }
 
@@ -151,10 +161,15 @@ public class ExecMapper extends MapReduceBase implements Mapper {
         l4j.trace("Close called no row");
         mo.initialize(jc, null, null);
         rp = null;
-      } catch (Exception e) {
+      } catch (Throwable e) {
         abort = true;
         e.printStackTrace();
-        throw new RuntimeException ("Map operator close failed during initialize", e);
+        if (e instanceof OutOfMemoryError) {
+          // Don't create a new object if we are already out of memory 
+          throw (OutOfMemoryError) e; 
+        } else {
+          throw new RuntimeException ("Map operator close failed during initialize", e);
+        }
       }
     }
 
