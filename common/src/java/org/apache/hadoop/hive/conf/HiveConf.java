@@ -117,6 +117,7 @@ public class HiveConf extends Configuration {
     HIVEMAPJOINCACHEROWS("hive.mapjoin.cache.numrows", 10000),
     HIVEGROUPBYMAPINTERVAL("hive.groupby.mapaggr.checkinterval", 100000),
     HIVEMAPAGGRHASHMEMORY("hive.map.aggr.hash.percentmemory", (float)0.5),
+    HIVEMAPAGGRHASHMINREDUCTION("hive.map.aggr.hash.min.reduction", (float)0.5),
     
     // Default file format for CREATE TABLE statement
     // Options: TextFile, SequenceFile

@@ -97,6 +97,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
   transient long    numRowsHashTbl;
   transient int     groupbyMapAggrInterval;
   transient long    numRowsCompareHashAggr;
+  transient float   minReductionHashAggr;
 
   
   /**
@@ -130,7 +131,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
   transient int           totalVariableSize;
   transient int           numEntriesVarSize;
   transient int           numEntriesHashTable;
-
+  
   public void initializeOp(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
 
     totalMemory = Runtime.getRuntime().totalMemory();
@@ -227,6 +228,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
 
       // compare every groupbyMapAggrInterval rows
       numRowsCompareHashAggr = groupbyMapAggrInterval;
+      minReductionHashAggr = HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEMAPAGGRHASHMINREDUCTION);
     }
 
     // init objectInspectors
@@ -475,13 +477,16 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
       if (numRowsInput == numRowsCompareHashAggr) {
         numRowsCompareHashAggr += groupbyMapAggrInterval;
         // map-side aggregation should reduce the entries by at-least half
-        if ((numRowsHashTbl * 2) > numRowsInput) {
-          LOG.warn("Disable Hash Aggr: #hash table = " + numRowsHashTbl + " #total = " + numRowsInput);
+        if (numRowsHashTbl > numRowsInput * minReductionHashAggr) {
+          LOG.warn("Disable Hash Aggr: #hash table = " + numRowsHashTbl + " #total = " + numRowsInput 
+              + " reduction = " + 1.0*(numRowsHashTbl/numRowsInput) + " minReduction = " + minReductionHashAggr);
           flush(true);
           hashAggr = false;
         }
-        else
-          LOG.trace("Hash Aggr Enabled: #hash table = " + numRowsHashTbl + " #total = " + numRowsInput);
+        else {
+          LOG.trace("Hash Aggr Enabled: #hash table = " + numRowsHashTbl + " #total = " + numRowsInput 
+              + " reduction = " + 1.0*(numRowsHashTbl/numRowsInput) + " minReduction = " + minReductionHashAggr);
+        }
       }
     }
 

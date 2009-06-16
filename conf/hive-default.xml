@@ -145,6 +145,14 @@
 </property>
 
 <property>
+  <name>hive.map.aggr.hash.min.reduction</name>
+  <value>0.5</value>
+  <description>Hash aggregation will be turned off if the ratio between hash
+  table size and input rows is bigger than this number. Set to 1 to make sure
+  hash aggregation is never turned off.</description>
+</property>
+
+<property>
   <name>hive.optimize.ppd</name>
   <value>false</value>
   <description>Whether to enable predicate pushdown</description>
