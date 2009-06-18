@@ -45,6 +45,8 @@ Trunk - Unreleased
 
     HIVE-460. Improve Column Pruning. (He Yongqiang via namit)
 
+    HIVE-563. UDF for parsing the URL: parse_url. (Suresh Antony via zshao)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 

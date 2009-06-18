@@ -83,6 +83,7 @@ public class FunctionRegistry {
     registerUDF("regexp", UDFRegExp.class, OperatorType.INFIX, true);
     registerUDF("regexp_replace", UDFRegExpReplace.class, OperatorType.PREFIX, false);
     registerUDF("regexp_extract", UDFRegExpExtract.class, OperatorType.PREFIX, false);
+    registerUDF("parse_url", UDFParseUrl.class, OperatorType.PREFIX, false);
 
     registerUDF("positive", UDFOPPositive.class, OperatorType.PREFIX, true, "+");
     registerUDF("negative", UDFOPNegative.class, OperatorType.PREFIX, true, "-");
