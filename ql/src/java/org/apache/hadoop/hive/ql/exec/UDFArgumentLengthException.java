@@ -16,25 +16,13 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.udf;
+package org.apache.hadoop.hive.ql.exec;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.io.BooleanWritable;
-
-
-public class UDFOPNotNull extends UDF {
-
-  private static Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.udf.UDFOPNotNull");
-
-  BooleanWritable result = new BooleanWritable();
-  public UDFOPNotNull() {
+/**
+ * exception class, thrown when udf arguments have wrong length.
+ */
+public class UDFArgumentLengthException extends UDFArgumentException {
+  public UDFArgumentLengthException(String message) {
+    super(message);
   }
-
-  public BooleanWritable evaluate(Object a)  {
-    result.set(a != null);
-    return result;
-  }
-
 }

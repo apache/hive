@@ -31,6 +31,8 @@ import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
@@ -413,12 +415,12 @@ public class TypeCheckProcFactory {
      * @param name
      * @param children
      * @return The expression node descriptor
-     * @throws UDFArgumentTypeException 
+     * @throws UDFArgumentException 
      */
     public static exprNodeDesc getFuncExprNodeDesc(String name, exprNodeDesc... children) {
       try {
         return getFuncExprNodeDesc(name, Arrays.asList(children));
-      } catch (UDFArgumentTypeException e) {
+      } catch (UDFArgumentException e) {
         throw new RuntimeException("Hive 2 internal error", e);
       }
     }
@@ -429,7 +431,7 @@ public class TypeCheckProcFactory {
      * @throws SemanticException 
      */
     public static exprNodeDesc getFuncExprNodeDesc(String udfName, List<exprNodeDesc> children)
-        throws UDFArgumentTypeException {
+        throws UDFArgumentException {
 
       FunctionInfo fi = FunctionRegistry.getFunctionInfo(udfName);
       if (fi == null) return null;
@@ -471,7 +473,7 @@ public class TypeCheckProcFactory {
 
     static exprNodeDesc getXpathOrFuncExprNodeDesc(ASTNode expr, boolean isFunction,
         ArrayList<exprNodeDesc> children)
-        throws SemanticException, UDFArgumentTypeException {
+        throws SemanticException, UDFArgumentException {
       // return the child directly if the conversion is redundant.
       if (isRedundantConversionFunction(expr, isFunction, children)) {
         assert(children.size() == 1);
@@ -654,6 +656,12 @@ public class TypeCheckProcFactory {
       } catch (UDFArgumentTypeException e) {
         throw new SemanticException(ErrorMsg.INVALID_ARGUMENT_TYPE
             .getMsg(expr.getChild(childrenBegin + e.getArgumentId()), e.getMessage()));
+      } catch (UDFArgumentLengthException e) {
+        throw new SemanticException(ErrorMsg.INVALID_ARGUMENT_LENGTH
+            .getMsg(expr, e.getMessage()));
+      } catch (UDFArgumentException e) {
+        throw new SemanticException(ErrorMsg.INVALID_ARGUMENT
+            .getMsg(expr, e.getMessage()));
       }
     }
     

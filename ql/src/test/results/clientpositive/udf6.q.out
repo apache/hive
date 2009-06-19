@@ -18,7 +18,7 @@ STAGE PLANS:
         dest1 
             Select Operator
               expressions:
-                    expr: if true, 1, 2
+                    expr: if(true, 1, 2)
                     type: int
               File Output Operator
                 compressed: false
@@ -34,16 +34,17 @@ STAGE PLANS:
 
 query: SELECT IF(TRUE, 1, 2) FROM dest1
 Input: default/dest1
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/923424840/10000
+Output: file:/data/users/zshao/tools/549-trunk-apache-hive/build/ql/tmp/1130815402/10000
 1
 query: EXPLAIN
 SELECT IF(TRUE, 1, 2), IF(FALSE, 1, 2), IF(NULL, 1, 2), IF(TRUE, "a", "b"),
-       IF(TRUE, 0.1, 0.2), IF(FALSE, CAST(1 AS BIGINT), 2),
-       IF(FALSE, CAST(127 AS TINYINT), 128), IF(FALSE, CAST(127 AS TINYINT),
-       CAST(128 AS SMALLINT)), CAST(128 AS INT), CAST(1.0 AS DOUBLE),
+       IF(TRUE, 0.1, 0.2), IF(FALSE, CAST(1 AS BIGINT), CAST(2 AS BIGINT)),
+       IF(FALSE, CAST(127 AS TINYINT), CAST(126 AS TINYINT)),
+       IF(FALSE, CAST(127 AS SMALLINT), CAST(128 AS SMALLINT)),
+       CAST(128 AS INT), CAST(1.0 AS DOUBLE),
        CAST('128' AS STRING) FROM dest1
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF dest1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION IF TRUE 1 2)) (TOK_SELEXPR (TOK_FUNCTION IF FALSE 1 2)) (TOK_SELEXPR (TOK_FUNCTION IF TOK_NULL 1 2)) (TOK_SELEXPR (TOK_FUNCTION IF TRUE "a" "b")) (TOK_SELEXPR (TOK_FUNCTION IF TRUE 0.1 0.2)) (TOK_SELEXPR (TOK_FUNCTION IF FALSE (TOK_FUNCTION TOK_BIGINT 1) 2)) (TOK_SELEXPR (TOK_FUNCTION IF FALSE (TOK_FUNCTION TOK_TINYINT 127) 128)) (TOK_SELEXPR (TOK_FUNCTION IF FALSE (TOK_FUNCTION TOK_TINYINT 127) (TOK_FUNCTION TOK_SMALLINT 128))) (TOK_SELEXPR (TOK_FUNCTION TOK_INT 128)) (TOK_SELEXPR (TOK_FUNCTION TOK_DOUBLE 1.0)) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING '128')))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF dest1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION IF TRUE 1 2)) (TOK_SELEXPR (TOK_FUNCTION IF FALSE 1 2)) (TOK_SELEXPR (TOK_FUNCTION IF TOK_NULL 1 2)) (TOK_SELEXPR (TOK_FUNCTION IF TRUE "a" "b")) (TOK_SELEXPR (TOK_FUNCTION IF TRUE 0.1 0.2)) (TOK_SELEXPR (TOK_FUNCTION IF FALSE (TOK_FUNCTION TOK_BIGINT 1) (TOK_FUNCTION TOK_BIGINT 2))) (TOK_SELEXPR (TOK_FUNCTION IF FALSE (TOK_FUNCTION TOK_TINYINT 127) (TOK_FUNCTION TOK_TINYINT 126))) (TOK_SELEXPR (TOK_FUNCTION IF FALSE (TOK_FUNCTION TOK_SMALLINT 127) (TOK_FUNCTION TOK_SMALLINT 128))) (TOK_SELEXPR (TOK_FUNCTION TOK_INT 128)) (TOK_SELEXPR (TOK_FUNCTION TOK_DOUBLE 1.0)) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING '128')))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -56,21 +57,21 @@ STAGE PLANS:
         dest1 
             Select Operator
               expressions:
-                    expr: if true, 1, 2
+                    expr: if(true, 1, 2)
                     type: int
-                    expr: if false, 1, 2
+                    expr: if(false, 1, 2)
                     type: int
-                    expr: if null, 1, 2
+                    expr: if(null, 1, 2)
                     type: int
-                    expr: if true, 'a', 'b'
+                    expr: if(true, 'a', 'b')
                     type: string
-                    expr: if true, 0.1, 0.2
+                    expr: if(true, 0.1, 0.2)
                     type: double
-                    expr: if false, UDFToLong(1), UDFToLong(2)
+                    expr: if(false, UDFToLong(1), UDFToLong(2))
                     type: bigint
-                    expr: if false, UDFToInteger(UDFToByte(127)), 128
-                    type: int
-                    expr: if false, UDFToShort(UDFToByte(127)), UDFToShort(128)
+                    expr: if(false, UDFToByte(127), UDFToByte(126))
+                    type: tinyint
+                    expr: if(false, UDFToShort(127), UDFToShort(128))
                     type: smallint
                     expr: 128
                     type: int
@@ -91,10 +92,11 @@ STAGE PLANS:
 
 
 query: SELECT IF(TRUE, 1, 2), IF(FALSE, 1, 2), IF(NULL, 1, 2), IF(TRUE, "a", "b"),
-       IF(TRUE, 0.1, 0.2), IF(FALSE, CAST(1 AS BIGINT), 2),
-       IF(FALSE, CAST(127 AS TINYINT), 128), IF(FALSE, CAST(127 AS TINYINT),
-       CAST(128 AS SMALLINT)), CAST(128 AS INT), CAST(1.0 AS DOUBLE),
+       IF(TRUE, 0.1, 0.2), IF(FALSE, CAST(1 AS BIGINT), CAST(2 AS BIGINT)),
+       IF(FALSE, CAST(127 AS TINYINT), CAST(126 AS TINYINT)),
+       IF(FALSE, CAST(127 AS SMALLINT), CAST(128 AS SMALLINT)),
+       CAST(128 AS INT), CAST(1.0 AS DOUBLE),
        CAST('128' AS STRING) FROM dest1
 Input: default/dest1
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1340342481/10000
-1	2	2	a	0.1	2	128	128	128	1.0	128
+Output: file:/data/users/zshao/tools/549-trunk-apache-hive/build/ql/tmp/1171008206/10000
+1	2	2	a	0.1	2	126	128	128	1.0	128

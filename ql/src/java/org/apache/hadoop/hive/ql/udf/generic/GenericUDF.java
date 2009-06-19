@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -59,12 +59,12 @@ public abstract class GenericUDF {
    * GenericUDF instance.
    * 
    * @param arguments     The ObjectInspector for the arguments
-   * @throws UDFArgumentTypeException
-   *                      Thrown when arguments have wrong types
+   * @throws UDFArgumentException
+   *                      Thrown when arguments have wrong types, wrong length, etc.
    * @return              The ObjectInspector for the return value
    */
   public abstract ObjectInspector initialize(ObjectInspector[] arguments) 
-      throws UDFArgumentTypeException;
+      throws UDFArgumentException;
   
   /**
    * Evaluate the GenericUDF with the arguments.

@@ -1,0 +1,57 @@
+query: EXPLAIN
+SELECT IF(TRUE, 1, 2) AS COL1,
+       IF(FALSE, CAST(NULL AS STRING), CAST(1 AS STRING)) AS COL2,
+       IF(1=1, IF(2=2, 1, 2), IF(3=3, 3, 4)) AS COL3,
+       IF(2=2, 1, NULL) AS COL4,
+       IF(2=2, NULL, 1) AS COL5,
+       IF(IF(TRUE, NULL, FALSE), 1, 2) AS COL6
+FROM src LIMIT 1
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION IF TRUE 1 2) COL1) (TOK_SELEXPR (TOK_FUNCTION IF FALSE (TOK_FUNCTION TOK_STRING TOK_NULL) (TOK_FUNCTION TOK_STRING 1)) COL2) (TOK_SELEXPR (TOK_FUNCTION IF (= 1 1) (TOK_FUNCTION IF (= 2 2) 1 2) (TOK_FUNCTION IF (= 3 3) 3 4)) COL3) (TOK_SELEXPR (TOK_FUNCTION IF (= 2 2) 1 TOK_NULL) COL4) (TOK_SELEXPR (TOK_FUNCTION IF (= 2 2) TOK_NULL 1) COL5) (TOK_SELEXPR (TOK_FUNCTION IF (TOK_FUNCTION IF TRUE TOK_NULL FALSE) 1 2) COL6)) (TOK_LIMIT 1)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src 
+            Select Operator
+              expressions:
+                    expr: if(true, 1, 2)
+                    type: int
+                    expr: if(false, UDFToString(null), UDFToString(1))
+                    type: string
+                    expr: if((1 = 1), if((2 = 2), 1, 2), if((3 = 3), 3, 4))
+                    type: int
+                    expr: if((2 = 2), 1, null)
+                    type: int
+                    expr: if((2 = 2), null, 1)
+                    type: int
+                    expr: if(if(true, null, false), 1, 2)
+                    type: int
+              Limit
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+
+
+query: SELECT IF(TRUE, 1, 2) AS COL1,
+       IF(FALSE, CAST(NULL AS STRING), CAST(1 AS STRING)) AS COL2,
+       IF(1=1, IF(2=2, 1, 2), IF(3=3, 3, 4)) AS COL3,
+       IF(2=2, 1, NULL) AS COL4,
+       IF(2=2, NULL, 1) AS COL5,
+       IF(IF(TRUE, NULL, FALSE), 1, 2) AS COL6
+FROM src LIMIT 1
+Input: default/src
+Output: file:/home/zhoumin/hive-trunk/build/ql/tmp/293930288/10000
+1	1	1	1	NULL	2

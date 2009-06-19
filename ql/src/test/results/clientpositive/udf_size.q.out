@@ -1,0 +1,57 @@
+query: EXPLAIN
+FROM src_thrift
+SELECT size(src_thrift.lint), 
+       size(src_thrift.lintstring), 
+       size(src_thrift.mstringstring),
+       size(null)
+WHERE  src_thrift.lint IS NOT NULL 
+       AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src_thrift)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION size (. (TOK_TABLE_OR_COL src_thrift) lint))) (TOK_SELEXPR (TOK_FUNCTION size (. (TOK_TABLE_OR_COL src_thrift) lintstring))) (TOK_SELEXPR (TOK_FUNCTION size (. (TOK_TABLE_OR_COL src_thrift) mstringstring))) (TOK_SELEXPR (TOK_FUNCTION size TOK_NULL))) (TOK_WHERE (AND (TOK_FUNCTION TOK_ISNOTNULL (. (TOK_TABLE_OR_COL src_thrift) lint)) (NOT (TOK_FUNCTION TOK_ISNULL (. (TOK_TABLE_OR_COL src_thrift) mstringstring))))) (TOK_LIMIT 1)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src_thrift 
+            Filter Operator
+              predicate:
+                  expr: (lint is not null and not mstringstring is null)
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: size(lint)
+                      type: int
+                      expr: size(lintstring)
+                      type: int
+                      expr: size(mstringstring)
+                      type: int
+                      expr: size(null)
+                      type: int
+                Limit
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+
+
+query: FROM src_thrift
+SELECT size(src_thrift.lint), 
+       size(src_thrift.lintstring), 
+       size(src_thrift.mstringstring),
+       size(null)
+WHERE  src_thrift.lint IS NOT NULL 
+       AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
+Input: default/src_thrift
+Output: file:/home/zhoumin/hive-trunk/build/ql/tmp/639668664/10000
+3	1	1	-1

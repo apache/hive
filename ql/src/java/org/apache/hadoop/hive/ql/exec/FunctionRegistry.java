@@ -52,7 +52,7 @@ public class FunctionRegistry {
     registerUDF("concat", UDFConcat.class, OperatorType.PREFIX, false);
     registerUDF("substr", UDFSubstr.class, OperatorType.PREFIX, false);
 
-    registerUDF("size", UDFSize.class, OperatorType.PREFIX, false);
+    registerGenericUDF("size", GenericUDFSize.class);
 
     registerUDF("round", UDFRound.class, OperatorType.PREFIX, false);
     registerUDF("floor", UDFFloor.class, OperatorType.PREFIX, false);
@@ -128,10 +128,10 @@ public class FunctionRegistry {
     registerUDF("not", UDFOPNot.class, OperatorType.PREFIX, true);
     registerUDF("!", UDFOPNot.class, OperatorType.PREFIX, true, "not");
 
-    registerUDF("isnull", UDFOPNull.class, OperatorType.POSTFIX, true, "is null");
-    registerUDF("isnotnull", UDFOPNotNull.class, OperatorType.POSTFIX, true, "is not null");
+    registerGenericUDF("isnull", GenericUDFOPNull.class);
+    registerGenericUDF("isnotnull", GenericUDFOPNotNull.class);
 
-    registerUDF("if", UDFIf.class, OperatorType.PREFIX, true);
+    registerGenericUDF("if", GenericUDFIf.class);
 
     // Aliases for Java Class Names
     // These are used in getImplicitConvertUDFMethod

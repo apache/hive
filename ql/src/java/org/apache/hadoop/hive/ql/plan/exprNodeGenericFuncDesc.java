@@ -25,7 +25,7 @@ import java.util.List;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -121,10 +121,10 @@ public class exprNodeGenericFuncDesc extends exprNodeDesc implements Serializabl
   /**
    * Create a exprNodeGenericFuncDesc based on the genericUDFClass and the children
    * parameters.
-   * @throws UDFArgumentTypeException
+   * @throws UDFArgumentException
    */
   public static exprNodeGenericFuncDesc newInstance(Class<? extends GenericUDF> genericUDFClass, 
-      List<exprNodeDesc> children) throws UDFArgumentTypeException {
+      List<exprNodeDesc> children) throws UDFArgumentException {
     ObjectInspector[] childrenOIs = new ObjectInspector[children.size()];
     for(int i=0; i<childrenOIs.length; i++) {
       childrenOIs[i] = TypeInfoUtils.getStandardObjectInspectorFromTypeInfo(

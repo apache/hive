@@ -24,6 +24,8 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -252,6 +254,12 @@ public class PartitionPruner {
           } catch (UDFArgumentTypeException e) {
             throw new SemanticException(ErrorMsg.INVALID_ARGUMENT_TYPE
                 .getMsg(expr.getChild(childrenBegin + e.getArgumentId()), e.getMessage()));
+          } catch (UDFArgumentLengthException e) {
+            throw new SemanticException(ErrorMsg.INVALID_ARGUMENT_LENGTH
+                .getMsg(expr, e.getMessage()));
+          } catch (UDFArgumentException e) {
+            throw new SemanticException(ErrorMsg.INVALID_ARGUMENT
+                .getMsg(expr, e.getMessage()));
           }
           
           if (desc instanceof exprNodeFuncDesc && (

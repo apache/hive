@@ -1,0 +1,104 @@
+query: EXPLAIN
+SELECT NULL IS NULL,
+       1 IS NOT NULL, 
+       'my string' IS NOT NULL
+FROM src
+WHERE true IS NOT NULL LIMIT 1
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION TOK_ISNULL TOK_NULL)) (TOK_SELEXPR (TOK_FUNCTION TOK_ISNOTNULL 1)) (TOK_SELEXPR (TOK_FUNCTION TOK_ISNOTNULL 'my string'))) (TOK_WHERE (TOK_FUNCTION TOK_ISNOTNULL true)) (TOK_LIMIT 1)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src 
+            Filter Operator
+              predicate:
+                  expr: true is not null
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: null is null
+                      type: boolean
+                      expr: 1 is not null
+                      type: boolean
+                      expr: 'my string' is not null
+                      type: boolean
+                Limit
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+
+
+query: SELECT NULL IS NULL,
+       1 IS NOT NULL, 
+       'my string' IS NOT NULL
+FROM src
+WHERE true IS NOT NULL LIMIT 1
+Input: default/src
+Output: file:/home/zhoumin/hive-trunk/build/ql/tmp/1515895443/10000
+true	true	true
+query: EXPLAIN
+FROM src_thrift
+SELECT src_thrift.lint IS NOT NULL, 
+       src_thrift.lintstring IS NOT NULL, 
+       src_thrift.mstringstring IS NOT NULL
+WHERE  src_thrift.lint IS NOT NULL 
+       AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src_thrift)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION TOK_ISNOTNULL (. (TOK_TABLE_OR_COL src_thrift) lint))) (TOK_SELEXPR (TOK_FUNCTION TOK_ISNOTNULL (. (TOK_TABLE_OR_COL src_thrift) lintstring))) (TOK_SELEXPR (TOK_FUNCTION TOK_ISNOTNULL (. (TOK_TABLE_OR_COL src_thrift) mstringstring)))) (TOK_WHERE (AND (TOK_FUNCTION TOK_ISNOTNULL (. (TOK_TABLE_OR_COL src_thrift) lint)) (NOT (TOK_FUNCTION TOK_ISNULL (. (TOK_TABLE_OR_COL src_thrift) mstringstring))))) (TOK_LIMIT 1)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src_thrift 
+            Filter Operator
+              predicate:
+                  expr: (lint is not null and not mstringstring is null)
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: lint is not null
+                      type: boolean
+                      expr: lintstring is not null
+                      type: boolean
+                      expr: mstringstring is not null
+                      type: boolean
+                Limit
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+
+
+query: FROM src_thrift
+SELECT src_thrift.lint IS NOT NULL, 
+       src_thrift.lintstring IS NOT NULL, 
+       src_thrift.mstringstring IS NOT NULL
+WHERE  src_thrift.lint IS NOT NULL 
+       AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
+Input: default/src_thrift
+Output: file:/home/zhoumin/hive-trunk/build/ql/tmp/302479509/10000
+true	true	true

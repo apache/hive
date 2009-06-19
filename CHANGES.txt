@@ -75,6 +75,9 @@ Trunk - Unreleased
 
     HIVE-542. UDF: Faster String Like. (Yuntao Jia via zshao)
 
+    HIVE-521. Move size, if, isnull, isnotnull to GenericUDF.
+    (Min Zhou via zshao)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).

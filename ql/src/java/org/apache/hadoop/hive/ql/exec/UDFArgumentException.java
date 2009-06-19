@@ -16,37 +16,20 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.udf;
+package org.apache.hadoop.hive.ql.exec;
 
-import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 
-import java.util.Map;
-import java.util.List;
+/**                                                                                     
+ * exception class, thrown when udf argument have something wrong.
+ */
+public class UDFArgumentException extends HiveException {
 
-public class UDFSize extends UDF {
-
-  IntWritable result = new IntWritable();
-  
-  public UDFSize() {
-  }
-
-  public IntWritable evaluate(Map<?,?> s) {
-    if (s == null) {
-      result.set(-1);
-    } else {
-      result.set(s.size());
-    }
-    return result;
-  }
-
-  public IntWritable evaluate(List<?> s) {
-    if (s == null) {
-      result.set(-1);
-    } else {
-      result.set(s.size());
-    }
-    return result;
+  public UDFArgumentException() {
+    super();
   }
   
+  public UDFArgumentException(String message) {
+    super(message);
+  }
 }

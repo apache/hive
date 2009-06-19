@@ -1,0 +1,1 @@
+FAILED: Error in semantic analysis: line 1:12 Argument Type Mismatch 'wrong type: string': "map" or "list" is expected at function SIZE, but "string" is found

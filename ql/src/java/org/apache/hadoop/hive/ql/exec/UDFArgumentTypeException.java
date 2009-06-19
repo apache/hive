@@ -18,13 +18,12 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**                                                                                     
- * Generic exception class for Hive
+ * exception class, thrown when udf arguments have wrong types.
  */
 
-public class UDFArgumentTypeException extends HiveException {
+public class UDFArgumentTypeException extends UDFArgumentException {
   
   int argumentId;
   
@@ -41,4 +40,3 @@ public class UDFArgumentTypeException extends HiveException {
     return argumentId;
   }
 }
-
