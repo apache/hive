@@ -25,6 +25,9 @@ import java.io.ObjectOutput;
 import java.util.ArrayList;
 
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator.MapJoinObjectCtx;
+import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
 
@@ -79,9 +82,14 @@ public class MapJoinObjectKey implements Externalizable {
       // get the tableDesc from the map stored in the mapjoin operator
       MapJoinObjectCtx ctx = MapJoinOperator.getMapMetadata().get(Integer.valueOf(metadataTag));
       val.readFields(in);      
-      obj = (ArrayList<Object>)ctx.getDeserializer().deserialize(val);
-    } catch (Exception e) {
-      throw new IOException(e.getMessage());
+      obj = 
+        (ArrayList<Object>)
+        ObjectInspectorUtils.copyToStandardObject(
+            ctx.getSerDe().deserialize(val),
+            ctx.getSerDe().getObjectInspector(),
+            ObjectInspectorCopyOption.WRITABLE);
+    } catch (SerDeException e) {
+      throw new IOException(e);
     }
   }
   
@@ -94,11 +102,11 @@ public class MapJoinObjectKey implements Externalizable {
       MapJoinObjectCtx ctx = MapJoinOperator.getMapMetadata().get(Integer.valueOf(metadataTag));
 
       // Different processing for key and value
-      Writable outVal = ctx.getSerializer().serialize(obj, ctx.getSerObjInspector());
+      Writable outVal = ctx.getSerDe().serialize(obj, ctx.getStandardOI());
       outVal.write(out);
     }
-    catch (Exception e) {
-      throw new IOException(e.getMessage());
+    catch (SerDeException e) {
+      throw new IOException(e);
     }
   }
 

@@ -23,7 +23,10 @@ import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
@@ -91,14 +94,27 @@ public class LazyUtils {
     }
   }
 
+
+  static byte[] trueBytes = {(byte)'t', 'r', 'u', 'e'};
+  static byte[] falseBytes = {(byte)'f', 'a', 'l', 's', 'e'};
+
   /**
-   * Write out the text representation of a Primitive Object to a UTF8 byte stream. 
+   * Write out the text representation of a Primitive Object to a UTF8 byte stream.
    * @param out  The UTF8 byte OutputStream
    * @param o    The primitive Object
    */
   public static void writePrimitiveUTF8(OutputStream out, Object o, PrimitiveObjectInspector oi) throws IOException {
     
     switch (oi.getPrimitiveCategory()) {
+      case BOOLEAN: {
+        boolean b = ((BooleanObjectInspector)oi).get(o);
+        if (b) {
+          out.write(trueBytes, 0, trueBytes.length);
+        } else {
+          out.write(falseBytes, 0, falseBytes.length);
+        }
+        break;
+      }
       case BYTE: {
         LazyInteger.writeUTF8(out, ((ByteObjectInspector)oi).get(o));
         break;
@@ -115,27 +131,25 @@ public class LazyUtils {
         LazyLong.writeUTF8(out, ((LongObjectInspector)oi).get(o));
         break;
       }
-      // TODO: We should enable this piece of code, once we pass ObjectInspector in the Operator.init() 
-      // instead of Operator.forward().  Until then, JoinOperator will assume the output columns are
-      // all strings but they may not be.
-      /*
+      case FLOAT: {
+        float f = ((FloatObjectInspector)oi).get(o);
+        ByteBuffer b = Text.encode(String.valueOf(f));
+        out.write(b.array(), 0, b.limit());
+        break;
+      }
+      case DOUBLE: {
+        double d = ((DoubleObjectInspector)oi).get(o);
+        ByteBuffer b = Text.encode(String.valueOf(d));
+        out.write(b.array(), 0, b.limit());
+        break;
+      }
       case STRING: {
         Text t = ((StringObjectInspector)oi).getPrimitiveWritableObject(o);
         out.write(t.getBytes(), 0, t.getLength());
         break;
       }
-      */
       default: {
-        if (o instanceof Text) {
-          // This piece of code improves the performance because we don't need to
-          // convert Text to String then back to Text.  We should rely on the code
-          // block above when JoinOperator is fixed.
-          Text t = (Text)o;
-          out.write(t.getBytes(), 0, t.getLength());
-        } else {
-          ByteBuffer b = Text.encode(o.toString());
-          out.write(b.array(), 0, b.limit());
-        }
+        throw new RuntimeException("Hive internal error.");
       }
     }
   }

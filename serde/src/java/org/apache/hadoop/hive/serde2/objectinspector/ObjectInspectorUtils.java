@@ -183,7 +183,7 @@ public class ObjectInspectorUtils {
             break;
           }
           case WRITABLE: {
-            result = loi.getPrimitiveWritableObject(o);
+            result = loi.getPrimitiveWritableObject(loi.copyObject(o));
             break;
           }
         }

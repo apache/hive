@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -48,22 +49,55 @@ public class JoinOperator extends CommonJoinOperator<joinDesc> implements Serial
 
     ArrayList<ObjectInspector> structFieldObjectInspectors = new ArrayList<ObjectInspector>(totalSz);
 
-    for (Byte alias : order) {
-      int sz = conf.getExprs().get(alias).size();
-      StructObjectInspector fldObjIns = (StructObjectInspector)((StructObjectInspector)inputObjInspector[alias.intValue()]).getStructFieldRef("VALUE").getFieldObjectInspector();
-      for (int i = 0; i < sz; i++) {
-        structFieldObjectInspectors.add(
-            ObjectInspectorUtils.getStandardObjectInspector(
-                fldObjIns.getAllStructFieldRefs().get(i).getFieldObjectInspector(),
-                ObjectInspectorCopyOption.KEEP));
-      }
-    }
-    
-    joinOutputObjectInspector = ObjectInspectorFactory
-    .getStandardStructObjectInspector(conf.getOutputColumnNames(), structFieldObjectInspectors);
-    LOG.info("JOIN " + ((StructObjectInspector)joinOutputObjectInspector).getTypeName() + " totalsz = " + totalSz);
-
     initializeChildren(hconf, reporter, new ObjectInspector[]{joinOutputObjectInspector});
   }
+  
+  public void process(Object row, ObjectInspector rowInspector, int tag)
+      throws HiveException {
+    try {
+      // get alias
+      alias = (byte)tag;
+    
+      if ((lastAlias == null) || (!lastAlias.equals(alias)))
+        nextSz = joinEmitInterval;
+      
+      ArrayList<Object> nr = computeValues(row, joinValues.get(alias), joinValuesObjectInspectors.get(alias));
+      
+      // number of rows for the key in the given table
+      int sz = storage.get(alias).size();
+    
+      // Are we consuming too much memory
+      if (alias == numAliases - 1) {
+        if (sz == joinEmitInterval) {
+          // The input is sorted by alias, so if we are already in the last join operand,
+          // we can emit some results now.
+          // Note this has to be done before adding the current row to the storage,
+          // to preserve the correctness for outer joins.
+          checkAndGenObject();
+          storage.get(alias).clear();
+        }
+      } else {
+        if (sz == nextSz) {
+          // Output a warning if we reached at least 1000 rows for a join operand
+          // We won't output a warning for the last join operand since the size
+          // will never goes to joinEmitInterval.
+          StructObjectInspector soi = (StructObjectInspector)rowInspector;
+          StructField sf = soi.getStructFieldRef(Utilities.ReduceField.KEY.toString());
+          Object keyObject = soi.getStructFieldData(row, sf);
+          LOG.warn("table " + alias + " has " + sz + " rows for join key " + keyObject);
+          nextSz = getNextSize(nextSz);
+        }
+      }
+    
+      // Add the value to the vector
+      storage.get(alias).add(nr);
+    
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new HiveException(e);
+    }
+  }
+
+  
 }
 

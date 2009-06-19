@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,20 +33,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
-import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.mapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.serde2.Deserializer;
-import org.apache.hadoop.hive.serde2.Serializer;
+import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.hive.ql.util.jdbm.htree.HTree;
@@ -60,8 +55,18 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
   private static final long serialVersionUID = 1L;
   static final private Log LOG = LogFactory.getLog(MapJoinOperator.class.getName());
 
+  /**
+   * The expressions for join inputs's join keys.
+   */
   transient protected Map<Byte, List<ExprNodeEvaluator>> joinKeys;
+  /**
+   * The ObjectInspectors for the join inputs's join keys.
+   */
   transient protected Map<Byte, List<ObjectInspector>> joinKeysObjectInspectors;
+  /**
+   * The standard ObjectInspectors for the join inputs's join keys.
+   */
+  transient protected Map<Byte, List<ObjectInspector>> joinKeysStandardObjectInspectors;
 
   transient private int posBigTable;       // one of the tables that is not in memory
   transient int mapJoinRowsKey;            // rows for a given key
@@ -69,51 +74,30 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
   transient protected Map<Byte, HTree> mapJoinTables;
 
   public static class MapJoinObjectCtx {
-    ObjectInspector serObjInspector;
-    Serializer      serializer;
-    Deserializer    deserializer;
-    ObjectInspector deserObjInspector;
+    ObjectInspector standardOI;
+    SerDe      serde;
     
     /**
-     * @param serObjInspector
-     * @param serializer
-     * @param deserializer
-     * @param deserObjInspector
+     * @param standardOI
+     * @param serde
      */
-    public MapJoinObjectCtx(ObjectInspector serObjInspector,
-        Serializer serializer, ObjectInspector deserObjInspector, Deserializer deserializer) {
-      this.serObjInspector = serObjInspector;
-      this.serializer = serializer;
-      this.deserializer = deserializer;
-      this.deserObjInspector = deserObjInspector;
+    public MapJoinObjectCtx(ObjectInspector standardOI, SerDe serde) {
+      this.standardOI = standardOI;
+      this.serde = serde;
     }
     
     /**
-     * @return the objInspector
+     * @return the standardOI
      */
-    public ObjectInspector getSerObjInspector() {
-      return serObjInspector;
+    public ObjectInspector getStandardOI() {
+      return standardOI;
     }
 
     /**
-     * @return the objInspector
+     * @return the serde
      */
-    public ObjectInspector getDeserObjInspector() {
-      return deserObjInspector;
-    }
-    
-    /**
-     * @return the serializer
-     */
-    public Serializer getSerializer() {
-      return serializer;
-    }
-
-    /**
-     * @return the deserializer
-     */
-    public Deserializer getDeserializer() {
-      return deserializer;
+    public SerDe getSerDe() {
+      return serde;
     }
 
   }
@@ -137,22 +121,23 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
     firstRow = true;
     try {
       joinKeys  = new HashMap<Byte, List<ExprNodeEvaluator>>();
-      joinKeysObjectInspectors = new HashMap<Byte, List<ObjectInspector>>();
       
       populateJoinKeyValue(joinKeys, conf.getKeys());
-      
+      joinKeysObjectInspectors = getObjectInspectorsFromEvaluators(joinKeys, inputObjInspector);
+      joinKeysStandardObjectInspectors = getStandardObjectInspectors(joinKeysObjectInspectors); 
+        
       // all other tables are small, and are cached in the hash table
       posBigTable = conf.getPosBigTable();
 
-      metadataValueTag = new int[numValues];
-      for (int pos = 0; pos < numValues; pos++)
+      metadataValueTag = new int[numAliases];
+      for (int pos = 0; pos < numAliases; pos++)
         metadataValueTag[pos] = -1;
       
       mapJoinTables = new HashMap<Byte, HTree>();
       hTables = new ArrayList<File>();
       
       // initialize the hash tables for other tables
-      for (int pos = 0; pos < numValues; pos++) {
+      for (int pos = 0; pos < numAliases; pos++) {
         if (pos == posBigTable)
           continue;
         
@@ -175,30 +160,15 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
         RecordManager recman = RecordManagerFactory.createRecordManager(newDirName + "/" + pos, props );
         HTree hashTable = HTree.createInstance(recman);
         
-        mapJoinTables.put(new Byte((byte)pos), hashTable);
+        mapJoinTables.put(Byte.valueOf((byte)pos), hashTable);
       }
 
       storage.put((byte)posBigTable, new Vector<ArrayList<Object>>());
       
       mapJoinRowsKey = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEMAPJOINROWSIZE);
       
-      // initialize the join output object inspectors
-      ArrayList<ObjectInspector> structFieldObjectInspectors = new ArrayList<ObjectInspector>(totalSz);
-
-      for (Byte alias : order) {
-        int sz = conf.getExprs().get(alias).size();
-        List<? extends StructField> listFlds = ((StructObjectInspector)inputObjInspector[alias.intValue()]).getAllStructFieldRefs();
-        assert listFlds.size() == sz;
-        for (StructField fld: listFlds) {
-          structFieldObjectInspectors.add(fld.getFieldObjectInspector());
-        }
-      }
-      
-      joinOutputObjectInspector = ObjectInspectorFactory
-      .getStandardStructObjectInspector(conf.getOutputColumnNames(), structFieldObjectInspectors);
-
       initializeChildren(hconf, reporter, new ObjectInspector[]{joinOutputObjectInspector});
-    } catch (Exception e) {
+    } catch (IOException e) {
       e.printStackTrace();
       throw new HiveException(e);
     }
@@ -214,21 +184,9 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
       if ((lastAlias == null) || (!lastAlias.equals(alias)))
         nextSz = joinEmitInterval;
       
-      // compute keys and values     
-      ArrayList<Object> key   = computeValues(row, rowInspector, joinKeys.get(alias), joinKeysObjectInspectors);
-      ArrayList<Object> value = computeValues(row, rowInspector, joinValues.get(alias), joinValuesObjectInspectors);
-
-      // Until there is one representation for the keys, convert explicitly
-      int keyPos = 0;
-      // TODO: use keyPos instead
-      for (Object keyElem : key) {
-        PrimitiveObjectInspector poi = (PrimitiveObjectInspector)joinKeysObjectInspectors.get(alias).get(keyPos);
-        if (!poi.isWritable()) {
-          // convert o to writable
-          key.set(keyPos, ObjectInspectorUtils.copyToStandardObject(key.get(keyPos), poi, ObjectInspectorCopyOption.WRITABLE));
-        }
-        keyPos++;
-      }
+      // compute keys and values as StandardObjects     
+      ArrayList<Object> key   = computeValues(row, joinKeys.get(alias), joinKeysObjectInspectors.get(alias));
+      ArrayList<Object> value = computeValues(row, joinValues.get(alias), joinValuesObjectInspectors.get(alias));
 
       // does this source need to be stored in the hash map
       if (tag != posBigTable) {
@@ -236,25 +194,14 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
           metadataKeyTag = nextVal++;
           
           tableDesc keyTableDesc = conf.getKeyTblDesc();
-          Serializer keySerializer = (Serializer)keyTableDesc.getDeserializerClass().newInstance();
+          SerDe keySerializer = (SerDe)ReflectionUtils.newInstance(keyTableDesc.getDeserializerClass(), null);
           keySerializer.initialize(null, keyTableDesc.getProperties());
 
-          ExprNodeEvaluator[] keyEval = new ExprNodeEvaluator[conf.getKeys().get(new Byte((byte)tag)).size()];
-          int i=0;
-          for (exprNodeDesc e: conf.getKeys().get(new Byte((byte)tag))) {
-            keyEval[i++] = ExprNodeEvaluatorFactory.get(e);
-          }
-          
-          List<String> keyOutputCols = new ArrayList<String>();
-          for (int k = 0; k < keyEval.length; k++) {
-            keyOutputCols.add(HiveConf.getColumnInternalName(k));
-          }
-          ObjectInspector keyObjectInspector = initEvaluatorsAndReturnStruct(keyEval, keyOutputCols, rowInspector);
-
-          Deserializer deserializer = (Deserializer)ReflectionUtils.newInstance(keyTableDesc.getDeserializerClass(), null);
-          deserializer.initialize(null, keyTableDesc.getProperties());
-          
-          mapMetadata.put(new Integer(metadataKeyTag), new MapJoinObjectCtx(keyObjectInspector, keySerializer, deserializer.getObjectInspector(), deserializer));
+          mapMetadata.put(Integer.valueOf(metadataKeyTag), 
+              new MapJoinObjectCtx(
+                  ObjectInspectorUtils.getStandardObjectInspector(keySerializer.getObjectInspector(),
+                      ObjectInspectorCopyOption.WRITABLE),
+                  keySerializer));
           
           firstRow = false;
         }
@@ -277,26 +224,14 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
           metadataValueTag[tag] = nextVal++;
                     
           tableDesc valueTableDesc = conf.getValueTblDescs().get(tag);
-          Serializer valueSerializer = (Serializer)valueTableDesc.getDeserializerClass().newInstance();
-          valueSerializer.initialize(null, valueTableDesc.getProperties());
-
-          ExprNodeEvaluator[] valueEval = new ExprNodeEvaluator[conf.getExprs().get(new Byte((byte)tag)).size()];
-          int i=0;
-          for (exprNodeDesc e: conf.getExprs().get(new Byte((byte)tag))) {
-            valueEval[i++] = ExprNodeEvaluatorFactory.get(e);
-          }
-          List<String> tagOutputCols = new ArrayList<String>(); 
-          int start = 0;
-          for (int k = 0; k < tag; k++)
-            start+=conf.getExprs().get(new Byte((byte)k)).size();
-          for (int k=0;k<conf.getExprs().get(new Byte((byte)tag)).size();k++)
-            tagOutputCols.add(HiveConf.getColumnInternalName(k));
-          ObjectInspector valueObjectInspector = initEvaluatorsAndReturnStruct(valueEval, tagOutputCols, rowInspector);
+          SerDe valueSerDe = (SerDe)ReflectionUtils.newInstance(valueTableDesc.getDeserializerClass(), null);
+          valueSerDe.initialize(null, valueTableDesc.getProperties());
  
-          Deserializer deserializer = (Deserializer)ReflectionUtils.newInstance(valueTableDesc.getDeserializerClass(), null);
-          deserializer.initialize(null, valueTableDesc.getProperties());
-          
-          mapMetadata.put(new Integer((byte)metadataValueTag[tag]), new MapJoinObjectCtx(valueObjectInspector, valueSerializer, deserializer.getObjectInspector(), deserializer));
+          mapMetadata.put(Integer.valueOf(metadataValueTag[tag]),
+              new MapJoinObjectCtx(
+                  ObjectInspectorUtils.getStandardObjectInspector(valueSerDe.getObjectInspector(),
+                      ObjectInspectorCopyOption.WRITABLE),
+              valueSerDe));
         }
         
         // Construct externalizable objects for key and value
@@ -342,7 +277,10 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
         if (pos.intValue() != tag)
           storage.put(pos, null);
     
-    } catch (Exception e) {
+    } catch (SerDeException e) {
+      e.printStackTrace();
+      throw new HiveException(e);
+    } catch (IOException e) {
       e.printStackTrace();
       throw new HiveException(e);
     }
@@ -353,7 +291,7 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
    * @return the name of the operator
    */
   public String getName() {
-    return new String("MAPJOIN");
+    return "MAPJOIN";
   }
   
   public void close(boolean abort) throws HiveException {

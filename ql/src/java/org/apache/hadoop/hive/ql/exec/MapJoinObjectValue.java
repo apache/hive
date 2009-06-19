@@ -29,10 +29,13 @@ import java.util.Vector;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator.MapJoinObjectCtx;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazyObject;
 import org.apache.hadoop.hive.serde2.lazy.LazyStruct;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 
 /**
  * Map Join Object used for both key and value
@@ -89,22 +92,18 @@ public class MapJoinObjectValue implements Externalizable {
 
       Vector<ArrayList<Object>> res = new Vector<ArrayList<Object>>();
       for (int pos = 0; pos < sz; pos++) {
-        ArrayList<Object> memObj = new ArrayList<Object>();
-        val.readFields(in);
-        StructObjectInspector objIns = (StructObjectInspector) ctx
-            .getDeserObjInspector();
-        LazyStruct lazyObj = (LazyStruct) (((LazyObject) ctx.getDeserializer()
-            .deserialize(val)).getObject());
-        List<? extends StructField> listFields = objIns.getAllStructFieldRefs();
-        for (StructField fld : listFields) {
-          memObj.add(objIns.getStructFieldData(lazyObj, fld));
-        }
-
+        ArrayList<Object> memObj =
+          (ArrayList<Object>)
+          ObjectInspectorUtils.copyToStandardObject(
+              ctx.getSerDe().deserialize(val),
+              ctx.getSerDe().getObjectInspector(),
+              ObjectInspectorCopyOption.WRITABLE);
+        
         res.add(memObj);
       }
       obj = res;
-    } catch (Exception e) {
-      throw new IOException(e.getMessage());
+    } catch (SerDeException e) {
+      throw new IOException(e);
     }
   }
   
@@ -122,12 +121,12 @@ public class MapJoinObjectValue implements Externalizable {
       out.writeInt(v.size());
 
       for (int pos = 0; pos < v.size(); pos++) {
-        Writable outVal = ctx.getSerializer().serialize(v.get(pos), ctx.getSerObjInspector());
+        Writable outVal = ctx.getSerDe().serialize(v.get(pos), ctx.getStandardOI());
         outVal.write(out);
       }
     }
-    catch (Exception e) {
-      throw new IOException(e.getMessage());
+    catch (SerDeException e) {
+      throw new IOException(e);
     }
   }
 
