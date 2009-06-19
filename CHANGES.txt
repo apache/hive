@@ -73,6 +73,8 @@ Trunk - Unreleased
     HIVE-528. Map Join followup: split MapJoinObject into MapJoinObjectKey and
     MapJoinObjectValue. (Namit Jain via zshao)
 
+    HIVE-542. UDF: Faster String Like. (Yuntao Jia via zshao)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).
