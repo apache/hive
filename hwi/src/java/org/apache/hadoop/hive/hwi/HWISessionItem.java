@@ -9,7 +9,7 @@ import java.util.Vector;
 
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.cli.OptionsProcessor;
-import org.apache.hadoop.hive.cli.SetProcessor;
+import org.apache.hadoop.hive.ql.processors.SetProcessor;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.ExecDriver;

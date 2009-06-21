@@ -16,12 +16,11 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.cli;
+package org.apache.hadoop.hive.ql.processors;
 
 import java.util.*;
 
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.CommandProcessor;
 
 public class SetProcessor implements CommandProcessor {
 

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.service;
 
+import java.io.PrintStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -42,12 +43,18 @@ import com.facebook.fb303.FacebookBase;
 import com.facebook.fb303.FacebookService;
 import com.facebook.fb303.fb_status;
 import com.facebook.thrift.TException;
+import com.facebook.thrift.TProcessor;
+import com.facebook.thrift.TProcessorFactory;
 import com.facebook.thrift.protocol.TBinaryProtocol;
 import com.facebook.thrift.server.TServer;
 import com.facebook.thrift.server.TThreadPoolServer;
 import com.facebook.thrift.transport.TServerSocket;
 import com.facebook.thrift.transport.TServerTransport;
+import com.facebook.thrift.transport.TTransport;
 import com.facebook.thrift.transport.TTransportFactory;
+
+import org.apache.hadoop.hive.ql.processors.CommandProcessor;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.*;
@@ -64,12 +71,9 @@ public class HiveServer extends ThriftHive {
    * to get an embedded server
    */
   public static class HiveServerHandler extends HiveMetaStore.HMSHandler implements HiveInterface {
-
     /**
      * Hive server uses org.apache.hadoop.hive.ql.Driver for run() and 
      * getResults() methods.
-     * TODO: There should be one Driver object per query statement executed
-     * TODO: That will allow clients to run multiple queries simulteneously
      */
     private Driver driver;
 
@@ -85,9 +89,9 @@ public class HiveServer extends ThriftHive {
      */
     public HiveServerHandler() throws MetaException {
       super(HiveServer.class.getName());
-      session = new SessionState(new HiveConf(SessionState.class));
+
+      SessionState session = new SessionState(new HiveConf(SessionState.class));
       SessionState.start(session);
-      HiveConf conf = session.get().getConf();
       session.in = null;
       session.out = null;
       session.err = null;
@@ -99,17 +103,30 @@ public class HiveServer extends ThriftHive {
      *
      * @param query HiveQL query to execute
      */
-    public void execute(String query) throws HiveServerException, TException {
-      HiveServerHandler.LOG.info("Running the query: " + query);
-      int rc = 0;
-      // TODO: driver.run should either return int or throw exception, not both.
+    public void execute(String cmd) throws HiveServerException, TException {
+      HiveServerHandler.LOG.info("Running the query: " + cmd);
+      SessionState ss = SessionState.get();
+      
+      String cmd_trimmed = cmd.trim();
+      String[] tokens = cmd_trimmed.split("\\s");
+      String cmd_1 = cmd_trimmed.substring(tokens[0].length()).trim();
+      
+      int ret = 0;
       try {
-        rc = driver.run(query);
+        CommandProcessor proc = CommandProcessorFactory.get(tokens[0]);
+        if(proc != null) {
+          if (proc instanceof Driver) {
+            ret = driver.run(cmd);
+          } else {
+            ret = proc.run(cmd_1);
+          }
+        }
       } catch (Exception e) {
         throw new HiveServerException("Error running query: " + e.toString());
       }
-      if (rc != 0) {
-        throw new HiveServerException("Query returned non-zero code: " + rc);
+
+      if (ret != 0) {
+        throw new HiveServerException("Query returned non-zero code: " + ret);
       }
     }
 
@@ -196,6 +213,21 @@ public class HiveServer extends ThriftHive {
       return VERSION;
     }
   }
+	
+  public static class ThriftHiveProcessorFactory extends TProcessorFactory {
+    public ThriftHiveProcessorFactory (TProcessor processor) {
+      super(processor);
+    }
+
+    public TProcessor getProcessor(TTransport trans) {
+      try {
+        Iface handler = new HiveServerHandler();
+        return new ThriftHive.Processor(handler);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
+  }
 
   public static void main(String[] args) {
     try {
@@ -204,10 +236,9 @@ public class HiveServer extends ThriftHive {
         port = Integer.parseInt(args[0]);
       }
       TServerTransport serverTransport = new TServerSocket(port);
-      Iface handler = new HiveServerHandler();
-      FacebookService.Processor processor = new ThriftHive.Processor(handler);
+      ThriftHiveProcessorFactory hfactory = new ThriftHiveProcessorFactory(null);
       TThreadPoolServer.Options options = new TThreadPoolServer.Options();
-      TServer server = new TThreadPoolServer(processor, serverTransport,
+      TServer server = new TThreadPoolServer(hfactory, serverTransport,
           new TTransportFactory(), new TTransportFactory(),
           new TBinaryProtocol.Factory(), new TBinaryProtocol.Factory(), options);
       server.serve();

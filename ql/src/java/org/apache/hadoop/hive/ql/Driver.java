@@ -42,9 +42,11 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.PreExecute;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
+import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.security.UserGroupInformation;
 
@@ -52,13 +54,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class Driver implements CommandProcessor {
-  static final private Log LOG = LogFactory.getLog("hive.ql.Driver");
+
+  static final private Log LOG = LogFactory.getLog(Driver.class.getName());
+  static final private LogHelper console = new LogHelper(LOG);
+
   private int maxRows = 100;
   ByteStream.Output bos = new ByteStream.Output();
 
   private HiveConf conf;
   private DataInput resStream;
-  private LogHelper console;
   private Context ctx;
   private QueryPlan plan;
 
@@ -138,12 +142,10 @@ public class Driver implements CommandProcessor {
    * for backwards compatibility with current tests
    */
   public Driver(HiveConf conf) {
-    console = new LogHelper(LOG);
     this.conf = conf;
   }
 
   public Driver() {
-    console = new LogHelper(LOG);
     if (SessionState.get() != null) {
       conf = SessionState.get().getConf();
     }
@@ -224,7 +226,7 @@ public class Driver implements CommandProcessor {
     
     for(String peClass: peClasses) {
       try {
-        pehooks.add((PreExecute)Class.forName(peClass.trim()).newInstance());
+        pehooks.add((PreExecute)Class.forName(peClass.trim(), true, JavaUtils.getClassLoader()).newInstance());
       } catch (ClassNotFoundException e) {
         console.printError("Pre Exec Hook Class not found:" + e.getMessage());
         throw e;

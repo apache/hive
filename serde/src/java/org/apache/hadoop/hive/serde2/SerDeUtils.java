@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.serde2;
 
 import java.util.*;
 
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
@@ -55,7 +56,7 @@ public class SerDeUtils {
         c = serdes.get(name);
     } else {
       try {
-        c = Class.forName(name);
+        c = Class.forName(name, true, JavaUtils.getClassLoader());
       } catch(ClassNotFoundException e) {
         throw new SerDeException("SerDe " + name + " does not exist");
       }

@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.*;
 import java.net.URI;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.*;
 import java.beans.*;
 
@@ -632,6 +634,63 @@ public class Utilities {
 
   public static String getNameMessage(Exception e) {
     return e.getClass().getName() + "(" +  e.getMessage() + ")";
+  }
+
+  /**
+   * Add new elements to the classpath
+   * 
+   * @param newPaths
+   *          Array of classpath elements
+   */
+  public static void addToClassPath(String[] newPaths) throws Exception {
+    Thread curThread = Thread.currentThread();
+    URLClassLoader loader = (URLClassLoader) curThread.getContextClassLoader();
+    List<URL> curPath = Arrays.asList(loader.getURLs());
+    ArrayList<URL> newPath = new ArrayList<URL>();
+
+    // get a list with the current classpath components
+    for(URL onePath: curPath) {
+      newPath.add(onePath);
+    }
+    curPath = newPath;
+
+    for (String onestr : newPaths) {
+      // special processing for hadoop-17. file:// needs to be removed
+      if (StringUtils.indexOf(onestr, "file://") == 0)
+        onestr = StringUtils.substring(onestr, 7);
+
+      URL oneurl = (new File(onestr)).toURL();
+      if (!curPath.contains(oneurl)) {
+        curPath.add(oneurl);
+      }
+    }
+
+    loader = new URLClassLoader(curPath.toArray(new URL[0]), loader);
+    curThread.setContextClassLoader(loader);
+  }
+
+  /**
+   * remove elements from the classpath
+   * 
+   * @param pathsToRemove
+   *          Array of classpath elements
+   */
+  public static void removeFromClassPath(String[] pathsToRemove) throws Exception {
+    Thread curThread = Thread.currentThread();
+    URLClassLoader loader = (URLClassLoader) curThread.getContextClassLoader();
+    Set<URL> newPath = new HashSet<URL>(Arrays.asList(loader.getURLs()));
+
+    for (String onestr : pathsToRemove) {
+      // special processing for hadoop-17. file:// needs to be removed
+      if (StringUtils.indexOf(onestr, "file://") == 0)
+        onestr = StringUtils.substring(onestr, 7);
+
+      URL oneurl = (new File(onestr)).toURL();
+      newPath.remove(oneurl);
+    }
+
+    loader = new URLClassLoader(newPath.toArray(new URL[0]));
+    curThread.setContextClassLoader(loader);
   }
 
 }

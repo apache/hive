@@ -30,28 +30,25 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.Utilities.StreamPrinter;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.ql.processors.CommandProcessor;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 
 public class CliDriver {
 
   public final static String prompt = "hive";
   public final static String prompt2 = "    "; // when ';' is not yet seen
 
-  private SetProcessor sp;
-  private Driver qp;
-  private FsShell dfs;
   private LogHelper console;
   private Configuration conf;
 
   public CliDriver() {
     SessionState ss = SessionState.get();
-    sp = new SetProcessor();
-    qp = new Driver();
     conf = (ss != null) ? ss.getConf() : new Configuration ();
-    dfs = new FsShell(conf);
     Log LOG = LogFactory.getLog("CliDriver");
     console = new LogHelper(LOG);
   }
@@ -61,14 +58,10 @@ public class CliDriver {
     
     String cmd_trimmed = cmd.trim();
     String[] tokens = cmd_trimmed.split("\\s+");
-    String cmd_1 = cmd_trimmed.substring(tokens[0].length());
+    String cmd_1 = cmd_trimmed.substring(tokens[0].length()).trim();
     int ret = 0;
     
-    if(tokens[0].toLowerCase().equals("set")) {
-
-      ret = sp.run(cmd_1);
-
-    } else if (cmd_trimmed.toLowerCase().equals("quit") || cmd_trimmed.toLowerCase().equals("exit")) {
+    if (cmd_trimmed.toLowerCase().equals("quit") || cmd_trimmed.toLowerCase().equals("exit")) {
 
       // if we have come this far - either the previous commands
       // are all successful or this is command line. in either case
@@ -99,26 +92,6 @@ public class CliDriver {
         ret = 1;
       }
 
-    } else if (tokens[0].toLowerCase().equals("dfs")) {
-
-      String [] alt_tokens = new String [tokens.length-1];
-      System.arraycopy(tokens, 1, alt_tokens, 0, tokens.length-1);
-      tokens = alt_tokens;
-
-      try {
-        PrintStream oldOut = System.out;
-        System.setOut(ss.out);
-        ret = dfs.run(tokens);
-        System.setOut(oldOut);
-        if (ret != 0) {
-          console.printError("Command failed with exit code = " + ret);
-        }
-      } catch (Exception e) {
-        console.printError("Exception raised from DFSShell.run " + e.getLocalizedMessage(),
-                           org.apache.hadoop.util.StringUtils.stringifyException(e));
-        ret = 1;
-      }
-
     } else if (tokens[0].toLowerCase().equals("list")) {
 
       SessionState.ResourceType t;
@@ -138,67 +111,43 @@ public class CliDriver {
           ss.out.println(StringUtils.join(s, "\n"));
       }
 
-    } else if (tokens[0].toLowerCase().equals("add")) {
+    } else {
+      CommandProcessor proc = CommandProcessorFactory.get(tokens[0]);
+      if(proc != null) {
+        if(proc instanceof Driver) {
+          Driver qp = (Driver) proc;
+          PrintStream out = ss.out;
+          long start = System.currentTimeMillis();
 
-      SessionState.ResourceType t;
-      if(tokens.length < 3 || (t = SessionState.find_resource_type(tokens[1])) == null) {
-        console.printError("Usage: add [" +
-                           StringUtils.join(SessionState.ResourceType.values(),"|") +
-                           "] <value> [<value>]*");
-        ret = 1;
-      } else {
-        for(int i = 2; i<tokens.length; i++) {
-          ss.add_resource(t, tokens[i]);
-        }
-      }
-
-    } else if (tokens[0].toLowerCase().equals("delete")) {
-
-      SessionState.ResourceType t;
-      if(tokens.length < 2 || (t = SessionState.find_resource_type(tokens[1])) == null) {
-        console.printError("Usage: delete [" +
-                           StringUtils.join(SessionState.ResourceType.values(),"|") +
-                           "] [<value>]");
-        ret = 1;
-      } else if (tokens.length >= 3) {
-        for(int i = 2; i<tokens.length; i++) {
-          ss.delete_resource(t, tokens[i]);
-        }
-      } else {
-        ss.delete_resource(t);
-      }
-
-    } else if (!StringUtils.isBlank(cmd_trimmed)) {
-      PrintStream out = ss.out;
-
-      long start = System.currentTimeMillis();
-
-      ret = qp.run(cmd);
-      if (ret != 0) {
-        qp.close();
-        return ret;
-      }
+          ret = qp.run(cmd);
+          if (ret != 0) {
+            qp.close();
+            return ret;
+          }
         
-      Vector<String> res = new Vector<String>();
-      while (qp.getResults(res)) {
-      	for (String r:res) {
-          out.println(r);
-      	}
-        res.clear();
-        if (out.checkError()) {
-          break;
-        }
-      }
+          Vector<String> res = new Vector<String>();
+          while (qp.getResults(res)) {
+            for (String r:res) {
+              out.println(r);
+            }
+            res.clear();
+            if (out.checkError()) {
+              break;
+            }
+          }
       
-      int cret = qp.close();
-      if (ret == 0) {
-        ret = cret;
-      }
+          int cret = qp.close();
+          ret = cret;
 
-      long end = System.currentTimeMillis();
-      if (end > start) {
-        double timeTaken = (double)(end-start)/1000.0;
-        console.printInfo("Time taken: " + timeTaken + " seconds", null);
+          long end = System.currentTimeMillis();
+          if (end > start) {
+            double timeTaken = (double)(end-start)/1000.0;
+            console.printInfo("Time taken: " + timeTaken + " seconds", null);
+          }
+
+        } else {
+          ret = proc.run(cmd_1);
+        }
       }
     }
 

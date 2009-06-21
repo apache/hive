@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
@@ -470,7 +471,8 @@ public class Table {
 
   public void setInputFormatClass(String name) throws HiveException {
     try {
-      setInputFormatClass((Class<? extends InputFormat<WritableComparable, Writable>>)Class.forName(name));
+      setInputFormatClass((Class<? extends InputFormat<WritableComparable, Writable>>)
+                          Class.forName(name, true, JavaUtils.getClassLoader()));
     } catch (ClassNotFoundException e) {
       throw new HiveException("Class not found: " + name, e);
     }
@@ -478,7 +480,7 @@ public class Table {
 
   public void setOutputFormatClass(String name) throws HiveException {
     try {
-      Class<?> origin = Class.forName(name);
+      Class<?> origin = Class.forName(name, true, JavaUtils.getClassLoader());
       setOutputFormatClass(HiveFileFormatUtils.getOutputFormatSubstitute(origin));
     } catch (ClassNotFoundException e) {
       throw new HiveException("Class not found: " + name, e);

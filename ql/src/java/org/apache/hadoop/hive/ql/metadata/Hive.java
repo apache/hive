@@ -32,6 +32,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -359,10 +360,12 @@ public class Hive {
       table.setTTable(tTable);
       table.setInputFormatClass((Class<? extends InputFormat<WritableComparable, Writable>>)
           Class.forName(table.getSchema().getProperty(org.apache.hadoop.hive.metastore.api.Constants.FILE_INPUT_FORMAT,
-              org.apache.hadoop.mapred.SequenceFileInputFormat.class.getName())));
+                                                      org.apache.hadoop.mapred.SequenceFileInputFormat.class.getName()),
+                        true, JavaUtils.getClassLoader()));
       table.setOutputFormatClass((Class<? extends HiveOutputFormat>)
           Class.forName(table.getSchema().getProperty(org.apache.hadoop.hive.metastore.api.Constants.FILE_OUTPUT_FORMAT,
-              HiveSequenceFileOutputFormat.class.getName()))); 
+                                                      HiveSequenceFileOutputFormat.class.getName()),
+                        true, JavaUtils.getClassLoader()));
       table.setDeserializer(MetaStoreUtils.getDeserializer(getConf(), p));
       table.setDataLocation(new URI(tTable.getSd().getLocation()));
     } catch(Exception e) {

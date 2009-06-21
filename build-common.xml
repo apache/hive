@@ -65,7 +65,6 @@
     <pathelement location="" />
     <pathelement location="${test.data.dir}/conf"/>
     <pathelement location="${hive.conf.dir}"/>
-    <fileset dir="${test.src.data.dir}" includes="files/*.jar"/>
     <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
     <path refid="classpath"/>
   </path>
@@ -117,7 +116,6 @@
     <pathelement location="${build.dir.hive}/metastore/classes"/>
     <pathelement location="${build.dir.hive}/ql/classes"/>
     <pathelement location="${build.dir.hive}/cli/classes"/>
-    <fileset dir="${test.src.data.dir}" includes="files/*.jar"/>
     <fileset dir="${basedir}" includes="lib/*.jar"/>
     <path refid="common-classpath"/>
   </path>
@@ -174,6 +172,7 @@
      encoding="${build.encoding}"
      srcdir="${test.src.dir}"
      includes="org/apache/hadoop/**/*.java"
+     excludes="**/TestSerDe.java"
      destdir="${test.build.classes}"
      debug="${javac.debug}"
      optimize="${javac.optimize}"
@@ -274,7 +273,7 @@
       <sysproperty key="test.service.standalone.server" value="${standalone}"/>
       <sysproperty key="log4j.configuration" value="file://${test.data.dir}/conf/hive-log4j.properties"/>
       <sysproperty key="derby.stream.error.file" value="${test.build.dir}/derby.log"/>
-      <sysproperty key="hive.aux.jars.path" value="file://${test.build.dir}/test-udfs.jar,file://${test.src.data.dir}/files/TestSerDe.jar"/>
+      <sysproperty key="hive.aux.jars.path" value="file://${test.build.dir}/test-udfs.jar"/>
       <sysproperty key="ql.test.query.clientpositive.dir" value="${ql.test.query.clientpositive.dir}"/>
       <sysproperty key="ql.test.results.clientpositive.dir" value="${ql.test.results.clientpositive.dir}"/>
       <sysproperty key="test.log.dir" value="${test.log.dir}"/>

@@ -311,13 +311,53 @@ public class SessionState {
     }
   }
 
+  public static boolean registerJar(String newJar) {
+    LogHelper console = getConsole();
+    try {
+      Utilities.addToClassPath(StringUtils.split(newJar, ","));
+      console.printInfo("Added " + newJar + " to class path");
+      return true;
+    } catch (Exception e) {
+      console.printError("Unable to register " + newJar + "\nException: " + e.getMessage(),
+                         "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      return false;
+    }
+  }
+  
+  public static boolean unregisterJar(String jarsToUnregister) {
+    LogHelper console = getConsole();
+    try {
+      Utilities.removeFromClassPath(StringUtils.split(jarsToUnregister, ","));
+      console.printInfo("Deleted " + jarsToUnregister + " from class path");
+      return true;
+    } catch (Exception e) {
+      console.printError("Unable to unregister " + jarsToUnregister + "\nException: " + e.getMessage(),
+                         "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      return false;
+    }
+  }
+
   public static interface ResourceHook {
     public String preHook(Set<String> cur, String s);
+    public boolean postHook(Set<String> cur, String s);
   }
 
   public static enum ResourceType {
     FILE(new ResourceHook () {
         public String preHook(Set<String> cur, String s) { return validateFile(cur, s); }
+        public boolean postHook(Set<String> cur, String s) { return true; }
+      }),
+
+    JAR(new ResourceHook () {
+        public String preHook(Set<String> cur, String s) {
+          String newJar = validateFile(cur, s);
+          if(newJar != null) {
+            return (registerJar(newJar) ? newJar : null);
+          } else {
+            return null;
+          }
+        }
+        public boolean postHook(Set<String> cur, String s) { return unregisterJar(s); }
       });
 
     public ResourceHook hook;
@@ -370,6 +410,10 @@ public class SessionState {
     if(resource_map.get(t) == null) {
       return false;
     }
+    if(t.hook != null) {
+      if(!t.hook.postHook(resource_map.get(t), value))
+        return false;
+    }
     return (resource_map.get(t).remove(value));
   }
 
@@ -392,6 +436,11 @@ public class SessionState {
   }
 
   public void delete_resource(ResourceType t) {
-    resource_map.remove (t);
+    if(resource_map.get(t) != null) {
+      for(String value : resource_map.get(t)) {
+        delete_resource(t, value);
+      }
+      resource_map.remove (t);
+    }
   }
 }

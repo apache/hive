@@ -9,6 +9,10 @@ Trunk - Unreleased
 
   NEW FEATURES
 
+    HIVE-338. add/delete jar commands, Hive Server fix for multithreading,
+    cli commands via hiveserver
+    (Min Zhou and Joydeep Sen Sarma via jssarma)
+
     HIVE-354. UDF for length of a string. (Neil Conway via namit).
 
     HIVE-402. Implement UDF regexp. (Raghotham Murthy via namit)

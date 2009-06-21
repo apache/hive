@@ -28,6 +28,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.hive.ql.plan.mapredWork;
 import org.apache.hadoop.hive.ql.exec.Utilities.*;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -48,10 +49,21 @@ public class MapRedTask extends Task<mapredWork> implements Serializable {
       String hiveJar = conf.getJar();
       String hiveConfArgs = ExecDriver.generateCmdLine(conf);
       String auxJars = conf.getAuxJars();
-      if (!StringUtils.isEmpty(auxJars)) {
-        auxJars = " -libjars " + auxJars + " ";
-      } else {
+      String addedJars = ExecDriver.getResourceFiles(conf, SessionState.ResourceType.JAR);
+
+      if (StringUtils.isEmpty(auxJars) && StringUtils.isEmpty(addedJars)) {
         auxJars = " ";
+      } else {
+        String jarList;
+        if(StringUtils.isEmpty(auxJars)) {
+          jarList = addedJars;
+        } else if (StringUtils.isEmpty(auxJars)) {
+          jarList = auxJars;
+        } else {
+          jarList = auxJars + "," + addedJars;
+        }
+
+        auxJars = " -libjars " + jarList + " ";
       }
 
       mapredWork plan = getWork();
@@ -67,7 +79,7 @@ public class MapRedTask extends Task<mapredWork> implements Serializable {
           + " org.apache.hadoop.hive.ql.exec.ExecDriver -plan "
           + planFile.toString() + " " + isSilent + " " + hiveConfArgs; 
       
-      String files = ExecDriver.getRealFiles(conf);
+      String files = ExecDriver.getResourceFiles(conf, SessionState.ResourceType.FILE);
       if(!files.isEmpty()) {
         cmdLine = cmdLine + " -files " + files;
       }

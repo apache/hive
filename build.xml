@@ -185,7 +185,7 @@
       <fileset dir="${hive.root}/service/src/gen-py/hive_service" excludes="**/.svn"/>
     </copy>
     <copy todir="${target.lib.dir}" preservelastmodified="true" flatten="true">
-      <fileset dir="${hive.root}" includes="*/*.jar, */*/*.jar" excludes="**/antlr-2*,**/antlr-3*"/>
+      <fileset dir="${hive.root}" includes="*/*.jar, */*/*.jar" excludes="**/antlr-2*,**/antlr-3*,**/TestSerDe.jar"/>
       <fileset file="${build.dir.hive}/cli/hive_cli.jar"/>
       <fileset file="${build.dir.hive}/common/hive_common.jar"/>
       <fileset file="${build.dir.hive}/ql/hive_exec.jar"/>

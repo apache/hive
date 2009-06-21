@@ -67,11 +67,10 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
     super();
   }
 
-  public static String getRealFiles(Configuration conf) {
+  public static String getResourceFiles(Configuration conf, SessionState.ResourceType t) {
     // fill in local files to be added to the task environment
     SessionState ss = SessionState.get();
-    Set<String> files = (ss == null) ? null : ss.list_resource(
-        SessionState.ResourceType.FILE, null);
+    Set<String> files = (ss == null) ? null : ss.list_resource(t, null);
     if (files != null) {
       ArrayList<String> realFiles = new ArrayList<String>(files.size());
       for (String one : files) {
@@ -88,22 +87,30 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
     }
   }
 
+  private void initializeFiles(String prop, String files) {
+    if (files != null && files.length() > 0) {
+      job.set(prop, files);
+
+      // workaround for hadoop-17 - jobclient only looks at commandlineconfig
+      Configuration commandConf = JobClient.getCommandLineConfig();
+      if (commandConf != null) {
+        commandConf.set(prop, files);
+      }
+    }
+  }
+
   /**
    * Initialization when invoked from QL
    */
   public void initialize(HiveConf conf) {
     super.initialize(conf);
     job = new JobConf(conf, ExecDriver.class);
-    String realFiles = getRealFiles(job);
-    if (realFiles != null && realFiles.length() > 0) {
-      job.set("tmpfiles", realFiles);
-
-      // workaround for hadoop-17 - jobclient only looks at commandlineconfig
-      Configuration commandConf = JobClient.getCommandLineConfig();
-      if (commandConf != null) {
-        commandConf.set("tmpfiles", realFiles);
-      }
-    }
+    initializeFiles(
+        "tmpfiles",
+        getResourceFiles(job, SessionState.ResourceType.FILE));
+    initializeFiles(
+        "tmpjars",
+        getResourceFiles(job, SessionState.ResourceType.JAR));
   }
 
   /**
@@ -271,36 +278,6 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
       console.printInfo("In order to set a constant number of reducers:");
       console.printInfo("  set " + HiveConf.ConfVars.HADOOPNUMREDUCERS + "=<number>");
     }
-  }
-
-
-  /**
-   * Add new elements to the classpath
-   * 
-   * @param newPaths
-   *          Array of classpath elements
-   */
-  private static void addToClassPath(String[] newPaths, boolean local) throws Exception {
-    Thread curThread = Thread.currentThread();
-    URLClassLoader loader = (URLClassLoader) curThread.getContextClassLoader();
-    List<URL> curPath = Arrays.asList(loader.getURLs());
-    ArrayList<URL> newPath = new ArrayList<URL>();
-
-    for (String onestr : newPaths) {
-      // special processing for hadoop-17. file:// needs to be removed
-      if (local) {
-        if (StringUtils.indexOf(onestr, "file://") == 0)
-          onestr = StringUtils.substring(onestr, 7);
-      }
-
-      URL oneurl = (new File(onestr)).toURL();
-      if (!curPath.contains(oneurl)) {
-        newPath.add(oneurl);
-      }
-    }
-
-    loader = new URLClassLoader(newPath.toArray(new URL[0]), loader);
-    curThread.setContextClassLoader(loader);
   }
 
   /**
@@ -555,7 +532,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
       String auxJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEAUXJARS);
       if (StringUtils.isNotBlank(auxJars)) {
         try {
-          addToClassPath(StringUtils.split(auxJars, ","), true);
+          Utilities.addToClassPath(StringUtils.split(auxJars, ","));
         } catch (Exception e) {
           throw new HiveException(e.getMessage(), e);
         }

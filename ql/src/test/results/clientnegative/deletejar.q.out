@@ -1,0 +1,4 @@
+query: DROP TABLE DELETEJAR
+query: CREATE TABLE DELETEJAR(KEY STRING, VALUE STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.TestSerDe' STORED AS TEXTFILE
+FAILED: Error in metadata: Cannot validate serde: org.apache.hadoop.hive.serde2.TestSerDe
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

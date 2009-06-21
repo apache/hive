@@ -18,9 +18,12 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.net.URLClassLoader;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.ql.plan.FunctionWork;
 import org.apache.hadoop.hive.ql.plan.createFunctionDesc;
 import org.apache.hadoop.util.StringUtils;
@@ -29,7 +32,7 @@ import org.apache.hadoop.hive.ql.exec.FunctionInfo.OperatorType;
 public class FunctionTask extends Task<FunctionWork> {
   private static final long serialVersionUID = 1L;
   private static final Log LOG = LogFactory.getLog("hive.ql.exec.FunctionTask");
-  
+
   transient HiveConf conf;
   
   public void initialize(HiveConf conf) {
@@ -57,7 +60,6 @@ public class FunctionTask extends Task<FunctionWork> {
   @SuppressWarnings("unchecked")
   private Class<? extends UDF> getUdfClass(createFunctionDesc desc)
       throws ClassNotFoundException {
-    return (Class<? extends UDF>) conf.getClassByName(desc.getClassName());
+    return (Class<? extends UDF>) Class.forName(desc.getClassName(), true, JavaUtils.getClassLoader());
   }
-
 }

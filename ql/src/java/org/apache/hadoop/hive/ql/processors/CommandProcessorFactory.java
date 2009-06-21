@@ -16,8 +16,30 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql;
+package org.apache.hadoop.hive.ql.processors;
 
-public interface CommandProcessor {
-  public int run(String command);
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.Driver;
+import org.apache.commons.lang.StringUtils;
+
+public class CommandProcessorFactory {
+  
+  public static CommandProcessor get(String cmd) {
+    String cmdl = cmd.toLowerCase();
+
+    if(cmdl.equals("set")) {
+      return new SetProcessor();
+    } else if (cmdl.equals("dfs")) {
+      SessionState ss = SessionState.get();
+      return new DfsProcessor(ss.getConf());
+    } else if (cmdl.equals("add")) {
+      return new AddResourceProcessor();
+    } else if (cmdl.equals("delete")) {
+      return new DeleteResourceProcessor();
+    } else if (!StringUtils.isBlank(cmd)) {
+      return new Driver();
+    }
+    return null;
+  }
+
 }

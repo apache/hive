@@ -11,6 +11,7 @@ describe extended alter1;
 alter table alter1 set serdeproperties('s1'='10', 's2' ='20');
 describe extended alter1;
 
+add jar ../data/files/TestSerDe.jar;
 alter table alter1 set serde 'org.apache.hadoop.hive.serde2.TestSerDe' with serdeproperties('s1'='9');
 describe extended alter1;
 

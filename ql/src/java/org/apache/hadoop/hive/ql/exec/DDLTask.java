@@ -65,6 +65,9 @@ import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.util.StringUtils;
 
 /**
@@ -629,6 +632,23 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
+  
+  /**
+   * Check if the given serde is valid
+   */
+  private void validateSerDe(String serdeName) throws HiveException {
+    try {
+      Deserializer d = SerDeUtils.lookupDeserializer(serdeName);
+      if(d != null) {
+        System.out.println("Found class for " + serdeName);
+      }
+    } catch (SerDeException e) {
+      throw new HiveException ("Cannot validate serde: " + serdeName, e);
+    }
+  }
+
+
+
   /**
    * Create a new table.
    * 
@@ -686,6 +706,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (crtTbl.getSerName() == null) {
       LOG.info("Default to LazySimpleSerDe for table " + crtTbl.getTableName() );
       tbl.setSerializationLib(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
+    } else {
+      // let's validate that the serde exists
+      validateSerDe(crtTbl.getSerName());
     }
 
     if (crtTbl.getComment() != null)

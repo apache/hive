@@ -33,6 +33,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -296,7 +297,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     
     try {
-      Class<?> origin = Class.forName(crtTblDesc.getOutputFormat());
+      Class<?> origin = Class.forName(crtTblDesc.getOutputFormat(), true, JavaUtils.getClassLoader());
       Class<? extends HiveOutputFormat> replaced = HiveFileFormatUtils.getOutputFormatSubstitute(origin);
       if(replaced == null)
         throw new SemanticException(ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE.getMsg());
