@@ -379,6 +379,7 @@ public class HiveConf extends Configuration {
    */
   public void setAuxJars(String auxJars) {
     this.auxJars = auxJars;
+    setVar(this, ConfVars.HIVEAUXJARS, auxJars);
   }
   
   /**

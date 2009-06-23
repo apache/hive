@@ -47,23 +47,26 @@ public class MapRedTask extends Task<mapredWork> implements Serializable {
       // enable assertion
       String hadoopExec = conf.getVar(HiveConf.ConfVars.HADOOPBIN);
       String hiveJar = conf.getJar();
-      String hiveConfArgs = ExecDriver.generateCmdLine(conf);
-      String auxJars = conf.getAuxJars();
-      String addedJars = ExecDriver.getResourceFiles(conf, SessionState.ResourceType.JAR);
 
-      if (StringUtils.isEmpty(auxJars) && StringUtils.isEmpty(addedJars)) {
+      String addedJars = ExecDriver.getResourceFiles(conf, SessionState.ResourceType.JAR);
+      if (!StringUtils.isEmpty(addedJars)) {
+        // Add addedJars to auxJars
+        String auxJars = conf.getAuxJars();
+        if (StringUtils.isEmpty(auxJars)) {
+          auxJars = addedJars;
+        } else {
+          auxJars = auxJars + "," + addedJars;
+        }
+        conf.setAuxJars(auxJars);
+      }
+      // Generate the hiveCOnfArgs after potentially adding the jars
+      String hiveConfArgs = ExecDriver.generateCmdLine(conf);
+
+      String auxJars = conf.getAuxJars();
+      if (StringUtils.isEmpty(auxJars)) {
         auxJars = " ";
       } else {
-        String jarList;
-        if(StringUtils.isEmpty(auxJars)) {
-          jarList = addedJars;
-        } else if (StringUtils.isEmpty(auxJars)) {
-          jarList = auxJars;
-        } else {
-          jarList = auxJars + "," + addedJars;
-        }
-
-        auxJars = " -libjars " + jarList + " ";
+        auxJars = " -libjars " + auxJars + " ";
       }
 
       mapredWork plan = getWork();

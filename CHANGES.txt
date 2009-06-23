@@ -9,10 +9,6 @@ Trunk - Unreleased
 
   NEW FEATURES
 
-    HIVE-338. add/delete jar commands, Hive Server fix for multithreading,
-    cli commands via hiveserver
-    (Min Zhou and Joydeep Sen Sarma via jssarma)
-
     HIVE-354. UDF for length of a string. (Neil Conway via namit).
 
     HIVE-402. Implement UDF regexp. (Raghotham Murthy via namit)
@@ -50,6 +46,12 @@ Trunk - Unreleased
     HIVE-460. Improve Column Pruning. (He Yongqiang via namit)
 
     HIVE-563. UDF for parsing the URL: parse_url. (Suresh Antony via zshao)
+
+    HIVE-338. add/delete jar commands, Hive Server fix for multithreading,
+    cli commands via hiveserver
+    (Min Zhou and Joydeep Sen Sarma via jssarma)
+
+    HIVE-338. Postfix for HIVE-338. (zshao)
 
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)

@@ -570,7 +570,13 @@ public class Utilities {
       fs.close();
     } catch(IOException e){};
 
-    return (path.makeQualified(fs).toString());
+    String file = path.makeQualified(fs).toString();
+    // For compatibility with hadoop 0.17, change file:/a/b/c to file:///a/b/c 
+    if (StringUtils.startsWith(file, "file:/")
+        && !StringUtils.startsWith(file, "file:///")) {
+      file = "file:///" + file.substring("file:/".length());
+    }
+    return file;
   }
 
   public static List<String> mergeUniqElems(List<String> src, List<String> dest) {
