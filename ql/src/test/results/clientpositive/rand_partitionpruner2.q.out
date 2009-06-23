@@ -9,7 +9,8 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-4 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-1
@@ -33,7 +34,7 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
-                  directory: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/193426468/98433997.10000.insclause-0
+                  directory: file:/data/users/njain/hive4/hive4/build/ql/tmp/1442257033/10002
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -47,15 +48,15 @@ STAGE PLANS:
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         file.inputformat org.apache.hadoop.mapred.TextInputFormat
                         file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/tmptable
+                        location file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/tmptable
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
-        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
       Path -> Partition:
-        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
             partition values:
               ds 2008-04-08
@@ -74,10 +75,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
             partition values:
               ds 2008-04-08
@@ -96,32 +97,103 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
+
+  Stage: Stage-4
+    Conditional Operator
+      list of dependent Tasks:
+          Move Operator
+            files:
+                hdfs directory: true
+                source: file:/data/users/njain/hive4/hive4/build/ql/tmp/1442257033/10002
+                destination: file:/data/users/njain/hive4/hive4/build/ql/tmp/221347159/10000
+          Map Reduce
+            Alias -> Map Operator Tree:
+              file:/data/users/njain/hive4/hive4/build/ql/tmp/1442257033/10002 
+                  Reduce Output Operator
+                    sort order: 
+                    Map-reduce partition columns:
+                          expr: rand()
+                          type: double
+                    tag: -1
+                    value expressions:
+                          expr: key
+                          type: string
+                          expr: value
+                          type: string
+                          expr: hr
+                          type: string
+                          expr: ds
+                          type: string
+            Needs Tagging: false
+            Path -> Alias:
+              file:/data/users/njain/hive4/hive4/build/ql/tmp/1442257033/10002 
+            Path -> Partition:
+              file:/data/users/njain/hive4/hive4/build/ql/tmp/1442257033/10002 
+                Partition
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      name tmptable
+                      columns.types string:string:string:string
+                      serialization.ddl struct tmptable { string key, string value, string hr, string ds}
+                      serialization.format 1
+                      columns key,value,hr,ds
+                      bucket_count -1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                      file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      location file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/tmptable
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: tmptable
+            Reduce Operator Tree:
+              Extract
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  directory: file:/data/users/njain/hive4/hive4/build/ql/tmp/221347159/10000
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      properties:
+                        name tmptable
+                        columns.types string:string:string:string
+                        serialization.ddl struct tmptable { string key, string value, string hr, string ds}
+                        serialization.format 1
+                        columns key,value,hr,ds
+                        bucket_count -1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                        file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        location file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/tmptable
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: tmptable
 
   Stage: Stage-0
     Move Operator
       tables:
-            replace: true
-            source: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/193426468/98433997.10000.insclause-0
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                properties:
-                  name tmptable
-                  columns.types string:string:string:string
-                  serialization.ddl struct tmptable { string key, string value, string hr, string ds}
-                  serialization.format 1
-                  columns key,value,hr,ds
-                  bucket_count -1
-                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                  file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/tmptable
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: tmptable
-            tmp directory: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/193426468/98433997.10001
+          replace: true
+          source: file:/data/users/njain/hive4/hive4/build/ql/tmp/221347159/10000
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                name tmptable
+                columns.types string:string:string:string
+                serialization.ddl struct tmptable { string key, string value, string hr, string ds}
+                serialization.format 1
+                columns key,value,hr,ds
+                bucket_count -1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                location file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/tmptable
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: tmptable
+          tmp directory: file:/data/users/njain/hive4/hive4/build/ql/tmp/221347159/10001
 
 
 query: insert overwrite table tmptable
@@ -129,119 +201,119 @@ select a.* from srcpart a where rand(1) < 0.1 and a.ds = '2008-04-08'
 Input: default/srcpart/ds=2008-04-08/hr=11
 Input: default/srcpart/ds=2008-04-08/hr=12
 Output: default/tmptable
-query: select * from tmptable x sort by x.key
+query: select * from tmptable x sort by x.key,x.value,x.ds,x.hr
 Input: default/tmptable
-Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/20138045/311110484.10000
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/554052416/10000
 103	val_103	2008-04-08	11
 103	val_103	2008-04-08	12
-133	val_133	2008-04-08	12
 133	val_133	2008-04-08	11
+133	val_133	2008-04-08	12
 134	val_134	2008-04-08	11
 134	val_134	2008-04-08	12
-138	val_138	2008-04-08	12
 138	val_138	2008-04-08	11
+138	val_138	2008-04-08	12
 152	val_152	2008-04-08	11
 152	val_152	2008-04-08	12
-153	val_153	2008-04-08	12
 153	val_153	2008-04-08	11
+153	val_153	2008-04-08	12
 169	val_169	2008-04-08	11
 169	val_169	2008-04-08	12
-170	val_170	2008-04-08	12
 170	val_170	2008-04-08	11
+170	val_170	2008-04-08	12
 176	val_176	2008-04-08	11
 176	val_176	2008-04-08	11
 176	val_176	2008-04-08	12
 176	val_176	2008-04-08	12
-18	val_18	2008-04-08	12
 18	val_18	2008-04-08	11
+18	val_18	2008-04-08	12
 197	val_197	2008-04-08	11
 197	val_197	2008-04-08	12
-199	val_199	2008-04-08	12
 199	val_199	2008-04-08	11
+199	val_199	2008-04-08	12
 202	val_202	2008-04-08	11
 202	val_202	2008-04-08	12
-203	val_203	2008-04-08	12
 203	val_203	2008-04-08	11
+203	val_203	2008-04-08	12
 209	val_209	2008-04-08	11
 209	val_209	2008-04-08	12
-217	val_217	2008-04-08	12
 217	val_217	2008-04-08	11
+217	val_217	2008-04-08	12
 221	val_221	2008-04-08	11
 221	val_221	2008-04-08	12
-224	val_224	2008-04-08	12
 224	val_224	2008-04-08	11
+224	val_224	2008-04-08	12
 233	val_233	2008-04-08	11
 233	val_233	2008-04-08	12
-26	val_26	2008-04-08	12
 26	val_26	2008-04-08	11
+26	val_26	2008-04-08	12
 277	val_277	2008-04-08	11
 277	val_277	2008-04-08	12
-288	val_288	2008-04-08	12
 288	val_288	2008-04-08	11
+288	val_288	2008-04-08	12
 298	val_298	2008-04-08	11
 298	val_298	2008-04-08	12
-309	val_309	2008-04-08	12
 309	val_309	2008-04-08	11
+309	val_309	2008-04-08	12
 310	val_310	2008-04-08	11
 310	val_310	2008-04-08	12
-317	val_317	2008-04-08	12
 317	val_317	2008-04-08	11
+317	val_317	2008-04-08	12
 331	val_331	2008-04-08	11
 331	val_331	2008-04-08	12
-336	val_336	2008-04-08	12
 336	val_336	2008-04-08	11
+336	val_336	2008-04-08	12
 348	val_348	2008-04-08	11
 348	val_348	2008-04-08	12
-37	val_37	2008-04-08	12
 37	val_37	2008-04-08	11
+37	val_37	2008-04-08	12
 378	val_378	2008-04-08	11
 378	val_378	2008-04-08	12
-384	val_384	2008-04-08	12
 384	val_384	2008-04-08	11
+384	val_384	2008-04-08	12
 389	val_389	2008-04-08	11
 389	val_389	2008-04-08	12
-400	val_400	2008-04-08	12
 400	val_400	2008-04-08	11
+400	val_400	2008-04-08	12
 409	val_409	2008-04-08	11
 409	val_409	2008-04-08	12
-42	val_42	2008-04-08	12
 42	val_42	2008-04-08	11
+42	val_42	2008-04-08	12
 429	val_429	2008-04-08	11
 429	val_429	2008-04-08	12
-431	val_431	2008-04-08	12
 431	val_431	2008-04-08	11
+431	val_431	2008-04-08	12
 44	val_44	2008-04-08	11
 44	val_44	2008-04-08	12
-453	val_453	2008-04-08	12
 453	val_453	2008-04-08	11
+453	val_453	2008-04-08	12
 454	val_454	2008-04-08	11
 454	val_454	2008-04-08	12
-457	val_457	2008-04-08	12
 457	val_457	2008-04-08	11
+457	val_457	2008-04-08	12
 458	val_458	2008-04-08	11
 458	val_458	2008-04-08	12
-467	val_467	2008-04-08	12
 467	val_467	2008-04-08	11
+467	val_467	2008-04-08	12
 469	val_469	2008-04-08	11
 469	val_469	2008-04-08	11
 469	val_469	2008-04-08	11
 469	val_469	2008-04-08	12
 469	val_469	2008-04-08	12
 469	val_469	2008-04-08	12
-489	val_489	2008-04-08	12
 489	val_489	2008-04-08	11
+489	val_489	2008-04-08	12
 491	val_491	2008-04-08	11
 491	val_491	2008-04-08	12
-498	val_498	2008-04-08	12
 498	val_498	2008-04-08	11
+498	val_498	2008-04-08	12
 51	val_51	2008-04-08	11
 51	val_51	2008-04-08	12
-70	val_70	2008-04-08	12
 70	val_70	2008-04-08	11
+70	val_70	2008-04-08	12
 74	val_74	2008-04-08	11
 74	val_74	2008-04-08	12
-77	val_77	2008-04-08	12
 77	val_77	2008-04-08	11
+77	val_77	2008-04-08	12
 78	val_78	2008-04-08	11
 78	val_78	2008-04-08	12
 query: drop table tmptable

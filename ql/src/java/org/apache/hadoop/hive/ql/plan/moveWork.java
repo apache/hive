@@ -18,39 +18,38 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.util.*;
 import java.io.*;
 
 @explain(displayName="Move Operator")
 public class moveWork implements Serializable {
   private static final long serialVersionUID = 1L;
-  private List<loadTableDesc> loadTableWork;
-  private List<loadFileDesc> loadFileWork;
+  private loadTableDesc loadTableWork;
+  private loadFileDesc loadFileWork;
 
   private boolean checkFileFormat;
 
   public moveWork() { }
   public moveWork(
-    final List<loadTableDesc> loadTableWork,
-    final List<loadFileDesc> loadFileWork,
+    final loadTableDesc loadTableWork,
+    final loadFileDesc loadFileWork,
     boolean checkFileFormat) {
     this.loadTableWork = loadTableWork;
     this.loadFileWork = loadFileWork;
     this.checkFileFormat = checkFileFormat;
   }
   @explain(displayName="tables")
-  public List<loadTableDesc> getLoadTableWork() {
+  public loadTableDesc getLoadTableWork() {
     return this.loadTableWork;
   }
-  public void setLoadTableWork(final List<loadTableDesc> loadTableWork) {
+  public void setLoadTableWork(final loadTableDesc loadTableWork) {
     this.loadTableWork = loadTableWork;
   }
   
   @explain(displayName="files")
-  public List<loadFileDesc> getLoadFileWork() {
+  public loadFileDesc getLoadFileWork() {
     return this.loadFileWork;
   }
-  public void setLoadFileWork(final List<loadFileDesc> loadFileWork) {
+  public void setLoadFileWork(final loadFileDesc loadFileWork) {
     this.loadFileWork=loadFileWork;
   }
   

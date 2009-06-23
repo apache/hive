@@ -323,7 +323,7 @@ public class Driver implements CommandProcessor {
           continue;
         }
 
-        for (Task<? extends Serializable> child : tsk.getChildTasks()) {
+        for (Task<? extends Serializable> child : tsk.getChildTasks()) {          
           // Check if the child is runnable
           if (!child.isRunnable()) {
             continue;

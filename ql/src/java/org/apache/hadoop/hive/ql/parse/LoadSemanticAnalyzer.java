@@ -22,9 +22,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import org.antlr.runtime.tree.Tree;
 import org.apache.commons.lang.StringUtils;
@@ -36,10 +34,8 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.copyWork;
-import org.apache.hadoop.hive.ql.plan.loadFileDesc;
 import org.apache.hadoop.hive.ql.plan.loadTableDesc;
 import org.apache.hadoop.hive.ql.plan.moveWork;
-import org.apache.hadoop.hive.ql.Context;
 
 public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
 
@@ -196,21 +192,18 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     
     // create final load/move work
-    List<loadTableDesc> loadTableWork =  new ArrayList<loadTableDesc>();
-    List<loadFileDesc> loadFileWork = new ArrayList<loadFileDesc>();
 
-    String loadTmpPath;
-    loadTmpPath = ctx.getExternalTmpFileURI(toURI);
-    loadTableWork.add(new loadTableDesc(fromURI.toString(), loadTmpPath,
+    String loadTmpPath = ctx.getExternalTmpFileURI(toURI);
+    loadTableDesc loadTableWork = new loadTableDesc(fromURI.toString(), loadTmpPath,
                                         Utilities.getTableDesc(ts.tableHandle),
                                         (ts.partSpec != null) ? ts.partSpec :
                                         new HashMap<String, String> (),
-                                        isOverWrite));
+                                        isOverWrite);
 
     if(rTask != null) {
-      rTask.addDependentTask(TaskFactory.get(new moveWork(loadTableWork, loadFileWork, true), this.conf));
+      rTask.addDependentTask(TaskFactory.get(new moveWork(loadTableWork, null, true), this.conf));
     } else {
-      rTask = TaskFactory.get(new moveWork(loadTableWork, loadFileWork, true), this.conf);
+      rTask = TaskFactory.get(new moveWork(loadTableWork, null, true), this.conf);
     }
 
     rootTasks.add(rTask);

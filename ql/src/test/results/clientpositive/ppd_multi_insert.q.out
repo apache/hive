@@ -14,11 +14,14 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF src a) (TOK_TABREF src b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB mi1)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF a))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL a) key) 100))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB mi2)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value))) (TOK_WHERE (and (>= (. (TOK_TABLE_OR_COL a) key) 100) (< (. (TOK_TABLE_OR_COL a) key) 200)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB mi3 (TOK_PARTSPEC (TOK_PARTVAL ds '2008-04-08') (TOK_PARTVAL hr '12')))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key))) (TOK_WHERE (and (>= (. (TOK_TABLE_OR_COL a) key) 200) (< (. (TOK_TABLE_OR_COL a) key) 300)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR '../build/ql/test/data/warehouse/mi4.out')) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value))) (TOK_WHERE (>= (. (TOK_TABLE_OR_COL a) key) 300))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-4 is a root stage
+  Stage-0 depends on stages: Stage-4
+  Stage-1 depends on stages: Stage-4
+  Stage-2 depends on stages: Stage-4
+  Stage-3 depends on stages: Stage-4
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
         b 
@@ -143,31 +146,42 @@ STAGE PLANS:
 
   Stage: Stage-0
     Move Operator
-      files:
-            hdfs directory: true
-            destination: ../build/ql/test/data/warehouse/mi4.out
       tables:
-            replace: true
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: mi1
-            replace: true
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: mi2
-            partition:
-              ds 2008-04-08
-              hr 12
-            replace: true
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: mi3
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: mi1
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: mi2
+
+  Stage: Stage-2
+    Move Operator
+      tables:
+          partition:
+            ds 2008-04-08
+            hr 12
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: mi3
+
+  Stage: Stage-3
+    Move Operator
+      files:
+          hdfs directory: true
+          destination: ../build/ql/test/data/warehouse/mi4.out
 
 
 query: FROM src a JOIN src b ON (a.key = b.key)
@@ -182,7 +196,7 @@ Output: default/mi3/ds=2008-04-08/hr=12
 Output: ../build/ql/test/data/warehouse/mi4.out
 query: SELECT mi1.* FROM mi1
 Input: default/mi1
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1570869193/10000
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1767221832/10000
 0	val_0
 0	val_0
 0	val_0
@@ -333,7 +347,7 @@ Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1570869193/10
 98	val_98
 query: SELECT mi2.* FROM mi2
 Input: default/mi2
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1383174916/10000
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/255224107/10000
 100	val_100
 100	val_100
 100	val_100
@@ -547,7 +561,7 @@ Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1383174916/10
 199	val_199
 query: SELECT mi3.* FROM mi3
 Input: default/mi3/ds=2008-04-08/hr=12
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/851984137/10000
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/928924656/10000
 200	2008-04-08	12
 200	2008-04-08	12
 200	2008-04-08	12

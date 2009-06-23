@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import java.io.File;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -38,12 +37,10 @@ import java.util.regex.PatternSyntaxException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
@@ -56,7 +53,6 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.UDAF;
 import org.apache.hadoop.hive.ql.exec.UDAFEvaluator;
 import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
@@ -1053,7 +1049,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return pos;
   }
   
-  private String getColumnInternalName(int pos) {
+  public static String getColumnInternalName(int pos) {
     return HiveConf.getColumnInternalName(pos);
   }
 
@@ -2370,12 +2366,27 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     input = genConversionSelectOperator(dest, qb, input, table_desc);
+    inputRR = opParseCtx.get(input).getRR();
+    Vector<ColumnInfo> vecCol = new Vector<ColumnInfo>();
 
+    try {
+      StructObjectInspector rowObjectInspector = (StructObjectInspector)table_desc.getDeserializer().getObjectInspector();
+      List<? extends StructField> fields = rowObjectInspector.getAllStructFieldRefs();
+      for (int i=0; i<fields.size(); i++)
+        vecCol.add(new ColumnInfo(fields.get(i).getFieldName(), 
+                                 TypeInfoUtils.getTypeInfoFromObjectInspector(fields.get(i).getFieldObjectInspector())));
+    } catch (Exception e)
+    {
+      throw new SemanticException(e.getMessage());
+    }
+    
+    RowSchema fsRS = new RowSchema(vecCol);
+    
     Operator output = putOpInsertMap(
       OperatorFactory.getAndMakeChild(
         new fileSinkDesc(queryTmpdir, table_desc,
                          conf.getBoolVar(HiveConf.ConfVars.COMPRESSRESULT), currentTableId),
-        new RowSchema(inputRR.getColumnInfos()), input), inputRR);
+        fsRS, input), inputRR);
 
     LOG.debug("Created FileSink Plan for clause: " + dest + "dest_path: "
         + dest_path + " row schema: "
@@ -3640,8 +3651,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   @SuppressWarnings("nls")
   private void genMapRedTasks(QB qb) throws SemanticException {
     fetchWork fetch = null;
-    moveWork  mv = null;
-    Task<? extends Serializable> mvTask = null;
+    List<Task<? extends Serializable>> mvTask = new ArrayList<Task<? extends Serializable>>();
     Task<? extends Serializable> fetchTask = null;
 
     QBParseInfo qbParseInfo = qb.getParseInfo();
@@ -3715,14 +3725,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     else {
       // First we generate the move work as this needs to be made dependent on all
       // the tasks that have a file sink operation
-      mv = new moveWork(loadTableWork, loadFileWork, false);
-      mvTask = TaskFactory.get(mv, this.conf);
+      List<moveWork>  mv = new ArrayList<moveWork>();
+      for (loadTableDesc ltd : loadTableWork)
+        mvTask.add(TaskFactory.get(new moveWork(ltd, null, false), this.conf));
+      for (loadFileDesc lfd : loadFileWork)
+        mvTask.add(TaskFactory.get(new moveWork(null, lfd, false), this.conf));
     }
 
     // generate map reduce plans
     GenMRProcContext procCtx = 
       new GenMRProcContext(
-        new HashMap<Operator<? extends Serializable>, Task<? extends Serializable>>(),
+        conf, new HashMap<Operator<? extends Serializable>, Task<? extends Serializable>>(),
         new ArrayList<Operator<? extends Serializable>>(),
         getParseContext(), mvTask, this.rootTasks,
         new HashMap<Operator<? extends Serializable>, GenMapRedCtx>(),
@@ -3802,6 +3815,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (!opMap.isEmpty())
         for (Operator<? extends Serializable> op: opMap.values())
           GenMapRedUtils.setKeyAndValueDesc(work, op);
+    }
+    else if (task instanceof ConditionalTask) {
+      List<Task<? extends Serializable>> listTasks = ((ConditionalTask)task).getListTasks();
+      for (Task<? extends Serializable> tsk : listTasks)
+        setKeyDescTaskTree(tsk);
     }
 
     if (task.getChildTasks() == null)

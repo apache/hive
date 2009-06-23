@@ -70,12 +70,12 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
-            replace: true
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: dest1
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: dest1
 
 
 query: FROM src INSERT OVERWRITE TABLE dest1 SELECT src.key, sum(substr(src.value,5)) GROUP BY src.key
@@ -83,7 +83,7 @@ Input: default/src
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/476967695/10000
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/555989891/10000
 0	0.0
 10	10.0
 100	200.0

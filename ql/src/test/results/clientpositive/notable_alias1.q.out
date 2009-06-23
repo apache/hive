@@ -77,12 +77,12 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
-            replace: true
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: dest1
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: dest1
 
 
 query: FROM src
@@ -91,7 +91,7 @@ Input: default/src
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/632604195/10000
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1874640355/10000
 1234	0	3.0
 1234	10	1.0
 1234	11	1.0

@@ -61,7 +61,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1732554576/10002 
+        file:/data/users/njain/hive4/hive4/build/ql/tmp/2087941217/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -85,12 +85,12 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
-            replace: true
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: t2
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: t2
 
 
 query: INSERT OVERWRITE TABLE T2 SELECT * FROM (SELECT * FROM T1 DISTRIBUTE BY key SORT BY key, value) T LIMIT 20
@@ -98,7 +98,7 @@ Input: default/t1
 Output: default/t2
 query: SELECT * FROM T2 SORT BY key, value
 Input: default/t2
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/856748724/10000
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1213849877/10000
 0	val_0
 0	val_0
 0	val_0

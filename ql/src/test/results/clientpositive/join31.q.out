@@ -70,7 +70,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/287638858/10002 
+        file:/data/users/njain/hive4/hive4/build/ql/tmp/1913053399/10002 
             Common Join Operator
               condition map:
                    Inner Join 0 to 1
@@ -90,11 +90,11 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
-            file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/287638858/10004 
+            file:/data/users/njain/hive4/hive4/build/ql/tmp/1913053399/10004 
               Fetch Operator
                 limit: -1
           Alias -> Map Local Operator Tree:
-            file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/287638858/10004 
+            file:/data/users/njain/hive4/hive4/build/ql/tmp/1913053399/10004 
                 Common Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -115,7 +115,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/287638858/10003 
+        file:/data/users/njain/hive4/hive4/build/ql/tmp/1913053399/10003 
           Select Operator
             Select Operator
               expressions:
@@ -172,12 +172,12 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
-            replace: true
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: dest_j1
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: dest_j1
 
   Stage: Stage-4
     Map Reduce
@@ -237,7 +237,7 @@ Input: default/src1
 Output: default/dest_j1
 query: select * from dest_j1 x order by x.key
 Input: default/dest_j1
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1116945545/10000
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1094372260/10000
 128	1
 146	1
 150	1

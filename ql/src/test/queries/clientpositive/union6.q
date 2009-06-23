@@ -16,6 +16,6 @@ select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, cast(count(1) as
                                       UNION  ALL  
                                           select s2.key as key, s2.value as value from src1 s2) unionsrc;
 
-select * from tmptable x sort by x.key;
+select * from tmptable x sort by x.key, x.value;
 
 drop table tmptable;

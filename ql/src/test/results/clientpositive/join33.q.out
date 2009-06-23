@@ -30,7 +30,7 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
-                directory: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/409684435/10002
+                directory: file:/data/users/njain/hive4/hive4/build/ql/tmp/1264995702/10002
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -58,7 +58,7 @@ STAGE PLANS:
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
-                    directory: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/409684435/10002
+                    directory: file:/data/users/njain/hive4/hive4/build/ql/tmp/1264995702/10002
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -67,9 +67,9 @@ STAGE PLANS:
                           columns.types string,string,string,string
       Needs Tagging: false
       Path -> Alias:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/src 
+        file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/src 
       Path -> Partition:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/src 
+        file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/src 
           Partition
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -84,7 +84,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/src
+                location file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/src
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
 
@@ -118,7 +118,7 @@ STAGE PLANS:
                         type: string
                         expr: hr
                         type: string
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/409684435/10002 
+        file:/data/users/njain/hive4/hive4/build/ql/tmp/1264995702/10002 
           Select Operator
             Reduce Output Operator
               key expressions:
@@ -140,10 +140,10 @@ STAGE PLANS:
                     type: string
       Needs Tagging: true
       Path -> Alias:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/409684435/10002 
+        file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/njain/hive4/hive4/build/ql/tmp/1264995702/10002 
       Path -> Partition:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
             partition values:
               ds 2008-04-08
@@ -162,10 +162,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/409684435/10002 
+        file:/data/users/njain/hive4/hive4/build/ql/tmp/1264995702/10002 
           Partition
           
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -191,7 +191,7 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 1
-              directory: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1859464866/10000
+              directory: file:/data/users/njain/hive4/hive4/build/ql/tmp/140361458/10000
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -205,32 +205,32 @@ STAGE PLANS:
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     file.inputformat org.apache.hadoop.mapred.TextInputFormat
                     file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    location file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/dest_j1
+                    location file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/dest_j1
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: dest_j1
 
   Stage: Stage-0
     Move Operator
       tables:
-            replace: true
-            source: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1859464866/10000
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                properties:
-                  name dest_j1
-                  columns.types string:string:string
-                  serialization.ddl struct dest_j1 { string key, string value, string val2}
-                  serialization.format 1
-                  columns key,value,val2
-                  bucket_count -1
-                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                  file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                  file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  location file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/dest_j1
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: dest_j1
-            tmp directory: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1859464866/10001
+          replace: true
+          source: file:/data/users/njain/hive4/hive4/build/ql/tmp/140361458/10000
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                name dest_j1
+                columns.types string:string:string
+                serialization.ddl struct dest_j1 { string key, string value, string val2}
+                serialization.format 1
+                columns key,value,val2
+                bucket_count -1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                location file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/dest_j1
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: dest_j1
+          tmp directory: file:/data/users/njain/hive4/hive4/build/ql/tmp/140361458/10001
 
 
 query: INSERT OVERWRITE TABLE dest_j1
@@ -243,7 +243,7 @@ Input: default/src1
 Output: default/dest_j1
 query: select * from dest_j1 x order by x.key
 Input: default/dest_j1
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1895295754/10000
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/2070324498/10000
 146	val_146	val_146
 146	val_146	val_146
 146	val_146	val_146

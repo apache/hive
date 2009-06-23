@@ -48,7 +48,8 @@ public class MoveTask extends Task<moveWork> implements Serializable {
     try {
       // Do any hive related operations like moving tables and files
       // to appropriate locations
-      for(loadFileDesc lfd: work.getLoadFileWork()) {
+      loadFileDesc lfd = work.getLoadFileWork();
+      if (lfd != null) {
         Path targetPath = new Path(lfd.getTargetDir());
         Path sourcePath = new Path(lfd.getSourceDir());
         FileSystem fs = sourcePath.getFileSystem(conf);
@@ -93,7 +94,8 @@ public class MoveTask extends Task<moveWork> implements Serializable {
       }
 
       // Next we do this for tables and partitions
-      for(loadTableDesc tbd: work.getLoadTableWork()) {
+      loadTableDesc tbd = work.getLoadTableWork();
+      if (tbd != null) {
         String mesg = "Loading data to table " + tbd.getTable().getTableName() +
         ((tbd.getPartitionSpec().size() > 0) ? 
             " partition " + tbd.getPartitionSpec().toString() : "");

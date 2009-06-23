@@ -53,12 +53,12 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
-            replace: true
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: tst_dest31
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: tst_dest31
 
 
 query: insert overwrite table dest31
@@ -67,7 +67,7 @@ Input: default/srcbucket
 Output: default/tst_dest31
 query: select * from tst_dest31
 Input: default/tst_dest31
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/500549894/10000
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/2046635781/10000
 500
 query: drop table tst_dest31
 query: drop table dest31

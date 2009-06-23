@@ -84,6 +84,8 @@ Trunk - Unreleased
     HIVE-521. Move size, if, isnull, isnotnull to GenericUDF.
     (Min Zhou via zshao)
 
+    HIVE-439. Merge small files after a map-only job. (Namit Jain via zshao)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).

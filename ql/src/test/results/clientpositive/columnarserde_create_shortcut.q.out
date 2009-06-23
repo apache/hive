@@ -58,12 +58,12 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
-            replace: true
-            table:
-                input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                name: columnarserde_create_shortcut
+          replace: true
+          table:
+              input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+              output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+              serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+              name: columnarserde_create_shortcut
 
 
 query: FROM src_thrift
@@ -72,7 +72,7 @@ Input: default/src_thrift
 Output: default/columnarserde_create_shortcut
 query: SELECT columnarserde_create_shortcut.* FROM columnarserde_create_shortcut DISTRIBUTE BY 1
 Input: default/columnarserde_create_shortcut
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/761844554/10000
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/349949332/10000
 [0,0,0]	["0","0","0"]	{"key_0":"value_0"}	1712634731	record_0
 [1,2,3]	["10","100","1000"]	{"key_1":"value_1"}	465985200	record_1
 [2,4,6]	["20","200","2000"]	{"key_2":"value_2"}	-751827638	record_2
@@ -86,7 +86,7 @@ Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/761844554/100
 null	null	{}	0	NULL
 query: SELECT columnarserde_create_shortcut.a[0], columnarserde_create_shortcut.b[0], columnarserde_create_shortcut.c['key2'], columnarserde_create_shortcut.d, columnarserde_create_shortcut.e FROM columnarserde_create_shortcut DISTRIBUTE BY 1
 Input: default/columnarserde_create_shortcut
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1537792942/10000
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1377698797/10000
 0	0	NULL	1712634731	record_0
 1	10	NULL	465985200	record_1
 2	20	NULL	-751827638	record_2
@@ -110,7 +110,7 @@ key	string	from deserializer
 value	string	from deserializer
 query: SELECT columnShortcutTable.* FROM columnShortcutTable
 Input: default/columnshortcuttable
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1192618903/10000
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/770049104/10000
 238	val_238
 86	val_86
 311	val_311
@@ -124,7 +124,7 @@ Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1192618903/10
 query: ALTER TABLE columnShortcutTable ADD COLUMNS (c string)
 query: SELECT columnShortcutTable.* FROM columnShortcutTable
 Input: default/columnshortcuttable
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/811310101/10000
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1057979880/10000
 238	val_238	NULL
 86	val_86	NULL
 311	val_311	NULL
@@ -138,7 +138,7 @@ Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/811310101/100
 query: ALTER TABLE columnShortcutTable REPLACE COLUMNS (key int)
 query: SELECT columnShortcutTable.* FROM columnShortcutTable
 Input: default/columnshortcuttable
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1699900771/10000
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1389619372/10000
 238
 86
 311

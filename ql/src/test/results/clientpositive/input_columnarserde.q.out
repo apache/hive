@@ -63,12 +63,12 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
-            replace: true
-            table:
-                input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                name: input_columnarserde
+          replace: true
+          table:
+              input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
+              output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+              serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+              name: input_columnarserde
 
 
 query: FROM src_thrift
@@ -77,7 +77,7 @@ Input: default/src_thrift
 Output: default/input_columnarserde
 query: SELECT input_columnarserde.* FROM input_columnarserde DISTRIBUTE BY 1
 Input: default/input_columnarserde
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/545096986/10000
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1094577778/10000
 [0,0,0]	["0","0","0"]	{"key_0":"value_0"}	1712634731	record_0
 [1,2,3]	["10","100","1000"]	{"key_1":"value_1"}	465985200	record_1
 [2,4,6]	["20","200","2000"]	{"key_2":"value_2"}	-751827638	record_2
@@ -91,7 +91,7 @@ Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/545096986/100
 null	null	{}	0	NULL
 query: SELECT input_columnarserde.a[0], input_columnarserde.b[0], input_columnarserde.c['key2'], input_columnarserde.d, input_columnarserde.e FROM input_columnarserde DISTRIBUTE BY 1
 Input: default/input_columnarserde
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/795399832/10000
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1785325429/10000
 0	0	NULL	1712634731	record_0
 1	10	NULL	465985200	record_1
 2	20	NULL	-751827638	record_2

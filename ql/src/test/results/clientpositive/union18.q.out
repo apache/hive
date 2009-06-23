@@ -14,15 +14,21 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF src s1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst1' key) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (TOK_FUNCTION count 1)) value)))) (TOK_QUERY (TOK_FROM (TOK_TABREF src s2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) key) key) (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) value) value))))) unionsrc)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB DEST1)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) value)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB DEST2)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) value)))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-3
-  Stage-0 depends on stages: Stage-2
-  Stage-3 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-3
-  Stage-0 depends on stages: Stage-2
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2, Stage-10
+  Stage-6 depends on stages: Stage-3
+  Stage-0 depends on stages: Stage-6
+  Stage-9 depends on stages: Stage-3
+  Stage-1 depends on stages: Stage-9
+  Stage-10 is a root stage
+  Stage-3 depends on stages: Stage-2, Stage-10
+  Stage-6 depends on stages: Stage-3
+  Stage-0 depends on stages: Stage-6
+  Stage-9 depends on stages: Stage-3
+  Stage-1 depends on stages: Stage-9
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery1:unionsrc-subquery1:s1 
@@ -56,10 +62,10 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   name: binary_table
 
-  Stage: Stage-2
+  Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/2017071553/10004 
+        file:/data/users/njain/hive4/hive4/build/ql/tmp/350775461/10004 
           Union
             Select Operator
               expressions:
@@ -91,7 +97,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: dest2
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/2017071553/10005 
+        file:/data/users/njain/hive4/hive4/build/ql/tmp/350775461/10007 
           Union
             Select Operator
               expressions:
@@ -123,24 +129,94 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: dest2
+
+  Stage: Stage-6
+    Conditional Operator
+      list of dependent Tasks:
+          Move Operator
+            files:
+                hdfs directory: true
+                destination: file:/data/users/njain/hive4/hive4/build/ql/tmp/1724840448/10000
+          Map Reduce
+            Alias -> Map Operator Tree:
+              file:/data/users/njain/hive4/hive4/build/ql/tmp/350775461/10005 
+                  Reduce Output Operator
+                    sort order: 
+                    Map-reduce partition columns:
+                          expr: rand()
+                          type: double
+                    tag: -1
+                    value expressions:
+                          expr: key
+                          type: string
+                          expr: value
+                          type: string
+            Reduce Operator Tree:
+              Extract
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: dest1
 
   Stage: Stage-0
     Move Operator
       tables:
-            replace: true
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: dest1
-            replace: true
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: dest2
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: dest1
 
-  Stage: Stage-3
+  Stage: Stage-9
+    Conditional Operator
+      list of dependent Tasks:
+          Move Operator
+            files:
+                hdfs directory: true
+                destination: file:/data/users/njain/hive4/hive4/build/ql/tmp/1724840448/10002
+          Map Reduce
+            Alias -> Map Operator Tree:
+              file:/data/users/njain/hive4/hive4/build/ql/tmp/350775461/10006 
+                  Reduce Output Operator
+                    sort order: 
+                    Map-reduce partition columns:
+                          expr: rand()
+                          type: double
+                    tag: -1
+                    value expressions:
+                          expr: key
+                          type: string
+                          expr: val1
+                          type: string
+                          expr: val2
+                          type: string
+            Reduce Operator Tree:
+              Extract
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: dest2
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: dest2
+
+  Stage: Stage-10
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery2:unionsrc-subquery2:s2 
@@ -169,7 +245,7 @@ Output: default/dest1
 Output: default/dest2
 query: SELECT DEST1.* FROM DEST1 SORT BY DEST1.key, DEST1.value
 Input: default/dest1
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1996050090/10000
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/579835717/10000
 0	val_0
 0	val_0
 0	val_0
@@ -673,7 +749,7 @@ Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1996050090/10
 tst1	500
 query: SELECT DEST2.* FROM DEST2 SORT BY DEST2.key, DEST2.val1, DEST2.val2
 Input: default/dest2
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/2108309784/10000
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1139474399/10000
 0	val_0	val_0
 0	val_0	val_0
 0	val_0	val_0

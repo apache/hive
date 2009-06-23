@@ -14,7 +14,8 @@ STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
   Stage-3 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-3
+  Stage-6 depends on stages: Stage-3
+  Stage-0 depends on stages: Stage-6
 
 STAGE PLANS:
   Stage: Stage-1
@@ -65,7 +66,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/808962627/10002 
+        file:/data/users/njain/hive4/hive4/build/ql/tmp/2104088223/10002 
           Select Operator
             Select Operator
               expressions:
@@ -123,7 +124,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/808962627/10003 
+        file:/data/users/njain/hive4/hive4/build/ql/tmp/2104088223/10003 
           Select Operator
             Select Operator
               expressions:
@@ -140,15 +141,47 @@ STAGE PLANS:
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: dest_j1
 
+  Stage: Stage-6
+    Conditional Operator
+      list of dependent Tasks:
+          Move Operator
+            files:
+                hdfs directory: true
+                destination: file:/data/users/njain/hive4/hive4/build/ql/tmp/1274578593/10000
+          Map Reduce
+            Alias -> Map Operator Tree:
+              file:/data/users/njain/hive4/hive4/build/ql/tmp/2104088223/10004 
+                  Reduce Output Operator
+                    sort order: 
+                    Map-reduce partition columns:
+                          expr: rand()
+                          type: double
+                    tag: -1
+                    value expressions:
+                          expr: key
+                          type: string
+                          expr: value
+                          type: string
+            Reduce Operator Tree:
+              Extract
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: dest_j1
+
   Stage: Stage-0
     Move Operator
       tables:
-            replace: true
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: dest_j1
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: dest_j1
 
 
 query: INSERT OVERWRITE TABLE dest_j1 
@@ -163,7 +196,7 @@ Input: default/srcpart/ds=2008-04-08/hr=11
 Output: default/dest_j1
 query: select * from dest_j1 x order by x.key
 Input: default/dest_j1
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/418632889/10000
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1105642705/10000
 128	val_128
 128	val_128
 128	val_128

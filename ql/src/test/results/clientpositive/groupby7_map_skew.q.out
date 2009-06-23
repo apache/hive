@@ -8,15 +8,15 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF SRC)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB DEST1)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL SRC) key)) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION SUBSTR (. (TOK_TABLE_OR_COL SRC) value) 5)))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL SRC) key))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB DEST2)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL SRC) key)) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION SUBSTR (. (TOK_TABLE_OR_COL SRC) value) 5)))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL SRC) key))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2, Stage-4
+  Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-3
   Stage-4 depends on stages: Stage-3
-  Stage-0 depends on stages: Stage-2, Stage-4
+  Stage-5 depends on stages: Stage-4
+  Stage-1 depends on stages: Stage-5
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
         src 
@@ -81,10 +81,10 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 name: binary_table
 
-  Stage: Stage-2
+  Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/159218052/10004 
+        file:/data/users/njain/hive4/hive4/build/ql/tmp/1954125949/10004 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -129,23 +129,17 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
-            replace: true
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: dest1
-            replace: true
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: dest2
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: dest1
 
-  Stage: Stage-3
+  Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/159218052/10005 
+        file:/data/users/njain/hive4/hive4/build/ql/tmp/1954125949/10005 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -174,10 +168,10 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                 name: binary_table
 
-  Stage: Stage-4
+  Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/159218052/10006 
+        file:/data/users/njain/hive4/hive4/build/ql/tmp/1954125949/10006 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -219,6 +213,16 @@ STAGE PLANS:
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: dest2
 
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: dest2
+
 
 query: FROM SRC
 INSERT OVERWRITE TABLE DEST1 SELECT SRC.key, sum(SUBSTR(SRC.value,5)) GROUP BY SRC.key
@@ -228,7 +232,7 @@ Output: default/dest1
 Output: default/dest2
 query: SELECT DEST1.* FROM DEST1
 Input: default/dest1
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1882977377/10000
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/454858363/10000
 0	0.0
 10	10.0
 100	200.0
@@ -540,7 +544,7 @@ Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1882977377/10
 98	196.0
 query: SELECT DEST2.* FROM DEST2
 Input: default/dest2
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/2022291262/10000
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/207448427/10000
 0	0.0
 10	10.0
 100	200.0

@@ -8,13 +8,13 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF SRC)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB DEST1)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL SRC) key)) (TOK_SELEXPR (TOK_FUNCTIONDI COUNT (TOK_FUNCTION SUBSTR (. (TOK_TABLE_OR_COL SRC) value) 5)))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL SRC) key))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB DEST2)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL SRC) key)) (TOK_SELEXPR (TOK_FUNCTIONDI COUNT (TOK_FUNCTION SUBSTR (. (TOK_TABLE_OR_COL SRC) value) 5)))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL SRC) key))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1, Stage-2
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-1, Stage-2
+  Stage-2 is a root stage
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-3
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
         src 
@@ -101,23 +101,17 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
-            replace: true
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: dest1
-            replace: true
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: dest2
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: dest1
 
-  Stage: Stage-2
+  Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/696709416/10004 
+        file:/data/users/njain/hive4/hive4/build/ql/tmp/903311418/10004 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -161,6 +155,16 @@ STAGE PLANS:
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: dest2
 
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: dest2
+
 
 query: FROM SRC
 INSERT OVERWRITE TABLE DEST1 SELECT SRC.key, COUNT(DISTINCT SUBSTR(SRC.value,5)) GROUP BY SRC.key
@@ -170,7 +174,7 @@ Output: default/dest1
 Output: default/dest2
 query: SELECT DEST1.* FROM DEST1
 Input: default/dest1
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1772033859/10000
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1813648590/10000
 0	1
 10	1
 100	1
@@ -482,7 +486,7 @@ Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1772033859/10
 98	1
 query: SELECT DEST2.* FROM DEST2
 Input: default/dest2
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1926577682/10000
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1471574546/10000
 0	1
 10	1
 100	1

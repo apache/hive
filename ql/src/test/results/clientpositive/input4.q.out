@@ -11,24 +11,24 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Copy
-      source: file:/data/users/athusoo/commits/hive_trunk_ws8/data/files/kv1.txt
-      destination: file:/data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/1051715073
+      source: file:/data/users/njain/hive4/hive4/data/files/kv1.txt
+      destination: file:/data/users/njain/hive4/hive4/build/ql/tmp/1119122844/10000
 
   Stage: Stage-1
     Move Operator
       tables:
-            replace: false
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: input4
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: input4
 
 
 query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE INPUT4
 query: SELECT INPUT4.VALUE, INPUT4.KEY FROM INPUT4
 Input: default/input4
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/4047701/256327496.10000
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/486784140/10000
 val_238	238
 val_86	86
 val_311	311

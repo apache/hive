@@ -12,11 +12,13 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-3
-  Stage-0 depends on stages: Stage-2
-  Stage-3 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-3
-  Stage-0 depends on stages: Stage-2
+  Stage-2 depends on stages: Stage-1, Stage-6
+  Stage-5 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-5
+  Stage-6 is a root stage
+  Stage-2 depends on stages: Stage-1, Stage-6
+  Stage-5 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-5
 
 STAGE PLANS:
   Stage: Stage-1
@@ -56,7 +58,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1736701337/10002 
+        file:/data/users/njain/hive4/hive4/build/ql/tmp/411854408/10002 
           Union
             Select Operator
               expressions:
@@ -72,7 +74,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: tmptable
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1736701337/10003 
+        file:/data/users/njain/hive4/hive4/build/ql/tmp/411854408/10004 
           Union
             Select Operator
               expressions:
@@ -88,18 +90,50 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: tmptable
+
+  Stage: Stage-5
+    Conditional Operator
+      list of dependent Tasks:
+          Move Operator
+            files:
+                hdfs directory: true
+                destination: file:/data/users/njain/hive4/hive4/build/ql/tmp/1482963287/10000
+          Map Reduce
+            Alias -> Map Operator Tree:
+              file:/data/users/njain/hive4/hive4/build/ql/tmp/411854408/10003 
+                  Reduce Output Operator
+                    sort order: 
+                    Map-reduce partition columns:
+                          expr: rand()
+                          type: double
+                    tag: -1
+                    value expressions:
+                          expr: key
+                          type: string
+                          expr: value
+                          type: string
+            Reduce Operator Tree:
+              Extract
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: tmptable
 
   Stage: Stage-0
     Move Operator
       tables:
-            replace: true
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: tmptable
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: tmptable
 
-  Stage: Stage-3
+  Stage: Stage-6
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery2:unionsrc-subquery2:s2 
@@ -125,19 +159,19 @@ select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, cast(count(1) as
 Input: default/src
 Input: default/src1
 Output: default/tmptable
-query: select * from tmptable x sort by x.key
+query: select * from tmptable x sort by x.key, x.value
 Input: default/tmptable
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1069903402/10000
-	val_193
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/779348526/10000
 	
 	
-	val_27
+	
+	
 	val_165
-	val_409
-	
-	
-	val_484
+	val_193
 	val_265
+	val_27
+	val_409
+	val_484
 128	
 146	val_146
 150	val_150

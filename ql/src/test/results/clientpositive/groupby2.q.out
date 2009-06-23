@@ -54,7 +54,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1233260/10002 
+        file:/data/users/njain/hive4/hive4/build/ql/tmp/1492777038/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -106,12 +106,12 @@ STAGE PLANS:
   Stage: Stage-0
     Move Operator
       tables:
-            replace: true
-            table:
-                input format: org.apache.hadoop.mapred.TextInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                name: dest_g2
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: dest_g2
 
 
 query: FROM src
@@ -120,7 +120,7 @@ Input: default/src
 Output: default/dest_g2
 query: SELECT dest_g2.* FROM dest_g2
 Input: default/dest_g2
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/162017745/10000
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/116857579/10000
 0	1	00.0
 1	71	116414.0
 2	69	225571.0
