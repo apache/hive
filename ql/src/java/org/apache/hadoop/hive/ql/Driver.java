@@ -90,23 +90,33 @@ public class Driver implements CommandProcessor {
    * Return the Thrift DDL string of the result
    */
   public String getSchema() throws Exception {
-    if (plan != null && plan.getPlan().getFetchTask() != null) {
-      BaseSemanticAnalyzer sem = plan.getPlan();
+    String schema = "";
+    try {
+      if (plan != null && plan.getPlan().getFetchTask() != null) {
+        BaseSemanticAnalyzer sem = plan.getPlan();
 
-      if (!sem.getFetchTaskInit()) {
-        sem.setFetchTaskInit(true);
-        sem.getFetchTask().initialize(conf);
+        if (!sem.getFetchTaskInit()) {
+          sem.setFetchTaskInit(true);
+          sem.getFetchTask().initialize(conf);
+        }
+        FetchTask ft = (FetchTask) sem.getFetchTask();
+
+        tableDesc td = ft.getTblDesc();
+        String tableName = "result";
+        List<FieldSchema> lst = MetaStoreUtils.getFieldsFromDeserializer(
+            tableName, td.getDeserializer());
+        schema = MetaStoreUtils.getFullDDLFromFieldSchema(tableName, lst);
       }
-      FetchTask ft = (FetchTask) sem.getFetchTask();
-
-      tableDesc td = ft.getTblDesc();
-      String tableName = "result";
-      List<FieldSchema> lst = MetaStoreUtils.getFieldsFromDeserializer(
-          tableName, td.getDeserializer());
-      String schema = MetaStoreUtils.getDDLFromFieldSchema(tableName, lst);
-      return schema;
+      else {
+        schema = "struct result { string empty }";
+      }
     }
-    return null;
+    catch (Exception e) {
+      e.printStackTrace();
+      throw e;
+    }
+    LOG.info("Returning schema: " + schema);
+    return schema;
   }
 
   /**

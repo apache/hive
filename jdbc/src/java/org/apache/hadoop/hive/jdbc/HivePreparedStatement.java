@@ -25,14 +25,21 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
 
+import org.apache.hadoop.hive.service.HiveInterface;
+
 
 public class HivePreparedStatement implements java.sql.PreparedStatement {
   String sql;
+  JdbcSessionState session;
+  HiveInterface client;
+
 
   /**
    *
    */
-  public HivePreparedStatement(String sql) {
+  public HivePreparedStatement(JdbcSessionState session, HiveInterface client, String sql) {
+    this.session = session;
+    this.client = client;
     this.sql = sql;
   }
 
@@ -51,7 +58,7 @@ public class HivePreparedStatement implements java.sql.PreparedStatement {
 
   public void clearParameters() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    //throw new SQLException("Method not supported");
   }
 
   /* (non-Javadoc)
@@ -68,8 +75,12 @@ public class HivePreparedStatement implements java.sql.PreparedStatement {
    */
 
   public ResultSet executeQuery() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    try {
+      client.execute(sql);
+    } catch (Exception ex) {
+      throw new SQLException(ex.toString());
+    }
+    return new HiveResultSet(client);
   }
 
   /* (non-Javadoc)
@@ -901,7 +912,7 @@ public class HivePreparedStatement implements java.sql.PreparedStatement {
 
   public void setMaxRows(int max) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    //throw new SQLException("Method not supported");
   }
 
   /* (non-Javadoc)
@@ -919,7 +930,7 @@ public class HivePreparedStatement implements java.sql.PreparedStatement {
 
   public void setQueryTimeout(int seconds) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    // throw new SQLException("Method not supported");
   }
 
   /* (non-Javadoc)

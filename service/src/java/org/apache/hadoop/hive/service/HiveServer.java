@@ -135,9 +135,16 @@ public class HiveServer extends ThriftHive {
      */
     public String getSchema() throws HiveServerException, TException {
       try {
-        return driver.getSchema();
+        String schema = driver.getSchema();
+        if (schema == null) {
+          schema = "";
+        }
+        LOG.info("Returning schema: " + schema);
+        return schema;
       }
       catch (Exception e) {
+        LOG.error(e.toString());
+        e.printStackTrace();
         throw new HiveServerException("Unable to get schema: " + e.toString());
       }
     }
@@ -241,8 +248,8 @@ public class HiveServer extends ThriftHive {
       TServer server = new TThreadPoolServer(hfactory, serverTransport,
           new TTransportFactory(), new TTransportFactory(),
           new TBinaryProtocol.Factory(), new TBinaryProtocol.Factory(), options);
+      HiveServerHandler.LOG.info("Starting hive server on port " + port);
       server.serve();
-      HiveServerHandler.LOG.info("Started the new hive server on port " + port);
     } catch (Exception x) {
       x.printStackTrace();
     }

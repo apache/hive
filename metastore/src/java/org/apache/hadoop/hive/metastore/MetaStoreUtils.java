@@ -400,6 +400,38 @@ public class MetaStoreUtils {
     }
     return thriftType.toString();
   }
+  /** 
+   * Convert FieldSchemas to Thrift DDL + column names and column types
+   * 
+   * @param structName The name of the table
+   * @param fieldSchemas List of fields along with their schemas
+   * @return String containing "Thrift DDL#comma-separated-column-names#colon-separated-columntypes
+   *         Example: "struct result { a string, map<int,string> b}#a,b#string:map<int,string>"
+   */
+  public static String getFullDDLFromFieldSchema(String structName, List<FieldSchema> fieldSchemas) {
+    StringBuilder ddl = new StringBuilder();
+    ddl.append(getDDLFromFieldSchema(structName, fieldSchemas));
+    ddl.append('#');
+    StringBuilder colnames = new StringBuilder();
+    StringBuilder coltypes = new StringBuilder();
+    boolean first = true;
+    for (FieldSchema col: fieldSchemas) {
+      if (first) {
+        first = false;
+      }
+      else {
+        colnames.append(',');
+        coltypes.append(':');
+      }
+      colnames.append(col.getName());
+      coltypes.append(col.getType());
+    }
+    ddl.append(colnames);
+    ddl.append('#');
+    ddl.append(coltypes);
+    return ddl.toString();
+  }
+  
   /** Convert FieldSchemas to Thrift DDL.
    */
   public static String getDDLFromFieldSchema(String structName, List<FieldSchema> fieldSchemas) {
@@ -419,6 +451,7 @@ public class MetaStoreUtils {
       ddl.append(col.getName());
     }
     ddl.append("}");
+    
     LOG.info("DDL: " + ddl);
     return ddl.toString();
   }

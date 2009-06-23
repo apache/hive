@@ -53,6 +53,9 @@ Trunk - Unreleased
 
     HIVE-338. Postfix for HIVE-338. (zshao)
 
+    HIVE-567. jdbc: integrate hive with pentaho report designer
+    (Raghotham Murthy via namit)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 

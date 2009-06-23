@@ -246,8 +246,7 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
    */
 
   public String getDriverName() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return new String("hive");
   }
 
   /* (non-Javadoc)
@@ -255,8 +254,7 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
    */
 
   public String getDriverVersion() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return new String("0");
   }
 
   /* (non-Javadoc)
@@ -332,8 +330,7 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
    */
 
   public int getJDBCMajorVersion() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return 3;
   }
 
   /* (non-Javadoc)
@@ -341,8 +338,7 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
    */
 
   public int getJDBCMinorVersion() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return 0;
   }
 
   /* (non-Javadoc)
@@ -1383,8 +1379,7 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
 
   public boolean supportsResultSetHoldability(int holdability)
       throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return false;
   }
 
   /* (non-Javadoc)
@@ -1392,8 +1387,7 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
    */
 
   public boolean supportsResultSetType(int type) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return true;
   }
 
   /* (non-Javadoc)

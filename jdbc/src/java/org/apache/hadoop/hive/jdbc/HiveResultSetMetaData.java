@@ -4,9 +4,16 @@
 package org.apache.hadoop.hive.jdbc;
 
 import java.sql.SQLException;
-
+import java.util.List;
 
 public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
+  List<String> columnNames;
+  List<String> columnTypes;
+  
+  public HiveResultSetMetaData(List<String> columnNames, List<String> columnTypes) {
+    this.columnNames = columnNames;
+    this.columnTypes = columnTypes;
+  }
 
   /* (non-Javadoc)
    * @see java.sql.ResultSetMetaData#getCatalogName(int)
@@ -31,8 +38,7 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
    */
 
   public int getColumnCount() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return columnNames.size();
   }
 
   /* (non-Javadoc)
@@ -50,7 +56,7 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
 
   public String getColumnLabel(int column) throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return columnNames.get(column-1);
   }
 
   /* (non-Javadoc)
@@ -58,8 +64,7 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
    */
 
   public String getColumnName(int column) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return columnNames.get(column-1);
   }
 
   /* (non-Javadoc)
@@ -76,8 +81,7 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
    */
 
   public String getColumnTypeName(int column) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return columnTypes.get(column-1);
   }
 
   /* (non-Javadoc)
