@@ -24,49 +24,57 @@ STAGE PLANS:
               predicate:
                   expr: (UDFToDouble(key) < UDFToDouble(100))
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-                Union
-                  Select Operator
-                    expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
-                    File Output Operator
-                      compressed: false
-                      GlobalTableId: 1
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(key) < UDFToDouble(100))
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
+                        type: string
+                        expr: value
+                        type: string
+                  Union
+                    Select Operator
+                      expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: string
+                      File Output Operator
+                        compressed: false
+                        GlobalTableId: 1
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
         null-subquery2:unioninput-subquery2:src 
             Filter Operator
               predicate:
                   expr: (UDFToDouble(key) > UDFToDouble(100))
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-                Union
-                  Select Operator
-                    expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
-                    File Output Operator
-                      compressed: false
-                      GlobalTableId: 1
-                      table:
-                          input format: org.apache.hadoop.mapred.TextInputFormat
-                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(key) > UDFToDouble(100))
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
+                        type: string
+                        expr: value
+                        type: string
+                  Union
+                    Select Operator
+                      expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: string
+                      File Output Operator
+                        compressed: false
+                        GlobalTableId: 1
+                        table:
+                            input format: org.apache.hadoop.mapred.TextInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-4
     Conditional Operator
@@ -74,10 +82,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/njain/hive4/hive4/build/ql/tmp/1845430872/10000
+                destination: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/888465041/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/njain/hive4/hive4/build/ql/tmp/1580671244/10001 
+              file:/data/users/pchakka/workspace/oshive/build/ql/tmp/976024110/10001 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:

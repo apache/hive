@@ -20,43 +20,47 @@ STAGE PLANS:
               predicate:
                   expr: (((hash(key) & 2147483647) % 4) = 0)
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
+              Filter Operator
+                predicate:
+                    expr: (((hash(key) & 2147483647) % 4) = 0)
+                    type: boolean
                 Select Operator
                   expressions:
-                        expr: UDFToInteger(_col0)
-                        type: int
-                        expr: _col1
+                        expr: key
                         type: string
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 1
-                    directory: file:/data/users/njain/hive4/hive4/build/ql/tmp/1050927778/10002
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        properties:
-                          name dest1
-                          columns.types int:string
-                          serialization.ddl struct dest1 { i32 key, string value}
-                          serialization.format 1
-                          columns key,value
-                          bucket_count -1
-                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                          file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                          file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          location file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/dest1
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: dest1
+                        expr: value
+                        type: string
+                  Select Operator
+                    expressions:
+                          expr: UDFToInteger(_col0)
+                          type: int
+                          expr: _col1
+                          type: string
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 1
+                      directory: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/557388751/10002
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          properties:
+                            name dest1
+                            columns.types int:string
+                            serialization.ddl struct dest1 { i32 key, string value}
+                            serialization.format 1
+                            columns key,value
+                            bucket_count -1
+                            serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                            file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            location file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/dest1
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: dest1
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcbucket/kv1.txt 
+        file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/srcbucket/kv1.txt 
       Path -> Partition:
-        file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcbucket/kv1.txt 
+        file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/srcbucket/kv1.txt 
           Partition
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -72,7 +76,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcbucket
+                location file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/srcbucket
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcbucket
 
@@ -82,11 +86,11 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                source: file:/data/users/njain/hive4/hive4/build/ql/tmp/1050927778/10002
-                destination: file:/data/users/njain/hive4/hive4/build/ql/tmp/1002911544/10000
+                source: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/557388751/10002
+                destination: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1329298090/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/njain/hive4/hive4/build/ql/tmp/1050927778/10002 
+              file:/data/users/pchakka/workspace/oshive/build/ql/tmp/557388751/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -100,9 +104,9 @@ STAGE PLANS:
                           type: string
             Needs Tagging: false
             Path -> Alias:
-              file:/data/users/njain/hive4/hive4/build/ql/tmp/1050927778/10002 
+              file:/data/users/pchakka/workspace/oshive/build/ql/tmp/557388751/10002 
             Path -> Partition:
-              file:/data/users/njain/hive4/hive4/build/ql/tmp/1050927778/10002 
+              file:/data/users/pchakka/workspace/oshive/build/ql/tmp/557388751/10002 
                 Partition
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -117,7 +121,7 @@ STAGE PLANS:
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       file.inputformat org.apache.hadoop.mapred.TextInputFormat
                       file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      location file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/dest1
+                      location file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/dest1
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: dest1
             Reduce Operator Tree:
@@ -125,7 +129,7 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
-                  directory: file:/data/users/njain/hive4/hive4/build/ql/tmp/1002911544/10000
+                  directory: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1329298090/10000
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -139,7 +143,7 @@ STAGE PLANS:
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         file.inputformat org.apache.hadoop.mapred.TextInputFormat
                         file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        location file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/dest1
+                        location file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/dest1
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: dest1
 
@@ -147,7 +151,7 @@ STAGE PLANS:
     Move Operator
       tables:
           replace: true
-          source: file:/data/users/njain/hive4/hive4/build/ql/tmp/1002911544/10000
+          source: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1329298090/10000
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -161,10 +165,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/dest1
+                location file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/dest1
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: dest1
-          tmp directory: file:/data/users/njain/hive4/hive4/build/ql/tmp/1002911544/10001
+          tmp directory: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1329298090/10001
 
 
 query: INSERT OVERWRITE TABLE dest1 SELECT s.* 
@@ -173,7 +177,7 @@ Input: default/srcbucket
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/753742949/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/569046726/10000
 165	val_165
 484	val_484
 150	val_150

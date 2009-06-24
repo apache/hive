@@ -213,32 +213,36 @@ STAGE PLANS:
               predicate:
                   expr: (UDFToDouble(key) = UDFToDouble(103))
                   type: boolean
-              Reduce Output Operator
-                key expressions:
-                      expr: key
-                      type: string
-                      expr: hr
-                      type: string
-                      expr: ds
-                      type: string
-                sort order: +++
-                Map-reduce partition columns:
-                      expr: key
-                      type: string
-                      expr: hr
-                      type: string
-                      expr: ds
-                      type: string
-                tag: 0
-                value expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-                      expr: ds
-                      type: string
-                      expr: hr
-                      type: string
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(key) = UDFToDouble(103))
+                    type: boolean
+                Reduce Output Operator
+                  key expressions:
+                        expr: key
+                        type: string
+                        expr: hr
+                        type: string
+                        expr: ds
+                        type: string
+                  sort order: +++
+                  Map-reduce partition columns:
+                        expr: key
+                        type: string
+                        expr: hr
+                        type: string
+                        expr: ds
+                        type: string
+                  tag: 0
+                  value expressions:
+                        expr: key
+                        type: string
+                        expr: value
+                        type: string
+                        expr: ds
+                        type: string
+                        expr: hr
+                        type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -263,7 +267,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/633491426/10002 
+        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/805719823/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -298,7 +302,7 @@ Input: default/srcpart/ds=2008-04-08/hr=11
 Input: default/srcpart/ds=2008-04-08/hr=12
 Input: default/srcpart/ds=2008-04-09/hr=11
 Input: default/srcpart/ds=2008-04-09/hr=12
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/277502116/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1129854195/10000
 2008-04-08	11
 2008-04-08	11
 2008-04-08	11
@@ -462,7 +466,7 @@ Input: default/srcpart/ds=2008-04-08/hr=11
 Input: default/srcpart/ds=2008-04-08/hr=12
 Input: default/srcpart/ds=2008-04-09/hr=11
 Input: default/srcpart/ds=2008-04-09/hr=12
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1512364739/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1035513263/10000
 0	val_0
 0	val_0
 0	val_0

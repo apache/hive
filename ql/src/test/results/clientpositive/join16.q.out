@@ -13,55 +13,63 @@ STAGE PLANS:
         subq:a 
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(key) > UDFToDouble(10))
+                  expr: ((UDFToDouble(key) > UDFToDouble(10)) and (UDFToDouble(key) > UDFToDouble(20)))
                   type: boolean
-              Select Operator
-                expressions:
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(key) > UDFToDouble(10))
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
+                        type: string
+                        expr: value
+                        type: string
+                  Filter Operator
+                    predicate:
+                        expr: (UDFToDouble(_col0) > UDFToDouble(20))
+                        type: boolean
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: string
+                      sort order: ++
+                      Map-reduce partition columns:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: string
+                      tag: 0
+                      value expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: string
+        tab 
+            Filter Operator
+              predicate:
+                  expr: (UDFToDouble(value) < UDFToDouble(200))
+                  type: boolean
+              Reduce Output Operator
+                key expressions:
                       expr: key
                       type: string
                       expr: value
                       type: string
-                Filter Operator
-                  predicate:
-                      expr: (UDFToDouble(_col0) > UDFToDouble(20))
-                      type: boolean
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
-                    sort order: ++
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
-                    tag: 0
-                    value expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
-        tab 
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              sort order: ++
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              tag: 1
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
+                sort order: ++
+                Map-reduce partition columns:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                tag: 1
+                value expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
       Reduce Operator Tree:
         Join Operator
           condition map:

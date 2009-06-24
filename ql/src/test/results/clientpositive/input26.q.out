@@ -23,31 +23,35 @@ STAGE PLANS:
               predicate:
                   expr: ((ds = '2008-04-08') and (hr = '11'))
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-                      expr: ds
-                      type: string
-                      expr: hr
-                      type: string
-                Reduce Output Operator
-                  key expressions:
-                        expr: _col0
+              Filter Operator
+                predicate:
+                    expr: ((ds = '2008-04-08') and (hr = '11'))
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
                         type: string
-                  sort order: +
-                  tag: -1
-                  value expressions:
-                        expr: _col0
+                        expr: value
                         type: string
-                        expr: _col1
+                        expr: ds
                         type: string
-                        expr: _col2
+                        expr: hr
                         type: string
-                        expr: _col3
-                        type: string
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    tag: -1
+                    value expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: string
+                          expr: _col2
+                          type: string
+                          expr: _col3
+                          type: string
       Reduce Operator Tree:
         Extract
           Limit
@@ -62,7 +66,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1762363316/10002 
+        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/998416025/10002 
           Union
             Select Operator
               expressions:
@@ -80,7 +84,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1762363316/10003 
+        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/998416025/10003 
           Union
             Select Operator
               expressions:
@@ -107,29 +111,33 @@ STAGE PLANS:
               predicate:
                   expr: ((ds = '2008-04-08') and (hr = '14'))
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-                      expr: ds
-                      type: string
-                      expr: hr
-                      type: string
-                Limit
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
-                          expr: _col2
-                          type: string
-                          expr: _col3
-                          type: string
+              Filter Operator
+                predicate:
+                    expr: ((ds = '2008-04-08') and (hr = '14'))
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
+                        type: string
+                        expr: value
+                        type: string
+                        expr: ds
+                        type: string
+                        expr: hr
+                        type: string
+                  Limit
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: string
+                            expr: _col2
+                            type: string
+                            expr: _col3
+                            type: string
       Reduce Operator Tree:
         Extract
           Limit
@@ -152,7 +160,7 @@ query: select * from (
   select * from srcpart b where b.ds = '2008-04-08' and b.hr = '14' limit 5
 )subq
 Input: default/srcpart/ds=2008-04-08/hr=11
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/987288914/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/122967309/10000
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11

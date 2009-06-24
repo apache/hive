@@ -14,29 +14,33 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         a:b 
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-              Group By Operator
-                aggregations:
-                      expr: count(1)
-                keys:
+            Filter Operator
+              predicate:
+                  expr: (UDFToDouble(key) >= UDFToDouble(90))
+                  type: boolean
+              Select Operator
+                expressions:
                       expr: key
                       type: string
-                mode: hash
-                Reduce Output Operator
-                  key expressions:
-                        expr: _col0
+                Group By Operator
+                  aggregations:
+                        expr: count(1)
+                  keys:
+                        expr: key
                         type: string
-                  sort order: +
-                  Map-reduce partition columns:
-                        expr: _col0
-                        type: string
-                  tag: -1
-                  value expressions:
-                        expr: _col1
-                        type: bigint
+                  mode: hash
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: -1
+                    value expressions:
+                          expr: _col1
+                          type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -77,7 +81,7 @@ query: SELECT a.k, a.c
 FROM (SELECT b.key as k, count(1) as c FROM src b GROUP BY b.key) a
 WHERE a.k >= 90
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/2044684588/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/259421857/10000
 100	2
 103	2
 104	2

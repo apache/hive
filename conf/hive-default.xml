@@ -154,7 +154,7 @@
 
 <property>
   <name>hive.optimize.ppd</name>
-  <value>false</value>
+  <value>true</value>
   <description>Whether to enable predicate pushdown</description>
 </property>
 
@@ -193,7 +193,7 @@
   <value>0.0.0.0</value>
   <description>This is the host address the Hive Web Interface will listen on</description>
 </property>
- 
+
 <property>
   <name>hive.hwi.listen.port</name>
   <value>9999</value>

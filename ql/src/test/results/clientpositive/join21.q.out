@@ -17,58 +17,70 @@ STAGE PLANS:
               predicate:
                   expr: (UDFToDouble(key) > UDFToDouble(10))
                   type: boolean
-              Reduce Output Operator
-                key expressions:
-                      expr: key
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: key
-                      type: string
-                tag: 1
-                value expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(key) > UDFToDouble(10))
+                    type: boolean
+                Reduce Output Operator
+                  key expressions:
+                        expr: key
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: key
+                        type: string
+                  tag: 1
+                  value expressions:
+                        expr: key
+                        type: string
+                        expr: value
+                        type: string
         src3 
             Filter Operator
               predicate:
                   expr: (UDFToDouble(key) < UDFToDouble(10))
                   type: boolean
-              Reduce Output Operator
-                key expressions:
-                      expr: key
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: key
-                      type: string
-                tag: 2
-                value expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(key) < UDFToDouble(10))
+                    type: boolean
+                Reduce Output Operator
+                  key expressions:
+                        expr: key
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: key
+                        type: string
+                  tag: 2
+                  value expressions:
+                        expr: key
+                        type: string
+                        expr: value
+                        type: string
         src1 
             Filter Operator
               predicate:
                   expr: (UDFToDouble(key) < UDFToDouble(10))
                   type: boolean
-              Reduce Output Operator
-                key expressions:
-                      expr: key
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: key
-                      type: string
-                tag: 0
-                value expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(key) < UDFToDouble(10))
+                    type: boolean
+                Reduce Output Operator
+                  key expressions:
+                        expr: key
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: key
+                        type: string
+                  tag: 0
+                  value expressions:
+                        expr: key
+                        type: string
+                        expr: value
+                        type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -103,7 +115,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1871738284/10002 
+        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/14709034/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -149,7 +161,7 @@ STAGE PLANS:
 
 query: SELECT * FROM src src1 LEFT OUTER JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10) RIGHT OUTER JOIN src src3 ON (src2.key = src3.key AND src3.key < 10) SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1337202380/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/808695063/10000
 NULL	NULL	NULL	NULL	0	val_0
 NULL	NULL	NULL	NULL	0	val_0
 NULL	NULL	NULL	NULL	0	val_0

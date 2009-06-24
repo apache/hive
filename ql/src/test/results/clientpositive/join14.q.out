@@ -18,43 +18,51 @@ STAGE PLANS:
               predicate:
                   expr: (ds = '2008-04-08')
                   type: boolean
-              Reduce Output Operator
-                key expressions:
-                      expr: key
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: key
-                      type: string
-                tag: 1
-                value expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-                      expr: ds
-                      type: string
-                      expr: hr
-                      type: string
+              Filter Operator
+                predicate:
+                    expr: (ds = '2008-04-08')
+                    type: boolean
+                Reduce Output Operator
+                  key expressions:
+                        expr: key
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: key
+                        type: string
+                  tag: 1
+                  value expressions:
+                        expr: key
+                        type: string
+                        expr: value
+                        type: string
+                        expr: ds
+                        type: string
+                        expr: hr
+                        type: string
         src 
             Filter Operator
               predicate:
                   expr: (UDFToDouble(key) > UDFToDouble(100))
                   type: boolean
-              Reduce Output Operator
-                key expressions:
-                      expr: key
-                      type: string
-                sort order: +
-                Map-reduce partition columns:
-                      expr: key
-                      type: string
-                tag: 0
-                value expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(key) > UDFToDouble(100))
+                    type: boolean
+                Reduce Output Operator
+                  key expressions:
+                        expr: key
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: key
+                        type: string
+                  tag: 0
+                  value expressions:
+                        expr: key
+                        type: string
+                        expr: value
+                        type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -102,7 +110,7 @@ Input: default/src
 Output: default/dest1
 query: select dest1.* from dest1
 Input: default/dest1
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/714212122/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/285954832/10000
 103	val_103
 103	val_103
 103	val_103

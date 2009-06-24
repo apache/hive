@@ -28,56 +28,60 @@ STAGE PLANS:
               predicate:
                   expr: (UDFToDouble(key) = UDFToDouble(86))
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: ('a' like '%a%')
-                      type: boolean
-                      expr: ('b' like '%a%')
-                      type: boolean
-                      expr: ('ab' like '%a%')
-                      type: boolean
-                      expr: ('ab' like '%a_')
-                      type: boolean
-                      expr: ('%_' like '\%\_')
-                      type: boolean
-                      expr: ('ab' like '\%\_')
-                      type: boolean
-                      expr: ('ab' like '_a%')
-                      type: boolean
-                      expr: ('ab' like 'a')
-                      type: boolean
-                      expr: ('' regexp '.*')
-                      type: boolean
-                      expr: ('a' regexp '[ab]')
-                      type: boolean
-                      expr: ('' regexp '[ab]')
-                      type: boolean
-                      expr: ('hadoop' regexp '[a-z]*')
-                      type: boolean
-                      expr: ('hadoop' regexp 'o*')
-                      type: boolean
-                      expr: regexp_replace('abc', 'b', 'c')
-                      type: string
-                      expr: regexp_replace('abc', 'z', 'a')
-                      type: string
-                      expr: regexp_replace('abbbb', 'bb', 'b')
-                      type: string
-                      expr: regexp_replace('hadoop', '(.)[a-z]*', '$1ive')
-                      type: string
-                      expr: regexp_replace('hadoopAAA', 'A.*', '')
-                      type: string
-                      expr: regexp_replace('abc', '', 'A')
-                      type: string
-                      expr: ('abc' regexp '')
-                      type: boolean
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 1
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: dest1
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(key) = UDFToDouble(86))
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: ('a' like '%a%')
+                        type: boolean
+                        expr: ('b' like '%a%')
+                        type: boolean
+                        expr: ('ab' like '%a%')
+                        type: boolean
+                        expr: ('ab' like '%a_')
+                        type: boolean
+                        expr: ('%_' like '\%\_')
+                        type: boolean
+                        expr: ('ab' like '\%\_')
+                        type: boolean
+                        expr: ('ab' like '_a%')
+                        type: boolean
+                        expr: ('ab' like 'a')
+                        type: boolean
+                        expr: ('' regexp '.*')
+                        type: boolean
+                        expr: ('a' regexp '[ab]')
+                        type: boolean
+                        expr: ('' regexp '[ab]')
+                        type: boolean
+                        expr: ('hadoop' regexp '[a-z]*')
+                        type: boolean
+                        expr: ('hadoop' regexp 'o*')
+                        type: boolean
+                        expr: regexp_replace('abc', 'b', 'c')
+                        type: string
+                        expr: regexp_replace('abc', 'z', 'a')
+                        type: string
+                        expr: regexp_replace('abbbb', 'bb', 'b')
+                        type: string
+                        expr: regexp_replace('hadoop', '(.)[a-z]*', '$1ive')
+                        type: string
+                        expr: regexp_replace('hadoopAAA', 'A.*', '')
+                        type: string
+                        expr: regexp_replace('abc', '', 'A')
+                        type: string
+                        expr: ('abc' regexp '')
+                        type: boolean
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 1
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: dest1
 
   Stage: Stage-4
     Conditional Operator
@@ -85,10 +89,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/njain/hive4/hive4/build/ql/tmp/1253611032/10000
+                destination: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/734075252/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/njain/hive4/hive4/build/ql/tmp/1620724991/10002 
+              file:/data/users/pchakka/workspace/oshive/build/ql/tmp/816992741/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -169,5 +173,5 @@ Input: default/src
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1990021744/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/674207509/10000
 true	false	true	true	true	false	false	false	true	true	false	true	false	acc	abc	abb	hive	hadoop	AaAbAcA	false

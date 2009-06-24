@@ -16,19 +16,23 @@ STAGE PLANS:
               predicate:
                   expr: (UDFToDouble(key) < UDFToDouble(300))
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-                Limit
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(key) < UDFToDouble(300))
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
+                        type: string
+                        expr: value
+                        type: string
+                  Limit
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 0
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -37,7 +41,7 @@ STAGE PLANS:
 
 query: SELECT x.* FROM SRC x WHERE x.key < 300 LIMIT 5
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/472205870/117610052.10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/455953501/10000
 238	val_238
 86	val_86
 27	val_27

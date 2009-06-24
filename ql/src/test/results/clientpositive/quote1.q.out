@@ -19,26 +19,30 @@ STAGE PLANS:
               predicate:
                   expr: ((UDFToDouble(key) >= UDFToDouble(200)) and (UDFToDouble(key) < UDFToDouble(300)))
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
+              Filter Operator
+                predicate:
+                    expr: ((UDFToDouble(key) >= UDFToDouble(200)) and (UDFToDouble(key) < UDFToDouble(300)))
+                    type: boolean
                 Select Operator
                   expressions:
-                        expr: UDFToInteger(_col0)
-                        type: int
-                        expr: _col1
+                        expr: key
                         type: string
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 1
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                        name: dest1
+                        expr: value
+                        type: string
+                  Select Operator
+                    expressions:
+                          expr: UDFToInteger(_col0)
+                          type: int
+                          expr: _col1
+                          type: string
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 1
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: dest1
 
   Stage: Stage-4
     Conditional Operator
@@ -46,10 +50,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/njain/hive4/hive4/build/ql/tmp/427744862/10000
+                destination: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/657063000/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/njain/hive4/hive4/build/ql/tmp/1826844590/10002 
+              file:/data/users/pchakka/workspace/oshive/build/ql/tmp/547720568/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -103,20 +107,24 @@ STAGE PLANS:
               predicate:
                   expr: (table = '2008-04-08')
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: location
-                      type: int
-                      expr: type
-                      type: string
-                      expr: table
-                      type: string
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              Filter Operator
+                predicate:
+                    expr: (table = '2008-04-08')
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: location
+                        type: int
+                        expr: type
+                        type: string
+                        expr: table
+                        type: string
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -129,7 +137,7 @@ Input: default/src
 Output: default/dest1/table=2008-04-08
 query: SELECT `int`.`location`, `int`.`type`, `int`.`table` FROM dest1 `int` WHERE `int`.`table` = '2008-04-08'
 Input: default/dest1/table=2008-04-08
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1598405104/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1782208476/10000
 238	val_238	2008-04-08
 255	val_255	2008-04-08
 278	val_278	2008-04-08

@@ -27,36 +27,40 @@ STAGE PLANS:
               predicate:
                   expr: (UDFToDouble(key) = UDFToDouble(86))
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'HOST')
-                      type: string
-                      expr: parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'PATH')
-                      type: string
-                      expr: parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'QUERY')
-                      type: string
-                      expr: parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'REF')
-                      type: string
-                      expr: parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'QUERY', 'k2')
-                      type: string
-                      expr: parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'QUERY', 'k1')
-                      type: string
-                      expr: parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'QUERY', 'k3')
-                      type: string
-                      expr: parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'FILE')
-                      type: string
-                      expr: parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'PROTOCOL')
-                      type: string
-                      expr: parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'USERINFO')
-                      type: string
-                      expr: parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'AUTHORITY')
-                      type: string
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(key) = UDFToDouble(86))
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'HOST')
+                        type: string
+                        expr: parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'PATH')
+                        type: string
+                        expr: parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'QUERY')
+                        type: string
+                        expr: parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'REF')
+                        type: string
+                        expr: parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'QUERY', 'k2')
+                        type: string
+                        expr: parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'QUERY', 'k1')
+                        type: string
+                        expr: parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'QUERY', 'k3')
+                        type: string
+                        expr: parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'FILE')
+                        type: string
+                        expr: parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'PROTOCOL')
+                        type: string
+                        expr: parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'USERINFO')
+                        type: string
+                        expr: parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'AUTHORITY')
+                        type: string
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -76,5 +80,5 @@ parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'USERINFO') ,
 parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'AUTHORITY') 
   FROM src WHERE key = 86
 Input: default/src
-Output: file:/mnt/vol/devrs008.snc1/suresh/hive_external/build/ql/tmp/384013469/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/17165920/10000
 facebook.com	/path1/p.php	k1=v1&k2=v2	Ref1	v2	v1	NULL	/path1/p.php?k1=v1&k2=v2	http	NULL	facebook.com

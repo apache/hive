@@ -89,6 +89,9 @@ Trunk - Unreleased
 
     HIVE-439. Merge small files after a map-only job. (Namit Jain via zshao)
 
+    HIVE-516. Enable predicate pushdown for junit tests.
+    (Prasad Chakka via zshao)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).

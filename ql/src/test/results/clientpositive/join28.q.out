@@ -66,7 +66,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive4/hive4/build/ql/tmp/2104088223/10002 
+        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1815676421/10002 
           Select Operator
             Select Operator
               expressions:
@@ -98,33 +98,37 @@ STAGE PLANS:
             z 
                 Filter Operator
                   predicate:
-                      expr: (ds = '2008-04-08')
+                      expr: ((ds = '2008-04-08') and (UDFToDouble(hr) = UDFToDouble(11)))
                       type: boolean
                   Filter Operator
                     predicate:
-                        expr: (UDFToDouble(hr) = UDFToDouble(11))
+                        expr: (ds = '2008-04-08')
                         type: boolean
-                    Common Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      condition expressions:
-                        0 {_col0}
-                        1 {key} {value} {ds} {hr}
-                      keys:
-                        0 
-                        1 
-                      Position of Big Table: 0
-                      File Output Operator
-                        compressed: false
-                        GlobalTableId: 0
-                        table:
-                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    Filter Operator
+                      predicate:
+                          expr: (UDFToDouble(hr) = UDFToDouble(11))
+                          type: boolean
+                      Common Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        condition expressions:
+                          0 {_col0}
+                          1 {key} {value} {ds} {hr}
+                        keys:
+                          0 
+                          1 
+                        Position of Big Table: 0
+                        File Output Operator
+                          compressed: false
+                          GlobalTableId: 0
+                          table:
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive4/hive4/build/ql/tmp/2104088223/10003 
+        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1815676421/10003 
           Select Operator
             Select Operator
               expressions:
@@ -147,10 +151,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/njain/hive4/hive4/build/ql/tmp/1274578593/10000
+                destination: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1094740336/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/njain/hive4/hive4/build/ql/tmp/2104088223/10004 
+              file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1815676421/10004 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -196,7 +200,7 @@ Input: default/srcpart/ds=2008-04-08/hr=11
 Output: default/dest_j1
 query: select * from dest_j1 x order by x.key
 Input: default/dest_j1
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1105642705/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1009140217/10000
 128	val_128
 128	val_128
 128	val_128

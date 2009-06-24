@@ -19,38 +19,42 @@ STAGE PLANS:
               predicate:
                   expr: (UDFToDouble(key) = UDFToDouble(86))
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: ('_%_' like '%\_\%\_%')
-                      type: boolean
-                      expr: ('__' like '%\_\%\_%')
-                      type: boolean
-                      expr: ('%%_%_' like '%\_\%\_%')
-                      type: boolean
-                      expr: ('%_%_%' like '%\%\_\%')
-                      type: boolean
-                      expr: ('_%_' like '\%\_%')
-                      type: boolean
-                      expr: ('%__' like '__\%%')
-                      type: boolean
-                      expr: ('_%' like '\_\%\_\%%')
-                      type: boolean
-                      expr: ('_%' like '\_\%_%')
-                      type: boolean
-                      expr: ('%_' like '\%\_')
-                      type: boolean
-                      expr: ('ab' like '\%\_')
-                      type: boolean
-                      expr: ('ab' like '_a%')
-                      type: boolean
-                      expr: ('ab' like 'a')
-                      type: boolean
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(key) = UDFToDouble(86))
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: ('_%_' like '%\_\%\_%')
+                        type: boolean
+                        expr: ('__' like '%\_\%\_%')
+                        type: boolean
+                        expr: ('%%_%_' like '%\_\%\_%')
+                        type: boolean
+                        expr: ('%_%_%' like '%\%\_\%')
+                        type: boolean
+                        expr: ('_%_' like '\%\_%')
+                        type: boolean
+                        expr: ('%__' like '__\%%')
+                        type: boolean
+                        expr: ('_%' like '\_\%\_\%%')
+                        type: boolean
+                        expr: ('_%' like '\_\%_%')
+                        type: boolean
+                        expr: ('%_' like '\%\_')
+                        type: boolean
+                        expr: ('ab' like '\%\_')
+                        type: boolean
+                        expr: ('ab' like '_a%')
+                        type: boolean
+                        expr: ('ab' like 'a')
+                        type: boolean
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -62,5 +66,5 @@ query: SELECT '_%_' LIKE '%\_\%\_%', '__' LIKE '%\_\%\_%', '%%_%_' LIKE '%\_\%\_
   '%_' LIKE '\%\_', 'ab' LIKE '\%\_', 'ab' LIKE '_a%', 'ab' LIKE 'a'
 FROM src WHERE src.key = 86
 Input: default/src
-Output: file:/home/yjia/hive/build/ql/tmp/839410699/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/551411911/10000
 true	false	true	true	false	false	false	false	true	false	false	false

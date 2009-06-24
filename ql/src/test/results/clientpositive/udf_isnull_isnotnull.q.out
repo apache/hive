@@ -20,21 +20,25 @@ STAGE PLANS:
               predicate:
                   expr: true is not null
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: null is null
-                      type: boolean
-                      expr: 1 is not null
-                      type: boolean
-                      expr: 'my string' is not null
-                      type: boolean
-                Limit
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              Filter Operator
+                predicate:
+                    expr: true is not null
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: null is null
+                        type: boolean
+                        expr: 1 is not null
+                        type: boolean
+                        expr: 'my string' is not null
+                        type: boolean
+                  Limit
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 0
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -47,7 +51,7 @@ query: SELECT NULL IS NULL,
 FROM src
 WHERE true IS NOT NULL LIMIT 1
 Input: default/src
-Output: file:/home/zhoumin/hive-trunk/build/ql/tmp/1515895443/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1433540979/10000
 true	true	true
 query: EXPLAIN
 FROM src_thrift
@@ -72,21 +76,25 @@ STAGE PLANS:
               predicate:
                   expr: (lint is not null and not mstringstring is null)
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: lint is not null
-                      type: boolean
-                      expr: lintstring is not null
-                      type: boolean
-                      expr: mstringstring is not null
-                      type: boolean
-                Limit
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              Filter Operator
+                predicate:
+                    expr: (lint is not null and not mstringstring is null)
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: lint is not null
+                        type: boolean
+                        expr: lintstring is not null
+                        type: boolean
+                        expr: mstringstring is not null
+                        type: boolean
+                  Limit
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 0
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -100,5 +108,5 @@ SELECT src_thrift.lint IS NOT NULL,
 WHERE  src_thrift.lint IS NOT NULL 
        AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
 Input: default/src_thrift
-Output: file:/home/zhoumin/hive-trunk/build/ql/tmp/302479509/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/63009813/10000
 true	true	true

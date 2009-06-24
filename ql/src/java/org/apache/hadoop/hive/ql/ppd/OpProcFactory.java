@@ -106,13 +106,13 @@ public class OpProcFactory {
       
       // combine all predicates into a single expression
       List<exprNodeDesc> preds = null;
-      exprNodeFuncDesc condn = null; 
+      exprNodeDesc condn = null; 
       Iterator<List<exprNodeDesc>> iterator = pushDownPreds.getFinalCandidates().values().iterator();
       while (iterator.hasNext()) {
         preds = iterator.next();
         int i = 0;
         if(condn == null) {
-          condn = (exprNodeFuncDesc) preds.get(0);
+          condn = preds.get(0);
           i++;
         }
         for(; i < preds.size(); i++) {
@@ -164,7 +164,7 @@ public class OpProcFactory {
       LOG.info("Processing for " +  nd.getName() + "(" + ((Operator)nd).getIdentifier() + ")");
       OpWalkerInfo owi = (OpWalkerInfo)procCtx;
       Operator<? extends Serializable> op = (Operator<? extends Serializable>) nd;
-      exprNodeFuncDesc predicate = (exprNodeFuncDesc) (((FilterOperator)nd).getConf()).getPredicate();
+      exprNodeDesc predicate = (((FilterOperator)nd).getConf()).getPredicate();
       // get pushdown predicates for this operato's predicate
       ExprWalkerInfo ewi = ExprWalkerProcFactory.extractPushdownPreds(owi, op, predicate);
       if (!ewi.isDeterministic()) {

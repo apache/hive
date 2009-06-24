@@ -27,25 +27,29 @@ STAGE PLANS:
               predicate:
                   expr: (d = '2009-01-01')
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: a
-                      type: int
-                      expr: b
-                      type: int
-                      expr: d
-                      type: string
-                Limit
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: int
-                          expr: _col1
-                          type: int
-                          expr: _col2
-                          type: string
+              Filter Operator
+                predicate:
+                    expr: (d = '2009-01-01')
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: a
+                        type: int
+                        expr: b
+                        type: int
+                        expr: d
+                        type: string
+                  Limit
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: int
+                            expr: _col1
+                            type: int
+                            expr: _col2
+                            type: string
       Reduce Operator Tree:
         Extract
           Limit
@@ -60,7 +64,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/905940285/10002 
+        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/717433292/10002 
           Union
             Select Operator
               expressions:
@@ -76,7 +80,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/905940285/10003 
+        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/717433292/10003 
           Union
             Select Operator
               expressions:
@@ -101,25 +105,29 @@ STAGE PLANS:
               predicate:
                   expr: (d = '2009-02-02')
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: a
-                      type: int
-                      expr: b
-                      type: int
-                      expr: d
-                      type: string
-                Limit
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: int
-                          expr: _col1
-                          type: int
-                          expr: _col2
-                          type: string
+              Filter Operator
+                predicate:
+                    expr: (d = '2009-02-02')
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: a
+                        type: int
+                        expr: b
+                        type: int
+                        expr: d
+                        type: string
+                  Limit
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: int
+                            expr: _col1
+                            type: int
+                            expr: _col2
+                            type: string
       Reduce Operator Tree:
         Extract
           Limit
@@ -143,5 +151,5 @@ query: select * from (
 ) subq
 Input: default/tst/d=2009-01-01
 Input: default/tst/d=2009-02-02
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/2079633835/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/273314648/10000
 query: drop table tst

@@ -12,36 +12,44 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         b 
-            Reduce Output Operator
-              sort order: 
-              tag: 1
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-                    expr: ds
-                    type: string
-                    expr: hr
-                    type: string
+            Filter Operator
+              predicate:
+                  expr: ((ds = '2008-04-08') and (hr = '14'))
+                  type: boolean
+              Reduce Output Operator
+                sort order: 
+                tag: 1
+                value expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                      expr: ds
+                      type: string
+                      expr: hr
+                      type: string
         a 
-            Reduce Output Operator
-              sort order: 
-              tag: 0
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-                    expr: ds
-                    type: string
-                    expr: hr
-                    type: string
+            Filter Operator
+              predicate:
+                  expr: ((ds = '2008-04-08') and (hr = '11'))
+                  type: boolean
+              Reduce Output Operator
+                sort order: 
+                tag: 0
+                value expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                      expr: ds
+                      type: string
+                      expr: hr
+                      type: string
       Needs Tagging: true
       Path -> Alias:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
       Path -> Partition:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
             partition values:
               ds 2008-04-08
@@ -60,7 +68,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
       Reduce Operator Tree:
@@ -96,7 +104,7 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
-                  directory: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/987896879/10001
+                  directory: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/2018964095/10001
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -111,4 +119,4 @@ STAGE PLANS:
 
 query: select * from srcpart a join srcpart b where a.ds = '2008-04-08' and a.hr = '11' and b.ds = '2008-04-08' and b.hr = '14' limit 5
 Input: default/srcpart/ds=2008-04-08/hr=11
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1484665177/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/342520994/10000

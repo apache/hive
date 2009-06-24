@@ -19,17 +19,21 @@ STAGE PLANS:
               predicate:
                   expr: (d = '2009-01-01')
                   type: boolean
-              Select Operator
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  mode: hash
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: bigint
+              Filter Operator
+                predicate:
+                    expr: (d = '2009-01-01')
+                    type: boolean
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    mode: hash
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -53,6 +57,6 @@ STAGE PLANS:
 
 query: select count(1) from tst x where x.d='2009-01-01'
 Input: default/tst/d=2009-01-01
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/826416972/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1480756599/10000
 0
 query: drop table tst

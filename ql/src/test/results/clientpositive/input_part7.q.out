@@ -21,34 +21,23 @@ STAGE PLANS:
               predicate:
                   expr: ((ds = '2008-04-08') and (UDFToDouble(key) < UDFToDouble(100)))
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-                      expr: ds
-                      type: string
-                      expr: hr
-                      type: string
-                Union
-                  Select Operator
-                    expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
-                          expr: _col2
-                          type: string
-                          expr: _col3
-                          type: string
-                    Reduce Output Operator
-                      key expressions:
-                            expr: _col0
-                            type: string
-                      sort order: +
-                      tag: -1
-                      value expressions:
+              Filter Operator
+                predicate:
+                    expr: ((ds = '2008-04-08') and (UDFToDouble(key) < UDFToDouble(100)))
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
+                        type: string
+                        expr: value
+                        type: string
+                        expr: ds
+                        type: string
+                        expr: hr
+                        type: string
+                  Union
+                    Select Operator
+                      expressions:
                             expr: _col0
                             type: string
                             expr: _col1
@@ -57,39 +46,43 @@ STAGE PLANS:
                             type: string
                             expr: _col3
                             type: string
+                      Reduce Output Operator
+                        key expressions:
+                              expr: _col0
+                              type: string
+                        sort order: +
+                        tag: -1
+                        value expressions:
+                              expr: _col0
+                              type: string
+                              expr: _col1
+                              type: string
+                              expr: _col2
+                              type: string
+                              expr: _col3
+                              type: string
         null-subquery2:a-subquery2:y 
             Filter Operator
               predicate:
                   expr: ((ds = '2008-04-08') and (UDFToDouble(key) < UDFToDouble(100)))
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-                      expr: ds
-                      type: string
-                      expr: hr
-                      type: string
-                Union
-                  Select Operator
-                    expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
-                          expr: _col2
-                          type: string
-                          expr: _col3
-                          type: string
-                    Reduce Output Operator
-                      key expressions:
-                            expr: _col0
-                            type: string
-                      sort order: +
-                      tag: -1
-                      value expressions:
+              Filter Operator
+                predicate:
+                    expr: ((ds = '2008-04-08') and (UDFToDouble(key) < UDFToDouble(100)))
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
+                        type: string
+                        expr: value
+                        type: string
+                        expr: ds
+                        type: string
+                        expr: hr
+                        type: string
+                  Union
+                    Select Operator
+                      expressions:
                             expr: _col0
                             type: string
                             expr: _col1
@@ -98,12 +91,27 @@ STAGE PLANS:
                             type: string
                             expr: _col3
                             type: string
+                      Reduce Output Operator
+                        key expressions:
+                              expr: _col0
+                              type: string
+                        sort order: +
+                        tag: -1
+                        value expressions:
+                              expr: _col0
+                              type: string
+                              expr: _col1
+                              type: string
+                              expr: _col2
+                              type: string
+                              expr: _col3
+                              type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
       Path -> Partition:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
             partition values:
               ds 2008-04-08
@@ -122,10 +130,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
             partition values:
               ds 2008-04-08
@@ -144,7 +152,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
       Reduce Operator Tree:
@@ -152,7 +160,7 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/12007688/10001
+            directory: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1425223263/10001
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -173,7 +181,7 @@ query: SELECT * FROM (
 SORT BY A.key
 Input: default/srcpart/ds=2008-04-08/hr=11
 Input: default/srcpart/ds=2008-04-08/hr=12
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/257008920/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1631529589/10000
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11

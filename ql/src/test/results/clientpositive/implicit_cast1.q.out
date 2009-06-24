@@ -19,18 +19,22 @@ STAGE PLANS:
               predicate:
                   expr: (UDFToDouble(a) <> UDFToDouble(0))
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: a
-                      type: bigint
-                      expr: b
-                      type: string
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(a) <> UDFToDouble(0))
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: a
+                        type: bigint
+                        expr: b
+                        type: string
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -41,5 +45,5 @@ query: SELECT implicit_test1.*
 FROM implicit_test1
 WHERE implicit_test1.a <> 0
 Input: default/implicit_test1
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/253022585/673360259.10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/351758098/10000
 query: DROP TABLE implicit_test1

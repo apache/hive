@@ -11,23 +11,31 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src2 
-            Reduce Output Operator
-              sort order: 
-              tag: 1
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
+            Filter Operator
+              predicate:
+                  expr: (UDFToDouble(key) < UDFToDouble(10))
+                  type: boolean
+              Reduce Output Operator
+                sort order: 
+                tag: 1
+                value expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
         src1 
-            Reduce Output Operator
-              sort order: 
-              tag: 0
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
+            Filter Operator
+              predicate:
+                  expr: (UDFToDouble(key) < UDFToDouble(10))
+                  type: boolean
+              Reduce Output Operator
+                sort order: 
+                tag: 0
+                value expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -60,7 +68,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1772065220/10002 
+        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/926752707/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0

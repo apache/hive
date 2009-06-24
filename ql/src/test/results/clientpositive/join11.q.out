@@ -38,26 +38,30 @@ STAGE PLANS:
                       expr: _col1
                       type: string
         src1:src 
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-              Filter Operator
-                predicate:
-                    expr: (UDFToDouble(_col0) < UDFToDouble(100))
-                    type: boolean
-                Reduce Output Operator
-                  key expressions:
-                        expr: _col0
-                        type: string
-                  sort order: +
-                  Map-reduce partition columns:
-                        expr: _col0
-                        type: string
-                  tag: 0
-                  value expressions:
-                        expr: _col0
-                        type: string
+            Filter Operator
+              predicate:
+                  expr: (UDFToDouble(key) < UDFToDouble(100))
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                Filter Operator
+                  predicate:
+                      expr: (UDFToDouble(_col0) < UDFToDouble(100))
+                      type: boolean
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: 0
+                    value expressions:
+                          expr: _col0
+                          type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -90,7 +94,7 @@ JOIN
 (SELECT src.key as c3, src.value as c4 from src) src2
 ON src1.c1 = src2.c3 AND src1.c1 < 100
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/760194900/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1092092252/10000
 0	val_0
 0	val_0
 0	val_0

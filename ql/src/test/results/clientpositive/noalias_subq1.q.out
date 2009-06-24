@@ -12,26 +12,30 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         x:src 
-            Select Operator
-              expressions:
-                    expr: value
-                    type: string
-                    expr: key
-                    type: string
-              Filter Operator
-                predicate:
-                    expr: (UDFToDouble(_col1) < UDFToDouble(100))
-                    type: boolean
-                Select Operator
-                  expressions:
-                        expr: _col0
-                        type: string
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            Filter Operator
+              predicate:
+                  expr: (UDFToDouble(key) < UDFToDouble(100))
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: value
+                      type: string
+                      expr: key
+                      type: string
+                Filter Operator
+                  predicate:
+                      expr: (UDFToDouble(_col1) < UDFToDouble(100))
+                      type: boolean
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 0
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -40,7 +44,7 @@ STAGE PLANS:
 
 query: SELECT c1 FROM (select value as c1, key as c2 from src) x where c2 < 100
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1484515504/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1322275245/10000
 val_86
 val_27
 val_98

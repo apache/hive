@@ -16,18 +16,22 @@ STAGE PLANS:
               predicate:
                   expr: (UDFToDouble(key) = UDFToDouble(86))
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: lower('AbC 123')
-                      type: string
-                      expr: ucase('AbC 123')
-                      type: string
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(key) = UDFToDouble(86))
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: lower('AbC 123')
+                        type: string
+                        expr: ucase('AbC 123')
+                        type: string
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -36,5 +40,5 @@ STAGE PLANS:
 
 query: SELECT lower('AbC 123'), upper('AbC 123') FROM src WHERE key = 86
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1926782866/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/894848839/10000
 abc 123	ABC 123

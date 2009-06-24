@@ -20,24 +20,28 @@ STAGE PLANS:
               predicate:
                   expr: ((ds = '2008-04-08') and (UDFToDouble(key) < UDFToDouble(100)))
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-                      expr: ds
-                      type: string
-                      expr: hr
-                      type: string
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 1
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: tmptable
+              Filter Operator
+                predicate:
+                    expr: ((ds = '2008-04-08') and (UDFToDouble(key) < UDFToDouble(100)))
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
+                        type: string
+                        expr: value
+                        type: string
+                        expr: ds
+                        type: string
+                        expr: hr
+                        type: string
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 1
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: tmptable
 
   Stage: Stage-4
     Conditional Operator
@@ -45,10 +49,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/njain/hive4/hive4/build/ql/tmp/1707984985/10000
+                destination: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1706524431/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/njain/hive4/hive4/build/ql/tmp/1200944144/10002 
+              file:/data/users/pchakka/workspace/oshive/build/ql/tmp/183636127/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -93,7 +97,7 @@ Input: default/srcpart/ds=2008-04-08/hr=12
 Output: default/tmptable
 query: select * from tmptable x sort by x.key,x.value,x.ds,x.hr
 Input: default/tmptable
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1468524643/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/936899817/10000
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11

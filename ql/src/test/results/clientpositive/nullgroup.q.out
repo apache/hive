@@ -16,17 +16,21 @@ STAGE PLANS:
               predicate:
                   expr: (UDFToDouble(key) > UDFToDouble(9999))
                   type: boolean
-              Select Operator
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  mode: hash
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: bigint
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(key) > UDFToDouble(9999))
+                    type: boolean
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    mode: hash
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -50,7 +54,7 @@ STAGE PLANS:
 
 query: select count(1) from src x where x.key > 9999
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/147597218/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/956604429/10000
 0
 query: explain
 select count(1) from src x where x.key > 9999
@@ -70,17 +74,21 @@ STAGE PLANS:
               predicate:
                   expr: (UDFToDouble(key) > UDFToDouble(9999))
                   type: boolean
-              Select Operator
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                  mode: hash
-                  Reduce Output Operator
-                    sort order: 
-                    tag: -1
-                    value expressions:
-                          expr: _col0
-                          type: bigint
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(key) > UDFToDouble(9999))
+                    type: boolean
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    mode: hash
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -104,7 +112,7 @@ STAGE PLANS:
 
 query: select count(1) from src x where x.key > 9999
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/533131483/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/354015080/10000
 0
 query: explain
 select count(1) from src x where x.key > 9999
@@ -125,13 +133,17 @@ STAGE PLANS:
               predicate:
                   expr: (UDFToDouble(key) > UDFToDouble(9999))
                   type: boolean
-              Select Operator
-                Reduce Output Operator
-                  sort order: 
-                  Map-reduce partition columns:
-                        expr: rand()
-                        type: double
-                  tag: -1
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(key) > UDFToDouble(9999))
+                    type: boolean
+                Select Operator
+                  Reduce Output Operator
+                    sort order: 
+                    Map-reduce partition columns:
+                          expr: rand()
+                          type: double
+                    tag: -1
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -148,7 +160,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1010806267/10002 
+        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/200770525/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -178,7 +190,7 @@ STAGE PLANS:
 
 query: select count(1) from src x where x.key > 9999
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1089737871/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1979407901/10000
 0
 query: explain
 select count(1) from src x where x.key > 9999
@@ -198,10 +210,14 @@ STAGE PLANS:
               predicate:
                   expr: (UDFToDouble(key) > UDFToDouble(9999))
                   type: boolean
-              Select Operator
-                Reduce Output Operator
-                  sort order: 
-                  tag: -1
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(key) > UDFToDouble(9999))
+                    type: boolean
+                Select Operator
+                  Reduce Output Operator
+                    sort order: 
+                    tag: -1
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -225,5 +241,5 @@ STAGE PLANS:
 
 query: select count(1) from src x where x.key > 9999
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1646500951/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/126794078/10000
 0

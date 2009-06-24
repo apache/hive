@@ -21,18 +21,22 @@ STAGE PLANS:
               predicate:
                   expr: (UDFToDouble(key) = UDFToDouble(86))
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: trim(trim(trim(trim(trim(trim(trim(trim(trim(trim('  abc  '))))))))))
-                      type: string
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 1
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: dest1
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(key) = UDFToDouble(86))
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: trim(trim(trim(trim(trim(trim(trim(trim(trim(trim('  abc  '))))))))))
+                        type: string
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 1
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        name: dest1
 
   Stage: Stage-4
     Conditional Operator
@@ -40,10 +44,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/njain/hive4/hive4/build/ql/tmp/561019190/10000
+                destination: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1489774447/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/njain/hive4/hive4/build/ql/tmp/545728748/10002 
+              file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1596742883/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:

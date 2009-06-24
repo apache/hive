@@ -16,26 +16,30 @@ STAGE PLANS:
               predicate:
                   expr: (UDFToDouble(key) = UDFToDouble(10))
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-                Reduce Output Operator
-                  key expressions:
-                        expr: _col0
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(key) = UDFToDouble(10))
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
                         type: string
-                  sort order: +
-                  Map-reduce partition columns:
-                        expr: _col0
+                        expr: value
                         type: string
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: string
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: -1
+                    value expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: string
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -52,7 +56,7 @@ STAGE PLANS:
 
 query: SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/775179415/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/469446419/10000
 10	val_10
 query: EXPLAIN
 SELECT * FROM SRC x  where x.key = 20 CLUSTER BY key
@@ -72,26 +76,30 @@ STAGE PLANS:
               predicate:
                   expr: (UDFToDouble(key) = UDFToDouble(20))
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-                Reduce Output Operator
-                  key expressions:
-                        expr: _col0
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(key) = UDFToDouble(20))
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
                         type: string
-                  sort order: +
-                  Map-reduce partition columns:
-                        expr: _col0
+                        expr: value
                         type: string
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: string
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: -1
+                    value expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: string
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -108,7 +116,7 @@ STAGE PLANS:
 
 query: SELECT * FROM SRC x where x.key = 20 CLUSTER BY key
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1647829108/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/918784205/10000
 20	val_20
 query: EXPLAIN
 SELECT x.* FROM SRC x where x.key = 20 CLUSTER BY key
@@ -128,26 +136,30 @@ STAGE PLANS:
               predicate:
                   expr: (UDFToDouble(key) = UDFToDouble(20))
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-                Reduce Output Operator
-                  key expressions:
-                        expr: _col0
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(key) = UDFToDouble(20))
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
                         type: string
-                  sort order: +
-                  Map-reduce partition columns:
-                        expr: _col0
+                        expr: value
                         type: string
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: string
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: -1
+                    value expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: string
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -164,7 +176,7 @@ STAGE PLANS:
 
 query: SELECT x.* FROM SRC x where x.key = 20 CLUSTER BY key
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/365690364/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/787341560/10000
 20	val_20
 query: EXPLAIN
 SELECT x.*  FROM SRC x where x.key = 20 CLUSTER BY x.key
@@ -184,26 +196,30 @@ STAGE PLANS:
               predicate:
                   expr: (UDFToDouble(key) = UDFToDouble(20))
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-                Reduce Output Operator
-                  key expressions:
-                        expr: _col0
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(key) = UDFToDouble(20))
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
                         type: string
-                  sort order: +
-                  Map-reduce partition columns:
-                        expr: _col0
+                        expr: value
                         type: string
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: string
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: -1
+                    value expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: string
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -220,7 +236,7 @@ STAGE PLANS:
 
 query: SELECT x.*  FROM SRC x where x.key = 20 CLUSTER BY x.key
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1392867261/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/2112333625/10000
 20	val_20
 query: EXPLAIN
 SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY key
@@ -240,26 +256,30 @@ STAGE PLANS:
               predicate:
                   expr: (UDFToDouble(key) = UDFToDouble(20))
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-                Reduce Output Operator
-                  key expressions:
-                        expr: _col0
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(key) = UDFToDouble(20))
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
                         type: string
-                  sort order: +
-                  Map-reduce partition columns:
-                        expr: _col0
+                        expr: value
                         type: string
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: string
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: -1
+                    value expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: string
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -276,7 +296,7 @@ STAGE PLANS:
 
 query: SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY key
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1057006857/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/82082573/10000
 20	val_20
 query: EXPLAIN
 SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY x.key
@@ -296,26 +316,30 @@ STAGE PLANS:
               predicate:
                   expr: (UDFToDouble(key) = UDFToDouble(20))
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-                Reduce Output Operator
-                  key expressions:
-                        expr: _col0
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(key) = UDFToDouble(20))
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
                         type: string
-                  sort order: +
-                  Map-reduce partition columns:
-                        expr: _col0
+                        expr: value
                         type: string
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: string
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: -1
+                    value expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: string
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -332,7 +356,7 @@ STAGE PLANS:
 
 query: SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY x.key
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1855630481/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/585460645/10000
 20	val_20
 query: EXPLAIN
 SELECT x.key, x.value as v1  FROM SRC x where x.key = 20 CLUSTER BY v1
@@ -352,26 +376,30 @@ STAGE PLANS:
               predicate:
                   expr: (UDFToDouble(key) = UDFToDouble(20))
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-                Reduce Output Operator
-                  key expressions:
-                        expr: _col1
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(key) = UDFToDouble(20))
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
                         type: string
-                  sort order: +
-                  Map-reduce partition columns:
-                        expr: _col1
+                        expr: value
                         type: string
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: string
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col1
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col1
+                          type: string
+                    tag: -1
+                    value expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: string
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -388,7 +416,7 @@ STAGE PLANS:
 
 query: SELECT x.key, x.value as v1  FROM SRC x where x.key = 20 CLUSTER BY v1
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1870112839/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1403624942/10000
 20	val_20
 query: EXPLAIN
 SELECT y.* from (SELECT x.* FROM SRC x CLUSTER BY x.key) y where y.key = 20
@@ -450,7 +478,7 @@ STAGE PLANS:
 
 query: SELECT y.* from (SELECT x.* FROM SRC x CLUSTER BY x.key) y where y.key = 20
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/980077979/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/595719915/10000
 20	val_20
 query: EXPLAIN 
 SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key)  where x.key = 20 CLUSTER BY v1
@@ -482,20 +510,24 @@ STAGE PLANS:
                     expr: value
                     type: string
         x 
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 0
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
+            Filter Operator
+              predicate:
+                  expr: (UDFToDouble(key) = UDFToDouble(20))
+                  type: boolean
+              Reduce Output Operator
+                key expressions:
+                      expr: key
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: key
+                      type: string
+                tag: 0
+                value expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -526,7 +558,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/666021615/10002 
+        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/654289407/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col1
@@ -559,7 +591,7 @@ STAGE PLANS:
 
 query: SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1347314676/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1865686895/10000
 20	val_20	20
 query: EXPLAIN 
 SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
@@ -591,20 +623,24 @@ STAGE PLANS:
                     expr: value
                     type: string
         x 
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 0
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
+            Filter Operator
+              predicate:
+                  expr: (UDFToDouble(key) = UDFToDouble(20))
+                  type: boolean
+              Reduce Output Operator
+                key expressions:
+                      expr: key
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: key
+                      type: string
+                tag: 0
+                value expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -637,7 +673,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/37635850/10002 
+        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/782657504/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col1
@@ -672,7 +708,7 @@ STAGE PLANS:
 
 query: SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/954552739/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1662517786/10000
 20	val_20	20	val_20
 query: EXPLAIN
 SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY x.key
@@ -704,20 +740,24 @@ STAGE PLANS:
                     expr: value
                     type: string
         x 
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 0
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
+            Filter Operator
+              predicate:
+                  expr: (UDFToDouble(key) = UDFToDouble(20))
+                  type: boolean
+              Reduce Output Operator
+                key expressions:
+                      expr: key
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: key
+                      type: string
+                tag: 0
+                value expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -750,7 +790,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/950425430/10002 
+        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1094038570/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -785,7 +825,7 @@ STAGE PLANS:
 
 query: SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY x.key
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/245227185/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1889196452/10000
 20	val_20	20	val_20
 query: EXPLAIN
 SELECT x.key, x.value as v1, y.key as yk  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY key
@@ -817,20 +857,24 @@ STAGE PLANS:
                     expr: value
                     type: string
         x 
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 0
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
+            Filter Operator
+              predicate:
+                  expr: (UDFToDouble(key) = UDFToDouble(20))
+                  type: boolean
+              Reduce Output Operator
+                key expressions:
+                      expr: key
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: key
+                      type: string
+                tag: 0
+                value expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -861,7 +905,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1181511478/10002 
+        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1162478443/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -894,7 +938,7 @@ STAGE PLANS:
 
 query: SELECT x.key, x.value as v1, y.key as yk  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY key
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/350754453/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/681246043/10000
 20	val_20	20
 query: EXPLAIN
 SELECT unioninput.*
@@ -920,65 +964,73 @@ STAGE PLANS:
               predicate:
                   expr: (UDFToDouble(key) < UDFToDouble(100))
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-                Union
-                  Select Operator
-                    expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
-                    Reduce Output Operator
-                      key expressions:
-                            expr: _col0
-                            type: string
-                      sort order: +
-                      Map-reduce partition columns:
-                            expr: _col0
-                            type: string
-                      tag: -1
-                      value expressions:
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(key) < UDFToDouble(100))
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
+                        type: string
+                        expr: value
+                        type: string
+                  Union
+                    Select Operator
+                      expressions:
                             expr: _col0
                             type: string
                             expr: _col1
                             type: string
+                      Reduce Output Operator
+                        key expressions:
+                              expr: _col0
+                              type: string
+                        sort order: +
+                        Map-reduce partition columns:
+                              expr: _col0
+                              type: string
+                        tag: -1
+                        value expressions:
+                              expr: _col0
+                              type: string
+                              expr: _col1
+                              type: string
         null-subquery2:unioninput-subquery2:src 
             Filter Operator
               predicate:
                   expr: (UDFToDouble(key) > UDFToDouble(100))
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: key
-                      type: string
-                      expr: value
-                      type: string
-                Union
-                  Select Operator
-                    expressions:
-                          expr: _col0
-                          type: string
-                          expr: _col1
-                          type: string
-                    Reduce Output Operator
-                      key expressions:
-                            expr: _col0
-                            type: string
-                      sort order: +
-                      Map-reduce partition columns:
-                            expr: _col0
-                            type: string
-                      tag: -1
-                      value expressions:
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(key) > UDFToDouble(100))
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
+                        type: string
+                        expr: value
+                        type: string
+                  Union
+                    Select Operator
+                      expressions:
                             expr: _col0
                             type: string
                             expr: _col1
                             type: string
+                      Reduce Output Operator
+                        key expressions:
+                              expr: _col0
+                              type: string
+                        sort order: +
+                        Map-reduce partition columns:
+                              expr: _col0
+                              type: string
+                        tag: -1
+                        value expressions:
+                              expr: _col0
+                              type: string
+                              expr: _col1
+                              type: string
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -1001,7 +1053,7 @@ FROM (
 ) unioninput
 CLUSTER BY unioninput.key
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1288179627/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/571624743/10000
 0	val_0
 0	val_0
 0	val_0

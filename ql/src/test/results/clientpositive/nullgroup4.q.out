@@ -17,32 +17,36 @@ STAGE PLANS:
               predicate:
                   expr: (UDFToDouble(key) = UDFToDouble(9999))
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: value
-                      type: string
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                        expr: count(DISTINCT value)
-                  keys:
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(key) = UDFToDouble(9999))
+                    type: boolean
+                Select Operator
+                  expressions:
                         expr: value
                         type: string
-                  mode: hash
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                          expr: count(DISTINCT value)
+                    keys:
+                          expr: value
                           type: string
-                    sort order: +
-                    Map-reduce partition columns:
-                          expr: _col0
-                          type: string
-                    tag: -1
-                    value expressions:
-                          expr: _col1
-                          type: bigint
-                          expr: _col2
-                          type: bigint
+                    mode: hash
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col0
+                            type: string
+                      sort order: +
+                      Map-reduce partition columns:
+                            expr: _col0
+                            type: string
+                      tag: -1
+                      value expressions:
+                            expr: _col1
+                            type: bigint
+                            expr: _col2
+                            type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -60,7 +64,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1897268457/10002 
+        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/797179428/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -95,7 +99,7 @@ STAGE PLANS:
 
 query: select count(1), count(distinct x.value) from src x where x.key = 9999
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1722609002/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/176192106/10000
 0	0
 query: explain
 select count(1), count(distinct x.value) from src x where x.key = 9999
@@ -115,29 +119,33 @@ STAGE PLANS:
               predicate:
                   expr: (UDFToDouble(key) = UDFToDouble(9999))
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: value
-                      type: string
-                Group By Operator
-                  aggregations:
-                        expr: count(1)
-                        expr: count(DISTINCT value)
-                  keys:
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(key) = UDFToDouble(9999))
+                    type: boolean
+                Select Operator
+                  expressions:
                         expr: value
                         type: string
-                  mode: hash
-                  Reduce Output Operator
-                    key expressions:
-                          expr: _col0
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                          expr: count(DISTINCT value)
+                    keys:
+                          expr: value
                           type: string
-                    sort order: +
-                    tag: -1
-                    value expressions:
-                          expr: _col1
-                          type: bigint
-                          expr: _col2
-                          type: bigint
+                    mode: hash
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col0
+                            type: string
+                      sort order: +
+                      tag: -1
+                      value expressions:
+                            expr: _col1
+                            type: bigint
+                            expr: _col2
+                            type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -164,7 +172,7 @@ STAGE PLANS:
 
 query: select count(1), count(distinct x.value) from src x where x.key = 9999
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/767488780/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1240165665/10000
 0	0
 query: explain
 select count(1), count(distinct x.value) from src x where x.key = 9999
@@ -185,19 +193,23 @@ STAGE PLANS:
               predicate:
                   expr: (UDFToDouble(key) = UDFToDouble(9999))
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: value
-                      type: string
-                Reduce Output Operator
-                  key expressions:
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(key) = UDFToDouble(9999))
+                    type: boolean
+                Select Operator
+                  expressions:
                         expr: value
                         type: string
-                  sort order: +
-                  Map-reduce partition columns:
-                        expr: value
-                        type: string
-                  tag: -1
+                  Reduce Output Operator
+                    key expressions:
+                          expr: value
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: value
+                          type: string
+                    tag: -1
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -215,7 +227,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/366816975/10002 
+        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/123668648/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -250,7 +262,7 @@ STAGE PLANS:
 
 query: select count(1), count(distinct x.value) from src x where x.key = 9999
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/449391495/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/2060544994/10000
 0	0
 query: explain
 select count(1), count(distinct x.value) from src x where x.key = 9999
@@ -270,16 +282,20 @@ STAGE PLANS:
               predicate:
                   expr: (UDFToDouble(key) = UDFToDouble(9999))
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: value
-                      type: string
-                Reduce Output Operator
-                  key expressions:
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(key) = UDFToDouble(9999))
+                    type: boolean
+                Select Operator
+                  expressions:
                         expr: value
                         type: string
-                  sort order: +
-                  tag: -1
+                  Reduce Output Operator
+                    key expressions:
+                          expr: value
+                          type: string
+                    sort order: +
+                    tag: -1
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -306,5 +322,5 @@ STAGE PLANS:
 
 query: select count(1), count(distinct x.value) from src x where x.key = 9999
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1178763568/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/131032386/10000
 0	0

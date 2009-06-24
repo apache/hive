@@ -22,23 +22,27 @@ STAGE PLANS:
               predicate:
                   expr: (lint is not null and not mstringstring is null)
                   type: boolean
-              Select Operator
-                expressions:
-                      expr: size(lint)
-                      type: int
-                      expr: size(lintstring)
-                      type: int
-                      expr: size(mstringstring)
-                      type: int
-                      expr: size(null)
-                      type: int
-                Limit
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.TextInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              Filter Operator
+                predicate:
+                    expr: (lint is not null and not mstringstring is null)
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: size(lint)
+                        type: int
+                        expr: size(lintstring)
+                        type: int
+                        expr: size(mstringstring)
+                        type: int
+                        expr: size(null)
+                        type: int
+                  Limit
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 0
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 
   Stage: Stage-0
     Fetch Operator
@@ -53,5 +57,5 @@ SELECT size(src_thrift.lint),
 WHERE  src_thrift.lint IS NOT NULL 
        AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
 Input: default/src_thrift
-Output: file:/home/zhoumin/hive-trunk/build/ql/tmp/639668664/10000
+Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/774936511/10000
 3	1	1	-1
