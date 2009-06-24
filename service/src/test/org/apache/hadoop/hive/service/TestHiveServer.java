@@ -1,6 +1,7 @@
 package org.apache.hadoop.hive.service;
 
 import java.util.*;
+
 import org.apache.hadoop.fs.Path;
 import junit.framework.TestCase;
 import org.apache.hadoop.hive.service.HiveInterface;
@@ -12,7 +13,6 @@ import com.facebook.thrift.transport.TSocket;
 import com.facebook.thrift.transport.TTransport;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.BytesWritable;
@@ -77,8 +77,7 @@ public class TestHiveServer extends TestCase {
       client.execute("select count(1) as cnt from " + tableName);
       String row = client.fetchOne();
       assertEquals(row, "500");
-      String schema = client.getSchema();
-      assertEquals("struct result { string cnt}", schema);
+      assertEquals("struct result { string cnt}#cnt#string", client.getSchema());
       client.execute("drop table " + tableName);
     }
     catch (Throwable t) {
@@ -172,7 +171,7 @@ public class TestHiveServer extends TestCase {
     Properties dsp = new Properties();
     dsp.setProperty(Constants.SERIALIZATION_FORMAT, org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol.class.getName());
     dsp.setProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME, "result");
-    dsp.setProperty(Constants.SERIALIZATION_DDL, client.getSchema());
+    dsp.setProperty(Constants.SERIALIZATION_DDL, client.getSchema().split("#")[0]);
     dsp.setProperty(Constants.SERIALIZATION_LIB, ds.getClass().toString());
     dsp.setProperty(Constants.FIELD_DELIM, "9");
     ds.initialize(new Configuration(), dsp);
@@ -188,7 +187,7 @@ public class TestHiveServer extends TestCase {
     sql = "select count(1) as c from " + tableName;
     client.execute(sql);
     row = client.fetchOne();
-    dsp.setProperty(Constants.SERIALIZATION_DDL, client.getSchema());
+    dsp.setProperty(Constants.SERIALIZATION_DDL, client.getSchema().split("#")[0]);
     // Need a new DynamicSerDe instance - re-initialization is not supported.
     ds = new DynamicSerDe();
     ds.initialize(new Configuration(), dsp);
