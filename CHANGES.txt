@@ -265,6 +265,8 @@ Trunk - Unreleased
 
     HIVE-573. Fix TestHiveServer. (Raghotham Murthy via zshao)
 
+    HIVE-575. Fix Map join out-of-memory problem. (Namit Jain via zshao)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

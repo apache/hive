@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Externalizable;
 import java.io.IOException;
+import java.lang.Exception;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
@@ -70,7 +71,7 @@ public class MapJoinObjectKey implements Externalizable {
   }
   
   public int hashCode() {
-    return (obj == null) ? 0 : obj.hashCode();
+    return (obj == null) ? metadataTag : obj.hashCode();
   }
   
   @Override
@@ -81,6 +82,8 @@ public class MapJoinObjectKey implements Externalizable {
 
       // get the tableDesc from the map stored in the mapjoin operator
       MapJoinObjectCtx ctx = MapJoinOperator.getMapMetadata().get(Integer.valueOf(metadataTag));
+
+      Writable val = ctx.getSerDe().getSerializedClass().newInstance();
       val.readFields(in);      
       obj = 
         (ArrayList<Object>)
@@ -88,9 +91,10 @@ public class MapJoinObjectKey implements Externalizable {
             ctx.getSerDe().deserialize(val),
             ctx.getSerDe().getObjectInspector(),
             ObjectInspectorCopyOption.WRITABLE);
-    } catch (SerDeException e) {
+    } catch (Exception e) {
       throw new IOException(e);
     }
+
   }
   
   @Override

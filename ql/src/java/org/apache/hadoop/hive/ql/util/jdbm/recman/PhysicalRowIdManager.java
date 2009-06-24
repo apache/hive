@@ -190,7 +190,7 @@ final class PhysicalRowIdManager
     {
         Location retval = freeman.get( size );
         if ( retval == null ) {
-            retval = allocNew( size, pageman.getLast( Magic.USED_PAGE ) );
+            retval = allocNew( 2*size, pageman.getLast( Magic.USED_PAGE ) );
         }
         return retval;
     }

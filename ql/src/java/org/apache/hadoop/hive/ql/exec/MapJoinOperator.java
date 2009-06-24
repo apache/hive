@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.Exception;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,6 +45,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.Object
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.hive.ql.util.jdbm.htree.HTree;
+import org.apache.hadoop.hive.ql.util.jdbm.helper.FastIterator;
 import org.apache.hadoop.hive.ql.util.jdbm.RecordManager;
 import org.apache.hadoop.hive.ql.util.jdbm.RecordManagerFactory;
 import org.apache.hadoop.hive.ql.util.jdbm.RecordManagerOptions;
@@ -244,6 +246,7 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
         // This may potentially increase the size of the hashmap on the mapper
         if (res.size() > mapJoinRowsKey) {
           LOG.warn("Number of values for a given key " + keyObj + " are " + res.size());
+          LOG.warn("used memory " + Runtime.getRuntime().totalMemory());
         }
         
         hashTable.put(keyObj, valueObj);
