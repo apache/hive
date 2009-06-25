@@ -93,8 +93,6 @@ STAGE PLANS:
                           type: string
                     tag: 1
                     value expressions:
-                          expr: _col0
-                          type: string
                           expr: _col1
                           type: string
         t33:t3 
@@ -123,8 +121,6 @@ STAGE PLANS:
                     tag: 2
                     value expressions:
                           expr: _col0
-                          type: string
-                          expr: _col1
                           type: string
         t11:t1 
             Filter Operator
@@ -158,8 +154,8 @@ STAGE PLANS:
                Inner Join 0 to 2
           condition expressions:
             0 {VALUE._col0}
-            1 {VALUE._col0} {VALUE._col1}
-            2 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col1}
+            2 {VALUE._col0}
           File Output Operator
             compressed: false
             GlobalTableId: 0
@@ -184,11 +180,7 @@ STAGE PLANS:
               value expressions:
                     expr: _col3
                     type: string
-                    expr: _col4
-                    type: string
                     expr: _col0
-                    type: string
-                    expr: _col1
                     type: string
                     expr: _col2
                     type: string
@@ -217,8 +209,6 @@ STAGE PLANS:
                           type: string
                     tag: 2
                     value expressions:
-                          expr: _col0
-                          type: string
                           expr: _col1
                           type: string
         t44:t4 
@@ -243,18 +233,15 @@ STAGE PLANS:
                           expr: _col0
                           type: string
                     tag: 1
-                    value expressions:
-                          expr: _col0
-                          type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
                Inner Join 1 to 2
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4}
-            1 {VALUE._col0}
-            2 {VALUE._col0} {VALUE._col1}
+            0 {VALUE._col0} {VALUE._col2} {VALUE._col4}
+            1 
+            2 {VALUE._col1}
           File Output Operator
             compressed: false
             GlobalTableId: 0
@@ -291,8 +278,6 @@ STAGE PLANS:
                           type: string
                     tag: 1
                     value expressions:
-                          expr: _col0
-                          type: string
                           expr: _col1
                           type: string
         $INTNAME 
@@ -308,17 +293,9 @@ STAGE PLANS:
               value expressions:
                     expr: _col0
                     type: string
-                    expr: _col1
-                    type: string
-                    expr: _col5
-                    type: string
                     expr: _col2
                     type: string
-                    expr: _col3
-                    type: string
                     expr: _col4
-                    type: string
-                    expr: _col6
                     type: string
                     expr: _col7
                     type: string
@@ -327,8 +304,8 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5} {VALUE._col6} {VALUE._col7}
-            1 {VALUE._col0} {VALUE._col1}
+            0 {VALUE._col0} {VALUE._col3} {VALUE._col5} {VALUE._col7}
+            1 {VALUE._col1}
           Select Operator
             expressions:
                   expr: _col3

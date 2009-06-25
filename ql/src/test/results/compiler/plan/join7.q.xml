@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_07" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_03-p3" class="java.beans.XMLDecoder"> 
  <object class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
   <void property="id"> 
    <string>Stage-2</string> 
@@ -64,7 +64,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src</string> 
+            <string>file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/src</string> 
            </void> 
           </object> 
          </void> 
@@ -132,7 +132,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src</string> 
+            <string>file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/src</string> 
            </void> 
           </object> 
          </void> 
@@ -200,7 +200,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src</string> 
+            <string>file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/src</string> 
            </void> 
           </object> 
          </void> 
@@ -2446,7 +2446,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src</string> 
+       <string>file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>c:a:src1</string> 
@@ -2464,7 +2464,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src</string> 
+       <string>file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap0"/> 
@@ -2509,7 +2509,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>file:/data/users/pchakka/workspace/oshive/build/ql/tmp/620356375/10001</string> 
+                     <string>file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/2127603756/10001</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -3163,6 +3163,34 @@
           </void> 
           <void method="add"> 
            <string>_col5</string> 
+          </void> 
+         </object> 
+        </void> 
+        <void property="reversedExprs"> 
+         <object class="java.util.HashMap"> 
+          <void method="put"> 
+           <string>_col5</string> 
+           <byte>2</byte> 
+          </void> 
+          <void method="put"> 
+           <string>_col4</string> 
+           <byte>2</byte> 
+          </void> 
+          <void method="put"> 
+           <string>_col3</string> 
+           <byte>1</byte> 
+          </void> 
+          <void method="put"> 
+           <string>_col2</string> 
+           <byte>1</byte> 
+          </void> 
+          <void method="put"> 
+           <string>_col1</string> 
+           <byte>0</byte> 
+          </void> 
+          <void method="put"> 
+           <string>_col0</string> 
+           <byte>0</byte> 
           </void> 
          </object> 
         </void> 

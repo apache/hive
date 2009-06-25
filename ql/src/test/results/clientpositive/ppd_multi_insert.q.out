@@ -34,11 +34,6 @@ STAGE PLANS:
                     expr: key
                     type: string
               tag: 1
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
         a 
             Reduce Output Operator
               key expressions:
@@ -60,7 +55,7 @@ STAGE PLANS:
                Inner Join 0 to 1
           condition expressions:
             0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col0} {VALUE._col1}
+            1 
           Filter Operator
             predicate:
                 expr: (UDFToDouble(_col0) < UDFToDouble(100))
@@ -196,7 +191,7 @@ Output: default/mi3/ds=2008-04-08/hr=12
 Output: ../build/ql/test/data/warehouse/mi4.out
 query: SELECT mi1.* FROM mi1
 Input: default/mi1
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1767221832/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1556379466/10000
 0	val_0
 0	val_0
 0	val_0
@@ -347,7 +342,7 @@ Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1767221832/10000
 98	val_98
 query: SELECT mi2.* FROM mi2
 Input: default/mi2
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/255224107/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1335038556/10000
 100	val_100
 100	val_100
 100	val_100
@@ -561,7 +556,7 @@ Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/255224107/10000
 199	val_199
 query: SELECT mi3.* FROM mi3
 Input: default/mi3/ds=2008-04-08/hr=12
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/928924656/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/584372656/10000
 200	2008-04-08	12
 200	2008-04-08	12
 200	2008-04-08	12

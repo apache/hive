@@ -42,8 +42,6 @@ STAGE PLANS:
                           type: string
                     tag: 1
                     value expressions:
-                          expr: _col0
-                          type: string
                           expr: _col1
                           type: string
         src1:src 
@@ -68,8 +66,8 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col0} {VALUE._col1}
+            0 {VALUE._col0}
+            1 {VALUE._col1}
           Filter Operator
             predicate:
                 expr: (rand() > 0.5)

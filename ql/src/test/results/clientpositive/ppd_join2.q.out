@@ -147,15 +147,13 @@ STAGE PLANS:
                     value expressions:
                           expr: _col0
                           type: string
-                          expr: _col1
-                          type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
             0 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3}
-            1 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col0}
           Filter Operator
             predicate:
                 expr: (((((_col2 <> '311') and ((_col3 <> 'val_50') or (_col2 > '1'))) and ((_col0 <> '10') or (_col2 <> '10'))) and (_col0 <> '14')) and (sqrt(UDFToDouble(_col4)) <> UDFToDouble(13)))
@@ -189,7 +187,7 @@ JOIN
 ON src1.c2 = src3.c6
 WHERE src1.c1 <> '311' and (src1.c2 <> 'val_50' or src1.c1 > '1') and (src2.c3 <> '10' or src1.c1 <> '10') and (src2.c3 <> '14') and (sqrt(src3.c5) <> 13)
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1480187717/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/976262349/10000
 0	val_0
 0	val_0
 0	val_0

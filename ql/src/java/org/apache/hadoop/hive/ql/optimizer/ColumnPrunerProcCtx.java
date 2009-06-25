@@ -24,6 +24,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
+import org.apache.hadoop.hive.ql.exec.JoinOperator;
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -41,12 +44,20 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
   private  Map<Operator<? extends Serializable>,List<String>> prunedColLists;
   
   private HashMap<Operator<? extends Serializable>, OpParseContext> opToParseCtxMap;
+  
+  private  Map<CommonJoinOperator,Map<Byte,List<String>>> joinPrunedColLists;
     
+
   public ColumnPrunerProcCtx(HashMap<Operator<? extends Serializable>, OpParseContext> opToParseContextMap) {
     prunedColLists = new HashMap<Operator<? extends Serializable>, List<String>>();
     this.opToParseCtxMap = opToParseContextMap;
+    joinPrunedColLists = new HashMap<CommonJoinOperator,Map<Byte,List<String>>>();
   }
 
+  public Map<CommonJoinOperator, Map<Byte, List<String>>> getJoinPrunedColLists() {
+    return joinPrunedColLists;
+  }
+  
   /**
    * @return the prunedColLists
    */
@@ -74,8 +85,18 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
   public List<String> genColLists(Operator<? extends Serializable> curOp) throws SemanticException {
     List<String> colList = new ArrayList<String>();
     if(curOp.getChildOperators() != null) {
-      for(Operator<? extends Serializable> child: curOp.getChildOperators())
-        colList = Utilities.mergeUniqElems(colList, prunedColLists.get(child));
+      for (Operator<? extends Serializable> child : curOp.getChildOperators()) {
+        if (child instanceof CommonJoinOperator) {
+          int tag = child.getParentOperators().indexOf(curOp);
+          List<String> prunList = joinPrunedColLists.get((CommonJoinOperator) child).get(
+              (byte) tag);
+          colList = Utilities
+              .mergeUniqElems(colList, prunList);
+        } else {
+          colList = Utilities
+              .mergeUniqElems(colList, prunedColLists.get(child));
+        }
+      }
     }
     return colList;
   }
@@ -107,6 +128,12 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
   public List<String> getSelectColsFromChildren(SelectOperator op, List<String> colList) {
     List<String> cols = new ArrayList<String>();
     selectDesc conf = op.getConf();
+    
+    if(conf.isSelStarNoCompute()){
+      cols.addAll(colList);
+      return cols;
+    }
+    
     ArrayList<exprNodeDesc> selectExprs = conf.getColList();
     
     // The colList is the output columns used by child operators, they are different

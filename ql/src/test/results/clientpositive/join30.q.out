@@ -20,8 +20,8 @@ STAGE PLANS:
               condition map:
                    Inner Join 0 to 1
               condition expressions:
-                0 {key} {value}
-                1 {key} {value}
+                0 {key}
+                1 
               keys:
                 0 
                 1 
@@ -44,8 +44,8 @@ STAGE PLANS:
                   condition map:
                        Inner Join 0 to 1
                   condition expressions:
-                    0 {key} {value}
-                    1 {key} {value}
+                    0 {key}
+                    1 
                   keys:
                     0 
                     1 
@@ -60,8 +60,11 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive4/hive4/build/ql/tmp/1868281911/10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1483061275/10002 
           Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
             Select Operator
               expressions:
                     expr: _col0
@@ -132,7 +135,7 @@ Input: default/src1
 Output: default/dest_j1
 query: select * from dest_j1 x order by x.key
 Input: default/dest_j1
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1393129158/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1361140895/10000
 66	1
 98	2
 128	3

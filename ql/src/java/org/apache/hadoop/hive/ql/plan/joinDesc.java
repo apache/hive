@@ -22,9 +22,13 @@ import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
 
 /**
  * Join operator Descriptor implementation.
@@ -41,7 +45,11 @@ public class joinDesc implements Serializable {
   // alias to key mapping
   private Map<Byte, List<exprNodeDesc>> exprs;
   
+  //used for create joinOutputObjectInspector
   protected java.util.ArrayList<java.lang.String> outputColumnNames;
+  
+  // key:column output name, value:tag
+  transient private Map<String, Byte> reversedExprs;
   
   // No outer join involved
   protected boolean noOuterJoin;
@@ -58,23 +66,25 @@ public class joinDesc implements Serializable {
   }
   
   public joinDesc(final Map<Byte, List<exprNodeDesc>> exprs, ArrayList<String> outputColumnNames) {
-    this.exprs = exprs;
-    this.outputColumnNames = outputColumnNames;
-    this.noOuterJoin = true;
-    this.conds = null;
+    this(exprs, outputColumnNames, true, null);
   }
 
   public joinDesc(final Map<Byte, List<exprNodeDesc>> exprs, ArrayList<String> outputColumnNames, final joinCond[] conds) {
-    this.exprs = exprs;
-    this.outputColumnNames = outputColumnNames;
-    this.noOuterJoin = false;
-    this.conds = conds;
+    this(exprs, outputColumnNames, false, conds);
   }
   
   public Map<Byte, List<exprNodeDesc>> getExprs() {
     return this.exprs;
   }
+  
+  public Map<String, Byte> getReversedExprs() {
+    return reversedExprs;
+  }
 
+  public void setReversedExprs(Map<String, Byte> reversed_Exprs) {
+    this.reversedExprs = reversed_Exprs;
+  }
+  
   @explain(displayName="condition expressions")
   public Map<Byte, String> getExprsStringMap() {
     if (getExprs() == null) {

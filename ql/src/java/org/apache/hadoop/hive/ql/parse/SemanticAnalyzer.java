@@ -2625,6 +2625,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     int pos = 0;
     int outputPos = 0;
 
+    Map<String, Byte> reversedExprs = new HashMap<String, Byte>(); 
     HashMap<Byte, List<exprNodeDesc>> exprMap = new HashMap<Byte, List<exprNodeDesc>>();
     Map<String, exprNodeDesc> colExprMap = new HashMap<String, exprNodeDesc>();
     HashMap<Integer, Set<String>> posToAliasMap = new HashMap<Integer, Set<String>>();
@@ -2660,6 +2661,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             colExprMap.put(colName, keyDesc.get(keyDesc.size() - 1));
             outputRS.put(key, field, new ColumnInfo(colName, 
                                                     valueInfo.getType()));
+            reversedExprs.put(colName, tag);
           }
         }
       }
@@ -2674,7 +2676,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       joinCondns[i] = new org.apache.hadoop.hive.ql.plan.joinCond(condn);
     }
 
-    JoinOperator joinOp = (JoinOperator) OperatorFactory.getAndMakeChild(new joinDesc(exprMap, outputColumnNames, joinCondns),
+    joinDesc desc = new joinDesc(exprMap, outputColumnNames, joinCondns);
+    desc.setReversedExprs(reversedExprs);
+    JoinOperator joinOp = (JoinOperator) OperatorFactory.getAndMakeChild(desc,
                                     new RowSchema(outputRS.getColumnInfos()), rightOps);
     joinOp.setColumnExprMap(colExprMap);
     joinOp.setPosToAliasMap(posToAliasMap);

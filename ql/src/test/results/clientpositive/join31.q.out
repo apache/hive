@@ -70,13 +70,13 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive4/hive4/build/ql/tmp/1913053399/10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1203288551/10002 
             Common Join Operator
               condition map:
                    Inner Join 0 to 1
               condition expressions:
                 0 {_col0}
-                1 {_col0}
+                1 
               keys:
                 0 
                 1 
@@ -90,17 +90,17 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
-            file:/data/users/njain/hive4/hive4/build/ql/tmp/1913053399/10004 
+            file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1203288551/10004 
               Fetch Operator
                 limit: -1
           Alias -> Map Local Operator Tree:
-            file:/data/users/njain/hive4/hive4/build/ql/tmp/1913053399/10004 
+            file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1203288551/10004 
                 Common Join Operator
                   condition map:
                        Inner Join 0 to 1
                   condition expressions:
                     0 {_col0}
-                    1 {_col0}
+                    1 
                   keys:
                     0 
                     1 
@@ -115,8 +115,11 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive4/hive4/build/ql/tmp/1913053399/10003 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1203288551/10003 
           Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
             Select Operator
               expressions:
                     expr: _col0
@@ -237,7 +240,7 @@ Input: default/src1
 Output: default/dest_j1
 query: select * from dest_j1 x order by x.key
 Input: default/dest_j1
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1094372260/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1617117942/10000
 128	1
 146	1
 150	1

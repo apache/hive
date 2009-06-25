@@ -40,7 +40,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.ReflectionUtils;
@@ -168,6 +171,23 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
       storage.put((byte)posBigTable, new Vector<ArrayList<Object>>());
       
       mapJoinRowsKey = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEMAPJOINROWSIZE);
+      
+      List<? extends StructField> structFields = ((StructObjectInspector)joinOutputObjectInspector).getAllStructFieldRefs();
+      if (conf.getOutputColumnNames().size() < structFields.size()) {
+        List<ObjectInspector> structFieldObjectInspectors = new ArrayList<ObjectInspector>();
+        for (Byte alias : order) {
+          int sz = conf.getExprs().get(alias).size();
+          List<Integer> retained = conf.getRetainList().get(alias);
+          for (int i = 0; i < sz; i++) {
+            int pos = retained.get(i);
+            structFieldObjectInspectors.add(structFields.get(pos)
+                .getFieldObjectInspector());
+          }
+        }
+        joinOutputObjectInspector = ObjectInspectorFactory
+            .getStandardStructObjectInspector(conf.getOutputColumnNames(),
+                structFieldObjectInspectors);
+      }
       
       initializeChildren(hconf, reporter, new ObjectInspector[]{joinOutputObjectInspector});
     } catch (IOException e) {

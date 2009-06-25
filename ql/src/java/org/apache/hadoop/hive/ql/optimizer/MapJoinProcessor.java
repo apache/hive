@@ -112,7 +112,7 @@ public class MapJoinProcessor implements Transform {
     List<Operator<? extends Serializable>> parentOps = op.getParentOperators();
     List<Operator<? extends Serializable>> newParentOps = new ArrayList<Operator<? extends Serializable>>();
     List<Operator<? extends Serializable>> oldReduceSinkParentOps = new ArrayList<Operator<? extends Serializable>>();
-    
+    Map<String, exprNodeDesc> colExprMap = new HashMap<String, exprNodeDesc>();
     // found a source which is not to be stored in memory
     if (leftSrc != null) {
       //      assert mapJoinPos == 0;
@@ -166,15 +166,17 @@ public class MapJoinProcessor implements Transform {
         {
           String field = fNamesIter.next();
           ColumnInfo valueInfo = inputRS.get(key, field);
-          values.add(new exprNodeColumnDesc(valueInfo.getType(), valueInfo.getInternalName()));
           ColumnInfo oldValueInfo = oldOutputRS.get(key, field);
-          String col = field;
-          if(oldValueInfo != null)
-            col = oldValueInfo.getInternalName();
-          if (outputRS.get(key, col) == null) {
-            outputColumnNames.add(col);
-            outputRS.put(key, col, new ColumnInfo(col, 
+          if(oldValueInfo == null)
+            continue;
+          String outputCol = oldValueInfo.getInternalName();
+          if (outputRS.get(key, field) == null) {
+            outputColumnNames.add(outputCol);
+            exprNodeDesc colDesc = new exprNodeColumnDesc(valueInfo.getType(), valueInfo.getInternalName());
+            values.add(colDesc);
+            outputRS.put(key, field, new ColumnInfo(outputCol, 
                 valueInfo.getType()));
+            colExprMap.put(outputCol, colDesc);
           }
         }
       }
@@ -238,6 +240,9 @@ public class MapJoinProcessor implements Transform {
       new mapJoinDesc(keyExprMap, keyTableDesc, valueExprMap, valueTableDescs, outputColumnNames, mapJoinPos, joinCondns),
       new RowSchema(outputRS.getColumnInfos()), newPar), outputRS);
     
+    mapJoinOp.getConf().setReversedExprs(op.getConf().getReversedExprs());
+    mapJoinOp.setColumnExprMap(colExprMap);
+    
     // change the children of the original join operator to point to the map join operator
     List<Operator<? extends Serializable>> childOps = op.getChildOperators();
     for (Operator<? extends Serializable> childOp : childOps) 
@@ -252,15 +257,40 @@ public class MapJoinProcessor implements Transform {
     genSelectPlan(pctx, mapJoinOp);
   }
 
-  private void genSelectPlan(ParseContext pctx, Operator<? extends Serializable> input) {
+  private void genSelectPlan(ParseContext pctx, MapJoinOperator input) throws SemanticException {
     List<Operator<? extends Serializable>> childOps = input.getChildOperators();
     input.setChildOperators(null);
 
     // create a dummy select - This select is needed by the walker to split the mapJoin later on
   	RowResolver inputRR = pctx.getOpParseCtx().get(input).getRR();
+  	
+  	ArrayList<exprNodeDesc> exprs = new ArrayList<exprNodeDesc>();
+  	ArrayList<String> outputs = new ArrayList<String>();
+    List<String> outputCols = input.getConf().getOutputColumnNames();
+    RowResolver outputRS = new RowResolver();
+    
+    Map<String, exprNodeDesc> colExprMap = new HashMap<String, exprNodeDesc>();
+    
+    for (int i = 0; i < outputCols.size(); i++) {
+      String internalName = outputCols.get(i);
+      String[] nm = inputRR.reverseLookup(internalName);
+      ColumnInfo valueInfo = inputRR.get(nm[0], nm[1]);
+      exprNodeDesc colDesc = new exprNodeColumnDesc(valueInfo.getType(),
+          valueInfo.getInternalName());
+      exprs.add(colDesc);
+      outputs.add(internalName);
+      outputRS .put(nm[0], nm[1], new ColumnInfo(internalName, 
+          valueInfo.getType()));
+      colExprMap.put(internalName, colDesc);
+    }
+  	
+  	selectDesc select = new selectDesc(exprs, outputs, false);
+  	
     SelectOperator sel = 
       (SelectOperator)putOpInsertMap(OperatorFactory.getAndMakeChild(
-                       new selectDesc(true), new RowSchema(inputRR.getColumnInfos()), input), inputRR);
+          select, new RowSchema(inputRR.getColumnInfos()), input), inputRR);
+    
+    sel.setColumnExprMap(colExprMap);
     
     // Insert the select operator in between. 
     sel.setChildOperators(childOps);

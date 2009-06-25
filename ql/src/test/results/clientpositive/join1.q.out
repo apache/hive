@@ -24,8 +24,6 @@ STAGE PLANS:
                     type: string
               tag: 1
               value expressions:
-                    expr: key
-                    type: string
                     expr: value
                     type: string
         src1 
@@ -41,15 +39,13 @@ STAGE PLANS:
               value expressions:
                     expr: key
                     type: string
-                    expr: value
-                    type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col0} {VALUE._col1}
+            0 {VALUE._col0}
+            1 {VALUE._col1}
           Select Operator
             expressions:
                   expr: _col0
@@ -88,7 +84,7 @@ Input: default/src
 Output: default/dest_j1
 query: SELECT dest_j1.* FROM dest_j1
 Input: default/dest_j1
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/791244140/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1850221773/10000
 0	val_0
 0	val_0
 0	val_0

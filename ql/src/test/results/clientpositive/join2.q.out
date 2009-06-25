@@ -27,8 +27,6 @@ STAGE PLANS:
               value expressions:
                     expr: key
                     type: string
-                    expr: value
-                    type: string
         src1 
             Reduce Output Operator
               key expressions:
@@ -42,15 +40,13 @@ STAGE PLANS:
               value expressions:
                     expr: key
                     type: string
-                    expr: value
-                    type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col0} {VALUE._col1}
+            0 {VALUE._col0}
+            1 {VALUE._col0}
           File Output Operator
             compressed: false
             GlobalTableId: 0
@@ -73,13 +69,7 @@ STAGE PLANS:
                     type: double
               tag: 0
               value expressions:
-                    expr: _col2
-                    type: string
-                    expr: _col3
-                    type: string
                     expr: _col0
-                    type: string
-                    expr: _col1
                     type: string
         src3 
             Reduce Output Operator
@@ -92,8 +82,6 @@ STAGE PLANS:
                     type: double
               tag: 1
               value expressions:
-                    expr: key
-                    type: string
                     expr: value
                     type: string
       Reduce Operator Tree:
@@ -101,8 +89,8 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3}
-            1 {VALUE._col0} {VALUE._col1}
+            0 {VALUE._col2}
+            1 {VALUE._col1}
           Select Operator
             expressions:
                   expr: _col2
@@ -141,7 +129,7 @@ Input: default/src
 Output: default/dest_j2
 query: SELECT dest_j2.* FROM dest_j2
 Input: default/dest_j2
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1218468210/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/47427829/10000
 0	val_0
 0	val_0
 0	val_0

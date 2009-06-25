@@ -115,7 +115,7 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0} {VALUE._col1}
             1 {VALUE._col0} {VALUE._col1}
-            2 {VALUE._col0} {VALUE._col1}
+            2 {VALUE._col0}
           Filter Operator
             predicate:
                 expr: (((((_col0 > '0') and ((_col1 <> 'val_500') or (_col0 > '1'))) and ((_col2 > '10') or (_col0 <> '10'))) and (_col2 <> '4')) and (_col4 <> '1'))
@@ -149,7 +149,7 @@ JOIN
 ON src1.c1 = src3.c5
 WHERE src1.c1 > '0' and (src1.c2 <> 'val_500' or src1.c1 > '1') and (src2.c3 > '10' or src1.c1 <> '10') and (src2.c3 <> '4') and (src3.c5 <> '1')
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1778414382/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1296260582/10000
 100	val_100
 100	val_100
 100	val_100

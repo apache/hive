@@ -48,8 +48,6 @@ STAGE PLANS:
               value expressions:
                     expr: key
                     type: string
-                    expr: value
-                    type: string
         a 
             Reduce Output Operator
               key expressions:
@@ -73,7 +71,7 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0} {VALUE._col1}
             1 {VALUE._col0} {VALUE._col1}
-            2 {VALUE._col0} {VALUE._col1}
+            2 {VALUE._col0}
           Filter Operator
             predicate:
                 expr: (((((_col0 > '10') and (_col0 < '20')) and (_col2 > '15')) and (_col2 < '25')) and (sqrt(UDFToDouble(_col4)) <> UDFToDouble(13)))
@@ -113,7 +111,7 @@ query: FROM
  SELECT a.key, a.value, b.key, b.value, c.key
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25' AND sqrt(c.key) <> 13
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/706058332/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/390144859/10000
 150	val_150	150	val_150	150
 152	val_152	152	val_152	152
 152	val_152	152	val_152	152

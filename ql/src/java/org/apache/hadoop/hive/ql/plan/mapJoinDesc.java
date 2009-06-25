@@ -23,8 +23,12 @@ import java.io.Serializable;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
 
 /**
  * Map Join operator Descriptor implementation.
@@ -40,6 +44,8 @@ public class mapJoinDesc extends joinDesc implements Serializable {
   
   private int posBigTable;
   
+  private Map<Byte, List<Integer>> retainList;
+  
   public mapJoinDesc() { }
 
   public mapJoinDesc(final Map<Byte, List<exprNodeDesc>> keys, 
@@ -54,8 +60,31 @@ public class mapJoinDesc extends joinDesc implements Serializable {
     this.keyTblDesc  = keyTblDesc;
     this.valueTblDescs = valueTblDescs;
     this.posBigTable = posBigTable;
+    initRetainExprList();
   }
 
+  private void initRetainExprList() {
+    retainList = new HashMap<Byte, List<Integer>>();
+    Set<Entry<Byte, List<exprNodeDesc>>> set = super.getExprs().entrySet();
+    Iterator<Entry<Byte, List<exprNodeDesc>>> setIter = set.iterator();
+    while (setIter.hasNext()) {
+      Entry<Byte, List<exprNodeDesc>> current = setIter.next();
+      List<Integer> list = new ArrayList<Integer>();
+      for (int i = 0; i < current.getValue().size(); i++) {
+        list.add(i);
+      }
+      retainList.put(current.getKey(), list);
+    }
+  }
+  
+  public Map<Byte, List<Integer>> getRetainList() {
+    return retainList;
+  }
+
+  public void setRetainList(Map<Byte, List<Integer>> retainList) {
+    this.retainList = retainList;
+  }
+  
   /**
    * @return the keys
    */

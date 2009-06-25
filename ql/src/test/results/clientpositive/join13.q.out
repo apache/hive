@@ -71,7 +71,7 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
+            0 {VALUE._col0}
             1 {VALUE._col0} {VALUE._col1}
           File Output Operator
             compressed: false
@@ -95,13 +95,9 @@ STAGE PLANS:
                     type: double
               tag: 0
               value expressions:
-                    expr: _col2
-                    type: string
                     expr: _col3
                     type: string
                     expr: _col0
-                    type: string
-                    expr: _col1
                     type: string
         src3:src 
             Filter Operator
@@ -125,16 +121,13 @@ STAGE PLANS:
                           expr: UDFToDouble(_col0)
                           type: double
                     tag: 1
-                    value expressions:
-                          expr: _col0
-                          type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3}
-            1 {VALUE._col0} {VALUE._col1}
+            0 {VALUE._col1} {VALUE._col2}
+            1 
           Select Operator
             expressions:
                   expr: _col2
@@ -163,7 +156,7 @@ JOIN
 (SELECT src.key as c5, src.value as c6 from src) src3
 ON src1.c1 + src2.c3 = src3.c5 AND src3.c5 < 200
 Input: default/src
-Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1162005483/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/372904562/10000
 0	val_0
 0	val_0
 0	val_0

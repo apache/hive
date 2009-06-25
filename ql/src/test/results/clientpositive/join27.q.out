@@ -23,7 +23,7 @@ STAGE PLANS:
                    Inner Join 0 to 1
               condition expressions:
                 0 {key} {value}
-                1 {key} {value}
+                1 {value}
               keys:
                 0 
                 1 
@@ -47,7 +47,7 @@ STAGE PLANS:
                        Inner Join 0 to 1
                   condition expressions:
                     0 {key} {value}
-                    1 {key} {value}
+                    1 {value}
                   keys:
                     0 
                     1 
@@ -62,8 +62,15 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive4/hive4/build/ql/tmp/2020334716/10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1103571809/10002 
           Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: string
+                  expr: _col3
+                  type: string
             Select Operator
               expressions:
                     expr: _col0
@@ -95,10 +102,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/njain/hive4/hive4/build/ql/tmp/1935107021/10000
+                destination: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1381867998/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/njain/hive4/hive4/build/ql/tmp/2020334716/10003 
+              file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1103571809/10003 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -142,7 +149,7 @@ Input: default/src1
 Output: default/dest_j1
 query: select * from dest_j1 x order by x.key, x.value
 Input: default/dest_j1
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/744630343/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1375214861/10000
 NULL	val_165	val_165
 NULL	val_165	val_165
 NULL	val_193	val_193

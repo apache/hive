@@ -22,11 +22,6 @@ STAGE PLANS:
                     expr: key
                     type: string
               tag: 1
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
         src5:src3:src1 
             Reduce Output Operator
               key expressions:
@@ -48,7 +43,7 @@ STAGE PLANS:
                Inner Join 0 to 1
           condition expressions:
             0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col0} {VALUE._col1}
+            1 
           Select Operator
             expressions:
                   expr: _col0
@@ -77,8 +72,6 @@ STAGE PLANS:
                     type: string
               tag: 1
               value expressions:
-                    expr: _col2
-                    type: string
                     expr: _col3
                     type: string
         src5:src4 
@@ -91,18 +84,13 @@ STAGE PLANS:
                     expr: key
                     type: string
               tag: 0
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3}
+            0 
+            1 {VALUE._col3}
           Select Operator
             expressions:
                   expr: _col5

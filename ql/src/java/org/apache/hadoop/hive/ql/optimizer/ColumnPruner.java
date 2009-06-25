@@ -91,6 +91,8 @@ public class ColumnPruner implements Transform {
     opRules.put(new RuleRegExp("R2", "GBY%"), ColumnPrunerProcFactory.getGroupByProc());
     opRules.put(new RuleRegExp("R3", "RS%"), ColumnPrunerProcFactory.getReduceSinkProc());
     opRules.put(new RuleRegExp("R4", "SEL%"), ColumnPrunerProcFactory.getSelectProc());
+    opRules.put(new RuleRegExp("R5", "JOIN%"), ColumnPrunerProcFactory.getJoinProc());
+    opRules.put(new RuleRegExp("R6", "MAPJOIN%"), ColumnPrunerProcFactory.getMapJoinProc());
 
     // The dispatcher fires the processor corresponding to the closest matching rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(ColumnPrunerProcFactory.getDefaultProc(), opRules, cppCtx);

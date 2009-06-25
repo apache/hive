@@ -23,11 +23,6 @@ STAGE PLANS:
                     expr: key
                     type: string
               tag: 1
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
         src3 
             Reduce Output Operator
               key expressions:
@@ -39,8 +34,6 @@ STAGE PLANS:
                     type: string
               tag: 2
               value expressions:
-                    expr: key
-                    type: string
                     expr: value
                     type: string
         src1 
@@ -56,17 +49,15 @@ STAGE PLANS:
               value expressions:
                     expr: key
                     type: string
-                    expr: value
-                    type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
                Inner Join 0 to 2
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col0} {VALUE._col1}
-            2 {VALUE._col0} {VALUE._col1}
+            0 {VALUE._col0}
+            1 
+            2 {VALUE._col1}
           Select Operator
             expressions:
                   expr: _col0
@@ -105,7 +96,7 @@ Input: default/src
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/447413355/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1106403218/10000
 0	val_0
 0	val_0
 0	val_0

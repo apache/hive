@@ -83,7 +83,7 @@ STAGE PLANS:
                Inner Join 0 to 1
           condition expressions:
             0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col0} {VALUE._col1}
+            1 {VALUE._col0}
           Filter Operator
             predicate:
                 expr: ((((_col0 > '20') and ((_col1 < 'val_50') or (_col0 > '2'))) and ((_col2 > '50') or (_col0 < '50'))) and (_col2 <> '4'))
@@ -110,7 +110,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1901853163/10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1497686794/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0

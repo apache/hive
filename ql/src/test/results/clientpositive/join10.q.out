@@ -29,9 +29,6 @@ STAGE PLANS:
                       expr: _col0
                       type: string
                 tag: 0
-                value expressions:
-                      expr: _col0
-                      type: string
         y:src 
             Select Operator
               expressions:
@@ -58,7 +55,7 @@ STAGE PLANS:
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
+            0 
             1 {VALUE._col0} {VALUE._col1}
           Select Operator
             expressions:
@@ -85,7 +82,7 @@ JOIN
 ON (x.key = Y.key)
 SELECT Y.*
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/397770096/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/576477959/10000
 0	val_0
 0	val_0
 0	val_0

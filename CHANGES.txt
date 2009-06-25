@@ -270,6 +270,9 @@ Trunk - Unreleased
     HIVE-472. HiveFileFormatUtils's checkInputFormat does not include RCFile.
     (He Yongqiang via namit)
 
+    HIVE-560. Column Pruning for mapjoins
+    (He Yongqiang via namit)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

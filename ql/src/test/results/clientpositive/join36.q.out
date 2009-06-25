@@ -35,7 +35,7 @@ STAGE PLANS:
                    Inner Join 0 to 1
               condition expressions:
                 0 {key} {cnt}
-                1 {key} {cnt}
+                1 {cnt}
               keys:
                 0 
                 1 
@@ -59,7 +59,7 @@ STAGE PLANS:
                        Inner Join 0 to 1
                   condition expressions:
                     0 {key} {cnt}
-                    1 {key} {cnt}
+                    1 {cnt}
                   keys:
                     0 
                     1 
@@ -74,8 +74,15 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive4/hive4/build/ql/tmp/1544683463/10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1818872230/10002 
           Select Operator
+            expressions:
+                  expr: _col0
+                  type: int
+                  expr: _col1
+                  type: int
+                  expr: _col3
+                  type: int
             Select Operator
               expressions:
                     expr: _col0
@@ -99,10 +106,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/njain/hive4/hive4/build/ql/tmp/1680197079/10000
+                destination: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/989321268/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/njain/hive4/hive4/build/ql/tmp/1544683463/10003 
+              file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1818872230/10003 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -146,7 +153,7 @@ Input: default/tmp1
 Output: default/dest_j1
 query: select * from dest_j1 x order by x.key
 Input: default/dest_j1
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1167058397/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/798843783/10000
 0	3	3
 2	1	1
 4	1	1

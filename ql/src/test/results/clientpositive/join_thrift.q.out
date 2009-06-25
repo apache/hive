@@ -32,18 +32,8 @@ STAGE PLANS:
                     type: int
               tag: 1
               value expressions:
-                    expr: aint
-                    type: int
-                    expr: astring
-                    type: string
-                    expr: lint
-                    type: array<int>
-                    expr: lstring
-                    type: array<string>
                     expr: lintstring
                     type: array<struct<myint:int,mystring:string,underscore_int:int>>
-                    expr: mstringstring
-                    type: map<string,string>
         s1 
             Reduce Output Operator
               key expressions:
@@ -57,23 +47,13 @@ STAGE PLANS:
               value expressions:
                     expr: aint
                     type: int
-                    expr: astring
-                    type: string
-                    expr: lint
-                    type: array<int>
-                    expr: lstring
-                    type: array<string>
-                    expr: lintstring
-                    type: array<struct<myint:int,mystring:string,underscore_int:int>>
-                    expr: mstringstring
-                    type: map<string,string>
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5}
-            1 {VALUE._col0} {VALUE._col1} {VALUE._col2} {VALUE._col3} {VALUE._col4} {VALUE._col5}
+            0 {VALUE._col0}
+            1 {VALUE._col4}
           Select Operator
             expressions:
                   expr: _col0
@@ -97,7 +77,7 @@ FROM src_thrift s1
 JOIN src_thrift s2
 ON s1.aint = s2.aint
 Input: default/src_thrift
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1473150956/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1144800345/10000
 -1952710710	[{"myint":25,"mystring":"125","underscore_int":5}]
 -1461153973	[{"myint":49,"mystring":"343","underscore_int":7}]
 -751827638	[{"myint":4,"mystring":"8","underscore_int":2}]

@@ -36,8 +36,6 @@ STAGE PLANS:
                       type: string
                 tag: 1
                 value expressions:
-                      expr: _col0
-                      type: string
                       expr: _col1
                       type: string
         src1:src 
@@ -87,18 +85,15 @@ STAGE PLANS:
                           expr: _col0
                           type: string
                     tag: 2
-                    value expressions:
-                          expr: _col0
-                          type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
                Inner Join 0 to 2
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col0} {VALUE._col1}
-            2 {VALUE._col0} {VALUE._col1}
+            0 {VALUE._col0}
+            1 {VALUE._col1}
+            2 
           Select Operator
             expressions:
                   expr: _col0
@@ -127,7 +122,7 @@ JOIN
 (SELECT src.key as c5, src.value as c6 from src) src3
 ON src1.c1 = src3.c5 AND src3.c5 < 80
 Input: default/src
-Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/2007793008/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1217946262/10000
 0	val_0
 0	val_0
 0	val_0

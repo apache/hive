@@ -29,11 +29,6 @@ STAGE PLANS:
                     expr: key
                     type: string
               tag: 1
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
         a 
             Reduce Output Operator
               key expressions:
@@ -47,15 +42,13 @@ STAGE PLANS:
               value expressions:
                     expr: key
                     type: string
-                    expr: value
-                    type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
                Inner Join 0 to 1
           condition expressions:
-            0 {VALUE._col0} {VALUE._col1}
-            1 {VALUE._col0} {VALUE._col1}
+            0 {VALUE._col0}
+            1 
           Select Operator
             expressions:
                   expr: CASE (_col0) WHEN ('1') THEN (2) WHEN ('3') THEN (4) ELSE (5) END
@@ -71,7 +64,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1081703636/10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1330132213/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -105,7 +98,7 @@ FROM src a JOIN src b
 ON a.key = b.key
 ORDER BY key LIMIT 10
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/10034618/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/303679320/10000
 5
 5
 5

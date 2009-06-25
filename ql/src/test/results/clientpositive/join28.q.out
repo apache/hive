@@ -26,8 +26,8 @@ STAGE PLANS:
               condition map:
                    Inner Join 0 to 1
               condition expressions:
-                0 {key} {value}
-                1 {key} {value}
+                0 {key}
+                1 
               keys:
                 0 
                 1 
@@ -50,8 +50,8 @@ STAGE PLANS:
                   condition map:
                        Inner Join 0 to 1
                   condition expressions:
-                    0 {key} {value}
-                    1 {key} {value}
+                    0 {key}
+                    1 
                   keys:
                     0 
                     1 
@@ -66,8 +66,11 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1815676421/10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/2012162302/10002 
           Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
             Select Operator
               expressions:
                     expr: _col0
@@ -77,7 +80,7 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 condition expressions:
                   0 {_col0}
-                  1 {key} {value} {ds} {hr}
+                  1 {value}
                 keys:
                   0 
                   1 
@@ -113,7 +116,7 @@ STAGE PLANS:
                              Inner Join 0 to 1
                         condition expressions:
                           0 {_col0}
-                          1 {key} {value} {ds} {hr}
+                          1 {value}
                         keys:
                           0 
                           1 
@@ -128,8 +131,13 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1815676421/10003 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/2012162302/10003 
           Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col5
+                  type: string
             Select Operator
               expressions:
                     expr: _col0
@@ -151,10 +159,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1094740336/10000
+                destination: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/16485935/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1815676421/10004 
+              file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/2012162302/10004 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -200,7 +208,7 @@ Input: default/srcpart/ds=2008-04-08/hr=11
 Output: default/dest_j1
 query: select * from dest_j1 x order by x.key
 Input: default/dest_j1
-Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1009140217/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/634729814/10000
 128	val_128
 128	val_128
 128	val_128
