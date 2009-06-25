@@ -123,7 +123,9 @@ public class MoveTask extends Task<moveWork> implements Serializable {
           }
 
           // Check if the file format of the file matches that of the table.
-          HiveFileFormatUtils.checkInputFormat(fs, conf, tbd.getTable().getInputFileFormatClass(), files);
+          boolean flag = HiveFileFormatUtils.checkInputFormat(fs, conf, tbd.getTable().getInputFileFormatClass(), files);
+          if(!flag)
+            throw new HiveException("Wrong file format. Please check the file's format.");
         }
 
         if(tbd.getPartitionSpec().size() == 0) {

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -35,6 +36,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
+import org.apache.hadoop.mapred.TextInputFormat;
 
 /**
  * An util class for various Hive file format tasks.
@@ -42,9 +44,6 @@ import org.apache.hadoop.mapred.SequenceFileOutputFormat;
  * {@link #getOutputFormatSubstitute(Class)} are added for backward 
  * compatibility. They return the newly added HiveOutputFormat for the older 
  * ones.
- * 
- * }
- * 
  * 
  */
 public class HiveFileFormatUtils {
@@ -59,7 +58,7 @@ public class HiveFileFormatUtils {
 
   @SuppressWarnings("unchecked")
   private static Map<Class<? extends OutputFormat>, Class<? extends HiveOutputFormat>> outputFormatSubstituteMap;
-
+  
   /**
    * register a substitute
    * 
@@ -104,35 +103,87 @@ public class HiveFileFormatUtils {
     }
     return defaultFinalPath;
   }
+  
+  static {
+    inputFormatCheckerMap = new HashMap<Class<? extends InputFormat>, Class<? extends InputFormatChecker>>();
+    HiveFileFormatUtils.registerInputFormatChecker(SequenceFileInputFormat.class, SequenceFileInputFormatChecker.class);
+    HiveFileFormatUtils.registerInputFormatChecker(RCFileInputFormat.class, RCFileInputFormat.class);
+    inputFormatCheckerInstanceCache = new HashMap<Class<? extends InputFormatChecker>, InputFormatChecker>();
+  }
+
+  @SuppressWarnings("unchecked")
+  private static Map<Class<? extends InputFormat>, Class<? extends InputFormatChecker>> inputFormatCheckerMap;
+
+  private static Map<Class<? extends InputFormatChecker>, InputFormatChecker> inputFormatCheckerInstanceCache;
+
+  /**
+   * register an InputFormatChecker for a given InputFormat
+   * 
+   * @param format
+   *          the class that need to be substituted
+   * @param checker
+   */
+  @SuppressWarnings("unchecked")
+  public synchronized static void registerInputFormatChecker(
+      Class<? extends InputFormat> format,
+      Class<? extends InputFormatChecker> checker) {
+    inputFormatCheckerMap.put(format, checker);
+  }
+
+	/**
+   * get an InputFormatChecker for a file format.
+   */
+  public synchronized static Class<? extends InputFormatChecker> getInputFormatChecker(
+      Class<?> inputFormat) {
+    Class<? extends InputFormatChecker> result = inputFormatCheckerMap.get(inputFormat);
+    return result;
+  }
 
   /**
    * checks if files are in same format as the given input format
    */
+  @SuppressWarnings("unchecked")
   public static boolean checkInputFormat(FileSystem fs, HiveConf conf,
       Class<? extends InputFormat> inputFormatCls, ArrayList<FileStatus> files)
       throws HiveException {
     if (files.size() > 0) {
-      boolean tableIsSequenceFile = inputFormatCls
-          .equals(SequenceFileInputFormat.class);
-      int fileId = 0;
-      boolean fileIsSequenceFile = true;
-      try {
-        SequenceFile.Reader reader = new SequenceFile.Reader(fs, files.get(
-            fileId).getPath(), conf);
-        reader.close();
-      } catch (IOException e) {
-        fileIsSequenceFile = false;
+      Class<? extends InputFormatChecker> checkerCls = getInputFormatChecker(inputFormatCls);
+      if(checkerCls==null && inputFormatCls.isAssignableFrom(TextInputFormat.class)) {
+        // we get a text input format here, we can not determine a file is text
+        // according to its content, so we can do is to test if other file
+        // format can accept it. If one other file format can accept this file,
+        // we treat this file as text file, although it maybe not.
+       return checkTextInputFormat(fs, conf, files);
       }
-      if (!fileIsSequenceFile && tableIsSequenceFile) {
-        throw new HiveException(
-            "Cannot load text files into a table stored as SequenceFile.");
-      }
-      if (fileIsSequenceFile && !tableIsSequenceFile) {
-        throw new HiveException(
-            "Cannot load SequenceFiles into a table stored as TextFile.");
+      
+      if (checkerCls != null) {
+        InputFormatChecker checkerInstance = inputFormatCheckerInstanceCache
+            .get(checkerCls);
+        try {
+          if (checkerInstance == null) {
+            checkerInstance = checkerCls.newInstance();
+            inputFormatCheckerInstanceCache.put(checkerCls, checkerInstance);
+          }
+          return checkerInstance.validateInput(fs, conf, files);
+        } catch (Exception e) {
+          throw new HiveException(e);
+        }
       }
       return true;
     }
     return false;
+  }
+
+  @SuppressWarnings("unchecked")
+  private static boolean checkTextInputFormat(FileSystem fs, HiveConf conf,
+      ArrayList<FileStatus> files) throws HiveException {
+    Set<Class<? extends InputFormat>> inputFormatter = inputFormatCheckerMap
+        .keySet();
+    for (Class<? extends InputFormat> reg : inputFormatter) {
+      boolean result = checkInputFormat(fs, conf, reg, files);
+      if (result)
+        return false;
+    }
+    return true;
   }
 }

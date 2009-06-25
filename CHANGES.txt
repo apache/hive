@@ -267,6 +267,9 @@ Trunk - Unreleased
 
     HIVE-575. Fix Map join out-of-memory problem. (Namit Jain via zshao)
 
+    HIVE-472. HiveFileFormatUtils's checkInputFormat does not include RCFile.
+    (He Yongqiang via namit)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

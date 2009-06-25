@@ -24,31 +24,9 @@ import java.util.ArrayList;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.serde2.columnar.BytesRefArrayWritable;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.SequenceFile;
-import org.apache.hadoop.mapred.FileInputFormat;
-import org.apache.hadoop.mapred.FileSplit;
-import org.apache.hadoop.mapred.InputSplit;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.RecordReader;
-import org.apache.hadoop.mapred.Reporter;
 
-public class RCFileInputFormat<K extends LongWritable, V extends BytesRefArrayWritable>
-    extends FileInputFormat<K, V> implements InputFormatChecker{
-
-  public RCFileInputFormat() {
-    setMinSplitSize(SequenceFile.SYNC_INTERVAL);
-  }
-
-  @SuppressWarnings("unchecked")
-  public RecordReader<K, V> getRecordReader(InputSplit split, JobConf job,
-      Reporter reporter) throws IOException {
-
-    reporter.setStatus(split.toString());
-
-    return new RCFileRecordReader(job, (FileSplit) split);
-  }
+public class SequenceFileInputFormatChecker implements InputFormatChecker {
 
   @Override
   public boolean validateInput(FileSystem fs, HiveConf conf,
@@ -57,7 +35,8 @@ public class RCFileInputFormat<K extends LongWritable, V extends BytesRefArrayWr
       return false;
     for (int fileId = 0; fileId < files.size(); fileId++) {
       try {
-        RCFile.Reader reader = new RCFile.Reader(fs, files.get(fileId).getPath(), conf);
+        SequenceFile.Reader reader = new SequenceFile.Reader(fs, files.get(
+            fileId).getPath(), conf);
         reader.close();
       } catch (IOException e) {
         return false;
@@ -65,4 +44,5 @@ public class RCFileInputFormat<K extends LongWritable, V extends BytesRefArrayWr
     }
     return true;
   }
+
 }
