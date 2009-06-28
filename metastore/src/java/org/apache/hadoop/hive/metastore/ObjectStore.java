@@ -305,9 +305,9 @@ public class ObjectStore implements RawStore, Configurable {
       if(!commited) {
         rollbackTransaction();
       }
-      if(db == null) {
-        throw new NoSuchObjectException("There is no database named " + name);
-      }
+    }
+    if(db == null) {
+      throw new NoSuchObjectException("There is no database named " + name);
     }
     return db;
   }

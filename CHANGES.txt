@@ -273,6 +273,9 @@ Trunk - Unreleased
     HIVE-560. Column Pruning for mapjoins
     (He Yongqiang via namit)
 
+    HIVE-583. Fix spurious 'default database not found'.
+    (Prasad Chakka via zshao)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES
