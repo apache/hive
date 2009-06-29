@@ -206,16 +206,20 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
         String specPath = conf.getDirName();
         fs = (new Path(specPath)).getFileSystem(hconf);
         Path tmpPath = Utilities.toTempPath(specPath);
+        Path intermediatePath = new Path(tmpPath.getParent(), tmpPath.getName() + ".intermediate");
         Path finalPath = new Path(specPath);
         if(success) {
           if(fs.exists(tmpPath)) {
-            // Step1: rename tmp output folder to final path. After this point, 
-            // updates from speculative tasks still writing to tmpPath will not 
-            // appear in finalPath
-            LOG.info("Moving tmp dir: " + tmpPath + " to: " + finalPath);
-            renameOrMoveFiles(fs, tmpPath, finalPath);
-            // Step2: Clean any temp files from finalPath
-            Utilities.removeTempFiles(fs, finalPath);
+            // Step1: rename tmp output folder to intermediate path. After this
+            // point, updates from speculative tasks still writing to tmpPath 
+            // will not appear in finalPath.
+            LOG.info("Moving tmp dir: " + tmpPath + " to: " + intermediatePath);
+            Utilities.rename(fs, tmpPath, intermediatePath);
+            // Step2: remove any tmp file or double-committed output files
+            Utilities.removeTempOrDuplicateFiles(fs, intermediatePath);
+            // Step3: move to the file destination
+            LOG.info("Moving tmp dir: " + intermediatePath + " to: " + finalPath);
+            Utilities.renameOrMoveFiles(fs, intermediatePath, finalPath);
           }
         } else {
           fs.delete(tmpPath);
@@ -227,39 +231,4 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
     super.jobClose(hconf, success);
   }
   
-  /**
-   * Rename src to dst, or in the case dst already exists, move files in src 
-   * to dst.  If there is an existing file with the same name, the new file's 
-   * name will be appended with "_1", "_2", etc.
-   * @param fs the FileSystem where src and dst are on.  
-   * @param src the src directory
-   * @param dst the target directory
-   * @throws IOException 
-   */
-  static public void renameOrMoveFiles(FileSystem fs, Path src, Path dst)
-    throws IOException, HiveException {
-    if (!fs.exists(dst)) {
-      if (!fs.rename(src, dst)) {
-        throw new HiveException ("Unable to move: " + src + " to: " + dst);
-      }
-    } else {
-      // move file by file
-      FileStatus[] files = fs.listStatus(src);
-      for (int i=0; i<files.length; i++) {
-        Path srcFilePath = files[i].getPath();
-        String fileName = srcFilePath.getName();
-        Path dstFilePath = new Path(dst, fileName);
-        if (fs.exists(dstFilePath)) {
-          int suffix = 0;
-          do {
-            suffix++;
-            dstFilePath = new Path(dst, fileName + "_" + suffix);
-          } while (fs.exists(dstFilePath));
-        }
-        if (!fs.rename(srcFilePath, dstFilePath)) {
-          throw new HiveException ("Unable to move: " + src + " to: " + dst);
-        }
-      }
-    }
-  }
 }

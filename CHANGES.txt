@@ -279,6 +279,9 @@ Trunk - Unreleased
     HIVE-583. Fix spurious 'default database not found'.
     (Prasad Chakka via zshao)
 
+    HIVE-587. Duplicate results from multiple TIP
+    (Zheng Shao via namit)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

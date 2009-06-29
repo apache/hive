@@ -267,6 +267,9 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
 
     boolean new_abort = abort;
     if(!abort) {
+      if(scriptError != null) {
+        throw new HiveException(scriptError);
+      }
       // everything ok. try normal shutdown
       try {
         scriptOut.flush();

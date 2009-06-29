@@ -24,6 +24,8 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.beans.*;
 
 import org.apache.commons.lang.StringUtils;
@@ -50,22 +52,9 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.plan.*;
 import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
 import org.apache.hadoop.hive.ql.io.RCFile;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.Partition;
-import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
@@ -82,7 +71,7 @@ public class Utilities {
 
   public static enum ReduceField { KEY, VALUE, ALIAS };
   private static volatile mapredWork gWork = null;
-  static final private Log LOG = LogFactory.getLog("hive.ql.exec.Utilities");
+  static final private Log LOG = LogFactory.getLog(Utilities.class.getName());
 
   public static void clearMapRedWork (Configuration job) {
     try {
@@ -619,9 +608,81 @@ public class Utilities {
   }
 
   /**
-   * Remove all temporary files from a given directory
+   * Rename src to dst, or in the case dst already exists, move files in src 
+   * to dst.  If there is an existing file with the same name, the new file's 
+   * name will be appended with "_1", "_2", etc.
+   * @param fs the FileSystem where src and dst are on.  
+   * @param src the src directory
+   * @param dst the target directory
+   * @throws IOException 
    */
-  public static void removeTempFiles(FileSystem fs, Path path) throws IOException {
+  static public void rename(FileSystem fs, Path src, Path dst)
+    throws IOException, HiveException {
+    if (!fs.rename(src, dst)) {
+      throw new HiveException ("Unable to move: " + src + " to: " + dst);
+    }
+  }  
+  /**
+   * Rename src to dst, or in the case dst already exists, move files in src 
+   * to dst.  If there is an existing file with the same name, the new file's 
+   * name will be appended with "_1", "_2", etc.
+   * @param fs the FileSystem where src and dst are on.  
+   * @param src the src directory
+   * @param dst the target directory
+   * @throws IOException 
+   */
+  static public void renameOrMoveFiles(FileSystem fs, Path src, Path dst)
+    throws IOException, HiveException {
+    if (!fs.exists(dst)) {
+      if (!fs.rename(src, dst)) {
+        throw new HiveException ("Unable to move: " + src + " to: " + dst);
+      }
+    } else {
+      // move file by file
+      FileStatus[] files = fs.listStatus(src);
+      for (int i=0; i<files.length; i++) {
+        Path srcFilePath = files[i].getPath();
+        String fileName = srcFilePath.getName();
+        Path dstFilePath = new Path(dst, fileName);
+        if (fs.exists(dstFilePath)) {
+          int suffix = 0;
+          do {
+            suffix++;
+            dstFilePath = new Path(dst, fileName + "_" + suffix);
+          } while (fs.exists(dstFilePath));
+        }
+        if (!fs.rename(srcFilePath, dstFilePath)) {
+          throw new HiveException ("Unable to move: " + src + " to: " + dst);
+        }
+      }
+    }
+  }
+  
+  /** The first group will contain the task id.
+   *  The second group is the optional extension.
+   *  The file name looks like: "24931_r_000000_0" or "24931_r_000000_0.gz"
+   */
+  static Pattern fileNameTaskIdRegex = Pattern.compile("^.*_([0-9]*)_[0-9](\\..*)?$");
+  
+  /**
+   * Get the task id from the filename.
+   * E.g., get "000000" out of "24931_r_000000_0" or "24931_r_000000_0.gz"
+   */
+  public static String getTaskIdFromFilename(String filename) {
+    Matcher m = fileNameTaskIdRegex.matcher(filename);
+    if (!m.matches()) {
+      LOG.warn("Unable to get task id from file name: " + filename + ". Using full filename as task id.");
+      return filename;
+    } else {
+      String taskId = m.group(1);
+      LOG.debug("TaskId for " + filename + " = " + taskId);
+      return taskId;
+    }
+  }
+  /**
+   * Remove all temporary files and duplicate (double-committed) files from a given directory.
+   */
+  public static void removeTempOrDuplicateFiles(FileSystem fs, Path path) throws IOException {
     if(path == null)
       return;
 
@@ -629,10 +690,24 @@ public class Utilities {
     if(items == null)
       return;
 
+    HashMap<String, FileStatus> taskIdToFile = new HashMap<String, FileStatus>();
     for(FileStatus one: items) {
       if(isTempPath(one)) {
         if(!fs.delete(one.getPath(), true)) {
           throw new IOException ("Unable to delete tmp file: " + one.getPath());
+        }
+      }
+      String taskId = getTaskIdFromFilename(one.getPath().getName());
+      FileStatus otherFile = taskIdToFile.get(taskId);
+      if (otherFile == null) {
+        taskIdToFile.put(taskId, one);
+      } else {
+        if(!fs.delete(one.getPath(), true)) {
+          throw new IOException ("Unable to delete duplicate file: "
+              + one.getPath() + ". Existing file: " + otherFile.getPath());
+        } else {
+          LOG.warn("Duplicate taskid file removed: " + one.getPath() 
+              + ". Existing file: " + otherFile.getPath());
         }
       }
     }
