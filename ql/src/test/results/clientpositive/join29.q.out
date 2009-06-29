@@ -10,15 +10,13 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-7
-  Stage-3 depends on stages: Stage-2
-  Stage-6 depends on stages: Stage-3
-  Stage-0 depends on stages: Stage-6
-  Stage-7 is a root stage
-  Stage-2 depends on stages: Stage-1, Stage-7
-  Stage-3 depends on stages: Stage-2
-  Stage-6 depends on stages: Stage-3
-  Stage-0 depends on stages: Stage-6
+  Stage-2 depends on stages: Stage-1, Stage-6
+  Stage-5 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-5
+  Stage-6 is a root stage
+  Stage-2 depends on stages: Stage-1, Stage-6
+  Stage-5 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-5
 
 STAGE PLANS:
   Stage: Stage-1
@@ -73,7 +71,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1590163898/10002 
+        file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/tmp/457091933/10002 
             Common Join Operator
               condition map:
                    Inner Join 0 to 1
@@ -84,20 +82,46 @@ STAGE PLANS:
                 0 
                 1 
               Position of Big Table: 1
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: string
+                      expr: _col1
+                      type: bigint
+                      expr: _col3
+                      type: bigint
+                Select Operator
+                  expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: bigint
+                        expr: _col3
+                        type: bigint
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                          expr: UDFToInteger(_col1)
+                          type: int
+                          expr: UDFToInteger(_col2)
+                          type: int
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 1
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: dest_j1
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
-            file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1590163898/10005 
+            file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/tmp/457091933/10004 
               Fetch Operator
                 limit: -1
           Alias -> Map Local Operator Tree:
-            file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1590163898/10005 
+            file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/tmp/457091933/10004 
                 Common Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -108,60 +132,49 @@ STAGE PLANS:
                     0 
                     1 
                   Position of Big Table: 1
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: bigint
+                          expr: _col3
+                          type: bigint
+                    Select Operator
+                      expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: bigint
+                            expr: _col3
+                            type: bigint
+                      Select Operator
+                        expressions:
+                              expr: _col0
+                              type: string
+                              expr: UDFToInteger(_col1)
+                              type: int
+                              expr: UDFToInteger(_col2)
+                              type: int
+                        File Output Operator
+                          compressed: false
+                          GlobalTableId: 1
+                          table:
+                              input format: org.apache.hadoop.mapred.TextInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                              name: dest_j1
 
-  Stage: Stage-3
-    Map Reduce
-      Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1590163898/10003 
-          Select Operator
-            expressions:
-                  expr: _col0
-                  type: string
-                  expr: _col1
-                  type: bigint
-                  expr: _col3
-                  type: bigint
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: bigint
-                    expr: _col3
-                    type: bigint
-              Select Operator
-                expressions:
-                      expr: _col0
-                      type: string
-                      expr: UDFToInteger(_col1)
-                      type: int
-                      expr: UDFToInteger(_col2)
-                      type: int
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 1
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      name: dest_j1
-
-  Stage: Stage-6
+  Stage: Stage-5
     Conditional Operator
       list of dependent Tasks:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/959537275/10000
+                destination: file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/tmp/1060447709/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1590163898/10004 
+              file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/tmp/457091933/10003 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -196,7 +209,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: dest_j1
 
-  Stage: Stage-7
+  Stage: Stage-6
     Map Reduce
       Alias -> Map Operator Tree:
         subq1:x 
@@ -255,7 +268,7 @@ Input: default/src1
 Output: default/dest_j1
 query: select * from dest_j1 x order by x.key
 Input: default/dest_j1
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/948921556/10000
+Output: file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/tmp/2107397936/10000
 128	1	3
 146	1	2
 150	1	1

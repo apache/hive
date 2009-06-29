@@ -89,7 +89,7 @@ public class TestOperators extends TestCase {
       op.setConf(filterCtx);
 
       // runtime initialization
-      op.initialize(null, null, new ObjectInspector[]{r[0].oi});
+      op.initialize(new JobConf(TestOperators.class), null, new ObjectInspector[]{r[0].oi});
 
       for(InspectableObject oner: r) {
         op.process(oner.o, oner.oi, 0);

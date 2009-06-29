@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.filterDesc;
@@ -40,16 +41,21 @@ public class FilterOperator extends Operator <filterDesc> implements Serializabl
   transient private final LongWritable filtered_count, passed_count;
   transient private ExprNodeEvaluator conditionEvaluator;
   transient private PrimitiveObjectInspector conditionInspector;  
+  transient private int consecutiveFails;
+  transient int      heartbeatInterval;
   
   public FilterOperator () {
     super();
     filtered_count = new LongWritable();
     passed_count = new LongWritable();
+    consecutiveFails = 0;
   }
 
   public void initializeOp(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
- 
+    this.reporter = reporter;
+
     try {
+      heartbeatInterval = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVESENDHEARTBEAT);
       this.conditionEvaluator = ExprNodeEvaluatorFactory.get(conf.getPredicate());
       statsMap.put(Counter.FILTERED, filtered_count);
       statsMap.put(Counter.PASSED, passed_count);
@@ -70,8 +76,14 @@ public class FilterOperator extends Operator <filterDesc> implements Serializabl
     if (Boolean.TRUE.equals(ret)) {
       forward(row, rowInspector);
       passed_count.set(passed_count.get()+1);
+      consecutiveFails = 0;
     } else {
       filtered_count.set(filtered_count.get()+1);
+      consecutiveFails++;
+      
+      // In case of a lot of consecutive failures, send a heartbeat in order to avoid timeout
+      if ((consecutiveFails % heartbeatInterval) == 0)
+        reporter.progress();
     }
   }
 

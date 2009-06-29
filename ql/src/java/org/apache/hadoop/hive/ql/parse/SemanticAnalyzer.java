@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
@@ -144,6 +145,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private ASTNode ast;
   private int destTableId;
   private UnionProcContext uCtx;
+  List<MapJoinOperator> listMapJoinOpsNoReducer;
 
   /**
    * ReadEntitites that are passed to the hooks.
@@ -173,6 +175,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     joinContext = new HashMap<JoinOperator, QBJoinTree>();
     this.destTableId = 1;
     this.uCtx = null;
+    this.listMapJoinOpsNoReducer = new ArrayList<MapJoinOperator>();
     
     inputs = new LinkedHashSet<ReadEntity>();
     outputs = new LinkedHashSet<WriteEntity>();
@@ -210,12 +213,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     destTableId = pctx.getDestTableId();
     idToTableNameMap = pctx.getIdToTableNameMap();
     this.uCtx = pctx.getUCtx();
+    this.listMapJoinOpsNoReducer = pctx.getListMapJoinOpsNoReducer();
     qb = pctx.getQB();
   }
 
   public ParseContext getParseContext() {
     return new ParseContext(conf, qb, ast, aliasToPruner, aliasToSamplePruner, topOps, 
-                            topSelOps, opParseCtx, joinContext, loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx);
+                            topSelOps, opParseCtx, joinContext, loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
+                            listMapJoinOpsNoReducer);
   }
   
   @SuppressWarnings("nls")
@@ -3863,7 +3868,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     
 
     ParseContext pCtx = new ParseContext(conf, qb, ast, aliasToPruner, aliasToSamplePruner, topOps, 
-    		                                 topSelOps, opParseCtx, joinContext, loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx);
+    		                                 topSelOps, opParseCtx, joinContext, loadTableWork, loadFileWork, 
+    		                                 ctx, idToTableNameMap, destTableId, uCtx, listMapJoinOpsNoReducer);
   
     Optimizer optm = new Optimizer();
     optm.setPctx(pCtx);

@@ -142,7 +142,9 @@ public class HiveConf extends Configuration {
 
     HIVEMERGEMAPFILES("hive.merge.mapfiles", true),
     HIVEMERGEMAPFILESSIZE("hive.merge.size.per.mapper", (long)(1000*1000*1000)),
-    
+      
+    HIVESENDHEARTBEAT("hive.heartbeat.interval", 1000),
+
     // Optimizer
     HIVEOPTPPD("hive.optimize.ppd", false); // predicate pushdown
     

@@ -219,6 +219,12 @@
 </property>
 
 <property>
+  <name>hive.heartbeat.interval</name>
+  <value>1000</value>
+  <description>Send a heartbeat after this interval - used by mapjoin and filter operators</description>
+</property>
+
+<property>
   <name>hive.merge.size.per.mapper</name>
   <value>1000000000</value>
   <description>Size of merged files at the end of the job</description>

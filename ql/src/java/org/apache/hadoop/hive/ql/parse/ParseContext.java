@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.plan.loadFileDesc;
 import org.apache.hadoop.hive.ql.plan.loadTableDesc;
@@ -57,6 +58,7 @@ public class ParseContext {
   private HashMap<String, String> idToTableNameMap;
   private int destTableId;
   private UnionProcContext uCtx;
+  private List<MapJoinOperator> listMapJoinOpsNoReducer;  // list of map join operators with no reducer
   
   /**
    * @param qb
@@ -78,6 +80,8 @@ public class ParseContext {
    *          list of operators for the top query
    * @param topSelOps
    *          list of operators for the selects introduced for column pruning
+   * @param listMapJoinOpsNoReducer
+   *          list of map join operators with no reducer         
    */
   public ParseContext(HiveConf conf, QB qb, ASTNode ast,
       HashMap<String, PartitionPruner> aliasToPruner,
@@ -87,7 +91,8 @@ public class ParseContext {
       HashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx,
       Map<JoinOperator, QBJoinTree> joinContext,
       List<loadTableDesc> loadTableWork, List<loadFileDesc> loadFileWork,
-      Context ctx, HashMap<String, String> idToTableNameMap, int destTableId, UnionProcContext uCtx) {
+      Context ctx, HashMap<String, String> idToTableNameMap, int destTableId, UnionProcContext uCtx,
+      List<MapJoinOperator> listMapJoinOpsNoReducer) {
     this.conf = conf;
     this.qb = qb;
     this.ast = ast;
@@ -103,6 +108,7 @@ public class ParseContext {
     this.idToTableNameMap = idToTableNameMap;
     this.destTableId = destTableId;
     this.uCtx = uCtx;
+    this.listMapJoinOpsNoReducer = listMapJoinOpsNoReducer;
   }
 
   /**
@@ -311,4 +317,18 @@ public class ParseContext {
     this.joinContext = joinContext;
   }
 
+  /**
+   * @return the listMapJoinOpsNoReducer
+   */
+  public List<MapJoinOperator> getListMapJoinOpsNoReducer() {
+    return listMapJoinOpsNoReducer;
+  }
+
+  /**
+   * @param listMapJoinOpsNoReducer the listMapJoinOpsNoReducer to set
+   */
+  public void setListMapJoinOpsNoReducer(
+      List<MapJoinOperator> listMapJoinOpsNoReducer) {
+    this.listMapJoinOpsNoReducer = listMapJoinOpsNoReducer;
+  }
 }

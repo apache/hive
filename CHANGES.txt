@@ -92,6 +92,9 @@ Trunk - Unreleased
     HIVE-516. Enable predicate pushdown for junit tests.
     (Prasad Chakka via zshao)
 
+    HIVE-530. Map Join followup: optimize number of map-reduce jobs.
+    (Namit Jain via zshao)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).

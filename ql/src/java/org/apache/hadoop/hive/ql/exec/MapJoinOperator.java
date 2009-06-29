@@ -119,12 +119,19 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
   transient int   metadataKeyTag;
   transient int[] metadataValueTag;
   transient List<File> hTables;
+  transient int      numMapRowsRead;
+  transient int      heartbeatInterval;
   
   @Override
   public void initializeOp(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
     super.initializeOp(hconf, reporter, inputObjInspector);
+    this.reporter=reporter;
+    numMapRowsRead = 0;
+  
     firstRow = true;
     try {
+      heartbeatInterval = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVESENDHEARTBEAT);
+
       joinKeys  = new HashMap<Byte, List<ExprNodeEvaluator>>();
       
       populateJoinKeyValue(joinKeys, conf.getKeys());
@@ -228,6 +235,11 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
           firstRow = false;
         }
         
+        // Send some status perodically 
+        numMapRowsRead++;
+        if ((numMapRowsRead % heartbeatInterval) == 0)
+          reporter.progress();
+
         HTree hashTable = mapJoinTables.get(alias);
         MapJoinObjectKey keyMap = new MapJoinObjectKey(metadataKeyTag, key);
         MapJoinObjectValue o = (MapJoinObjectValue)hashTable.get(keyMap);

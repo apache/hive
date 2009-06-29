@@ -13,9 +13,8 @@ ABSTRACT SYNTAX TREE:
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-3 depends on stages: Stage-2
-  Stage-6 depends on stages: Stage-3
-  Stage-0 depends on stages: Stage-6
+  Stage-5 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-5
 
 STAGE PLANS:
   Stage: Stage-1
@@ -66,7 +65,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/2012162302/10002 
+        file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/tmp/1238929189/10002 
           Select Operator
             expressions:
                   expr: _col0
@@ -85,12 +84,26 @@ STAGE PLANS:
                   0 
                   1 
                 Position of Big Table: 0
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                Select Operator
+                  expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col5
+                        type: string
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col5
+                          type: string
+                    File Output Operator
+                      compressed: false
+                      GlobalTableId: 1
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: dest_j1
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
@@ -121,48 +134,37 @@ STAGE PLANS:
                           0 
                           1 
                         Position of Big Table: 0
-                        File Output Operator
-                          compressed: false
-                          GlobalTableId: 0
-                          table:
-                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        Select Operator
+                          expressions:
+                                expr: _col0
+                                type: string
+                                expr: _col5
+                                type: string
+                          Select Operator
+                            expressions:
+                                  expr: _col0
+                                  type: string
+                                  expr: _col5
+                                  type: string
+                            File Output Operator
+                              compressed: false
+                              GlobalTableId: 1
+                              table:
+                                  input format: org.apache.hadoop.mapred.TextInputFormat
+                                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                                  name: dest_j1
 
-  Stage: Stage-3
-    Map Reduce
-      Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/2012162302/10003 
-          Select Operator
-            expressions:
-                  expr: _col0
-                  type: string
-                  expr: _col5
-                  type: string
-            Select Operator
-              expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col5
-                    type: string
-              File Output Operator
-                compressed: false
-                GlobalTableId: 1
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: dest_j1
-
-  Stage: Stage-6
+  Stage: Stage-5
     Conditional Operator
       list of dependent Tasks:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/16485935/10000
+                destination: file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/tmp/2043029458/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/2012162302/10004 
+              file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/tmp/1238929189/10003 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -208,7 +210,7 @@ Input: default/srcpart/ds=2008-04-08/hr=11
 Output: default/dest_j1
 query: select * from dest_j1 x order by x.key
 Input: default/dest_j1
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/634729814/10000
+Output: file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/tmp/981515436/10000
 128	val_128
 128	val_128
 128	val_128

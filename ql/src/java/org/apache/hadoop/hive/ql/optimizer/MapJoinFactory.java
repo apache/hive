@@ -167,13 +167,23 @@ public class MapJoinFactory {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
-
+      
       SelectOperator  sel     = (SelectOperator)nd;
       MapJoinOperator mapJoin = (MapJoinOperator)sel.getParentOperators().get(0);
       assert sel.getParentOperators().size() == 1;
-
+      
       GenMRProcContext ctx = (GenMRProcContext)procCtx;
       ParseContext parseCtx = ctx.getParseCtx();
+      
+      // is the mapjoin followed by a reducer
+      List<MapJoinOperator> listMapJoinOps = parseCtx.getListMapJoinOpsNoReducer();
+      
+      if (listMapJoinOps.contains(mapJoin)) {
+        ctx.setCurrAliasId(null);
+        ctx.setCurrTopOp(null);
+        return null;
+      }
+
       ctx.setCurrMapJoinOp(mapJoin);
       
       Task<? extends Serializable> currTask = ctx.getCurrTask();
