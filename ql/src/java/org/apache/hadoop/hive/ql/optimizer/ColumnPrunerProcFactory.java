@@ -301,14 +301,17 @@ public class ColumnPrunerProcFactory {
     }
   }
   
-  private static boolean[] getPruneReduceSinkOpRetainFlags(List<String> retainedParentOpOutputCols, ReduceSinkOperator reduce){
+  private static boolean[] getPruneReduceSinkOpRetainFlags(
+      List<String> retainedParentOpOutputCols, ReduceSinkOperator reduce) {
     reduceSinkDesc reduceConf = reduce.getConf();
     java.util.ArrayList<exprNodeDesc> originalValueEval = reduceConf.getValueCols();
     boolean[] flags = new boolean[originalValueEval.size()];
     for (int i = 0; i < originalValueEval.size(); i++) {
       flags[i] = false;
       List<String> current = originalValueEval.get(i).getCols();
-      if (current != null) {
+      if (current == null || current.size() == 0) {
+        flags[i] = true;
+      } else {
         for (int j = 0; j < current.size(); j++) {
           if (retainedParentOpOutputCols.contains(current.get(j))) {
             flags[i] = true;

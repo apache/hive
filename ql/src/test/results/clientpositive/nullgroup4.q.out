@@ -64,7 +64,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/797179428/10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/630845842/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -99,7 +99,7 @@ STAGE PLANS:
 
 query: select count(1), count(distinct x.value) from src x where x.key = 9999
 Input: default/src
-Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/176192106/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1938635713/10000
 0	0
 query: explain
 select count(1), count(distinct x.value) from src x where x.key = 9999
@@ -172,7 +172,7 @@ STAGE PLANS:
 
 query: select count(1), count(distinct x.value) from src x where x.key = 9999
 Input: default/src
-Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1240165665/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/2019754835/10000
 0	0
 query: explain
 select count(1), count(distinct x.value) from src x where x.key = 9999
@@ -210,6 +210,9 @@ STAGE PLANS:
                           expr: value
                           type: string
                     tag: -1
+                    value expressions:
+                          expr: 1
+                          type: int
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -227,7 +230,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/123668648/10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1425841757/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -262,7 +265,7 @@ STAGE PLANS:
 
 query: select count(1), count(distinct x.value) from src x where x.key = 9999
 Input: default/src
-Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/2060544994/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/2042822876/10000
 0	0
 query: explain
 select count(1), count(distinct x.value) from src x where x.key = 9999
@@ -296,6 +299,9 @@ STAGE PLANS:
                           type: string
                     sort order: +
                     tag: -1
+                    value expressions:
+                          expr: 1
+                          type: int
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -322,5 +328,5 @@ STAGE PLANS:
 
 query: select count(1), count(distinct x.value) from src x where x.key = 9999
 Input: default/src
-Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/131032386/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/2013029014/10000
 0	0

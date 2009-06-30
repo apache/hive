@@ -63,7 +63,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1813446506/10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/728386179/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -104,7 +104,7 @@ STAGE PLANS:
 
 query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 Input: default/src
-Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1274223349/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/284238698/10000
 query: explain
 select x.key, count(1) from src x where x.key > 9999 group by x.key
 ABSTRACT SYNTAX TREE:
@@ -178,7 +178,7 @@ STAGE PLANS:
 
 query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 Input: default/src
-Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/2031150875/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1931999488/10000
 query: explain
 select x.key, count(1) from src x where x.key > 9999 group by x.key
 ABSTRACT SYNTAX TREE:
@@ -215,6 +215,9 @@ STAGE PLANS:
                           expr: rand()
                           type: double
                     tag: -1
+                    value expressions:
+                          expr: 1
+                          type: int
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -234,7 +237,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1094899532/10002 
+        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1264700371/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -275,7 +278,7 @@ STAGE PLANS:
 
 query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 Input: default/src
-Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/2019724226/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/192620128/10000
 query: explain
 select x.key, count(1) from src x where x.key > 9999 group by x.key
 ABSTRACT SYNTAX TREE:
@@ -311,6 +314,9 @@ STAGE PLANS:
                           expr: key
                           type: string
                     tag: -1
+                    value expressions:
+                          expr: 1
+                          type: int
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -339,4 +345,4 @@ STAGE PLANS:
 
 query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 Input: default/src
-Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/629412428/10000
+Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/5517742/10000
