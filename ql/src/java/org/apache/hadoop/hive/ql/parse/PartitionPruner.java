@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc;
+import org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeIndexDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeNullDesc;
 import org.apache.hadoop.hive.ql.udf.UDFOPAnd;
@@ -270,14 +271,19 @@ public class PartitionPruner {
             // NOTE: In the future all UDFs that treats null value as UNKNOWN (both in parameters and return 
             // values) should derive from a common base class UDFNullAsUnknown, so instead of listing the classes
             // here we would test whether a class is derived from that base class. 
-          } else if ((desc instanceof exprNodeFuncDesc && 
-              ((exprNodeFuncDesc)desc).getUDFClass().getAnnotation(UDFType.class) != null && 
-              ((exprNodeFuncDesc)desc).getUDFClass().getAnnotation(UDFType.class).deterministic() == false) ||
-              mightBeUnknown(desc)) {
-             // If its a non-deterministic UDF or if any child is null, set this node to null
+          } else if (mightBeUnknown(desc) ||
+                     (desc instanceof exprNodeFuncDesc && 
+                      ((exprNodeFuncDesc)desc).getUDFClass().getAnnotation(UDFType.class) != null && 
+                      ((exprNodeFuncDesc)desc).getUDFClass().getAnnotation(UDFType.class).deterministic() == false) ||
+                     (desc instanceof exprNodeGenericFuncDesc && 
+                      ((exprNodeGenericFuncDesc)desc).getGenericUDFClass().getAnnotation(UDFType.class) != null && 
+                      ((exprNodeGenericFuncDesc)desc).getGenericUDFClass().getAnnotation(UDFType.class).deterministic() == false))
+          {
+            // If its a non-deterministic UDF or if any child is null, set this node to null
             LOG.trace("Pruner function might be unknown: " + expr.toStringTree());
             desc = new exprNodeConstantDesc(desc.getTypeInfo(), null);
           }
+
           tempDesc = new ExprNodeTempDesc(desc);
         }
         break;
@@ -324,6 +330,14 @@ public class PartitionPruner {
       return mightBeUnknown(d.getDesc());
     } else if (desc instanceof exprNodeFuncDesc) {
       exprNodeFuncDesc d = (exprNodeFuncDesc)desc;
+      for(int i=0; i<d.getChildren().size(); i++) {
+        if (mightBeUnknown(d.getChildExprs().get(i))) {
+          return true;
+        }
+      }
+      return false;
+    } else if (desc instanceof exprNodeGenericFuncDesc) {
+      exprNodeGenericFuncDesc d = (exprNodeGenericFuncDesc)desc;
       for(int i=0; i<d.getChildren().size(); i++) {
         if (mightBeUnknown(d.getChildExprs().get(i))) {
           return true;
