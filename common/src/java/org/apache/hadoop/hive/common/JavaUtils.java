@@ -24,9 +24,12 @@ package org.apache.hadoop.hive.common;
 public class JavaUtils {
 
   /**
-   * Standard way of getting classloader across all of Hive.
+   * Standard way of getting classloader in Hive code (outside of Hadoop).
+   * 
    * Uses the context loader to get access to classpaths to auxiliary and jars
    * added with 'add jar' command. Falls back to current classloader.
+   * 
+   * In Hadoop-related code, we use Configuration.getClassLoader().
    */
   public static ClassLoader getClassLoader() {
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();

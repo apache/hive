@@ -981,8 +981,8 @@ public class RCFile {
         throw new VersionMismatchException(VERSION[3], version);
 
       try {
-        Class<?> keyCls = Class.forName(Text.readString(in));
-        Class<?> valCls = Class.forName(Text.readString(in));
+        Class<?> keyCls = conf.getClassByName(Text.readString(in));
+        Class<?> valCls = conf.getClassByName(Text.readString(in));
         if (!keyCls.equals(KeyBuffer.class)
             || !valCls.equals(ValueBuffer.class))
           throw new IOException(file + " not a RCFile");

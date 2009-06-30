@@ -99,7 +99,7 @@ public class Utilities {
           if(gWork != null)
             return (gWork);
           InputStream in = new FileInputStream("HIVE_PLAN");
-          mapredWork ret = deserializeMapRedWork(in);
+          mapredWork ret = deserializeMapRedWork(in, job);
           gWork = ret;
         }
         gWork.initialize();
@@ -187,8 +187,8 @@ public class Utilities {
     e.close();
   }
 
-  public static mapredWork deserializeMapRedWork (InputStream in) {
-    XMLDecoder d = new XMLDecoder(in);
+  public static mapredWork deserializeMapRedWork (InputStream in, Configuration conf) {
+    XMLDecoder d = new XMLDecoder(in, null, null, conf.getClassLoader());
     mapredWork ret = (mapredWork)d.readObject();
     d.close();
     return (ret);
@@ -723,9 +723,8 @@ public class Utilities {
    * @param newPaths
    *          Array of classpath elements
    */
-  public static void addToClassPath(String[] newPaths) throws Exception {
-    Thread curThread = Thread.currentThread();
-    URLClassLoader loader = (URLClassLoader) curThread.getContextClassLoader();
+  public static ClassLoader addToClassPath(ClassLoader cloader, String[] newPaths) throws Exception {
+    URLClassLoader loader = (URLClassLoader)cloader;
     List<URL> curPath = Arrays.asList(loader.getURLs());
     ArrayList<URL> newPath = new ArrayList<URL>();
 
@@ -746,8 +745,7 @@ public class Utilities {
       }
     }
 
-    loader = new URLClassLoader(curPath.toArray(new URL[0]), loader);
-    curThread.setContextClassLoader(loader);
+    return new URLClassLoader(curPath.toArray(new URL[0]), loader);
   }
 
   /**

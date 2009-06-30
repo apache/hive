@@ -314,7 +314,9 @@ public class SessionState {
   public static boolean registerJar(String newJar) {
     LogHelper console = getConsole();
     try {
-      Utilities.addToClassPath(StringUtils.split(newJar, ","));
+      ClassLoader loader = Thread.currentThread().getContextClassLoader();
+      Thread.currentThread().setContextClassLoader(
+          Utilities.addToClassPath(loader, StringUtils.split(newJar, ",")));
       console.printInfo("Added " + newJar + " to class path");
       return true;
     } catch (Exception e) {

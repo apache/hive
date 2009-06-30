@@ -40,6 +40,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.plan.mapredWork;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.partitionDesc;
@@ -105,12 +106,21 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
   public void initialize(HiveConf conf) {
     super.initialize(conf);
     job = new JobConf(conf, ExecDriver.class);
-    initializeFiles(
-        "tmpfiles",
-        getResourceFiles(job, SessionState.ResourceType.FILE));
-    initializeFiles(
-        "tmpjars",
-        getResourceFiles(job, SessionState.ResourceType.JAR));
+    // NOTE: initialize is only called if it is in non-local mode.
+    // In case it's in non-local mode, we need to move the SessionState files
+    // and jars to jobConf.
+    // In case it's in local mode, MapRedTask will set the jobConf.
+    //
+    // "tmpfiles" and "tmpjars" are set by the method ExecDriver.execute(),
+    // which will be called by both local and NON-local mode.
+    String addedFiles = getResourceFiles(job, SessionState.ResourceType.FILE);
+    if (StringUtils.isNotBlank(addedFiles)) {
+      HiveConf.setVar(job, ConfVars.HIVEADDEDFILES, addedFiles);
+    }
+    String addedJars = getResourceFiles(job, SessionState.ResourceType.JAR);
+    if (StringUtils.isNotBlank(addedJars)) {
+      HiveConf.setVar(job, ConfVars.HIVEADDEDJARS, addedJars);
+    }
   }
 
   /**
@@ -342,12 +352,24 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
     job.setOutputKeyClass(Text.class);
     job.setOutputValueClass(Text.class);
 
+    // Transfer HIVEAUXJARS and HIVEADDEDJARS to "tmpjars" so hadoop understands it
     String auxJars = HiveConf.getVar(job, HiveConf.ConfVars.HIVEAUXJARS);
-    if (StringUtils.isNotBlank(auxJars)) {
-      LOG.info("adding libjars: " + auxJars);
-      job.set("tmpjars", auxJars);
+    String addedJars = HiveConf.getVar(job, HiveConf.ConfVars.HIVEADDEDJARS);
+    if (StringUtils.isNotBlank(auxJars) || StringUtils.isNotBlank(addedJars)) {
+      String allJars = 
+        StringUtils.isNotBlank(auxJars)
+        ? (StringUtils.isNotBlank(addedJars) ? addedJars + "," + auxJars : auxJars)
+        : addedJars;
+      LOG.info("adding libjars: " + allJars);
+      initializeFiles("tmpjars", allJars);
     }
 
+    // Transfer HIVEADDEDFILES to "tmpfiles" so hadoop understands it
+    String addedFiles = HiveConf.getVar(job, HiveConf.ConfVars.HIVEADDEDFILES);
+    if (StringUtils.isNotBlank(addedFiles)) {
+      initializeFiles("tmpfiles", addedFiles);
+    }
+    
     int returnVal = 0;
     RunningJob rj = null, orig_rj = null;
     boolean success = false;
@@ -530,16 +552,26 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
         .equals("local");
     if (localMode) {
       String auxJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEAUXJARS);
-      if (StringUtils.isNotBlank(auxJars)) {
-        try {
-          Utilities.addToClassPath(StringUtils.split(auxJars, ","));
-        } catch (Exception e) {
-          throw new HiveException(e.getMessage(), e);
+      String addedJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEADDEDJARS);
+      try {
+        ClassLoader loader = conf.getClassLoader();
+        if (StringUtils.isNotBlank(auxJars)) {
+          loader = Utilities.addToClassPath(loader, StringUtils.split(auxJars, ","));
         }
+        if (StringUtils.isNotBlank(addedJars)) {
+          loader = Utilities.addToClassPath(loader, StringUtils.split(addedJars, ","));
+        }
+        conf.setClassLoader(loader);
+        // Also set this to the Thread ContextClassLoader, so new threads will inherit
+        // this class loader, and propagate into newly created Configurations by those
+        // new threads.
+        Thread.currentThread().setContextClassLoader(loader);
+      } catch (Exception e) {
+        throw new HiveException(e.getMessage(), e);
       }
     }
 
-    mapredWork plan = Utilities.deserializeMapRedWork(pathData);
+    mapredWork plan = Utilities.deserializeMapRedWork(pathData, conf);
     ExecDriver ed = new ExecDriver(plan, conf, isSilent);
     int ret = ed.execute();
     if (ret != 0) {
@@ -621,7 +653,8 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
         !work.getAliasToWork().isEmpty()) {
       String oneAlias = (String)work.getAliasToWork().keySet().toArray()[0];
       
-      Class<? extends HiveOutputFormat> outFileFormat = (Class<? extends HiveOutputFormat>)Class.forName("org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat");
+      Class<? extends HiveOutputFormat> outFileFormat = (Class<? extends HiveOutputFormat>)
+          job.getClassByName("org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat");
       
       String newFile = hiveScratchDir + File.separator + (++numEmptyPaths);
       Path newPath = new Path(newFile);

@@ -39,7 +39,7 @@ public class ThriftDeserializer implements Deserializer {
       // per Table basis
 
       String className = tbl.getProperty(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_CLASS);
-      Class<?> recordClass = Class.forName(className);
+      Class<?> recordClass = job.getClassByName(className);
 
       String protoName = tbl.getProperty(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT);
       if (protoName == null) {

@@ -28,6 +28,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.hive.ql.plan.mapredWork;
 import org.apache.hadoop.hive.ql.exec.Utilities.*;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import org.apache.commons.lang.StringUtils;
@@ -48,27 +49,31 @@ public class MapRedTask extends Task<mapredWork> implements Serializable {
       String hadoopExec = conf.getVar(HiveConf.ConfVars.HADOOPBIN);
       String hiveJar = conf.getJar();
 
-      String addedJars = ExecDriver.getResourceFiles(conf, SessionState.ResourceType.JAR);
-      if (!StringUtils.isEmpty(addedJars)) {
-        // Add addedJars to auxJars
+      String libJarsOption;
+      {
+        String addedJars = ExecDriver.getResourceFiles(conf, SessionState.ResourceType.JAR);
+        conf.setVar(ConfVars.HIVEADDEDJARS, addedJars);
+
         String auxJars = conf.getAuxJars();
-        if (StringUtils.isEmpty(auxJars)) {
-          auxJars = addedJars;
+        // Put auxjars and addedjars together into libjars
+        if (StringUtils.isEmpty(addedJars)) {
+          if (StringUtils.isEmpty(auxJars)) {
+            libJarsOption = " ";
+          } else {
+            libJarsOption = " -libjars " + auxJars + " ";
+          }
         } else {
-          auxJars = auxJars + "," + addedJars;
+          if (StringUtils.isEmpty(auxJars)) {
+            libJarsOption = " -libjars " + addedJars + " ";
+          } else {
+            libJarsOption = " -libjars " + addedJars + "," + auxJars + " ";
+          }   
         }
-        conf.setAuxJars(auxJars);
       }
-      // Generate the hiveCOnfArgs after potentially adding the jars
+
+      // Generate the hiveConfArgs after potentially adding the jars
       String hiveConfArgs = ExecDriver.generateCmdLine(conf);
-
-      String auxJars = conf.getAuxJars();
-      if (StringUtils.isEmpty(auxJars)) {
-        auxJars = " ";
-      } else {
-        auxJars = " -libjars " + auxJars + " ";
-      }
-
+      
       mapredWork plan = getWork();
 
       File planFile = File.createTempFile("plan", ".xml");
@@ -78,7 +83,7 @@ public class MapRedTask extends Task<mapredWork> implements Serializable {
 
       String isSilent = "true".equalsIgnoreCase(System.getProperty("test.silent"))
                         ? "-silent" : "";
-      String cmdLine = hadoopExec + " jar " + auxJars + " " + hiveJar 
+      String cmdLine = hadoopExec + " jar " + libJarsOption + " " + hiveJar 
           + " org.apache.hadoop.hive.ql.exec.ExecDriver -plan "
           + planFile.toString() + " " + isSilent + " " + hiveConfArgs; 
       

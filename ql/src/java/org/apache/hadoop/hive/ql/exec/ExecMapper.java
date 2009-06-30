@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.*;
+import java.net.URLClassLoader;
 import java.util.*;
 
 import org.apache.hadoop.io.*;
@@ -55,6 +56,14 @@ public class ExecMapper extends MapReduceBase implements Mapper {
   }
   
   public void configure(JobConf job) {
+    try {
+      l4j.info("conf classpath = " 
+          + Arrays.asList(((URLClassLoader)job.getClassLoader()).getURLs()));
+      l4j.info("thread classpath = " 
+          + Arrays.asList(((URLClassLoader)Thread.currentThread().getContextClassLoader()).getURLs()));
+    } catch (Exception e) {
+      l4j.info("cannot get classpath: " + e.getMessage());
+    }
     try {
       init();
       jc = job;

@@ -22,12 +22,16 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configurable;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.mapredWork;
@@ -61,7 +65,7 @@ public class HiveInputFormat<K extends WritableComparable,
    * HiveInputSplit encapsulates an InputSplit with its corresponding inputFormatClass.
    * The reason that it derives from FileSplit is to make sure "map.input.file" in MapTask.
    */
-  public static class HiveInputSplit extends FileSplit implements InputSplit {
+  public static class HiveInputSplit extends FileSplit implements InputSplit, Configurable {
 
     InputSplit inputSplit;
     String     inputFormatClassName;
@@ -121,7 +125,8 @@ public class HiveInputFormat<K extends WritableComparable,
     public void readFields(DataInput in) throws IOException {
       String inputSplitClassName = in.readUTF();
       try {
-        inputSplit = (InputSplit) ReflectionUtils.newInstance(Class.forName(inputSplitClassName), job);
+        inputSplit = (InputSplit) ReflectionUtils.newInstance(
+            conf.getClassByName(inputSplitClassName), conf);
       } catch (Exception e) {
         throw new IOException("Cannot create an instance of InputSplit class = "
             + inputSplitClassName + ":" + e.getMessage());
@@ -135,19 +140,31 @@ public class HiveInputFormat<K extends WritableComparable,
       inputSplit.write(out);
       out.writeUTF(inputFormatClassName);
     }
+
+    Configuration conf;
+    
+    @Override
+    public Configuration getConf() {
+      return conf;
+    }
+
+    @Override
+    public void setConf(Configuration conf) {
+      this.conf = conf;
+    }
   }
 
-  static JobConf job;
+  JobConf job;
 
   public void configure(JobConf job) {
-    HiveInputFormat.job = job;
+    this.job = job;
   }
 
   /**
    * A cache of InputFormat instances.
    */
   private static Map<Class,InputFormat<WritableComparable, Writable>> inputFormats;
-  static InputFormat<WritableComparable, Writable> getInputFormatFromCache(Class inputFormatClass) throws IOException {
+  static InputFormat<WritableComparable, Writable> getInputFormatFromCache(Class inputFormatClass, JobConf job) throws IOException {
     if (inputFormats == null) {
       inputFormats = new HashMap<Class, InputFormat<WritableComparable, Writable>>();
     }
@@ -174,12 +191,12 @@ public class HiveInputFormat<K extends WritableComparable,
     Class inputFormatClass = null;
     try {
       inputFormatClassName = hsplit.inputFormatClassName();
-      inputFormatClass = Class.forName(inputFormatClassName);
+      inputFormatClass = job.getClassByName(inputFormatClassName);
     } catch (Exception e) {
       throw new IOException("cannot find class " + inputFormatClassName);
     }
 
-    InputFormat inputFormat = getInputFormatFromCache(inputFormatClass);
+    InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, job);
 
     return new HiveRecordReader(inputFormat.getRecordReader(inputSplit, job, reporter));
   }
@@ -208,7 +225,7 @@ public class HiveInputFormat<K extends WritableComparable,
       tableDesc table = getTableDescFromPath(dir);
       // create a new InputFormat instance if this is the first time to see this class
       Class inputFormatClass = table.getInputFileFormatClass();
-      InputFormat inputFormat = getInputFormatFromCache(inputFormatClass);
+      InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, job);
 
       FileInputFormat.setInputPaths(newjob, dir);
       newjob.setInputFormat(inputFormat.getClass());
@@ -234,7 +251,7 @@ public class HiveInputFormat<K extends WritableComparable,
     for (Path dir: dirs) {
       tableDesc table = getTableDescFromPath(dir);
       // create a new InputFormat instance if this is the first time to see this class
-      InputFormat inputFormat = getInputFormatFromCache(table.getInputFileFormatClass());
+      InputFormat inputFormat = getInputFormatFromCache(table.getInputFileFormatClass(), job);
 
       FileInputFormat.setInputPaths(newjob, dir);
       newjob.setInputFormat(inputFormat.getClass());

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.util.*;
 import java.io.*;
+import java.net.URLClassLoader;
 
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -153,7 +154,7 @@ public class MapOperator extends Operator <mapredWork> implements Serializable {
       if ((className == "") || (className == null)) {
         throw new HiveException("SerDe class or the SerDe class name is not set for table: " + td.getProperties().getProperty("name"));
       }
-      sdclass = MapOperator.class.getClassLoader().loadClass(className);
+      sdclass = hconf.getClassByName(className);
     }
     
     deserializer = (Deserializer) sdclass.newInstance();
