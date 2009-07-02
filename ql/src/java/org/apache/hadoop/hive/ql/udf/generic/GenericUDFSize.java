@@ -39,7 +39,7 @@ public class GenericUDFSize extends GenericUDF {
       throws UDFArgumentException {
     if (arguments.length != 1) {
       throw new UDFArgumentLengthException(
-          "The functin SIZE only accepts 1 argument.");
+          "The function SIZE only accepts 1 argument.");
     }
     Category category = arguments[0].getCategory();
     String typeName = arguments[0].getTypeName();

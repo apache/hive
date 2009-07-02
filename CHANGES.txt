@@ -100,6 +100,8 @@ Trunk - Unreleased
 
     HIVE-445. Upgrade JPOX to datanuclues plugins. (Prasad Chakka via zshao)
 
+    HIVE-593. UDF and GenericUDF clean-up. (Zheng Shao via pchakka)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).
@@ -234,8 +236,8 @@ Trunk - Unreleased
     (Yongqiang He via zshao)
 
     HIVE-520. Fix TestTCTLSeparatedProtocol. (Johan Oskarsson via zshao)
-    
-    HIVE-525. Fix Eclipse classpath by adding Hadoop test jar. 
+
+    HIVE-525. Fix Eclipse classpath by adding Hadoop test jar.
     (Prasad Chakka via johan)
 
     HIVE-495. Fix join of a table of ThriftSerDe with complex columns
@@ -244,7 +246,7 @@ Trunk - Unreleased
     HIVE-532. Predicates not pushed above limit
     (Prasad Chakka via namit)
 
-    HIVE-534. Fix in the cli so that it does not ignore the first 
+    HIVE-534. Fix in the cli so that it does not ignore the first
     newline character. (Raghotham Murthy via athusoo)
 
     HIVE-443. Remove deprecated functions from metastore.

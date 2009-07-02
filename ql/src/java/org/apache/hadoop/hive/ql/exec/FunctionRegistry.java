@@ -164,6 +164,7 @@ public class FunctionRegistry {
     registerGenericUDF("when", GenericUDFWhen.class);
     registerGenericUDF("hash", GenericUDFHash.class);
     registerGenericUDF("coalesce", GenericUDFCoalesce.class);
+    registerGenericUDF("index", GenericUDFIndex.class);
   }
 
   public static FunctionInfo getInfo(Class<?> fClass) {
@@ -520,5 +521,13 @@ public class FunctionRegistry {
       }
     }
     return udfMethod;
+  }
+  
+  /**
+   * A shortcut to get the index GenericUDFClass.
+   * This is used for getting elements out of array and getting values out of map.
+   */
+  public static Class<? extends GenericUDF> getGenericUDFClassForIndex() {
+    return FunctionRegistry.getFunctionInfo("index").getGenericUDFClass();
   }
 }

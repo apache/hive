@@ -37,7 +37,6 @@ import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeIndexDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeNullDesc;
 import org.apache.hadoop.hive.ql.udf.UDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.UDFOPNot;
@@ -322,9 +321,6 @@ public class PartitionPruner {
       return d.getValue() == null;
     } else if (desc instanceof exprNodeNullDesc) {
       return false;
-    } else if (desc instanceof exprNodeIndexDesc) {
-      exprNodeIndexDesc d = (exprNodeIndexDesc)desc;
-      return mightBeUnknown(d.getDesc()) || mightBeUnknown(d.getIndex());
     } else if (desc instanceof exprNodeFieldDesc) {
       exprNodeFieldDesc d = (exprNodeFieldDesc)desc;
       return mightBeUnknown(d.getDesc());

@@ -25,7 +25,6 @@ import org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeNullDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeIndexDesc;
 
 public class ExprNodeEvaluatorFactory {
   
@@ -51,10 +50,6 @@ public class ExprNodeEvaluatorFactory {
     // Field node, e.g. get a.myfield1 from a
     if (desc instanceof exprNodeFieldDesc) {
       return new ExprNodeFieldEvaluator((exprNodeFieldDesc)desc);
-    }
-    // Index node, e.g. get a[index] from a
-    if (desc instanceof exprNodeIndexDesc) {
-      return new ExprNodeIndexEvaluator((exprNodeIndexDesc)desc);
     }
     // Null node, a constant node with value NULL and no type information 
     if (desc instanceof exprNodeNullDesc) {

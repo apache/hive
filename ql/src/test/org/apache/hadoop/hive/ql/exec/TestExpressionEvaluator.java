@@ -33,8 +33,9 @@ import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeIndexDesc;
+import org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -113,13 +114,24 @@ public class TestExpressionEvaluator extends TestCase {
     }
   }
 
+  private static exprNodeDesc getListIndexNode(exprNodeDesc node, int index) {
+    return getListIndexNode(node, new exprNodeConstantDesc(index));
+  }
+  
+  private static exprNodeDesc getListIndexNode(exprNodeDesc node, exprNodeDesc index) {
+    return new exprNodeGenericFuncDesc(
+          ((ListTypeInfo)node.getTypeInfo()).getListElementTypeInfo(),
+          FunctionRegistry.getGenericUDFClassForIndex(),
+          Arrays.asList(new exprNodeDesc[]{node, index}));
+  }
+  
   public void testExprNodeFuncEvaluator() throws Throwable {
     try {
       // get a evaluator for a string concatenation expression
       exprNodeDesc col1desc = new exprNodeColumnDesc(col1Type, "col1");
       exprNodeDesc coladesc = new exprNodeColumnDesc(colaType, "cola");
-      exprNodeDesc col11desc = new exprNodeIndexDesc(col1desc, new exprNodeConstantDesc(new Integer(1)));
-      exprNodeDesc cola0desc = new exprNodeIndexDesc(coladesc, new exprNodeConstantDesc(new Integer(0)));
+      exprNodeDesc col11desc = getListIndexNode(col1desc, 1);
+      exprNodeDesc cola0desc = getListIndexNode(coladesc, 0);
       exprNodeDesc func1 = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("concat", col11desc, cola0desc);
       ExprNodeEvaluator eval = ExprNodeEvaluatorFactory.get(func1);
 
@@ -139,7 +151,7 @@ public class TestExpressionEvaluator extends TestCase {
     try {
       // get a evaluator for a string concatenation expression
       exprNodeDesc col1desc = new exprNodeColumnDesc(col1Type, "col1");
-      exprNodeDesc col11desc = new exprNodeIndexDesc(col1desc, new exprNodeConstantDesc(new Integer(1)));
+      exprNodeDesc col11desc = getListIndexNode(col1desc, 1);
       exprNodeDesc func1 = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc(Constants.DOUBLE_TYPE_NAME, col11desc);
       ExprNodeEvaluator eval = ExprNodeEvaluatorFactory.get(func1);
 
@@ -241,8 +253,8 @@ public class TestExpressionEvaluator extends TestCase {
           basetimes * 10,
           ExprNodeEvaluatorFactory.get(
               TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("concat",
-                  new exprNodeIndexDesc(new exprNodeColumnDesc(col1Type, "col1"), constant1), 
-                  new exprNodeIndexDesc(new exprNodeColumnDesc(colaType, "cola"), constant1))),
+                  getListIndexNode(new exprNodeColumnDesc(col1Type, "col1"), constant1), 
+                  getListIndexNode(new exprNodeColumnDesc(colaType, "cola"), constant1))),
           r,
           "1b");
       measureSpeed("concat(concat(col1[1], cola[1]), col1[2])", 
@@ -250,9 +262,9 @@ public class TestExpressionEvaluator extends TestCase {
           ExprNodeEvaluatorFactory.get(
               TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("concat", 
                   TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("concat", 
-                      new exprNodeIndexDesc(new exprNodeColumnDesc(col1Type, "col1"), constant1), 
-                      new exprNodeIndexDesc(new exprNodeColumnDesc(colaType, "cola"), constant1)),
-                  new exprNodeIndexDesc(new exprNodeColumnDesc(col1Type, "col1"), constant2))),
+                      getListIndexNode(new exprNodeColumnDesc(col1Type, "col1"), constant1), 
+                      getListIndexNode(new exprNodeColumnDesc(colaType, "cola"), constant1)),
+                  getListIndexNode(new exprNodeColumnDesc(col1Type, "col1"), constant2))),
           r,
           "1b2");
       measureSpeed("concat(concat(concat(col1[1], cola[1]), col1[2]), cola[2])", 
@@ -261,10 +273,10 @@ public class TestExpressionEvaluator extends TestCase {
               TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("concat", 
                   TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("concat", 
                       TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("concat", 
-                          new exprNodeIndexDesc(new exprNodeColumnDesc(col1Type, "col1"), constant1), 
-                          new exprNodeIndexDesc(new exprNodeColumnDesc(colaType, "cola"), constant1)),
-                      new exprNodeIndexDesc(new exprNodeColumnDesc(col1Type, "col1"), constant2)),
-                  new exprNodeIndexDesc(new exprNodeColumnDesc(colaType, "cola"), constant2))),
+                          getListIndexNode(new exprNodeColumnDesc(col1Type, "col1"), constant1), 
+                          getListIndexNode(new exprNodeColumnDesc(colaType, "cola"), constant1)),
+                      getListIndexNode(new exprNodeColumnDesc(col1Type, "col1"), constant2)),
+                  getListIndexNode(new exprNodeColumnDesc(colaType, "cola"), constant2))),
           r,
           "1b2c");
       

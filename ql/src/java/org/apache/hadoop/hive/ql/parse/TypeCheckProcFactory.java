@@ -43,7 +43,6 @@ import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeIndexDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeNullDesc;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
@@ -526,7 +525,9 @@ public class TypeCheckProcFactory {
         
           // Calculate TypeInfo
           TypeInfo t = ((ListTypeInfo)myt).getListElementTypeInfo();
-          desc = new exprNodeIndexDesc(t, children.get(0), children.get(1));
+          desc = new exprNodeGenericFuncDesc(t, 
+              FunctionRegistry.getGenericUDFClassForIndex(),
+              children);
         }
         else if (myt.getCategory() == Category.MAP) {
           // Only allow only constant indexes for now
@@ -539,8 +540,9 @@ public class TypeCheckProcFactory {
           }
           // Calculate TypeInfo
           TypeInfo t = ((MapTypeInfo)myt).getMapValueTypeInfo();
-          
-          desc = new exprNodeIndexDesc(t, children.get(0), children.get(1));
+          desc = new exprNodeGenericFuncDesc(t, 
+              FunctionRegistry.getGenericUDFClassForIndex(),
+              children);
         }
         else {
           throw new SemanticException(ErrorMsg.NON_COLLECTION_TYPE.getMsg(expr, 

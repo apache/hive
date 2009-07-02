@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeIndexDesc;
 import org.apache.hadoop.hive.ql.udf.UDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 
@@ -230,50 +229,6 @@ public class ExprWalkerProcFactory {
 
   }
   
-  public static class IndexExprProcessor implements NodeProcessor {
-
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
-        Object... nodeOutputs) throws SemanticException {
-      ExprWalkerInfo ctx = (ExprWalkerInfo) procCtx;
-      exprNodeIndexDesc expr = (exprNodeIndexDesc) nd;
-
-      // process the base array expr(or map)
-      exprNodeDesc desc = expr.getDesc();
-      exprNodeDesc index = expr.getIndex();
-      
-      exprNodeDesc newDesc = ctx.getConvertedNode(desc);
-      if (newDesc != null) {
-        expr.setDesc(newDesc);
-        desc = newDesc;
-      }
-      
-      exprNodeDesc newIndex = ctx.getConvertedNode(desc);
-      if (newIndex != null) {
-        expr.setIndex(newIndex);
-        index = newIndex;
-      }
-      if (!ctx.isCandidate(desc) || !ctx.isCandidate(index)) {
-        ctx.setIsCandidate(expr, false);
-        return false;
-      }
-      
-      String descAlias = ctx.getAlias(desc);
-      String indexAlias = ctx.getAlias(index);
-      if ((descAlias != null && indexAlias != null)
-          && (!descAlias.equals(indexAlias))) {
-        // aliases don't match
-        ctx.setIsCandidate(expr, false);
-        return false;
-      }
-      String alias = descAlias != null ? descAlias : indexAlias;
-      ctx.addAlias(expr, alias);
-      ctx.setIsCandidate(expr, true);
-      return true;
-    }
-
-  }
-
   /**
    * For constants and null expressions
    */
@@ -298,10 +253,6 @@ public class ExprWalkerProcFactory {
 
   public static NodeProcessor getGenericFuncProcessor() {
     return new GenericFuncExprProcessor();
-  }
-
-  public static NodeProcessor getIndexProcessor() {
-    return new IndexExprProcessor();
   }
 
   public static NodeProcessor getColumnProcessor() {
@@ -340,8 +291,7 @@ public class ExprWalkerProcFactory {
     exprRules.put(new RuleRegExp("R1", exprNodeColumnDesc.class.getName() + "%"), getColumnProcessor());
     exprRules.put(new RuleRegExp("R2", exprNodeFieldDesc.class.getName() + "%"), getFieldProcessor());
     exprRules.put(new RuleRegExp("R3", exprNodeFuncDesc.class.getName() + "%"), getFuncProcessor());
-    exprRules.put(new RuleRegExp("R4", exprNodeIndexDesc.class.getName() + "%"), getIndexProcessor());
-    exprRules.put(new RuleRegExp("R5", exprNodeGenericFuncDesc.class.getName() + "%"), getGenericFuncProcessor());
+    exprRules.put(new RuleRegExp("R4", exprNodeGenericFuncDesc.class.getName() + "%"), getGenericFuncProcessor());
   
     // The dispatcher fires the processor corresponding to the closest matching rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(getDefaultExprProcessor(), exprRules, exprContext);
