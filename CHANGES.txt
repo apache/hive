@@ -56,6 +56,9 @@ Trunk - Unreleased
     HIVE-567. jdbc: integrate hive with pentaho report designer
     (Raghotham Murthy via namit)
 
+    HIVE-136. escaping in lazy serde
+    (Zheng Shao via namit)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 

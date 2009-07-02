@@ -78,7 +78,7 @@ public class ExprNodeIndexEvaluator extends ExprNodeEvaluator {
     } else if (mainInspector.getCategory() == Category.MAP) {
       MapObjectInspector moi = (MapObjectInspector)mainInspector;
       Object indexObject;
-      if (((PrimitiveObjectInspector)moi.getMapKeyObjectInspector()).isWritable()) {
+      if (((PrimitiveObjectInspector)moi.getMapKeyObjectInspector()).preferWritable()) {
         indexObject = indexInspector.getPrimitiveWritableObject(index);
       } else {
         indexObject = indexInspector.getPrimitiveJavaObject(index);

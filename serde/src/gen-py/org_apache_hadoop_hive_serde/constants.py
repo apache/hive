@@ -31,6 +31,8 @@ MAPKEY_DELIM = 'mapkey.delim'
 
 QUOTE_CHAR = 'quote.delim'
 
+ESCAPE_CHAR = 'escape.delim'
+
 VOID_TYPE_NAME = 'void'
 
 BOOLEAN_TYPE_NAME = 'boolean'

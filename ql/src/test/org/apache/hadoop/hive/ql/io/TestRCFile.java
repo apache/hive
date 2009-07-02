@@ -38,8 +38,10 @@ import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -176,10 +178,12 @@ public class TestRCFile extends TestCase {
       assertEquals(8, fieldRefs.size());
       for (int j = 0; j < fieldRefs.size(); j++) {
         Object fieldData = oi.getStructFieldData(row, fieldRefs.get(j));
+        Object standardWritableData = ObjectInspectorUtils.copyToStandardObject(fieldData, 
+            fieldRefs.get(j).getFieldObjectInspector(), ObjectInspectorCopyOption.WRITABLE);
         if (i == 0)
-          assertEquals("Field " + i, fieldData, expectedRecord_1[j]);
+          assertEquals("Field " + i, standardWritableData, expectedRecord_1[j]);
         else
-          assertEquals("Field " + i, fieldData, expectedRecord_2[j]);
+          assertEquals("Field " + i, standardWritableData, expectedRecord_2[j]);
       }
     }
 
@@ -300,7 +304,9 @@ public class TestRCFile extends TestCase {
       assertEquals(8, fieldRefs.size());
       for (int i = 0; i < fieldRefs.size(); i++) {
         Object fieldData = oi.getStructFieldData(row, fieldRefs.get(i));
-        assertEquals("Field " + i, fieldData, expectedFieldsData[i]);
+        Object standardWritableData = ObjectInspectorUtils.copyToStandardObject(fieldData, 
+            fieldRefs.get(i).getFieldObjectInspector(), ObjectInspectorCopyOption.WRITABLE);
+        assertEquals("Field " + i, standardWritableData, expectedFieldsData[i]);
       }
       // Serialize
       assertEquals(BytesRefArrayWritable.class, serDe.getSerializedClass());
@@ -336,7 +342,9 @@ public class TestRCFile extends TestCase {
 
       for (int i = 0; i < fieldRefs.size(); i++) {
         Object fieldData = oi.getStructFieldData(row, fieldRefs.get(i));
-        assertEquals("Field " + i, fieldData, expectedPartitalFieldsData[i]);
+        Object standardWritableData = ObjectInspectorUtils.copyToStandardObject(fieldData, 
+            fieldRefs.get(i).getFieldObjectInspector(), ObjectInspectorCopyOption.WRITABLE);
+        assertEquals("Field " + i, standardWritableData, expectedPartitalFieldsData[i]);
       }
 
       assertEquals(BytesRefArrayWritable.class, serDe.getSerializedClass());

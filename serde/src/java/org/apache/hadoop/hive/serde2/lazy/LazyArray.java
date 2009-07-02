@@ -21,17 +21,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyListObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.io.Text;
 
 /**
  * LazyArray stores an array of Lazy Objects.
  * 
  * LazyArray does not deal with the case of a NULL array. That is handled
- * by LazyArrayObjectInspector.
+ * by the parent LazyObject.
  */
-public class LazyArray extends LazyNonPrimitive {
+public class LazyArray extends LazyNonPrimitive<LazyListObjectInspector> {
 
   /**
    * Whether the data is already parsed or not.
@@ -65,11 +65,12 @@ public class LazyArray extends LazyNonPrimitive {
   LazyObject[] arrayElements;
 
   /**
-   * Construct a LazyArray object with the TypeInfo.
-   * @param typeInfo  the TypeInfo representing the type of this LazyArray.
+   * Construct a LazyArray object with the ObjectInspector.
+   * @param oi  the oi representing the type of this LazyArray as well as meta 
+   *            information like separator etc.
    */
-  protected LazyArray(TypeInfo typeInfo) {
-    super(typeInfo);
+  protected LazyArray(LazyListObjectInspector oi) {
+    super(oi);
   }
 
   /**
@@ -86,7 +87,7 @@ public class LazyArray extends LazyNonPrimitive {
    * Enlarge the size of arrays storing information for the elements inside 
    * the array.
    */
-  protected void enlargeArrays() {
+  private void enlargeArrays() {
     if (startPosition == null) {
       int initialSize = 2;
       startPosition = new int[initialSize]; 
@@ -102,8 +103,12 @@ public class LazyArray extends LazyNonPrimitive {
   /**
    * Parse the bytes and fill arrayLength and startPosition.
    */
-  private void parse(byte separator, Text nullSequence) {
+  private void parse() {
     parsed = true;
+    
+    byte separator = oi.getSeparator();
+    boolean isEscaped = oi.isEscaped();
+    byte escapeChar = oi.getEscapeChar();
     
     // empty array?
     if (length == 0) {
@@ -131,7 +136,14 @@ public class LazyArray extends LazyNonPrimitive {
         arrayLength++;
         elementByteBegin = elementByteEnd + 1;
       }
-      elementByteEnd++;
+      if (isEscaped && bytes[elementByteEnd] == escapeChar
+          && elementByteEnd+1 < arrayByteEnd) {
+        // ignore the char after escape_char
+        elementByteEnd += 2;
+      } else {
+        elementByteEnd ++;
+      }
+      
     }
     // Store arrayByteEnd+1 in startPosition[arrayLength]
     // so that we can use the same formula to compute the length of
@@ -148,21 +160,22 @@ public class LazyArray extends LazyNonPrimitive {
    * Returns the actual primitive object at the index position
    * inside the array represented by this LazyObject.
    */
-  public Object getListElementObject(int index, byte separator, 
-      Text nullSequence) {
+  public Object getListElementObject(int index) {
     if (!parsed) {
-      parse(separator, nullSequence);
+      parse();
     }
     if (index < 0 || index >= arrayLength) {
       return null;
     }
-    return uncheckedGetElement(index, nullSequence);
+    return uncheckedGetElement(index);
   }
   
   /**
-   * Get the element without checking parsed or out-of-bound index.
+   * Get the element without checking out-of-bound index.
    */
-  private Object uncheckedGetElement(int index, Text nullSequence) {
+  private Object uncheckedGetElement(int index) {
+    Text nullSequence = oi.getNullSequence();
+
     int elementLength = startPosition[index+1] - startPosition[index] - 1;
     if (elementLength == nullSequence.getLength() 
         && 0 == LazyUtils.compare(bytes.getData(), startPosition[index], 
@@ -174,7 +187,7 @@ public class LazyArray extends LazyNonPrimitive {
         elementInited[index] = true;
         if (arrayElements[index] == null) {
           arrayElements[index] = LazyFactory.createLazyObject(
-            ((ListTypeInfo)typeInfo).getListElementTypeInfo());
+            ((ListObjectInspector)oi).getListElementObjectInspector());
         }
         arrayElements[index].init(bytes, startPosition[index], 
             elementLength);
@@ -185,9 +198,9 @@ public class LazyArray extends LazyNonPrimitive {
   
   /** Returns -1 for null array.
    */
-  public int getListLength(byte separator, Text nullSequence) {
+  public int getListLength() {
     if (!parsed) {
-      parse(separator, nullSequence);
+      parse();
     }
     return arrayLength;
   }
@@ -200,9 +213,9 @@ public class LazyArray extends LazyNonPrimitive {
   /** Returns the List of actual primitive objects.
    *  Returns null for null array.
    */
-  public List<Object> getList(byte separator, Text nullSequence) {
+  public List<Object> getList() {
     if (!parsed) {
-      parse(separator, nullSequence);
+      parse();
     }
     if (arrayLength == -1) {
       return null;
@@ -213,7 +226,7 @@ public class LazyArray extends LazyNonPrimitive {
       cachedList.clear();
     }
     for (int index=0; index<arrayLength; index++) {
-      cachedList.add(uncheckedGetElement(index, nullSequence));
+      cachedList.add(uncheckedGetElement(index));
     }
     return cachedList;
   }

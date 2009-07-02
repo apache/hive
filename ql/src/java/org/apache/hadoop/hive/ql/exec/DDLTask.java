@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -673,10 +674,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (crtTbl.getSerName() != null) {
       tbl.setSerializationLib(crtTbl.getSerName());
       if (crtTbl.getMapProp() != null) {
-        Iterator<Map.Entry<String, String>> iter = crtTbl.getMapProp()
+        Iterator<Entry<String, String>> iter = crtTbl.getMapProp()
             .entrySet().iterator();
         while (iter.hasNext()) {
-          Map.Entry<String, String> m = (Map.Entry<String, String>) iter.next();
+          Entry<String, String> m = (Entry<String, String>) iter.next();
           tbl.setSerdeParam(m.getKey(), m.getValue());
         }
       }
@@ -686,11 +687,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         tbl.setSerdeParam(Constants.SERIALIZATION_FORMAT, crtTbl
             .getFieldDelim());
       }
+      if (crtTbl.getFieldEscape() != null) {
+        tbl.setSerdeParam(Constants.ESCAPE_CHAR, crtTbl.getFieldEscape());
+      }
 
       if (crtTbl.getCollItemDelim() != null)
-        tbl
-            .setSerdeParam(Constants.COLLECTION_DELIM, crtTbl
-                .getCollItemDelim());
+        tbl.setSerdeParam(Constants.COLLECTION_DELIM, 
+            crtTbl.getCollItemDelim());
       if (crtTbl.getMapKeyDelim() != null)
         tbl.setSerdeParam(Constants.MAPKEY_DELIM, crtTbl.getMapKeyDelim());
       if (crtTbl.getLineDelim() != null)

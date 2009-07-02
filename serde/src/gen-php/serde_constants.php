@@ -32,6 +32,8 @@ $GLOBALS['serde_CONSTANTS']['MAPKEY_DELIM'] = 'mapkey.delim';
 
 $GLOBALS['serde_CONSTANTS']['QUOTE_CHAR'] = 'quote.delim';
 
+$GLOBALS['serde_CONSTANTS']['ESCAPE_CHAR'] = 'escape.delim';
+
 $GLOBALS['serde_CONSTANTS']['VOID_TYPE_NAME'] = 'void';
 
 $GLOBALS['serde_CONSTANTS']['BOOLEAN_TYPE_NAME'] = 'boolean';

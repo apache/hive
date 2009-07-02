@@ -17,25 +17,28 @@
  */
 package org.apache.hadoop.hive.serde2.lazy;
 
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 /**
  * LazyPrimitive stores a primitive Object in a LazyObject.
  */
-public abstract class LazyNonPrimitive implements LazyObject {
+public abstract class LazyNonPrimitive<OI extends ObjectInspector> extends LazyObject<OI> {
 
   protected ByteArrayRef bytes;
   protected int start;
   protected int length;
-  
+
   /**
-   * The TypeInfo for this LazyNonPrimitive. 
+   * Create a LazyNonPrimitive object with the specified ObjectInspector.
+   * @param oi  The ObjectInspector would have to have a hierarchy of 
+   *            LazyObjectInspectors with the leaf nodes being 
+   *            WritableObjectInspectors.  It's used both for accessing the
+   *            type hierarchy of the complex object, as well as getting
+   *            meta information (separator, nullSequence, etc) when parsing
+   *            the lazy object.
    */
-  TypeInfo typeInfo;
-  
-  protected LazyNonPrimitive(TypeInfo typeInfo) {
-    this.typeInfo = typeInfo;
+  protected LazyNonPrimitive(OI oi) {
+    super(oi);
     bytes = null;
     start = 0;
     length = 0;

@@ -23,8 +23,9 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.Text;
 
 
@@ -33,9 +34,9 @@ import org.apache.hadoop.io.Text;
  * The field of a struct can be primitive or non-primitive.
  *
  * LazyStruct does not deal with the case of a NULL struct. That is handled
- * by LazySimpleStructObjectInspector.
+ * by the parent LazyObject.
  */
-public class LazyStruct extends LazyNonPrimitive {
+public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector> {
 
   private static Log LOG = LogFactory.getLog(LazyStruct.class.getName());
 
@@ -63,11 +64,10 @@ public class LazyStruct extends LazyNonPrimitive {
   boolean[] fieldInited;
   
   /**
-   * Construct a LazyStruct object with the TypeInfo.
-   * @param typeInfo  the TypeInfo representing the type of this LazyStruct.
+   * Construct a LazyStruct object with the ObjectInspector.
    */
-  public LazyStruct(TypeInfo typeInfo) {
-    super(typeInfo);
+  public LazyStruct(LazySimpleStructObjectInspector oi) {
+    super(oi);
   }
   
   /**
@@ -83,20 +83,19 @@ public class LazyStruct extends LazyNonPrimitive {
   boolean extraFieldWarned = false;
   /**
    * Parse the byte[] and fill each field.
-   * @param separator  The separator for delimiting the fields in the byte[]
-   * @param nullSequence  The sequence for the NULL value
-   * @param lastColumnTakesRest  Whether the additional fields should be all 
-   *                             put into the last column in case the data 
-   *                             contains more columns than the schema.  
    */
-  private void parse(byte separator, Text nullSequence, 
-      boolean lastColumnTakesRest) {
+  private void parse() {
+    
+    byte separator = oi.getSeparator();
+    boolean lastColumnTakesRest = oi.getLastColumnTakesRest();
+    boolean isEscaped = oi.isEscaped();
+    byte escapeChar = oi.getEscapeChar();
     
     if (fields == null) {
-      List<TypeInfo> fieldTypeInfos = ((StructTypeInfo)typeInfo).getAllStructFieldTypeInfos();
-      fields = new LazyObject[fieldTypeInfos.size()];
+      List<? extends StructField> fieldRefs = ((StructObjectInspector)oi).getAllStructFieldRefs();
+      fields = new LazyObject[fieldRefs.size()];
       for (int i = 0 ; i < fields.length; i++) {
-        fields[i] = LazyFactory.createLazyObject(fieldTypeInfos.get(i));
+        fields[i] = LazyFactory.createLazyObject(fieldRefs.get(i).getFieldObjectInspector());
       }
       fieldInited = new boolean[fields.length];      
       // Extra element to make sure we have the same formula to compute the 
@@ -133,7 +132,13 @@ public class LazyStruct extends LazyNonPrimitive {
         }
         fieldByteBegin = fieldByteEnd + 1;
       }
-      fieldByteEnd++;
+      if (isEscaped && bytes[fieldByteEnd] == escapeChar
+          && fieldByteEnd+1 < structByteEnd) {
+        // ignore the char after escape_char
+        fieldByteEnd += 2;
+      } else {
+        fieldByteEnd++;
+      }
     }
     
     // Extra bytes at the end?
@@ -151,7 +156,7 @@ public class LazyStruct extends LazyNonPrimitive {
     }
     
     Arrays.fill(fieldInited, false);
-    parsed = true;
+    parsed = true;    
   }
   
   /**
@@ -163,34 +168,25 @@ public class LazyStruct extends LazyNonPrimitive {
    * directly use the Object instead of going through 
    * Object PrimitiveObjectInspector.get(Object).  
    * 
-   * NOTE: separator and nullSequence has to be the same each time 
-   * this method is called.  These two parameters are used only once to parse
-   * each record.
-   * 
    * @param fieldID  The field ID
-   * @param separator  The separator for delimiting the fields in the byte[]
-   * @param nullSequence  The sequence for null value
-   * @param lastColumnTakesRest  Whether the additional fields should be all 
-   *                             put into the last column in case the data 
-   *                             contains more columns than the schema.  
    * @return         The field as a LazyObject
    */
-  public Object getField(int fieldID, byte separator, Text nullSequence, 
-      boolean lastColumnTakesRest) {
+  public Object getField(int fieldID) {
     if (!parsed) {
-      parse(separator, nullSequence, lastColumnTakesRest);
+      parse();
     }
-    return uncheckedGetField(fieldID, nullSequence);
+    return uncheckedGetField(fieldID);
   }
-
+  
   /**
    * Get the field out of the row without checking parsed.
    * This is called by both getField and getFieldsAsList.
    * @param fieldID  The id of the field starting from 0.
    * @param nullSequence  The sequence representing NULL value.
-   * @return  The value of the field 
+   * @return  The value of the field
    */
-  private Object uncheckedGetField(int fieldID, Text nullSequence) {
+  private Object uncheckedGetField(int fieldID) {
+    Text nullSequence = oi.getNullSequence();
     // Test the length first so in most cases we avoid doing a byte[] 
     // comparison.
     int fieldByteBegin = startPosition[fieldID];
@@ -211,17 +207,11 @@ public class LazyStruct extends LazyNonPrimitive {
   ArrayList<Object> cachedList;
   /**
    * Get the values of the fields as an ArrayList.
-   * @param separator  The separator for delimiting the fields in the byte[]
-   * @param nullSequence         The sequence for the NULL value
-   * @param lastColumnTakesRest  Whether the additional fields should be all 
-   *                             put into the last column in case the data 
-   *                             contains more columns than the schema.  
    * @return The values of the fields as an ArrayList.
    */
-  public ArrayList<Object> getFieldsAsList(byte separator, Text nullSequence, 
-      boolean lastColumnTakesRest) {
+  public ArrayList<Object> getFieldsAsList() {
     if (!parsed) {
-      parse(separator, nullSequence, lastColumnTakesRest);
+      parse();
     }
     if (cachedList == null) {
       cachedList = new ArrayList<Object>();
@@ -229,7 +219,7 @@ public class LazyStruct extends LazyNonPrimitive {
       cachedList.clear();
     }
     for (int i=0; i<fields.length; i++) {
-      cachedList.add(uncheckedGetField(i, nullSequence));
+      cachedList.add(uncheckedGetField(i));
     }
     return cachedList;
   }

@@ -15,42 +15,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.serde2.lazy;
+package org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive;
 
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.lazy.LazyPrimitive;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.AbstractPrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
 import org.apache.hadoop.io.Writable;
 
 /**
- * LazyPrimitive stores a primitive Object in a LazyObject.
+ * An AbstractPrimitiveLazyObjectInspector for a LazyPrimitive object. 
  */
-public abstract class LazyPrimitive<OI extends ObjectInspector, 
-    T extends Writable> extends LazyObject<OI> {
+public abstract class AbstractPrimitiveLazyObjectInspector<T extends Writable> extends AbstractPrimitiveObjectInspector {
 
-  LazyPrimitive(OI oi) {
-    super(oi);
-  }
-
-  LazyPrimitive(LazyPrimitive<OI, T> copy) {
-    super(copy.oi);
-    isNull = copy.isNull;
-  }
-
-  T data;
-  boolean isNull = false;
-
-  /**
-   * Returns the primitive object represented by this LazyObject.
-   * This is useful because it can make sure we have "null" for null objects.
-   */
-  public Object getObject() {
-    return isNull ? null : this;
-  }
-
-  public T getWritableObject() {
-    return isNull ? null : data;
+  protected AbstractPrimitiveLazyObjectInspector(PrimitiveTypeEntry typeEntry) {
+    super(typeEntry); 
   }
   
-  public String toString() {
-    return isNull ? null : data.toString();
+  @Override
+  public T getPrimitiveWritableObject(Object o) {
+    return o == null ? null : ((LazyPrimitive<?,T>)o).getWritableObject();
   }
+
+  @Override
+  public boolean preferWritable() {
+    return true;
+  }
+  
 }

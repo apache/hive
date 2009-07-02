@@ -382,7 +382,7 @@ public class PrimitiveObjectInspectorUtils {
       }
       case STRING: {
         StringObjectInspector soi = (StringObjectInspector)oi;
-        if (soi.isWritable()) {
+        if (soi.preferWritable()) {
           Text t = soi.getPrimitiveWritableObject(o);
           result = LazyInteger.parseInt(t.getBytes(), 0, t.getLength());
         } else {

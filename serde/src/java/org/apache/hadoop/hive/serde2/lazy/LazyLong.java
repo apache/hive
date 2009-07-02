@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.serde2.lazy;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyLongObjectInspector;
 import org.apache.hadoop.io.LongWritable;
 
 /**
@@ -35,13 +36,19 @@ import org.apache.hadoop.io.LongWritable;
  * </p>
  * 
  */
-public class LazyLong extends LazyPrimitive<LongWritable> {
+public class LazyLong extends LazyPrimitive<LazyLongObjectInspector, LongWritable> {
 
 
-  public LazyLong() {
+  public LazyLong(LazyLongObjectInspector oi) {
+    super(oi);
     data = new LongWritable();
   }
 
+  public LazyLong(LazyLong copy) {
+    super(copy);
+    data = new LongWritable(copy.data.get());
+  }
+   
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
     try {

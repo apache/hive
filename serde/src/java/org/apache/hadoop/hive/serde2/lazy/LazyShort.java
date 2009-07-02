@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.serde2.lazy;
 
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyShortObjectInspector;
 
 /**
  * LazyObject for storing a value of Short.
@@ -32,10 +33,16 @@ import org.apache.hadoop.hive.serde2.io.ShortWritable;
  * </p>
  * 
  */
-public class LazyShort extends LazyPrimitive<ShortWritable> {
+public class LazyShort extends LazyPrimitive<LazyShortObjectInspector, ShortWritable> {
 
-  public LazyShort() {
+  public LazyShort(LazyShortObjectInspector oi) {
+    super(oi);
     data = new ShortWritable();
+  }
+  
+  public LazyShort(LazyShort copy) {
+    super(copy);
+    data = new ShortWritable(copy.data.get());
   }
   
   @Override

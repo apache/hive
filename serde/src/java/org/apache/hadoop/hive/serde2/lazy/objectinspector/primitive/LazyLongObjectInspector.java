@@ -15,31 +15,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.serde2.objectinspector.primitive;
+package org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive;
 
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
+import org.apache.hadoop.hive.serde2.lazy.LazyLong;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.io.LongWritable;
+
 
 /**
- * An AbstractJavaPrimitiveObjectInspector for a Java object. 
+ * A WritableLongObjectInspector inspects a LongWritable Object.
  */
-public abstract class AbstractPrimitiveJavaObjectInspector extends AbstractPrimitiveObjectInspector {
+public class LazyLongObjectInspector extends AbstractPrimitiveLazyObjectInspector<LongWritable> 
+implements LongObjectInspector{
 
-  protected AbstractPrimitiveJavaObjectInspector(PrimitiveTypeEntry typeEntry) {
-    super(typeEntry);
+  LazyLongObjectInspector() {
+    super(PrimitiveObjectInspectorUtils.longTypeEntry);
   }
   
   @Override
-  public Object getPrimitiveJavaObject(Object o) {
-    return o;
+  public long get(Object o) {
+    return getPrimitiveWritableObject(o).get();
   }
 
   @Override
   public Object copyObject(Object o) {
-    return o;
+    return o == null ? null : new LazyLong((LazyLong)o);
   }
-  
+
   @Override
-  public boolean preferWritable() {
-    return false;
+  public Object getPrimitiveJavaObject(Object o) {
+    return o == null ? null : Long.valueOf(get(o));
   }
 }

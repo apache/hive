@@ -83,13 +83,13 @@ public class ObjectInspectorUtils {
   /**
    * This enum controls how we copy primitive objects.
    * 
-   * KEEP means keeping the original format of the primitive object. This is usually the most efficient. 
+   * DEFAULT means choosing the most efficient way between JAVA and WRITABLE. 
    * JAVA means converting all primitive objects to java primitive objects.
    * WRITABLE means converting all primitive objects to writable objects. 
    *
    */
   public enum ObjectInspectorCopyOption {
-    KEEP,
+    DEFAULT,
     JAVA,
     WRITABLE
   }
@@ -100,7 +100,7 @@ public class ObjectInspectorUtils {
    * The returned ObjectInspector can be used to inspect the standard object.
    */
   public static ObjectInspector getStandardObjectInspector(ObjectInspector oi) {
-    return getStandardObjectInspector(oi, ObjectInspectorCopyOption.KEEP);
+    return getStandardObjectInspector(oi, ObjectInspectorCopyOption.DEFAULT);
   }
   
   public static ObjectInspector getStandardObjectInspector(ObjectInspector oi, ObjectInspectorCopyOption objectInspectorOption) {
@@ -109,8 +109,12 @@ public class ObjectInspectorUtils {
       case PRIMITIVE: {
         PrimitiveObjectInspector poi = (PrimitiveObjectInspector)oi;
         switch (objectInspectorOption) {
-          case KEEP: {
-            result = poi;
+          case DEFAULT: {
+            if (poi.preferWritable()) {
+              result = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(poi.getPrimitiveCategory());
+            } else {
+              result = PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(poi.getPrimitiveCategory());
+            }
             break;
           }
           case JAVA: {
@@ -161,7 +165,7 @@ public class ObjectInspectorUtils {
    * StandardObjectInspector returned by getStandardObjectInspector(oi).
    */
   public static Object copyToStandardObject(Object o, ObjectInspector oi) {
-    return copyToStandardObject(o, oi, ObjectInspectorCopyOption.KEEP);
+    return copyToStandardObject(o, oi, ObjectInspectorCopyOption.DEFAULT);
   }
   
   public static Object copyToStandardObject(Object o, ObjectInspector oi, ObjectInspectorCopyOption objectInspectorOption) {
@@ -174,8 +178,12 @@ public class ObjectInspectorUtils {
       case PRIMITIVE: {
         PrimitiveObjectInspector loi = (PrimitiveObjectInspector)oi;
         switch (objectInspectorOption) {
-          case KEEP: {
-            result = loi.copyObject(o);
+          case DEFAULT: {
+            if (loi.preferWritable()) {
+              result = loi.getPrimitiveWritableObject(loi.copyObject(o));
+            } else {
+              result = loi.getPrimitiveJavaObject(o);
+            }
             break;
           }
           case JAVA: {
@@ -349,6 +357,117 @@ public class ObjectInspectorUtils {
       case MAP: 
       default:  
         throw new RuntimeException("Hash code on complex types not supported yet.");
+    }
+  }
+
+  public static int compare(Object o1, ObjectInspector oi1, Object o2, ObjectInspector oi2) {
+    if (oi1.getCategory() != oi2.getCategory()) {
+      return oi1.getCategory().compareTo(oi2.getCategory());
+    }
+
+    if (o1 == null) {
+      return o2 == null ? 0 : -1;
+    } else if (o2 == null) {
+      return 1;
+    }
+    
+    switch (oi1.getCategory()) {
+      case PRIMITIVE: {
+        PrimitiveObjectInspector poi1 = ((PrimitiveObjectInspector)oi1);
+        PrimitiveObjectInspector poi2 = ((PrimitiveObjectInspector)oi2);
+        if (poi1.getPrimitiveCategory() != poi2.getPrimitiveCategory()) {
+          return poi1.getPrimitiveCategory().compareTo(poi2.getPrimitiveCategory());
+        }
+        switch (poi1.getPrimitiveCategory()) {
+          case VOID: return 0;
+          case BOOLEAN: {
+            int v1 = ((BooleanObjectInspector)poi1).get(o1) ? 1 : 0;
+            int v2 = ((BooleanObjectInspector)poi2).get(o2) ? 1 : 0;
+            return v1 - v2;
+          }
+          case BYTE: {
+            int v1 = ((ByteObjectInspector)poi1).get(o1);
+            int v2 = ((ByteObjectInspector)poi2).get(o2);
+            return v1 - v2;
+          }
+          case SHORT: {
+            int v1 = ((ShortObjectInspector)poi1).get(o1);
+            int v2 = ((ShortObjectInspector)poi2).get(o2);
+            return v1 - v2;
+          }
+          case INT: {
+            int v1 = ((IntObjectInspector)poi1).get(o1);
+            int v2 = ((IntObjectInspector)poi2).get(o2);
+            return v1 > v2 ? 1 : (v1 < v2 ? -1 : 0);
+          }
+          case LONG: {
+            long v1 = ((LongObjectInspector)poi1).get(o1);
+            long v2 = ((LongObjectInspector)poi2).get(o2);
+            return v1 > v2 ? 1 : (v1 < v2 ? -1 : 0);
+          }
+          case FLOAT: {
+            float v1 = ((FloatObjectInspector)poi1).get(o1);
+            float v2 = ((FloatObjectInspector)poi2).get(o2);
+            return v1 > v2 ? 1 : (v1 < v2 ? -1 : 0);
+          }
+          case DOUBLE: {
+            double v1 = ((DoubleObjectInspector)poi1).get(o1);
+            double v2 = ((DoubleObjectInspector)poi2).get(o2);
+            return v1 > v2 ? 1 : (v1 < v2 ? -1 : 0);
+          }
+          case STRING: {
+            if (poi1.preferWritable() || poi2.preferWritable()) {
+              Text t1 = (Text)poi1.getPrimitiveWritableObject(o1);
+              Text t2 = (Text)poi2.getPrimitiveWritableObject(o2);
+              return t1 == null
+                     ? (t2 == null ? 0 : -1)
+                     : (t2 == null ? 1 : t1.compareTo(t2));
+            } else {
+              String s1 = (String)poi1.getPrimitiveJavaObject(o1);
+              String s2 = (String)poi2.getPrimitiveJavaObject(o2);
+              return s1 == null
+                     ? (s2 == null ? 0 : -1)
+                     : (s2 == null ? 1 : s1.compareTo(s2));
+            }
+          }
+          default: {
+            throw new RuntimeException("Unknown type: " + poi1.getPrimitiveCategory());
+          }
+        }
+      }
+      case STRUCT: {
+        StructObjectInspector soi1 = (StructObjectInspector)oi1;
+        StructObjectInspector soi2 = (StructObjectInspector)oi2;
+        List<? extends StructField> fields1 = soi1.getAllStructFieldRefs();
+        List<? extends StructField> fields2 = soi2.getAllStructFieldRefs();
+        int minimum = Math.min(fields1.size(), fields2.size());
+        for (int i=0; i<minimum; i++) {
+          int r = compare(
+              soi1.getStructFieldData(o1, fields1.get(i)),
+              fields1.get(i).getFieldObjectInspector(),
+              soi2.getStructFieldData(o2, fields2.get(i)),
+              fields2.get(i).getFieldObjectInspector());
+          if (r != 0) return r;
+        }
+        return fields1.size() - fields2.size();
+      }
+      case LIST: {
+        ListObjectInspector loi1 = (ListObjectInspector)oi1;
+        ListObjectInspector loi2 = (ListObjectInspector)oi2;
+        int minimum = Math.min(loi1.getListLength(o1), loi1.getListLength(o2));
+        for (int i=0; i<minimum; i++) {
+          int r = compare(
+              loi1.getListElement(o1, i),
+              loi1.getListElementObjectInspector(),
+              loi2.getListElement(o2, i),
+              loi2.getListElementObjectInspector());
+          if (r != 0) return r;
+        }
+        return loi1.getListLength(o1) - loi1.getListLength(o2);
+      }
+      case MAP:
+      default:  
+        throw new RuntimeException("Hash code on map type not supported yet.");
     }
   }
   

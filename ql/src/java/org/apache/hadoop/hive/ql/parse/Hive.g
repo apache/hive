@@ -383,8 +383,8 @@ tableRowFormatFieldIdentifier
 @init { msgs.push("table row format's field separator"); }
 @after { msgs.pop(); }
     :
-      KW_FIELDS KW_TERMINATED KW_BY fldIdnt=StringLiteral 
-    -> ^(TOK_TABLEROWFORMATFIELD $fldIdnt)
+      KW_FIELDS KW_TERMINATED KW_BY fldIdnt=StringLiteral (KW_ESCAPED KW_BY fldEscape=StringLiteral)?
+    -> ^(TOK_TABLEROWFORMATFIELD $fldIdnt $fldEscape?)
     ;
 
 tableRowFormatCollItemsIdentifier
@@ -1185,6 +1185,7 @@ KW_FORMAT: 'FORMAT';
 KW_DELIMITED: 'DELIMITED';
 KW_FIELDS: 'FIELDS';
 KW_TERMINATED: 'TERMINATED';
+KW_ESCAPED: 'ESCAPED';
 KW_COLLECTION: 'COLLECTION';
 KW_ITEMS: 'ITEMS';
 KW_KEYS: 'KEYS';

@@ -84,13 +84,15 @@ public class ColumnarSerDe implements SerDe {
     serdeParams = LazySimpleSerDe.initSerdeParams(job, tbl, getClass()
         .getName());
 
-    cachedLazyStruct = new ColumnarStruct(serdeParams.getRowTypeInfo());
     // Create the ObjectInspectors for the fields. Note: Currently
     // ColumnarObject uses same ObjectInpector as LazyStruct
     cachedObjectInspector = LazyFactory.createColumnarStructInspector(
         serdeParams.getColumnNames(), serdeParams.getColumnTypes(), serdeParams
-            .getSeparators(), serdeParams.getNullSequence());
+            .getSeparators(), serdeParams.getNullSequence(), serdeParams.isEscaped(),
+            serdeParams.getEscapeChar());
 
+    cachedLazyStruct = new ColumnarStruct(cachedObjectInspector);
+    
     int size = serdeParams.getColumnTypes().size();
     field = new BytesRefWritable[size];
     for (int i = 0; i < size; i++) {
@@ -198,13 +200,17 @@ public class ColumnarSerDe implements SerDe {
             && (declaredFields == null || declaredFields.get(i)
                 .getFieldObjectInspector().getCategory().equals(
                     Category.PRIMITIVE))) {
-          LazySimpleSerDe.serialize(serializeStream, SerDeUtils.getJSONString(
-              f, foi),
+          LazySimpleSerDe.serialize(serializeStream, 
+              SerDeUtils.getJSONString(f, foi),
               PrimitiveObjectInspectorFactory.javaStringObjectInspector,
-              serdeParams.getSeparators(), 1, serdeParams.getNullSequence());
+              serdeParams.getSeparators(), 1, serdeParams.getNullSequence(),
+              serdeParams.isEscaped(), serdeParams.getEscapeChar(),
+              serdeParams.getNeedsEscape());
         } else {
-          LazySimpleSerDe.serialize(serializeStream, f, foi, serdeParams
-              .getSeparators(), 1, serdeParams.getNullSequence());
+          LazySimpleSerDe.serialize(serializeStream, f, foi, 
+              serdeParams.getSeparators(), 1, serdeParams.getNullSequence(),
+              serdeParams.isEscaped(), serdeParams.getEscapeChar(),
+              serdeParams.getNeedsEscape());
         }
 
         field[i].set(serializeStream.getData(), count, serializeStream

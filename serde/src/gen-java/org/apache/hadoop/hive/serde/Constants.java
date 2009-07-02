@@ -39,6 +39,8 @@ public class Constants {
 
   public static final String QUOTE_CHAR = "quote.delim";
 
+  public static final String ESCAPE_CHAR = "escape.delim";
+
   public static final String VOID_TYPE_NAME = "void";
 
   public static final String BOOLEAN_TYPE_NAME = "boolean";

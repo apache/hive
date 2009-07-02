@@ -99,11 +99,43 @@ public class LazyUtils {
   static byte[] falseBytes = {(byte)'f', 'a', 'l', 's', 'e'};
 
   /**
+   * Write the bytes with special characters escaped.
+   * @param escaped     Whether the data should be written out in an escaped way.
+   * @param escapeChar  if escaped, the char for prefixing special characters.
+   * @param needsEscape if escaped, whether a specific character needs escaping.
+   *                    This array should have size of 128.
+   */
+  private static void writeEscaped(OutputStream out, byte[] bytes,
+      int start, int len, boolean escaped, byte escapeChar, boolean[] needsEscape)
+      throws IOException {
+    if (escaped) {
+      int end = start + len;
+      for (int i = start; i <= end; i++) {
+        if (i == end || (bytes[i] >= 0 && needsEscape[bytes[i]])) {
+          if (i > start) {
+            out.write(bytes, start, i - start);
+          }
+          start = i;
+          if (i < len) {
+            out.write(escapeChar);
+            // the current char will be written out later.
+          }
+        }
+      }
+    } else {
+      out.write(bytes, 0, len);
+    }
+  }
+  
+  
+  /**
    * Write out the text representation of a Primitive Object to a UTF8 byte stream.
    * @param out  The UTF8 byte OutputStream
    * @param o    The primitive Object
+   * @param needsEscape  Whether a character needs escaping. This array should have size of 128. 
    */
-  public static void writePrimitiveUTF8(OutputStream out, Object o, PrimitiveObjectInspector oi) throws IOException {
+  public static void writePrimitiveUTF8(OutputStream out, Object o, PrimitiveObjectInspector oi,
+      boolean escaped, byte escapeChar, boolean[] needsEscape) throws IOException {
     
     switch (oi.getPrimitiveCategory()) {
       case BOOLEAN: {
@@ -145,7 +177,7 @@ public class LazyUtils {
       }
       case STRING: {
         Text t = ((StringObjectInspector)oi).getPrimitiveWritableObject(o);
-        out.write(t.getBytes(), 0, t.getLength());
+        writeEscaped(out, t.getBytes(), 0, t.getLength(), escaped, escapeChar, needsEscape);
         break;
       }
       default: {

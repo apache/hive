@@ -107,7 +107,11 @@ public class LazySimpleSerDe implements SerDe {
     boolean lastColumnTakesRest;
     List<String> columnNames;
     List<TypeInfo> columnTypes;
-
+    
+    boolean escaped;
+    byte escapeChar;
+    boolean[] needsEscape;
+    
     public List<TypeInfo> getColumnTypes() {
       return columnTypes;
     }
@@ -135,6 +139,16 @@ public class LazySimpleSerDe implements SerDe {
     public boolean isLastColumnTakesRest() {
       return lastColumnTakesRest;
     }
+    
+    public boolean isEscaped() {
+      return escaped;
+    }
+    public byte getEscapeChar() {
+      return escapeChar;
+    }
+    public boolean[] getNeedsEscape() {
+      return needsEscape;
+    }
   }
 
   SerDeParameters serdeParams = null;
@@ -152,15 +166,18 @@ public class LazySimpleSerDe implements SerDe {
 
     serdeParams = LazySimpleSerDe.initSerdeParams(job, tbl, getClass()
         .getName());
-    cachedLazyStruct = (LazyStruct) LazyFactory
-        .createLazyObject(serdeParams.rowTypeInfo);
 
     // Create the ObjectInspectors for the fields
     cachedObjectInspector = LazyFactory.createLazyStructInspector(
-        serdeParams.columnNames, serdeParams.columnTypes,
-        serdeParams.separators, serdeParams.nullSequence,
-        serdeParams.lastColumnTakesRest);
+        serdeParams.getColumnNames(), serdeParams.getColumnTypes(),
+        serdeParams.getSeparators(), serdeParams.getNullSequence(),
+        serdeParams.isLastColumnTakesRest(),
+        serdeParams.isEscaped(),
+        serdeParams.getEscapeChar());
 
+    cachedLazyStruct = (LazyStruct) LazyFactory
+      .createLazyObject(cachedObjectInspector);
+    
     LOG.debug("LazySimpleSerDe initialized with: columnNames="
         + serdeParams.columnNames + " columnTypes=" + serdeParams.columnTypes
         + " separator=" + Arrays.asList(serdeParams.separators)
@@ -171,10 +188,10 @@ public class LazySimpleSerDe implements SerDe {
   public static SerDeParameters initSerdeParams(Configuration job,
       Properties tbl, String serdeName) throws SerDeException {
     SerDeParameters serdeParams = new SerDeParameters();
-    // Read the separators: We use 10 levels of separators by default, but we
+    // Read the separators: We use 8 levels of separators by default, but we
     // should change this when we allow users to specify more than 10 levels
     // of separators through DDL.
-    serdeParams.separators = new byte[10];
+    serdeParams.separators = new byte[8];
     serdeParams.separators[0] = getByte(tbl.getProperty(Constants.FIELD_DELIM,
         tbl.getProperty(Constants.SERIALIZATION_FORMAT)), DefaultSeparators[0]);
     serdeParams.separators[1] = getByte(tbl
@@ -230,6 +247,24 @@ public class LazySimpleSerDe implements SerDe {
     // Create the LazyObject for storing the rows
     serdeParams.rowTypeInfo = TypeInfoFactory.getStructTypeInfo(
         serdeParams.columnNames, serdeParams.columnTypes);
+    
+    // Get the escape information
+    String escapeProperty = tbl.getProperty(Constants.ESCAPE_CHAR);
+    serdeParams.escaped = (escapeProperty != null);
+    if (serdeParams.escaped) {
+      serdeParams.escapeChar = getByte(escapeProperty, (byte)'\\');
+    }
+    if (serdeParams.escaped) {
+      serdeParams.needsEscape = new boolean[128];
+      for (int i=0; i<128; i++) {
+        serdeParams.needsEscape[i] = false;
+      }
+      serdeParams.needsEscape[serdeParams.escapeChar] = true;
+      for (int i=0; i<serdeParams.separators.length; i++) {
+        serdeParams.needsEscape[serdeParams.separators[i]] = true;
+      }
+    }
+    
     return serdeParams;
   }
 
@@ -342,10 +377,13 @@ public class LazySimpleSerDe implements SerDe {
                 .equals(Category.PRIMITIVE))) {
           serialize(serializeStream, SerDeUtils.getJSONString(f, foi),
               PrimitiveObjectInspectorFactory.javaStringObjectInspector,
-              serdeParams.separators, 1, serdeParams.nullSequence);
+              serdeParams.separators, 1, serdeParams.nullSequence,
+              serdeParams.escaped, serdeParams.escapeChar,
+              serdeParams.needsEscape);
         } else {
           serialize(serializeStream, f, foi, serdeParams.separators, 1,
-              serdeParams.nullSequence);
+              serdeParams.nullSequence, serdeParams.escaped, serdeParams.escapeChar,
+              serdeParams.needsEscape);
         }
       }
     } catch (IOException e) {
@@ -365,12 +403,16 @@ public class LazySimpleSerDe implements SerDe {
    * @param objInspector  The ObjectInspector for the current Object.
    * @param separators    The separators array.
    * @param level         The current level of separator.
-   * @param nullSequence    The byte sequence representing the NULL value.
+   * @param nullSequence  The byte sequence representing the NULL value.
+   * @param escaped       Whether we need to escape the data when writing out
+   * @param escapeChar    Which char to use as the escape char, e.g. '\\'     
+   * @param needsEscape   Which chars needs to be escaped. This array should have size of 128.
+   *                      Negative byte values (or byte values >= 128) are never escaped.
    * @throws IOException 
    */
   public static void serialize(ByteStream.Output out, Object obj, 
       ObjectInspector objInspector, byte[] separators, int level,
-      Text nullSequence) throws IOException {
+      Text nullSequence, boolean escaped, byte escapeChar, boolean[] needsEscape) throws IOException {
     
     if (obj == null) {
       out.write(nullSequence.getBytes(), 0, nullSequence.getLength());
@@ -379,7 +421,7 @@ public class LazySimpleSerDe implements SerDe {
     
     switch (objInspector.getCategory()) {
       case PRIMITIVE: {
-        LazyUtils.writePrimitiveUTF8(out, obj, (PrimitiveObjectInspector)objInspector);
+        LazyUtils.writePrimitiveUTF8(out, obj, (PrimitiveObjectInspector)objInspector, escaped, escapeChar, needsEscape);
         return;
       }
       case LIST: {
@@ -395,7 +437,7 @@ public class LazySimpleSerDe implements SerDe {
               out.write(separator);
             }
             serialize(out, list.get(i), eoi, separators, level+1,
-                nullSequence);
+                nullSequence, escaped, escapeChar, needsEscape);
           }
         }
         return;
@@ -419,10 +461,10 @@ public class LazySimpleSerDe implements SerDe {
               out.write(separator);
             }
             serialize(out, entry.getKey(), koi, separators, level+2, 
-                nullSequence);
+                nullSequence, escaped, escapeChar, needsEscape);
             out.write(keyValueSeparator);
             serialize(out, entry.getValue(), voi, separators, level+2, 
-                nullSequence);
+                nullSequence, escaped, escapeChar, needsEscape);
           }
         }
         return;
@@ -441,7 +483,7 @@ public class LazySimpleSerDe implements SerDe {
             }
             serialize(out, list.get(i),
                 fields.get(i).getFieldObjectInspector(), separators, level+1,
-                nullSequence);
+                nullSequence, escaped, escapeChar, needsEscape);
           }
         }
         return;

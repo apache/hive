@@ -25,8 +25,9 @@ import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
 import org.apache.hadoop.hive.serde2.lazy.LazyObject;
 import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -39,17 +40,6 @@ import org.apache.hadoop.io.Text;
 public class ColumnarStruct {
 
   /**
-   * The TypeInfo for this LazyNonPrimitive.
-   */
-  TypeInfo typeInfo;
-  List<TypeInfo> fieldTypeInfos;
-
-  /**
-   * Whether the data is already parsed or not.
-   */
-  boolean parsed;
-
-  /**
    * The fields of the struct.
    */
   LazyObject[] fields;
@@ -58,18 +48,17 @@ public class ColumnarStruct {
    * Construct a ColumnarStruct object with the TypeInfo. It creates the first
    * level object at the first place
    * 
-   * @param typeInfo
-   *          the TypeInfo representing the type of this LazyStruct.
+   * @param oi
+   *          the ObjectInspector representing the type of this LazyStruct.
    */
-  public ColumnarStruct(TypeInfo typeInfo) {
-    this.typeInfo = typeInfo;
-    fieldTypeInfos = ((StructTypeInfo) typeInfo).getAllStructFieldTypeInfos();
-    int num = fieldTypeInfos.size();
+  public ColumnarStruct(ObjectInspector oi) {
+    List<? extends StructField> fieldRefs = ((StructObjectInspector) oi).getAllStructFieldRefs();
+    int num = fieldRefs.size();
     fields = new LazyObject[num];
     cachedByteArrayRef = new ByteArrayRef[num];
     fieldIsNull = new boolean[num];
     for (int i = 0; i < num; i++) {
-      fields[i] = LazyFactory.createLazyObject(fieldTypeInfos.get(i));
+      fields[i] = LazyFactory.createLazyObject(fieldRefs.get(i).getFieldObjectInspector());
       cachedByteArrayRef[i] = new ByteArrayRef();
       fieldIsNull[i] = false;
     }
@@ -147,8 +136,6 @@ public class ColumnarStruct {
     }
     for (; fieldIndex < fields.length; fieldIndex++)
       fieldIsNull[fieldIndex] = true;
-
-    parsed = true;
   }
 
   ArrayList<Object> cachedList;

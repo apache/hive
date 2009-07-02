@@ -17,6 +17,7 @@ const string COLLECTION_DELIM = "colelction.delim"
 const string LINE_DELIM = "line.delim"
 const string MAPKEY_DELIM = "mapkey.delim"
 const string QUOTE_CHAR = "quote.delim"
+const string ESCAPE_CHAR = "escape.delim"
 
 typedef string PrimitiveType
 typedef string CollectionType

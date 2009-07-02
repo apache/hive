@@ -34,7 +34,7 @@ public abstract class AbstractPrimitiveWritableObjectInspector extends AbstractP
   }
 
   @Override
-  public boolean isWritable() {
+  public boolean preferWritable() {
     return true;
   }
   

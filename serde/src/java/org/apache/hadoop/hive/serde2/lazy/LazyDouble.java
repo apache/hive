@@ -20,17 +20,24 @@ package org.apache.hadoop.hive.serde2.lazy;
 import java.nio.charset.CharacterCodingException;
 
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyDoubleObjectInspector;
 import org.apache.hadoop.io.Text;
 
 /**
  * LazyObject for storing a value of Double.
  * 
  */
-public class LazyDouble extends LazyPrimitive<DoubleWritable> {
+public class LazyDouble extends LazyPrimitive<LazyDoubleObjectInspector, DoubleWritable> {
 
-  public LazyDouble() {
+  public LazyDouble(LazyDoubleObjectInspector oi) {
+    super(oi);
     data = new DoubleWritable();
   }
+
+  public LazyDouble(LazyDouble copy) {
+    super(copy);
+    data = new DoubleWritable(copy.data.get());
+  }  
   
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {

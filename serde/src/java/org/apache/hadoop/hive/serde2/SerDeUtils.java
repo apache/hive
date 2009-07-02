@@ -25,9 +25,18 @@ import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.io.Text;
 
 public class SerDeUtils {
@@ -96,6 +105,9 @@ public class SerDeUtils {
     return true;
   }
 
+  /**
+   * Escape a String in JSON format.
+   */
   public static String escapeString(String str) {
     int length = str.length();
     StringBuilder escape = new StringBuilder(length + 16);
@@ -181,7 +193,7 @@ public class SerDeUtils {
     return sb.toString();
   }
 
-  
+
   static void buildJSONString(StringBuilder sb, Object o, ObjectInspector oi) {
 
     switch(oi.getCategory()) {
@@ -189,17 +201,46 @@ public class SerDeUtils {
         PrimitiveObjectInspector poi = (PrimitiveObjectInspector)oi;
         if (o == null) {
           sb.append("null");
-        } else if (oi.getTypeName().equals(Constants.STRING_TYPE_NAME)) {
-          String s = (String)poi.getPrimitiveJavaObject(o);
-          sb.append(QUOTE);
-          sb.append(escapeString(s));
-          sb.append(QUOTE);
-        } else if (oi.getTypeName().equals(Constants.BOOLEAN_TYPE_NAME)) {
-          Boolean b = (Boolean)poi.getPrimitiveJavaObject(o);
-          sb.append(b.booleanValue() ? "True" : "False");
         } else {
-          // it's a number - so doesn't need to be escaped.
-          sb.append(o.toString());
+          switch (poi.getPrimitiveCategory()) {
+          case BOOLEAN: {
+            boolean b = ((BooleanObjectInspector)poi).get(o);
+            sb.append(b ? "true" : "false");
+            break;
+          }
+          case BYTE: {
+            sb.append(((ByteObjectInspector)poi).get(o));
+            break;
+          }
+          case SHORT: {
+            sb.append(((ShortObjectInspector)poi).get(o));
+            break;
+          }
+          case INT: {
+            sb.append(((IntObjectInspector)poi).get(o));
+            break;
+          }
+          case LONG: {
+            sb.append(((LongObjectInspector)poi).get(o));
+            break;
+          }
+          case FLOAT: {
+            sb.append(((FloatObjectInspector)poi).get(o));
+            break;
+          }
+          case DOUBLE: {
+            sb.append(((DoubleObjectInspector)poi).get(o));
+            break;
+          }
+          case STRING: {
+            sb.append('"'); 
+            sb.append(escapeString(((StringObjectInspector)poi).getPrimitiveJavaObject(o)));
+            sb.append('"'); 
+            break;
+          }
+          default:
+            throw new RuntimeException("Unknown primitive type: " + poi.getPrimitiveCategory());
+          }
         }
         break;
       }

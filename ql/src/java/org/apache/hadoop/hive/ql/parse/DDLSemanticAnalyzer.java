@@ -155,6 +155,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     List<Order>       sortCols      = null;
     int               numBuckets    = -1;
     String            fieldDelim    = null;
+    String            fieldEscape   = null;
     String            collItemDelim = null;
     String            mapKeyDelim   = null;
     String            lineDelim     = null;
@@ -216,6 +217,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
             switch (rowChild.getToken().getType()) {
               case HiveParser.TOK_TABLEROWFORMATFIELD:
                 fieldDelim = unescapeSQLString(rowChild.getChild(0).getText());
+                if (rowChild.getChildCount()>=2) {
+                  fieldEscape = unescapeSQLString(rowChild.getChild(1).getText());
+                }
                 break;
               case HiveParser.TOK_TABLEROWFORMATCOLLITEMS:
                 collItemDelim = unescapeSQLString(rowChild.getChild(0).getText());
@@ -269,7 +273,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       createTableDesc crtTblDesc = 
         new createTableDesc(tableName, isExt, cols, partCols, bucketCols, 
                             sortCols, numBuckets,
-                            fieldDelim, collItemDelim, mapKeyDelim, lineDelim,
+                            fieldDelim, fieldEscape,
+                            collItemDelim, mapKeyDelim, lineDelim,
                             comment, inputFormat, outputFormat, location, serde, 
                             mapProp, ifNotExists);
   

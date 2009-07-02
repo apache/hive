@@ -77,6 +77,9 @@ public class TestLazySimpleSerDe extends TestCase {
     Object row = serDe.deserialize(t);
     for (int i = 0; i < fieldRefs.size(); i++) {
       Object fieldData = oi.getStructFieldData(row, fieldRefs.get(i));
+      if (fieldData != null) {
+        fieldData = ((LazyPrimitive)fieldData).getWritableObject();
+      }
       assertEquals("Field " + i, expectedFieldsData[i], fieldData);
     }
     // Serialize 

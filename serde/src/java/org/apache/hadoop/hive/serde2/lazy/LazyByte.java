@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.serde2.lazy;
 
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyByteObjectInspector;
 
 /**
  * LazyObject for storing a value of Byte.
@@ -32,12 +33,18 @@ import org.apache.hadoop.hive.serde2.io.ByteWritable;
  * </p>
  * 
  */
-public class LazyByte extends LazyPrimitive<ByteWritable> {
+public class LazyByte extends LazyPrimitive<LazyByteObjectInspector, ByteWritable> {
 
-  public LazyByte() {
+  public LazyByte(LazyByteObjectInspector oi) {
+    super(oi);
     data = new ByteWritable();
   }
 
+  public LazyByte(LazyByte copy) {
+    super(copy);
+    data = new ByteWritable(copy.data.get());
+  }
+  
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
     try {

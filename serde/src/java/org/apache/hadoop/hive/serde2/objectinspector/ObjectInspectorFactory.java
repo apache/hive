@@ -27,10 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableBooleanObjectInspector;
 import org.apache.hadoop.io.Text;
 
 
@@ -192,60 +190,6 @@ public class ObjectInspectorFactory {
     return result;
   }
 
-  static HashMap<ArrayList<Object>, LazySimpleStructObjectInspector> cachedLazySimpleStructObjectInspector =
-    new HashMap<ArrayList<Object>, LazySimpleStructObjectInspector>(); 
-  public static LazySimpleStructObjectInspector getLazySimpleStructObjectInspector(List<String> structFieldNames, 
-      List<ObjectInspector> structFieldObjectInspectors, byte separator, Text nullSequence,
-      boolean lastColumnTakesRest) {
-    ArrayList<Object> signature = new ArrayList<Object>();
-    signature.add(structFieldNames);
-    signature.add(structFieldObjectInspectors);
-    signature.add(Byte.valueOf(separator));
-    signature.add(nullSequence.toString());
-    signature.add(Boolean.valueOf(lastColumnTakesRest));
-    LazySimpleStructObjectInspector result = cachedLazySimpleStructObjectInspector.get(signature);
-    if (result == null) {
-      result = new LazySimpleStructObjectInspector(structFieldNames, structFieldObjectInspectors, 
-          separator, nullSequence, lastColumnTakesRest);
-      cachedLazySimpleStructObjectInspector.put(signature, result);
-    }
-    return result;
-  }
-
-  static HashMap<ArrayList<Object>, LazyListObjectInspector> cachedLazySimpleListObjectInspector =
-    new HashMap<ArrayList<Object>, LazyListObjectInspector>(); 
-  public static LazyListObjectInspector getLazySimpleListObjectInspector( 
-      ObjectInspector listElementObjectInspector, byte separator, Text nullSequence) {
-    ArrayList<Object> signature = new ArrayList<Object>();
-    signature.add(listElementObjectInspector);
-    signature.add(Byte.valueOf(separator));
-    signature.add(nullSequence.toString());
-    LazyListObjectInspector result = cachedLazySimpleListObjectInspector.get(signature);
-    if (result == null) {
-      result = new LazyListObjectInspector(listElementObjectInspector, 
-          separator, nullSequence);
-      cachedLazySimpleListObjectInspector.put(signature, result);
-    }
-    return result;
-  }
-  
-  static HashMap<ArrayList<Object>, LazyMapObjectInspector> cachedLazySimpleMapObjectInspector =
-    new HashMap<ArrayList<Object>, LazyMapObjectInspector>(); 
-  public static LazyMapObjectInspector getLazySimpleMapObjectInspector( 
-      ObjectInspector mapKeyObjectInspector, ObjectInspector mapValueObjectInspector, 
-      byte itemSeparator, byte keyValueSeparator, Text nullSequence) {
-    ArrayList<Object> signature = new ArrayList<Object>();
-    signature.add(mapKeyObjectInspector);
-    signature.add(mapValueObjectInspector);
-    signature.add(nullSequence.toString());
-    LazyMapObjectInspector result = cachedLazySimpleMapObjectInspector.get(signature);
-    if (result == null) {
-      result = new LazyMapObjectInspector(mapKeyObjectInspector,
-          mapValueObjectInspector, itemSeparator, keyValueSeparator, nullSequence);
-      cachedLazySimpleMapObjectInspector.put(signature, result);
-    }
-    return result;
-  }
   
   static HashMap<List<StructObjectInspector>, UnionStructObjectInspector> cachedUnionStructObjectInspector =
     new HashMap<List<StructObjectInspector>, UnionStructObjectInspector>(); 

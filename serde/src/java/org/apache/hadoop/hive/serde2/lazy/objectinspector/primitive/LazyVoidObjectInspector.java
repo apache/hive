@@ -15,28 +15,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.serde2.objectinspector.primitive;
+package org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive;
 
-import org.apache.hadoop.io.Text;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
+import org.apache.hadoop.io.NullWritable;
 
 
 /**
- * A JavaStringObjectInspector inspects a Java String Object.
+ * A WritableVoidObjectInspector inspects a NullWritable Object.
  */
-public class JavaStringObjectInspector extends AbstractPrimitiveJavaObjectInspector 
-implements StringObjectInspector{
+public class LazyVoidObjectInspector extends AbstractPrimitiveLazyObjectInspector<NullWritable> 
+implements VoidObjectInspector{
 
-  JavaStringObjectInspector() {
-    super(PrimitiveObjectInspectorUtils.stringTypeEntry);
+  LazyVoidObjectInspector() {
+    super(PrimitiveObjectInspectorUtils.voidTypeEntry);
   }
   
   @Override
-  public Text getPrimitiveWritableObject(Object o) {
-    return o == null ? null : new Text(((String)o));
+  public Object copyObject(Object o) {
+    return o;
   }
 
   @Override
-  public String getPrimitiveJavaObject(Object o) {
-    return (String)o;
+  public Object getPrimitiveJavaObject(Object o) {
+    throw new RuntimeException("Internal error: cannot create Void object.");
   }
 }

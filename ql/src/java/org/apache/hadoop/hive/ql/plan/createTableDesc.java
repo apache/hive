@@ -38,6 +38,7 @@ public class createTableDesc extends ddlDesc implements Serializable
   List<Order>         sortCols;
   int                 numBuckets;
   String              fieldDelim;
+  String              fieldEscape;
   String              collItemDelim;
   String              mapKeyDelim;
   String              lineDelim;
@@ -53,6 +54,7 @@ public class createTableDesc extends ddlDesc implements Serializable
                          List<FieldSchema> cols, List<FieldSchema> partCols,
                          List<String> bucketCols, List<Order> sortCols, 
                          int numBuckets, String fieldDelim, 
+                         String fieldEscape,
                          String collItemDelim,
                          String mapKeyDelim, String lineDelim, 
                          String comment, String inputFormat, String outputFormat,
@@ -66,6 +68,7 @@ public class createTableDesc extends ddlDesc implements Serializable
     this.cols            = cols;
     this.comment         = comment;
     this.fieldDelim      = fieldDelim;
+    this.fieldEscape     = fieldEscape;
     this.inputFormat     = inputFormat;
     this.outputFormat    = outputFormat;
     this.lineDelim       = lineDelim;
@@ -147,6 +150,15 @@ public class createTableDesc extends ddlDesc implements Serializable
 
   public void setFieldDelim(String fieldDelim) {
     this.fieldDelim = fieldDelim;
+  }
+
+  @explain(displayName="field escape")
+  public String getFieldEscape() {
+    return fieldEscape;
+  }
+
+  public void setFieldEscape(String fieldEscape) {
+    this.fieldEscape = fieldEscape;
   }
 
   @explain(displayName="collection delimiter")

@@ -15,31 +15,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.serde2.objectinspector.primitive;
+package org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive;
 
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.lazy.LazyDouble;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+
 
 /**
- * An AbstractJavaPrimitiveObjectInspector for a Java object. 
+ * A WritableDoubleObjectInspector inspects a DoubleWritable Object.
  */
-public abstract class AbstractPrimitiveJavaObjectInspector extends AbstractPrimitiveObjectInspector {
+public class LazyDoubleObjectInspector extends AbstractPrimitiveLazyObjectInspector<DoubleWritable>
+implements DoubleObjectInspector{
 
-  protected AbstractPrimitiveJavaObjectInspector(PrimitiveTypeEntry typeEntry) {
-    super(typeEntry);
+  LazyDoubleObjectInspector() {
+    super(PrimitiveObjectInspectorUtils.doubleTypeEntry);
   }
   
   @Override
-  public Object getPrimitiveJavaObject(Object o) {
-    return o;
+  public double get(Object o) {
+    return getPrimitiveWritableObject(o).get();
   }
 
   @Override
   public Object copyObject(Object o) {
-    return o;
+    return o == null ? null : new LazyDouble((LazyDouble)o);
   }
-  
+
   @Override
-  public boolean preferWritable() {
-    return false;
+  public Object getPrimitiveJavaObject(Object o) {
+    return o == null ? null : Double.valueOf(get(o));
   }
 }

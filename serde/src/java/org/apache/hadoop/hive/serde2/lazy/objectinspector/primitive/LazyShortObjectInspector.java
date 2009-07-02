@@ -15,31 +15,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.serde2.objectinspector.primitive;
+package org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive;
 
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.lazy.LazyShort;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
+
 
 /**
- * An AbstractJavaPrimitiveObjectInspector for a Java object. 
+ * A WritableShortObjectInspector inspects a ShortWritable Object.
  */
-public abstract class AbstractPrimitiveJavaObjectInspector extends AbstractPrimitiveObjectInspector {
+public class LazyShortObjectInspector extends AbstractPrimitiveLazyObjectInspector<ShortWritable> 
+implements ShortObjectInspector{
 
-  protected AbstractPrimitiveJavaObjectInspector(PrimitiveTypeEntry typeEntry) {
-    super(typeEntry);
+  LazyShortObjectInspector() {
+    super(PrimitiveObjectInspectorUtils.shortTypeEntry);
   }
   
   @Override
-  public Object getPrimitiveJavaObject(Object o) {
-    return o;
+  public short get(Object o) {
+    return getPrimitiveWritableObject(o).get();
   }
 
   @Override
   public Object copyObject(Object o) {
-    return o;
+    return o == null ? null : new LazyShort((LazyShort)o);
   }
-  
+
   @Override
-  public boolean preferWritable() {
-    return false;
+  public Object getPrimitiveJavaObject(Object o) {
+    return o == null ? null : Short.valueOf(get(o));
   }
 }

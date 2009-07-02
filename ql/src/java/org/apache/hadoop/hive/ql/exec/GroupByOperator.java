@@ -33,11 +33,11 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.aggregationDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.groupByDesc;
-import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -68,6 +68,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
   
   transient protected ExprNodeEvaluator[][] aggregationParameterFields;
   transient protected ObjectInspector[][] aggregationParameterObjectInspectors;
+  transient protected ObjectInspector[][] aggregationParameterStandardObjectInspectors;
   transient protected Object[][] aggregationParameterObjects;
   // In the future, we may allow both count(DISTINCT a) and sum(DISTINCT a) in the same SQL clause,
   // so aggregationIsDistinct is a boolean array instead of a single number. 
@@ -99,6 +100,11 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
   transient long    numRowsCompareHashAggr;
   transient float   minReductionHashAggr;
 
+  // current Key ObjectInspectors are standard ObjectInspectors
+  transient protected ObjectInspector[] currentKeyObjectInspectors;
+  // new Key ObjectInspectors are objectInspectors from the parent
+  transient StructObjectInspector newKeyObjectInspector;
+  transient StructObjectInspector currentKeyObjectInspector;
   
   /**
    * This is used to store the position and field names for variable length fields.
@@ -149,18 +155,23 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     }
     newKeys = new ArrayList<Object>(keyFields.length);
     
+    currentKeyObjectInspectors = new ObjectInspector[conf.getKeys().size()];
+    
     // init aggregationParameterFields
     aggregationParameterFields = new ExprNodeEvaluator[conf.getAggregators().size()][];
     aggregationParameterObjectInspectors = new ObjectInspector[conf.getAggregators().size()][];
+    aggregationParameterStandardObjectInspectors = new ObjectInspector[conf.getAggregators().size()][];
     aggregationParameterObjects = new Object[conf.getAggregators().size()][];
     for (int i = 0; i < aggregationParameterFields.length; i++) {
       ArrayList<exprNodeDesc> parameters = conf.getAggregators().get(i).getParameters();
       aggregationParameterFields[i] = new ExprNodeEvaluator[parameters.size()];
       aggregationParameterObjectInspectors[i] = new ObjectInspector[parameters.size()];
+      aggregationParameterStandardObjectInspectors[i] = new ObjectInspector[parameters.size()];
       aggregationParameterObjects[i] = new Object[parameters.size()];
       for (int j = 0; j < parameters.size(); j++) {
         aggregationParameterFields[i][j] = ExprNodeEvaluatorFactory.get(parameters.get(j));
         aggregationParameterObjectInspectors[i][j] = null;
+        aggregationParameterStandardObjectInspectors[i][j] = null;
         aggregationParameterObjects[i][j] = null;
       }
     }
@@ -248,9 +259,21 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     for (int i = 0; i < keyFields.length; i++) {
       if (keyObjectInspectors[i] == null) {
         keyObjectInspectors[i] = keyFields[i].initialize(inputObjInspector[0]);
+        currentKeyObjectInspectors[i] = ObjectInspectorUtils.getStandardObjectInspector(keyObjectInspectors[i], 
+            ObjectInspectorCopyOption.WRITABLE);
       }
-      objectInspectors.set(i, keyObjectInspectors[i]);
+      objectInspectors.set(i, currentKeyObjectInspectors[i]);
     }
+    
+    // Generate key names
+    ArrayList<String> keyNames = new ArrayList<String>(keyFields.length);
+    for (int i = 0; i < keyFields.length; i++) {
+      keyNames.add(fieldNames.get(i));
+    }
+    newKeyObjectInspector = 
+      ObjectInspectorFactory.getStandardStructObjectInspector(keyNames, Arrays.asList(keyObjectInspectors));
+    currentKeyObjectInspector = 
+      ObjectInspectorFactory.getStandardStructObjectInspector(keyNames, Arrays.asList(currentKeyObjectInspectors));
     
     outputObjectInspector = 
       ObjectInspectorFactory.getStandardStructObjectInspector(fieldNames, objectInspectors);
@@ -418,6 +441,8 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
         if (oi == null) {
           oi = aggregationParameterFields[ai][pi].initialize(rowInspector);
           aggregationParameterObjectInspectors[ai][pi] = oi;
+          aggregationParameterStandardObjectInspectors[ai][pi]
+              = ObjectInspectorUtils.getStandardObjectInspector(oi, ObjectInspectorCopyOption.WRITABLE);
         }
         PrimitiveObjectInspector poi = (PrimitiveObjectInspector)oi;
         o[pi] = poi.getPrimitiveWritableObject(
@@ -457,7 +482,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
             }
             for (int pi=0; pi<o.length; pi++) {
               lastInvoke[ai][pi] = ObjectInspectorUtils.copyToStandardObject(o[pi],
-                  aggregationParameterObjectInspectors[ai][pi]);
+                  aggregationParameterStandardObjectInspectors[ai][pi], ObjectInspectorCopyOption.WRITABLE);
             }
           }
         }
@@ -512,16 +537,18 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     }
   }
 
-  private static ArrayList<Object> deepCopyElements(Object[] keys, ObjectInspector[] keyObjectInspectors) {
+  private static ArrayList<Object> deepCopyElements(Object[] keys, ObjectInspector[] keyObjectInspectors,
+      ObjectInspectorCopyOption copyOption) {
     ArrayList<Object> result = new ArrayList<Object>(keys.length);
-    deepCopyElements(keys, keyObjectInspectors, result);
+    deepCopyElements(keys, keyObjectInspectors, result, copyOption);
     return result;
   }
   
-  private static void deepCopyElements(Object[] keys, ObjectInspector[] keyObjectInspectors, ArrayList<Object> result) {
+  private static void deepCopyElements(Object[] keys, ObjectInspector[] keyObjectInspectors, ArrayList<Object> result,
+      ObjectInspectorCopyOption copyOption) {
     result.clear();
     for (int i=0; i<keys.length; i++) {
-      result.add(ObjectInspectorUtils.copyToStandardObject(keys[i], keyObjectInspectors[i]));
+      result.add(ObjectInspectorUtils.copyToStandardObject(keys[i], keyObjectInspectors[i], copyOption));
     }
   }
   
@@ -531,10 +558,11 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     boolean newEntry = false;
 
     // hash-based aggregations
-    aggs = hashAggregations.get(newKeys);
+    ArrayList<Object> newDefaultKeys = deepCopyElements(keyObjects, keyObjectInspectors, ObjectInspectorCopyOption.WRITABLE);
+    aggs = hashAggregations.get(newDefaultKeys);
     if (aggs == null) {
       aggs = newAggregations();
-      hashAggregations.put(deepCopyElements(keyObjects, keyObjectInspectors), aggs);
+      hashAggregations.put(newDefaultKeys, aggs);
       newEntry = true;
       numRowsHashTbl++;      // new entry in the hash table
     }
@@ -552,7 +580,9 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     // Prepare aggs for updating
     UDAFEvaluator[] aggs = null;
     Object[][] lastInvoke = null;
-    boolean keysAreEqual = newKeys.equals(currentKeys);
+    boolean keysAreEqual = ObjectInspectorUtils.compare(
+        newKeys, newKeyObjectInspector,
+        currentKeys, currentKeyObjectInspector) == 0;
     
     // Forward the current keys if needed for sort-based aggregation
     if (currentKeys != null && !keysAreEqual)
@@ -563,7 +593,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
       if (currentKeys == null) {
         currentKeys = new ArrayList<Object>(keyFields.length);
       }
-      deepCopyElements(keyObjects, keyObjectInspectors, currentKeys);
+      deepCopyElements(keyObjects, keyObjectInspectors, currentKeys, ObjectInspectorCopyOption.WRITABLE);
       
       // Init aggregations
       for(UDAFEvaluator aggregation: aggregations)
@@ -596,7 +626,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
         if (key != null) {
           if (key instanceof String) {
             totalVariableSize += ((String)key).length();
-          } else {
+          } else if (key instanceof Text) {
             totalVariableSize += ((Text)key).getLength();
           }
         }

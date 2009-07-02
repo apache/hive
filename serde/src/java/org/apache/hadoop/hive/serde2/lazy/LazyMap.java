@@ -19,10 +19,12 @@ package org.apache.hadoop.hive.serde2.lazy;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyMapObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -30,9 +32,9 @@ import org.apache.hadoop.io.Text;
  * Note that the keys of the map cannot contain null.
  * 
  * LazyMap does not deal with the case of a NULL map. That is handled
- * by LazyMapObjectInspector.
+ * by the parent LazyObject.
  */
-public class LazyMap extends LazyNonPrimitive {
+public class LazyMap extends LazyNonPrimitive<LazyMapObjectInspector> {
   
   /**
    * Whether the data is already parsed or not.
@@ -63,7 +65,7 @@ public class LazyMap extends LazyNonPrimitive {
   /**
    * The keys are stored in an array of LazyPrimitives.
    */
-  LazyPrimitive<?>[] keyObjects;
+  LazyPrimitive<?,?>[] keyObjects;
   /**
    * Whether init() is called on keyObjects[i]. 
    */
@@ -80,11 +82,10 @@ public class LazyMap extends LazyNonPrimitive {
   boolean[] valueInited;
   
   /**
-   * Construct a LazyMap object with the TypeInfo.
-   * @param typeInfo  the TypeInfo representing the type of this LazyMap.
+   * Construct a LazyMap object with the ObjectInspector.
    */
-  protected LazyMap(TypeInfo typeInfo) {
-    super(typeInfo);
+  protected LazyMap(LazyMapObjectInspector oi) {
+    super(oi);
   }
 
   /**
@@ -106,7 +107,7 @@ public class LazyMap extends LazyNonPrimitive {
       int initialSize = 2;
       keyStart = new int[initialSize];
       keyEnd = new int[initialSize];
-      keyObjects = new LazyPrimitive<?>[initialSize];
+      keyObjects = new LazyPrimitive<?,?>[initialSize];
       valueObjects = new LazyObject[initialSize];
       keyInited = new boolean[initialSize];
       valueInited = new boolean[initialSize];
@@ -122,13 +123,14 @@ public class LazyMap extends LazyNonPrimitive {
 
   /**
    * Parse the byte[] and fill keyStart, keyEnd.
-   * @param itemSeparator     The separator between different entries.
-   * @param keyValueSeparator The separator between key and value.
-   * @param nullSequence      The byte sequence representing NULL.
    */
-  private void parse(byte itemSeparator, byte keyValueSeparator, 
-      Text nullSequence) {
+  private void parse() {
     parsed = true;
+    
+    byte itemSeparator = oi.getItemSeparator();
+    byte keyValueSeparator = oi.getKeyValueSeparator(); 
+    boolean isEscaped = oi.isEscaped();
+    byte escapeChar = oi.getEscapeChar();
     
     // empty array?
     if (length == 0) {
@@ -167,7 +169,13 @@ public class LazyMap extends LazyNonPrimitive {
           && bytes[elementByteEnd] == keyValueSeparator) {
         keyValueSeparatorPosition = elementByteEnd;
       }
-      elementByteEnd++;
+      if (isEscaped && bytes[elementByteEnd] == escapeChar
+          && elementByteEnd+1 < arrayByteEnd) {
+        // ignore the char after escape_char
+        elementByteEnd += 2;
+      } else {
+        elementByteEnd ++;
+      }
     }
     
     // This makes sure we can use the same formula to compute the
@@ -191,28 +199,23 @@ public class LazyMap extends LazyNonPrimitive {
    * most cases, user only wants to get one or two values out of the map, and 
    * the cost of building up a HashMap is substantially higher.
    * 
-   * @param itemSeparator     The separator between different entries.
-   * @param keyValueSeparator The separator between key and value.
-   * @param nullSequence      The byte sequence representing NULL.
    * @param key               The key object that we are looking for.
    * @return The corresponding value object, or NULL if not found
    */
-  public Object getMapValueElement(byte itemSeparator, byte keyValueSeparator, 
-      Text nullSequence, Object key) {
+  public Object getMapValueElement(Object key) {
     if (!parsed) {
-      parse(itemSeparator, keyValueSeparator, nullSequence);
+      parse();
     }
-    
     // search for the key
     for (int i=0; i<mapSize; i++) {
-      LazyPrimitive<?> lazyKeyI = uncheckedGetKey(i, nullSequence);
+      LazyPrimitive<?,?> lazyKeyI = uncheckedGetKey(i);
       if (lazyKeyI == null) continue;
-      // getObject() will convert LazyPrimitive to actual primitive objects.
-      Object keyI = lazyKeyI.getObject();
+      // getWritableObject() will convert LazyPrimitive to actual primitive writable objects.
+      Object keyI = lazyKeyI.getWritableObject();
       if (keyI == null) continue;
       if (keyI.equals(key)) {
         // Got a match, return the value
-        LazyObject v = uncheckedGetValue(i, nullSequence);
+        LazyObject v = uncheckedGetValue(i);
         return v == null ? v : v.getObject();
       }
     }
@@ -225,7 +228,8 @@ public class LazyMap extends LazyNonPrimitive {
    * @param index  The index into the array starting from 0
    * @param nullSequence  The byte sequence representing the NULL value
    */
-  private LazyObject uncheckedGetValue(int index, Text nullSequence) {
+  private LazyObject uncheckedGetValue(int index) {
+    Text nullSequence = oi.getNullSequence();
     int valueIBegin = keyEnd[index] + 1;
     int valueILength = keyStart[index+1] - 1 - valueIBegin;
     if (valueILength < 0 || 
@@ -238,7 +242,7 @@ public class LazyMap extends LazyNonPrimitive {
       valueInited[index] = true;
       if (valueObjects[index] == null) {
         valueObjects[index] = LazyFactory.createLazyObject(
-            ((MapTypeInfo)typeInfo).getMapValueTypeInfo());
+            ((MapObjectInspector)oi).getMapValueObjectInspector());
       }
       valueObjects[index].init(bytes, valueIBegin, valueILength);
     }
@@ -250,7 +254,8 @@ public class LazyMap extends LazyNonPrimitive {
    * @param index  The index into the array starting from 0
    * @param nullSequence  The byte sequence representing the NULL value
    */
-  private LazyPrimitive<?> uncheckedGetKey(int index, Text nullSequence) {
+  private LazyPrimitive<?,?> uncheckedGetKey(int index) {
+    Text nullSequence = oi.getNullSequence(); 
     int keyIBegin = keyStart[index];
     int keyILength = keyEnd[index] - keyStart[index];
     if (keyILength < 0 || 
@@ -264,7 +269,7 @@ public class LazyMap extends LazyNonPrimitive {
       if (keyObjects[index] == null) {
         // Keys are always primitive
         keyObjects[index] = LazyFactory.createLazyPrimitiveClass(
-            ((MapTypeInfo)typeInfo).getMapKeyTypeInfo().getTypeName());
+            (PrimitiveObjectInspector)((MapObjectInspector)oi).getMapKeyObjectInspector());
       }
       keyObjects[index].init(bytes, keyIBegin, keyILength);
     }
@@ -276,34 +281,32 @@ public class LazyMap extends LazyNonPrimitive {
    * But each LazyMap has a separate cachedMap so we won't overwrite the
    * data by accident.
    */
-  HashMap<Object, Object> cachedMap;
+  LinkedHashMap<Object, Object> cachedMap;
   
   /**
    * Return the map object representing this LazyMap.
-   * Note that the keyObjects will be Java primitive objects.
-   * @param itemSeparator     The separator between different entries.
-   * @param keyValueSeparator The separator between key and value.
-   * @param nullSequence      The byte sequence representing NULL.
+   * Note that the keyObjects will be Writable primitive objects.
    * @return the map object
    */
-  public Map<Object, Object> getMap(byte itemSeparator, byte keyValueSeparator,
-      Text nullSequence) {
+  public Map<Object, Object> getMap() {
     if (!parsed) {
-      parse(itemSeparator, keyValueSeparator, nullSequence);
+      parse();
     }
     if (cachedMap == null) {
-      cachedMap = new HashMap<Object, Object>();
+      // Use LinkedHashMap to provide deterministic order
+      cachedMap = new LinkedHashMap<Object, Object>();
+    } else {
+      cachedMap.clear();
     }
-    cachedMap.clear();
     
     // go through each element of the map
     for (int i = 0; i < mapSize; i++) {
-      LazyPrimitive<?> lazyKey = uncheckedGetKey(i, nullSequence);
+      LazyPrimitive<?,?> lazyKey = uncheckedGetKey(i);
       if (lazyKey == null) continue;
       Object key = lazyKey.getObject();
       // do not overwrite if there are duplicate keys
       if (key != null && !cachedMap.containsKey(key)) {
-        LazyObject lazyValue = uncheckedGetValue(i, nullSequence);
+        LazyObject lazyValue = uncheckedGetValue(i);
         Object value = (lazyValue == null ? null : lazyValue.getObject());
         cachedMap.put(key, value);
       }
@@ -313,15 +316,11 @@ public class LazyMap extends LazyNonPrimitive {
 
   /**
    * Get the size of the map represented by this LazyMap.
-   * @param itemSeparator     The separator between different entries.
-   * @param keyValueSeparator The separator between key and value.
-   * @param nullSequence      The byte sequence representing NULL.
    * @return                  The size of the map, -1 for NULL map.
    */
-  public int getMapSize(byte itemSeparator, byte keyValueSeparator,
-      Text nullSequence) {
+  public int getMapSize() {
     if (!parsed) {
-      parse(itemSeparator, keyValueSeparator, nullSequence);
+      parse();
     }
     return mapSize;
   }

@@ -15,31 +15,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.serde2.objectinspector.primitive;
+package org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive;
 
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
+import org.apache.hadoop.hive.serde2.lazy.LazyFloat;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.io.FloatWritable;
 
 /**
- * An AbstractJavaPrimitiveObjectInspector for a Java object. 
+ * A FloatObjectInspector inspects a FloatWritable Object.
  */
-public abstract class AbstractPrimitiveJavaObjectInspector extends AbstractPrimitiveObjectInspector {
+public class LazyFloatObjectInspector extends AbstractPrimitiveLazyObjectInspector<FloatWritable> 
+implements FloatObjectInspector{
 
-  protected AbstractPrimitiveJavaObjectInspector(PrimitiveTypeEntry typeEntry) {
-    super(typeEntry);
+  LazyFloatObjectInspector() {
+    super(PrimitiveObjectInspectorUtils.floatTypeEntry);
   }
   
   @Override
-  public Object getPrimitiveJavaObject(Object o) {
-    return o;
+  public float get(Object o) {
+    return getPrimitiveWritableObject(o).get();
   }
 
   @Override
   public Object copyObject(Object o) {
-    return o;
+    return o == null ? null : new LazyFloat((LazyFloat)o);
   }
-  
+
   @Override
-  public boolean preferWritable() {
-    return false;
+  public Object getPrimitiveJavaObject(Object o) {
+    return o == null ? null : Float.valueOf(get(o));
   }
 }

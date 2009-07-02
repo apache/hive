@@ -15,34 +15,50 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.serde2.objectinspector.primitive;
+package org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive;
 
+import org.apache.hadoop.hive.serde2.lazy.LazyString;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.io.Text;
 
 
 /**
  * A WritableStringObjectInspector inspects a Text Object.
  */
-public class WritableStringObjectInspector extends AbstractPrimitiveWritableObjectInspector 
+public class LazyStringObjectInspector extends AbstractPrimitiveLazyObjectInspector<Text> 
 implements StringObjectInspector{
 
-  WritableStringObjectInspector() {
+  boolean escaped;
+  byte escapeChar;
+  
+  LazyStringObjectInspector(boolean escaped, byte escapeChar) {
     super(PrimitiveObjectInspectorUtils.stringTypeEntry);
+    this.escaped = escaped;
+    this.escapeChar = escapeChar;
   }
 
   @Override
   public Object copyObject(Object o) {
-    return o == null ? null : new Text((Text)o);
+    return o == null ? null : new LazyString((LazyString)o);
   }
 
   @Override
   public Text getPrimitiveWritableObject(Object o) {
-    return o == null ? null : (Text)o;
+    return o == null ? null : ((LazyString)o).getWritableObject();
   }
   
   @Override
   public String getPrimitiveJavaObject(Object o) {
-    return o == null ? null : ((Text)o).toString();
+    return o == null ? null : ((LazyString)o).getWritableObject().toString();
   }
 
+  public boolean isEscaped() {
+    return escaped;
+  }
+  public byte getEscapeChar() {
+    return escapeChar;
+  }
+  
+  
 }

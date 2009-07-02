@@ -15,31 +15,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.serde2.objectinspector.primitive;
+package org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive;
 
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
+import org.apache.hadoop.hive.serde2.lazy.LazyBoolean;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.io.BooleanWritable;
+
 
 /**
- * An AbstractJavaPrimitiveObjectInspector for a Java object. 
+ * A WritableBooleanObjectInspector inspects a BooleanWritable Object.
  */
-public abstract class AbstractPrimitiveJavaObjectInspector extends AbstractPrimitiveObjectInspector {
+public class LazyBooleanObjectInspector extends AbstractPrimitiveLazyObjectInspector<BooleanWritable> 
+implements BooleanObjectInspector{
 
-  protected AbstractPrimitiveJavaObjectInspector(PrimitiveTypeEntry typeEntry) {
-    super(typeEntry);
+  LazyBooleanObjectInspector() {
+    super(PrimitiveObjectInspectorUtils.booleanTypeEntry);
   }
   
   @Override
-  public Object getPrimitiveJavaObject(Object o) {
-    return o;
+  public boolean get(Object o) {
+    return getPrimitiveWritableObject(o).get();
   }
 
   @Override
   public Object copyObject(Object o) {
-    return o;
+    return o == null ? null : new LazyBoolean((LazyBoolean)o);
   }
-  
+
   @Override
-  public boolean preferWritable() {
-    return false;
+  public Object getPrimitiveJavaObject(Object o) {
+    return o == null ? null : Boolean.valueOf(get(o));
   }
 }

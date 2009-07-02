@@ -69,5 +69,5 @@ public interface PrimitiveObjectInspector extends ObjectInspector {
    * This can be useful for determining the most efficient way to getting
    * data out of the Object. 
    */
-  public boolean isWritable();
+  public boolean preferWritable();
 }
