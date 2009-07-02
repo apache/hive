@@ -1160,6 +1160,94 @@ class Index:
   def __ne__(self, other):
     return not (self == other)
 
+class Schema:
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.LIST, 'fieldSchemas', (TType.STRUCT,(FieldSchema, FieldSchema.thrift_spec)), None, ), # 1
+    (2, TType.MAP, 'properties', (TType.STRING,None,TType.STRING,None), None, ), # 2
+  )
+
+  def __init__(self, d=None):
+    self.fieldSchemas = None
+    self.properties = None
+    if isinstance(d, dict):
+      if 'fieldSchemas' in d:
+        self.fieldSchemas = d['fieldSchemas']
+      if 'properties' in d:
+        self.properties = d['properties']
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.LIST:
+          self.fieldSchemas = []
+          (_etype88, _size85) = iprot.readListBegin()
+          for _i89 in xrange(_size85):
+            _elem90 = FieldSchema()
+            _elem90.read(iprot)
+            self.fieldSchemas.append(_elem90)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.MAP:
+          self.properties = {}
+          (_ktype92, _vtype93, _size91 ) = iprot.readMapBegin() 
+          for _i95 in xrange(_size91):
+            _key96 = iprot.readString();
+            _val97 = iprot.readString();
+            self.properties[_key96] = _val97
+          iprot.readMapEnd()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('Schema')
+    if self.fieldSchemas != None:
+      oprot.writeFieldBegin('fieldSchemas', TType.LIST, 1)
+      oprot.writeListBegin(TType.STRUCT, len(self.fieldSchemas))
+      for iter98 in self.fieldSchemas:
+        iter98.write(oprot)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.properties != None:
+      oprot.writeFieldBegin('properties', TType.MAP, 2)
+      oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.properties))
+      for kiter99,viter100 in self.properties.items():
+        oprot.writeString(kiter99)
+        oprot.writeString(viter100)
+      oprot.writeMapEnd()
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def __str__(self): 
+    return str(self.__dict__)
+
+  def __repr__(self): 
+    return repr(self.__dict__)
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class MetaException(Exception):
 
   thrift_spec = None

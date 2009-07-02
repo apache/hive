@@ -68,7 +68,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src_thrift</string> 
+            <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src_thrift</string> 
            </void> 
           </object> 
          </void> 
@@ -104,7 +104,7 @@
                         <void property="conf"> 
                          <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                           <void property="dirName"> 
-                           <string>file:/data/users/pchakka/workspace/oshive/build/ql/tmp/98140911/10001</string> 
+                           <string>file:/data/users/njain/hive1/hive1/build/ql/tmp/720855656/10001</string> 
                           </void> 
                           <void property="tableInfo"> 
                            <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -126,6 +126,10 @@
                               <void method="put"> 
                                <string>serialization.format</string> 
                                <string>1</string> 
+                              </void> 
+                              <void method="put"> 
+                               <string>columns.types</string> 
+                               <string>int:int:int</string> 
                               </void> 
                              </object> 
                             </void> 
@@ -152,7 +156,7 @@
                               <void property="type"> 
                                <object id="PrimitiveTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
                                 <void property="typeName"> 
-                                 <string>string</string> 
+                                 <string>int</string> 
                                 </void> 
                                </object> 
                               </void> 
@@ -201,10 +205,14 @@
                             <void property="typeInfo"> 
                              <object id="MapTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo"> 
                               <void property="mapKeyTypeInfo"> 
-                               <object idref="PrimitiveTypeInfo0"/> 
+                               <object id="PrimitiveTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
+                                <void property="typeName"> 
+                                 <string>string</string> 
+                                </void> 
+                               </object> 
                               </void> 
                               <void property="mapValueTypeInfo"> 
-                               <object idref="PrimitiveTypeInfo0"/> 
+                               <object idref="PrimitiveTypeInfo1"/> 
                               </void> 
                              </object> 
                             </void> 
@@ -216,11 +224,7 @@
                          <class>org.apache.hadoop.hive.ql.udf.generic.GenericUDFSize</class> 
                         </void> 
                         <void property="typeInfo"> 
-                         <object id="PrimitiveTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
-                          <void property="typeName"> 
-                           <string>int</string> 
-                          </void> 
-                         </object> 
+                         <object idref="PrimitiveTypeInfo0"/> 
                         </void> 
                        </object> 
                       </void> 
@@ -249,7 +253,7 @@
                          <class>org.apache.hadoop.hive.ql.udf.generic.GenericUDFSize</class> 
                         </void> 
                         <void property="typeInfo"> 
-                         <object idref="PrimitiveTypeInfo1"/> 
+                         <object idref="PrimitiveTypeInfo0"/> 
                         </void> 
                        </object> 
                       </void> 
@@ -266,7 +270,7 @@
                             <void property="typeInfo"> 
                              <object id="ListTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo"> 
                               <void property="listElementTypeInfo"> 
-                               <object idref="PrimitiveTypeInfo1"/> 
+                               <object idref="PrimitiveTypeInfo0"/> 
                               </void> 
                              </object> 
                             </void> 
@@ -278,7 +282,7 @@
                          <class>org.apache.hadoop.hive.ql.udf.generic.GenericUDFSize</class> 
                         </void> 
                         <void property="typeInfo"> 
-                         <object idref="PrimitiveTypeInfo1"/> 
+                         <object idref="PrimitiveTypeInfo0"/> 
                         </void> 
                        </object> 
                       </void> 
@@ -331,7 +335,7 @@
                            <string>_col0</string> 
                           </void> 
                           <void property="type"> 
-                           <object idref="PrimitiveTypeInfo1"/> 
+                           <object idref="PrimitiveTypeInfo0"/> 
                           </void> 
                          </object> 
                         </void> 
@@ -341,7 +345,7 @@
                            <string>_col1</string> 
                           </void> 
                           <void property="type"> 
-                           <object idref="PrimitiveTypeInfo1"/> 
+                           <object idref="PrimitiveTypeInfo0"/> 
                           </void> 
                          </object> 
                         </void> 
@@ -351,7 +355,7 @@
                            <string>_col2</string> 
                           </void> 
                           <void property="type"> 
-                           <object idref="PrimitiveTypeInfo1"/> 
+                           <object idref="PrimitiveTypeInfo0"/> 
                           </void> 
                          </object> 
                         </void> 
@@ -487,7 +491,7 @@
                        <string>aint</string> 
                       </void> 
                       <void property="type"> 
-                       <object idref="PrimitiveTypeInfo1"/> 
+                       <object idref="PrimitiveTypeInfo0"/> 
                       </void> 
                      </object> 
                     </void> 
@@ -497,7 +501,7 @@
                        <string>astring</string> 
                       </void> 
                       <void property="type"> 
-                       <object idref="PrimitiveTypeInfo0"/> 
+                       <object idref="PrimitiveTypeInfo1"/> 
                       </void> 
                      </object> 
                     </void> 
@@ -519,7 +523,7 @@
                       <void property="type"> 
                        <object class="org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo"> 
                         <void property="listElementTypeInfo"> 
-                         <object idref="PrimitiveTypeInfo0"/> 
+                         <object idref="PrimitiveTypeInfo1"/> 
                         </void> 
                        </object> 
                       </void> 
@@ -671,7 +675,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src_thrift</string> 
+       <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src_thrift</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src_thrift</string> 
@@ -683,7 +687,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src_thrift</string> 
+       <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src_thrift</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap0"/> 

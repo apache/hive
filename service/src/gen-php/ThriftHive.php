@@ -1003,7 +1003,8 @@ class ThriftHive_getSchema_result {
       self::$_TSPEC = array(
         0 => array(
           'var' => 'success',
-          'type' => TType::STRING,
+          'type' => TType::STRUCT,
+          'class' => 'metastore_Schema',
           ),
         1 => array(
           'var' => 'ex',
@@ -1042,8 +1043,9 @@ class ThriftHive_getSchema_result {
       switch ($fid)
       {
         case 0:
-          if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->success);
+          if ($ftype == TType::STRUCT) {
+            $this->success = new metastore_Schema();
+            $xfer += $this->success->read($input);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -1070,8 +1072,11 @@ class ThriftHive_getSchema_result {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ThriftHive_getSchema_result');
     if ($this->success !== null) {
-      $xfer += $output->writeFieldBegin('success', TType::STRING, 0);
-      $xfer += $output->writeString($this->success);
+      if (!is_object($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::STRUCT, 0);
+      $xfer += $this->success->write($output);
       $xfer += $output->writeFieldEnd();
     }
     if ($this->ex !== null) {

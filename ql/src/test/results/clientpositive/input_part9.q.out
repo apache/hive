@@ -33,19 +33,20 @@ STAGE PLANS:
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
-                    directory: file:/data/users/njain/deploy/hive2/tools/ahive2-trunk-apache-hive/build/ql/tmp/1481007439/10001
+                    directory: file:/data/users/njain/hive1/hive1/build/ql/tmp/1867593931/10001
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         properties:
                           columns x.key,x.value,x.ds,x.hr
                           serialization.format 1
+                          columns.types string:string:string:string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/njain/deploy/hive2/tools/ahive2-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
-        file:/data/users/njain/deploy/hive2/tools/ahive2-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
       Path -> Partition:
-        file:/data/users/njain/deploy/hive2/tools/ahive2-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
             partition values:
               ds 2008-04-08
@@ -64,10 +65,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/deploy/hive2/tools/ahive2-trunk-apache-hive/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/njain/deploy/hive2/tools/ahive2-trunk-apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
             partition values:
               ds 2008-04-08
@@ -86,7 +87,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/deploy/hive2/tools/ahive2-trunk-apache-hive/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
 
@@ -98,7 +99,7 @@ STAGE PLANS:
 query: SELECT x.* FROM SRCPART x WHERE key IS NOT NULL AND ds = '2008-04-08'
 Input: default/srcpart/ds=2008-04-08/hr=11
 Input: default/srcpart/ds=2008-04-08/hr=12
-Output: file:/data/users/njain/deploy/hive2/tools/ahive2-trunk-apache-hive/build/ql/tmp/983232439/10000
+Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/640376818/10000
 238	val_238	2008-04-08	11
 86	val_86	2008-04-08	11
 311	val_311	2008-04-08	11

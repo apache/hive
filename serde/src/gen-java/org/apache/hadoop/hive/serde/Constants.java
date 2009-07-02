@@ -70,6 +70,10 @@ public class Constants {
   public static final String MAP_TYPE_NAME = "map";
 
   public static final String STRUCT_TYPE_NAME = "struct";
+  
+  public static final String LIST_COLUMNS = "columns";
+  
+  public static final String LIST_COLUMN_TYPES = "columns.types";
 
   public static final Set<String> PrimitiveTypes = new HashSet<String>();
   static {

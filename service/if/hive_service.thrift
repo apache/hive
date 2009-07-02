@@ -50,6 +50,6 @@ service ThriftHive extends hive_metastore.ThriftHiveMetastore {
   list<string> fetchAll() throws(1:HiveServerException ex)
 
   # Get the Thrift DDL string of the query result
-  string getSchema() throws(1:HiveServerException ex)
+  hive_metastore.Schema getSchema() throws(1:HiveServerException ex)
 
 }

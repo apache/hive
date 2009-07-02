@@ -454,7 +454,7 @@ sb.append(this.createTime);
 sb.append(",lastAccessTime:");
 sb.append(this.lastAccessTime);
 sb.append(",sd:");
-sb.append(this.sd.toString());
+sb.append(this.sd);
 sb.append(",parameters:");
 sb.append(this.parameters);
 sb.append(")");

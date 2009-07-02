@@ -541,7 +541,7 @@ sb.append(this.lastAccessTime);
 sb.append(",retention:");
 sb.append(this.retention);
 sb.append(",sd:");
-sb.append(this.sd.toString());
+sb.append(this.sd);
 sb.append(",partitionKeys:");
 sb.append(this.partitionKeys);
 sb.append(",parameters:");

@@ -64,7 +64,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/src</string> 
+            <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src</string> 
            </void> 
           </object> 
          </void> 
@@ -96,7 +96,7 @@
                     <void property="conf"> 
                      <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                       <void property="dirName"> 
-                       <string>file:/data/users/njain/hive4/hive4/build/ql/tmp/792684261/10001</string> 
+                       <string>file:/data/users/njain/hive1/hive1/build/ql/tmp/1177328759/10001</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -118,6 +118,10 @@
                           <void method="put"> 
                            <string>serialization.format</string> 
                            <string>1</string> 
+                          </void> 
+                          <void method="put"> 
+                           <string>columns.types</string> 
+                           <string>int:int</string> 
                           </void> 
                          </object> 
                         </void> 
@@ -144,7 +148,7 @@
                           <void property="type"> 
                            <object id="PrimitiveTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
                             <void property="typeName"> 
-                             <string>string</string> 
+                             <string>int</string> 
                             </void> 
                            </object> 
                           </void> 
@@ -192,11 +196,7 @@
                        <string>_col0</string> 
                       </void> 
                       <void property="type"> 
-                       <object id="PrimitiveTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
-                        <void property="typeName"> 
-                         <string>int</string> 
-                        </void> 
-                       </object> 
+                       <object idref="PrimitiveTypeInfo0"/> 
                       </void> 
                      </object> 
                     </void> 
@@ -206,7 +206,7 @@
                        <string>_col1</string> 
                       </void> 
                       <void property="type"> 
-                       <object idref="PrimitiveTypeInfo1"/> 
+                       <object idref="PrimitiveTypeInfo0"/> 
                       </void> 
                      </object> 
                     </void> 
@@ -248,7 +248,7 @@
                       <void method="add"> 
                        <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
                         <void property="typeInfo"> 
-                         <object idref="PrimitiveTypeInfo1"/> 
+                         <object idref="PrimitiveTypeInfo0"/> 
                         </void> 
                         <void property="value"> 
                          <int>12</int> 
@@ -258,7 +258,7 @@
                       <void method="add"> 
                        <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
                         <void property="typeInfo"> 
-                         <object idref="PrimitiveTypeInfo1"/> 
+                         <object idref="PrimitiveTypeInfo0"/> 
                         </void> 
                         <void property="value"> 
                          <int>11</int> 
@@ -268,7 +268,7 @@
                      </object> 
                     </void> 
                     <void property="typeInfo"> 
-                     <object id="PrimitiveTypeInfo2" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
+                     <object id="PrimitiveTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
                       <void property="typeName"> 
                        <string>boolean</string> 
                       </void> 
@@ -279,7 +279,7 @@
                   <void method="add"> 
                    <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
                     <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo1"/> 
+                     <object idref="PrimitiveTypeInfo0"/> 
                     </void> 
                     <void property="value"> 
                      <int>13</int> 
@@ -309,7 +309,7 @@
                       <void method="add"> 
                        <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
                         <void property="typeInfo"> 
-                         <object idref="PrimitiveTypeInfo1"/> 
+                         <object idref="PrimitiveTypeInfo0"/> 
                         </void> 
                         <void property="value"> 
                          <int>14</int> 
@@ -319,7 +319,7 @@
                       <void method="add"> 
                        <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
                         <void property="typeInfo"> 
-                         <object idref="PrimitiveTypeInfo1"/> 
+                         <object idref="PrimitiveTypeInfo0"/> 
                         </void> 
                         <void property="value"> 
                          <int>10</int> 
@@ -329,14 +329,14 @@
                      </object> 
                     </void> 
                     <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo2"/> 
+                     <object idref="PrimitiveTypeInfo1"/> 
                     </void> 
                    </object> 
                   </void> 
                   <void method="add"> 
                    <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
                     <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo1"/> 
+                     <object idref="PrimitiveTypeInfo0"/> 
                     </void> 
                     <void property="value"> 
                      <int>15</int> 
@@ -349,7 +349,7 @@
                  <class>org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen</class> 
                 </void> 
                 <void property="typeInfo"> 
-                 <object idref="PrimitiveTypeInfo1"/> 
+                 <object idref="PrimitiveTypeInfo0"/> 
                 </void> 
                </object> 
               </void> 
@@ -381,7 +381,7 @@
                       <void method="add"> 
                        <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
                         <void property="typeInfo"> 
-                         <object idref="PrimitiveTypeInfo1"/> 
+                         <object idref="PrimitiveTypeInfo0"/> 
                         </void> 
                         <void property="value"> 
                          <int>1</int> 
@@ -391,7 +391,7 @@
                       <void method="add"> 
                        <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
                         <void property="typeInfo"> 
-                         <object idref="PrimitiveTypeInfo1"/> 
+                         <object idref="PrimitiveTypeInfo0"/> 
                         </void> 
                         <void property="value"> 
                          <int>1</int> 
@@ -401,14 +401,14 @@
                      </object> 
                     </void> 
                     <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo2"/> 
+                     <object idref="PrimitiveTypeInfo1"/> 
                     </void> 
                    </object> 
                   </void> 
                   <void method="add"> 
                    <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
                     <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo1"/> 
+                     <object idref="PrimitiveTypeInfo0"/> 
                     </void> 
                     <void property="value"> 
                      <int>2</int> 
@@ -438,7 +438,7 @@
                       <void method="add"> 
                        <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
                         <void property="typeInfo"> 
-                         <object idref="PrimitiveTypeInfo1"/> 
+                         <object idref="PrimitiveTypeInfo0"/> 
                         </void> 
                         <void property="value"> 
                          <int>3</int> 
@@ -448,7 +448,7 @@
                       <void method="add"> 
                        <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
                         <void property="typeInfo"> 
-                         <object idref="PrimitiveTypeInfo1"/> 
+                         <object idref="PrimitiveTypeInfo0"/> 
                         </void> 
                         <void property="value"> 
                          <int>5</int> 
@@ -458,14 +458,14 @@
                      </object> 
                     </void> 
                     <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo2"/> 
+                     <object idref="PrimitiveTypeInfo1"/> 
                     </void> 
                    </object> 
                   </void> 
                   <void method="add"> 
                    <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
                     <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo1"/> 
+                     <object idref="PrimitiveTypeInfo0"/> 
                     </void> 
                     <void property="value"> 
                      <int>4</int> 
@@ -475,7 +475,7 @@
                   <void method="add"> 
                    <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
                     <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo1"/> 
+                     <object idref="PrimitiveTypeInfo0"/> 
                     </void> 
                     <void property="value"> 
                      <int>5</int> 
@@ -488,7 +488,7 @@
                  <class>org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen</class> 
                 </void> 
                 <void property="typeInfo"> 
-                 <object idref="PrimitiveTypeInfo1"/> 
+                 <object idref="PrimitiveTypeInfo0"/> 
                 </void> 
                </object> 
               </void> 
@@ -546,7 +546,11 @@
                <string>key</string> 
               </void> 
               <void property="type"> 
-               <object idref="PrimitiveTypeInfo0"/> 
+               <object id="PrimitiveTypeInfo2" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
+                <void property="typeName"> 
+                 <string>string</string> 
+                </void> 
+               </object> 
               </void> 
              </object> 
             </void> 
@@ -556,7 +560,7 @@
                <string>value</string> 
               </void> 
               <void property="type"> 
-               <object idref="PrimitiveTypeInfo0"/> 
+               <object idref="PrimitiveTypeInfo2"/> 
               </void> 
              </object> 
             </void> 
@@ -571,7 +575,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src</string> 
@@ -583,7 +587,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap0"/> 

@@ -21,14 +21,15 @@ import java.sql.SQLXML;
 import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Properties;
+
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.service.HiveInterface;
@@ -57,17 +58,32 @@ public class HiveResultSet implements java.sql.ResultSet {
    */
   public void initDynamicSerde() {
     try {
-      String fullSchema = client.getSchema();
-      String[] schemaParts = fullSchema.split("#");
-      if (schemaParts.length > 2) {
-        columnNames = Arrays.asList(schemaParts[1].split(","));
-        columnTypes = Arrays.asList(schemaParts[2].split(":"));
+      Schema fullSchema = client.getSchema();
+      List<FieldSchema> schema = fullSchema.getFieldSchemas();
+      columnNames = new ArrayList<String>();
+      columnTypes = new ArrayList<String>();
+      
+      String serDDL;
+      
+      if ((schema != null) && (!schema.isEmpty())) {
+        serDDL = new String("struct result { ");
+        for (int pos = 0; pos < schema.size(); pos++) {
+          if (pos != 0)
+            serDDL = serDDL.concat(",");
+          serDDL = serDDL.concat(schema.get(pos).getType());
+          serDDL = serDDL.concat(" ");
+          serDDL = serDDL.concat(schema.get(pos).getName());
+        }
+        serDDL = serDDL.concat("}");
       }
+      else
+        serDDL = new String("struct result { string empty }");
+
       ds = new DynamicSerDe();
       Properties dsp = new Properties();
       dsp.setProperty(Constants.SERIALIZATION_FORMAT, org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol.class.getName());
       dsp.setProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME, "result");
-      dsp.setProperty(Constants.SERIALIZATION_DDL, schemaParts[0]);
+      dsp.setProperty(Constants.SERIALIZATION_DDL, serDDL);
       dsp.setProperty(Constants.SERIALIZATION_LIB, ds.getClass().toString());
       dsp.setProperty(Constants.FIELD_DELIM, "9");
       ds.initialize(new Configuration(), dsp);

@@ -653,7 +653,7 @@ sb.append(this.compressed);
 sb.append(",numBuckets:");
 sb.append(this.numBuckets);
 sb.append(",serdeInfo:");
-sb.append(this.serdeInfo.toString());
+sb.append(this.serdeInfo);
 sb.append(",bucketCols:");
 sb.append(this.bucketCols);
 sb.append(",sortCols:");

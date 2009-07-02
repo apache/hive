@@ -64,7 +64,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/src</string> 
+            <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src</string> 
            </void> 
           </object> 
          </void> 
@@ -92,7 +92,7 @@
                 <void property="conf"> 
                  <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                   <void property="dirName"> 
-                   <string>file:/data/users/njain/hive4/hive4/build/ql/tmp/785930518/10001</string> 
+                   <string>file:/data/users/njain/hive1/hive1/build/ql/tmp/1381018045/10001</string> 
                   </void> 
                   <void property="tableInfo"> 
                    <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -114,6 +114,10 @@
                       <void method="put"> 
                        <string>serialization.format</string> 
                        <string>1</string> 
+                      </void> 
+                      <void method="put"> 
+                       <string>columns.types</string> 
+                       <string>string:int</string> 
                       </void> 
                      </object> 
                     </void> 
@@ -152,7 +156,11 @@
                        <string>_c1</string> 
                       </void> 
                       <void property="type"> 
-                       <object idref="PrimitiveTypeInfo0"/> 
+                       <object id="PrimitiveTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
+                        <void property="typeName"> 
+                         <string>int</string> 
+                        </void> 
+                       </object> 
                       </void> 
                      </object> 
                     </void> 
@@ -188,11 +196,7 @@
                   <void method="add"> 
                    <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
                     <void property="typeInfo"> 
-                     <object id="PrimitiveTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
-                      <void property="typeName"> 
-                       <string>int</string> 
-                      </void> 
-                     </object> 
+                     <object idref="PrimitiveTypeInfo1"/> 
                     </void> 
                     <void property="value"> 
                      <int>1</int> 
@@ -367,7 +371,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src</string> 
@@ -379,7 +383,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap0"/> 

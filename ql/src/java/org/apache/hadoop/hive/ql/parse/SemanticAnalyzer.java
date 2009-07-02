@@ -2336,19 +2336,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
         }
         String cols = new String();
+        String colTypes = new String();
         Vector<ColumnInfo> colInfos = inputRR.getColumnInfos();
     
         boolean first = true;
         for (ColumnInfo colInfo:colInfos) {
           String[] nm = inputRR.reverseLookup(colInfo.getInternalName());
-          if (!first)
+          if (!first) {
             cols = cols.concat(",");
+            colTypes = colTypes.concat(":");
+          }
           
           first = false;
           if (nm[0] == null) 
             cols = cols.concat(nm[1]);
           else
             cols = cols.concat(nm[0] + "." + nm[1]);
+          colTypes = colTypes.concat(colInfo.getType().getTypeName());
         }
 
         if (!ctx.isMRTmpFileURI(destStr)) {
@@ -2359,10 +2363,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
         boolean isDfsDir = (dest_type.intValue() == QBMetaData.DEST_DFS_FILE);
         this.loadFileWork.add(new loadFileDesc(queryTmpdir, destStr,
-                                               isDfsDir, cols));
+                                               isDfsDir, cols, colTypes));
 
         table_desc = PlanUtils.getDefaultTableDesc(Integer.toString(Utilities.ctrlaCode),
-                                                   cols);
+                                                   cols, colTypes, false);
         outputs.add(new WriteEntity(destStr, !isDfsDir));
         break;
     }
@@ -3719,13 +3723,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if ((!loadTableWork.isEmpty()) || (loadFileWork.size() != 1))
         throw new SemanticException(ErrorMsg.GENERIC_ERROR.getMsg());
       String cols = loadFileWork.get(0).getColumns();
+      String colTypes = loadFileWork.get(0).getColumnTypes();
     
       fetch = new fetchWork(new Path(loadFileWork.get(0).getSourceDir()).toString(),
       			                new tableDesc(LazySimpleSerDe.class, TextInputFormat.class,
                  			                		IgnoreKeyTextOutputFormat.class,
       			                           		Utilities.makeProperties(
       			                                org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, "" + Utilities.ctrlaCode,
-      			                                "columns", cols)),    
+      			                                org.apache.hadoop.hive.serde.Constants.LIST_COLUMNS, cols,
+      			                                org.apache.hadoop.hive.serde.Constants.LIST_COLUMN_TYPES, colTypes)),    
       			                qb.getParseInfo().getOuterQueryLimit());    
 
       fetchTask = TaskFactory.get(fetch, this.conf);

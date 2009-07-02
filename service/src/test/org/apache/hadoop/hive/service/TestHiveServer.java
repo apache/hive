@@ -4,6 +4,9 @@ import java.util.*;
 
 import org.apache.hadoop.fs.Path;
 import junit.framework.TestCase;
+
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.service.HiveInterface;
 import org.apache.hadoop.hive.service.HiveClient;
 import org.apache.hadoop.hive.service.HiveServer;
@@ -77,7 +80,11 @@ public class TestHiveServer extends TestCase {
       client.execute("select count(1) as cnt from " + tableName);
       String row = client.fetchOne();
       assertEquals(row, "500");
-      assertEquals("struct result { string cnt}#cnt#string", client.getSchema());
+      Schema schema = client.getSchema();
+      List<FieldSchema> listFields = schema.getFieldSchemas();
+      assertEquals(listFields.size(), 1);
+      assertEquals(listFields.get(0).getName(), "cnt");
+      assertEquals(listFields.get(0).getType(), "i64");
       client.execute("drop table " + tableName);
     }
     catch (Throwable t) {
@@ -171,7 +178,18 @@ public class TestHiveServer extends TestCase {
     Properties dsp = new Properties();
     dsp.setProperty(Constants.SERIALIZATION_FORMAT, org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol.class.getName());
     dsp.setProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME, "result");
-    dsp.setProperty(Constants.SERIALIZATION_DDL, client.getSchema().split("#")[0]);
+    String serDDL = new String("struct result { ");
+    List<FieldSchema> schema = client.getSchema().getFieldSchemas();
+    for (int pos = 0; pos < schema.size(); pos++) {
+      if (pos != 0) 
+          serDDL = serDDL.concat(",");
+      serDDL = serDDL.concat(schema.get(pos).getType());
+      serDDL = serDDL.concat(" ");
+      serDDL = serDDL.concat(schema.get(pos).getName());
+    }
+    serDDL = serDDL.concat("}");
+
+    dsp.setProperty(Constants.SERIALIZATION_DDL, serDDL);
     dsp.setProperty(Constants.SERIALIZATION_LIB, ds.getClass().toString());
     dsp.setProperty(Constants.FIELD_DELIM, "9");
     ds.initialize(new Configuration(), dsp);
@@ -181,13 +199,25 @@ public class TestHiveServer extends TestCase {
 
     assertEquals(o.getClass().toString(), "class java.util.ArrayList");
     List<?> lst = (List<?>)o;
-    assertEquals(lst.get(0), "238");
+    assertEquals(lst.get(0), 238);
 
     // TODO: serde doesn't like underscore  -- struct result { string _c0}
     sql = "select count(1) as c from " + tableName;
     client.execute(sql);
     row = client.fetchOne();
-    dsp.setProperty(Constants.SERIALIZATION_DDL, client.getSchema().split("#")[0]);
+
+    serDDL = new String("struct result { ");
+    schema = client.getSchema().getFieldSchemas();
+    for (int pos = 0; pos < schema.size(); pos++) {
+      if (pos != 0) 
+          serDDL = serDDL.concat(",");
+      serDDL = serDDL.concat(schema.get(pos).getType());
+      serDDL = serDDL.concat(" ");
+      serDDL = serDDL.concat(schema.get(pos).getName());
+    }
+    serDDL = serDDL.concat("}");
+
+    dsp.setProperty(Constants.SERIALIZATION_DDL, serDDL);
     // Need a new DynamicSerDe instance - re-initialization is not supported.
     ds = new DynamicSerDe();
     ds.initialize(new Configuration(), dsp);

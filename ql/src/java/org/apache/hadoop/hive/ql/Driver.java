@@ -29,6 +29,7 @@ import org.apache.commons.lang.StringUtils;
 
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.ParseException;
@@ -47,7 +48,6 @@ import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.common.JavaUtils;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.security.UserGroupInformation;
 
 import org.apache.commons.logging.Log;
@@ -89,8 +89,8 @@ public class Driver implements CommandProcessor {
   /**
    * Return the Thrift DDL string of the result
    */
-  public String getSchema() throws Exception {
-    String schema = "";
+  public Schema getSchema() throws Exception {
+    Schema schema;
     try {
       if (plan != null && plan.getPlan().getFetchTask() != null) {
         BaseSemanticAnalyzer sem = plan.getPlan();
@@ -102,13 +102,29 @@ public class Driver implements CommandProcessor {
         FetchTask ft = (FetchTask) sem.getFetchTask();
 
         tableDesc td = ft.getTblDesc();
+        // partitioned tables don't have tableDesc set on the FetchTask. Instead
+        // they have a list of PartitionDesc objects, each with a table desc. Let's
+        // try to fetch the desc for the first partition and use it's deserializer.
+        if (td == null && ft.getWork() != null && ft.getWork().getPartDesc() != null) {
+          if (ft.getWork().getPartDesc().size() > 0) {
+            td = ft.getWork().getPartDesc().get(0).getTableDesc();
+          }
+        }
+
+        if (td == null) {
+          throw new Exception("No table description found for fetch task: " + ft);
+        }
+ 
         String tableName = "result";
         List<FieldSchema> lst = MetaStoreUtils.getFieldsFromDeserializer(
             tableName, td.getDeserializer());
-        schema = MetaStoreUtils.getFullDDLFromFieldSchema(tableName, lst);
+        // Go over the schema and convert type to thrift type
+        for (FieldSchema f : lst) 
+          f.setType(MetaStoreUtils.typeToThriftType(f.getType()));
+        schema = new Schema(lst, null);
       }
       else {
-        schema = "struct result { string empty }";
+        schema = new Schema();
       }
     }
     catch (Exception e) {

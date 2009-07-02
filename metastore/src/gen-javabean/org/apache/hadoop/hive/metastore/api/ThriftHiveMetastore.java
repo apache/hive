@@ -1826,9 +1826,9 @@ StringBuilder sb = new StringBuilder("create_database_result(");
 sb.append("success:");
 sb.append(this.success);
 sb.append(",o1:");
-sb.append(this.o1.toString());
+sb.append(this.o1);
 sb.append(",o2:");
-sb.append(this.o2.toString());
+sb.append(this.o2);
 sb.append(")");
 return sb.toString();
 }
@@ -2153,11 +2153,11 @@ oprot.writeStructEnd();
 public String toString() {
 StringBuilder sb = new StringBuilder("get_database_result(");
 sb.append("success:");
-sb.append(this.success.toString());
+sb.append(this.success);
 sb.append(",o1:");
-sb.append(this.o1.toString());
+sb.append(this.o1);
 sb.append(",o2:");
-sb.append(this.o2.toString());
+sb.append(this.o2);
 sb.append(")");
 return sb.toString();
 }
@@ -2434,7 +2434,7 @@ StringBuilder sb = new StringBuilder("drop_database_result(");
 sb.append("success:");
 sb.append(this.success);
 sb.append(",o2:");
-sb.append(this.o2.toString());
+sb.append(this.o2);
 sb.append(")");
 return sb.toString();
 }
@@ -2618,13 +2618,13 @@ while (true)
     case 0:
       if (field.type == TType.LIST) {
         {
-          TList _list48 = iprot.readListBegin();
-          this.success = new ArrayList<String>(_list48.size);
-          for (int _i49 = 0; _i49 < _list48.size; ++_i49)
+          TList _list57 = iprot.readListBegin();
+          this.success = new ArrayList<String>(_list57.size);
+          for (int _i58 = 0; _i58 < _list57.size; ++_i58)
           {
-            String _elem50 = null;
-            _elem50 = iprot.readString();
-            this.success.add(_elem50);
+            String _elem59 = null;
+            _elem59 = iprot.readString();
+            this.success.add(_elem59);
           }
           iprot.readListEnd();
         }
@@ -2664,8 +2664,8 @@ if (this.__isset.success) {
     oprot.writeFieldBegin(field);
     {
       oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-      for (String _iter51 : this.success)      {
-        oprot.writeString(_iter51);
+      for (String _iter60 : this.success)      {
+        oprot.writeString(_iter60);
       }
       oprot.writeListEnd();
     }
@@ -2690,7 +2690,7 @@ StringBuilder sb = new StringBuilder("get_databases_result(");
 sb.append("success:");
 sb.append(this.success);
 sb.append(",o1:");
-sb.append(this.o1.toString());
+sb.append(this.o1);
 sb.append(")");
 return sb.toString();
 }
@@ -2969,9 +2969,9 @@ oprot.writeStructEnd();
 public String toString() {
 StringBuilder sb = new StringBuilder("get_type_result(");
 sb.append("success:");
-sb.append(this.success.toString());
+sb.append(this.success);
 sb.append(",o2:");
-sb.append(this.o2.toString());
+sb.append(this.o2);
 sb.append(")");
 return sb.toString();
 }
@@ -3087,7 +3087,7 @@ oprot.writeStructEnd();
 public String toString() {
 StringBuilder sb = new StringBuilder("create_type_args(");
 sb.append("type:");
-sb.append(this.type.toString());
+sb.append(this.type);
 sb.append(")");
 return sb.toString();
 }
@@ -3342,11 +3342,11 @@ StringBuilder sb = new StringBuilder("create_type_result(");
 sb.append("success:");
 sb.append(this.success);
 sb.append(",o1:");
-sb.append(this.o1.toString());
+sb.append(this.o1);
 sb.append(",o2:");
-sb.append(this.o2.toString());
+sb.append(this.o2);
 sb.append(",o3:");
-sb.append(this.o3.toString());
+sb.append(this.o3);
 sb.append(")");
 return sb.toString();
 }
@@ -3623,7 +3623,7 @@ StringBuilder sb = new StringBuilder("drop_type_result(");
 sb.append("success:");
 sb.append(this.success);
 sb.append(",o2:");
-sb.append(this.o2.toString());
+sb.append(this.o2);
 sb.append(")");
 return sb.toString();
 }
@@ -3859,16 +3859,16 @@ while (true)
     case 0:
       if (field.type == TType.MAP) {
         {
-          TMap _map52 = iprot.readMapBegin();
-          this.success = new HashMap<String,Type>(2*_map52.size);
-          for (int _i53 = 0; _i53 < _map52.size; ++_i53)
+          TMap _map61 = iprot.readMapBegin();
+          this.success = new HashMap<String,Type>(2*_map61.size);
+          for (int _i62 = 0; _i62 < _map61.size; ++_i62)
           {
-            String _key54;
-            Type _val55;
-            _key54 = iprot.readString();
-            _val55 = new Type();
-            _val55.read(iprot);
-            this.success.put(_key54, _val55);
+            String _key63;
+            Type _val64;
+            _key63 = iprot.readString();
+            _val64 = new Type();
+            _val64.read(iprot);
+            this.success.put(_key63, _val64);
           }
           iprot.readMapEnd();
         }
@@ -3908,9 +3908,9 @@ if (this.__isset.success) {
     oprot.writeFieldBegin(field);
     {
       oprot.writeMapBegin(new TMap(TType.STRING, TType.STRUCT, this.success.size()));
-      for (String _iter56 : this.success.keySet())      {
-        oprot.writeString(_iter56);
-        this.success.get(_iter56).write(oprot);
+      for (String _iter65 : this.success.keySet())      {
+        oprot.writeString(_iter65);
+        this.success.get(_iter65).write(oprot);
       }
       oprot.writeMapEnd();
     }
@@ -3935,7 +3935,7 @@ StringBuilder sb = new StringBuilder("get_type_all_result(");
 sb.append("success:");
 sb.append(this.success);
 sb.append(",o2:");
-sb.append(this.o2.toString());
+sb.append(this.o2);
 sb.append(")");
 return sb.toString();
 }
@@ -4276,14 +4276,14 @@ while (true)
     case 0:
       if (field.type == TType.LIST) {
         {
-          TList _list57 = iprot.readListBegin();
-          this.success = new ArrayList<FieldSchema>(_list57.size);
-          for (int _i58 = 0; _i58 < _list57.size; ++_i58)
+          TList _list66 = iprot.readListBegin();
+          this.success = new ArrayList<FieldSchema>(_list66.size);
+          for (int _i67 = 0; _i67 < _list66.size; ++_i67)
           {
-            FieldSchema _elem59 = new FieldSchema();
-            _elem59 = new FieldSchema();
-            _elem59.read(iprot);
-            this.success.add(_elem59);
+            FieldSchema _elem68 = new FieldSchema();
+            _elem68 = new FieldSchema();
+            _elem68.read(iprot);
+            this.success.add(_elem68);
           }
           iprot.readListEnd();
         }
@@ -4341,8 +4341,8 @@ if (this.__isset.success) {
     oprot.writeFieldBegin(field);
     {
       oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
-      for (FieldSchema _iter60 : this.success)      {
-        _iter60.write(oprot);
+      for (FieldSchema _iter69 : this.success)      {
+        _iter69.write(oprot);
       }
       oprot.writeListEnd();
     }
@@ -4385,11 +4385,11 @@ StringBuilder sb = new StringBuilder("get_fields_result(");
 sb.append("success:");
 sb.append(this.success);
 sb.append(",o1:");
-sb.append(this.o1.toString());
+sb.append(this.o1);
 sb.append(",o2:");
-sb.append(this.o2.toString());
+sb.append(this.o2);
 sb.append(",o3:");
-sb.append(this.o3.toString());
+sb.append(this.o3);
 sb.append(")");
 return sb.toString();
 }
@@ -4505,7 +4505,7 @@ oprot.writeStructEnd();
 public String toString() {
 StringBuilder sb = new StringBuilder("create_table_args(");
 sb.append("tbl:");
-sb.append(this.tbl.toString());
+sb.append(this.tbl);
 sb.append(")");
 return sb.toString();
 }
@@ -4762,13 +4762,13 @@ oprot.writeStructEnd();
 public String toString() {
 StringBuilder sb = new StringBuilder("create_table_result(");
 sb.append("o1:");
-sb.append(this.o1.toString());
+sb.append(this.o1);
 sb.append(",o2:");
-sb.append(this.o2.toString());
+sb.append(this.o2);
 sb.append(",o3:");
-sb.append(this.o3.toString());
+sb.append(this.o3);
 sb.append(",o4:");
-sb.append(this.o4.toString());
+sb.append(this.o4);
 sb.append(")");
 return sb.toString();
 }
@@ -5135,9 +5135,9 @@ oprot.writeStructEnd();
 public String toString() {
 StringBuilder sb = new StringBuilder("drop_table_result(");
 sb.append("o1:");
-sb.append(this.o1.toString());
+sb.append(this.o1);
 sb.append(",o3:");
-sb.append(this.o3.toString());
+sb.append(this.o3);
 sb.append(")");
 return sb.toString();
 }
@@ -5422,13 +5422,13 @@ while (true)
     case 0:
       if (field.type == TType.LIST) {
         {
-          TList _list61 = iprot.readListBegin();
-          this.success = new ArrayList<String>(_list61.size);
-          for (int _i62 = 0; _i62 < _list61.size; ++_i62)
+          TList _list70 = iprot.readListBegin();
+          this.success = new ArrayList<String>(_list70.size);
+          for (int _i71 = 0; _i71 < _list70.size; ++_i71)
           {
-            String _elem63 = null;
-            _elem63 = iprot.readString();
-            this.success.add(_elem63);
+            String _elem72 = null;
+            _elem72 = iprot.readString();
+            this.success.add(_elem72);
           }
           iprot.readListEnd();
         }
@@ -5468,8 +5468,8 @@ if (this.__isset.success) {
     oprot.writeFieldBegin(field);
     {
       oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-      for (String _iter64 : this.success)      {
-        oprot.writeString(_iter64);
+      for (String _iter73 : this.success)      {
+        oprot.writeString(_iter73);
       }
       oprot.writeListEnd();
     }
@@ -5494,7 +5494,7 @@ StringBuilder sb = new StringBuilder("get_tables_result(");
 sb.append("success:");
 sb.append(this.success);
 sb.append(",o1:");
-sb.append(this.o1.toString());
+sb.append(this.o1);
 sb.append(")");
 return sb.toString();
 }
@@ -5864,11 +5864,11 @@ oprot.writeStructEnd();
 public String toString() {
 StringBuilder sb = new StringBuilder("get_table_result(");
 sb.append("success:");
-sb.append(this.success.toString());
+sb.append(this.success);
 sb.append(",o1:");
-sb.append(this.o1.toString());
+sb.append(this.o1);
 sb.append(",o2:");
-sb.append(this.o2.toString());
+sb.append(this.o2);
 sb.append(")");
 return sb.toString();
 }
@@ -6074,7 +6074,7 @@ sb.append(this.dbname);
 sb.append(",tbl_name:");
 sb.append(this.tbl_name);
 sb.append(",new_tbl:");
-sb.append(this.new_tbl.toString());
+sb.append(this.new_tbl);
 sb.append(")");
 return sb.toString();
 }
@@ -6239,9 +6239,9 @@ oprot.writeStructEnd();
 public String toString() {
 StringBuilder sb = new StringBuilder("alter_table_result(");
 sb.append("o1:");
-sb.append(this.o1.toString());
+sb.append(this.o1);
 sb.append(",o2:");
-sb.append(this.o2.toString());
+sb.append(this.o2);
 sb.append(")");
 return sb.toString();
 }
@@ -6357,7 +6357,7 @@ oprot.writeStructEnd();
 public String toString() {
 StringBuilder sb = new StringBuilder("add_partition_args(");
 sb.append("new_part:");
-sb.append(this.new_part.toString());
+sb.append(this.new_part);
 sb.append(")");
 return sb.toString();
 }
@@ -6614,13 +6614,13 @@ oprot.writeStructEnd();
 public String toString() {
 StringBuilder sb = new StringBuilder("add_partition_result(");
 sb.append("success:");
-sb.append(this.success.toString());
+sb.append(this.success);
 sb.append(",o1:");
-sb.append(this.o1.toString());
+sb.append(this.o1);
 sb.append(",o2:");
-sb.append(this.o2.toString());
+sb.append(this.o2);
 sb.append(",o3:");
-sb.append(this.o3.toString());
+sb.append(this.o3);
 sb.append(")");
 return sb.toString();
 }
@@ -6788,13 +6788,13 @@ while (true)
     case 3:
       if (field.type == TType.LIST) {
         {
-          TList _list65 = iprot.readListBegin();
-          this.part_vals = new ArrayList<String>(_list65.size);
-          for (int _i66 = 0; _i66 < _list65.size; ++_i66)
+          TList _list74 = iprot.readListBegin();
+          this.part_vals = new ArrayList<String>(_list74.size);
+          for (int _i75 = 0; _i75 < _list74.size; ++_i75)
           {
-            String _elem67 = null;
-            _elem67 = iprot.readString();
-            this.part_vals.add(_elem67);
+            String _elem76 = null;
+            _elem76 = iprot.readString();
+            this.part_vals.add(_elem76);
           }
           iprot.readListEnd();
         }
@@ -6839,8 +6839,8 @@ if (this.part_vals != null) {
   oprot.writeFieldBegin(field);
   {
     oprot.writeListBegin(new TList(TType.STRING, this.part_vals.size()));
-    for (String _iter68 : this.part_vals)    {
-      oprot.writeString(_iter68);
+    for (String _iter77 : this.part_vals)    {
+      oprot.writeString(_iter77);
     }
     oprot.writeListEnd();
   }
@@ -7114,13 +7114,13 @@ oprot.writeStructEnd();
 public String toString() {
 StringBuilder sb = new StringBuilder("append_partition_result(");
 sb.append("success:");
-sb.append(this.success.toString());
+sb.append(this.success);
 sb.append(",o1:");
-sb.append(this.o1.toString());
+sb.append(this.o1);
 sb.append(",o2:");
-sb.append(this.o2.toString());
+sb.append(this.o2);
 sb.append(",o3:");
-sb.append(this.o3.toString());
+sb.append(this.o3);
 sb.append(")");
 return sb.toString();
 }
@@ -7315,13 +7315,13 @@ while (true)
     case 3:
       if (field.type == TType.LIST) {
         {
-          TList _list69 = iprot.readListBegin();
-          this.part_vals = new ArrayList<String>(_list69.size);
-          for (int _i70 = 0; _i70 < _list69.size; ++_i70)
+          TList _list78 = iprot.readListBegin();
+          this.part_vals = new ArrayList<String>(_list78.size);
+          for (int _i79 = 0; _i79 < _list78.size; ++_i79)
           {
-            String _elem71 = null;
-            _elem71 = iprot.readString();
-            this.part_vals.add(_elem71);
+            String _elem80 = null;
+            _elem80 = iprot.readString();
+            this.part_vals.add(_elem80);
           }
           iprot.readListEnd();
         }
@@ -7374,8 +7374,8 @@ if (this.part_vals != null) {
   oprot.writeFieldBegin(field);
   {
     oprot.writeListBegin(new TList(TType.STRING, this.part_vals.size()));
-    for (String _iter72 : this.part_vals)    {
-      oprot.writeString(_iter72);
+    for (String _iter81 : this.part_vals)    {
+      oprot.writeString(_iter81);
     }
     oprot.writeListEnd();
   }
@@ -7609,9 +7609,9 @@ StringBuilder sb = new StringBuilder("drop_partition_result(");
 sb.append("success:");
 sb.append(this.success);
 sb.append(",o1:");
-sb.append(this.o1.toString());
+sb.append(this.o1);
 sb.append(",o2:");
-sb.append(this.o2.toString());
+sb.append(this.o2);
 sb.append(")");
 return sb.toString();
 }
@@ -7779,13 +7779,13 @@ while (true)
     case 3:
       if (field.type == TType.LIST) {
         {
-          TList _list73 = iprot.readListBegin();
-          this.part_vals = new ArrayList<String>(_list73.size);
-          for (int _i74 = 0; _i74 < _list73.size; ++_i74)
+          TList _list82 = iprot.readListBegin();
+          this.part_vals = new ArrayList<String>(_list82.size);
+          for (int _i83 = 0; _i83 < _list82.size; ++_i83)
           {
-            String _elem75 = null;
-            _elem75 = iprot.readString();
-            this.part_vals.add(_elem75);
+            String _elem84 = null;
+            _elem84 = iprot.readString();
+            this.part_vals.add(_elem84);
           }
           iprot.readListEnd();
         }
@@ -7830,8 +7830,8 @@ if (this.part_vals != null) {
   oprot.writeFieldBegin(field);
   {
     oprot.writeListBegin(new TList(TType.STRING, this.part_vals.size()));
-    for (String _iter76 : this.part_vals)    {
-      oprot.writeString(_iter76);
+    for (String _iter85 : this.part_vals)    {
+      oprot.writeString(_iter85);
     }
     oprot.writeListEnd();
   }
@@ -8013,9 +8013,9 @@ oprot.writeStructEnd();
 public String toString() {
 StringBuilder sb = new StringBuilder("get_partition_result(");
 sb.append("success:");
-sb.append(this.success.toString());
+sb.append(this.success);
 sb.append(",o1:");
-sb.append(this.o1.toString());
+sb.append(this.o1);
 sb.append(")");
 return sb.toString();
 }
@@ -8373,14 +8373,14 @@ while (true)
     case 0:
       if (field.type == TType.LIST) {
         {
-          TList _list77 = iprot.readListBegin();
-          this.success = new ArrayList<Partition>(_list77.size);
-          for (int _i78 = 0; _i78 < _list77.size; ++_i78)
+          TList _list86 = iprot.readListBegin();
+          this.success = new ArrayList<Partition>(_list86.size);
+          for (int _i87 = 0; _i87 < _list86.size; ++_i87)
           {
-            Partition _elem79 = new Partition();
-            _elem79 = new Partition();
-            _elem79.read(iprot);
-            this.success.add(_elem79);
+            Partition _elem88 = new Partition();
+            _elem88 = new Partition();
+            _elem88.read(iprot);
+            this.success.add(_elem88);
           }
           iprot.readListEnd();
         }
@@ -8429,8 +8429,8 @@ if (this.__isset.success) {
     oprot.writeFieldBegin(field);
     {
       oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
-      for (Partition _iter80 : this.success)      {
-        _iter80.write(oprot);
+      for (Partition _iter89 : this.success)      {
+        _iter89.write(oprot);
       }
       oprot.writeListEnd();
     }
@@ -8464,9 +8464,9 @@ StringBuilder sb = new StringBuilder("get_partitions_result(");
 sb.append("success:");
 sb.append(this.success);
 sb.append(",o1:");
-sb.append(this.o1.toString());
+sb.append(this.o1);
 sb.append(",o2:");
-sb.append(this.o2.toString());
+sb.append(this.o2);
 sb.append(")");
 return sb.toString();
 }
@@ -8796,13 +8796,13 @@ while (true)
     case 0:
       if (field.type == TType.LIST) {
         {
-          TList _list81 = iprot.readListBegin();
-          this.success = new ArrayList<String>(_list81.size);
-          for (int _i82 = 0; _i82 < _list81.size; ++_i82)
+          TList _list90 = iprot.readListBegin();
+          this.success = new ArrayList<String>(_list90.size);
+          for (int _i91 = 0; _i91 < _list90.size; ++_i91)
           {
-            String _elem83 = null;
-            _elem83 = iprot.readString();
-            this.success.add(_elem83);
+            String _elem92 = null;
+            _elem92 = iprot.readString();
+            this.success.add(_elem92);
           }
           iprot.readListEnd();
         }
@@ -8842,8 +8842,8 @@ if (this.__isset.success) {
     oprot.writeFieldBegin(field);
     {
       oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-      for (String _iter84 : this.success)      {
-        oprot.writeString(_iter84);
+      for (String _iter93 : this.success)      {
+        oprot.writeString(_iter93);
       }
       oprot.writeListEnd();
     }
@@ -8868,7 +8868,7 @@ StringBuilder sb = new StringBuilder("get_partition_names_result(");
 sb.append("success:");
 sb.append(this.success);
 sb.append(",o2:");
-sb.append(this.o2.toString());
+sb.append(this.o2);
 sb.append(")");
 return sb.toString();
 }
@@ -9074,7 +9074,7 @@ sb.append(this.db_name);
 sb.append(",tbl_name:");
 sb.append(this.tbl_name);
 sb.append(",new_part:");
-sb.append(this.new_part.toString());
+sb.append(this.new_part);
 sb.append(")");
 return sb.toString();
 }
@@ -9239,9 +9239,9 @@ oprot.writeStructEnd();
 public String toString() {
 StringBuilder sb = new StringBuilder("alter_partition_result(");
 sb.append("o1:");
-sb.append(this.o1.toString());
+sb.append(this.o1);
 sb.append(",o2:");
-sb.append(this.o2.toString());
+sb.append(this.o2);
 sb.append(")");
 return sb.toString();
 }

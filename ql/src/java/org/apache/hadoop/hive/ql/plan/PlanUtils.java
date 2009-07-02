@@ -71,9 +71,22 @@ public class PlanUtils {
    */
   public static tableDesc getDefaultTableDesc(String separatorCode, String columns,
       boolean lastColumnTakesRestOfTheLine) {
+    return getDefaultTableDesc(separatorCode, columns, null, lastColumnTakesRestOfTheLine);
+  }
+
+  /** 
+   * Generate the table descriptor of MetadataTypedColumnsetSerDe with the separatorCode
+   * and column names (comma separated string), and whether the last column should take
+   * the rest of the line.
+   */
+  public static tableDesc getDefaultTableDesc(String separatorCode, String columns, String columnTypes,
+      boolean lastColumnTakesRestOfTheLine) {
     Properties properties = Utilities.makeProperties(
-        Constants.SERIALIZATION_FORMAT, separatorCode,
-        "columns", columns);
+      Constants.SERIALIZATION_FORMAT, separatorCode,
+      Constants.LIST_COLUMNS, columns);
+    if (columnTypes != null)
+      properties.setProperty(Constants.LIST_COLUMN_TYPES, columnTypes);
+    
     if (lastColumnTakesRestOfTheLine) {
       properties.setProperty(
           Constants.SERIALIZATION_LAST_COLUMN_TAKES_REST,
@@ -85,7 +98,7 @@ public class PlanUtils {
         IgnoreKeyTextOutputFormat.class,
         properties);    
   }
-
+  
   /** 
    * Generate the table descriptor of MetadataTypedColumnsetSerDe with the separatorCode.
    * MetaDataTypedColumnsetSerDe is used because LazySimpleSerDe does not support a table

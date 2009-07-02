@@ -349,6 +349,9 @@ class metastore_Type {
       $xfer += $output->writeFieldEnd();
     }
     if ($this->fields !== null) {
+      if (!is_array($this->fields)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
       $xfer += $output->writeFieldBegin('fields', TType::LST, 4);
       {
         $output->writeListBegin(TType::STRUCT, count($this->fields));
@@ -583,6 +586,9 @@ class metastore_SerDeInfo {
       $xfer += $output->writeFieldEnd();
     }
     if ($this->parameters !== null) {
+      if (!is_array($this->parameters)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
       $xfer += $output->writeFieldBegin('parameters', TType::MAP, 3);
       {
         $output->writeMapBegin(TType::STRING, TType::STRING, count($this->parameters));
@@ -961,6 +967,9 @@ class metastore_StorageDescriptor {
     $xfer = 0;
     $xfer += $output->writeStructBegin('StorageDescriptor');
     if ($this->cols !== null) {
+      if (!is_array($this->cols)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
       $xfer += $output->writeFieldBegin('cols', TType::LST, 1);
       {
         $output->writeListBegin(TType::STRUCT, count($this->cols));
@@ -1000,11 +1009,17 @@ class metastore_StorageDescriptor {
       $xfer += $output->writeFieldEnd();
     }
     if ($this->serdeInfo !== null) {
+      if (!is_object($this->serdeInfo)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
       $xfer += $output->writeFieldBegin('serdeInfo', TType::STRUCT, 7);
       $xfer += $this->serdeInfo->write($output);
       $xfer += $output->writeFieldEnd();
     }
     if ($this->bucketCols !== null) {
+      if (!is_array($this->bucketCols)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
       $xfer += $output->writeFieldBegin('bucketCols', TType::LST, 8);
       {
         $output->writeListBegin(TType::STRING, count($this->bucketCols));
@@ -1019,6 +1034,9 @@ class metastore_StorageDescriptor {
       $xfer += $output->writeFieldEnd();
     }
     if ($this->sortCols !== null) {
+      if (!is_array($this->sortCols)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
       $xfer += $output->writeFieldBegin('sortCols', TType::LST, 9);
       {
         $output->writeListBegin(TType::STRUCT, count($this->sortCols));
@@ -1033,6 +1051,9 @@ class metastore_StorageDescriptor {
       $xfer += $output->writeFieldEnd();
     }
     if ($this->parameters !== null) {
+      if (!is_array($this->parameters)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
       $xfer += $output->writeFieldBegin('parameters', TType::MAP, 10);
       {
         $output->writeMapBegin(TType::STRING, TType::STRING, count($this->parameters));
@@ -1304,11 +1325,17 @@ class metastore_Table {
       $xfer += $output->writeFieldEnd();
     }
     if ($this->sd !== null) {
+      if (!is_object($this->sd)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
       $xfer += $output->writeFieldBegin('sd', TType::STRUCT, 7);
       $xfer += $this->sd->write($output);
       $xfer += $output->writeFieldEnd();
     }
     if ($this->partitionKeys !== null) {
+      if (!is_array($this->partitionKeys)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
       $xfer += $output->writeFieldBegin('partitionKeys', TType::LST, 8);
       {
         $output->writeListBegin(TType::STRUCT, count($this->partitionKeys));
@@ -1323,6 +1350,9 @@ class metastore_Table {
       $xfer += $output->writeFieldEnd();
     }
     if ($this->parameters !== null) {
+      if (!is_array($this->parameters)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
       $xfer += $output->writeFieldBegin('parameters', TType::MAP, 9);
       {
         $output->writeMapBegin(TType::STRING, TType::STRING, count($this->parameters));
@@ -1532,6 +1562,9 @@ class metastore_Partition {
     $xfer = 0;
     $xfer += $output->writeStructBegin('Partition');
     if ($this->values !== null) {
+      if (!is_array($this->values)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
       $xfer += $output->writeFieldBegin('values', TType::LST, 1);
       {
         $output->writeListBegin(TType::STRING, count($this->values));
@@ -1566,11 +1599,17 @@ class metastore_Partition {
       $xfer += $output->writeFieldEnd();
     }
     if ($this->sd !== null) {
+      if (!is_object($this->sd)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
       $xfer += $output->writeFieldBegin('sd', TType::STRUCT, 6);
       $xfer += $this->sd->write($output);
       $xfer += $output->writeFieldEnd();
     }
     if ($this->parameters !== null) {
+      if (!is_array($this->parameters)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
       $xfer += $output->writeFieldBegin('parameters', TType::MAP, 7);
       {
         $output->writeMapBegin(TType::STRING, TType::STRING, count($this->parameters));
@@ -1747,6 +1786,9 @@ class metastore_Index {
       $xfer += $output->writeFieldEnd();
     }
     if ($this->colNames !== null) {
+      if (!is_array($this->colNames)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
       $xfer += $output->writeFieldBegin('colNames', TType::LST, 5);
       {
         $output->writeListBegin(TType::STRING, count($this->colNames));
@@ -1757,6 +1799,160 @@ class metastore_Index {
           }
         }
         $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class metastore_Schema {
+  static $_TSPEC;
+
+  public $fieldSchemas = null;
+  public $properties = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'fieldSchemas',
+          'type' => TType::LST,
+          'etype' => TType::STRUCT,
+          'elem' => array(
+            'type' => TType::STRUCT,
+            'class' => 'metastore_FieldSchema',
+            ),
+          ),
+        2 => array(
+          'var' => 'properties',
+          'type' => TType::MAP,
+          'ktype' => TType::STRING,
+          'vtype' => TType::STRING,
+          'key' => array(
+            'type' => TType::STRING,
+          ),
+          'val' => array(
+            'type' => TType::STRING,
+            ),
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['fieldSchemas'])) {
+        $this->fieldSchemas = $vals['fieldSchemas'];
+      }
+      if (isset($vals['properties'])) {
+        $this->properties = $vals['properties'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'Schema';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::LST) {
+            $this->fieldSchemas = array();
+            $_size85 = 0;
+            $_etype88 = 0;
+            $xfer += $input->readListBegin($_etype88, $_size85);
+            for ($_i89 = 0; $_i89 < $_size85; ++$_i89)
+            {
+              $elem90 = null;
+              $elem90 = new metastore_FieldSchema();
+              $xfer += $elem90->read($input);
+              $this->fieldSchemas []= $elem90;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::MAP) {
+            $this->properties = array();
+            $_size91 = 0;
+            $_ktype92 = 0;
+            $_vtype93 = 0;
+            $xfer += $input->readMapBegin($_ktype92, $_vtype93, $_size91);
+            for ($_i95 = 0; $_i95 < $_size91; ++$_i95)
+            {
+              $key96 = '';
+              $val97 = '';
+              $xfer += $input->readString($key96);
+              $xfer += $input->readString($val97);
+              $this->properties[$key96] = $val97;
+            }
+            $xfer += $input->readMapEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('Schema');
+    if ($this->fieldSchemas !== null) {
+      if (!is_array($this->fieldSchemas)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('fieldSchemas', TType::LST, 1);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->fieldSchemas));
+        {
+          foreach ($this->fieldSchemas as $iter98)
+          {
+            $xfer += $iter98->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->properties !== null) {
+      if (!is_array($this->properties)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('properties', TType::MAP, 2);
+      {
+        $output->writeMapBegin(TType::STRING, TType::STRING, count($this->properties));
+        {
+          foreach ($this->properties as $kiter99 => $viter100)
+          {
+            $xfer += $output->writeString($kiter99);
+            $xfer += $output->writeString($viter100);
+          }
+        }
+        $output->writeMapEnd();
       }
       $xfer += $output->writeFieldEnd();
     }

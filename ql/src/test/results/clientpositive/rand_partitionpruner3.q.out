@@ -30,18 +30,19 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
-                  directory: file:/data/users/pchakka/workspace/oshive2/build/ql/tmp/868971644/10001
+                  directory: file:/data/users/njain/hive1/hive1/build/ql/tmp/199516785/10001
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       properties:
                         columns a.key,a.value,a.ds,a.hr
                         serialization.format 1
+                        columns.types string:string:string:string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/pchakka/workspace/oshive2/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
       Path -> Partition:
-        file:/data/users/pchakka/workspace/oshive2/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
             partition values:
               ds 2008-04-08
@@ -60,7 +61,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/pchakka/workspace/oshive2/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
 
@@ -71,7 +72,7 @@ STAGE PLANS:
 
 query: select a.* from srcpart a where rand(1) < 0.1 and a.ds = '2008-04-08' and not(key > 50 or key < 10) and a.hr like '%2'
 Input: default/srcpart/ds=2008-04-08/hr=12
-Output: file:/data/users/pchakka/workspace/oshive2/build/ql/tmp/499802678/10000
+Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/206596522/10000
 42	val_42	2008-04-08	12
 44	val_44	2008-04-08	12
 26	val_26	2008-04-08	12
@@ -112,18 +113,19 @@ STAGE PLANS:
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
-                    directory: file:/data/users/pchakka/workspace/oshive2/build/ql/tmp/1606994614/10001
+                    directory: file:/data/users/njain/hive1/hive1/build/ql/tmp/2011784836/10001
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         properties:
                           columns a.key,a.value,a.ds,a.hr
                           serialization.format 1
+                          columns.types string:string:string:string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/pchakka/workspace/oshive2/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
       Path -> Partition:
-        file:/data/users/pchakka/workspace/oshive2/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
             partition values:
               ds 2008-04-08
@@ -142,7 +144,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/pchakka/workspace/oshive2/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
 
@@ -153,7 +155,7 @@ STAGE PLANS:
 
 query: select a.* from srcpart a where a.ds = '2008-04-08' and not(key > 50 or key < 10) and a.hr like '%2'
 Input: default/srcpart/ds=2008-04-08/hr=12
-Output: file:/data/users/pchakka/workspace/oshive2/build/ql/tmp/1256518849/10000
+Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/1689821052/10000
 27	val_27	2008-04-08	12
 37	val_37	2008-04-08	12
 15	val_15	2008-04-08	12

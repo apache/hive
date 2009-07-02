@@ -28,7 +28,7 @@ public class ThriftHive {
 
     public List<String> fetchAll() throws HiveServerException, TException;
 
-    public String getSchema() throws HiveServerException, TException;
+    public org.apache.hadoop.hive.metastore.api.Schema getSchema() throws HiveServerException, TException;
 
   }
 
@@ -182,7 +182,7 @@ public class ThriftHive {
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "fetchAll failed: unknown result");
     }
 
-    public String getSchema() throws HiveServerException, TException
+    public org.apache.hadoop.hive.metastore.api.Schema getSchema() throws HiveServerException, TException
     {
       send_getSchema();
       return recv_getSchema();
@@ -197,7 +197,7 @@ public class ThriftHive {
       oprot_.getTransport().flush();
     }
 
-    public String recv_getSchema() throws HiveServerException, TException
+    public org.apache.hadoop.hive.metastore.api.Schema recv_getSchema() throws HiveServerException, TException
     {
       TMessage msg = iprot_.readMessageBegin();
       if (msg.type == TMessageType.EXCEPTION) {
@@ -1442,7 +1442,7 @@ public class ThriftHive {
   }
 
   public static class getSchema_result implements TBase, java.io.Serializable   {
-    private String success;
+    private org.apache.hadoop.hive.metastore.api.Schema success;
     private HiveServerException ex;
 
     public final Isset __isset = new Isset();
@@ -1455,7 +1455,7 @@ public class ThriftHive {
     }
 
     public getSchema_result(
-      String success,
+      org.apache.hadoop.hive.metastore.api.Schema success,
       HiveServerException ex)
     {
       this();
@@ -1465,16 +1465,17 @@ public class ThriftHive {
       this.__isset.ex = true;
     }
 
-    public String getSuccess() {
+    public org.apache.hadoop.hive.metastore.api.Schema getSuccess() {
       return this.success;
     }
 
-    public void setSuccess(String success) {
+    public void setSuccess(org.apache.hadoop.hive.metastore.api.Schema success) {
       this.success = success;
       this.__isset.success = true;
     }
 
     public void unsetSuccess() {
+      this.success = null;
       this.__isset.success = false;
     }
 
@@ -1541,8 +1542,9 @@ public class ThriftHive {
         switch (field.id)
         {
           case 0:
-            if (field.type == TType.STRING) {
-              this.success = iprot.readString();
+            if (field.type == TType.STRUCT) {
+              this.success = new org.apache.hadoop.hive.metastore.api.Schema();
+              this.success.read(iprot);
               this.__isset.success = true;
             } else { 
               TProtocolUtil.skip(iprot, field.type);
@@ -1574,10 +1576,10 @@ public class ThriftHive {
       if (this.__isset.success) {
         if (this.success != null) {
           field.name = "success";
-          field.type = TType.STRING;
+          field.type = TType.STRUCT;
           field.id = 0;
           oprot.writeFieldBegin(field);
-          oprot.writeString(this.success);
+          this.success.write(oprot);
           oprot.writeFieldEnd();
         }
       } else if (this.__isset.ex) {

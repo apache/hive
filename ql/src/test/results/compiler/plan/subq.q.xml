@@ -23,6 +23,9 @@
            <object class="org.apache.hadoop.hive.ql.plan.moveWork"> 
             <void property="loadFileWork"> 
              <object class="org.apache.hadoop.hive.ql.plan.loadFileDesc"> 
+              <void property="columnTypes"> 
+               <string>string:string</string> 
+              </void> 
               <void property="columns"> 
                <string>unioninput.key,unioninput.value</string> 
               </void> 
@@ -30,7 +33,7 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1410037290/10000</string> 
+               <string>file:/data/users/njain/hive1/hive1/build/ql/tmp/147216436/10000</string> 
               </void> 
               <void property="targetDir"> 
                <string>../build/ql/test/data/warehouse/union.out</string> 
@@ -61,10 +64,10 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1164893495/10001</string> 
+               <string>file:/data/users/njain/hive1/hive1/build/ql/tmp/144092508/10001</string> 
               </void> 
               <void property="targetDir"> 
-               <string>file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1410037290/10000</string> 
+               <string>file:/data/users/njain/hive1/hive1/build/ql/tmp/147216436/10000</string> 
               </void> 
              </object> 
             </void> 
@@ -82,7 +85,7 @@
             <void property="aliasToWork"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1164893495/10001</string> 
+               <string>file:/data/users/njain/hive1/hive1/build/ql/tmp/144092508/10001</string> 
                <object id="TableScanOperator0" class="org.apache.hadoop.hive.ql.exec.TableScanOperator"> 
                 <void property="childOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -282,10 +285,10 @@
             <void property="pathToAliases"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1164893495/10001</string> 
+               <string>file:/data/users/njain/hive1/hive1/build/ql/tmp/144092508/10001</string> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <string>file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1164893495/10001</string> 
+                 <string>file:/data/users/njain/hive1/hive1/build/ql/tmp/144092508/10001</string> 
                 </void> 
                </object> 
               </void> 
@@ -294,7 +297,7 @@
             <void property="pathToPartitionInfo"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1164893495/10001</string> 
+               <string>file:/data/users/njain/hive1/hive1/build/ql/tmp/144092508/10001</string> 
                <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
                 <void property="tableDesc"> 
                  <object id="tableDesc2" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -317,6 +320,10 @@
                      <string>serialization.format</string> 
                      <string>1</string> 
                     </void> 
+                    <void method="put"> 
+                     <string>columns.types</string> 
+                     <string>string:string</string> 
+                    </void> 
                    </object> 
                   </void> 
                  </object> 
@@ -334,7 +341,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1410037290/10000</string> 
+                     <string>file:/data/users/njain/hive1/hive1/build/ql/tmp/147216436/10000</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object idref="tableDesc2"/> 
@@ -503,7 +510,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src</string> 
+            <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src</string> 
            </void> 
           </object> 
          </void> 
@@ -546,7 +553,7 @@
                                <int>1</int> 
                               </void> 
                               <void property="dirName"> 
-                               <string>file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1164893495/10001</string> 
+                               <string>file:/data/users/njain/hive1/hive1/build/ql/tmp/144092508/10001</string> 
                               </void> 
                               <void property="tableInfo"> 
                                <object idref="tableDesc2"/> 
@@ -1004,7 +1011,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>unioninput:src</string> 
@@ -1016,7 +1023,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/pchakka/workspace/oshive/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap0"/> 

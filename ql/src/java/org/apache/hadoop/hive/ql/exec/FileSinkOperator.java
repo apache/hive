@@ -39,8 +39,6 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
-import com.sun.corba.se.pept.encoding.InputObject;
-
 /**
  * File Sink operator implementation
  **/

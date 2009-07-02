@@ -53,9 +53,9 @@ STAGE PLANS:
                         type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/src 
+        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src 
       Path -> Partition:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/src 
+        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src 
           Partition
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -70,7 +70,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/src
+                location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
       Reduce Operator Tree:
@@ -88,13 +88,14 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
-                directory: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/377939618/10001
+                directory: file:/data/users/njain/hive1/hive1/build/ql/tmp/73993756/10001
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       columns tmap.key,_c1
                       serialization.format 1
+                      columns.types string:string
 
   Stage: Stage-0
     Fetch Operator
@@ -109,7 +110,7 @@ query: FROM (
 ) tmap
 SELECT tmap.key, regexp_extract(tmap.value, 'val_(\\d+\\t\\d+)',1) WHERE tmap.key < 100
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1157716176/10000
+Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/395306564/10000
 0	0	3
 0	0	3
 0	0	3
@@ -249,9 +250,9 @@ STAGE PLANS:
                         type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/src 
+        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src 
       Path -> Partition:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/src 
+        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src 
           Partition
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -266,7 +267,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/Users/char/Documents/workspace/Hive-460/build/ql/test/data/warehouse/src
+                location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
       Reduce Operator Tree:
@@ -284,13 +285,14 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
-                directory: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1112689500/10001
+                directory: file:/data/users/njain/hive1/hive1/build/ql/tmp/1617035180/10001
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
                       columns tmap.key,_c1
                       serialization.format 1
+                      columns.types string:string
 
   Stage: Stage-0
     Fetch Operator
@@ -305,7 +307,7 @@ query: FROM (
 ) tmap
 SELECT tmap.key, regexp_extract(tmap.value, 'val_(\\d+\\t\\d+)') WHERE tmap.key < 100
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1926471082/10000
+Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/1810791707/10000
 0	0	3
 0	0	3
 0	0	3

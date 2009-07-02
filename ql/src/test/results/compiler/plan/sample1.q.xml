@@ -77,7 +77,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcpart</string> 
+            <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpart</string> 
            </void> 
           </object> 
          </void> 
@@ -113,7 +113,7 @@
                         <void property="conf"> 
                          <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                           <void property="dirName"> 
-                           <string>file:/data/users/njain/hive4/hive4/build/ql/tmp/133862678/10001</string> 
+                           <string>file:/data/users/njain/hive1/hive1/build/ql/tmp/316066904/10001</string> 
                           </void> 
                           <void property="tableInfo"> 
                            <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -135,6 +135,10 @@
                               <void method="put"> 
                                <string>serialization.format</string> 
                                <string>1</string> 
+                              </void> 
+                              <void method="put"> 
+                               <string>columns.types</string> 
+                               <string>string:string:string:string</string> 
                               </void> 
                              </object> 
                             </void> 
@@ -720,7 +724,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11</string> 
+       <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>s</string> 
@@ -732,7 +736,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11</string> 
+       <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap0"/> 

@@ -291,6 +291,9 @@ Trunk - Unreleased
     HIVE-596. Fix PartitionPruner to work with GenericUDF.
     (Namit Jain via zshao)
 
+    HIVE-590. Pass type information in genFileSinkPlan and improve getSchema
+    call in Driver. (Namit Jain via rmurthy)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

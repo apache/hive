@@ -25,18 +25,19 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
-                  directory: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/552086915/1424484527.10001.insclause-0
+                  directory: file:/data/users/njain/hive1/hive1/build/ql/tmp/1772270999/10001
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       properties:
                         columns src.key,src.value
                         serialization.format 1
+                        columns.types string:string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/src 
+        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src 
       Path -> Partition:
-        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/src 
+        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src 
           Partition
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -51,7 +52,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/src
+                location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
 
@@ -62,7 +63,7 @@ STAGE PLANS:
 
 query: select * from src where rand(1) < 0.1
 Input: default/src
-Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/258191470/334752323.10000
+Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/1857203962/10000
 409	val_409
 429	val_429
 209	val_209

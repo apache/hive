@@ -19,6 +19,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 public class TestJdbcDriver extends TestCase {
   private static String driverName = "org.apache.hadoop.hive.jdbc.HiveDriver";
   private static String tableName = "testHiveDriverTable";
+  private static String partitionedTableName = "testHiveDriverPartitionedTable";
   private HiveConf conf;
   private Path dataFilePath;
   private Connection con;
@@ -29,7 +30,7 @@ public class TestJdbcDriver extends TestCase {
     conf = new HiveConf(TestJdbcDriver.class);
     String dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
     dataFilePath = new Path(dataFileDir, "kv1.txt");
-    //standAloneServer = System.getProperty("test.service.standalone.server").equals("true");
+    standAloneServer = "true".equals(System.getProperty("test.service.standalone.server"));
   }
 
   protected void setUp() throws Exception {
@@ -55,13 +56,27 @@ public class TestJdbcDriver extends TestCase {
     // create table
     ResultSet res = stmt.executeQuery("create table " + tableName + " (key int, value string)");
     assertFalse(res.next());
-//    res = stmt.executeQuery("describe " + tableName);
-//    while (res.next()) {
-//      System.out.println(res.getString(1));
-//    }
 
     // load data
     res = stmt.executeQuery("load data local inpath '" + dataFilePath.toString() + "' into table " + tableName);
+    assertFalse(res.next());
+
+    // also initialize a paritioned table to test against.
+
+    // drop table. ignore error.
+    try {
+      stmt.executeQuery("drop table " + partitionedTableName);
+    } catch (Exception ex) {
+    }
+
+    res = stmt.executeQuery("create table " + partitionedTableName +
+                            " (key int, value string) partitioned by (dt STRING)");
+    assertFalse(res.next());
+
+    // load data
+    res = stmt.executeQuery("load data local inpath '" + dataFilePath.toString() +
+                            "' into table " + partitionedTableName +
+                            " PARTITION (dt='20090619')");
     assertFalse(res.next());
 
   }
@@ -74,10 +89,12 @@ public class TestJdbcDriver extends TestCase {
     assertNotNull("Statement is null", stmt);
     ResultSet res = stmt.executeQuery("drop table " + tableName);
     assertFalse(res.next());
+    res = stmt.executeQuery("drop table " + partitionedTableName);
+    assertFalse(res.next());
 
   }
 
-  public final void testHiveDriver() throws Exception {
+  public final void testSelectAll() throws Exception {
     Statement stmt = con.createStatement();
     assertNotNull("Statement is null", stmt);
 
@@ -108,13 +125,14 @@ public class TestJdbcDriver extends TestCase {
     while (moreRow) {
       try {
         i++;
-        res.getString(2);
-        res.getString(1);
         res.getInt(1);
-        // TODO add assert
-//      System.out.println(res.getString(2));
-//      System.out.println(res.getString(1));
-//      System.out.println(res.getInt(1));
+        res.getString(1);
+        res.getString(2);
+        //System.out.println(res.getString(1) + " " + res.getString(2));
+        assertEquals("getInt and getString don't align for the same result value",
+                String.valueOf(res.getInt(1)), res.getString(1));
+        assertEquals("Unexpected result found",
+                "val_" + res.getString(1), res.getString(2));
         moreRow = res.next();
       }
       catch (SQLException e) {
@@ -129,4 +147,76 @@ public class TestJdbcDriver extends TestCase {
     // should have no more rows
     assertEquals(false, moreRow);
   }
+
+  public final void testSelectAllPartitioned() throws Exception {
+    Statement stmt = con.createStatement();
+    assertNotNull("Statement is null", stmt);
+
+    // run some queries
+    ResultSet res = stmt.executeQuery("select * from " + partitionedTableName);
+    assertNotNull("ResultSet is null", res);
+    int i = 0;
+
+    boolean moreRow = res.next();
+    while (moreRow) {
+      try {
+        i++;
+        res.getInt(1);
+        res.getString(1);
+        res.getString(2);
+        //System.out.println(res.getString(1) + " " + res.getString(2));
+        assertEquals("getInt and getString don't align for the same result value",
+                String.valueOf(res.getInt(1)), res.getString(1));
+        assertEquals("Unexpected result found",
+                "val_" + res.getString(1), res.getString(2));
+        moreRow = res.next();
+      }
+      catch (SQLException e) {
+        System.out.println(e.toString());
+        e.printStackTrace();
+        throw new Exception(e.toString());
+      }
+    }
+    // supposed to get 500 rows
+    assertEquals(500, i);
+
+    // should have no more rows
+    assertEquals(false, moreRow);
+  }
+
+  public void testShowTables() throws SQLException {
+    Statement stmt = con.createStatement();
+    assertNotNull("Statement is null", stmt);
+
+    ResultSet res = stmt.executeQuery("show tables");
+
+    boolean testTableExists = false;
+    while (res.next()) {
+      assertNotNull("table name is null in result set", res.getString(1));
+      if (tableName.equalsIgnoreCase(res.getString(1))) testTableExists = true;
+    }
+
+    assertTrue("table name " + tableName + " not found in SHOW TABLES result set",
+               testTableExists);
+  }
+
+  public void testDescribeTable() throws SQLException {
+    Statement stmt = con.createStatement();
+    assertNotNull("Statement is null", stmt);
+
+    ResultSet res = stmt.executeQuery("describe " + tableName);
+
+    res.next();
+    assertEquals("Column name 'key' not found", "key", res.getString(1));
+    assertEquals("Column type 'int' for column key not found",
+                "int", res.getString(2));
+    res.next();
+    assertEquals("Column name 'value' not found", "value", res.getString(1));
+    assertEquals("Column type 'string' for column key not found",
+                "string", res.getString(2));
+
+    assertFalse("More results found than expected", res.next());
+
+  }
+
 }

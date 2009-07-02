@@ -18,30 +18,16 @@
 
 package org.apache.hadoop.hive.service;
 
-import java.io.PrintStream;
 import java.util.List;
-import java.util.Map;
 import java.util.Vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.plan.tableDesc;
-import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.service.ThriftHive;
-import org.apache.hadoop.hive.service.ThriftHive.*;
 import org.apache.hadoop.hive.service.HiveServerException;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.serde2.Deserializer;
-import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.hadoop.util.StringUtils;
 
-import com.facebook.fb303.FacebookBase;
-import com.facebook.fb303.FacebookService;
-import com.facebook.fb303.fb_status;
 import com.facebook.thrift.TException;
 import com.facebook.thrift.TProcessor;
 import com.facebook.thrift.TProcessorFactory;
@@ -133,11 +119,11 @@ public class HiveServer extends ThriftHive {
     /**
      * Return the schema of the query result
      */
-    public String getSchema() throws HiveServerException, TException {
+    public Schema getSchema() throws HiveServerException, TException {
       try {
-        String schema = driver.getSchema();
+        Schema schema = driver.getSchema();
         if (schema == null) {
-          schema = "";
+          schema = new Schema();
         }
         LOG.info("Returning schema: " + schema);
         return schema;

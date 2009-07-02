@@ -67,6 +67,7 @@ public class LazySimpleSerDe implements SerDe {
   final public static byte[] DefaultSeparators = {(byte)1, (byte)2, (byte)3};
 
   private ObjectInspector cachedObjectInspector;
+  private boolean         useJSONSerialize; // use json to serialize
 
   public String toString() {
     return getClass().toString()
@@ -212,9 +213,9 @@ public class LazySimpleSerDe implements SerDe {
         .equalsIgnoreCase("true"));
 
     // Read the configuration parameters
-    String columnNameProperty = tbl.getProperty("columns");
+    String columnNameProperty = tbl.getProperty(Constants.LIST_COLUMNS);
     // NOTE: if "columns.types" is missing, all columns will be of String type
-    String columnTypeProperty = tbl.getProperty("columns.types");
+    String columnTypeProperty = tbl.getProperty(Constants.LIST_COLUMN_TYPES);
 
     // Parse the configuration parameters
 
@@ -374,7 +375,7 @@ public class LazySimpleSerDe implements SerDe {
         if (!foi.getCategory().equals(Category.PRIMITIVE)
             && (declaredFields == null || 
                 declaredFields.get(i).getFieldObjectInspector().getCategory()
-                .equals(Category.PRIMITIVE))) {
+                .equals(Category.PRIMITIVE) || useJSONSerialize)) {
           serialize(serializeStream, SerDeUtils.getJSONString(f, foi),
               PrimitiveObjectInspectorFactory.javaStringObjectInspector,
               serdeParams.separators, 1, serdeParams.nullSequence,
@@ -492,5 +493,19 @@ public class LazySimpleSerDe implements SerDe {
     
     throw new RuntimeException("Unknown category type: "
         + objInspector.getCategory());
+  }
+
+  /**
+   * @return the useJSONSerialize
+   */
+  public boolean isUseJSONSerialize() {
+    return useJSONSerialize;
+  }
+
+  /**
+   * @param useJSONSerialize the useJSONSerialize to set
+   */
+  public void setUseJSONSerialize(boolean useJSONSerialize) {
+    this.useJSONSerialize = useJSONSerialize;
   }
 }

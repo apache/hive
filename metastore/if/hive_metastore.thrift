@@ -92,6 +92,14 @@ struct Index {
   5: list<string> colNames,  // for now columns will be sorted in the ascending order
 }
 
+// schema of the table/query results etc.
+struct Schema {
+ // column names, types, comments
+ 1: list<FieldSchema> fieldSchemas,  // delimiters etc
+ 2: map<string, string> properties
+}
+
+
 exception MetaException {
   string message
 }
