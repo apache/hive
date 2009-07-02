@@ -330,6 +330,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         this.incrementCounter("drop_table");
         logStartFunction("drop_table", dbname, name);
         boolean success = false;
+        boolean isExternal = false;
         Path tblPath = null;
         Table tbl = null;
         try {
@@ -342,15 +343,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           if(tbl.getSd() == null  || tbl.getSd().getLocation() == null) {
             throw new MetaException("Table metadata is corrupted");
           }
+          isExternal = isExternal(tbl);
+          tblPath = new Path(tbl.getSd().getLocation());
           if(!getMS().dropTable(dbname, name)) {
             throw new MetaException("Unable to drop table");
           }
+          tbl = null; // table collections disappear after dropping
           success  = getMS().commitTransaction();
-          tblPath = new Path(tbl.getSd().getLocation());
         } finally {
           if(!success) {
             getMS().rollbackTransaction();
-          } else if(deleteData && (tblPath != null) && !isExternal(tbl)) {
+          } else if(deleteData && (tblPath != null) && !isExternal) {
             wh.deleteDir(tblPath, true);
             // ok even if the data is not deleted
           }

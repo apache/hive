@@ -430,6 +430,7 @@ public class TestHiveMetaStore extends TestCase {
     assertEquals(tbl3.getSd().isCompressed(), false);
     assertEquals(tbl3.getSd().getNumBuckets(), 1);
     assertEquals(tbl3.getSd().getLocation(), tbl2.getSd().getLocation());
+    assertEquals(tbl3.getParameters(), tbl2.getParameters());
     
   
     assertEquals("Use this for comments etc", tbl2.getSd().getParameters().get("test_param_1"));

@@ -42,14 +42,14 @@
       <classpath refid="classpath"/>
     </javac>
   </target>
- 
+
   <target name="compile" depends="core-compile, model-compile, model-enhance">
   </target>
 
   <target name="model-compile" depends="init">
-    <javac srcdir="${model.dir}"  destdir="${build.classes}" debug="${javac.debug}"> 
-       <classpath refid="classpath"/> 
-    </javac> 
+    <javac srcdir="${model.dir}"  destdir="${build.classes}" debug="${javac.debug}">
+       <classpath refid="classpath"/>
+    </javac>
     <!-- ORM data for model -->
     <copy file="${model.dir}/package.jdo" todir="${build.classes}"/>
   </target>
@@ -59,24 +59,31 @@
     <mapper type="merge" to="${build.dir}/hive_${name}.jar"/>
   </uptodate>
 
-  <target name="model-enhance" depends="model-compile" unless="enhanceModel.notRequired">
-    <echo>Enhancing model classes with JPOX stuff....</echo>
-    <java classname="org.jpox.enhancer.JPOXEnhancer"  failonerror="true" dir="${basedir}" fork="true">
-      <classpath>
-        <path refid="classpath"/>
-        <pathelement path="${build.dir}/classes/"/>
-      </classpath>
-      <sysproperty key="log4j.configuration" value="file:${basedir}/../conf/hive-log4j.properties"/>
-      <arg value="${model.dir}/package.jdo" />
-    </java>
+  <target name="model-enhance" depends="model-compile" unless="enhanceModel.notRequired" >
+    <taskdef name="datanucleusenhancer"
+                classname="org.datanucleus.enhancer.tools.EnhancerTask">
+       <classpath refid="classpath"/>
+   </taskdef>
+
+    <datanucleusenhancer
+        dir="${base.dir}" failonerror="true" verbose="true" fork="true">
+        <fileset dir="${model.dir}">
+            <include name="**/*.jdo"/>
+        </fileset>
+	<classpath>
+          <path refid="classpath"/>
+          <pathelement path="${build.dir}/classes/"/>
+	</classpath>
+	<jvmarg line="-Dlog4j.configuration=${basedir}/../conf/hive-log4j.properties"/>
+    </datanucleusenhancer>
   </target>
 
   <target name="model-jar" depends="model-enhance">
     <echo message="Jar: ${name}"/>
     <jar
       jarfile="${build.dir}/${name}_model.jar"
-      basedir="${build.classes}"     
-      includes="**/model/M*" 
+      basedir="${build.classes}"
+      includes="**/model/M*"
     />
   </target>
 

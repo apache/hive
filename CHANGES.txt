@@ -98,6 +98,8 @@ Trunk - Unreleased
     HIVE-530. Map Join followup: optimize number of map-reduce jobs.
     (Namit Jain via zshao)
 
+    HIVE-445. Upgrade JPOX to datanuclues plugins. (Prasad Chakka via zshao)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).
