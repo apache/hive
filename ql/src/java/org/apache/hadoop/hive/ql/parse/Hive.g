@@ -481,10 +481,13 @@ columnNameType
 colType
 @init { msgs.push("column type"); }
 @after { msgs.pop(); }
+    : type
+    ;
+
+type
     : primitiveType
     | listType
-    | mapType
-    ;
+    | mapType;
 
 primitiveType
 @init { msgs.push("primitive type specification"); }
@@ -505,13 +508,13 @@ primitiveType
 listType
 @init { msgs.push("list type"); }
 @after { msgs.pop(); }
-    : KW_ARRAY LESSTHAN primitiveType GREATERTHAN   -> ^(TOK_LIST primitiveType)
+    : KW_ARRAY LESSTHAN type GREATERTHAN   -> ^(TOK_LIST type)
     ;
 
 mapType
 @init { msgs.push("map type"); }
 @after { msgs.pop(); }
-    : KW_MAP LESSTHAN left=primitiveType COMMA right=primitiveType GREATERTHAN
+    : KW_MAP LESSTHAN left=primitiveType COMMA right=type GREATERTHAN
     -> ^(TOK_MAP $left $right)
     ;
 

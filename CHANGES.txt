@@ -59,6 +59,9 @@ Trunk - Unreleased
     HIVE-136. escaping in lazy serde
     (Zheng Shao via namit)
 
+    HIVE-603. list of maps and vice versa
+    (Zheng Shao via namit)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 

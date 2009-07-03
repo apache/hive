@@ -427,6 +427,20 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     return mapProp;
   }
 
+  private static String getTypeStringFromAST(ASTNode typeNode) {
+    switch (typeNode.getType()) {
+    case HiveParser.TOK_LIST:
+      return Constants.LIST_TYPE_NAME + "<"
+        + getTypeStringFromAST((ASTNode)typeNode.getChild(0)) + ">";
+    case HiveParser.TOK_MAP:
+      return Constants.MAP_TYPE_NAME + "<"
+        + getTypeStringFromAST((ASTNode)typeNode.getChild(0)) + ","
+        + getTypeStringFromAST((ASTNode)typeNode.getChild(1)) + ">";
+    default:
+      return getTypeName(typeNode.getType());
+    }
+  }
+  
   private List<FieldSchema> getColumns(ASTNode ast)
   {
     List<FieldSchema> colList = new ArrayList<FieldSchema>();
@@ -436,19 +450,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       ASTNode child = (ASTNode)ast.getChild(i);
       col.setName(unescapeIdentifier(child.getChild(0).getText()));
       ASTNode typeChild = (ASTNode)(child.getChild(1));
-      if (typeChild.getToken().getType() == HiveParser.TOK_LIST)
-      {
-        ASTNode typName = (ASTNode)typeChild.getChild(0);
-        col.setType(MetaStoreUtils.getListType(getTypeName(typName.getToken().getType())));
-      }
-      else if (typeChild.getToken().getType() == HiveParser.TOK_MAP)
-      {
-        ASTNode ltypName = (ASTNode)typeChild.getChild(0);
-        ASTNode rtypName = (ASTNode)typeChild.getChild(1);
-        col.setType(MetaStoreUtils.getMapType(getTypeName(ltypName.getToken().getType()), getTypeName(rtypName.getToken().getType())));
-      }
-      else                                // primitive type
-        col.setType(getTypeName(typeChild.getToken().getType()));
+      col.setType(getTypeStringFromAST(typeChild));
         
       if (child.getChildCount() == 3)
         col.setComment(unescapeSQLString(child.getChild(2).getText()));
