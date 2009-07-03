@@ -102,6 +102,9 @@ Trunk - Unreleased
 
     HIVE-593. UDF and GenericUDF clean-up. (Zheng Shao via pchakka)
 
+    HIVE-605. Change eclipse classpath for datanuclues.
+    (Prasad Chakka via zshao)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).

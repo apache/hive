@@ -13,10 +13,10 @@
 	<classpathentry exported="true" kind="lib" path="lib/commons-logging-1.0.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-logging-api-1.0.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/derby.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jdo2-api-2.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jpox-core-1.2.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jpox-enhancer-1.2.2.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jpox-rdbms-1.2.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jdo2-api-2.3-SNAPSHOT.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/datanucleus-core-1.1.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/datanucleus-enhancer-1.1.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/datanucleus-rdbms-1.1.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/libfb303.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/libthrift.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/log4j-1.2.15.jar"/>
