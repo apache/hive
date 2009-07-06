@@ -96,7 +96,7 @@
                 <void property="conf"> 
                  <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                   <void property="dirName"> 
-                   <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/1490863661/10001</string> 
+                   <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/1162019634/10001</string> 
                   </void> 
                   <void property="tableInfo"> 
                    <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -399,6 +399,19 @@
              </object> 
             </void> 
            </object> 
+          </void> 
+         </object> 
+        </void> 
+        <void property="neededColumnIDs"> 
+         <object class="java.util.ArrayList"> 
+          <void method="add"> 
+           <int>2</int> 
+          </void> 
+          <void method="add"> 
+           <int>4</int> 
+          </void> 
+          <void method="add"> 
+           <int>5</int> 
           </void> 
          </object> 
         </void> 

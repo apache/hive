@@ -288,7 +288,7 @@ public class TestRCFile extends TestCase {
       throws IOException, SerDeException {
     LOG.debug("reading " + count + " records");
     long start = System.currentTimeMillis();
-    RCFile.clearSkipColumnIDs(conf);
+    HiveFileFormatUtils.setFullyReadColumns(conf);
     RCFile.Reader reader = new RCFile.Reader(fs, file, conf);
 
     LongWritable rowID = new LongWritable();
@@ -326,7 +326,10 @@ public class TestRCFile extends TestCase {
       throws IOException, SerDeException {
     LOG.debug("reading " + count + " records");
     long start = System.currentTimeMillis();
-    RCFile.setSkipColumnIDs(conf, new int[] { 0, 1, 4, 5, 6, 7 });
+    java.util.ArrayList<Integer> readCols = new java.util.ArrayList<Integer>();
+    readCols.add(Integer.valueOf(2));
+    readCols.add(Integer.valueOf(3));
+    HiveFileFormatUtils.setReadColumnIDs(conf, readCols);
     RCFile.Reader reader = new RCFile.Reader(fs, file, conf);
 
     LongWritable rowID = new LongWritable();

@@ -265,12 +265,6 @@ public class PerformTestRCFileAndSeqFile extends TestCase {
   public int performRCFileReadFirstColumnTest(FileSystem fs, Path file,
       int allColumnsNumber, boolean chechCorrect) throws IOException {
 
-    int[] skippedColumns = new int[allColumnsNumber - 1];
-
-    for (int i = 0; i < skippedColumns.length; i++) {
-      skippedColumns[i] = i + 1;
-    }
-
     byte[][] checkBytes = null;
     BytesRefArrayWritable checkRow = new BytesRefArrayWritable(allColumnsNumber);
     if (chechCorrect) {
@@ -280,7 +274,9 @@ public class PerformTestRCFileAndSeqFile extends TestCase {
 
     int actualReadCount = 0;
 
-    RCFile.setSkipColumnIDs(conf, skippedColumns);
+    java.util.ArrayList<Integer> readCols = new java.util.ArrayList<Integer>();
+    readCols.add(Integer.valueOf(0));
+    HiveFileFormatUtils.setReadColumnIDs(conf, readCols);
     RCFile.Reader reader = new RCFile.Reader(fs, file, conf);
 
     LongWritable rowID = new LongWritable();
@@ -302,12 +298,6 @@ public class PerformTestRCFileAndSeqFile extends TestCase {
   public int performRCFileReadFirstAndLastColumnTest(FileSystem fs, Path file,
       int allColumnsNumber, boolean chechCorrect) throws IOException {
 
-    int[] skippedColumns = new int[allColumnsNumber - 2];
-
-    for (int i = 0; i < skippedColumns.length; i++) {
-      skippedColumns[i] = i + 1;
-    }
-
     byte[][] checkBytes = null;
     BytesRefArrayWritable checkRow = new BytesRefArrayWritable(allColumnsNumber);
     if (chechCorrect) {
@@ -317,7 +307,10 @@ public class PerformTestRCFileAndSeqFile extends TestCase {
 
     int actualReadCount = 0;
 
-    RCFile.setSkipColumnIDs(conf, skippedColumns);
+    java.util.ArrayList<Integer> readCols = new java.util.ArrayList<Integer>();
+    readCols.add(Integer.valueOf(0));
+    readCols.add(Integer.valueOf(allColumnsNumber - 1));
+    HiveFileFormatUtils.setReadColumnIDs(conf, readCols);
     RCFile.Reader reader = new RCFile.Reader(fs, file, conf);
 
     LongWritable rowID = new LongWritable();
@@ -351,7 +344,7 @@ public class PerformTestRCFileAndSeqFile extends TestCase {
 
     int actualReadCount = 0;
 
-    RCFile.clearSkipColumnIDs(conf);
+    HiveFileFormatUtils.setFullyReadColumns(conf);
     RCFile.Reader reader = new RCFile.Reader(fs, file, conf);
 
     LongWritable rowID = new LongWritable();

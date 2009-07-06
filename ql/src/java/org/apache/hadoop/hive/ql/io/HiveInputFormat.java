@@ -21,18 +21,23 @@ package org.apache.hadoop.hive.ql.io;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.mapredWork;
 import org.apache.hadoop.hive.ql.plan.tableDesc;
@@ -198,14 +203,45 @@ public class HiveInputFormat<K extends WritableComparable,
 
     InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, job);
 
-    return new HiveRecordReader(inputFormat.getRecordReader(inputSplit, job, reporter));
+    
+    if (this.mrwork == null)
+      init(job);
+    JobConf jobConf = new JobConf(job);
+    ArrayList<String> aliases = new ArrayList<String>();
+    Iterator<Entry<String, ArrayList<String>>> iterator = this.mrwork
+        .getPathToAliases().entrySet().iterator();
+    String splitPath = hsplit.getPath().toString();
+    String splitPathWithNoSchema = hsplit.getPath().toUri().getPath();
+    while (iterator.hasNext()) {
+      Entry<String, ArrayList<String>> entry = iterator.next();
+      String key = entry.getKey();
+      if (splitPath.startsWith(key) || splitPathWithNoSchema.startsWith(key)) {
+        ArrayList<String> list = entry.getValue();
+        for (String val : list)
+          aliases.add(val);
+      }
+    }
+    for (String alias : aliases) {
+      Operator<? extends Serializable> op = this.mrwork.getAliasToWork().get(
+          alias);
+      if (op instanceof TableScanOperator) {
+        TableScanOperator tableScan = (TableScanOperator) op;
+        ArrayList<Integer> list = tableScan.getNeededColumnIDs();
+        if (list != null)
+          HiveFileFormatUtils.setReadColumnIDs(jobConf, list);
+        else
+          HiveFileFormatUtils.setFullyReadColumns(jobConf);
+      }
+    }
+    return new HiveRecordReader(inputFormat.getRecordReader(inputSplit,
+        jobConf, reporter));
   }
 
-
   private Map<String, partitionDesc> pathToPartitionInfo;
+  mapredWork mrwork = null;
 
   protected void init(JobConf job) {
-    mapredWork mrwork = Utilities.getMapRedWork(job);
+    mrwork = Utilities.getMapRedWork(job);
     pathToPartitionInfo = mrwork.getPathToPartitionInfo();
   }
 

@@ -108,6 +108,9 @@ Trunk - Unreleased
     HIVE-605. Change eclipse classpath for datanuclues.
     (Prasad Chakka via zshao)
 
+    HIVE-461. Optimize RCFile reading by using column pruning results.
+    (Yongqiang He via zshao)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).

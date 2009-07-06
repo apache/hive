@@ -24,19 +24,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.hadoop.util.StringUtils;
 
 /**
  * An util class for various Hive file format tasks.
@@ -185,5 +186,54 @@ public class HiveFileFormatUtils {
         return false;
     }
     return true;
+  }
+  
+  
+  public static String READ_COLUMN_IDS_CONF_STR = "hive.io.file.readcolumn.ids";
+
+  /**
+   * Sets read columns' ids(start from zero) for RCFile's Reader. Once a column
+   * is included in the list, RCFile's reader will not skip its value.
+   * 
+   */
+  public static void setReadColumnIDs(Configuration conf, ArrayList<Integer> ids) {
+    String id = null;
+    if (ids != null) {
+      for (int i = 0; i < ids.size(); i++) {
+        if (i == 0) {
+          id = "" + ids.get(i);
+        } else {
+          id = id + StringUtils.COMMA_STR + ids.get(i);
+        }
+      }
+    }
+
+    if (id == null || id.length() <= 0) {
+      conf.set(READ_COLUMN_IDS_CONF_STR, "");
+      return;
+    }
+
+    conf.set(READ_COLUMN_IDS_CONF_STR, id);
+  }
+
+  /**
+   * Returns an array of column ids(start from zero) which is set in the given
+   * parameter <tt>conf</tt>.
+   */
+  public static ArrayList<Integer> getReadColumnIDs(Configuration conf) {
+    String skips = conf.get(READ_COLUMN_IDS_CONF_STR, "");
+    String[] list = StringUtils.split(skips);
+    ArrayList<Integer> result = new ArrayList<Integer>(list.length);
+    for (int i = 0; i < list.length; i++) {
+      result.add(Integer.parseInt(list[i]));
+    }
+    return result;
+  }
+
+  /**
+   * Clears the read column ids set in the conf, and will read all columns.
+   */
+  public static void setFullyReadColumns(Configuration conf) {
+    conf.set(READ_COLUMN_IDS_CONF_STR, "");
   }
 }

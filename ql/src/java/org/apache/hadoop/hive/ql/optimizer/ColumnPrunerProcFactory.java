@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.ScriptOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -58,6 +59,7 @@ import org.apache.hadoop.hive.ql.plan.mapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.reduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.selectDesc;
 import org.apache.hadoop.hive.ql.plan.tableDesc;
+import org.apache.hadoop.hive.ql.plan.tableScanDesc;
 
 /**
  * Factory for generating the different node processors used by ColumnPruner.
@@ -140,6 +142,35 @@ public class ColumnPrunerProcFactory {
    */
   public static ColumnPrunerDefaultProc getDefaultProc() {
     return new ColumnPrunerDefaultProc();
+  }
+
+  /**
+   * The Node Processor for Column Pruning on Table Scan Operators. It will store
+   * needed columns in tableScanDesc.
+   */
+  public static class ColumnPrunerTableScanProc implements NodeProcessor {
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx, Object... nodeOutputs) throws SemanticException {
+      TableScanOperator scanOp = (TableScanOperator)nd;
+      ColumnPrunerProcCtx cppCtx = (ColumnPrunerProcCtx)ctx;
+      List<String> cols = cppCtx.genColLists((Operator<? extends Serializable>)nd);
+      cppCtx.getPrunedColLists().put((Operator<? extends Serializable>)nd, cols);
+      ArrayList<Integer> needed_columns = new ArrayList<Integer>();
+      RowResolver inputRR = cppCtx.getOpToParseCtxMap().get(scanOp).getRR();
+      for (int i = 0; i < cols.size(); i++) {
+        int position = inputRR.getPosition(cols.get(i));
+        needed_columns.add(position);
+      }
+      scanOp.setNeededColumnIDs(needed_columns);
+      return null;
+    }
+  }
+
+  /**
+   * Factory method to get the ColumnPrunerDefaultProc class.
+   * @return ColumnPrunerTableScanProc
+   */
+  public static ColumnPrunerTableScanProc getTableScanProc() {
+    return new ColumnPrunerTableScanProc();
   }
   
   /**
@@ -409,7 +440,7 @@ public class ColumnPrunerProcFactory {
   }
   
   /**
-   * The Node Processor for Column Pruning on Join Operators.
+   * The Node Processor for Column Pruning on Map Join Operators.
    */
   public static class ColumnPrunerMapJoinProc implements NodeProcessor {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx ctx,
@@ -525,9 +556,9 @@ public class ColumnPrunerProcFactory {
   }
 
   /**
-   * The Factory method to get ColumnJoinProc class.
+   * The Factory method to get ColumnMapJoinProc class.
    * 
-   * @return ColumnPrunerJoinProc
+   * @return ColumnPrunerMapJoinProc
    */
   public static ColumnPrunerMapJoinProc getMapJoinProc() {
     return new ColumnPrunerMapJoinProc();

@@ -56,5 +56,19 @@ public class TableScanOperator extends Operator<tableScanDesc> implements Serial
   public String getName() {
     return new String("TS");
   }
+  
+  // this 'neededColumnIDs' field is included in this operator class instead of
+  // its desc class.The reason is that 1)tableScanDesc can not be instantiated,
+  // and 2) it will fail some join and union queries if this is added forcibly
+  // into tableScanDesc
+  java.util.ArrayList<Integer> neededColumnIDs;
+
+  public void setNeededColumnIDs(java.util.ArrayList<Integer> orign_columns) {
+    this.neededColumnIDs = orign_columns;
+  }
+
+  public java.util.ArrayList<Integer> getNeededColumnIDs() {
+    return neededColumnIDs;
+  }
 
 }

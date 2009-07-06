@@ -819,54 +819,6 @@ public class RCFile {
     }
   }
 
-  public static String SKIP_COLUMN_IDS_CONF_STR = "hive.io.rcfile.skipcolumn.ids";
-
-  /**
-   * Sets skip columns' ids(start from zero) for RCFile's Reader. Once a column
-   * is included in the list, RCFile's reader will just skip its value.
-   * 
-   */
-  public static void setSkipColumnIDs(Configuration conf, int[] ids) {
-    String id = null;
-    if (ids != null) {
-      for (int i = 0; i < ids.length; i++) {
-        if (i == 0) {
-          id = "" + ids[i];
-        } else {
-          id = id + StringUtils.COMMA_STR + ids[i];
-        }
-      }
-    }
-
-    if (id == null || id.length() <= 0) {
-      conf.set(SKIP_COLUMN_IDS_CONF_STR, "");
-      return;
-    }
-
-    conf.set(SKIP_COLUMN_IDS_CONF_STR, id);
-  }
-
-  /**
-   * Returns an array of column ids(start from zero) which is set in the given
-   * parameter <tt>conf</tt>.
-   */
-  public static int[] getSkipColumnIDs(Configuration conf) {
-    String skips = conf.get(SKIP_COLUMN_IDS_CONF_STR, "");
-    String[] list = StringUtils.split(skips);
-    int[] result = new int[list.length];
-    for (int i = 0; i < list.length; i++) {
-      result[i] = Integer.parseInt(list[i]);
-    }
-    return result;
-  }
-
-  /**
-   * Clears the skip column ids set in the conf.
-   */
-  public static void clearSkipColumnIDs(Configuration conf) {
-    conf.set(SKIP_COLUMN_IDS_CONF_STR, "");
-  }
-
   /**
    * Read KeyBuffer/ValueBuffer pairs from a RCFile.
    * 
@@ -937,14 +889,20 @@ public class RCFile {
       columnNumber = Integer.parseInt(metadata.get(
           new Text(COLUMN_NUMBER_METADATA_STR)).toString());
 
-      int[] skipIDs = getSkipColumnIDs(conf);
+      java.util.ArrayList<Integer> notSkipIDs = HiveFileFormatUtils.getReadColumnIDs(conf);
       skippedColIDs = new boolean[columnNumber];
-      for (int i = 0; i < skippedColIDs.length; i++) {
-        skippedColIDs[i] = false;
-      }
-      for (int skip : skipIDs) {
-        if (skip < columnNumber)
-          skippedColIDs[skip] = true;
+      if (notSkipIDs.size() > 0) {
+        for (int i = 0; i < skippedColIDs.length; i++) {
+          skippedColIDs[i] = true;
+        }
+        for (int read : notSkipIDs) {
+          if (read < columnNumber)
+            skippedColIDs[read] = false;
+        }
+      } else {
+        for (int i = 0; i < skippedColIDs.length; i++) {
+          skippedColIDs[i] = false;
+        }
       }
 
       loadColumnNum = columnNumber;
