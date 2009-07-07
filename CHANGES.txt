@@ -310,6 +310,9 @@ Trunk - Unreleased
     HIVE-590. Pass type information in genFileSinkPlan and improve getSchema
     call in Driver. (Namit Jain via rmurthy)
 
+    HIVE-612. Problem in removing temp files in FileSinkOperator.jobClose
+    (Zheng Shao via namit)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

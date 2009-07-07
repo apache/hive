@@ -696,18 +696,19 @@ public class Utilities {
         if(!fs.delete(one.getPath(), true)) {
           throw new IOException ("Unable to delete tmp file: " + one.getPath());
         }
-      }
-      String taskId = getTaskIdFromFilename(one.getPath().getName());
-      FileStatus otherFile = taskIdToFile.get(taskId);
-      if (otherFile == null) {
-        taskIdToFile.put(taskId, one);
       } else {
-        if(!fs.delete(one.getPath(), true)) {
-          throw new IOException ("Unable to delete duplicate file: "
-              + one.getPath() + ". Existing file: " + otherFile.getPath());
+        String taskId = getTaskIdFromFilename(one.getPath().getName());
+        FileStatus otherFile = taskIdToFile.get(taskId);
+        if (otherFile == null) {
+          taskIdToFile.put(taskId, one);
         } else {
-          LOG.warn("Duplicate taskid file removed: " + one.getPath() 
-              + ". Existing file: " + otherFile.getPath());
+          if(!fs.delete(one.getPath(), true)) {
+            throw new IOException ("Unable to delete duplicate file: "
+                + one.getPath() + ". Existing file: " + otherFile.getPath());
+          } else {
+            LOG.warn("Duplicate taskid file removed: " + one.getPath() 
+                + ". Existing file: " + otherFile.getPath());
+          }
         }
       }
     }
