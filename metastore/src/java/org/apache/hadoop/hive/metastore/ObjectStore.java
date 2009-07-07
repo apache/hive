@@ -18,9 +18,6 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -137,27 +134,12 @@ public class ObjectStore implements RawStore, Configurable {
     if(prop != null) {
       return;
     }
-    URL url= classLoader.getResource(JPOX_CONFIG);
     prop = new Properties();
-    if (url == null) {
-      LOG.info(JPOX_CONFIG + " not found.");
-    } else {
-      LOG.info("found resource " + JPOX_CONFIG + " at " + url);
-      try {
-        InputStream is = url.openStream();
-        if (is == null) {
-          throw new RuntimeException("Properties file " + url + " couldn't be opened");
-        }
-        prop.load(is);
-      } catch (IOException ex) {
-        throw new RuntimeException("could not load: " + JPOX_CONFIG, ex);
-      }
-    }
     
     Iterator<Map.Entry<String, String>> iter = hiveConf.iterator();
     while(iter.hasNext()) {
       Map.Entry<String, String> e = iter.next();
-      if(e.getKey().contains("jpox") || e.getKey().contains("jdo")) {
+      if(e.getKey().contains("datanucleus") || e.getKey().contains("jdo")) {
         Object prevVal = prop.setProperty(e.getKey(), e.getValue());
         if(LOG.isDebugEnabled() && !e.getKey().equals(HiveConf.ConfVars.METASTOREPWD.varname)) {
           LOG.debug("Overriding " + e.getKey() + " value " + prevVal 

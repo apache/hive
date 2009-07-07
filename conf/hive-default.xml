@@ -91,6 +91,106 @@
 </property>
 
 <property>
+  <name>javax.jdo.PersistenceManagerFactoryClass</name>
+  <value>org.datanucleus.jdo.JDOPersistenceManagerFactory</value>
+  <description>class implementing the jdo persistence</description>
+</property>
+
+=true
+javax.jdo.option.NontransactionalRead=true
+javax.jdo.option.ConnectionDriverName=org.apache.derby.jdbc.EmbeddedDriver
+javax.jdo.option.ConnectionURL=jdbc:derby:;databaseName=test_metastore_db;create=true
+=APP
+javax.jdo.option.ConnectionPassword=mine
+datanucleus.validateTables=false
+datanucleus.validateColumns=false
+datanucleus.validateConstraints=false
+datanucleus.storeManagerType=rdbms
+datanucleus.autoCreateSchema=true
+datanucleus.autoStartMechanismMode=checked
+datanucleus.transactionIsolation=read-committed
+datanucleus.cache.level2=true
+datanucleus.cache.level2.type=SOFT
+
+<property>
+  <name>javax.jdo.option.DetachAllOnCommit</name>
+  <value>true</value>
+  <description>detaches all objects from session so that they can be used after transaction is committed</description>
+</property>
+
+<property>
+  <name>javax.jdo.option.NonTransactionalRead</name>
+  <value>true</value>
+  <description>reads outside of transactions</description>
+</property>
+
+<property>
+  <name>javax.jdo.option.ConnectionUserName</name>
+  <value>APP</value>
+  <description>username to use against metastore database</description>
+</property>
+
+<property>
+  <name>javax.jdo.option.ConnectionPassword</name>
+  <value>mine</value>
+  <description>password to use against metastore database</description>
+</property>
+
+<property>
+  <name>datanucleus.validateTables</name>
+  <value>false</value>
+  <description>validates existing schema against code. turn this on if you want to verify existing schema </description>
+</property>
+
+<property>
+  <name>datanucleus.validateColumns</name>
+  <value>false</value>
+  <description>validates existing schema against code. turn this on if you want to verify existing schema </description>
+</property>
+
+<property>
+  <name>datanucleus.validateConstraints</name>
+  <value>false</value>
+  <description>validates existing schema against code. turn this on if you want to verify existing schema </description>
+</property>
+
+<property>
+  <name>datanucleus.storeManagerType</name>
+  <value>rdbms</value>
+  <description>metadata store type</description>
+</property>
+
+<property>
+  <name>datanucleus.autoCreateSchema</name>
+  <value>true</value>
+  <description>creates necessary schema on a startup if one doesn't exist. set this to false, after creating it once</description>
+</property>
+
+<property>
+  <name>datanucleus.autoStartMechanismMode</name>
+  <value>checked</value>
+  <description>throw exception if metadata tables are incorrect</description>
+</property>
+
+<property>
+  <name>datancucleus.transactionIsolation</name>
+  <value>read-committed</value>
+  <description></description>
+</property>
+
+<property>
+  <name>datanuclues.cache.level2</name>
+  <value>true</value>
+  <description>use a level 2 cache. turn this off if metadata is changed independently of hive metastore server</description>
+</property>
+
+<property>
+  <name>datanuclues.cache.level2.type</name>
+  <value>SOFT</value>
+  <description>SOFT=soft reference based cache, WEAK=weak reference based cache.</description>
+</property>
+
+<property>
   <name>hive.metastore.warehouse.dir</name>
   <value>/user/hive/warehouse</value>
   <description>location of default database for the warehouse</description>

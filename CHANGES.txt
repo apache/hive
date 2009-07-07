@@ -122,6 +122,9 @@ Trunk - Unreleased
 
     HIVE-462. Avoid Text->String->Text conversion (Namit Jain via zshao)
 
+    HIVE-610. Move all properties from jpox.properties to hive-site.xml.
+    (Prasad Chakka via zshao)
+
   BUG FIXES
 
     HIVE-381. Fix JDBC HiveResultSet's next function.
