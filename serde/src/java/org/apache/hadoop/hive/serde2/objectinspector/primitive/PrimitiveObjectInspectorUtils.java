@@ -25,10 +25,12 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
+import org.apache.hadoop.hive.serde2.lazy.LazyLong;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.io.BooleanWritable;
@@ -344,6 +346,26 @@ public class PrimitiveObjectInspectorUtils {
   
   /**
    * Get the integer number out of a primitive object. 
+   * Note that NullPointerException will be thrown if o is null.
+   * Note that NumberFormatException will be thrown if o is not a valid number.
+   */
+  public static byte getByte(Object o, PrimitiveObjectInspector oi) throws NumberFormatException {
+    return (byte)getInt(o, oi);
+  }
+  
+  /**
+   * Get the integer number out of a primitive object. 
+   * Note that NullPointerException will be thrown if o is null.
+   * Note that NumberFormatException will be thrown if o is not a valid number.
+   */
+  public static short getShort(Object o, PrimitiveObjectInspector oi) throws NumberFormatException {
+    return (short)getInt(o, oi);
+  }
+  
+  /**
+   * Get the integer number out of a primitive object.
+   * Note that NullPointerException will be thrown if o is null.
+   * Note that NumberFormatException will be thrown if o is not a valid number.
    */
   public static int getInt(Object o, PrimitiveObjectInspector oi) throws NumberFormatException {
     int result = 0;
@@ -398,5 +420,216 @@ public class PrimitiveObjectInspectorUtils {
       }
     }
     return result;
+  }
+  
+  /**
+   * Get the long number out of a primitive object. 
+   * Note that NullPointerException will be thrown if o is null.
+   * Note that NumberFormatException will be thrown if o is not a valid number.
+   */
+  public static long getLong(Object o, PrimitiveObjectInspector oi) throws NumberFormatException {
+    long result = 0;
+    switch (oi.getPrimitiveCategory()) {
+      case VOID: {
+        result = 0;
+        break;
+      }
+      case BOOLEAN: {
+        result = (((BooleanObjectInspector)oi).get(o) ? 1 : 0);
+        break;
+      }
+      case BYTE: {
+        result = ((ByteObjectInspector)oi).get(o);
+        break;
+      }
+      case SHORT: {
+        result = ((ShortObjectInspector)oi).get(o);
+        break;
+      }
+      case INT: {
+        result = ((IntObjectInspector)oi).get(o);
+        break;
+      }
+      case LONG: {
+        result = ((LongObjectInspector)oi).get(o);
+        break;
+      }
+      case FLOAT: {
+        result = (long)((FloatObjectInspector)oi).get(o);
+        break;
+      }
+      case DOUBLE: {
+        result = (long)((DoubleObjectInspector)oi).get(o);
+        break;
+      }
+      case STRING: {
+        StringObjectInspector soi = (StringObjectInspector)oi;
+        if (soi.preferWritable()) {
+          Text t = soi.getPrimitiveWritableObject(o);
+          result = LazyLong.parseLong(t.getBytes(), 0, t.getLength());
+        } else {
+          String s = soi.getPrimitiveJavaObject(o);
+          result = Long.parseLong(s);
+        }
+        break;
+      }
+      default: {
+        // Should never happen because we checked this in SemanticAnalyzer.getXpathOrFuncExprNodeDesc
+        throw new RuntimeException("Hive 2 Internal error: index expression is not ordinal types: "
+            + oi.getTypeName());
+      }
+    }
+    return result;
+  }
+  
+  /**
+   * Get the double number out of a primitive object. 
+   * Note that NullPointerException will be thrown if o is null.
+   * Note that NumberFormatException will be thrown if o is not a valid number.
+   */
+  public static double getDouble(Object o, PrimitiveObjectInspector oi) throws NumberFormatException {
+    double result = 0;
+    switch (oi.getPrimitiveCategory()) {
+      case VOID: {
+        result = 0;
+        break;
+      }
+      case BOOLEAN: {
+        result = (((BooleanObjectInspector)oi).get(o) ? 1 : 0);
+        break;
+      }
+      case BYTE: {
+        result = ((ByteObjectInspector)oi).get(o);
+        break;
+      }
+      case SHORT: {
+        result = ((ShortObjectInspector)oi).get(o);
+        break;
+      }
+      case INT: {
+        result = ((IntObjectInspector)oi).get(o);
+        break;
+      }
+      case LONG: {
+        result = ((LongObjectInspector)oi).get(o);
+        break;
+      }
+      case FLOAT: {
+        result = ((FloatObjectInspector)oi).get(o);
+        break;
+      }
+      case DOUBLE: {
+        result = ((DoubleObjectInspector)oi).get(o);
+        break;
+      }
+      case STRING: {
+        StringObjectInspector soi = (StringObjectInspector)oi;
+        String s = soi.getPrimitiveJavaObject(o);
+        result = Double.parseDouble(s);
+        break;
+      }
+      default: {
+        // Should never happen because we checked this in SemanticAnalyzer.getXpathOrFuncExprNodeDesc
+        throw new RuntimeException("Hive 2 Internal error: index expression is not ordinal types: "
+            + oi.getTypeName());
+      }
+    }
+    return result;
+  }    
+
+  /**
+   * Get the float number out of a primitive object. 
+   * Note that NullPointerException will be thrown if o is null.
+   * Note that NumberFormatException will be thrown if o is not a valid number.
+   */
+  public static float getFloat(Object o, PrimitiveObjectInspector oi) throws NumberFormatException {
+    return (float)getDouble(o, oi);
+  }
+  
+  /**
+   * A helper class to convert any primitive to Text. 
+   */
+  public static class TextConverter {
+    Text t = new Text();
+    ByteStream.Output out = new ByteStream.Output();
+    
+    static byte[] trueBytes = {'T', 'R', 'U', 'E'};
+    static byte[] falseBytes = {'F', 'A', 'L', 'S', 'E'};
+    
+    
+    public Text convert(Object o, PrimitiveObjectInspector oi)  {
+      if (o == null) {
+        return null;
+      }
+      
+      switch(oi.getPrimitiveCategory()) {
+        case VOID: {
+          return null;
+        }
+        case BOOLEAN: {
+          t.set(((BooleanObjectInspector)oi).get(o) ? trueBytes : falseBytes);
+          return t;
+        }
+        case BYTE: {
+          out.reset();
+          LazyInteger.writeUTF8NoException(out, ((ByteObjectInspector)oi).get(o));
+          t.set(out.getData(), 0, out.getCount());
+          return t;
+        }
+        case SHORT: {
+          out.reset();
+          LazyInteger.writeUTF8NoException(out, ((ShortObjectInspector)oi).get(o));
+          t.set(out.getData(), 0, out.getCount());
+          return t;
+        }
+        case INT: {
+          out.reset();
+          LazyInteger.writeUTF8NoException(out, ((IntObjectInspector)oi).get(o));
+          t.set(out.getData(), 0, out.getCount());
+          return t;
+        }
+        case LONG:{
+          out.reset();
+          LazyLong.writeUTF8NoException(out, ((LongObjectInspector)oi).get(o));
+          t.set(out.getData(), 0, out.getCount());
+          return t;
+        }
+        case FLOAT: {
+          t.set(String.valueOf(((FloatObjectInspector)oi).get(o)));
+          return t;
+        }
+        case DOUBLE: {
+          t.set(String.valueOf(((DoubleObjectInspector)oi).get(o)));
+          return t;
+        }
+        case STRING: {
+          t.set(((StringObjectInspector)oi).getPrimitiveJavaObject(o));
+          return t;
+        }
+        default: {
+          throw new RuntimeException("Hive 2 Internal error: type = "
+              + oi.getTypeName());
+        }
+      }
+    }
+
+    public Text evaluate(FloatWritable i)  {
+      if (i == null) {
+        return null;
+      } else {
+        t.set(i.toString());
+        return t;
+      }
+    }
+    
+    public Text evaluate(DoubleWritable i)  {
+      if (i == null) {
+        return null;
+      } else {
+        t.set(i.toString());
+        return t;
+      }
+    }
+
   }
 }

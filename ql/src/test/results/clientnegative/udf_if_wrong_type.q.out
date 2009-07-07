@@ -1,1 +1,0 @@
-FAILED: Error in semantic analysis: line 1:25 Argument Type Mismatch 1: The second and the third arguments of function IF should have the same type, but they are different: "string" and "int"

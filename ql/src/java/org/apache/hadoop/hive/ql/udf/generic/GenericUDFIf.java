@@ -41,7 +41,7 @@ public class GenericUDFIf extends GenericUDF {
   public ObjectInspector initialize(ObjectInspector[] arguments)
       throws UDFArgumentException {
     this.argumentOIs = arguments;
-    returnOIResolver = new GenericUDFUtils.ReturnObjectInspectorResolver();
+    returnOIResolver = new GenericUDFUtils.ReturnObjectInspectorResolver(true);
 
     if (arguments.length != 3) {
       throw new UDFArgumentLengthException(

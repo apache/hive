@@ -25,12 +25,6 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.serde.Constants;
-import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
@@ -38,15 +32,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspec
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
-import org.apache.hadoop.io.BooleanWritable;
-import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.TextConverter;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.Writable;
 
 /**
  * ObjectInspectorFactory is the primary way to create new ObjectInspector instances.
@@ -470,5 +461,92 @@ public class ObjectInspectorUtils {
         throw new RuntimeException("Hash code on map type not supported yet.");
     }
   }
-  
+
+  /**
+   * A converter which will convert objects with one ObjectInspector to another.
+   * We can optimize this class by reusing the same returning object, etc, in the future.
+   *
+   * Note that the outputOI has to be a standard Writable ObjectInspector for now.
+   * In the future, we can allow standard Java ObjectInspector as well.
+   */
+  public static class Converter {
+    boolean typeConversionNeeded;
+    ObjectInspector inputOI;
+    ObjectInspector outputOI;
+    TextConverter textConverter;
+    
+    Converter(ObjectInspector inputOI, ObjectInspector outputOI) {
+      this.inputOI = inputOI;
+      this.outputOI = outputOI;
+      
+      if (outputOI != 
+        TypeInfoUtils.getStandardObjectInspectorFromTypeInfo(
+            TypeInfoUtils.getTypeInfoFromObjectInspector(outputOI))) {
+        throw new RuntimeException("Hive internal error: ObjectInspectorUtils.Converter"
+           + " is called with non writable outputOI!");
+      }
+      
+      typeConversionNeeded = 
+        !TypeInfoUtils.getTypeInfoFromObjectInspector(inputOI)
+          .equals(TypeInfoUtils.getTypeInfoFromObjectInspector(outputOI));
+      
+      if (outputOI instanceof StringObjectInspector) {
+        textConverter = new TextConverter();
+      }
+    }
+    
+    /**
+     * Returns an object that can be inspected by outputOI.
+     * @param o  an object that can be inspected by inputOI.
+     */
+    public Object convert(Object o) {
+
+      if (o == null) {
+        return null;
+      }
+      
+      if (!typeConversionNeeded) {
+        return ObjectInspectorUtils.copyToStandardObject(
+            o, inputOI, ObjectInspectorCopyOption.WRITABLE);
+      }
+      
+      PrimitiveObjectInspector pInputOI = (PrimitiveObjectInspector)inputOI;
+      PrimitiveObjectInspector pOutputOI = (PrimitiveObjectInspector)outputOI;
+      
+      try {
+        switch (pOutputOI.getPrimitiveCategory()) {
+          case VOID:
+          case BOOLEAN:
+          case BYTE:
+            return PrimitiveObjectInspectorUtils.getByte(o, pInputOI);
+          case SHORT:
+            return PrimitiveObjectInspectorUtils.getShort(o, pInputOI);
+          case INT:
+            return PrimitiveObjectInspectorUtils.getInt(o, pInputOI);
+          case LONG:
+            return PrimitiveObjectInspectorUtils.getLong(o, pInputOI);
+          case FLOAT:
+            return PrimitiveObjectInspectorUtils.getFloat(o, pInputOI);
+          case DOUBLE:
+            return PrimitiveObjectInspectorUtils.getDouble(o, pInputOI);
+          case STRING:
+            return textConverter.convert(o, pInputOI);
+          default: throw new RuntimeException("Hive internal error: unknown category:"
+              + pOutputOI.getPrimitiveCategory());
+        }
+      } catch (NumberFormatException e) {
+        return null;
+      } 
+      
+    }
+  }
+
+  /**
+   * Returns a converter that converts objects from one OI to another OI.
+   * The returned (converted) object belongs to this converter, so that it can be reused
+   * across different calls.
+   */
+  public static Converter getConverter(ObjectInspector inputOI, ObjectInspector outputOI) {
+    return new Converter(inputOI, outputOI);
+  }
 }

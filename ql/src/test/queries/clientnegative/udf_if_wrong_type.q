@@ -1,1 +1,0 @@
-SELECT IF(1=1, 'STRING', 1) FROM src;

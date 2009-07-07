@@ -258,9 +258,14 @@ public class FunctionRegistry {
 
   /**
    * Find a common class that objects of both TypeInfo a and TypeInfo b can convert to.
+   * This is used for comparing objects of type a and type b.
+   * 
+   * When we are comparing string and double, we will always convert both of them
+   * to double and then compare.
+   * 
    * @return null if no common class could be found.
    */
-  public static TypeInfo getCommonClass(TypeInfo a, TypeInfo b) {
+  public static TypeInfo getCommonClassForComparison(TypeInfo a, TypeInfo b) {
     // If same return one of them
     if (a.equals(b)) return a;
     
@@ -271,6 +276,24 @@ public class FunctionRegistry {
       }
     }
     return null;
+  }
+
+  /**
+   * Find a common class that objects of both TypeInfo a and TypeInfo b can convert to.
+   * This is used for places other than comparison.
+   * 
+   * The common class of string and double is string.
+   * 
+   * @return null if no common class could be found.
+   */
+  public static TypeInfo getCommonClass(TypeInfo a, TypeInfo b) {
+    Integer ai = numericTypes.get(a);
+    Integer bi = numericTypes.get(b);
+    if (ai == null || bi == null) {
+      // If either is not a numeric type, return null.
+      return null;
+    }
+    return (ai > bi) ? a : b;
   }
 
   /** Returns whether it is possible to implicitly convert an object of Class from to Class to.

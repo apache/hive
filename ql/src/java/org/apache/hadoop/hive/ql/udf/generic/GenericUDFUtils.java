@@ -18,19 +18,18 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import java.util.HashMap;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 /**
@@ -46,8 +45,7 @@ public class GenericUDFUtils {
    * 
    * In many cases like CASE and IF, the GenericUDF is returning a value out
    * of several possibilities.  However these possibilities may not always 
-   * have the same ObjectInspector, although they should have the same 
-   * TypeInfo.
+   * have the same ObjectInspector.
    * 
    * This class will help detect whether all possibilities have exactly the
    * same ObjectInspector.  If not, then we need to convert the Objects to
@@ -57,11 +55,20 @@ public class GenericUDFUtils {
    * can use the same ObjectInspector.
    */
   public static class ReturnObjectInspectorResolver {
-    boolean valueInspectorsAreTheSame;
+
+    boolean allowTypeConversion;
     ObjectInspector returnObjectInspector;
     
-    ReturnObjectInspectorResolver() {
-      valueInspectorsAreTheSame = true;
+    // We create converters beforehand, so that the converters can reuse the 
+    // same object for returning conversion results. 
+    HashMap<ObjectInspector, ObjectInspectorUtils.Converter> converters;
+    
+    public ReturnObjectInspectorResolver() {
+      this(false);
+    }
+
+    public ReturnObjectInspectorResolver(boolean allowTypeConversion) {
+      this.allowTypeConversion = allowTypeConversion;
     }
     /**
      * Update returnObjectInspector and valueInspectorsAreTheSame based on the
@@ -70,19 +77,44 @@ public class GenericUDFUtils {
      */
     public boolean update(ObjectInspector oi)
         throws UDFArgumentTypeException {
-      if (!(oi instanceof VoidObjectInspector)) {
-        if (returnObjectInspector == null) {
-          returnObjectInspector = oi;
-        } else if (TypeInfoUtils.getTypeInfoFromObjectInspector(oi)
-            != TypeInfoUtils.getTypeInfoFromObjectInspector(returnObjectInspector)) {
-          System.out.println(TypeInfoUtils.getTypeInfoFromObjectInspector(oi).getTypeName());
-          System.out.println(TypeInfoUtils.getTypeInfoFromObjectInspector(returnObjectInspector).getTypeName());
-          return false;
-        } else {
-          valueInspectorsAreTheSame = valueInspectorsAreTheSame &&
-              oi == returnObjectInspector;
-        }
+      if (oi instanceof VoidObjectInspector) {
+        return true;
       }
+      
+      if (returnObjectInspector == null) {
+        // The first argument, just set it.
+        returnObjectInspector = oi;
+        return true;
+      }
+      
+      if (returnObjectInspector == oi) {
+        // The new ObjectInspector is the same as the old one, directly return true
+        return true;
+      }
+      
+      TypeInfo oiTypeInfo = TypeInfoUtils.getTypeInfoFromObjectInspector(oi);
+      TypeInfo rTypeInfo = TypeInfoUtils.getTypeInfoFromObjectInspector(returnObjectInspector); 
+      if (oiTypeInfo == rTypeInfo) {
+        // Convert everything to writable, if types of arguments are the same,
+        // but ObjectInspectors are different.
+        returnObjectInspector = ObjectInspectorUtils.getStandardObjectInspector(returnObjectInspector,
+            ObjectInspectorCopyOption.WRITABLE);
+        return true;
+      }
+      
+      if (!allowTypeConversion) {
+        return false;
+      }
+      
+      // Types are different, we need to check whether we can convert them to 
+      // a common base class or not.
+      TypeInfo commonTypeInfo = FunctionRegistry.getCommonClass(oiTypeInfo, rTypeInfo);
+      if (commonTypeInfo == null) {
+        return false;
+      }
+
+      returnObjectInspector = TypeInfoUtils.getStandardObjectInspectorFromTypeInfo(commonTypeInfo);
+      
       return true;
     }
     
@@ -90,10 +122,7 @@ public class GenericUDFUtils {
      * Returns the ObjectInspector of the return value.
      */
     public ObjectInspector get() {
-      return valueInspectorsAreTheSame
-          ? returnObjectInspector
-          : ObjectInspectorUtils.getStandardObjectInspector(returnObjectInspector,
-              ObjectInspectorCopyOption.WRITABLE);
+      return returnObjectInspector;
     }
     
     /**
@@ -101,47 +130,29 @@ public class GenericUDFUtils {
      * different possibilities are not all the same).
      */
     public Object convertIfNecessary(Object o, ObjectInspector oi) {
-      if (valueInspectorsAreTheSame || oi instanceof VoidObjectInspector) {
+      if (oi == returnObjectInspector) {
         return o;
       } else {
-        return ObjectInspectorUtils.copyToStandardObject(
-            o, oi, ObjectInspectorCopyOption.WRITABLE);
+
+        if (o == null) {
+          return null;
+        }
+        
+        if (converters == null) {
+          converters = new HashMap<ObjectInspector, ObjectInspectorUtils.Converter>();
+        }
+        
+        Converter converter = converters.get(oi);
+        if (converter == null) {
+          converter = ObjectInspectorUtils.getConverter(oi, returnObjectInspector);
+          converters.put(oi, converter);
+        }
+
+        return converter.convert(o);
       }   
     }
     
   }
-  
-  /**
-   * This class helps to make sure the TypeInfo of different possibilities
-   * of the return values are all the same. 
-   */
-  public static class ReturnTypeInfoResolver {
-    
-    TypeInfo returnTypeInfo = null;
-    /**
-     * Update the return TypeInfo based on the new value TypeInfo.
-     * @return  false if there is a type mismatch
-     */
-    public boolean updateReturnTypeInfo(TypeInfo newValueTypeInfo) 
-        throws UDFArgumentTypeException {
-      if (newValueTypeInfo == TypeInfoFactory.voidTypeInfo) {
-        // do nothing
-      } else if (returnTypeInfo == null) {
-        returnTypeInfo = newValueTypeInfo;
-      } else if (returnTypeInfo != newValueTypeInfo) {
-        return false;
-      } else {
-        // do nothing
-      }
-      return true;
-    }
-    
-    public TypeInfo getReturnTypeInfo() {
-      return returnTypeInfo;
-    }
-    
-  }
-  
   
   
 }

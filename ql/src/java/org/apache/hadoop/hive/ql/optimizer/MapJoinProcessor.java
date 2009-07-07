@@ -197,7 +197,7 @@ public class MapJoinProcessor implements Transform {
       for (int i=1; i < newParentOps.size(); i++) {
         TypeInfo a = commonType;
         TypeInfo b = keyExprMap.get(new Byte((byte)i)).get(k).getTypeInfo(); 
-        commonType = FunctionRegistry.getCommonClass(a, b);
+        commonType = FunctionRegistry.getCommonClassForComparison(a, b);
         if (commonType == null) {
           throw new SemanticException("Cannot do equality join on different types: " + a.getTypeName() + " and " + b.getTypeName());
         }
