@@ -36,7 +36,7 @@ bin=`cd "$bin"; pwd`
 this="$bin/$script"
 
 # the root of the Hadoop installation
-export HIVE_HOME=`dirname "$this"`/..
+export HIVE_HOME=`dirname "$bin"`
 
 #check to see if the conf dir is given as an optional argument
 while [ $# -gt 0 ]; do    # Until you run out of parameters . . .

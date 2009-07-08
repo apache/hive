@@ -313,8 +313,11 @@ Trunk - Unreleased
     HIVE-612. Problem in removing temp files in FileSinkOperator.jobClose
     (Zheng Shao via namit)
  
-    HIVE-608, No type conversion in GenericUDF
+    HIVE-608. No type conversion in GenericUDF
     (Zheng Shao via namit)  
+
+    HIVE-616. Make hive work with symbolic linked sub directories
+    (Zheng Shao via rmurthy)
 
 Release 0.3.1 - Unreleased
 
