@@ -2276,6 +2276,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     case QBMetaData.DEST_TABLE: {
 
         dest_tab = qbm.getDestTableForAlias(dest);
+        //check for partition
+        List<FieldSchema> parts = dest_tab.getTTable().getPartitionKeys();
+        if(parts != null && parts.size() > 0) {
+          throw new SemanticException(ErrorMsg.NEED_PARTITION_ERROR.getMsg());
+        }
         dest_path = dest_tab.getPath();
         queryTmpdir = ctx.getExternalTmpFileURI(dest_path.toUri());
         table_desc = Utilities.getTableDesc(dest_tab);

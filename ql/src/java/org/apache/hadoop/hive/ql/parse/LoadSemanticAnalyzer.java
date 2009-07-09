@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.List;
 
 import org.antlr.runtime.tree.Tree;
 import org.apache.commons.lang.StringUtils;
@@ -30,6 +31,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -176,6 +178,12 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     tableSpec ts = new tableSpec(db, conf, (ASTNode) table_t);
     URI toURI = (ts.partHandle != null) ? ts.partHandle.getDataLocation() : ts.tableHandle.getDataLocation();
 
+    List<FieldSchema> parts = ts.tableHandle.getTTable().getPartitionKeys();
+    if (isOverWrite && (parts != null && parts.size() > 0)
+        && (ts.partSpec == null || ts.partSpec.size() == 0)) {
+      throw new SemanticException(ErrorMsg.NEED_PARTITION_ERROR.getMsg());
+    }
+    
     // make sure the arguments make sense
     applyConstraints(fromURI, toURI, from_t, isLocal);
 

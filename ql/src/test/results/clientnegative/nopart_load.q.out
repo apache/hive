@@ -1,0 +1,3 @@
+query: DROP TABLE nopart_load
+query: CREATE TABLE nopart_load(a STRING, b STRING) PARTITIONED BY (ds STRING)
+FAILED: Error in semantic analysis: need to specify partition columns because the destination table is partitioned.

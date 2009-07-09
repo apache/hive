@@ -319,6 +319,9 @@ Trunk - Unreleased
     HIVE-616. Make hive work with symbolic linked sub directories
     (Zheng Shao via rmurthy)
 
+    HIVE-527. Inserting into a partitioned table without specifying the partition field should fail.
+    (He Yongqiang via namit)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

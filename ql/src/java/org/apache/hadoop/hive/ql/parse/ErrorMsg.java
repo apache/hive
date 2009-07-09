@@ -83,7 +83,8 @@ public enum ErrorMsg {
   NO_OUTER_MAPJOIN("Map Join cannot be performed with Outer join"),
   INVALID_MAPJOIN_HINT("neither table specified as map-table"),
   INVALID_MAPJOIN_TABLE("result of a union cannot be a map table"),
-  NON_BUCKETED_TABLE("Sampling Expression Needed for Non-Bucketed Table");
+  NON_BUCKETED_TABLE("Sampling Expression Needed for Non-Bucketed Table"),
+  NEED_PARTITION_ERROR("need to specify partition columns because the destination table is partitioned.");
 
   private String mesg;
   ErrorMsg(String mesg) {
