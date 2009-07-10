@@ -65,6 +65,9 @@ Trunk - Unreleased
     HIVE-553. add BinarySortableSerDe
     (Zheng Shao via namit)
 
+    HIVE-622. add UDF reverse
+    (Emil Ibrishimov via namit)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 

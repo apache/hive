@@ -1,8 +1,8 @@
-query: CREATE TABLE dest1(len INT)
+query: CREATE TABLE dest1(len STRING)
 query: EXPLAIN
-FROM src INSERT OVERWRITE TABLE dest1 SELECT length(src.value)
+FROM src1 INSERT OVERWRITE TABLE dest1 SELECT reverse(src1.value)
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION length (. (TOK_TABLE_OR_COL src) value))))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src1)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION reverse (. (TOK_TABLE_OR_COL src1) value))))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -13,11 +13,11 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        src 
+        src1 
             Select Operator
               expressions:
-                    expr: length(value)
-                    type: int
+                    expr: reverse(value)
+                    type: string
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
@@ -33,10 +33,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/emil/hive1/hive1/build/ql/tmp/809193894/10000
+                destination: file:/data/users/emil/hive1/hive1/build/ql/tmp/533825523/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/emil/hive1/hive1/build/ql/tmp/353629462/10002 
+              file:/data/users/emil/hive1/hive1/build/ql/tmp/620216694/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -45,7 +45,7 @@ STAGE PLANS:
                     tag: -1
                     value expressions:
                           expr: len
-                          type: int
+                          type: string
             Reduce Operator Tree:
               Extract
                 File Output Operator
@@ -68,510 +68,35 @@ STAGE PLANS:
               name: dest1
 
 
-query: FROM src INSERT OVERWRITE TABLE dest1 SELECT length(src.value)
-Input: default/src
+query: FROM src1 INSERT OVERWRITE TABLE dest1 SELECT reverse(src1.value)
+Input: default/src1
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/emil/hive1/hive1/build/ql/tmp/1493924198/10000
-7
-6
-7
-6
-7
-7
-7
-7
-6
-7
-7
-7
-7
-7
-7
-7
-7
-6
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-6
-7
-7
-7
-7
-6
-6
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-6
-7
-7
-7
-7
-5
-7
-7
-7
-7
-6
-7
-7
-7
-7
-7
-7
-7
-6
-7
-7
-7
-7
-6
-7
-6
-6
-5
-7
-6
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-6
-7
-6
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-6
-7
-7
-7
-7
-7
-7
-6
-7
-7
-7
-6
-7
-7
-6
-7
-7
-7
-7
-7
-7
-7
-7
-7
-6
-7
-7
-6
-5
-7
-7
-7
-7
-6
-7
-7
-7
-7
-6
-7
-7
-7
-7
-5
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-6
-6
-7
-7
-7
-7
-7
-7
-6
-7
-6
-7
-7
-7
-7
-7
-6
-7
-7
-7
-7
-6
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-6
-6
-5
-7
-6
-7
-7
-7
-7
-7
-7
-7
-7
-7
-6
-7
-6
-6
-7
-6
-7
-6
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-5
-7
-7
-7
-7
-7
-6
-6
-7
-6
-6
-7
-6
-7
-7
-7
-7
-7
-7
-7
-7
-6
-7
-7
-7
-7
-7
-6
-6
-6
-7
-7
-7
-7
-7
-7
-7
-7
-6
-7
-6
-7
-6
-6
-7
-6
-7
-6
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-6
-7
-7
-7
-7
-7
-5
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-5
-6
-7
-7
-7
-6
-6
-7
-7
-7
-7
-7
-7
-7
-7
-7
-6
-7
-7
-7
-7
-7
-7
-7
-7
-7
-6
-7
-7
-7
-7
-6
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-5
-6
-7
-7
-7
-6
-7
-7
-7
-6
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-6
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-6
-7
-6
-7
-7
-6
-7
-7
-7
-7
-5
-7
-7
-7
-7
-7
-7
-7
-7
-7
-6
-7
-7
-7
-7
-6
-7
-7
-6
-6
-6
-7
-7
-7
-7
-7
-7
-7
-7
-7
-6
-7
-7
-7
-7
-6
+Output: file:/data/users/emil/hive1/hive1/build/ql/tmp/1181513979/10000
+832_lav
+
+113_lav
+72_lav
+561_lav
+904_lav
+552_lav
+872_lav
+89_lav
+484_lav
+562_lav
+391_lav
+104_lav
+051_lav
+372_lav
+
+
+66_lav
+
+312_lav
+641_lav
+604_lav
+
+
+
 query: DROP TABLE dest1

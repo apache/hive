@@ -1,0 +1,10 @@
+CREATE TABLE dest1(len STRING);
+
+EXPLAIN
+FROM src1 INSERT OVERWRITE TABLE dest1 SELECT reverse(src1.value);
+
+FROM src1 INSERT OVERWRITE TABLE dest1 SELECT reverse(src1.value);
+
+SELECT dest1.* FROM dest1;
+
+DROP TABLE dest1;
