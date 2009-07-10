@@ -20,8 +20,11 @@ package org.apache.hadoop.hive.serde2.objectinspector;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -456,9 +459,11 @@ public class ObjectInspectorUtils {
         }
         return loi1.getListLength(o1) - loi1.getListLength(o2);
       }
-      case MAP:
+      case MAP:  {
+        throw new RuntimeException("Compare on map type not supported!");
+      }
       default:  
-        throw new RuntimeException("Hash code on map type not supported yet.");
+        throw new RuntimeException("Compare on unknown type: " + oi1.getCategory());
     }
   }
 
@@ -549,4 +554,38 @@ public class ObjectInspectorUtils {
   public static Converter getConverter(ObjectInspector inputOI, ObjectInspector outputOI) {
     return new Converter(inputOI, outputOI);
   }
+  
+  /**
+   * Get the list of field names as csv from a StructObjectInspector.
+   */
+  public static String getFieldNames(StructObjectInspector soi) {
+    List<? extends StructField> fields = soi.getAllStructFieldRefs();
+    StringBuilder sb = new StringBuilder();
+    for (int i=0; i<fields.size(); i++) {
+      if (i > 0) {
+        sb.append(",");
+      }
+      sb.append(fields.get(i).getFieldName());
+    }
+    return sb.toString();
+  }
+
+  /**
+   * Get the list of field type as csv from a StructObjectInspector.
+   */
+  public static String getFieldTypes(StructObjectInspector soi) {
+    List<? extends StructField> fields = soi.getAllStructFieldRefs();
+    StringBuilder sb = new StringBuilder();
+    for (int i=0; i<fields.size(); i++) {
+      if (i > 0) {
+        sb.append(":");
+      }
+      sb.append(
+          TypeInfoUtils.getTypeInfoFromObjectInspector(
+              fields.get(i).getFieldObjectInspector()).getTypeName());
+    }
+    return sb.toString();
+  }
+
+
 }

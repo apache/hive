@@ -288,7 +288,7 @@ public class SerDeUtils {
       case STRUCT: {
         StructObjectInspector soi = (StructObjectInspector)oi;
         List<? extends StructField> structFields = soi.getAllStructFieldRefs();
-        if (structFields == null) {
+        if (o == null) {
           sb.append("null");
         } else {
           sb.append(LBRACE);

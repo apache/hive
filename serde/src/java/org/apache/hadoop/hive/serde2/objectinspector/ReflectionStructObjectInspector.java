@@ -92,6 +92,7 @@ public class ReflectionStructObjectInspector implements StructObjectInspector {
     int used = 0;
     for (int i=0; i<reflectionFields.length; i++) {
       if (!shouldIgnoreField(reflectionFields[i].getName())) {
+        reflectionFields[i].setAccessible(true);
         fields.add(new MyField(reflectionFields[i], structFieldObjectInspectors.get(used++)));
       }
     }
@@ -125,7 +126,7 @@ public class ReflectionStructObjectInspector implements StructObjectInspector {
       return r;
     } catch (Exception e) {
       throw new RuntimeException("cannot get field " + f.field + " from " 
-    		  + data.getClass() + " " + data); 
+    		  + data.getClass() + " " + data, e); 
     }
   }
   public List<Object> getStructFieldsDataAsList(Object data) {

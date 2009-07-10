@@ -89,8 +89,8 @@ Input: default/src_thrift
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/310776186/10000
-NULL	{"myint":null,"mystring":null,"underscore_int":null}
+Output: file:/data/users/zshao/tools/553-trunk-apache-hive/build/ql/tmp/667771200/10000
+NULL	null
 -1461153966	{"myint":49,"mystring":"343","underscore_int":7}
 -1952710705	{"myint":25,"mystring":"125","underscore_int":5}
 -734328905	{"myint":16,"mystring":"64","underscore_int":4}

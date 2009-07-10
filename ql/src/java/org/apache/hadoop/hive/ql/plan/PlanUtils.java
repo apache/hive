@@ -32,8 +32,8 @@ import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
+import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
-import org.apache.hadoop.hive.serde2.thrift.TBinarySortableProtocol;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
@@ -117,18 +117,16 @@ public class PlanUtils {
    * Generate the table descriptor of DynamicSerDe and TBinarySortableProtocol.
    */
   public static tableDesc getBinarySortableTableDesc(List<FieldSchema> fieldSchemas, String order) {
-    String structName = "binary_sortable_table";
     return new tableDesc(
-        DynamicSerDe.class,
+        BinarySortableSerDe.class,
         SequenceFileInputFormat.class,
         SequenceFileOutputFormat.class,
         Utilities.makeProperties(
-            "name", structName,        
-            org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT,
-              TBinarySortableProtocol.class.getName(),
-            org.apache.hadoop.hive.serde.Constants.SERIALIZATION_DDL, 
-              MetaStoreUtils.getDDLFromFieldSchema(structName, fieldSchemas),
-            org.apache.hadoop.hive.serde.Constants.SERIALIZATION_SORT_ORDER, 
+            Constants.LIST_COLUMNS,
+              MetaStoreUtils.getColumnNamesFromFieldSchema(fieldSchemas),
+            Constants.LIST_COLUMN_TYPES, 
+              MetaStoreUtils.getColumnTypesFromFieldSchema(fieldSchemas),
+            Constants.SERIALIZATION_SORT_ORDER, 
               order
         ));
   }

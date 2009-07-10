@@ -64,7 +64,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
+            <string>file:/data/users/zshao/tools/553-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
            </void> 
           </object> 
          </void> 
@@ -138,7 +138,7 @@
                       <void property="keySerializeInfo"> 
                        <object id="tableDesc0" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
                         <void property="deserializerClass"> 
-                         <class>org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe</class> 
+                         <class>org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe</class> 
                         </void> 
                         <void property="inputFileFormatClass"> 
                          <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
@@ -149,20 +149,16 @@
                         <void property="properties"> 
                          <object class="java.util.Properties"> 
                           <void method="put"> 
-                           <string>name</string> 
-                           <string>binary_sortable_table</string> 
+                           <string>columns</string> 
+                           <string>_col0,_col1</string> 
                           </void> 
                           <void method="put"> 
                            <string>serialization.sort.order</string> 
                            <string>++</string> 
                           </void> 
                           <void method="put"> 
-                           <string>serialization.ddl</string> 
-                           <string>struct binary_sortable_table { string _col0, string _col1}</string> 
-                          </void> 
-                          <void method="put"> 
-                           <string>serialization.format</string> 
-                           <string>org.apache.hadoop.hive.serde2.thrift.TBinarySortableProtocol</string> 
+                           <string>columns.types</string> 
+                           <string>string,string</string> 
                           </void> 
                          </object> 
                         </void> 
@@ -807,7 +803,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/zshao/tools/553-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src</string> 
@@ -819,7 +815,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/zshao/tools/553-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap0"/> 
@@ -860,7 +856,7 @@
               <void property="conf"> 
                <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                 <void property="dirName"> 
-                 <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/1812446837/10001</string> 
+                 <string>file:/data/users/zshao/tools/553-trunk-apache-hive/build/ql/tmp/681513171/10001</string> 
                 </void> 
                 <void property="tableInfo"> 
                  <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 

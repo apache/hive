@@ -84,11 +84,11 @@ public class StructTypeInfo extends TypeInfo implements Serializable{
   }
   
   public List<String> getAllStructFieldNames() {
-    return java.util.Collections.unmodifiableList(allStructFieldNames);
+    return allStructFieldNames;
   }
   
   public List<TypeInfo> getAllStructFieldTypeInfos() {
-    return java.util.Collections.unmodifiableList(allStructFieldTypeInfos);
+    return allStructFieldTypeInfos;
   }
   
   public TypeInfo getStructFieldTypeInfo(String field) {
