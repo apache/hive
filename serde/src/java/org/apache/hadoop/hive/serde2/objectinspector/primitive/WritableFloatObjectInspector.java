@@ -17,13 +17,14 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.FloatWritable;
 
 /**
  * A FloatObjectInspector inspects a FloatWritable Object.
  */
 public class WritableFloatObjectInspector extends AbstractPrimitiveWritableObjectInspector 
-implements FloatObjectInspector{
+implements SettableFloatObjectInspector{
 
   WritableFloatObjectInspector() {
     super(PrimitiveObjectInspectorUtils.floatTypeEntry);
@@ -42,5 +43,15 @@ implements FloatObjectInspector{
   @Override
   public Object getPrimitiveJavaObject(Object o) {
     return o == null ? null : Float.valueOf(((FloatWritable)o).get());
+  }
+
+  @Override
+  public Object create(float value) {
+    return new FloatWritable(value);
+  }
+
+  @Override
+  public void set(Object o, float value) {
+    ((FloatWritable)o).set(value);
   }
 }

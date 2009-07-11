@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
-import java.util.Vector;
 import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
@@ -97,7 +96,7 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
   transient private Object[] dummyObj; // for outer joins, contains the
                                        // potential nulls for the concerned
                                        // aliases
-  transient private Vector<ArrayList<Object>>[] dummyObjVectors;
+  transient private ArrayList<ArrayList<Object>>[] dummyObjVectors;
   transient private Stack<Iterator<ArrayList<Object>>> iterators;
   transient protected int totalSz; // total size of the composite object
   transient ObjectInspector joinOutputObjectInspector;  // The OI for the output row 
@@ -106,7 +105,7 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
   // the output of the CommonJoinOperator to the input columnInfo.
   transient private Map<Integer, Set<String>> posToAliasMap;
 
-  HashMap<Byte, Vector<ArrayList<Object>>> storage;
+  HashMap<Byte, ArrayList<ArrayList<Object>>> storage;
   int joinEmitInterval = -1;
   int nextSz = 0;
   transient Byte lastAlias = null;
@@ -186,7 +185,7 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
     LOG.info("COMMONJOIN " + ((StructObjectInspector)inputObjInspector[0]).getTypeName());   
     totalSz = 0;
     // Map that contains the rows for each alias
-    storage = new HashMap<Byte, Vector<ArrayList<Object>>>();
+    storage = new HashMap<Byte, ArrayList<ArrayList<Object>>>();
 
     numAliases = conf.getExprs().size();
     
@@ -206,7 +205,7 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
     joinValuesStandardObjectInspectors = getStandardObjectInspectors(joinValuesObjectInspectors);
       
     dummyObj = new Object[numAliases];
-    dummyObjVectors = new Vector[numAliases];
+    dummyObjVectors = new ArrayList[numAliases];
 
     int pos = 0;
     for (Byte alias : order) {
@@ -216,7 +215,7 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
       for (int j = 0; j < sz; j++)
         nr.add(null);
       dummyObj[pos] = nr;
-      Vector<ArrayList<Object>> values = new Vector<ArrayList<Object>>();
+      ArrayList<ArrayList<Object>> values = new ArrayList<ArrayList<Object>>();
       values.add((ArrayList<Object>) dummyObj[pos]);
       dummyObjVectors[pos] = values;
       pos++;
@@ -236,7 +235,7 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
     LOG.trace("Join: Starting new group");
     storage.clear();
     for (Byte alias : order)
-      storage.put(alias, new Vector<ArrayList<Object>>());
+      storage.put(alias, new ArrayList<ArrayList<Object>>());
   }
 
   protected int getNextSize(int sz) {
@@ -295,8 +294,8 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
       dest[i] = src[i];
   }
 
-  private Vector<boolean[]> joinObjectsInnerJoin(Vector<boolean[]> resNulls,
-      Vector<boolean[]> inputNulls, ArrayList<Object> newObj,
+  private ArrayList<boolean[]> joinObjectsInnerJoin(ArrayList<boolean[]> resNulls,
+      ArrayList<boolean[]> inputNulls, ArrayList<Object> newObj,
       IntermediateObject intObj, int left, boolean newObjNull) {
     if (newObjNull)
       return resNulls;
@@ -314,8 +313,8 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
     return resNulls;
   }
 
-  private Vector<boolean[]> joinObjectsLeftOuterJoin(
-      Vector<boolean[]> resNulls, Vector<boolean[]> inputNulls,
+  private ArrayList<boolean[]> joinObjectsLeftOuterJoin(
+      ArrayList<boolean[]> resNulls, ArrayList<boolean[]> inputNulls,
       ArrayList<Object> newObj, IntermediateObject intObj, int left,
       boolean newObjNull) {
     Iterator<boolean[]> nullsIter = inputNulls.iterator();
@@ -333,8 +332,8 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
     return resNulls;
   }
 
-  private Vector<boolean[]> joinObjectsRightOuterJoin(
-      Vector<boolean[]> resNulls, Vector<boolean[]> inputNulls,
+  private ArrayList<boolean[]> joinObjectsRightOuterJoin(
+      ArrayList<boolean[]> resNulls, ArrayList<boolean[]> inputNulls,
       ArrayList<Object> newObj, IntermediateObject intObj, int left,
       boolean newObjNull, boolean firstRow) {
     if (newObjNull)
@@ -382,8 +381,8 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
     return resNulls;
   }
 
-  private Vector<boolean[]> joinObjectsFullOuterJoin(
-      Vector<boolean[]> resNulls, Vector<boolean[]> inputNulls,
+  private ArrayList<boolean[]> joinObjectsFullOuterJoin(
+      ArrayList<boolean[]> resNulls, ArrayList<boolean[]> inputNulls,
       ArrayList<Object> newObj, IntermediateObject intObj, int left,
       boolean newObjNull, boolean firstRow) {
     if (newObjNull) {
@@ -455,10 +454,10 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
    * nulls is changed appropriately. The list will contain all non-nulls for a
    * inner join. The outer joins are processed appropriately.
    */
-  private Vector<boolean[]> joinObjects(Vector<boolean[]> inputNulls,
+  private ArrayList<boolean[]> joinObjects(ArrayList<boolean[]> inputNulls,
                                         ArrayList<Object> newObj, IntermediateObject intObj, 
                                         int joinPos, boolean firstRow) {
-    Vector<boolean[]> resNulls = new Vector<boolean[]>();
+    ArrayList<boolean[]> resNulls = new ArrayList<boolean[]>();
     boolean newObjNull = newObj == dummyObj[joinPos] ? true : false;
     if (joinPos == 0) {
       if (newObjNull)
@@ -507,7 +506,7 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
    * same as the number of inputs under consideration currently. When all inputs
    * are accounted for, the output is forwared appropriately.
    */
-  private void genObject(Vector<boolean[]> inputNulls, int aliasNum,
+  private void genObject(ArrayList<boolean[]> inputNulls, int aliasNum,
                          IntermediateObject intObj, boolean firstRow) throws HiveException {
     boolean childFirstRow = firstRow;
     if (aliasNum < numAliases) {
@@ -517,7 +516,7 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
       while (aliasRes.hasNext()) {
         ArrayList<Object> newObj = aliasRes.next();
         intObj.pushObj(newObj);
-        Vector<boolean[]> newNulls = joinObjects(inputNulls, newObj, intObj,
+        ArrayList<boolean[]> newNulls = joinObjects(inputNulls, newObj, intObj,
                                                  aliasNum, childFirstRow);
         genObject(newNulls, aliasNum + 1, intObj, firstRow);
         intObj.popObj();

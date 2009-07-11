@@ -24,7 +24,7 @@ import org.apache.hadoop.io.BooleanWritable;
  * A WritableBooleanObjectInspector inspects a BooleanWritable Object.
  */
 public class WritableBooleanObjectInspector extends AbstractPrimitiveWritableObjectInspector 
-implements BooleanObjectInspector{
+implements SettableBooleanObjectInspector{
 
   WritableBooleanObjectInspector() {
     super(PrimitiveObjectInspectorUtils.booleanTypeEntry);
@@ -43,5 +43,15 @@ implements BooleanObjectInspector{
   @Override
   public Object getPrimitiveJavaObject(Object o) {
     return o == null ? null : Boolean.valueOf(((BooleanWritable)o).get());
+  }
+
+  @Override
+  public Object create(boolean value) {
+    return new BooleanWritable(value);
+  }
+
+  @Override
+  public void set(Object o, boolean value) {
+    ((BooleanWritable)o).set(value);
   }
 }

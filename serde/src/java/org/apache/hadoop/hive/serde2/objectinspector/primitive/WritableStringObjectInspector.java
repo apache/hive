@@ -24,7 +24,7 @@ import org.apache.hadoop.io.Text;
  * A WritableStringObjectInspector inspects a Text Object.
  */
 public class WritableStringObjectInspector extends AbstractPrimitiveWritableObjectInspector 
-implements StringObjectInspector{
+implements SettableStringObjectInspector{
 
   WritableStringObjectInspector() {
     super(PrimitiveObjectInspectorUtils.stringTypeEntry);
@@ -43,6 +43,40 @@ implements StringObjectInspector{
   @Override
   public String getPrimitiveJavaObject(Object o) {
     return o == null ? null : ((Text)o).toString();
+  }
+
+  @Override
+  public Object create(Text value) {
+    Text r = new Text();
+    if (value != null) {
+      r.set(value);
+    }
+    return r;
+  }
+
+  @Override
+  public Object create(String value) {
+    Text r = new Text();
+    if (value != null) {
+      r.set(value);
+    }
+    return r;
+  }
+
+  @Override
+  public void set(Object o, Text value) {
+    Text r = (Text)o;
+    if (value != null) {
+      r.set(value);
+    }
+  }
+
+  @Override
+  public void set(Object o, String value) {
+    Text r = (Text)o;
+    if (value != null) {
+      r.set(value);
+    }
   }
 
 }

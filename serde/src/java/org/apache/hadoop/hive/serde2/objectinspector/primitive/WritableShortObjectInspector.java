@@ -18,13 +18,14 @@
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.io.LongWritable;
 
 
 /**
  * A WritableShortObjectInspector inspects a ShortWritable Object.
  */
 public class WritableShortObjectInspector extends AbstractPrimitiveWritableObjectInspector 
-implements ShortObjectInspector{
+implements SettableShortObjectInspector{
 
   WritableShortObjectInspector() {
     super(PrimitiveObjectInspectorUtils.shortTypeEntry);
@@ -44,4 +45,15 @@ implements ShortObjectInspector{
   public Object getPrimitiveJavaObject(Object o) {
     return o == null ? null : Short.valueOf(((ShortWritable)o).get());
   }
+  
+  @Override
+  public Object create(short value) {
+    return new ShortWritable(value);
+  }
+
+  @Override
+  public void set(Object o, short value) {
+    ((ShortWritable)o).set(value);
+  }
+  
 }

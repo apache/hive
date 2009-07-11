@@ -17,17 +17,31 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.io.Text;
 
 
 /**
- * A ByteObjectInspector inspects an Object representing a Byte object.
+ * A SettableStringObjectInspector can set a string value to an object.
  */
-public interface ByteObjectInspector extends PrimitiveObjectInspector {
+public interface SettableStringObjectInspector extends StringObjectInspector {
+
+  /**
+   * Set the object with the value. 
+   */
+  public void set(Object o, Text value);
   
   /**
-   * Get the byte data.
+   * Set the object with the value. 
    */
-  byte get(Object o);
+  public void set(Object o, String value);
   
+  /**
+   * Create an object with the value.
+   */
+  public Object create(Text value);
+
+  /**
+   * Create an object with the value.
+   */
+  public Object create(String value);
 }

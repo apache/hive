@@ -25,8 +25,9 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.Converter;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -61,7 +62,7 @@ public class GenericUDFUtils {
     
     // We create converters beforehand, so that the converters can reuse the 
     // same object for returning conversion results. 
-    HashMap<ObjectInspector, ObjectInspectorUtils.Converter> converters;
+    HashMap<ObjectInspector, Converter> converters;
     
     public ReturnObjectInspectorResolver() {
       this(false);
@@ -130,8 +131,9 @@ public class GenericUDFUtils {
      * different possibilities are not all the same).
      */
     public Object convertIfNecessary(Object o, ObjectInspector oi) {
+      Object converted = null;
       if (oi == returnObjectInspector) {
-        return o;
+        converted = o;
       } else {
 
         if (o == null) {
@@ -139,20 +141,19 @@ public class GenericUDFUtils {
         }
         
         if (converters == null) {
-          converters = new HashMap<ObjectInspector, ObjectInspectorUtils.Converter>();
+          converters = new HashMap<ObjectInspector, Converter>();
         }
         
         Converter converter = converters.get(oi);
         if (converter == null) {
-          converter = ObjectInspectorUtils.getConverter(oi, returnObjectInspector);
+          converter = ObjectInspectorConverters.getConverter(oi, returnObjectInspector);
           converters.put(oi, converter);
         }
-
-        return converter.convert(o);
-      }   
+        converted = converter.convert(o);
+      }
+      return converted;
     }
     
   }
-  
   
 }

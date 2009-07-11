@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.Random;
-import java.util.Vector;
+import java.util.ArrayList;
 import java.util.ArrayList;
 import java.util.Properties;
 
@@ -175,7 +175,7 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
         mapJoinTables.put(Byte.valueOf((byte)pos), hashTable);
       }
 
-      storage.put((byte)posBigTable, new Vector<ArrayList<Object>>());
+      storage.put((byte)posBigTable, new ArrayList<ArrayList<Object>>());
       
       mapJoinRowsKey = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEMAPJOINROWSIZE);
       
@@ -243,10 +243,10 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
         HTree hashTable = mapJoinTables.get(alias);
         MapJoinObjectKey keyMap = new MapJoinObjectKey(metadataKeyTag, key);
         MapJoinObjectValue o = (MapJoinObjectValue)hashTable.get(keyMap);
-        Vector<ArrayList<Object>> res = null;
+        ArrayList<ArrayList<Object>> res = null;
         
         if (o == null) {
-          res = new Vector<ArrayList<Object>>();
+          res = new ArrayList<ArrayList<Object>>();
         }
         else {
           res = o.getObj();
@@ -285,7 +285,7 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
         return;
       }
 
-      // Add the value to the vector
+      // Add the value to the ArrayList
       storage.get(alias).add(value);
 
       for (Byte pos : order) {
@@ -294,7 +294,7 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
           MapJoinObjectValue o = (MapJoinObjectValue)mapJoinTables.get(pos).get(keyMap);
 
           if (o == null) {
-            storage.put(pos, new Vector<ArrayList<Object>>());
+            storage.put(pos, new ArrayList<ArrayList<Object>>());
           }
           else {
             storage.put(pos, o.getObj());

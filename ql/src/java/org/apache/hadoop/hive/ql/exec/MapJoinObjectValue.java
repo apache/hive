@@ -23,18 +23,12 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Vector;
 
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator.MapJoinObjectCtx;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.lazy.LazyObject;
-import org.apache.hadoop.hive.serde2.lazy.LazyStruct;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 
 /**
@@ -43,7 +37,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.Object
 public class MapJoinObjectValue implements Externalizable {
 
   transient protected int     metadataTag;
-  transient protected Vector<ArrayList<Object>>  obj;
+  transient protected ArrayList<ArrayList<Object>>  obj;
   transient Writable val;
 
 
@@ -56,7 +50,7 @@ public class MapJoinObjectValue implements Externalizable {
    * @param objectTypeTag
    * @param obj
    */
-  public MapJoinObjectValue(int metadataTag, Vector<ArrayList<Object>> obj) {
+  public MapJoinObjectValue(int metadataTag, ArrayList<ArrayList<Object>> obj) {
     val = new Text();
     this.metadataTag = metadataTag;
     this.obj = obj;
@@ -90,7 +84,7 @@ public class MapJoinObjectValue implements Externalizable {
       MapJoinObjectCtx ctx = MapJoinOperator.getMapMetadata().get(Integer.valueOf(metadataTag));
       int sz = in.readInt();
 
-      Vector<ArrayList<Object>> res = new Vector<ArrayList<Object>>();
+      ArrayList<ArrayList<Object>> res = new ArrayList<ArrayList<Object>>();
       for (int pos = 0; pos < sz; pos++) {
         ArrayList<Object> memObj =
           (ArrayList<Object>)
@@ -117,7 +111,7 @@ public class MapJoinObjectValue implements Externalizable {
       MapJoinObjectCtx ctx = MapJoinOperator.getMapMetadata().get(Integer.valueOf(metadataTag));
 
       // Different processing for key and value
-      Vector<ArrayList<Object>> v = (Vector<ArrayList<Object>>) obj;
+      ArrayList<ArrayList<Object>> v = (ArrayList<ArrayList<Object>>) obj;
       out.writeInt(v.size());
 
       for (int pos = 0; pos < v.size(); pos++) {
@@ -147,14 +141,14 @@ public class MapJoinObjectValue implements Externalizable {
   /**
    * @return the obj
    */
-  public Vector<ArrayList<Object>> getObj() {
+  public ArrayList<ArrayList<Object>> getObj() {
     return obj;
   }
 
   /**
    * @param obj the obj to set
    */
-  public void setObj(Vector<ArrayList<Object>> obj) {
+  public void setObj(ArrayList<ArrayList<Object>> obj) {
     this.obj = obj;
   }
 

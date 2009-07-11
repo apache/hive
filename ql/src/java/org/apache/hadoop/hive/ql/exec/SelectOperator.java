@@ -72,7 +72,14 @@ public class SelectOperator extends Operator <selectDesc> implements Serializabl
     }
     
     for(int i=0; i<eval.length; i++) {
-      output[i] = eval[i].evaluate(row);
+      try {
+        output[i] = eval[i].evaluate(row);
+      } catch (HiveException e) {
+        throw e;
+      } catch (RuntimeException e) {
+        throw new HiveException("Error evaluating "
+            + conf.getColList().get(i).getExprString(), e);
+      }
     }
     forward(output, outputObjectInspector);
   }

@@ -331,6 +331,9 @@ Trunk - Unreleased
     HIVE-473. Clean up after tests.
     (Johan Oskarsson via namit)
 
+    HIVE-616. Bug in TypeConvertor
+    (Zheng Shao via namit)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

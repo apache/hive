@@ -136,7 +136,6 @@ public class BinarySortableSerDe implements SerDe {
     for (int i=0; i<columnSortOrderIsDesc.length; i++) {
       columnSortOrderIsDesc[i] = (columnSortOrder != null && columnSortOrder.charAt(i) == '-');
     }
-    System.out.println("Column sort order = " + columnSortOrder);
   }
   
   @Override

@@ -25,7 +25,6 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde.Constants;
-import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -345,7 +344,66 @@ public class PrimitiveObjectInspectorUtils {
   }
   
   /**
-   * Get the integer number out of a primitive object. 
+   * Get the boolean value out of a primitive object.
+   * Note that NullPointerException will be thrown if o is null.
+   * Note that NumberFormatException will be thrown if o is not a valid number.
+   */
+  public static boolean getBoolean(Object o, PrimitiveObjectInspector oi) throws NumberFormatException {
+    boolean result = false;
+    switch (oi.getPrimitiveCategory()) {
+      case VOID: {
+        result = false;
+        break;
+      }
+      case BOOLEAN: {
+        result = ((BooleanObjectInspector)oi).get(o);
+        break;
+      }
+      case BYTE: {
+        result = ((ByteObjectInspector)oi).get(o) != 0;
+        break;
+      }
+      case SHORT: {
+        result = ((ShortObjectInspector)oi).get(o) != 0;
+        break;
+      }
+      case INT: {
+        result = ((IntObjectInspector)oi).get(o) != 0;
+        break;
+      }
+      case LONG: {
+        result = (int)((LongObjectInspector)oi).get(o) != 0;
+        break;
+      }
+      case FLOAT: {
+        result = (int)((FloatObjectInspector)oi).get(o) != 0;
+        break;
+      }
+      case DOUBLE: {
+        result = (int)((DoubleObjectInspector)oi).get(o) != 0;
+        break;
+      }
+      case STRING: {
+        StringObjectInspector soi = (StringObjectInspector)oi;
+        if (soi.preferWritable()) {
+          Text t = soi.getPrimitiveWritableObject(o);
+          result = t.getLength() != 0;
+        } else {
+          String s = soi.getPrimitiveJavaObject(o);
+          result = s.length() != 0;
+        }
+        break;
+      }
+      default: {
+        throw new RuntimeException("Hive 2 Internal error: unknown type: "
+            + oi.getTypeName());
+      }
+    }
+    return result;
+  }
+  
+  /**
+   * Get the byte value out of a primitive object. 
    * Note that NullPointerException will be thrown if o is null.
    * Note that NumberFormatException will be thrown if o is not a valid number.
    */
@@ -354,7 +412,7 @@ public class PrimitiveObjectInspectorUtils {
   }
   
   /**
-   * Get the integer number out of a primitive object. 
+   * Get the short value out of a primitive object. 
    * Note that NullPointerException will be thrown if o is null.
    * Note that NumberFormatException will be thrown if o is not a valid number.
    */
@@ -363,7 +421,7 @@ public class PrimitiveObjectInspectorUtils {
   }
   
   /**
-   * Get the integer number out of a primitive object.
+   * Get the integer value out of a primitive object.
    * Note that NullPointerException will be thrown if o is null.
    * Note that NumberFormatException will be thrown if o is not a valid number.
    */
@@ -414,8 +472,7 @@ public class PrimitiveObjectInspectorUtils {
         break;
       }
       default: {
-        // Should never happen because we checked this in SemanticAnalyzer.getXpathOrFuncExprNodeDesc
-        throw new RuntimeException("Hive 2 Internal error: index expression is not ordinal types: "
+        throw new RuntimeException("Hive 2 Internal error: unknown type: "
             + oi.getTypeName());
       }
     }
@@ -423,7 +480,7 @@ public class PrimitiveObjectInspectorUtils {
   }
   
   /**
-   * Get the long number out of a primitive object. 
+   * Get the long value out of a primitive object. 
    * Note that NullPointerException will be thrown if o is null.
    * Note that NumberFormatException will be thrown if o is not a valid number.
    */
@@ -474,8 +531,7 @@ public class PrimitiveObjectInspectorUtils {
         break;
       }
       default: {
-        // Should never happen because we checked this in SemanticAnalyzer.getXpathOrFuncExprNodeDesc
-        throw new RuntimeException("Hive 2 Internal error: index expression is not ordinal types: "
+        throw new RuntimeException("Hive 2 Internal error: unknown type: "
             + oi.getTypeName());
       }
     }
@@ -483,7 +539,7 @@ public class PrimitiveObjectInspectorUtils {
   }
   
   /**
-   * Get the double number out of a primitive object. 
+   * Get the double value out of a primitive object. 
    * Note that NullPointerException will be thrown if o is null.
    * Note that NumberFormatException will be thrown if o is not a valid number.
    */
@@ -529,8 +585,7 @@ public class PrimitiveObjectInspectorUtils {
         break;
       }
       default: {
-        // Should never happen because we checked this in SemanticAnalyzer.getXpathOrFuncExprNodeDesc
-        throw new RuntimeException("Hive 2 Internal error: index expression is not ordinal types: "
+        throw new RuntimeException("Hive 2 Internal error: unknown type: "
             + oi.getTypeName());
       }
     }
@@ -538,98 +593,12 @@ public class PrimitiveObjectInspectorUtils {
   }    
 
   /**
-   * Get the float number out of a primitive object. 
+   * Get the float value out of a primitive object. 
    * Note that NullPointerException will be thrown if o is null.
    * Note that NumberFormatException will be thrown if o is not a valid number.
    */
   public static float getFloat(Object o, PrimitiveObjectInspector oi) throws NumberFormatException {
     return (float)getDouble(o, oi);
   }
-  
-  /**
-   * A helper class to convert any primitive to Text. 
-   */
-  public static class TextConverter {
-    Text t = new Text();
-    ByteStream.Output out = new ByteStream.Output();
-    
-    static byte[] trueBytes = {'T', 'R', 'U', 'E'};
-    static byte[] falseBytes = {'F', 'A', 'L', 'S', 'E'};
-    
-    
-    public Text convert(Object o, PrimitiveObjectInspector oi)  {
-      if (o == null) {
-        return null;
-      }
-      
-      switch(oi.getPrimitiveCategory()) {
-        case VOID: {
-          return null;
-        }
-        case BOOLEAN: {
-          t.set(((BooleanObjectInspector)oi).get(o) ? trueBytes : falseBytes);
-          return t;
-        }
-        case BYTE: {
-          out.reset();
-          LazyInteger.writeUTF8NoException(out, ((ByteObjectInspector)oi).get(o));
-          t.set(out.getData(), 0, out.getCount());
-          return t;
-        }
-        case SHORT: {
-          out.reset();
-          LazyInteger.writeUTF8NoException(out, ((ShortObjectInspector)oi).get(o));
-          t.set(out.getData(), 0, out.getCount());
-          return t;
-        }
-        case INT: {
-          out.reset();
-          LazyInteger.writeUTF8NoException(out, ((IntObjectInspector)oi).get(o));
-          t.set(out.getData(), 0, out.getCount());
-          return t;
-        }
-        case LONG:{
-          out.reset();
-          LazyLong.writeUTF8NoException(out, ((LongObjectInspector)oi).get(o));
-          t.set(out.getData(), 0, out.getCount());
-          return t;
-        }
-        case FLOAT: {
-          t.set(String.valueOf(((FloatObjectInspector)oi).get(o)));
-          return t;
-        }
-        case DOUBLE: {
-          t.set(String.valueOf(((DoubleObjectInspector)oi).get(o)));
-          return t;
-        }
-        case STRING: {
-          t.set(((StringObjectInspector)oi).getPrimitiveJavaObject(o));
-          return t;
-        }
-        default: {
-          throw new RuntimeException("Hive 2 Internal error: type = "
-              + oi.getTypeName());
-        }
-      }
-    }
 
-    public Text evaluate(FloatWritable i)  {
-      if (i == null) {
-        return null;
-      } else {
-        t.set(i.toString());
-        return t;
-      }
-    }
-    
-    public Text evaluate(DoubleWritable i)  {
-      if (i == null) {
-        return null;
-      } else {
-        t.set(i.toString());
-        return t;
-      }
-    }
-
-  }
 }

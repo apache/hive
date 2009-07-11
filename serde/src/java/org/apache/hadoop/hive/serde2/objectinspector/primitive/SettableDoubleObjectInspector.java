@@ -17,17 +17,19 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-
 
 /**
- * A ByteObjectInspector inspects an Object representing a Byte object.
+ * A SettableDoubleObjectInspector can set a double value to an object.
  */
-public interface ByteObjectInspector extends PrimitiveObjectInspector {
+public interface SettableDoubleObjectInspector extends DoubleObjectInspector {
+
+  /**
+   * Set the object with the value. 
+   */
+  public void set(Object o, double value);
   
   /**
-   * Get the byte data.
+   * Create an object with the value.
    */
-  byte get(Object o);
-  
+  public Object create(double value);
 }
