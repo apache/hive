@@ -11,6 +11,12 @@
 
 <!-- Hive Execution Parameters -->
 <property>
+  <name>hadoop.tmp.dir</name>
+  <value>${user.dir}/../build/test/hadoop-${user.name}</value>
+  <description>A base for other temporary directories.</description>
+</property>
+
+<property>
   <name>hive.exec.scratchdir</name>
   <value>${user.dir}/../build/ql/tmp</value>
   <description>Scratch space for Hive jobs</description>

@@ -328,6 +328,9 @@ Trunk - Unreleased
     HIVE-527. Inserting into a partitioned table without specifying the partition field should fail.
     (He Yongqiang via namit)
 
+    HIVE-473. Clean up after tests.
+    (Johan Oskarsson via namit)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES
