@@ -201,6 +201,7 @@
     <delete file="${test.build.dir}/test-udfs.jar"/>
     <jar jarfile="${test.build.dir}/test-udfs.jar">
         <fileset dir="${test.build.classes}" includes="**/udf/*.class"/>
+        <fileset dir="${test.build.classes}" includes="**/udf/generic/*.class"/>
     </jar>
   </target>
 

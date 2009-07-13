@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.ql.plan.FunctionWork;
 import org.apache.hadoop.hive.ql.plan.createFunctionDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo.OperatorType;
 
@@ -45,10 +46,23 @@ public class FunctionTask extends Task<FunctionWork> {
     createFunctionDesc createFunctionDesc = work.getCreateFunctionDesc();
     if (createFunctionDesc != null) {
       try {
-        Class<? extends UDF> udfClass = getUdfClass(createFunctionDesc);
-        FunctionRegistry.registerUDF(createFunctionDesc.getFunctionName(), udfClass,
-                                     OperatorType.PREFIX, false);
-        return 0;
+        Class<?> udfClass = getUdfClass(createFunctionDesc);
+        if(UDF.class.isAssignableFrom(udfClass)) {
+          FunctionRegistry.registerUDF(createFunctionDesc.getFunctionName(), 
+                                       (Class<? extends UDF>) udfClass,
+                                       OperatorType.PREFIX, false);
+          return 0;
+        } else if(GenericUDF.class.isAssignableFrom(udfClass)) {
+          FunctionRegistry.registerGenericUDF(createFunctionDesc.getFunctionName(), 
+                                              (Class<? extends GenericUDF>) udfClass);
+          return 0;
+        } else if(UDAF.class.isAssignableFrom(udfClass)) {
+          FunctionRegistry.registerUDAF(createFunctionDesc.getFunctionName(), 
+                                        (Class<? extends UDAF>) udfClass);
+          return 0;
+        } 
+        return 1;
+
       } catch (ClassNotFoundException e) {
         LOG.info("create function: " + StringUtils.stringifyException(e));
         return 1;
@@ -58,8 +72,8 @@ public class FunctionTask extends Task<FunctionWork> {
   }
 
   @SuppressWarnings("unchecked")
-  private Class<? extends UDF> getUdfClass(createFunctionDesc desc)
+  private Class<?> getUdfClass(createFunctionDesc desc)
       throws ClassNotFoundException {
-    return (Class<? extends UDF>) Class.forName(desc.getClassName(), true, JavaUtils.getClassLoader());
+    return Class.forName(desc.getClassName(), true, JavaUtils.getClassLoader());
   }
 }

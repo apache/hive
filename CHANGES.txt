@@ -334,6 +334,9 @@ Trunk - Unreleased
     HIVE-616. Bug in TypeConvertor
     (Zheng Shao via namit)
 
+    HIVE-555. Support create temporary function for udaf and generic udf
+    (Min Zhou via namit)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES
