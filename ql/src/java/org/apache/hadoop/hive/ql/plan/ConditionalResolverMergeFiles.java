@@ -41,6 +41,9 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver {
     List<Task<? extends Serializable>> listTasks;
     private String dir;
 
+    public ConditionalResolverMergeFilesCtx() {  
+    }
+    
     /**
      * @param dir
      */

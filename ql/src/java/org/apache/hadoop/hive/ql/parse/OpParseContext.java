@@ -28,6 +28,9 @@ package org.apache.hadoop.hive.ql.parse;
 public class OpParseContext {
   private RowResolver rr;  // row resolver for the operator
 
+  public OpParseContext() {  
+  }
+  
   /**
    * @param rr row resolver
    */

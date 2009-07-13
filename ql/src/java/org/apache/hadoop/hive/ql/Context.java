@@ -61,6 +61,9 @@ public class Context {
   protected int pathid = 10000;
   protected boolean explain = false;
 
+  public Context() {  
+  }
+  
   public Context(HiveConf conf) {
     this.conf = conf;
     Path tmpPath = new Path(conf.getVar(HiveConf.ConfVars.SCRATCHDIR));

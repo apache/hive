@@ -331,11 +331,13 @@ Trunk - Unreleased
     HIVE-473. Clean up after tests.
     (Johan Oskarsson via namit)
 
-    HIVE-616. Bug in TypeConvertor
+    HIVE-624. Bug in TypeConvertor
     (Zheng Shao via namit)
 
     HIVE-555. Support create temporary function for udaf and generic udf
     (Min Zhou via namit)
+
+    HIVE-631. Fix TestParse. (Namit Jain via zshao)
 
 Release 0.3.1 - Unreleased
 

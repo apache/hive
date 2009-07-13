@@ -137,7 +137,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private HashMap<String, SamplePruner> aliasToSamplePruner;
   private HashMap<String, Operator<? extends Serializable>> topOps;
   private HashMap<String, Operator<? extends Serializable>> topSelOps;
-  private HashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx;
+  private LinkedHashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx;
   private List<loadTableDesc> loadTableWork;
   private List<loadFileDesc> loadFileWork;
   private Map<JoinOperator, QBJoinTree> joinContext;
@@ -171,7 +171,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     this.topSelOps = new HashMap<String, Operator<? extends Serializable>>();
     this.loadTableWork = new ArrayList<loadTableDesc>();
     this.loadFileWork = new ArrayList<loadFileDesc>();
-    opParseCtx = new HashMap<Operator<? extends Serializable>, OpParseContext>();
+    opParseCtx = new LinkedHashMap<Operator<? extends Serializable>, OpParseContext>();
     joinContext = new HashMap<JoinOperator, QBJoinTree>();
     this.destTableId = 1;
     this.uCtx = null;
@@ -3758,7 +3758,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         conf, new HashMap<Operator<? extends Serializable>, Task<? extends Serializable>>(),
         new ArrayList<Operator<? extends Serializable>>(),
         getParseContext(), mvTask, this.rootTasks,
-        new HashMap<Operator<? extends Serializable>, GenMapRedCtx>(),
+        new LinkedHashMap<Operator<? extends Serializable>, GenMapRedCtx>(),
         inputs, outputs);
 
     // create a walker which walks the tree in a DFS manner while maintaining the operator stack. 

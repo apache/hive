@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -49,7 +50,7 @@ public class ParseContext {
   private HashMap<String, SamplePruner> aliasToSamplePruner;
   private HashMap<String, Operator<? extends Serializable>> topOps;
   private HashMap<String, Operator<? extends Serializable>> topSelOps;
-  private HashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx;
+  private LinkedHashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx;
   private Map<JoinOperator, QBJoinTree> joinContext;
   private List<loadTableDesc> loadTableWork;
   private List<loadFileDesc> loadFileWork;
@@ -59,6 +60,9 @@ public class ParseContext {
   private int destTableId;
   private UnionProcContext uCtx;
   private List<MapJoinOperator> listMapJoinOpsNoReducer;  // list of map join operators with no reducer
+  
+  public ParseContext() {  
+  }
   
   /**
    * @param qb
@@ -88,7 +92,7 @@ public class ParseContext {
       HashMap<String, SamplePruner> aliasToSamplePruner,
       HashMap<String, Operator<? extends Serializable>> topOps,
       HashMap<String, Operator<? extends Serializable>> topSelOps,
-      HashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx,
+      LinkedHashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx,
       Map<JoinOperator, QBJoinTree> joinContext,
       List<loadTableDesc> loadTableWork, List<loadFileDesc> loadFileWork,
       Context ctx, HashMap<String, String> idToTableNameMap, int destTableId, UnionProcContext uCtx,
@@ -236,7 +240,7 @@ public class ParseContext {
   /**
    * @return the opParseCtx
    */
-  public HashMap<Operator<? extends Serializable>, OpParseContext> getOpParseCtx() {
+  public LinkedHashMap<Operator<? extends Serializable>, OpParseContext> getOpParseCtx() {
     return opParseCtx;
   }
 
@@ -245,7 +249,7 @@ public class ParseContext {
    *          the opParseCtx to set
    */
   public void setOpParseCtx(
-      HashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx) {
+      LinkedHashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx) {
     this.opParseCtx = opParseCtx;
   }
 

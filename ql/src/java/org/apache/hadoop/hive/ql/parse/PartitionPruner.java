@@ -76,6 +76,9 @@ public class PartitionPruner {
   // a map-reduce job
   private boolean onlyContainsPartCols;
 
+  public PartitionPruner() {  
+  }
+  
   /** Creates a new instance of PartitionPruner */
   public PartitionPruner(String tableAlias, QBMetaData metaData) {
     this.tableAlias = tableAlias;

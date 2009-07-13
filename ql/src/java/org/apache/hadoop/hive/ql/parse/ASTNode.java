@@ -29,6 +29,9 @@ import org.apache.hadoop.hive.ql.lib.Node;
  */
 public class ASTNode extends CommonTree implements Node {
 
+  public ASTNode() {  
+  }
+  
   /**
    * Constructor
    * @param t Token for the CommonTree Node

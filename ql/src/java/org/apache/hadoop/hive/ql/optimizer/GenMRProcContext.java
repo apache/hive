@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -51,6 +52,9 @@ public class GenMRProcContext implements NodeProcessorCtx {
     Task<? extends Serializable>         currTask;
     Operator<? extends Serializable>     currTopOp;
     String                               currAliasId;
+    
+    public GenMapRedCtx() {  
+    }
     
     /**
      * @param currTask    the current task
@@ -206,7 +210,7 @@ public class GenMRProcContext implements NodeProcessorCtx {
   private List<Task<? extends Serializable>>    mvTask;
   private List<Task<? extends Serializable>>    rootTasks;
 
-  private Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx; 
+  private LinkedHashMap<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx; 
   private Task<? extends Serializable>         currTask;
   private Operator<? extends Serializable>     currTopOp;
   private UnionOperator                        currUnionOp;
@@ -224,6 +228,9 @@ public class GenMRProcContext implements NodeProcessorCtx {
    * passed to the hooks.
    */
   private Set<WriteEntity>                    outputs;
+  
+  public GenMRProcContext() {  
+  }
   
   /**
    * @param conf       hive configuration
@@ -243,7 +250,7 @@ public class GenMRProcContext implements NodeProcessorCtx {
     ParseContext                           parseCtx,
     List<Task<? extends Serializable>>     mvTask,
     List<Task<? extends Serializable>>     rootTasks,
-    Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx,
+    LinkedHashMap<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx,
     Set<ReadEntity> inputs,
     Set<WriteEntity> outputs) 
   {
@@ -368,14 +375,14 @@ public class GenMRProcContext implements NodeProcessorCtx {
   /**
    * @return operator to task mappings
    */
-  public Map<Operator<? extends Serializable>, GenMapRedCtx> getMapCurrCtx() {
+  public LinkedHashMap<Operator<? extends Serializable>, GenMapRedCtx> getMapCurrCtx() {
     return mapCurrCtx;
   }
 
   /**
    * @param mapCurrCtx operator to task mappings
    */
-  public void setMapCurrCtx(Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx) {
+  public void setMapCurrCtx(LinkedHashMap<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx) {
     this.mapCurrCtx = mapCurrCtx;
   }
 

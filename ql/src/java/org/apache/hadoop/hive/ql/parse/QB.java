@@ -57,6 +57,9 @@ public class QB {
     }
   }
 
+  public QB() {  
+  }
+  
   public QB(String outer_id, String alias, boolean isSubQ) {
     aliasToTabs = new HashMap<String, String>();
     aliasToSubq = new HashMap<String, QBExpr>();
