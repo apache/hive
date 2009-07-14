@@ -7,27 +7,27 @@
 from thrift.Thrift import *
 from ttypes import *
 
-META_TABLE_COLUMNS = 'columns'
+META_TABLE_COLUMNS = "columns"
 
-META_TABLE_COLUMN_TYPES = 'columns.types'
+META_TABLE_COLUMN_TYPES = "columns.types"
 
-BUCKET_FIELD_NAME = 'bucket_field_name'
+BUCKET_FIELD_NAME = "bucket_field_name"
 
-BUCKET_COUNT = 'bucket_count'
+BUCKET_COUNT = "bucket_count"
 
-FIELD_TO_DIMENSION = 'field_to_dimension'
+FIELD_TO_DIMENSION = "field_to_dimension"
 
-META_TABLE_NAME = 'name'
+META_TABLE_NAME = "name"
 
-META_TABLE_DB = 'db'
+META_TABLE_DB = "db"
 
-META_TABLE_LOCATION = 'location'
+META_TABLE_LOCATION = "location"
 
-META_TABLE_SERDE = 'serde'
+META_TABLE_SERDE = "serde"
 
-META_TABLE_PARTITION_COLUMNS = 'partition_columns'
+META_TABLE_PARTITION_COLUMNS = "partition_columns"
 
-FILE_INPUT_FORMAT = 'file.inputformat'
+FILE_INPUT_FORMAT = "file.inputformat"
 
-FILE_OUTPUT_FORMAT = 'file.outputformat'
+FILE_OUTPUT_FORMAT = "file.outputformat"
 

@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.serde2.thrift;
 
-import com.facebook.thrift.TException;
+import org.apache.thrift.TException;
 
 /**
  * An interface for TProtocols that can efficiently skip fields when

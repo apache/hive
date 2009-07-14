@@ -11,9241 +11,13770 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
-import com.facebook.thrift.*;
+import java.util.Collections;
+import org.apache.log4j.Logger;
 
-import com.facebook.thrift.protocol.*;
-import com.facebook.thrift.transport.*;
+import org.apache.thrift.*;
+import org.apache.thrift.meta_data.*;
+import org.apache.thrift.protocol.*;
 
 public class ThriftHiveMetastore {
 
-/**
- * This interface is live.
- */
-public interface Iface extends com.facebook.fb303.FacebookService.Iface {
+  /**
+   * This interface is live.
+   */
+  public interface Iface extends com.facebook.fb303.FacebookService.Iface {
 
-public boolean create_database(String name, String description) throws AlreadyExistsException, MetaException, TException;
+    public boolean create_database(String name, String description) throws AlreadyExistsException, MetaException, TException;
 
-public Database get_database(String name) throws NoSuchObjectException, MetaException, TException;
+    public Database get_database(String name) throws NoSuchObjectException, MetaException, TException;
 
-public boolean drop_database(String name) throws MetaException, TException;
+    public boolean drop_database(String name) throws MetaException, TException;
 
-public List<String> get_databases() throws MetaException, TException;
+    public List<String> get_databases() throws MetaException, TException;
 
-public Type get_type(String name) throws MetaException, TException;
+    public Type get_type(String name) throws MetaException, TException;
 
-public boolean create_type(Type type) throws AlreadyExistsException, InvalidObjectException, MetaException, TException;
+    public boolean create_type(Type type) throws AlreadyExistsException, InvalidObjectException, MetaException, TException;
 
-public boolean drop_type(String type) throws MetaException, TException;
+    public boolean drop_type(String type) throws MetaException, TException;
 
-public Map<String,Type> get_type_all(String name) throws MetaException, TException;
+    public Map<String,Type> get_type_all(String name) throws MetaException, TException;
 
-public List<FieldSchema> get_fields(String db_name, String table_name) throws MetaException, UnknownTableException, UnknownDBException, TException;
+    public List<FieldSchema> get_fields(String db_name, String table_name) throws MetaException, UnknownTableException, UnknownDBException, TException;
 
-public void create_table(Table tbl) throws AlreadyExistsException, InvalidObjectException, MetaException, NoSuchObjectException, TException;
+    public void create_table(Table tbl) throws AlreadyExistsException, InvalidObjectException, MetaException, NoSuchObjectException, TException;
 
-public void drop_table(String dbname, String name, boolean deleteData) throws NoSuchObjectException, MetaException, TException;
+    public void drop_table(String dbname, String name, boolean deleteData) throws NoSuchObjectException, MetaException, TException;
 
-public List<String> get_tables(String db_name, String pattern) throws MetaException, TException;
+    public List<String> get_tables(String db_name, String pattern) throws MetaException, TException;
 
-public Table get_table(String dbname, String tbl_name) throws MetaException, NoSuchObjectException, TException;
+    public Table get_table(String dbname, String tbl_name) throws MetaException, NoSuchObjectException, TException;
 
-public void alter_table(String dbname, String tbl_name, Table new_tbl) throws InvalidOperationException, MetaException, TException;
+    public void alter_table(String dbname, String tbl_name, Table new_tbl) throws InvalidOperationException, MetaException, TException;
 
-public Partition add_partition(Partition new_part) throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
+    public Partition add_partition(Partition new_part) throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
 
-public Partition append_partition(String db_name, String tbl_name, List<String> part_vals) throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
+    public Partition append_partition(String db_name, String tbl_name, List<String> part_vals) throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
 
-public boolean drop_partition(String db_name, String tbl_name, List<String> part_vals, boolean deleteData) throws NoSuchObjectException, MetaException, TException;
+    public boolean drop_partition(String db_name, String tbl_name, List<String> part_vals, boolean deleteData) throws NoSuchObjectException, MetaException, TException;
 
-public Partition get_partition(String db_name, String tbl_name, List<String> part_vals) throws MetaException, TException;
+    public Partition get_partition(String db_name, String tbl_name, List<String> part_vals) throws MetaException, TException;
 
-public List<Partition> get_partitions(String db_name, String tbl_name, short max_parts) throws NoSuchObjectException, MetaException, TException;
+    public List<Partition> get_partitions(String db_name, String tbl_name, short max_parts) throws NoSuchObjectException, MetaException, TException;
 
-public List<String> get_partition_names(String db_name, String tbl_name, short max_parts) throws MetaException, TException;
+    public List<String> get_partition_names(String db_name, String tbl_name, short max_parts) throws MetaException, TException;
 
-public void alter_partition(String db_name, String tbl_name, Partition new_part) throws InvalidOperationException, MetaException, TException;
+    public void alter_partition(String db_name, String tbl_name, Partition new_part) throws InvalidOperationException, MetaException, TException;
 
-}
-
-public static class Client extends com.facebook.fb303.FacebookService.Client implements Iface {
-public Client(TProtocol prot)
-{
-this(prot, prot);
-}
-
-public Client(TProtocol iprot, TProtocol oprot)
-{
-super(iprot, oprot);
-}
-
-public boolean create_database(String name, String description) throws AlreadyExistsException, MetaException, TException
-{
-send_create_database(name, description);
-return recv_create_database();
-}
-
-public void send_create_database(String name, String description) throws TException
-{
-oprot_.writeMessageBegin(new TMessage("create_database", TMessageType.CALL, seqid_));
-create_database_args args = new create_database_args();
-args.name = name;
-args.description = description;
-args.write(oprot_);
-oprot_.writeMessageEnd();
-oprot_.getTransport().flush();
-}
-
-public boolean recv_create_database() throws AlreadyExistsException, MetaException, TException
-{
-TMessage msg = iprot_.readMessageBegin();
-if (msg.type == TMessageType.EXCEPTION) {
-  TApplicationException x = TApplicationException.read(iprot_);
-  iprot_.readMessageEnd();
-  throw x;
-}
-create_database_result result = new create_database_result();
-result.read(iprot_);
-iprot_.readMessageEnd();
-if (result.__isset.success) {
-  return result.success;
-}
-if (result.__isset.o1) {
-  throw result.o1;
-}
-if (result.__isset.o2) {
-  throw result.o2;
-}
-throw new TApplicationException(TApplicationException.MISSING_RESULT, "create_database failed: unknown result");
-}
-
-public Database get_database(String name) throws NoSuchObjectException, MetaException, TException
-{
-send_get_database(name);
-return recv_get_database();
-}
-
-public void send_get_database(String name) throws TException
-{
-oprot_.writeMessageBegin(new TMessage("get_database", TMessageType.CALL, seqid_));
-get_database_args args = new get_database_args();
-args.name = name;
-args.write(oprot_);
-oprot_.writeMessageEnd();
-oprot_.getTransport().flush();
-}
-
-public Database recv_get_database() throws NoSuchObjectException, MetaException, TException
-{
-TMessage msg = iprot_.readMessageBegin();
-if (msg.type == TMessageType.EXCEPTION) {
-  TApplicationException x = TApplicationException.read(iprot_);
-  iprot_.readMessageEnd();
-  throw x;
-}
-get_database_result result = new get_database_result();
-result.read(iprot_);
-iprot_.readMessageEnd();
-if (result.__isset.success) {
-  return result.success;
-}
-if (result.__isset.o1) {
-  throw result.o1;
-}
-if (result.__isset.o2) {
-  throw result.o2;
-}
-throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_database failed: unknown result");
-}
-
-public boolean drop_database(String name) throws MetaException, TException
-{
-send_drop_database(name);
-return recv_drop_database();
-}
-
-public void send_drop_database(String name) throws TException
-{
-oprot_.writeMessageBegin(new TMessage("drop_database", TMessageType.CALL, seqid_));
-drop_database_args args = new drop_database_args();
-args.name = name;
-args.write(oprot_);
-oprot_.writeMessageEnd();
-oprot_.getTransport().flush();
-}
-
-public boolean recv_drop_database() throws MetaException, TException
-{
-TMessage msg = iprot_.readMessageBegin();
-if (msg.type == TMessageType.EXCEPTION) {
-  TApplicationException x = TApplicationException.read(iprot_);
-  iprot_.readMessageEnd();
-  throw x;
-}
-drop_database_result result = new drop_database_result();
-result.read(iprot_);
-iprot_.readMessageEnd();
-if (result.__isset.success) {
-  return result.success;
-}
-if (result.__isset.o2) {
-  throw result.o2;
-}
-throw new TApplicationException(TApplicationException.MISSING_RESULT, "drop_database failed: unknown result");
-}
-
-public List<String> get_databases() throws MetaException, TException
-{
-send_get_databases();
-return recv_get_databases();
-}
-
-public void send_get_databases() throws TException
-{
-oprot_.writeMessageBegin(new TMessage("get_databases", TMessageType.CALL, seqid_));
-get_databases_args args = new get_databases_args();
-args.write(oprot_);
-oprot_.writeMessageEnd();
-oprot_.getTransport().flush();
-}
-
-public List<String> recv_get_databases() throws MetaException, TException
-{
-TMessage msg = iprot_.readMessageBegin();
-if (msg.type == TMessageType.EXCEPTION) {
-  TApplicationException x = TApplicationException.read(iprot_);
-  iprot_.readMessageEnd();
-  throw x;
-}
-get_databases_result result = new get_databases_result();
-result.read(iprot_);
-iprot_.readMessageEnd();
-if (result.__isset.success) {
-  return result.success;
-}
-if (result.__isset.o1) {
-  throw result.o1;
-}
-throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_databases failed: unknown result");
-}
-
-public Type get_type(String name) throws MetaException, TException
-{
-send_get_type(name);
-return recv_get_type();
-}
-
-public void send_get_type(String name) throws TException
-{
-oprot_.writeMessageBegin(new TMessage("get_type", TMessageType.CALL, seqid_));
-get_type_args args = new get_type_args();
-args.name = name;
-args.write(oprot_);
-oprot_.writeMessageEnd();
-oprot_.getTransport().flush();
-}
-
-public Type recv_get_type() throws MetaException, TException
-{
-TMessage msg = iprot_.readMessageBegin();
-if (msg.type == TMessageType.EXCEPTION) {
-  TApplicationException x = TApplicationException.read(iprot_);
-  iprot_.readMessageEnd();
-  throw x;
-}
-get_type_result result = new get_type_result();
-result.read(iprot_);
-iprot_.readMessageEnd();
-if (result.__isset.success) {
-  return result.success;
-}
-if (result.__isset.o2) {
-  throw result.o2;
-}
-throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_type failed: unknown result");
-}
-
-public boolean create_type(Type type) throws AlreadyExistsException, InvalidObjectException, MetaException, TException
-{
-send_create_type(type);
-return recv_create_type();
-}
-
-public void send_create_type(Type type) throws TException
-{
-oprot_.writeMessageBegin(new TMessage("create_type", TMessageType.CALL, seqid_));
-create_type_args args = new create_type_args();
-args.type = type;
-args.write(oprot_);
-oprot_.writeMessageEnd();
-oprot_.getTransport().flush();
-}
-
-public boolean recv_create_type() throws AlreadyExistsException, InvalidObjectException, MetaException, TException
-{
-TMessage msg = iprot_.readMessageBegin();
-if (msg.type == TMessageType.EXCEPTION) {
-  TApplicationException x = TApplicationException.read(iprot_);
-  iprot_.readMessageEnd();
-  throw x;
-}
-create_type_result result = new create_type_result();
-result.read(iprot_);
-iprot_.readMessageEnd();
-if (result.__isset.success) {
-  return result.success;
-}
-if (result.__isset.o1) {
-  throw result.o1;
-}
-if (result.__isset.o2) {
-  throw result.o2;
-}
-if (result.__isset.o3) {
-  throw result.o3;
-}
-throw new TApplicationException(TApplicationException.MISSING_RESULT, "create_type failed: unknown result");
-}
-
-public boolean drop_type(String type) throws MetaException, TException
-{
-send_drop_type(type);
-return recv_drop_type();
-}
-
-public void send_drop_type(String type) throws TException
-{
-oprot_.writeMessageBegin(new TMessage("drop_type", TMessageType.CALL, seqid_));
-drop_type_args args = new drop_type_args();
-args.type = type;
-args.write(oprot_);
-oprot_.writeMessageEnd();
-oprot_.getTransport().flush();
-}
-
-public boolean recv_drop_type() throws MetaException, TException
-{
-TMessage msg = iprot_.readMessageBegin();
-if (msg.type == TMessageType.EXCEPTION) {
-  TApplicationException x = TApplicationException.read(iprot_);
-  iprot_.readMessageEnd();
-  throw x;
-}
-drop_type_result result = new drop_type_result();
-result.read(iprot_);
-iprot_.readMessageEnd();
-if (result.__isset.success) {
-  return result.success;
-}
-if (result.__isset.o2) {
-  throw result.o2;
-}
-throw new TApplicationException(TApplicationException.MISSING_RESULT, "drop_type failed: unknown result");
-}
-
-public Map<String,Type> get_type_all(String name) throws MetaException, TException
-{
-send_get_type_all(name);
-return recv_get_type_all();
-}
-
-public void send_get_type_all(String name) throws TException
-{
-oprot_.writeMessageBegin(new TMessage("get_type_all", TMessageType.CALL, seqid_));
-get_type_all_args args = new get_type_all_args();
-args.name = name;
-args.write(oprot_);
-oprot_.writeMessageEnd();
-oprot_.getTransport().flush();
-}
-
-public Map<String,Type> recv_get_type_all() throws MetaException, TException
-{
-TMessage msg = iprot_.readMessageBegin();
-if (msg.type == TMessageType.EXCEPTION) {
-  TApplicationException x = TApplicationException.read(iprot_);
-  iprot_.readMessageEnd();
-  throw x;
-}
-get_type_all_result result = new get_type_all_result();
-result.read(iprot_);
-iprot_.readMessageEnd();
-if (result.__isset.success) {
-  return result.success;
-}
-if (result.__isset.o2) {
-  throw result.o2;
-}
-throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_type_all failed: unknown result");
-}
-
-public List<FieldSchema> get_fields(String db_name, String table_name) throws MetaException, UnknownTableException, UnknownDBException, TException
-{
-send_get_fields(db_name, table_name);
-return recv_get_fields();
-}
-
-public void send_get_fields(String db_name, String table_name) throws TException
-{
-oprot_.writeMessageBegin(new TMessage("get_fields", TMessageType.CALL, seqid_));
-get_fields_args args = new get_fields_args();
-args.db_name = db_name;
-args.table_name = table_name;
-args.write(oprot_);
-oprot_.writeMessageEnd();
-oprot_.getTransport().flush();
-}
-
-public List<FieldSchema> recv_get_fields() throws MetaException, UnknownTableException, UnknownDBException, TException
-{
-TMessage msg = iprot_.readMessageBegin();
-if (msg.type == TMessageType.EXCEPTION) {
-  TApplicationException x = TApplicationException.read(iprot_);
-  iprot_.readMessageEnd();
-  throw x;
-}
-get_fields_result result = new get_fields_result();
-result.read(iprot_);
-iprot_.readMessageEnd();
-if (result.__isset.success) {
-  return result.success;
-}
-if (result.__isset.o1) {
-  throw result.o1;
-}
-if (result.__isset.o2) {
-  throw result.o2;
-}
-if (result.__isset.o3) {
-  throw result.o3;
-}
-throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_fields failed: unknown result");
-}
-
-public void create_table(Table tbl) throws AlreadyExistsException, InvalidObjectException, MetaException, NoSuchObjectException, TException
-{
-send_create_table(tbl);
-recv_create_table();
-}
-
-public void send_create_table(Table tbl) throws TException
-{
-oprot_.writeMessageBegin(new TMessage("create_table", TMessageType.CALL, seqid_));
-create_table_args args = new create_table_args();
-args.tbl = tbl;
-args.write(oprot_);
-oprot_.writeMessageEnd();
-oprot_.getTransport().flush();
-}
-
-public void recv_create_table() throws AlreadyExistsException, InvalidObjectException, MetaException, NoSuchObjectException, TException
-{
-TMessage msg = iprot_.readMessageBegin();
-if (msg.type == TMessageType.EXCEPTION) {
-  TApplicationException x = TApplicationException.read(iprot_);
-  iprot_.readMessageEnd();
-  throw x;
-}
-create_table_result result = new create_table_result();
-result.read(iprot_);
-iprot_.readMessageEnd();
-if (result.__isset.o1) {
-  throw result.o1;
-}
-if (result.__isset.o2) {
-  throw result.o2;
-}
-if (result.__isset.o3) {
-  throw result.o3;
-}
-if (result.__isset.o4) {
-  throw result.o4;
-}
-return;
-}
-
-public void drop_table(String dbname, String name, boolean deleteData) throws NoSuchObjectException, MetaException, TException
-{
-send_drop_table(dbname, name, deleteData);
-recv_drop_table();
-}
-
-public void send_drop_table(String dbname, String name, boolean deleteData) throws TException
-{
-oprot_.writeMessageBegin(new TMessage("drop_table", TMessageType.CALL, seqid_));
-drop_table_args args = new drop_table_args();
-args.dbname = dbname;
-args.name = name;
-args.deleteData = deleteData;
-args.write(oprot_);
-oprot_.writeMessageEnd();
-oprot_.getTransport().flush();
-}
-
-public void recv_drop_table() throws NoSuchObjectException, MetaException, TException
-{
-TMessage msg = iprot_.readMessageBegin();
-if (msg.type == TMessageType.EXCEPTION) {
-  TApplicationException x = TApplicationException.read(iprot_);
-  iprot_.readMessageEnd();
-  throw x;
-}
-drop_table_result result = new drop_table_result();
-result.read(iprot_);
-iprot_.readMessageEnd();
-if (result.__isset.o1) {
-  throw result.o1;
-}
-if (result.__isset.o3) {
-  throw result.o3;
-}
-return;
-}
-
-public List<String> get_tables(String db_name, String pattern) throws MetaException, TException
-{
-send_get_tables(db_name, pattern);
-return recv_get_tables();
-}
-
-public void send_get_tables(String db_name, String pattern) throws TException
-{
-oprot_.writeMessageBegin(new TMessage("get_tables", TMessageType.CALL, seqid_));
-get_tables_args args = new get_tables_args();
-args.db_name = db_name;
-args.pattern = pattern;
-args.write(oprot_);
-oprot_.writeMessageEnd();
-oprot_.getTransport().flush();
-}
-
-public List<String> recv_get_tables() throws MetaException, TException
-{
-TMessage msg = iprot_.readMessageBegin();
-if (msg.type == TMessageType.EXCEPTION) {
-  TApplicationException x = TApplicationException.read(iprot_);
-  iprot_.readMessageEnd();
-  throw x;
-}
-get_tables_result result = new get_tables_result();
-result.read(iprot_);
-iprot_.readMessageEnd();
-if (result.__isset.success) {
-  return result.success;
-}
-if (result.__isset.o1) {
-  throw result.o1;
-}
-throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_tables failed: unknown result");
-}
-
-public Table get_table(String dbname, String tbl_name) throws MetaException, NoSuchObjectException, TException
-{
-send_get_table(dbname, tbl_name);
-return recv_get_table();
-}
-
-public void send_get_table(String dbname, String tbl_name) throws TException
-{
-oprot_.writeMessageBegin(new TMessage("get_table", TMessageType.CALL, seqid_));
-get_table_args args = new get_table_args();
-args.dbname = dbname;
-args.tbl_name = tbl_name;
-args.write(oprot_);
-oprot_.writeMessageEnd();
-oprot_.getTransport().flush();
-}
-
-public Table recv_get_table() throws MetaException, NoSuchObjectException, TException
-{
-TMessage msg = iprot_.readMessageBegin();
-if (msg.type == TMessageType.EXCEPTION) {
-  TApplicationException x = TApplicationException.read(iprot_);
-  iprot_.readMessageEnd();
-  throw x;
-}
-get_table_result result = new get_table_result();
-result.read(iprot_);
-iprot_.readMessageEnd();
-if (result.__isset.success) {
-  return result.success;
-}
-if (result.__isset.o1) {
-  throw result.o1;
-}
-if (result.__isset.o2) {
-  throw result.o2;
-}
-throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_table failed: unknown result");
-}
-
-public void alter_table(String dbname, String tbl_name, Table new_tbl) throws InvalidOperationException, MetaException, TException
-{
-send_alter_table(dbname, tbl_name, new_tbl);
-recv_alter_table();
-}
-
-public void send_alter_table(String dbname, String tbl_name, Table new_tbl) throws TException
-{
-oprot_.writeMessageBegin(new TMessage("alter_table", TMessageType.CALL, seqid_));
-alter_table_args args = new alter_table_args();
-args.dbname = dbname;
-args.tbl_name = tbl_name;
-args.new_tbl = new_tbl;
-args.write(oprot_);
-oprot_.writeMessageEnd();
-oprot_.getTransport().flush();
-}
-
-public void recv_alter_table() throws InvalidOperationException, MetaException, TException
-{
-TMessage msg = iprot_.readMessageBegin();
-if (msg.type == TMessageType.EXCEPTION) {
-  TApplicationException x = TApplicationException.read(iprot_);
-  iprot_.readMessageEnd();
-  throw x;
-}
-alter_table_result result = new alter_table_result();
-result.read(iprot_);
-iprot_.readMessageEnd();
-if (result.__isset.o1) {
-  throw result.o1;
-}
-if (result.__isset.o2) {
-  throw result.o2;
-}
-return;
-}
-
-public Partition add_partition(Partition new_part) throws InvalidObjectException, AlreadyExistsException, MetaException, TException
-{
-send_add_partition(new_part);
-return recv_add_partition();
-}
-
-public void send_add_partition(Partition new_part) throws TException
-{
-oprot_.writeMessageBegin(new TMessage("add_partition", TMessageType.CALL, seqid_));
-add_partition_args args = new add_partition_args();
-args.new_part = new_part;
-args.write(oprot_);
-oprot_.writeMessageEnd();
-oprot_.getTransport().flush();
-}
-
-public Partition recv_add_partition() throws InvalidObjectException, AlreadyExistsException, MetaException, TException
-{
-TMessage msg = iprot_.readMessageBegin();
-if (msg.type == TMessageType.EXCEPTION) {
-  TApplicationException x = TApplicationException.read(iprot_);
-  iprot_.readMessageEnd();
-  throw x;
-}
-add_partition_result result = new add_partition_result();
-result.read(iprot_);
-iprot_.readMessageEnd();
-if (result.__isset.success) {
-  return result.success;
-}
-if (result.__isset.o1) {
-  throw result.o1;
-}
-if (result.__isset.o2) {
-  throw result.o2;
-}
-if (result.__isset.o3) {
-  throw result.o3;
-}
-throw new TApplicationException(TApplicationException.MISSING_RESULT, "add_partition failed: unknown result");
-}
-
-public Partition append_partition(String db_name, String tbl_name, List<String> part_vals) throws InvalidObjectException, AlreadyExistsException, MetaException, TException
-{
-send_append_partition(db_name, tbl_name, part_vals);
-return recv_append_partition();
-}
-
-public void send_append_partition(String db_name, String tbl_name, List<String> part_vals) throws TException
-{
-oprot_.writeMessageBegin(new TMessage("append_partition", TMessageType.CALL, seqid_));
-append_partition_args args = new append_partition_args();
-args.db_name = db_name;
-args.tbl_name = tbl_name;
-args.part_vals = part_vals;
-args.write(oprot_);
-oprot_.writeMessageEnd();
-oprot_.getTransport().flush();
-}
-
-public Partition recv_append_partition() throws InvalidObjectException, AlreadyExistsException, MetaException, TException
-{
-TMessage msg = iprot_.readMessageBegin();
-if (msg.type == TMessageType.EXCEPTION) {
-  TApplicationException x = TApplicationException.read(iprot_);
-  iprot_.readMessageEnd();
-  throw x;
-}
-append_partition_result result = new append_partition_result();
-result.read(iprot_);
-iprot_.readMessageEnd();
-if (result.__isset.success) {
-  return result.success;
-}
-if (result.__isset.o1) {
-  throw result.o1;
-}
-if (result.__isset.o2) {
-  throw result.o2;
-}
-if (result.__isset.o3) {
-  throw result.o3;
-}
-throw new TApplicationException(TApplicationException.MISSING_RESULT, "append_partition failed: unknown result");
-}
-
-public boolean drop_partition(String db_name, String tbl_name, List<String> part_vals, boolean deleteData) throws NoSuchObjectException, MetaException, TException
-{
-send_drop_partition(db_name, tbl_name, part_vals, deleteData);
-return recv_drop_partition();
-}
-
-public void send_drop_partition(String db_name, String tbl_name, List<String> part_vals, boolean deleteData) throws TException
-{
-oprot_.writeMessageBegin(new TMessage("drop_partition", TMessageType.CALL, seqid_));
-drop_partition_args args = new drop_partition_args();
-args.db_name = db_name;
-args.tbl_name = tbl_name;
-args.part_vals = part_vals;
-args.deleteData = deleteData;
-args.write(oprot_);
-oprot_.writeMessageEnd();
-oprot_.getTransport().flush();
-}
-
-public boolean recv_drop_partition() throws NoSuchObjectException, MetaException, TException
-{
-TMessage msg = iprot_.readMessageBegin();
-if (msg.type == TMessageType.EXCEPTION) {
-  TApplicationException x = TApplicationException.read(iprot_);
-  iprot_.readMessageEnd();
-  throw x;
-}
-drop_partition_result result = new drop_partition_result();
-result.read(iprot_);
-iprot_.readMessageEnd();
-if (result.__isset.success) {
-  return result.success;
-}
-if (result.__isset.o1) {
-  throw result.o1;
-}
-if (result.__isset.o2) {
-  throw result.o2;
-}
-throw new TApplicationException(TApplicationException.MISSING_RESULT, "drop_partition failed: unknown result");
-}
-
-public Partition get_partition(String db_name, String tbl_name, List<String> part_vals) throws MetaException, TException
-{
-send_get_partition(db_name, tbl_name, part_vals);
-return recv_get_partition();
-}
-
-public void send_get_partition(String db_name, String tbl_name, List<String> part_vals) throws TException
-{
-oprot_.writeMessageBegin(new TMessage("get_partition", TMessageType.CALL, seqid_));
-get_partition_args args = new get_partition_args();
-args.db_name = db_name;
-args.tbl_name = tbl_name;
-args.part_vals = part_vals;
-args.write(oprot_);
-oprot_.writeMessageEnd();
-oprot_.getTransport().flush();
-}
-
-public Partition recv_get_partition() throws MetaException, TException
-{
-TMessage msg = iprot_.readMessageBegin();
-if (msg.type == TMessageType.EXCEPTION) {
-  TApplicationException x = TApplicationException.read(iprot_);
-  iprot_.readMessageEnd();
-  throw x;
-}
-get_partition_result result = new get_partition_result();
-result.read(iprot_);
-iprot_.readMessageEnd();
-if (result.__isset.success) {
-  return result.success;
-}
-if (result.__isset.o1) {
-  throw result.o1;
-}
-throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_partition failed: unknown result");
-}
-
-public List<Partition> get_partitions(String db_name, String tbl_name, short max_parts) throws NoSuchObjectException, MetaException, TException
-{
-send_get_partitions(db_name, tbl_name, max_parts);
-return recv_get_partitions();
-}
-
-public void send_get_partitions(String db_name, String tbl_name, short max_parts) throws TException
-{
-oprot_.writeMessageBegin(new TMessage("get_partitions", TMessageType.CALL, seqid_));
-get_partitions_args args = new get_partitions_args();
-args.db_name = db_name;
-args.tbl_name = tbl_name;
-args.max_parts = max_parts;
-args.write(oprot_);
-oprot_.writeMessageEnd();
-oprot_.getTransport().flush();
-}
-
-public List<Partition> recv_get_partitions() throws NoSuchObjectException, MetaException, TException
-{
-TMessage msg = iprot_.readMessageBegin();
-if (msg.type == TMessageType.EXCEPTION) {
-  TApplicationException x = TApplicationException.read(iprot_);
-  iprot_.readMessageEnd();
-  throw x;
-}
-get_partitions_result result = new get_partitions_result();
-result.read(iprot_);
-iprot_.readMessageEnd();
-if (result.__isset.success) {
-  return result.success;
-}
-if (result.__isset.o1) {
-  throw result.o1;
-}
-if (result.__isset.o2) {
-  throw result.o2;
-}
-throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_partitions failed: unknown result");
-}
-
-public List<String> get_partition_names(String db_name, String tbl_name, short max_parts) throws MetaException, TException
-{
-send_get_partition_names(db_name, tbl_name, max_parts);
-return recv_get_partition_names();
-}
-
-public void send_get_partition_names(String db_name, String tbl_name, short max_parts) throws TException
-{
-oprot_.writeMessageBegin(new TMessage("get_partition_names", TMessageType.CALL, seqid_));
-get_partition_names_args args = new get_partition_names_args();
-args.db_name = db_name;
-args.tbl_name = tbl_name;
-args.max_parts = max_parts;
-args.write(oprot_);
-oprot_.writeMessageEnd();
-oprot_.getTransport().flush();
-}
-
-public List<String> recv_get_partition_names() throws MetaException, TException
-{
-TMessage msg = iprot_.readMessageBegin();
-if (msg.type == TMessageType.EXCEPTION) {
-  TApplicationException x = TApplicationException.read(iprot_);
-  iprot_.readMessageEnd();
-  throw x;
-}
-get_partition_names_result result = new get_partition_names_result();
-result.read(iprot_);
-iprot_.readMessageEnd();
-if (result.__isset.success) {
-  return result.success;
-}
-if (result.__isset.o2) {
-  throw result.o2;
-}
-throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_partition_names failed: unknown result");
-}
-
-public void alter_partition(String db_name, String tbl_name, Partition new_part) throws InvalidOperationException, MetaException, TException
-{
-send_alter_partition(db_name, tbl_name, new_part);
-recv_alter_partition();
-}
-
-public void send_alter_partition(String db_name, String tbl_name, Partition new_part) throws TException
-{
-oprot_.writeMessageBegin(new TMessage("alter_partition", TMessageType.CALL, seqid_));
-alter_partition_args args = new alter_partition_args();
-args.db_name = db_name;
-args.tbl_name = tbl_name;
-args.new_part = new_part;
-args.write(oprot_);
-oprot_.writeMessageEnd();
-oprot_.getTransport().flush();
-}
-
-public void recv_alter_partition() throws InvalidOperationException, MetaException, TException
-{
-TMessage msg = iprot_.readMessageBegin();
-if (msg.type == TMessageType.EXCEPTION) {
-  TApplicationException x = TApplicationException.read(iprot_);
-  iprot_.readMessageEnd();
-  throw x;
-}
-alter_partition_result result = new alter_partition_result();
-result.read(iprot_);
-iprot_.readMessageEnd();
-if (result.__isset.o1) {
-  throw result.o1;
-}
-if (result.__isset.o2) {
-  throw result.o2;
-}
-return;
-}
-
-}
-public static class Processor extends com.facebook.fb303.FacebookService.Processor implements TProcessor {
-public Processor(Iface iface)
-{
-super(iface);
-iface_ = iface;
-processMap_.put("create_database", new create_database());
-processMap_.put("get_database", new get_database());
-processMap_.put("drop_database", new drop_database());
-processMap_.put("get_databases", new get_databases());
-processMap_.put("get_type", new get_type());
-processMap_.put("create_type", new create_type());
-processMap_.put("drop_type", new drop_type());
-processMap_.put("get_type_all", new get_type_all());
-processMap_.put("get_fields", new get_fields());
-processMap_.put("create_table", new create_table());
-processMap_.put("drop_table", new drop_table());
-processMap_.put("get_tables", new get_tables());
-processMap_.put("get_table", new get_table());
-processMap_.put("alter_table", new alter_table());
-processMap_.put("add_partition", new add_partition());
-processMap_.put("append_partition", new append_partition());
-processMap_.put("drop_partition", new drop_partition());
-processMap_.put("get_partition", new get_partition());
-processMap_.put("get_partitions", new get_partitions());
-processMap_.put("get_partition_names", new get_partition_names());
-processMap_.put("alter_partition", new alter_partition());
-}
-
-private Iface iface_;
-
-public boolean process(TProtocol iprot, TProtocol oprot) throws TException
-{
-TMessage msg = iprot.readMessageBegin();
-ProcessFunction fn = processMap_.get(msg.name);
-if (fn == null) {
-  TProtocolUtil.skip(iprot, TType.STRUCT);
-  iprot.readMessageEnd();
-  TApplicationException x = new TApplicationException(TApplicationException.UNKNOWN_METHOD, "Invalid method name: '"+msg.name+"'");
-  oprot.writeMessageBegin(new TMessage(msg.name, TMessageType.EXCEPTION, msg.seqid));
-  x.write(oprot);
-  oprot.writeMessageEnd();
-  oprot.getTransport().flush();
-  return true;
-}
-fn.process(msg.seqid, iprot, oprot);
-return true;
-}
-
-private class create_database implements ProcessFunction {
-public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
-{
-  create_database_args args = new create_database_args();
-  args.read(iprot);
-  iprot.readMessageEnd();
-  create_database_result result = new create_database_result();
-  try {
-    result.success = iface_.create_database(args.name, args.description);
-    result.__isset.success = true;
-  } catch (AlreadyExistsException o1) {
-    result.o1 = o1;
-    result.__isset.o1 = true;
-  } catch (MetaException o2) {
-    result.o2 = o2;
-    result.__isset.o2 = true;
   }
-  oprot.writeMessageBegin(new TMessage("create_database", TMessageType.REPLY, seqid));
-  result.write(oprot);
-  oprot.writeMessageEnd();
-  oprot.getTransport().flush();
-}
 
-}
-
-private class get_database implements ProcessFunction {
-public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
-{
-  get_database_args args = new get_database_args();
-  args.read(iprot);
-  iprot.readMessageEnd();
-  get_database_result result = new get_database_result();
-  try {
-    result.success = iface_.get_database(args.name);
-    result.__isset.success = true;
-  } catch (NoSuchObjectException o1) {
-    result.o1 = o1;
-    result.__isset.o1 = true;
-  } catch (MetaException o2) {
-    result.o2 = o2;
-    result.__isset.o2 = true;
-  }
-  oprot.writeMessageBegin(new TMessage("get_database", TMessageType.REPLY, seqid));
-  result.write(oprot);
-  oprot.writeMessageEnd();
-  oprot.getTransport().flush();
-}
-
-}
-
-private class drop_database implements ProcessFunction {
-public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
-{
-  drop_database_args args = new drop_database_args();
-  args.read(iprot);
-  iprot.readMessageEnd();
-  drop_database_result result = new drop_database_result();
-  try {
-    result.success = iface_.drop_database(args.name);
-    result.__isset.success = true;
-  } catch (MetaException o2) {
-    result.o2 = o2;
-    result.__isset.o2 = true;
-  }
-  oprot.writeMessageBegin(new TMessage("drop_database", TMessageType.REPLY, seqid));
-  result.write(oprot);
-  oprot.writeMessageEnd();
-  oprot.getTransport().flush();
-}
-
-}
-
-private class get_databases implements ProcessFunction {
-public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
-{
-  get_databases_args args = new get_databases_args();
-  args.read(iprot);
-  iprot.readMessageEnd();
-  get_databases_result result = new get_databases_result();
-  try {
-    result.success = iface_.get_databases();
-    result.__isset.success = true;
-  } catch (MetaException o1) {
-    result.o1 = o1;
-    result.__isset.o1 = true;
-  }
-  oprot.writeMessageBegin(new TMessage("get_databases", TMessageType.REPLY, seqid));
-  result.write(oprot);
-  oprot.writeMessageEnd();
-  oprot.getTransport().flush();
-}
-
-}
-
-private class get_type implements ProcessFunction {
-public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
-{
-  get_type_args args = new get_type_args();
-  args.read(iprot);
-  iprot.readMessageEnd();
-  get_type_result result = new get_type_result();
-  try {
-    result.success = iface_.get_type(args.name);
-    result.__isset.success = true;
-  } catch (MetaException o2) {
-    result.o2 = o2;
-    result.__isset.o2 = true;
-  }
-  oprot.writeMessageBegin(new TMessage("get_type", TMessageType.REPLY, seqid));
-  result.write(oprot);
-  oprot.writeMessageEnd();
-  oprot.getTransport().flush();
-}
-
-}
-
-private class create_type implements ProcessFunction {
-public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
-{
-  create_type_args args = new create_type_args();
-  args.read(iprot);
-  iprot.readMessageEnd();
-  create_type_result result = new create_type_result();
-  try {
-    result.success = iface_.create_type(args.type);
-    result.__isset.success = true;
-  } catch (AlreadyExistsException o1) {
-    result.o1 = o1;
-    result.__isset.o1 = true;
-  } catch (InvalidObjectException o2) {
-    result.o2 = o2;
-    result.__isset.o2 = true;
-  } catch (MetaException o3) {
-    result.o3 = o3;
-    result.__isset.o3 = true;
-  }
-  oprot.writeMessageBegin(new TMessage("create_type", TMessageType.REPLY, seqid));
-  result.write(oprot);
-  oprot.writeMessageEnd();
-  oprot.getTransport().flush();
-}
-
-}
-
-private class drop_type implements ProcessFunction {
-public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
-{
-  drop_type_args args = new drop_type_args();
-  args.read(iprot);
-  iprot.readMessageEnd();
-  drop_type_result result = new drop_type_result();
-  try {
-    result.success = iface_.drop_type(args.type);
-    result.__isset.success = true;
-  } catch (MetaException o2) {
-    result.o2 = o2;
-    result.__isset.o2 = true;
-  }
-  oprot.writeMessageBegin(new TMessage("drop_type", TMessageType.REPLY, seqid));
-  result.write(oprot);
-  oprot.writeMessageEnd();
-  oprot.getTransport().flush();
-}
-
-}
-
-private class get_type_all implements ProcessFunction {
-public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
-{
-  get_type_all_args args = new get_type_all_args();
-  args.read(iprot);
-  iprot.readMessageEnd();
-  get_type_all_result result = new get_type_all_result();
-  try {
-    result.success = iface_.get_type_all(args.name);
-    result.__isset.success = true;
-  } catch (MetaException o2) {
-    result.o2 = o2;
-    result.__isset.o2 = true;
-  }
-  oprot.writeMessageBegin(new TMessage("get_type_all", TMessageType.REPLY, seqid));
-  result.write(oprot);
-  oprot.writeMessageEnd();
-  oprot.getTransport().flush();
-}
-
-}
-
-private class get_fields implements ProcessFunction {
-public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
-{
-  get_fields_args args = new get_fields_args();
-  args.read(iprot);
-  iprot.readMessageEnd();
-  get_fields_result result = new get_fields_result();
-  try {
-    result.success = iface_.get_fields(args.db_name, args.table_name);
-    result.__isset.success = true;
-  } catch (MetaException o1) {
-    result.o1 = o1;
-    result.__isset.o1 = true;
-  } catch (UnknownTableException o2) {
-    result.o2 = o2;
-    result.__isset.o2 = true;
-  } catch (UnknownDBException o3) {
-    result.o3 = o3;
-    result.__isset.o3 = true;
-  }
-  oprot.writeMessageBegin(new TMessage("get_fields", TMessageType.REPLY, seqid));
-  result.write(oprot);
-  oprot.writeMessageEnd();
-  oprot.getTransport().flush();
-}
-
-}
-
-private class create_table implements ProcessFunction {
-public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
-{
-  create_table_args args = new create_table_args();
-  args.read(iprot);
-  iprot.readMessageEnd();
-  create_table_result result = new create_table_result();
-  try {
-    iface_.create_table(args.tbl);
-  } catch (AlreadyExistsException o1) {
-    result.o1 = o1;
-    result.__isset.o1 = true;
-  } catch (InvalidObjectException o2) {
-    result.o2 = o2;
-    result.__isset.o2 = true;
-  } catch (MetaException o3) {
-    result.o3 = o3;
-    result.__isset.o3 = true;
-  } catch (NoSuchObjectException o4) {
-    result.o4 = o4;
-    result.__isset.o4 = true;
-  }
-  oprot.writeMessageBegin(new TMessage("create_table", TMessageType.REPLY, seqid));
-  result.write(oprot);
-  oprot.writeMessageEnd();
-  oprot.getTransport().flush();
-}
-
-}
-
-private class drop_table implements ProcessFunction {
-public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
-{
-  drop_table_args args = new drop_table_args();
-  args.read(iprot);
-  iprot.readMessageEnd();
-  drop_table_result result = new drop_table_result();
-  try {
-    iface_.drop_table(args.dbname, args.name, args.deleteData);
-  } catch (NoSuchObjectException o1) {
-    result.o1 = o1;
-    result.__isset.o1 = true;
-  } catch (MetaException o3) {
-    result.o3 = o3;
-    result.__isset.o3 = true;
-  }
-  oprot.writeMessageBegin(new TMessage("drop_table", TMessageType.REPLY, seqid));
-  result.write(oprot);
-  oprot.writeMessageEnd();
-  oprot.getTransport().flush();
-}
-
-}
-
-private class get_tables implements ProcessFunction {
-public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
-{
-  get_tables_args args = new get_tables_args();
-  args.read(iprot);
-  iprot.readMessageEnd();
-  get_tables_result result = new get_tables_result();
-  try {
-    result.success = iface_.get_tables(args.db_name, args.pattern);
-    result.__isset.success = true;
-  } catch (MetaException o1) {
-    result.o1 = o1;
-    result.__isset.o1 = true;
-  }
-  oprot.writeMessageBegin(new TMessage("get_tables", TMessageType.REPLY, seqid));
-  result.write(oprot);
-  oprot.writeMessageEnd();
-  oprot.getTransport().flush();
-}
-
-}
-
-private class get_table implements ProcessFunction {
-public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
-{
-  get_table_args args = new get_table_args();
-  args.read(iprot);
-  iprot.readMessageEnd();
-  get_table_result result = new get_table_result();
-  try {
-    result.success = iface_.get_table(args.dbname, args.tbl_name);
-    result.__isset.success = true;
-  } catch (MetaException o1) {
-    result.o1 = o1;
-    result.__isset.o1 = true;
-  } catch (NoSuchObjectException o2) {
-    result.o2 = o2;
-    result.__isset.o2 = true;
-  }
-  oprot.writeMessageBegin(new TMessage("get_table", TMessageType.REPLY, seqid));
-  result.write(oprot);
-  oprot.writeMessageEnd();
-  oprot.getTransport().flush();
-}
-
-}
-
-private class alter_table implements ProcessFunction {
-public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
-{
-  alter_table_args args = new alter_table_args();
-  args.read(iprot);
-  iprot.readMessageEnd();
-  alter_table_result result = new alter_table_result();
-  try {
-    iface_.alter_table(args.dbname, args.tbl_name, args.new_tbl);
-  } catch (InvalidOperationException o1) {
-    result.o1 = o1;
-    result.__isset.o1 = true;
-  } catch (MetaException o2) {
-    result.o2 = o2;
-    result.__isset.o2 = true;
-  }
-  oprot.writeMessageBegin(new TMessage("alter_table", TMessageType.REPLY, seqid));
-  result.write(oprot);
-  oprot.writeMessageEnd();
-  oprot.getTransport().flush();
-}
-
-}
-
-private class add_partition implements ProcessFunction {
-public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
-{
-  add_partition_args args = new add_partition_args();
-  args.read(iprot);
-  iprot.readMessageEnd();
-  add_partition_result result = new add_partition_result();
-  try {
-    result.success = iface_.add_partition(args.new_part);
-    result.__isset.success = true;
-  } catch (InvalidObjectException o1) {
-    result.o1 = o1;
-    result.__isset.o1 = true;
-  } catch (AlreadyExistsException o2) {
-    result.o2 = o2;
-    result.__isset.o2 = true;
-  } catch (MetaException o3) {
-    result.o3 = o3;
-    result.__isset.o3 = true;
-  }
-  oprot.writeMessageBegin(new TMessage("add_partition", TMessageType.REPLY, seqid));
-  result.write(oprot);
-  oprot.writeMessageEnd();
-  oprot.getTransport().flush();
-}
-
-}
-
-private class append_partition implements ProcessFunction {
-public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
-{
-  append_partition_args args = new append_partition_args();
-  args.read(iprot);
-  iprot.readMessageEnd();
-  append_partition_result result = new append_partition_result();
-  try {
-    result.success = iface_.append_partition(args.db_name, args.tbl_name, args.part_vals);
-    result.__isset.success = true;
-  } catch (InvalidObjectException o1) {
-    result.o1 = o1;
-    result.__isset.o1 = true;
-  } catch (AlreadyExistsException o2) {
-    result.o2 = o2;
-    result.__isset.o2 = true;
-  } catch (MetaException o3) {
-    result.o3 = o3;
-    result.__isset.o3 = true;
-  }
-  oprot.writeMessageBegin(new TMessage("append_partition", TMessageType.REPLY, seqid));
-  result.write(oprot);
-  oprot.writeMessageEnd();
-  oprot.getTransport().flush();
-}
-
-}
-
-private class drop_partition implements ProcessFunction {
-public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
-{
-  drop_partition_args args = new drop_partition_args();
-  args.read(iprot);
-  iprot.readMessageEnd();
-  drop_partition_result result = new drop_partition_result();
-  try {
-    result.success = iface_.drop_partition(args.db_name, args.tbl_name, args.part_vals, args.deleteData);
-    result.__isset.success = true;
-  } catch (NoSuchObjectException o1) {
-    result.o1 = o1;
-    result.__isset.o1 = true;
-  } catch (MetaException o2) {
-    result.o2 = o2;
-    result.__isset.o2 = true;
-  }
-  oprot.writeMessageBegin(new TMessage("drop_partition", TMessageType.REPLY, seqid));
-  result.write(oprot);
-  oprot.writeMessageEnd();
-  oprot.getTransport().flush();
-}
-
-}
-
-private class get_partition implements ProcessFunction {
-public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
-{
-  get_partition_args args = new get_partition_args();
-  args.read(iprot);
-  iprot.readMessageEnd();
-  get_partition_result result = new get_partition_result();
-  try {
-    result.success = iface_.get_partition(args.db_name, args.tbl_name, args.part_vals);
-    result.__isset.success = true;
-  } catch (MetaException o1) {
-    result.o1 = o1;
-    result.__isset.o1 = true;
-  }
-  oprot.writeMessageBegin(new TMessage("get_partition", TMessageType.REPLY, seqid));
-  result.write(oprot);
-  oprot.writeMessageEnd();
-  oprot.getTransport().flush();
-}
-
-}
-
-private class get_partitions implements ProcessFunction {
-public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
-{
-  get_partitions_args args = new get_partitions_args();
-  args.read(iprot);
-  iprot.readMessageEnd();
-  get_partitions_result result = new get_partitions_result();
-  try {
-    result.success = iface_.get_partitions(args.db_name, args.tbl_name, args.max_parts);
-    result.__isset.success = true;
-  } catch (NoSuchObjectException o1) {
-    result.o1 = o1;
-    result.__isset.o1 = true;
-  } catch (MetaException o2) {
-    result.o2 = o2;
-    result.__isset.o2 = true;
-  }
-  oprot.writeMessageBegin(new TMessage("get_partitions", TMessageType.REPLY, seqid));
-  result.write(oprot);
-  oprot.writeMessageEnd();
-  oprot.getTransport().flush();
-}
-
-}
-
-private class get_partition_names implements ProcessFunction {
-public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
-{
-  get_partition_names_args args = new get_partition_names_args();
-  args.read(iprot);
-  iprot.readMessageEnd();
-  get_partition_names_result result = new get_partition_names_result();
-  try {
-    result.success = iface_.get_partition_names(args.db_name, args.tbl_name, args.max_parts);
-    result.__isset.success = true;
-  } catch (MetaException o2) {
-    result.o2 = o2;
-    result.__isset.o2 = true;
-  }
-  oprot.writeMessageBegin(new TMessage("get_partition_names", TMessageType.REPLY, seqid));
-  result.write(oprot);
-  oprot.writeMessageEnd();
-  oprot.getTransport().flush();
-}
-
-}
-
-private class alter_partition implements ProcessFunction {
-public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
-{
-  alter_partition_args args = new alter_partition_args();
-  args.read(iprot);
-  iprot.readMessageEnd();
-  alter_partition_result result = new alter_partition_result();
-  try {
-    iface_.alter_partition(args.db_name, args.tbl_name, args.new_part);
-  } catch (InvalidOperationException o1) {
-    result.o1 = o1;
-    result.__isset.o1 = true;
-  } catch (MetaException o2) {
-    result.o2 = o2;
-    result.__isset.o2 = true;
-  }
-  oprot.writeMessageBegin(new TMessage("alter_partition", TMessageType.REPLY, seqid));
-  result.write(oprot);
-  oprot.writeMessageEnd();
-  oprot.getTransport().flush();
-}
-
-}
-
-}
-
-public static class create_database_args implements TBase, java.io.Serializable {
-private String name;
-private String description;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean name = false;
-public boolean description = false;
-}
-
-public create_database_args() {
-}
-
-public create_database_args(
-String name,
-String description)
-{
-this();
-this.name = name;
-this.__isset.name = true;
-this.description = description;
-this.__isset.description = true;
-}
-
-public String getName() {
-return this.name;
-}
-
-public void setName(String name) {
-this.name = name;
-this.__isset.name = true;
-}
-
-public void unsetName() {
-this.__isset.name = false;
-}
-
-public String getDescription() {
-return this.description;
-}
-
-public void setDescription(String description) {
-this.description = description;
-this.__isset.description = true;
-}
-
-public void unsetDescription() {
-this.__isset.description = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof create_database_args)
-  return this.equals((create_database_args)that);
-return false;
-}
-
-public boolean equals(create_database_args that) {
-if (that == null)
-  return false;
-
-boolean this_present_name = true && (this.name != null);
-boolean that_present_name = true && (that.name != null);
-if (this_present_name || that_present_name) {
-  if (!(this_present_name && that_present_name))
-    return false;
-  if (!this.name.equals(that.name))
-    return false;
-}
-
-boolean this_present_description = true && (this.description != null);
-boolean that_present_description = true && (that.description != null);
-if (this_present_description || that_present_description) {
-  if (!(this_present_description && that_present_description))
-    return false;
-  if (!this.description.equals(that.description))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 1:
-      if (field.type == TType.STRING) {
-        this.name = iprot.readString();
-        this.__isset.name = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 2:
-      if (field.type == TType.STRING) {
-        this.description = iprot.readString();
-        this.__isset.description = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("create_database_args");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-if (this.name != null) {
-  field.name = "name";
-  field.type = TType.STRING;
-  field.id = 1;
-  oprot.writeFieldBegin(field);
-  oprot.writeString(this.name);
-  oprot.writeFieldEnd();
-}
-if (this.description != null) {
-  field.name = "description";
-  field.type = TType.STRING;
-  field.id = 2;
-  oprot.writeFieldBegin(field);
-  oprot.writeString(this.description);
-  oprot.writeFieldEnd();
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("create_database_args(");
-sb.append("name:");
-sb.append(this.name);
-sb.append(",description:");
-sb.append(this.description);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class create_database_result implements TBase, java.io.Serializable {
-private boolean success;
-private AlreadyExistsException o1;
-private MetaException o2;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean success = false;
-public boolean o1 = false;
-public boolean o2 = false;
-}
-
-public create_database_result() {
-}
-
-public create_database_result(
-boolean success,
-AlreadyExistsException o1,
-MetaException o2)
-{
-this();
-this.success = success;
-this.__isset.success = true;
-this.o1 = o1;
-this.__isset.o1 = true;
-this.o2 = o2;
-this.__isset.o2 = true;
-}
-
-public boolean isSuccess() {
-return this.success;
-}
-
-public void setSuccess(boolean success) {
-this.success = success;
-this.__isset.success = true;
-}
-
-public void unsetSuccess() {
-this.__isset.success = false;
-}
-
-public AlreadyExistsException getO1() {
-return this.o1;
-}
-
-public void setO1(AlreadyExistsException o1) {
-this.o1 = o1;
-this.__isset.o1 = true;
-}
-
-public void unsetO1() {
-this.o1 = null;
-this.__isset.o1 = false;
-}
-
-public MetaException getO2() {
-return this.o2;
-}
-
-public void setO2(MetaException o2) {
-this.o2 = o2;
-this.__isset.o2 = true;
-}
-
-public void unsetO2() {
-this.o2 = null;
-this.__isset.o2 = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof create_database_result)
-  return this.equals((create_database_result)that);
-return false;
-}
-
-public boolean equals(create_database_result that) {
-if (that == null)
-  return false;
-
-boolean this_present_success = true;
-boolean that_present_success = true;
-if (this_present_success || that_present_success) {
-  if (!(this_present_success && that_present_success))
-    return false;
-  if (this.success != that.success)
-    return false;
-}
-
-boolean this_present_o1 = true && (this.o1 != null);
-boolean that_present_o1 = true && (that.o1 != null);
-if (this_present_o1 || that_present_o1) {
-  if (!(this_present_o1 && that_present_o1))
-    return false;
-  if (!this.o1.equals(that.o1))
-    return false;
-}
-
-boolean this_present_o2 = true && (this.o2 != null);
-boolean that_present_o2 = true && (that.o2 != null);
-if (this_present_o2 || that_present_o2) {
-  if (!(this_present_o2 && that_present_o2))
-    return false;
-  if (!this.o2.equals(that.o2))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 0:
-      if (field.type == TType.BOOL) {
-        this.success = iprot.readBool();
-        this.__isset.success = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 1:
-      if (field.type == TType.STRUCT) {
-        this.o1 = new AlreadyExistsException();
-        this.o1.read(iprot);
-        this.__isset.o1 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 2:
-      if (field.type == TType.STRUCT) {
-        this.o2 = new MetaException();
-        this.o2.read(iprot);
-        this.__isset.o2 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("create_database_result");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-
-if (this.__isset.success) {
-  field.name = "success";
-  field.type = TType.BOOL;
-  field.id = 0;
-  oprot.writeFieldBegin(field);
-  oprot.writeBool(this.success);
-  oprot.writeFieldEnd();
-} else if (this.__isset.o1) {
-  if (this.o1 != null) {
-    field.name = "o1";
-    field.type = TType.STRUCT;
-    field.id = 1;
-    oprot.writeFieldBegin(field);
-    this.o1.write(oprot);
-    oprot.writeFieldEnd();
-  }
-} else if (this.__isset.o2) {
-  if (this.o2 != null) {
-    field.name = "o2";
-    field.type = TType.STRUCT;
-    field.id = 2;
-    oprot.writeFieldBegin(field);
-    this.o2.write(oprot);
-    oprot.writeFieldEnd();
-  }
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("create_database_result(");
-sb.append("success:");
-sb.append(this.success);
-sb.append(",o1:");
-sb.append(this.o1);
-sb.append(",o2:");
-sb.append(this.o2);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class get_database_args implements TBase, java.io.Serializable {
-private String name;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean name = false;
-}
-
-public get_database_args() {
-}
-
-public get_database_args(
-String name)
-{
-this();
-this.name = name;
-this.__isset.name = true;
-}
-
-public String getName() {
-return this.name;
-}
-
-public void setName(String name) {
-this.name = name;
-this.__isset.name = true;
-}
-
-public void unsetName() {
-this.__isset.name = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof get_database_args)
-  return this.equals((get_database_args)that);
-return false;
-}
-
-public boolean equals(get_database_args that) {
-if (that == null)
-  return false;
-
-boolean this_present_name = true && (this.name != null);
-boolean that_present_name = true && (that.name != null);
-if (this_present_name || that_present_name) {
-  if (!(this_present_name && that_present_name))
-    return false;
-  if (!this.name.equals(that.name))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 1:
-      if (field.type == TType.STRING) {
-        this.name = iprot.readString();
-        this.__isset.name = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("get_database_args");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-if (this.name != null) {
-  field.name = "name";
-  field.type = TType.STRING;
-  field.id = 1;
-  oprot.writeFieldBegin(field);
-  oprot.writeString(this.name);
-  oprot.writeFieldEnd();
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("get_database_args(");
-sb.append("name:");
-sb.append(this.name);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class get_database_result implements TBase, java.io.Serializable {
-private Database success;
-private NoSuchObjectException o1;
-private MetaException o2;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean success = false;
-public boolean o1 = false;
-public boolean o2 = false;
-}
-
-public get_database_result() {
-}
-
-public get_database_result(
-Database success,
-NoSuchObjectException o1,
-MetaException o2)
-{
-this();
-this.success = success;
-this.__isset.success = true;
-this.o1 = o1;
-this.__isset.o1 = true;
-this.o2 = o2;
-this.__isset.o2 = true;
-}
-
-public Database getSuccess() {
-return this.success;
-}
-
-public void setSuccess(Database success) {
-this.success = success;
-this.__isset.success = true;
-}
-
-public void unsetSuccess() {
-this.success = null;
-this.__isset.success = false;
-}
-
-public NoSuchObjectException getO1() {
-return this.o1;
-}
-
-public void setO1(NoSuchObjectException o1) {
-this.o1 = o1;
-this.__isset.o1 = true;
-}
-
-public void unsetO1() {
-this.o1 = null;
-this.__isset.o1 = false;
-}
-
-public MetaException getO2() {
-return this.o2;
-}
-
-public void setO2(MetaException o2) {
-this.o2 = o2;
-this.__isset.o2 = true;
-}
-
-public void unsetO2() {
-this.o2 = null;
-this.__isset.o2 = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof get_database_result)
-  return this.equals((get_database_result)that);
-return false;
-}
-
-public boolean equals(get_database_result that) {
-if (that == null)
-  return false;
-
-boolean this_present_success = true && (this.success != null);
-boolean that_present_success = true && (that.success != null);
-if (this_present_success || that_present_success) {
-  if (!(this_present_success && that_present_success))
-    return false;
-  if (!this.success.equals(that.success))
-    return false;
-}
-
-boolean this_present_o1 = true && (this.o1 != null);
-boolean that_present_o1 = true && (that.o1 != null);
-if (this_present_o1 || that_present_o1) {
-  if (!(this_present_o1 && that_present_o1))
-    return false;
-  if (!this.o1.equals(that.o1))
-    return false;
-}
-
-boolean this_present_o2 = true && (this.o2 != null);
-boolean that_present_o2 = true && (that.o2 != null);
-if (this_present_o2 || that_present_o2) {
-  if (!(this_present_o2 && that_present_o2))
-    return false;
-  if (!this.o2.equals(that.o2))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 0:
-      if (field.type == TType.STRUCT) {
-        this.success = new Database();
-        this.success.read(iprot);
-        this.__isset.success = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 1:
-      if (field.type == TType.STRUCT) {
-        this.o1 = new NoSuchObjectException();
-        this.o1.read(iprot);
-        this.__isset.o1 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 2:
-      if (field.type == TType.STRUCT) {
-        this.o2 = new MetaException();
-        this.o2.read(iprot);
-        this.__isset.o2 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("get_database_result");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-
-if (this.__isset.success) {
-  if (this.success != null) {
-    field.name = "success";
-    field.type = TType.STRUCT;
-    field.id = 0;
-    oprot.writeFieldBegin(field);
-    this.success.write(oprot);
-    oprot.writeFieldEnd();
-  }
-} else if (this.__isset.o1) {
-  if (this.o1 != null) {
-    field.name = "o1";
-    field.type = TType.STRUCT;
-    field.id = 1;
-    oprot.writeFieldBegin(field);
-    this.o1.write(oprot);
-    oprot.writeFieldEnd();
-  }
-} else if (this.__isset.o2) {
-  if (this.o2 != null) {
-    field.name = "o2";
-    field.type = TType.STRUCT;
-    field.id = 2;
-    oprot.writeFieldBegin(field);
-    this.o2.write(oprot);
-    oprot.writeFieldEnd();
-  }
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("get_database_result(");
-sb.append("success:");
-sb.append(this.success);
-sb.append(",o1:");
-sb.append(this.o1);
-sb.append(",o2:");
-sb.append(this.o2);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class drop_database_args implements TBase, java.io.Serializable {
-private String name;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean name = false;
-}
-
-public drop_database_args() {
-}
-
-public drop_database_args(
-String name)
-{
-this();
-this.name = name;
-this.__isset.name = true;
-}
-
-public String getName() {
-return this.name;
-}
-
-public void setName(String name) {
-this.name = name;
-this.__isset.name = true;
-}
-
-public void unsetName() {
-this.__isset.name = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof drop_database_args)
-  return this.equals((drop_database_args)that);
-return false;
-}
-
-public boolean equals(drop_database_args that) {
-if (that == null)
-  return false;
-
-boolean this_present_name = true && (this.name != null);
-boolean that_present_name = true && (that.name != null);
-if (this_present_name || that_present_name) {
-  if (!(this_present_name && that_present_name))
-    return false;
-  if (!this.name.equals(that.name))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 1:
-      if (field.type == TType.STRING) {
-        this.name = iprot.readString();
-        this.__isset.name = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("drop_database_args");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-if (this.name != null) {
-  field.name = "name";
-  field.type = TType.STRING;
-  field.id = 1;
-  oprot.writeFieldBegin(field);
-  oprot.writeString(this.name);
-  oprot.writeFieldEnd();
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("drop_database_args(");
-sb.append("name:");
-sb.append(this.name);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class drop_database_result implements TBase, java.io.Serializable {
-private boolean success;
-private MetaException o2;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean success = false;
-public boolean o2 = false;
-}
-
-public drop_database_result() {
-}
-
-public drop_database_result(
-boolean success,
-MetaException o2)
-{
-this();
-this.success = success;
-this.__isset.success = true;
-this.o2 = o2;
-this.__isset.o2 = true;
-}
-
-public boolean isSuccess() {
-return this.success;
-}
-
-public void setSuccess(boolean success) {
-this.success = success;
-this.__isset.success = true;
-}
-
-public void unsetSuccess() {
-this.__isset.success = false;
-}
-
-public MetaException getO2() {
-return this.o2;
-}
-
-public void setO2(MetaException o2) {
-this.o2 = o2;
-this.__isset.o2 = true;
-}
-
-public void unsetO2() {
-this.o2 = null;
-this.__isset.o2 = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof drop_database_result)
-  return this.equals((drop_database_result)that);
-return false;
-}
-
-public boolean equals(drop_database_result that) {
-if (that == null)
-  return false;
-
-boolean this_present_success = true;
-boolean that_present_success = true;
-if (this_present_success || that_present_success) {
-  if (!(this_present_success && that_present_success))
-    return false;
-  if (this.success != that.success)
-    return false;
-}
-
-boolean this_present_o2 = true && (this.o2 != null);
-boolean that_present_o2 = true && (that.o2 != null);
-if (this_present_o2 || that_present_o2) {
-  if (!(this_present_o2 && that_present_o2))
-    return false;
-  if (!this.o2.equals(that.o2))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 0:
-      if (field.type == TType.BOOL) {
-        this.success = iprot.readBool();
-        this.__isset.success = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 2:
-      if (field.type == TType.STRUCT) {
-        this.o2 = new MetaException();
-        this.o2.read(iprot);
-        this.__isset.o2 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("drop_database_result");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-
-if (this.__isset.success) {
-  field.name = "success";
-  field.type = TType.BOOL;
-  field.id = 0;
-  oprot.writeFieldBegin(field);
-  oprot.writeBool(this.success);
-  oprot.writeFieldEnd();
-} else if (this.__isset.o2) {
-  if (this.o2 != null) {
-    field.name = "o2";
-    field.type = TType.STRUCT;
-    field.id = 2;
-    oprot.writeFieldBegin(field);
-    this.o2.write(oprot);
-    oprot.writeFieldEnd();
-  }
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("drop_database_result(");
-sb.append("success:");
-sb.append(this.success);
-sb.append(",o2:");
-sb.append(this.o2);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class get_databases_args implements TBase, java.io.Serializable {
-public get_databases_args() {
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof get_databases_args)
-  return this.equals((get_databases_args)that);
-return false;
-}
-
-public boolean equals(get_databases_args that) {
-if (that == null)
-  return false;
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("get_databases_args");
-oprot.writeStructBegin(struct);
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("get_databases_args(");
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class get_databases_result implements TBase, java.io.Serializable {
-private List<String> success;
-private MetaException o1;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean success = false;
-public boolean o1 = false;
-}
-
-public get_databases_result() {
-}
-
-public get_databases_result(
-List<String> success,
-MetaException o1)
-{
-this();
-this.success = success;
-this.__isset.success = true;
-this.o1 = o1;
-this.__isset.o1 = true;
-}
-
-public int getSuccessSize() {
-return (this.success == null) ? 0 : this.success.size();
-}
-
-public java.util.Iterator<String> getSuccessIterator() {
-return (this.success == null) ? null : this.success.iterator();
-}
-
-public void addToSuccess(String elem) {
-if (this.success == null) {
-  this.success = new ArrayList<String>();
-}
-this.success.add(elem);
-this.__isset.success = true;
-}
-
-public List<String> getSuccess() {
-return this.success;
-}
-
-public void setSuccess(List<String> success) {
-this.success = success;
-this.__isset.success = true;
-}
-
-public void unsetSuccess() {
-this.success = null;
-this.__isset.success = false;
-}
-
-public MetaException getO1() {
-return this.o1;
-}
-
-public void setO1(MetaException o1) {
-this.o1 = o1;
-this.__isset.o1 = true;
-}
-
-public void unsetO1() {
-this.o1 = null;
-this.__isset.o1 = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof get_databases_result)
-  return this.equals((get_databases_result)that);
-return false;
-}
-
-public boolean equals(get_databases_result that) {
-if (that == null)
-  return false;
-
-boolean this_present_success = true && (this.success != null);
-boolean that_present_success = true && (that.success != null);
-if (this_present_success || that_present_success) {
-  if (!(this_present_success && that_present_success))
-    return false;
-  if (!this.success.equals(that.success))
-    return false;
-}
-
-boolean this_present_o1 = true && (this.o1 != null);
-boolean that_present_o1 = true && (that.o1 != null);
-if (this_present_o1 || that_present_o1) {
-  if (!(this_present_o1 && that_present_o1))
-    return false;
-  if (!this.o1.equals(that.o1))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 0:
-      if (field.type == TType.LIST) {
-        {
-          TList _list57 = iprot.readListBegin();
-          this.success = new ArrayList<String>(_list57.size);
-          for (int _i58 = 0; _i58 < _list57.size; ++_i58)
-          {
-            String _elem59 = null;
-            _elem59 = iprot.readString();
-            this.success.add(_elem59);
-          }
-          iprot.readListEnd();
-        }
-        this.__isset.success = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 1:
-      if (field.type == TType.STRUCT) {
-        this.o1 = new MetaException();
-        this.o1.read(iprot);
-        this.__isset.o1 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("get_databases_result");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-
-if (this.__isset.success) {
-  if (this.success != null) {
-    field.name = "success";
-    field.type = TType.LIST;
-    field.id = 0;
-    oprot.writeFieldBegin(field);
+  public static class Client extends com.facebook.fb303.FacebookService.Client implements Iface {
+    public Client(TProtocol prot)
     {
-      oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-      for (String _iter60 : this.success)      {
-        oprot.writeString(_iter60);
-      }
-      oprot.writeListEnd();
+      this(prot, prot);
     }
-    oprot.writeFieldEnd();
-  }
-} else if (this.__isset.o1) {
-  if (this.o1 != null) {
-    field.name = "o1";
-    field.type = TType.STRUCT;
-    field.id = 1;
-    oprot.writeFieldBegin(field);
-    this.o1.write(oprot);
-    oprot.writeFieldEnd();
-  }
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
 
-public String toString() {
-StringBuilder sb = new StringBuilder("get_databases_result(");
-sb.append("success:");
-sb.append(this.success);
-sb.append(",o1:");
-sb.append(this.o1);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class get_type_args implements TBase, java.io.Serializable {
-private String name;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean name = false;
-}
-
-public get_type_args() {
-}
-
-public get_type_args(
-String name)
-{
-this();
-this.name = name;
-this.__isset.name = true;
-}
-
-public String getName() {
-return this.name;
-}
-
-public void setName(String name) {
-this.name = name;
-this.__isset.name = true;
-}
-
-public void unsetName() {
-this.__isset.name = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof get_type_args)
-  return this.equals((get_type_args)that);
-return false;
-}
-
-public boolean equals(get_type_args that) {
-if (that == null)
-  return false;
-
-boolean this_present_name = true && (this.name != null);
-boolean that_present_name = true && (that.name != null);
-if (this_present_name || that_present_name) {
-  if (!(this_present_name && that_present_name))
-    return false;
-  if (!this.name.equals(that.name))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 1:
-      if (field.type == TType.STRING) {
-        this.name = iprot.readString();
-        this.__isset.name = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("get_type_args");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-if (this.name != null) {
-  field.name = "name";
-  field.type = TType.STRING;
-  field.id = 1;
-  oprot.writeFieldBegin(field);
-  oprot.writeString(this.name);
-  oprot.writeFieldEnd();
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("get_type_args(");
-sb.append("name:");
-sb.append(this.name);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class get_type_result implements TBase, java.io.Serializable {
-private Type success;
-private MetaException o2;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean success = false;
-public boolean o2 = false;
-}
-
-public get_type_result() {
-}
-
-public get_type_result(
-Type success,
-MetaException o2)
-{
-this();
-this.success = success;
-this.__isset.success = true;
-this.o2 = o2;
-this.__isset.o2 = true;
-}
-
-public Type getSuccess() {
-return this.success;
-}
-
-public void setSuccess(Type success) {
-this.success = success;
-this.__isset.success = true;
-}
-
-public void unsetSuccess() {
-this.success = null;
-this.__isset.success = false;
-}
-
-public MetaException getO2() {
-return this.o2;
-}
-
-public void setO2(MetaException o2) {
-this.o2 = o2;
-this.__isset.o2 = true;
-}
-
-public void unsetO2() {
-this.o2 = null;
-this.__isset.o2 = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof get_type_result)
-  return this.equals((get_type_result)that);
-return false;
-}
-
-public boolean equals(get_type_result that) {
-if (that == null)
-  return false;
-
-boolean this_present_success = true && (this.success != null);
-boolean that_present_success = true && (that.success != null);
-if (this_present_success || that_present_success) {
-  if (!(this_present_success && that_present_success))
-    return false;
-  if (!this.success.equals(that.success))
-    return false;
-}
-
-boolean this_present_o2 = true && (this.o2 != null);
-boolean that_present_o2 = true && (that.o2 != null);
-if (this_present_o2 || that_present_o2) {
-  if (!(this_present_o2 && that_present_o2))
-    return false;
-  if (!this.o2.equals(that.o2))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 0:
-      if (field.type == TType.STRUCT) {
-        this.success = new Type();
-        this.success.read(iprot);
-        this.__isset.success = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 1:
-      if (field.type == TType.STRUCT) {
-        this.o2 = new MetaException();
-        this.o2.read(iprot);
-        this.__isset.o2 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("get_type_result");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-
-if (this.__isset.success) {
-  if (this.success != null) {
-    field.name = "success";
-    field.type = TType.STRUCT;
-    field.id = 0;
-    oprot.writeFieldBegin(field);
-    this.success.write(oprot);
-    oprot.writeFieldEnd();
-  }
-} else if (this.__isset.o2) {
-  if (this.o2 != null) {
-    field.name = "o2";
-    field.type = TType.STRUCT;
-    field.id = 1;
-    oprot.writeFieldBegin(field);
-    this.o2.write(oprot);
-    oprot.writeFieldEnd();
-  }
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("get_type_result(");
-sb.append("success:");
-sb.append(this.success);
-sb.append(",o2:");
-sb.append(this.o2);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class create_type_args implements TBase, java.io.Serializable {
-private Type type;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean type = false;
-}
-
-public create_type_args() {
-}
-
-public create_type_args(
-Type type)
-{
-this();
-this.type = type;
-this.__isset.type = true;
-}
-
-public Type getType() {
-return this.type;
-}
-
-public void setType(Type type) {
-this.type = type;
-this.__isset.type = true;
-}
-
-public void unsetType() {
-this.type = null;
-this.__isset.type = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof create_type_args)
-  return this.equals((create_type_args)that);
-return false;
-}
-
-public boolean equals(create_type_args that) {
-if (that == null)
-  return false;
-
-boolean this_present_type = true && (this.type != null);
-boolean that_present_type = true && (that.type != null);
-if (this_present_type || that_present_type) {
-  if (!(this_present_type && that_present_type))
-    return false;
-  if (!this.type.equals(that.type))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 1:
-      if (field.type == TType.STRUCT) {
-        this.type = new Type();
-        this.type.read(iprot);
-        this.__isset.type = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("create_type_args");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-if (this.type != null) {
-  field.name = "type";
-  field.type = TType.STRUCT;
-  field.id = 1;
-  oprot.writeFieldBegin(field);
-  this.type.write(oprot);
-  oprot.writeFieldEnd();
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("create_type_args(");
-sb.append("type:");
-sb.append(this.type);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class create_type_result implements TBase, java.io.Serializable {
-private boolean success;
-private AlreadyExistsException o1;
-private InvalidObjectException o2;
-private MetaException o3;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean success = false;
-public boolean o1 = false;
-public boolean o2 = false;
-public boolean o3 = false;
-}
-
-public create_type_result() {
-}
-
-public create_type_result(
-boolean success,
-AlreadyExistsException o1,
-InvalidObjectException o2,
-MetaException o3)
-{
-this();
-this.success = success;
-this.__isset.success = true;
-this.o1 = o1;
-this.__isset.o1 = true;
-this.o2 = o2;
-this.__isset.o2 = true;
-this.o3 = o3;
-this.__isset.o3 = true;
-}
-
-public boolean isSuccess() {
-return this.success;
-}
-
-public void setSuccess(boolean success) {
-this.success = success;
-this.__isset.success = true;
-}
-
-public void unsetSuccess() {
-this.__isset.success = false;
-}
-
-public AlreadyExistsException getO1() {
-return this.o1;
-}
-
-public void setO1(AlreadyExistsException o1) {
-this.o1 = o1;
-this.__isset.o1 = true;
-}
-
-public void unsetO1() {
-this.o1 = null;
-this.__isset.o1 = false;
-}
-
-public InvalidObjectException getO2() {
-return this.o2;
-}
-
-public void setO2(InvalidObjectException o2) {
-this.o2 = o2;
-this.__isset.o2 = true;
-}
-
-public void unsetO2() {
-this.o2 = null;
-this.__isset.o2 = false;
-}
-
-public MetaException getO3() {
-return this.o3;
-}
-
-public void setO3(MetaException o3) {
-this.o3 = o3;
-this.__isset.o3 = true;
-}
-
-public void unsetO3() {
-this.o3 = null;
-this.__isset.o3 = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof create_type_result)
-  return this.equals((create_type_result)that);
-return false;
-}
-
-public boolean equals(create_type_result that) {
-if (that == null)
-  return false;
-
-boolean this_present_success = true;
-boolean that_present_success = true;
-if (this_present_success || that_present_success) {
-  if (!(this_present_success && that_present_success))
-    return false;
-  if (this.success != that.success)
-    return false;
-}
-
-boolean this_present_o1 = true && (this.o1 != null);
-boolean that_present_o1 = true && (that.o1 != null);
-if (this_present_o1 || that_present_o1) {
-  if (!(this_present_o1 && that_present_o1))
-    return false;
-  if (!this.o1.equals(that.o1))
-    return false;
-}
-
-boolean this_present_o2 = true && (this.o2 != null);
-boolean that_present_o2 = true && (that.o2 != null);
-if (this_present_o2 || that_present_o2) {
-  if (!(this_present_o2 && that_present_o2))
-    return false;
-  if (!this.o2.equals(that.o2))
-    return false;
-}
-
-boolean this_present_o3 = true && (this.o3 != null);
-boolean that_present_o3 = true && (that.o3 != null);
-if (this_present_o3 || that_present_o3) {
-  if (!(this_present_o3 && that_present_o3))
-    return false;
-  if (!this.o3.equals(that.o3))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 0:
-      if (field.type == TType.BOOL) {
-        this.success = iprot.readBool();
-        this.__isset.success = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 1:
-      if (field.type == TType.STRUCT) {
-        this.o1 = new AlreadyExistsException();
-        this.o1.read(iprot);
-        this.__isset.o1 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 2:
-      if (field.type == TType.STRUCT) {
-        this.o2 = new InvalidObjectException();
-        this.o2.read(iprot);
-        this.__isset.o2 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 3:
-      if (field.type == TType.STRUCT) {
-        this.o3 = new MetaException();
-        this.o3.read(iprot);
-        this.__isset.o3 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("create_type_result");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-
-if (this.__isset.success) {
-  field.name = "success";
-  field.type = TType.BOOL;
-  field.id = 0;
-  oprot.writeFieldBegin(field);
-  oprot.writeBool(this.success);
-  oprot.writeFieldEnd();
-} else if (this.__isset.o1) {
-  if (this.o1 != null) {
-    field.name = "o1";
-    field.type = TType.STRUCT;
-    field.id = 1;
-    oprot.writeFieldBegin(field);
-    this.o1.write(oprot);
-    oprot.writeFieldEnd();
-  }
-} else if (this.__isset.o2) {
-  if (this.o2 != null) {
-    field.name = "o2";
-    field.type = TType.STRUCT;
-    field.id = 2;
-    oprot.writeFieldBegin(field);
-    this.o2.write(oprot);
-    oprot.writeFieldEnd();
-  }
-} else if (this.__isset.o3) {
-  if (this.o3 != null) {
-    field.name = "o3";
-    field.type = TType.STRUCT;
-    field.id = 3;
-    oprot.writeFieldBegin(field);
-    this.o3.write(oprot);
-    oprot.writeFieldEnd();
-  }
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("create_type_result(");
-sb.append("success:");
-sb.append(this.success);
-sb.append(",o1:");
-sb.append(this.o1);
-sb.append(",o2:");
-sb.append(this.o2);
-sb.append(",o3:");
-sb.append(this.o3);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class drop_type_args implements TBase, java.io.Serializable {
-private String type;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean type = false;
-}
-
-public drop_type_args() {
-}
-
-public drop_type_args(
-String type)
-{
-this();
-this.type = type;
-this.__isset.type = true;
-}
-
-public String getType() {
-return this.type;
-}
-
-public void setType(String type) {
-this.type = type;
-this.__isset.type = true;
-}
-
-public void unsetType() {
-this.__isset.type = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof drop_type_args)
-  return this.equals((drop_type_args)that);
-return false;
-}
-
-public boolean equals(drop_type_args that) {
-if (that == null)
-  return false;
-
-boolean this_present_type = true && (this.type != null);
-boolean that_present_type = true && (that.type != null);
-if (this_present_type || that_present_type) {
-  if (!(this_present_type && that_present_type))
-    return false;
-  if (!this.type.equals(that.type))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 1:
-      if (field.type == TType.STRING) {
-        this.type = iprot.readString();
-        this.__isset.type = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("drop_type_args");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-if (this.type != null) {
-  field.name = "type";
-  field.type = TType.STRING;
-  field.id = 1;
-  oprot.writeFieldBegin(field);
-  oprot.writeString(this.type);
-  oprot.writeFieldEnd();
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("drop_type_args(");
-sb.append("type:");
-sb.append(this.type);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class drop_type_result implements TBase, java.io.Serializable {
-private boolean success;
-private MetaException o2;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean success = false;
-public boolean o2 = false;
-}
-
-public drop_type_result() {
-}
-
-public drop_type_result(
-boolean success,
-MetaException o2)
-{
-this();
-this.success = success;
-this.__isset.success = true;
-this.o2 = o2;
-this.__isset.o2 = true;
-}
-
-public boolean isSuccess() {
-return this.success;
-}
-
-public void setSuccess(boolean success) {
-this.success = success;
-this.__isset.success = true;
-}
-
-public void unsetSuccess() {
-this.__isset.success = false;
-}
-
-public MetaException getO2() {
-return this.o2;
-}
-
-public void setO2(MetaException o2) {
-this.o2 = o2;
-this.__isset.o2 = true;
-}
-
-public void unsetO2() {
-this.o2 = null;
-this.__isset.o2 = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof drop_type_result)
-  return this.equals((drop_type_result)that);
-return false;
-}
-
-public boolean equals(drop_type_result that) {
-if (that == null)
-  return false;
-
-boolean this_present_success = true;
-boolean that_present_success = true;
-if (this_present_success || that_present_success) {
-  if (!(this_present_success && that_present_success))
-    return false;
-  if (this.success != that.success)
-    return false;
-}
-
-boolean this_present_o2 = true && (this.o2 != null);
-boolean that_present_o2 = true && (that.o2 != null);
-if (this_present_o2 || that_present_o2) {
-  if (!(this_present_o2 && that_present_o2))
-    return false;
-  if (!this.o2.equals(that.o2))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 0:
-      if (field.type == TType.BOOL) {
-        this.success = iprot.readBool();
-        this.__isset.success = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 1:
-      if (field.type == TType.STRUCT) {
-        this.o2 = new MetaException();
-        this.o2.read(iprot);
-        this.__isset.o2 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("drop_type_result");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-
-if (this.__isset.success) {
-  field.name = "success";
-  field.type = TType.BOOL;
-  field.id = 0;
-  oprot.writeFieldBegin(field);
-  oprot.writeBool(this.success);
-  oprot.writeFieldEnd();
-} else if (this.__isset.o2) {
-  if (this.o2 != null) {
-    field.name = "o2";
-    field.type = TType.STRUCT;
-    field.id = 1;
-    oprot.writeFieldBegin(field);
-    this.o2.write(oprot);
-    oprot.writeFieldEnd();
-  }
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("drop_type_result(");
-sb.append("success:");
-sb.append(this.success);
-sb.append(",o2:");
-sb.append(this.o2);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class get_type_all_args implements TBase, java.io.Serializable {
-private String name;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean name = false;
-}
-
-public get_type_all_args() {
-}
-
-public get_type_all_args(
-String name)
-{
-this();
-this.name = name;
-this.__isset.name = true;
-}
-
-public String getName() {
-return this.name;
-}
-
-public void setName(String name) {
-this.name = name;
-this.__isset.name = true;
-}
-
-public void unsetName() {
-this.__isset.name = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof get_type_all_args)
-  return this.equals((get_type_all_args)that);
-return false;
-}
-
-public boolean equals(get_type_all_args that) {
-if (that == null)
-  return false;
-
-boolean this_present_name = true && (this.name != null);
-boolean that_present_name = true && (that.name != null);
-if (this_present_name || that_present_name) {
-  if (!(this_present_name && that_present_name))
-    return false;
-  if (!this.name.equals(that.name))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 1:
-      if (field.type == TType.STRING) {
-        this.name = iprot.readString();
-        this.__isset.name = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("get_type_all_args");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-if (this.name != null) {
-  field.name = "name";
-  field.type = TType.STRING;
-  field.id = 1;
-  oprot.writeFieldBegin(field);
-  oprot.writeString(this.name);
-  oprot.writeFieldEnd();
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("get_type_all_args(");
-sb.append("name:");
-sb.append(this.name);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class get_type_all_result implements TBase, java.io.Serializable {
-private Map<String,Type> success;
-private MetaException o2;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean success = false;
-public boolean o2 = false;
-}
-
-public get_type_all_result() {
-}
-
-public get_type_all_result(
-Map<String,Type> success,
-MetaException o2)
-{
-this();
-this.success = success;
-this.__isset.success = true;
-this.o2 = o2;
-this.__isset.o2 = true;
-}
-
-public int getSuccessSize() {
-return (this.success == null) ? 0 : this.success.size();
-}
-
-public void putToSuccess(String key, Type val) {
-if (this.success == null) {
-  this.success = new HashMap<String,Type>();
-}
-this.success.put(key, val);
-this.__isset.success = true;
-}
-
-public Map<String,Type> getSuccess() {
-return this.success;
-}
-
-public void setSuccess(Map<String,Type> success) {
-this.success = success;
-this.__isset.success = true;
-}
-
-public void unsetSuccess() {
-this.success = null;
-this.__isset.success = false;
-}
-
-public MetaException getO2() {
-return this.o2;
-}
-
-public void setO2(MetaException o2) {
-this.o2 = o2;
-this.__isset.o2 = true;
-}
-
-public void unsetO2() {
-this.o2 = null;
-this.__isset.o2 = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof get_type_all_result)
-  return this.equals((get_type_all_result)that);
-return false;
-}
-
-public boolean equals(get_type_all_result that) {
-if (that == null)
-  return false;
-
-boolean this_present_success = true && (this.success != null);
-boolean that_present_success = true && (that.success != null);
-if (this_present_success || that_present_success) {
-  if (!(this_present_success && that_present_success))
-    return false;
-  if (!this.success.equals(that.success))
-    return false;
-}
-
-boolean this_present_o2 = true && (this.o2 != null);
-boolean that_present_o2 = true && (that.o2 != null);
-if (this_present_o2 || that_present_o2) {
-  if (!(this_present_o2 && that_present_o2))
-    return false;
-  if (!this.o2.equals(that.o2))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 0:
-      if (field.type == TType.MAP) {
-        {
-          TMap _map61 = iprot.readMapBegin();
-          this.success = new HashMap<String,Type>(2*_map61.size);
-          for (int _i62 = 0; _i62 < _map61.size; ++_i62)
-          {
-            String _key63;
-            Type _val64;
-            _key63 = iprot.readString();
-            _val64 = new Type();
-            _val64.read(iprot);
-            this.success.put(_key63, _val64);
-          }
-          iprot.readMapEnd();
-        }
-        this.__isset.success = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 1:
-      if (field.type == TType.STRUCT) {
-        this.o2 = new MetaException();
-        this.o2.read(iprot);
-        this.__isset.o2 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("get_type_all_result");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-
-if (this.__isset.success) {
-  if (this.success != null) {
-    field.name = "success";
-    field.type = TType.MAP;
-    field.id = 0;
-    oprot.writeFieldBegin(field);
+    public Client(TProtocol iprot, TProtocol oprot)
     {
-      oprot.writeMapBegin(new TMap(TType.STRING, TType.STRUCT, this.success.size()));
-      for (String _iter65 : this.success.keySet())      {
-        oprot.writeString(_iter65);
-        this.success.get(_iter65).write(oprot);
-      }
-      oprot.writeMapEnd();
+      super(iprot, oprot);
     }
-    oprot.writeFieldEnd();
-  }
-} else if (this.__isset.o2) {
-  if (this.o2 != null) {
-    field.name = "o2";
-    field.type = TType.STRUCT;
-    field.id = 1;
-    oprot.writeFieldBegin(field);
-    this.o2.write(oprot);
-    oprot.writeFieldEnd();
-  }
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
 
-public String toString() {
-StringBuilder sb = new StringBuilder("get_type_all_result(");
-sb.append("success:");
-sb.append(this.success);
-sb.append(",o2:");
-sb.append(this.o2);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class get_fields_args implements TBase, java.io.Serializable {
-private String db_name;
-private String table_name;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean db_name = false;
-public boolean table_name = false;
-}
-
-public get_fields_args() {
-}
-
-public get_fields_args(
-String db_name,
-String table_name)
-{
-this();
-this.db_name = db_name;
-this.__isset.db_name = true;
-this.table_name = table_name;
-this.__isset.table_name = true;
-}
-
-public String getDb_name() {
-return this.db_name;
-}
-
-public void setDb_name(String db_name) {
-this.db_name = db_name;
-this.__isset.db_name = true;
-}
-
-public void unsetDb_name() {
-this.__isset.db_name = false;
-}
-
-public String getTable_name() {
-return this.table_name;
-}
-
-public void setTable_name(String table_name) {
-this.table_name = table_name;
-this.__isset.table_name = true;
-}
-
-public void unsetTable_name() {
-this.__isset.table_name = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof get_fields_args)
-  return this.equals((get_fields_args)that);
-return false;
-}
-
-public boolean equals(get_fields_args that) {
-if (that == null)
-  return false;
-
-boolean this_present_db_name = true && (this.db_name != null);
-boolean that_present_db_name = true && (that.db_name != null);
-if (this_present_db_name || that_present_db_name) {
-  if (!(this_present_db_name && that_present_db_name))
-    return false;
-  if (!this.db_name.equals(that.db_name))
-    return false;
-}
-
-boolean this_present_table_name = true && (this.table_name != null);
-boolean that_present_table_name = true && (that.table_name != null);
-if (this_present_table_name || that_present_table_name) {
-  if (!(this_present_table_name && that_present_table_name))
-    return false;
-  if (!this.table_name.equals(that.table_name))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case -1:
-      if (field.type == TType.STRING) {
-        this.db_name = iprot.readString();
-        this.__isset.db_name = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case -2:
-      if (field.type == TType.STRING) {
-        this.table_name = iprot.readString();
-        this.__isset.table_name = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("get_fields_args");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-if (this.db_name != null) {
-  field.name = "db_name";
-  field.type = TType.STRING;
-  field.id = -1;
-  oprot.writeFieldBegin(field);
-  oprot.writeString(this.db_name);
-  oprot.writeFieldEnd();
-}
-if (this.table_name != null) {
-  field.name = "table_name";
-  field.type = TType.STRING;
-  field.id = -2;
-  oprot.writeFieldBegin(field);
-  oprot.writeString(this.table_name);
-  oprot.writeFieldEnd();
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("get_fields_args(");
-sb.append("db_name:");
-sb.append(this.db_name);
-sb.append(",table_name:");
-sb.append(this.table_name);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class get_fields_result implements TBase, java.io.Serializable {
-private List<FieldSchema> success;
-private MetaException o1;
-private UnknownTableException o2;
-private UnknownDBException o3;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean success = false;
-public boolean o1 = false;
-public boolean o2 = false;
-public boolean o3 = false;
-}
-
-public get_fields_result() {
-}
-
-public get_fields_result(
-List<FieldSchema> success,
-MetaException o1,
-UnknownTableException o2,
-UnknownDBException o3)
-{
-this();
-this.success = success;
-this.__isset.success = true;
-this.o1 = o1;
-this.__isset.o1 = true;
-this.o2 = o2;
-this.__isset.o2 = true;
-this.o3 = o3;
-this.__isset.o3 = true;
-}
-
-public int getSuccessSize() {
-return (this.success == null) ? 0 : this.success.size();
-}
-
-public java.util.Iterator<FieldSchema> getSuccessIterator() {
-return (this.success == null) ? null : this.success.iterator();
-}
-
-public void addToSuccess(FieldSchema elem) {
-if (this.success == null) {
-  this.success = new ArrayList<FieldSchema>();
-}
-this.success.add(elem);
-this.__isset.success = true;
-}
-
-public List<FieldSchema> getSuccess() {
-return this.success;
-}
-
-public void setSuccess(List<FieldSchema> success) {
-this.success = success;
-this.__isset.success = true;
-}
-
-public void unsetSuccess() {
-this.success = null;
-this.__isset.success = false;
-}
-
-public MetaException getO1() {
-return this.o1;
-}
-
-public void setO1(MetaException o1) {
-this.o1 = o1;
-this.__isset.o1 = true;
-}
-
-public void unsetO1() {
-this.o1 = null;
-this.__isset.o1 = false;
-}
-
-public UnknownTableException getO2() {
-return this.o2;
-}
-
-public void setO2(UnknownTableException o2) {
-this.o2 = o2;
-this.__isset.o2 = true;
-}
-
-public void unsetO2() {
-this.o2 = null;
-this.__isset.o2 = false;
-}
-
-public UnknownDBException getO3() {
-return this.o3;
-}
-
-public void setO3(UnknownDBException o3) {
-this.o3 = o3;
-this.__isset.o3 = true;
-}
-
-public void unsetO3() {
-this.o3 = null;
-this.__isset.o3 = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof get_fields_result)
-  return this.equals((get_fields_result)that);
-return false;
-}
-
-public boolean equals(get_fields_result that) {
-if (that == null)
-  return false;
-
-boolean this_present_success = true && (this.success != null);
-boolean that_present_success = true && (that.success != null);
-if (this_present_success || that_present_success) {
-  if (!(this_present_success && that_present_success))
-    return false;
-  if (!this.success.equals(that.success))
-    return false;
-}
-
-boolean this_present_o1 = true && (this.o1 != null);
-boolean that_present_o1 = true && (that.o1 != null);
-if (this_present_o1 || that_present_o1) {
-  if (!(this_present_o1 && that_present_o1))
-    return false;
-  if (!this.o1.equals(that.o1))
-    return false;
-}
-
-boolean this_present_o2 = true && (this.o2 != null);
-boolean that_present_o2 = true && (that.o2 != null);
-if (this_present_o2 || that_present_o2) {
-  if (!(this_present_o2 && that_present_o2))
-    return false;
-  if (!this.o2.equals(that.o2))
-    return false;
-}
-
-boolean this_present_o3 = true && (this.o3 != null);
-boolean that_present_o3 = true && (that.o3 != null);
-if (this_present_o3 || that_present_o3) {
-  if (!(this_present_o3 && that_present_o3))
-    return false;
-  if (!this.o3.equals(that.o3))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 0:
-      if (field.type == TType.LIST) {
-        {
-          TList _list66 = iprot.readListBegin();
-          this.success = new ArrayList<FieldSchema>(_list66.size);
-          for (int _i67 = 0; _i67 < _list66.size; ++_i67)
-          {
-            FieldSchema _elem68 = new FieldSchema();
-            _elem68 = new FieldSchema();
-            _elem68.read(iprot);
-            this.success.add(_elem68);
-          }
-          iprot.readListEnd();
-        }
-        this.__isset.success = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case -3:
-      if (field.type == TType.STRUCT) {
-        this.o1 = new MetaException();
-        this.o1.read(iprot);
-        this.__isset.o1 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case -4:
-      if (field.type == TType.STRUCT) {
-        this.o2 = new UnknownTableException();
-        this.o2.read(iprot);
-        this.__isset.o2 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case -5:
-      if (field.type == TType.STRUCT) {
-        this.o3 = new UnknownDBException();
-        this.o3.read(iprot);
-        this.__isset.o3 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("get_fields_result");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-
-if (this.__isset.success) {
-  if (this.success != null) {
-    field.name = "success";
-    field.type = TType.LIST;
-    field.id = 0;
-    oprot.writeFieldBegin(field);
+    public boolean create_database(String name, String description) throws AlreadyExistsException, MetaException, TException
     {
-      oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
-      for (FieldSchema _iter69 : this.success)      {
-        _iter69.write(oprot);
-      }
-      oprot.writeListEnd();
+      send_create_database(name, description);
+      return recv_create_database();
     }
-    oprot.writeFieldEnd();
-  }
-} else if (this.__isset.o1) {
-  if (this.o1 != null) {
-    field.name = "o1";
-    field.type = TType.STRUCT;
-    field.id = -3;
-    oprot.writeFieldBegin(field);
-    this.o1.write(oprot);
-    oprot.writeFieldEnd();
-  }
-} else if (this.__isset.o2) {
-  if (this.o2 != null) {
-    field.name = "o2";
-    field.type = TType.STRUCT;
-    field.id = -4;
-    oprot.writeFieldBegin(field);
-    this.o2.write(oprot);
-    oprot.writeFieldEnd();
-  }
-} else if (this.__isset.o3) {
-  if (this.o3 != null) {
-    field.name = "o3";
-    field.type = TType.STRUCT;
-    field.id = -5;
-    oprot.writeFieldBegin(field);
-    this.o3.write(oprot);
-    oprot.writeFieldEnd();
-  }
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
 
-public String toString() {
-StringBuilder sb = new StringBuilder("get_fields_result(");
-sb.append("success:");
-sb.append(this.success);
-sb.append(",o1:");
-sb.append(this.o1);
-sb.append(",o2:");
-sb.append(this.o2);
-sb.append(",o3:");
-sb.append(this.o3);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class create_table_args implements TBase, java.io.Serializable {
-private Table tbl;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean tbl = false;
-}
-
-public create_table_args() {
-}
-
-public create_table_args(
-Table tbl)
-{
-this();
-this.tbl = tbl;
-this.__isset.tbl = true;
-}
-
-public Table getTbl() {
-return this.tbl;
-}
-
-public void setTbl(Table tbl) {
-this.tbl = tbl;
-this.__isset.tbl = true;
-}
-
-public void unsetTbl() {
-this.tbl = null;
-this.__isset.tbl = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof create_table_args)
-  return this.equals((create_table_args)that);
-return false;
-}
-
-public boolean equals(create_table_args that) {
-if (that == null)
-  return false;
-
-boolean this_present_tbl = true && (this.tbl != null);
-boolean that_present_tbl = true && (that.tbl != null);
-if (this_present_tbl || that_present_tbl) {
-  if (!(this_present_tbl && that_present_tbl))
-    return false;
-  if (!this.tbl.equals(that.tbl))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 1:
-      if (field.type == TType.STRUCT) {
-        this.tbl = new Table();
-        this.tbl.read(iprot);
-        this.__isset.tbl = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("create_table_args");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-if (this.tbl != null) {
-  field.name = "tbl";
-  field.type = TType.STRUCT;
-  field.id = 1;
-  oprot.writeFieldBegin(field);
-  this.tbl.write(oprot);
-  oprot.writeFieldEnd();
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("create_table_args(");
-sb.append("tbl:");
-sb.append(this.tbl);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class create_table_result implements TBase, java.io.Serializable {
-private AlreadyExistsException o1;
-private InvalidObjectException o2;
-private MetaException o3;
-private NoSuchObjectException o4;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean o1 = false;
-public boolean o2 = false;
-public boolean o3 = false;
-public boolean o4 = false;
-}
-
-public create_table_result() {
-}
-
-public create_table_result(
-AlreadyExistsException o1,
-InvalidObjectException o2,
-MetaException o3,
-NoSuchObjectException o4)
-{
-this();
-this.o1 = o1;
-this.__isset.o1 = true;
-this.o2 = o2;
-this.__isset.o2 = true;
-this.o3 = o3;
-this.__isset.o3 = true;
-this.o4 = o4;
-this.__isset.o4 = true;
-}
-
-public AlreadyExistsException getO1() {
-return this.o1;
-}
-
-public void setO1(AlreadyExistsException o1) {
-this.o1 = o1;
-this.__isset.o1 = true;
-}
-
-public void unsetO1() {
-this.o1 = null;
-this.__isset.o1 = false;
-}
-
-public InvalidObjectException getO2() {
-return this.o2;
-}
-
-public void setO2(InvalidObjectException o2) {
-this.o2 = o2;
-this.__isset.o2 = true;
-}
-
-public void unsetO2() {
-this.o2 = null;
-this.__isset.o2 = false;
-}
-
-public MetaException getO3() {
-return this.o3;
-}
-
-public void setO3(MetaException o3) {
-this.o3 = o3;
-this.__isset.o3 = true;
-}
-
-public void unsetO3() {
-this.o3 = null;
-this.__isset.o3 = false;
-}
-
-public NoSuchObjectException getO4() {
-return this.o4;
-}
-
-public void setO4(NoSuchObjectException o4) {
-this.o4 = o4;
-this.__isset.o4 = true;
-}
-
-public void unsetO4() {
-this.o4 = null;
-this.__isset.o4 = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof create_table_result)
-  return this.equals((create_table_result)that);
-return false;
-}
-
-public boolean equals(create_table_result that) {
-if (that == null)
-  return false;
-
-boolean this_present_o1 = true && (this.o1 != null);
-boolean that_present_o1 = true && (that.o1 != null);
-if (this_present_o1 || that_present_o1) {
-  if (!(this_present_o1 && that_present_o1))
-    return false;
-  if (!this.o1.equals(that.o1))
-    return false;
-}
-
-boolean this_present_o2 = true && (this.o2 != null);
-boolean that_present_o2 = true && (that.o2 != null);
-if (this_present_o2 || that_present_o2) {
-  if (!(this_present_o2 && that_present_o2))
-    return false;
-  if (!this.o2.equals(that.o2))
-    return false;
-}
-
-boolean this_present_o3 = true && (this.o3 != null);
-boolean that_present_o3 = true && (that.o3 != null);
-if (this_present_o3 || that_present_o3) {
-  if (!(this_present_o3 && that_present_o3))
-    return false;
-  if (!this.o3.equals(that.o3))
-    return false;
-}
-
-boolean this_present_o4 = true && (this.o4 != null);
-boolean that_present_o4 = true && (that.o4 != null);
-if (this_present_o4 || that_present_o4) {
-  if (!(this_present_o4 && that_present_o4))
-    return false;
-  if (!this.o4.equals(that.o4))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 1:
-      if (field.type == TType.STRUCT) {
-        this.o1 = new AlreadyExistsException();
-        this.o1.read(iprot);
-        this.__isset.o1 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 2:
-      if (field.type == TType.STRUCT) {
-        this.o2 = new InvalidObjectException();
-        this.o2.read(iprot);
-        this.__isset.o2 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 3:
-      if (field.type == TType.STRUCT) {
-        this.o3 = new MetaException();
-        this.o3.read(iprot);
-        this.__isset.o3 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 4:
-      if (field.type == TType.STRUCT) {
-        this.o4 = new NoSuchObjectException();
-        this.o4.read(iprot);
-        this.__isset.o4 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("create_table_result");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-
-if (this.__isset.o1) {
-  if (this.o1 != null) {
-    field.name = "o1";
-    field.type = TType.STRUCT;
-    field.id = 1;
-    oprot.writeFieldBegin(field);
-    this.o1.write(oprot);
-    oprot.writeFieldEnd();
-  }
-} else if (this.__isset.o2) {
-  if (this.o2 != null) {
-    field.name = "o2";
-    field.type = TType.STRUCT;
-    field.id = 2;
-    oprot.writeFieldBegin(field);
-    this.o2.write(oprot);
-    oprot.writeFieldEnd();
-  }
-} else if (this.__isset.o3) {
-  if (this.o3 != null) {
-    field.name = "o3";
-    field.type = TType.STRUCT;
-    field.id = 3;
-    oprot.writeFieldBegin(field);
-    this.o3.write(oprot);
-    oprot.writeFieldEnd();
-  }
-} else if (this.__isset.o4) {
-  if (this.o4 != null) {
-    field.name = "o4";
-    field.type = TType.STRUCT;
-    field.id = 4;
-    oprot.writeFieldBegin(field);
-    this.o4.write(oprot);
-    oprot.writeFieldEnd();
-  }
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("create_table_result(");
-sb.append("o1:");
-sb.append(this.o1);
-sb.append(",o2:");
-sb.append(this.o2);
-sb.append(",o3:");
-sb.append(this.o3);
-sb.append(",o4:");
-sb.append(this.o4);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class drop_table_args implements TBase, java.io.Serializable {
-private String dbname;
-private String name;
-private boolean deleteData;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean dbname = false;
-public boolean name = false;
-public boolean deleteData = false;
-}
-
-public drop_table_args() {
-}
-
-public drop_table_args(
-String dbname,
-String name,
-boolean deleteData)
-{
-this();
-this.dbname = dbname;
-this.__isset.dbname = true;
-this.name = name;
-this.__isset.name = true;
-this.deleteData = deleteData;
-this.__isset.deleteData = true;
-}
-
-public String getDbname() {
-return this.dbname;
-}
-
-public void setDbname(String dbname) {
-this.dbname = dbname;
-this.__isset.dbname = true;
-}
-
-public void unsetDbname() {
-this.__isset.dbname = false;
-}
-
-public String getName() {
-return this.name;
-}
-
-public void setName(String name) {
-this.name = name;
-this.__isset.name = true;
-}
-
-public void unsetName() {
-this.__isset.name = false;
-}
-
-public boolean isDeleteData() {
-return this.deleteData;
-}
-
-public void setDeleteData(boolean deleteData) {
-this.deleteData = deleteData;
-this.__isset.deleteData = true;
-}
-
-public void unsetDeleteData() {
-this.__isset.deleteData = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof drop_table_args)
-  return this.equals((drop_table_args)that);
-return false;
-}
-
-public boolean equals(drop_table_args that) {
-if (that == null)
-  return false;
-
-boolean this_present_dbname = true && (this.dbname != null);
-boolean that_present_dbname = true && (that.dbname != null);
-if (this_present_dbname || that_present_dbname) {
-  if (!(this_present_dbname && that_present_dbname))
-    return false;
-  if (!this.dbname.equals(that.dbname))
-    return false;
-}
-
-boolean this_present_name = true && (this.name != null);
-boolean that_present_name = true && (that.name != null);
-if (this_present_name || that_present_name) {
-  if (!(this_present_name && that_present_name))
-    return false;
-  if (!this.name.equals(that.name))
-    return false;
-}
-
-boolean this_present_deleteData = true;
-boolean that_present_deleteData = true;
-if (this_present_deleteData || that_present_deleteData) {
-  if (!(this_present_deleteData && that_present_deleteData))
-    return false;
-  if (this.deleteData != that.deleteData)
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 1:
-      if (field.type == TType.STRING) {
-        this.dbname = iprot.readString();
-        this.__isset.dbname = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 2:
-      if (field.type == TType.STRING) {
-        this.name = iprot.readString();
-        this.__isset.name = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 3:
-      if (field.type == TType.BOOL) {
-        this.deleteData = iprot.readBool();
-        this.__isset.deleteData = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("drop_table_args");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-if (this.dbname != null) {
-  field.name = "dbname";
-  field.type = TType.STRING;
-  field.id = 1;
-  oprot.writeFieldBegin(field);
-  oprot.writeString(this.dbname);
-  oprot.writeFieldEnd();
-}
-if (this.name != null) {
-  field.name = "name";
-  field.type = TType.STRING;
-  field.id = 2;
-  oprot.writeFieldBegin(field);
-  oprot.writeString(this.name);
-  oprot.writeFieldEnd();
-}
-field.name = "deleteData";
-field.type = TType.BOOL;
-field.id = 3;
-oprot.writeFieldBegin(field);
-oprot.writeBool(this.deleteData);
-oprot.writeFieldEnd();
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("drop_table_args(");
-sb.append("dbname:");
-sb.append(this.dbname);
-sb.append(",name:");
-sb.append(this.name);
-sb.append(",deleteData:");
-sb.append(this.deleteData);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class drop_table_result implements TBase, java.io.Serializable {
-private NoSuchObjectException o1;
-private MetaException o3;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean o1 = false;
-public boolean o3 = false;
-}
-
-public drop_table_result() {
-}
-
-public drop_table_result(
-NoSuchObjectException o1,
-MetaException o3)
-{
-this();
-this.o1 = o1;
-this.__isset.o1 = true;
-this.o3 = o3;
-this.__isset.o3 = true;
-}
-
-public NoSuchObjectException getO1() {
-return this.o1;
-}
-
-public void setO1(NoSuchObjectException o1) {
-this.o1 = o1;
-this.__isset.o1 = true;
-}
-
-public void unsetO1() {
-this.o1 = null;
-this.__isset.o1 = false;
-}
-
-public MetaException getO3() {
-return this.o3;
-}
-
-public void setO3(MetaException o3) {
-this.o3 = o3;
-this.__isset.o3 = true;
-}
-
-public void unsetO3() {
-this.o3 = null;
-this.__isset.o3 = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof drop_table_result)
-  return this.equals((drop_table_result)that);
-return false;
-}
-
-public boolean equals(drop_table_result that) {
-if (that == null)
-  return false;
-
-boolean this_present_o1 = true && (this.o1 != null);
-boolean that_present_o1 = true && (that.o1 != null);
-if (this_present_o1 || that_present_o1) {
-  if (!(this_present_o1 && that_present_o1))
-    return false;
-  if (!this.o1.equals(that.o1))
-    return false;
-}
-
-boolean this_present_o3 = true && (this.o3 != null);
-boolean that_present_o3 = true && (that.o3 != null);
-if (this_present_o3 || that_present_o3) {
-  if (!(this_present_o3 && that_present_o3))
-    return false;
-  if (!this.o3.equals(that.o3))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 1:
-      if (field.type == TType.STRUCT) {
-        this.o1 = new NoSuchObjectException();
-        this.o1.read(iprot);
-        this.__isset.o1 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 2:
-      if (field.type == TType.STRUCT) {
-        this.o3 = new MetaException();
-        this.o3.read(iprot);
-        this.__isset.o3 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("drop_table_result");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-
-if (this.__isset.o1) {
-  if (this.o1 != null) {
-    field.name = "o1";
-    field.type = TType.STRUCT;
-    field.id = 1;
-    oprot.writeFieldBegin(field);
-    this.o1.write(oprot);
-    oprot.writeFieldEnd();
-  }
-} else if (this.__isset.o3) {
-  if (this.o3 != null) {
-    field.name = "o3";
-    field.type = TType.STRUCT;
-    field.id = 2;
-    oprot.writeFieldBegin(field);
-    this.o3.write(oprot);
-    oprot.writeFieldEnd();
-  }
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("drop_table_result(");
-sb.append("o1:");
-sb.append(this.o1);
-sb.append(",o3:");
-sb.append(this.o3);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class get_tables_args implements TBase, java.io.Serializable {
-private String db_name;
-private String pattern;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean db_name = false;
-public boolean pattern = false;
-}
-
-public get_tables_args() {
-}
-
-public get_tables_args(
-String db_name,
-String pattern)
-{
-this();
-this.db_name = db_name;
-this.__isset.db_name = true;
-this.pattern = pattern;
-this.__isset.pattern = true;
-}
-
-public String getDb_name() {
-return this.db_name;
-}
-
-public void setDb_name(String db_name) {
-this.db_name = db_name;
-this.__isset.db_name = true;
-}
-
-public void unsetDb_name() {
-this.__isset.db_name = false;
-}
-
-public String getPattern() {
-return this.pattern;
-}
-
-public void setPattern(String pattern) {
-this.pattern = pattern;
-this.__isset.pattern = true;
-}
-
-public void unsetPattern() {
-this.__isset.pattern = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof get_tables_args)
-  return this.equals((get_tables_args)that);
-return false;
-}
-
-public boolean equals(get_tables_args that) {
-if (that == null)
-  return false;
-
-boolean this_present_db_name = true && (this.db_name != null);
-boolean that_present_db_name = true && (that.db_name != null);
-if (this_present_db_name || that_present_db_name) {
-  if (!(this_present_db_name && that_present_db_name))
-    return false;
-  if (!this.db_name.equals(that.db_name))
-    return false;
-}
-
-boolean this_present_pattern = true && (this.pattern != null);
-boolean that_present_pattern = true && (that.pattern != null);
-if (this_present_pattern || that_present_pattern) {
-  if (!(this_present_pattern && that_present_pattern))
-    return false;
-  if (!this.pattern.equals(that.pattern))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case -1:
-      if (field.type == TType.STRING) {
-        this.db_name = iprot.readString();
-        this.__isset.db_name = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case -2:
-      if (field.type == TType.STRING) {
-        this.pattern = iprot.readString();
-        this.__isset.pattern = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("get_tables_args");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-if (this.db_name != null) {
-  field.name = "db_name";
-  field.type = TType.STRING;
-  field.id = -1;
-  oprot.writeFieldBegin(field);
-  oprot.writeString(this.db_name);
-  oprot.writeFieldEnd();
-}
-if (this.pattern != null) {
-  field.name = "pattern";
-  field.type = TType.STRING;
-  field.id = -2;
-  oprot.writeFieldBegin(field);
-  oprot.writeString(this.pattern);
-  oprot.writeFieldEnd();
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("get_tables_args(");
-sb.append("db_name:");
-sb.append(this.db_name);
-sb.append(",pattern:");
-sb.append(this.pattern);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class get_tables_result implements TBase, java.io.Serializable {
-private List<String> success;
-private MetaException o1;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean success = false;
-public boolean o1 = false;
-}
-
-public get_tables_result() {
-}
-
-public get_tables_result(
-List<String> success,
-MetaException o1)
-{
-this();
-this.success = success;
-this.__isset.success = true;
-this.o1 = o1;
-this.__isset.o1 = true;
-}
-
-public int getSuccessSize() {
-return (this.success == null) ? 0 : this.success.size();
-}
-
-public java.util.Iterator<String> getSuccessIterator() {
-return (this.success == null) ? null : this.success.iterator();
-}
-
-public void addToSuccess(String elem) {
-if (this.success == null) {
-  this.success = new ArrayList<String>();
-}
-this.success.add(elem);
-this.__isset.success = true;
-}
-
-public List<String> getSuccess() {
-return this.success;
-}
-
-public void setSuccess(List<String> success) {
-this.success = success;
-this.__isset.success = true;
-}
-
-public void unsetSuccess() {
-this.success = null;
-this.__isset.success = false;
-}
-
-public MetaException getO1() {
-return this.o1;
-}
-
-public void setO1(MetaException o1) {
-this.o1 = o1;
-this.__isset.o1 = true;
-}
-
-public void unsetO1() {
-this.o1 = null;
-this.__isset.o1 = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof get_tables_result)
-  return this.equals((get_tables_result)that);
-return false;
-}
-
-public boolean equals(get_tables_result that) {
-if (that == null)
-  return false;
-
-boolean this_present_success = true && (this.success != null);
-boolean that_present_success = true && (that.success != null);
-if (this_present_success || that_present_success) {
-  if (!(this_present_success && that_present_success))
-    return false;
-  if (!this.success.equals(that.success))
-    return false;
-}
-
-boolean this_present_o1 = true && (this.o1 != null);
-boolean that_present_o1 = true && (that.o1 != null);
-if (this_present_o1 || that_present_o1) {
-  if (!(this_present_o1 && that_present_o1))
-    return false;
-  if (!this.o1.equals(that.o1))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 0:
-      if (field.type == TType.LIST) {
-        {
-          TList _list70 = iprot.readListBegin();
-          this.success = new ArrayList<String>(_list70.size);
-          for (int _i71 = 0; _i71 < _list70.size; ++_i71)
-          {
-            String _elem72 = null;
-            _elem72 = iprot.readString();
-            this.success.add(_elem72);
-          }
-          iprot.readListEnd();
-        }
-        this.__isset.success = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case -3:
-      if (field.type == TType.STRUCT) {
-        this.o1 = new MetaException();
-        this.o1.read(iprot);
-        this.__isset.o1 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("get_tables_result");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-
-if (this.__isset.success) {
-  if (this.success != null) {
-    field.name = "success";
-    field.type = TType.LIST;
-    field.id = 0;
-    oprot.writeFieldBegin(field);
+    public void send_create_database(String name, String description) throws TException
     {
-      oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-      for (String _iter73 : this.success)      {
-        oprot.writeString(_iter73);
-      }
-      oprot.writeListEnd();
+      oprot_.writeMessageBegin(new TMessage("create_database", TMessageType.CALL, seqid_));
+      create_database_args args = new create_database_args();
+      args.name = name;
+      args.description = description;
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
     }
-    oprot.writeFieldEnd();
-  }
-} else if (this.__isset.o1) {
-  if (this.o1 != null) {
-    field.name = "o1";
-    field.type = TType.STRUCT;
-    field.id = -3;
-    oprot.writeFieldBegin(field);
-    this.o1.write(oprot);
-    oprot.writeFieldEnd();
-  }
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
 
-public String toString() {
-StringBuilder sb = new StringBuilder("get_tables_result(");
-sb.append("success:");
-sb.append(this.success);
-sb.append(",o1:");
-sb.append(this.o1);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class get_table_args implements TBase, java.io.Serializable {
-private String dbname;
-private String tbl_name;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean dbname = false;
-public boolean tbl_name = false;
-}
-
-public get_table_args() {
-}
-
-public get_table_args(
-String dbname,
-String tbl_name)
-{
-this();
-this.dbname = dbname;
-this.__isset.dbname = true;
-this.tbl_name = tbl_name;
-this.__isset.tbl_name = true;
-}
-
-public String getDbname() {
-return this.dbname;
-}
-
-public void setDbname(String dbname) {
-this.dbname = dbname;
-this.__isset.dbname = true;
-}
-
-public void unsetDbname() {
-this.__isset.dbname = false;
-}
-
-public String getTbl_name() {
-return this.tbl_name;
-}
-
-public void setTbl_name(String tbl_name) {
-this.tbl_name = tbl_name;
-this.__isset.tbl_name = true;
-}
-
-public void unsetTbl_name() {
-this.__isset.tbl_name = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof get_table_args)
-  return this.equals((get_table_args)that);
-return false;
-}
-
-public boolean equals(get_table_args that) {
-if (that == null)
-  return false;
-
-boolean this_present_dbname = true && (this.dbname != null);
-boolean that_present_dbname = true && (that.dbname != null);
-if (this_present_dbname || that_present_dbname) {
-  if (!(this_present_dbname && that_present_dbname))
-    return false;
-  if (!this.dbname.equals(that.dbname))
-    return false;
-}
-
-boolean this_present_tbl_name = true && (this.tbl_name != null);
-boolean that_present_tbl_name = true && (that.tbl_name != null);
-if (this_present_tbl_name || that_present_tbl_name) {
-  if (!(this_present_tbl_name && that_present_tbl_name))
-    return false;
-  if (!this.tbl_name.equals(that.tbl_name))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 1:
-      if (field.type == TType.STRING) {
-        this.dbname = iprot.readString();
-        this.__isset.dbname = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 2:
-      if (field.type == TType.STRING) {
-        this.tbl_name = iprot.readString();
-        this.__isset.tbl_name = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("get_table_args");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-if (this.dbname != null) {
-  field.name = "dbname";
-  field.type = TType.STRING;
-  field.id = 1;
-  oprot.writeFieldBegin(field);
-  oprot.writeString(this.dbname);
-  oprot.writeFieldEnd();
-}
-if (this.tbl_name != null) {
-  field.name = "tbl_name";
-  field.type = TType.STRING;
-  field.id = 2;
-  oprot.writeFieldBegin(field);
-  oprot.writeString(this.tbl_name);
-  oprot.writeFieldEnd();
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("get_table_args(");
-sb.append("dbname:");
-sb.append(this.dbname);
-sb.append(",tbl_name:");
-sb.append(this.tbl_name);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class get_table_result implements TBase, java.io.Serializable {
-private Table success;
-private MetaException o1;
-private NoSuchObjectException o2;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean success = false;
-public boolean o1 = false;
-public boolean o2 = false;
-}
-
-public get_table_result() {
-}
-
-public get_table_result(
-Table success,
-MetaException o1,
-NoSuchObjectException o2)
-{
-this();
-this.success = success;
-this.__isset.success = true;
-this.o1 = o1;
-this.__isset.o1 = true;
-this.o2 = o2;
-this.__isset.o2 = true;
-}
-
-public Table getSuccess() {
-return this.success;
-}
-
-public void setSuccess(Table success) {
-this.success = success;
-this.__isset.success = true;
-}
-
-public void unsetSuccess() {
-this.success = null;
-this.__isset.success = false;
-}
-
-public MetaException getO1() {
-return this.o1;
-}
-
-public void setO1(MetaException o1) {
-this.o1 = o1;
-this.__isset.o1 = true;
-}
-
-public void unsetO1() {
-this.o1 = null;
-this.__isset.o1 = false;
-}
-
-public NoSuchObjectException getO2() {
-return this.o2;
-}
-
-public void setO2(NoSuchObjectException o2) {
-this.o2 = o2;
-this.__isset.o2 = true;
-}
-
-public void unsetO2() {
-this.o2 = null;
-this.__isset.o2 = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof get_table_result)
-  return this.equals((get_table_result)that);
-return false;
-}
-
-public boolean equals(get_table_result that) {
-if (that == null)
-  return false;
-
-boolean this_present_success = true && (this.success != null);
-boolean that_present_success = true && (that.success != null);
-if (this_present_success || that_present_success) {
-  if (!(this_present_success && that_present_success))
-    return false;
-  if (!this.success.equals(that.success))
-    return false;
-}
-
-boolean this_present_o1 = true && (this.o1 != null);
-boolean that_present_o1 = true && (that.o1 != null);
-if (this_present_o1 || that_present_o1) {
-  if (!(this_present_o1 && that_present_o1))
-    return false;
-  if (!this.o1.equals(that.o1))
-    return false;
-}
-
-boolean this_present_o2 = true && (this.o2 != null);
-boolean that_present_o2 = true && (that.o2 != null);
-if (this_present_o2 || that_present_o2) {
-  if (!(this_present_o2 && that_present_o2))
-    return false;
-  if (!this.o2.equals(that.o2))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 0:
-      if (field.type == TType.STRUCT) {
-        this.success = new Table();
-        this.success.read(iprot);
-        this.__isset.success = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 1:
-      if (field.type == TType.STRUCT) {
-        this.o1 = new MetaException();
-        this.o1.read(iprot);
-        this.__isset.o1 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 2:
-      if (field.type == TType.STRUCT) {
-        this.o2 = new NoSuchObjectException();
-        this.o2.read(iprot);
-        this.__isset.o2 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("get_table_result");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-
-if (this.__isset.success) {
-  if (this.success != null) {
-    field.name = "success";
-    field.type = TType.STRUCT;
-    field.id = 0;
-    oprot.writeFieldBegin(field);
-    this.success.write(oprot);
-    oprot.writeFieldEnd();
-  }
-} else if (this.__isset.o1) {
-  if (this.o1 != null) {
-    field.name = "o1";
-    field.type = TType.STRUCT;
-    field.id = 1;
-    oprot.writeFieldBegin(field);
-    this.o1.write(oprot);
-    oprot.writeFieldEnd();
-  }
-} else if (this.__isset.o2) {
-  if (this.o2 != null) {
-    field.name = "o2";
-    field.type = TType.STRUCT;
-    field.id = 2;
-    oprot.writeFieldBegin(field);
-    this.o2.write(oprot);
-    oprot.writeFieldEnd();
-  }
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("get_table_result(");
-sb.append("success:");
-sb.append(this.success);
-sb.append(",o1:");
-sb.append(this.o1);
-sb.append(",o2:");
-sb.append(this.o2);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class alter_table_args implements TBase, java.io.Serializable {
-private String dbname;
-private String tbl_name;
-private Table new_tbl;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean dbname = false;
-public boolean tbl_name = false;
-public boolean new_tbl = false;
-}
-
-public alter_table_args() {
-}
-
-public alter_table_args(
-String dbname,
-String tbl_name,
-Table new_tbl)
-{
-this();
-this.dbname = dbname;
-this.__isset.dbname = true;
-this.tbl_name = tbl_name;
-this.__isset.tbl_name = true;
-this.new_tbl = new_tbl;
-this.__isset.new_tbl = true;
-}
-
-public String getDbname() {
-return this.dbname;
-}
-
-public void setDbname(String dbname) {
-this.dbname = dbname;
-this.__isset.dbname = true;
-}
-
-public void unsetDbname() {
-this.__isset.dbname = false;
-}
-
-public String getTbl_name() {
-return this.tbl_name;
-}
-
-public void setTbl_name(String tbl_name) {
-this.tbl_name = tbl_name;
-this.__isset.tbl_name = true;
-}
-
-public void unsetTbl_name() {
-this.__isset.tbl_name = false;
-}
-
-public Table getNew_tbl() {
-return this.new_tbl;
-}
-
-public void setNew_tbl(Table new_tbl) {
-this.new_tbl = new_tbl;
-this.__isset.new_tbl = true;
-}
-
-public void unsetNew_tbl() {
-this.new_tbl = null;
-this.__isset.new_tbl = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof alter_table_args)
-  return this.equals((alter_table_args)that);
-return false;
-}
-
-public boolean equals(alter_table_args that) {
-if (that == null)
-  return false;
-
-boolean this_present_dbname = true && (this.dbname != null);
-boolean that_present_dbname = true && (that.dbname != null);
-if (this_present_dbname || that_present_dbname) {
-  if (!(this_present_dbname && that_present_dbname))
-    return false;
-  if (!this.dbname.equals(that.dbname))
-    return false;
-}
-
-boolean this_present_tbl_name = true && (this.tbl_name != null);
-boolean that_present_tbl_name = true && (that.tbl_name != null);
-if (this_present_tbl_name || that_present_tbl_name) {
-  if (!(this_present_tbl_name && that_present_tbl_name))
-    return false;
-  if (!this.tbl_name.equals(that.tbl_name))
-    return false;
-}
-
-boolean this_present_new_tbl = true && (this.new_tbl != null);
-boolean that_present_new_tbl = true && (that.new_tbl != null);
-if (this_present_new_tbl || that_present_new_tbl) {
-  if (!(this_present_new_tbl && that_present_new_tbl))
-    return false;
-  if (!this.new_tbl.equals(that.new_tbl))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 1:
-      if (field.type == TType.STRING) {
-        this.dbname = iprot.readString();
-        this.__isset.dbname = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 2:
-      if (field.type == TType.STRING) {
-        this.tbl_name = iprot.readString();
-        this.__isset.tbl_name = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 3:
-      if (field.type == TType.STRUCT) {
-        this.new_tbl = new Table();
-        this.new_tbl.read(iprot);
-        this.__isset.new_tbl = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("alter_table_args");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-if (this.dbname != null) {
-  field.name = "dbname";
-  field.type = TType.STRING;
-  field.id = 1;
-  oprot.writeFieldBegin(field);
-  oprot.writeString(this.dbname);
-  oprot.writeFieldEnd();
-}
-if (this.tbl_name != null) {
-  field.name = "tbl_name";
-  field.type = TType.STRING;
-  field.id = 2;
-  oprot.writeFieldBegin(field);
-  oprot.writeString(this.tbl_name);
-  oprot.writeFieldEnd();
-}
-if (this.new_tbl != null) {
-  field.name = "new_tbl";
-  field.type = TType.STRUCT;
-  field.id = 3;
-  oprot.writeFieldBegin(field);
-  this.new_tbl.write(oprot);
-  oprot.writeFieldEnd();
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("alter_table_args(");
-sb.append("dbname:");
-sb.append(this.dbname);
-sb.append(",tbl_name:");
-sb.append(this.tbl_name);
-sb.append(",new_tbl:");
-sb.append(this.new_tbl);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class alter_table_result implements TBase, java.io.Serializable {
-private InvalidOperationException o1;
-private MetaException o2;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean o1 = false;
-public boolean o2 = false;
-}
-
-public alter_table_result() {
-}
-
-public alter_table_result(
-InvalidOperationException o1,
-MetaException o2)
-{
-this();
-this.o1 = o1;
-this.__isset.o1 = true;
-this.o2 = o2;
-this.__isset.o2 = true;
-}
-
-public InvalidOperationException getO1() {
-return this.o1;
-}
-
-public void setO1(InvalidOperationException o1) {
-this.o1 = o1;
-this.__isset.o1 = true;
-}
-
-public void unsetO1() {
-this.o1 = null;
-this.__isset.o1 = false;
-}
-
-public MetaException getO2() {
-return this.o2;
-}
-
-public void setO2(MetaException o2) {
-this.o2 = o2;
-this.__isset.o2 = true;
-}
-
-public void unsetO2() {
-this.o2 = null;
-this.__isset.o2 = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof alter_table_result)
-  return this.equals((alter_table_result)that);
-return false;
-}
-
-public boolean equals(alter_table_result that) {
-if (that == null)
-  return false;
-
-boolean this_present_o1 = true && (this.o1 != null);
-boolean that_present_o1 = true && (that.o1 != null);
-if (this_present_o1 || that_present_o1) {
-  if (!(this_present_o1 && that_present_o1))
-    return false;
-  if (!this.o1.equals(that.o1))
-    return false;
-}
-
-boolean this_present_o2 = true && (this.o2 != null);
-boolean that_present_o2 = true && (that.o2 != null);
-if (this_present_o2 || that_present_o2) {
-  if (!(this_present_o2 && that_present_o2))
-    return false;
-  if (!this.o2.equals(that.o2))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 1:
-      if (field.type == TType.STRUCT) {
-        this.o1 = new InvalidOperationException();
-        this.o1.read(iprot);
-        this.__isset.o1 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 2:
-      if (field.type == TType.STRUCT) {
-        this.o2 = new MetaException();
-        this.o2.read(iprot);
-        this.__isset.o2 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("alter_table_result");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-
-if (this.__isset.o1) {
-  if (this.o1 != null) {
-    field.name = "o1";
-    field.type = TType.STRUCT;
-    field.id = 1;
-    oprot.writeFieldBegin(field);
-    this.o1.write(oprot);
-    oprot.writeFieldEnd();
-  }
-} else if (this.__isset.o2) {
-  if (this.o2 != null) {
-    field.name = "o2";
-    field.type = TType.STRUCT;
-    field.id = 2;
-    oprot.writeFieldBegin(field);
-    this.o2.write(oprot);
-    oprot.writeFieldEnd();
-  }
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("alter_table_result(");
-sb.append("o1:");
-sb.append(this.o1);
-sb.append(",o2:");
-sb.append(this.o2);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class add_partition_args implements TBase, java.io.Serializable {
-private Partition new_part;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean new_part = false;
-}
-
-public add_partition_args() {
-}
-
-public add_partition_args(
-Partition new_part)
-{
-this();
-this.new_part = new_part;
-this.__isset.new_part = true;
-}
-
-public Partition getNew_part() {
-return this.new_part;
-}
-
-public void setNew_part(Partition new_part) {
-this.new_part = new_part;
-this.__isset.new_part = true;
-}
-
-public void unsetNew_part() {
-this.new_part = null;
-this.__isset.new_part = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof add_partition_args)
-  return this.equals((add_partition_args)that);
-return false;
-}
-
-public boolean equals(add_partition_args that) {
-if (that == null)
-  return false;
-
-boolean this_present_new_part = true && (this.new_part != null);
-boolean that_present_new_part = true && (that.new_part != null);
-if (this_present_new_part || that_present_new_part) {
-  if (!(this_present_new_part && that_present_new_part))
-    return false;
-  if (!this.new_part.equals(that.new_part))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 1:
-      if (field.type == TType.STRUCT) {
-        this.new_part = new Partition();
-        this.new_part.read(iprot);
-        this.__isset.new_part = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("add_partition_args");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-if (this.new_part != null) {
-  field.name = "new_part";
-  field.type = TType.STRUCT;
-  field.id = 1;
-  oprot.writeFieldBegin(field);
-  this.new_part.write(oprot);
-  oprot.writeFieldEnd();
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("add_partition_args(");
-sb.append("new_part:");
-sb.append(this.new_part);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class add_partition_result implements TBase, java.io.Serializable {
-private Partition success;
-private InvalidObjectException o1;
-private AlreadyExistsException o2;
-private MetaException o3;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean success = false;
-public boolean o1 = false;
-public boolean o2 = false;
-public boolean o3 = false;
-}
-
-public add_partition_result() {
-}
-
-public add_partition_result(
-Partition success,
-InvalidObjectException o1,
-AlreadyExistsException o2,
-MetaException o3)
-{
-this();
-this.success = success;
-this.__isset.success = true;
-this.o1 = o1;
-this.__isset.o1 = true;
-this.o2 = o2;
-this.__isset.o2 = true;
-this.o3 = o3;
-this.__isset.o3 = true;
-}
-
-public Partition getSuccess() {
-return this.success;
-}
-
-public void setSuccess(Partition success) {
-this.success = success;
-this.__isset.success = true;
-}
-
-public void unsetSuccess() {
-this.success = null;
-this.__isset.success = false;
-}
-
-public InvalidObjectException getO1() {
-return this.o1;
-}
-
-public void setO1(InvalidObjectException o1) {
-this.o1 = o1;
-this.__isset.o1 = true;
-}
-
-public void unsetO1() {
-this.o1 = null;
-this.__isset.o1 = false;
-}
-
-public AlreadyExistsException getO2() {
-return this.o2;
-}
-
-public void setO2(AlreadyExistsException o2) {
-this.o2 = o2;
-this.__isset.o2 = true;
-}
-
-public void unsetO2() {
-this.o2 = null;
-this.__isset.o2 = false;
-}
-
-public MetaException getO3() {
-return this.o3;
-}
-
-public void setO3(MetaException o3) {
-this.o3 = o3;
-this.__isset.o3 = true;
-}
-
-public void unsetO3() {
-this.o3 = null;
-this.__isset.o3 = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof add_partition_result)
-  return this.equals((add_partition_result)that);
-return false;
-}
-
-public boolean equals(add_partition_result that) {
-if (that == null)
-  return false;
-
-boolean this_present_success = true && (this.success != null);
-boolean that_present_success = true && (that.success != null);
-if (this_present_success || that_present_success) {
-  if (!(this_present_success && that_present_success))
-    return false;
-  if (!this.success.equals(that.success))
-    return false;
-}
-
-boolean this_present_o1 = true && (this.o1 != null);
-boolean that_present_o1 = true && (that.o1 != null);
-if (this_present_o1 || that_present_o1) {
-  if (!(this_present_o1 && that_present_o1))
-    return false;
-  if (!this.o1.equals(that.o1))
-    return false;
-}
-
-boolean this_present_o2 = true && (this.o2 != null);
-boolean that_present_o2 = true && (that.o2 != null);
-if (this_present_o2 || that_present_o2) {
-  if (!(this_present_o2 && that_present_o2))
-    return false;
-  if (!this.o2.equals(that.o2))
-    return false;
-}
-
-boolean this_present_o3 = true && (this.o3 != null);
-boolean that_present_o3 = true && (that.o3 != null);
-if (this_present_o3 || that_present_o3) {
-  if (!(this_present_o3 && that_present_o3))
-    return false;
-  if (!this.o3.equals(that.o3))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 0:
-      if (field.type == TType.STRUCT) {
-        this.success = new Partition();
-        this.success.read(iprot);
-        this.__isset.success = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 1:
-      if (field.type == TType.STRUCT) {
-        this.o1 = new InvalidObjectException();
-        this.o1.read(iprot);
-        this.__isset.o1 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 2:
-      if (field.type == TType.STRUCT) {
-        this.o2 = new AlreadyExistsException();
-        this.o2.read(iprot);
-        this.__isset.o2 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 3:
-      if (field.type == TType.STRUCT) {
-        this.o3 = new MetaException();
-        this.o3.read(iprot);
-        this.__isset.o3 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("add_partition_result");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-
-if (this.__isset.success) {
-  if (this.success != null) {
-    field.name = "success";
-    field.type = TType.STRUCT;
-    field.id = 0;
-    oprot.writeFieldBegin(field);
-    this.success.write(oprot);
-    oprot.writeFieldEnd();
-  }
-} else if (this.__isset.o1) {
-  if (this.o1 != null) {
-    field.name = "o1";
-    field.type = TType.STRUCT;
-    field.id = 1;
-    oprot.writeFieldBegin(field);
-    this.o1.write(oprot);
-    oprot.writeFieldEnd();
-  }
-} else if (this.__isset.o2) {
-  if (this.o2 != null) {
-    field.name = "o2";
-    field.type = TType.STRUCT;
-    field.id = 2;
-    oprot.writeFieldBegin(field);
-    this.o2.write(oprot);
-    oprot.writeFieldEnd();
-  }
-} else if (this.__isset.o3) {
-  if (this.o3 != null) {
-    field.name = "o3";
-    field.type = TType.STRUCT;
-    field.id = 3;
-    oprot.writeFieldBegin(field);
-    this.o3.write(oprot);
-    oprot.writeFieldEnd();
-  }
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("add_partition_result(");
-sb.append("success:");
-sb.append(this.success);
-sb.append(",o1:");
-sb.append(this.o1);
-sb.append(",o2:");
-sb.append(this.o2);
-sb.append(",o3:");
-sb.append(this.o3);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class append_partition_args implements TBase, java.io.Serializable {
-private String db_name;
-private String tbl_name;
-private List<String> part_vals;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean db_name = false;
-public boolean tbl_name = false;
-public boolean part_vals = false;
-}
-
-public append_partition_args() {
-}
-
-public append_partition_args(
-String db_name,
-String tbl_name,
-List<String> part_vals)
-{
-this();
-this.db_name = db_name;
-this.__isset.db_name = true;
-this.tbl_name = tbl_name;
-this.__isset.tbl_name = true;
-this.part_vals = part_vals;
-this.__isset.part_vals = true;
-}
-
-public String getDb_name() {
-return this.db_name;
-}
-
-public void setDb_name(String db_name) {
-this.db_name = db_name;
-this.__isset.db_name = true;
-}
-
-public void unsetDb_name() {
-this.__isset.db_name = false;
-}
-
-public String getTbl_name() {
-return this.tbl_name;
-}
-
-public void setTbl_name(String tbl_name) {
-this.tbl_name = tbl_name;
-this.__isset.tbl_name = true;
-}
-
-public void unsetTbl_name() {
-this.__isset.tbl_name = false;
-}
-
-public int getPart_valsSize() {
-return (this.part_vals == null) ? 0 : this.part_vals.size();
-}
-
-public java.util.Iterator<String> getPart_valsIterator() {
-return (this.part_vals == null) ? null : this.part_vals.iterator();
-}
-
-public void addToPart_vals(String elem) {
-if (this.part_vals == null) {
-  this.part_vals = new ArrayList<String>();
-}
-this.part_vals.add(elem);
-this.__isset.part_vals = true;
-}
-
-public List<String> getPart_vals() {
-return this.part_vals;
-}
-
-public void setPart_vals(List<String> part_vals) {
-this.part_vals = part_vals;
-this.__isset.part_vals = true;
-}
-
-public void unsetPart_vals() {
-this.part_vals = null;
-this.__isset.part_vals = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof append_partition_args)
-  return this.equals((append_partition_args)that);
-return false;
-}
-
-public boolean equals(append_partition_args that) {
-if (that == null)
-  return false;
-
-boolean this_present_db_name = true && (this.db_name != null);
-boolean that_present_db_name = true && (that.db_name != null);
-if (this_present_db_name || that_present_db_name) {
-  if (!(this_present_db_name && that_present_db_name))
-    return false;
-  if (!this.db_name.equals(that.db_name))
-    return false;
-}
-
-boolean this_present_tbl_name = true && (this.tbl_name != null);
-boolean that_present_tbl_name = true && (that.tbl_name != null);
-if (this_present_tbl_name || that_present_tbl_name) {
-  if (!(this_present_tbl_name && that_present_tbl_name))
-    return false;
-  if (!this.tbl_name.equals(that.tbl_name))
-    return false;
-}
-
-boolean this_present_part_vals = true && (this.part_vals != null);
-boolean that_present_part_vals = true && (that.part_vals != null);
-if (this_present_part_vals || that_present_part_vals) {
-  if (!(this_present_part_vals && that_present_part_vals))
-    return false;
-  if (!this.part_vals.equals(that.part_vals))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 1:
-      if (field.type == TType.STRING) {
-        this.db_name = iprot.readString();
-        this.__isset.db_name = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 2:
-      if (field.type == TType.STRING) {
-        this.tbl_name = iprot.readString();
-        this.__isset.tbl_name = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 3:
-      if (field.type == TType.LIST) {
-        {
-          TList _list74 = iprot.readListBegin();
-          this.part_vals = new ArrayList<String>(_list74.size);
-          for (int _i75 = 0; _i75 < _list74.size; ++_i75)
-          {
-            String _elem76 = null;
-            _elem76 = iprot.readString();
-            this.part_vals.add(_elem76);
-          }
-          iprot.readListEnd();
-        }
-        this.__isset.part_vals = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("append_partition_args");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-if (this.db_name != null) {
-  field.name = "db_name";
-  field.type = TType.STRING;
-  field.id = 1;
-  oprot.writeFieldBegin(field);
-  oprot.writeString(this.db_name);
-  oprot.writeFieldEnd();
-}
-if (this.tbl_name != null) {
-  field.name = "tbl_name";
-  field.type = TType.STRING;
-  field.id = 2;
-  oprot.writeFieldBegin(field);
-  oprot.writeString(this.tbl_name);
-  oprot.writeFieldEnd();
-}
-if (this.part_vals != null) {
-  field.name = "part_vals";
-  field.type = TType.LIST;
-  field.id = 3;
-  oprot.writeFieldBegin(field);
-  {
-    oprot.writeListBegin(new TList(TType.STRING, this.part_vals.size()));
-    for (String _iter77 : this.part_vals)    {
-      oprot.writeString(_iter77);
-    }
-    oprot.writeListEnd();
-  }
-  oprot.writeFieldEnd();
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("append_partition_args(");
-sb.append("db_name:");
-sb.append(this.db_name);
-sb.append(",tbl_name:");
-sb.append(this.tbl_name);
-sb.append(",part_vals:");
-sb.append(this.part_vals);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class append_partition_result implements TBase, java.io.Serializable {
-private Partition success;
-private InvalidObjectException o1;
-private AlreadyExistsException o2;
-private MetaException o3;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean success = false;
-public boolean o1 = false;
-public boolean o2 = false;
-public boolean o3 = false;
-}
-
-public append_partition_result() {
-}
-
-public append_partition_result(
-Partition success,
-InvalidObjectException o1,
-AlreadyExistsException o2,
-MetaException o3)
-{
-this();
-this.success = success;
-this.__isset.success = true;
-this.o1 = o1;
-this.__isset.o1 = true;
-this.o2 = o2;
-this.__isset.o2 = true;
-this.o3 = o3;
-this.__isset.o3 = true;
-}
-
-public Partition getSuccess() {
-return this.success;
-}
-
-public void setSuccess(Partition success) {
-this.success = success;
-this.__isset.success = true;
-}
-
-public void unsetSuccess() {
-this.success = null;
-this.__isset.success = false;
-}
-
-public InvalidObjectException getO1() {
-return this.o1;
-}
-
-public void setO1(InvalidObjectException o1) {
-this.o1 = o1;
-this.__isset.o1 = true;
-}
-
-public void unsetO1() {
-this.o1 = null;
-this.__isset.o1 = false;
-}
-
-public AlreadyExistsException getO2() {
-return this.o2;
-}
-
-public void setO2(AlreadyExistsException o2) {
-this.o2 = o2;
-this.__isset.o2 = true;
-}
-
-public void unsetO2() {
-this.o2 = null;
-this.__isset.o2 = false;
-}
-
-public MetaException getO3() {
-return this.o3;
-}
-
-public void setO3(MetaException o3) {
-this.o3 = o3;
-this.__isset.o3 = true;
-}
-
-public void unsetO3() {
-this.o3 = null;
-this.__isset.o3 = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof append_partition_result)
-  return this.equals((append_partition_result)that);
-return false;
-}
-
-public boolean equals(append_partition_result that) {
-if (that == null)
-  return false;
-
-boolean this_present_success = true && (this.success != null);
-boolean that_present_success = true && (that.success != null);
-if (this_present_success || that_present_success) {
-  if (!(this_present_success && that_present_success))
-    return false;
-  if (!this.success.equals(that.success))
-    return false;
-}
-
-boolean this_present_o1 = true && (this.o1 != null);
-boolean that_present_o1 = true && (that.o1 != null);
-if (this_present_o1 || that_present_o1) {
-  if (!(this_present_o1 && that_present_o1))
-    return false;
-  if (!this.o1.equals(that.o1))
-    return false;
-}
-
-boolean this_present_o2 = true && (this.o2 != null);
-boolean that_present_o2 = true && (that.o2 != null);
-if (this_present_o2 || that_present_o2) {
-  if (!(this_present_o2 && that_present_o2))
-    return false;
-  if (!this.o2.equals(that.o2))
-    return false;
-}
-
-boolean this_present_o3 = true && (this.o3 != null);
-boolean that_present_o3 = true && (that.o3 != null);
-if (this_present_o3 || that_present_o3) {
-  if (!(this_present_o3 && that_present_o3))
-    return false;
-  if (!this.o3.equals(that.o3))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 0:
-      if (field.type == TType.STRUCT) {
-        this.success = new Partition();
-        this.success.read(iprot);
-        this.__isset.success = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 1:
-      if (field.type == TType.STRUCT) {
-        this.o1 = new InvalidObjectException();
-        this.o1.read(iprot);
-        this.__isset.o1 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 2:
-      if (field.type == TType.STRUCT) {
-        this.o2 = new AlreadyExistsException();
-        this.o2.read(iprot);
-        this.__isset.o2 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 3:
-      if (field.type == TType.STRUCT) {
-        this.o3 = new MetaException();
-        this.o3.read(iprot);
-        this.__isset.o3 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("append_partition_result");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-
-if (this.__isset.success) {
-  if (this.success != null) {
-    field.name = "success";
-    field.type = TType.STRUCT;
-    field.id = 0;
-    oprot.writeFieldBegin(field);
-    this.success.write(oprot);
-    oprot.writeFieldEnd();
-  }
-} else if (this.__isset.o1) {
-  if (this.o1 != null) {
-    field.name = "o1";
-    field.type = TType.STRUCT;
-    field.id = 1;
-    oprot.writeFieldBegin(field);
-    this.o1.write(oprot);
-    oprot.writeFieldEnd();
-  }
-} else if (this.__isset.o2) {
-  if (this.o2 != null) {
-    field.name = "o2";
-    field.type = TType.STRUCT;
-    field.id = 2;
-    oprot.writeFieldBegin(field);
-    this.o2.write(oprot);
-    oprot.writeFieldEnd();
-  }
-} else if (this.__isset.o3) {
-  if (this.o3 != null) {
-    field.name = "o3";
-    field.type = TType.STRUCT;
-    field.id = 3;
-    oprot.writeFieldBegin(field);
-    this.o3.write(oprot);
-    oprot.writeFieldEnd();
-  }
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("append_partition_result(");
-sb.append("success:");
-sb.append(this.success);
-sb.append(",o1:");
-sb.append(this.o1);
-sb.append(",o2:");
-sb.append(this.o2);
-sb.append(",o3:");
-sb.append(this.o3);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class drop_partition_args implements TBase, java.io.Serializable {
-private String db_name;
-private String tbl_name;
-private List<String> part_vals;
-private boolean deleteData;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean db_name = false;
-public boolean tbl_name = false;
-public boolean part_vals = false;
-public boolean deleteData = false;
-}
-
-public drop_partition_args() {
-}
-
-public drop_partition_args(
-String db_name,
-String tbl_name,
-List<String> part_vals,
-boolean deleteData)
-{
-this();
-this.db_name = db_name;
-this.__isset.db_name = true;
-this.tbl_name = tbl_name;
-this.__isset.tbl_name = true;
-this.part_vals = part_vals;
-this.__isset.part_vals = true;
-this.deleteData = deleteData;
-this.__isset.deleteData = true;
-}
-
-public String getDb_name() {
-return this.db_name;
-}
-
-public void setDb_name(String db_name) {
-this.db_name = db_name;
-this.__isset.db_name = true;
-}
-
-public void unsetDb_name() {
-this.__isset.db_name = false;
-}
-
-public String getTbl_name() {
-return this.tbl_name;
-}
-
-public void setTbl_name(String tbl_name) {
-this.tbl_name = tbl_name;
-this.__isset.tbl_name = true;
-}
-
-public void unsetTbl_name() {
-this.__isset.tbl_name = false;
-}
-
-public int getPart_valsSize() {
-return (this.part_vals == null) ? 0 : this.part_vals.size();
-}
-
-public java.util.Iterator<String> getPart_valsIterator() {
-return (this.part_vals == null) ? null : this.part_vals.iterator();
-}
-
-public void addToPart_vals(String elem) {
-if (this.part_vals == null) {
-  this.part_vals = new ArrayList<String>();
-}
-this.part_vals.add(elem);
-this.__isset.part_vals = true;
-}
-
-public List<String> getPart_vals() {
-return this.part_vals;
-}
-
-public void setPart_vals(List<String> part_vals) {
-this.part_vals = part_vals;
-this.__isset.part_vals = true;
-}
-
-public void unsetPart_vals() {
-this.part_vals = null;
-this.__isset.part_vals = false;
-}
-
-public boolean isDeleteData() {
-return this.deleteData;
-}
-
-public void setDeleteData(boolean deleteData) {
-this.deleteData = deleteData;
-this.__isset.deleteData = true;
-}
-
-public void unsetDeleteData() {
-this.__isset.deleteData = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof drop_partition_args)
-  return this.equals((drop_partition_args)that);
-return false;
-}
-
-public boolean equals(drop_partition_args that) {
-if (that == null)
-  return false;
-
-boolean this_present_db_name = true && (this.db_name != null);
-boolean that_present_db_name = true && (that.db_name != null);
-if (this_present_db_name || that_present_db_name) {
-  if (!(this_present_db_name && that_present_db_name))
-    return false;
-  if (!this.db_name.equals(that.db_name))
-    return false;
-}
-
-boolean this_present_tbl_name = true && (this.tbl_name != null);
-boolean that_present_tbl_name = true && (that.tbl_name != null);
-if (this_present_tbl_name || that_present_tbl_name) {
-  if (!(this_present_tbl_name && that_present_tbl_name))
-    return false;
-  if (!this.tbl_name.equals(that.tbl_name))
-    return false;
-}
-
-boolean this_present_part_vals = true && (this.part_vals != null);
-boolean that_present_part_vals = true && (that.part_vals != null);
-if (this_present_part_vals || that_present_part_vals) {
-  if (!(this_present_part_vals && that_present_part_vals))
-    return false;
-  if (!this.part_vals.equals(that.part_vals))
-    return false;
-}
-
-boolean this_present_deleteData = true;
-boolean that_present_deleteData = true;
-if (this_present_deleteData || that_present_deleteData) {
-  if (!(this_present_deleteData && that_present_deleteData))
-    return false;
-  if (this.deleteData != that.deleteData)
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 1:
-      if (field.type == TType.STRING) {
-        this.db_name = iprot.readString();
-        this.__isset.db_name = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 2:
-      if (field.type == TType.STRING) {
-        this.tbl_name = iprot.readString();
-        this.__isset.tbl_name = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 3:
-      if (field.type == TType.LIST) {
-        {
-          TList _list78 = iprot.readListBegin();
-          this.part_vals = new ArrayList<String>(_list78.size);
-          for (int _i79 = 0; _i79 < _list78.size; ++_i79)
-          {
-            String _elem80 = null;
-            _elem80 = iprot.readString();
-            this.part_vals.add(_elem80);
-          }
-          iprot.readListEnd();
-        }
-        this.__isset.part_vals = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 4:
-      if (field.type == TType.BOOL) {
-        this.deleteData = iprot.readBool();
-        this.__isset.deleteData = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("drop_partition_args");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-if (this.db_name != null) {
-  field.name = "db_name";
-  field.type = TType.STRING;
-  field.id = 1;
-  oprot.writeFieldBegin(field);
-  oprot.writeString(this.db_name);
-  oprot.writeFieldEnd();
-}
-if (this.tbl_name != null) {
-  field.name = "tbl_name";
-  field.type = TType.STRING;
-  field.id = 2;
-  oprot.writeFieldBegin(field);
-  oprot.writeString(this.tbl_name);
-  oprot.writeFieldEnd();
-}
-if (this.part_vals != null) {
-  field.name = "part_vals";
-  field.type = TType.LIST;
-  field.id = 3;
-  oprot.writeFieldBegin(field);
-  {
-    oprot.writeListBegin(new TList(TType.STRING, this.part_vals.size()));
-    for (String _iter81 : this.part_vals)    {
-      oprot.writeString(_iter81);
-    }
-    oprot.writeListEnd();
-  }
-  oprot.writeFieldEnd();
-}
-field.name = "deleteData";
-field.type = TType.BOOL;
-field.id = 4;
-oprot.writeFieldBegin(field);
-oprot.writeBool(this.deleteData);
-oprot.writeFieldEnd();
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("drop_partition_args(");
-sb.append("db_name:");
-sb.append(this.db_name);
-sb.append(",tbl_name:");
-sb.append(this.tbl_name);
-sb.append(",part_vals:");
-sb.append(this.part_vals);
-sb.append(",deleteData:");
-sb.append(this.deleteData);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class drop_partition_result implements TBase, java.io.Serializable {
-private boolean success;
-private NoSuchObjectException o1;
-private MetaException o2;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean success = false;
-public boolean o1 = false;
-public boolean o2 = false;
-}
-
-public drop_partition_result() {
-}
-
-public drop_partition_result(
-boolean success,
-NoSuchObjectException o1,
-MetaException o2)
-{
-this();
-this.success = success;
-this.__isset.success = true;
-this.o1 = o1;
-this.__isset.o1 = true;
-this.o2 = o2;
-this.__isset.o2 = true;
-}
-
-public boolean isSuccess() {
-return this.success;
-}
-
-public void setSuccess(boolean success) {
-this.success = success;
-this.__isset.success = true;
-}
-
-public void unsetSuccess() {
-this.__isset.success = false;
-}
-
-public NoSuchObjectException getO1() {
-return this.o1;
-}
-
-public void setO1(NoSuchObjectException o1) {
-this.o1 = o1;
-this.__isset.o1 = true;
-}
-
-public void unsetO1() {
-this.o1 = null;
-this.__isset.o1 = false;
-}
-
-public MetaException getO2() {
-return this.o2;
-}
-
-public void setO2(MetaException o2) {
-this.o2 = o2;
-this.__isset.o2 = true;
-}
-
-public void unsetO2() {
-this.o2 = null;
-this.__isset.o2 = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof drop_partition_result)
-  return this.equals((drop_partition_result)that);
-return false;
-}
-
-public boolean equals(drop_partition_result that) {
-if (that == null)
-  return false;
-
-boolean this_present_success = true;
-boolean that_present_success = true;
-if (this_present_success || that_present_success) {
-  if (!(this_present_success && that_present_success))
-    return false;
-  if (this.success != that.success)
-    return false;
-}
-
-boolean this_present_o1 = true && (this.o1 != null);
-boolean that_present_o1 = true && (that.o1 != null);
-if (this_present_o1 || that_present_o1) {
-  if (!(this_present_o1 && that_present_o1))
-    return false;
-  if (!this.o1.equals(that.o1))
-    return false;
-}
-
-boolean this_present_o2 = true && (this.o2 != null);
-boolean that_present_o2 = true && (that.o2 != null);
-if (this_present_o2 || that_present_o2) {
-  if (!(this_present_o2 && that_present_o2))
-    return false;
-  if (!this.o2.equals(that.o2))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 0:
-      if (field.type == TType.BOOL) {
-        this.success = iprot.readBool();
-        this.__isset.success = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 1:
-      if (field.type == TType.STRUCT) {
-        this.o1 = new NoSuchObjectException();
-        this.o1.read(iprot);
-        this.__isset.o1 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 2:
-      if (field.type == TType.STRUCT) {
-        this.o2 = new MetaException();
-        this.o2.read(iprot);
-        this.__isset.o2 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("drop_partition_result");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-
-if (this.__isset.success) {
-  field.name = "success";
-  field.type = TType.BOOL;
-  field.id = 0;
-  oprot.writeFieldBegin(field);
-  oprot.writeBool(this.success);
-  oprot.writeFieldEnd();
-} else if (this.__isset.o1) {
-  if (this.o1 != null) {
-    field.name = "o1";
-    field.type = TType.STRUCT;
-    field.id = 1;
-    oprot.writeFieldBegin(field);
-    this.o1.write(oprot);
-    oprot.writeFieldEnd();
-  }
-} else if (this.__isset.o2) {
-  if (this.o2 != null) {
-    field.name = "o2";
-    field.type = TType.STRUCT;
-    field.id = 2;
-    oprot.writeFieldBegin(field);
-    this.o2.write(oprot);
-    oprot.writeFieldEnd();
-  }
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("drop_partition_result(");
-sb.append("success:");
-sb.append(this.success);
-sb.append(",o1:");
-sb.append(this.o1);
-sb.append(",o2:");
-sb.append(this.o2);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class get_partition_args implements TBase, java.io.Serializable {
-private String db_name;
-private String tbl_name;
-private List<String> part_vals;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean db_name = false;
-public boolean tbl_name = false;
-public boolean part_vals = false;
-}
-
-public get_partition_args() {
-}
-
-public get_partition_args(
-String db_name,
-String tbl_name,
-List<String> part_vals)
-{
-this();
-this.db_name = db_name;
-this.__isset.db_name = true;
-this.tbl_name = tbl_name;
-this.__isset.tbl_name = true;
-this.part_vals = part_vals;
-this.__isset.part_vals = true;
-}
-
-public String getDb_name() {
-return this.db_name;
-}
-
-public void setDb_name(String db_name) {
-this.db_name = db_name;
-this.__isset.db_name = true;
-}
-
-public void unsetDb_name() {
-this.__isset.db_name = false;
-}
-
-public String getTbl_name() {
-return this.tbl_name;
-}
-
-public void setTbl_name(String tbl_name) {
-this.tbl_name = tbl_name;
-this.__isset.tbl_name = true;
-}
-
-public void unsetTbl_name() {
-this.__isset.tbl_name = false;
-}
-
-public int getPart_valsSize() {
-return (this.part_vals == null) ? 0 : this.part_vals.size();
-}
-
-public java.util.Iterator<String> getPart_valsIterator() {
-return (this.part_vals == null) ? null : this.part_vals.iterator();
-}
-
-public void addToPart_vals(String elem) {
-if (this.part_vals == null) {
-  this.part_vals = new ArrayList<String>();
-}
-this.part_vals.add(elem);
-this.__isset.part_vals = true;
-}
-
-public List<String> getPart_vals() {
-return this.part_vals;
-}
-
-public void setPart_vals(List<String> part_vals) {
-this.part_vals = part_vals;
-this.__isset.part_vals = true;
-}
-
-public void unsetPart_vals() {
-this.part_vals = null;
-this.__isset.part_vals = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof get_partition_args)
-  return this.equals((get_partition_args)that);
-return false;
-}
-
-public boolean equals(get_partition_args that) {
-if (that == null)
-  return false;
-
-boolean this_present_db_name = true && (this.db_name != null);
-boolean that_present_db_name = true && (that.db_name != null);
-if (this_present_db_name || that_present_db_name) {
-  if (!(this_present_db_name && that_present_db_name))
-    return false;
-  if (!this.db_name.equals(that.db_name))
-    return false;
-}
-
-boolean this_present_tbl_name = true && (this.tbl_name != null);
-boolean that_present_tbl_name = true && (that.tbl_name != null);
-if (this_present_tbl_name || that_present_tbl_name) {
-  if (!(this_present_tbl_name && that_present_tbl_name))
-    return false;
-  if (!this.tbl_name.equals(that.tbl_name))
-    return false;
-}
-
-boolean this_present_part_vals = true && (this.part_vals != null);
-boolean that_present_part_vals = true && (that.part_vals != null);
-if (this_present_part_vals || that_present_part_vals) {
-  if (!(this_present_part_vals && that_present_part_vals))
-    return false;
-  if (!this.part_vals.equals(that.part_vals))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 1:
-      if (field.type == TType.STRING) {
-        this.db_name = iprot.readString();
-        this.__isset.db_name = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 2:
-      if (field.type == TType.STRING) {
-        this.tbl_name = iprot.readString();
-        this.__isset.tbl_name = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 3:
-      if (field.type == TType.LIST) {
-        {
-          TList _list82 = iprot.readListBegin();
-          this.part_vals = new ArrayList<String>(_list82.size);
-          for (int _i83 = 0; _i83 < _list82.size; ++_i83)
-          {
-            String _elem84 = null;
-            _elem84 = iprot.readString();
-            this.part_vals.add(_elem84);
-          }
-          iprot.readListEnd();
-        }
-        this.__isset.part_vals = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("get_partition_args");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-if (this.db_name != null) {
-  field.name = "db_name";
-  field.type = TType.STRING;
-  field.id = 1;
-  oprot.writeFieldBegin(field);
-  oprot.writeString(this.db_name);
-  oprot.writeFieldEnd();
-}
-if (this.tbl_name != null) {
-  field.name = "tbl_name";
-  field.type = TType.STRING;
-  field.id = 2;
-  oprot.writeFieldBegin(field);
-  oprot.writeString(this.tbl_name);
-  oprot.writeFieldEnd();
-}
-if (this.part_vals != null) {
-  field.name = "part_vals";
-  field.type = TType.LIST;
-  field.id = 3;
-  oprot.writeFieldBegin(field);
-  {
-    oprot.writeListBegin(new TList(TType.STRING, this.part_vals.size()));
-    for (String _iter85 : this.part_vals)    {
-      oprot.writeString(_iter85);
-    }
-    oprot.writeListEnd();
-  }
-  oprot.writeFieldEnd();
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("get_partition_args(");
-sb.append("db_name:");
-sb.append(this.db_name);
-sb.append(",tbl_name:");
-sb.append(this.tbl_name);
-sb.append(",part_vals:");
-sb.append(this.part_vals);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class get_partition_result implements TBase, java.io.Serializable {
-private Partition success;
-private MetaException o1;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean success = false;
-public boolean o1 = false;
-}
-
-public get_partition_result() {
-}
-
-public get_partition_result(
-Partition success,
-MetaException o1)
-{
-this();
-this.success = success;
-this.__isset.success = true;
-this.o1 = o1;
-this.__isset.o1 = true;
-}
-
-public Partition getSuccess() {
-return this.success;
-}
-
-public void setSuccess(Partition success) {
-this.success = success;
-this.__isset.success = true;
-}
-
-public void unsetSuccess() {
-this.success = null;
-this.__isset.success = false;
-}
-
-public MetaException getO1() {
-return this.o1;
-}
-
-public void setO1(MetaException o1) {
-this.o1 = o1;
-this.__isset.o1 = true;
-}
-
-public void unsetO1() {
-this.o1 = null;
-this.__isset.o1 = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof get_partition_result)
-  return this.equals((get_partition_result)that);
-return false;
-}
-
-public boolean equals(get_partition_result that) {
-if (that == null)
-  return false;
-
-boolean this_present_success = true && (this.success != null);
-boolean that_present_success = true && (that.success != null);
-if (this_present_success || that_present_success) {
-  if (!(this_present_success && that_present_success))
-    return false;
-  if (!this.success.equals(that.success))
-    return false;
-}
-
-boolean this_present_o1 = true && (this.o1 != null);
-boolean that_present_o1 = true && (that.o1 != null);
-if (this_present_o1 || that_present_o1) {
-  if (!(this_present_o1 && that_present_o1))
-    return false;
-  if (!this.o1.equals(that.o1))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 0:
-      if (field.type == TType.STRUCT) {
-        this.success = new Partition();
-        this.success.read(iprot);
-        this.__isset.success = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 1:
-      if (field.type == TType.STRUCT) {
-        this.o1 = new MetaException();
-        this.o1.read(iprot);
-        this.__isset.o1 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("get_partition_result");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-
-if (this.__isset.success) {
-  if (this.success != null) {
-    field.name = "success";
-    field.type = TType.STRUCT;
-    field.id = 0;
-    oprot.writeFieldBegin(field);
-    this.success.write(oprot);
-    oprot.writeFieldEnd();
-  }
-} else if (this.__isset.o1) {
-  if (this.o1 != null) {
-    field.name = "o1";
-    field.type = TType.STRUCT;
-    field.id = 1;
-    oprot.writeFieldBegin(field);
-    this.o1.write(oprot);
-    oprot.writeFieldEnd();
-  }
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("get_partition_result(");
-sb.append("success:");
-sb.append(this.success);
-sb.append(",o1:");
-sb.append(this.o1);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class get_partitions_args implements TBase, java.io.Serializable {
-private String db_name;
-private String tbl_name;
-private short max_parts;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean db_name = false;
-public boolean tbl_name = false;
-public boolean max_parts = false;
-}
-
-public get_partitions_args() {
-this.max_parts = -1;
-
-}
-
-public get_partitions_args(
-String db_name,
-String tbl_name,
-short max_parts)
-{
-this();
-this.db_name = db_name;
-this.__isset.db_name = true;
-this.tbl_name = tbl_name;
-this.__isset.tbl_name = true;
-this.max_parts = max_parts;
-this.__isset.max_parts = true;
-}
-
-public String getDb_name() {
-return this.db_name;
-}
-
-public void setDb_name(String db_name) {
-this.db_name = db_name;
-this.__isset.db_name = true;
-}
-
-public void unsetDb_name() {
-this.__isset.db_name = false;
-}
-
-public String getTbl_name() {
-return this.tbl_name;
-}
-
-public void setTbl_name(String tbl_name) {
-this.tbl_name = tbl_name;
-this.__isset.tbl_name = true;
-}
-
-public void unsetTbl_name() {
-this.__isset.tbl_name = false;
-}
-
-public short getMax_parts() {
-return this.max_parts;
-}
-
-public void setMax_parts(short max_parts) {
-this.max_parts = max_parts;
-this.__isset.max_parts = true;
-}
-
-public void unsetMax_parts() {
-this.__isset.max_parts = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof get_partitions_args)
-  return this.equals((get_partitions_args)that);
-return false;
-}
-
-public boolean equals(get_partitions_args that) {
-if (that == null)
-  return false;
-
-boolean this_present_db_name = true && (this.db_name != null);
-boolean that_present_db_name = true && (that.db_name != null);
-if (this_present_db_name || that_present_db_name) {
-  if (!(this_present_db_name && that_present_db_name))
-    return false;
-  if (!this.db_name.equals(that.db_name))
-    return false;
-}
-
-boolean this_present_tbl_name = true && (this.tbl_name != null);
-boolean that_present_tbl_name = true && (that.tbl_name != null);
-if (this_present_tbl_name || that_present_tbl_name) {
-  if (!(this_present_tbl_name && that_present_tbl_name))
-    return false;
-  if (!this.tbl_name.equals(that.tbl_name))
-    return false;
-}
-
-boolean this_present_max_parts = true;
-boolean that_present_max_parts = true;
-if (this_present_max_parts || that_present_max_parts) {
-  if (!(this_present_max_parts && that_present_max_parts))
-    return false;
-  if (this.max_parts != that.max_parts)
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 1:
-      if (field.type == TType.STRING) {
-        this.db_name = iprot.readString();
-        this.__isset.db_name = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 2:
-      if (field.type == TType.STRING) {
-        this.tbl_name = iprot.readString();
-        this.__isset.tbl_name = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 3:
-      if (field.type == TType.I16) {
-        this.max_parts = iprot.readI16();
-        this.__isset.max_parts = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("get_partitions_args");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-if (this.db_name != null) {
-  field.name = "db_name";
-  field.type = TType.STRING;
-  field.id = 1;
-  oprot.writeFieldBegin(field);
-  oprot.writeString(this.db_name);
-  oprot.writeFieldEnd();
-}
-if (this.tbl_name != null) {
-  field.name = "tbl_name";
-  field.type = TType.STRING;
-  field.id = 2;
-  oprot.writeFieldBegin(field);
-  oprot.writeString(this.tbl_name);
-  oprot.writeFieldEnd();
-}
-field.name = "max_parts";
-field.type = TType.I16;
-field.id = 3;
-oprot.writeFieldBegin(field);
-oprot.writeI16(this.max_parts);
-oprot.writeFieldEnd();
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("get_partitions_args(");
-sb.append("db_name:");
-sb.append(this.db_name);
-sb.append(",tbl_name:");
-sb.append(this.tbl_name);
-sb.append(",max_parts:");
-sb.append(this.max_parts);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class get_partitions_result implements TBase, java.io.Serializable {
-private List<Partition> success;
-private NoSuchObjectException o1;
-private MetaException o2;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean success = false;
-public boolean o1 = false;
-public boolean o2 = false;
-}
-
-public get_partitions_result() {
-}
-
-public get_partitions_result(
-List<Partition> success,
-NoSuchObjectException o1,
-MetaException o2)
-{
-this();
-this.success = success;
-this.__isset.success = true;
-this.o1 = o1;
-this.__isset.o1 = true;
-this.o2 = o2;
-this.__isset.o2 = true;
-}
-
-public int getSuccessSize() {
-return (this.success == null) ? 0 : this.success.size();
-}
-
-public java.util.Iterator<Partition> getSuccessIterator() {
-return (this.success == null) ? null : this.success.iterator();
-}
-
-public void addToSuccess(Partition elem) {
-if (this.success == null) {
-  this.success = new ArrayList<Partition>();
-}
-this.success.add(elem);
-this.__isset.success = true;
-}
-
-public List<Partition> getSuccess() {
-return this.success;
-}
-
-public void setSuccess(List<Partition> success) {
-this.success = success;
-this.__isset.success = true;
-}
-
-public void unsetSuccess() {
-this.success = null;
-this.__isset.success = false;
-}
-
-public NoSuchObjectException getO1() {
-return this.o1;
-}
-
-public void setO1(NoSuchObjectException o1) {
-this.o1 = o1;
-this.__isset.o1 = true;
-}
-
-public void unsetO1() {
-this.o1 = null;
-this.__isset.o1 = false;
-}
-
-public MetaException getO2() {
-return this.o2;
-}
-
-public void setO2(MetaException o2) {
-this.o2 = o2;
-this.__isset.o2 = true;
-}
-
-public void unsetO2() {
-this.o2 = null;
-this.__isset.o2 = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof get_partitions_result)
-  return this.equals((get_partitions_result)that);
-return false;
-}
-
-public boolean equals(get_partitions_result that) {
-if (that == null)
-  return false;
-
-boolean this_present_success = true && (this.success != null);
-boolean that_present_success = true && (that.success != null);
-if (this_present_success || that_present_success) {
-  if (!(this_present_success && that_present_success))
-    return false;
-  if (!this.success.equals(that.success))
-    return false;
-}
-
-boolean this_present_o1 = true && (this.o1 != null);
-boolean that_present_o1 = true && (that.o1 != null);
-if (this_present_o1 || that_present_o1) {
-  if (!(this_present_o1 && that_present_o1))
-    return false;
-  if (!this.o1.equals(that.o1))
-    return false;
-}
-
-boolean this_present_o2 = true && (this.o2 != null);
-boolean that_present_o2 = true && (that.o2 != null);
-if (this_present_o2 || that_present_o2) {
-  if (!(this_present_o2 && that_present_o2))
-    return false;
-  if (!this.o2.equals(that.o2))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 0:
-      if (field.type == TType.LIST) {
-        {
-          TList _list86 = iprot.readListBegin();
-          this.success = new ArrayList<Partition>(_list86.size);
-          for (int _i87 = 0; _i87 < _list86.size; ++_i87)
-          {
-            Partition _elem88 = new Partition();
-            _elem88 = new Partition();
-            _elem88.read(iprot);
-            this.success.add(_elem88);
-          }
-          iprot.readListEnd();
-        }
-        this.__isset.success = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 1:
-      if (field.type == TType.STRUCT) {
-        this.o1 = new NoSuchObjectException();
-        this.o1.read(iprot);
-        this.__isset.o1 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 2:
-      if (field.type == TType.STRUCT) {
-        this.o2 = new MetaException();
-        this.o2.read(iprot);
-        this.__isset.o2 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("get_partitions_result");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-
-if (this.__isset.success) {
-  if (this.success != null) {
-    field.name = "success";
-    field.type = TType.LIST;
-    field.id = 0;
-    oprot.writeFieldBegin(field);
+    public boolean recv_create_database() throws AlreadyExistsException, MetaException, TException
     {
-      oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
-      for (Partition _iter89 : this.success)      {
-        _iter89.write(oprot);
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
       }
-      oprot.writeListEnd();
+      create_database_result result = new create_database_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      if (result.o2 != null) {
+        throw result.o2;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "create_database failed: unknown result");
     }
-    oprot.writeFieldEnd();
-  }
-} else if (this.__isset.o1) {
-  if (this.o1 != null) {
-    field.name = "o1";
-    field.type = TType.STRUCT;
-    field.id = 1;
-    oprot.writeFieldBegin(field);
-    this.o1.write(oprot);
-    oprot.writeFieldEnd();
-  }
-} else if (this.__isset.o2) {
-  if (this.o2 != null) {
-    field.name = "o2";
-    field.type = TType.STRUCT;
-    field.id = 2;
-    oprot.writeFieldBegin(field);
-    this.o2.write(oprot);
-    oprot.writeFieldEnd();
-  }
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
 
-public String toString() {
-StringBuilder sb = new StringBuilder("get_partitions_result(");
-sb.append("success:");
-sb.append(this.success);
-sb.append(",o1:");
-sb.append(this.o1);
-sb.append(",o2:");
-sb.append(this.o2);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class get_partition_names_args implements TBase, java.io.Serializable {
-private String db_name;
-private String tbl_name;
-private short max_parts;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean db_name = false;
-public boolean tbl_name = false;
-public boolean max_parts = false;
-}
-
-public get_partition_names_args() {
-this.max_parts = -1;
-
-}
-
-public get_partition_names_args(
-String db_name,
-String tbl_name,
-short max_parts)
-{
-this();
-this.db_name = db_name;
-this.__isset.db_name = true;
-this.tbl_name = tbl_name;
-this.__isset.tbl_name = true;
-this.max_parts = max_parts;
-this.__isset.max_parts = true;
-}
-
-public String getDb_name() {
-return this.db_name;
-}
-
-public void setDb_name(String db_name) {
-this.db_name = db_name;
-this.__isset.db_name = true;
-}
-
-public void unsetDb_name() {
-this.__isset.db_name = false;
-}
-
-public String getTbl_name() {
-return this.tbl_name;
-}
-
-public void setTbl_name(String tbl_name) {
-this.tbl_name = tbl_name;
-this.__isset.tbl_name = true;
-}
-
-public void unsetTbl_name() {
-this.__isset.tbl_name = false;
-}
-
-public short getMax_parts() {
-return this.max_parts;
-}
-
-public void setMax_parts(short max_parts) {
-this.max_parts = max_parts;
-this.__isset.max_parts = true;
-}
-
-public void unsetMax_parts() {
-this.__isset.max_parts = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof get_partition_names_args)
-  return this.equals((get_partition_names_args)that);
-return false;
-}
-
-public boolean equals(get_partition_names_args that) {
-if (that == null)
-  return false;
-
-boolean this_present_db_name = true && (this.db_name != null);
-boolean that_present_db_name = true && (that.db_name != null);
-if (this_present_db_name || that_present_db_name) {
-  if (!(this_present_db_name && that_present_db_name))
-    return false;
-  if (!this.db_name.equals(that.db_name))
-    return false;
-}
-
-boolean this_present_tbl_name = true && (this.tbl_name != null);
-boolean that_present_tbl_name = true && (that.tbl_name != null);
-if (this_present_tbl_name || that_present_tbl_name) {
-  if (!(this_present_tbl_name && that_present_tbl_name))
-    return false;
-  if (!this.tbl_name.equals(that.tbl_name))
-    return false;
-}
-
-boolean this_present_max_parts = true;
-boolean that_present_max_parts = true;
-if (this_present_max_parts || that_present_max_parts) {
-  if (!(this_present_max_parts && that_present_max_parts))
-    return false;
-  if (this.max_parts != that.max_parts)
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 1:
-      if (field.type == TType.STRING) {
-        this.db_name = iprot.readString();
-        this.__isset.db_name = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 2:
-      if (field.type == TType.STRING) {
-        this.tbl_name = iprot.readString();
-        this.__isset.tbl_name = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 3:
-      if (field.type == TType.I16) {
-        this.max_parts = iprot.readI16();
-        this.__isset.max_parts = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("get_partition_names_args");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-if (this.db_name != null) {
-  field.name = "db_name";
-  field.type = TType.STRING;
-  field.id = 1;
-  oprot.writeFieldBegin(field);
-  oprot.writeString(this.db_name);
-  oprot.writeFieldEnd();
-}
-if (this.tbl_name != null) {
-  field.name = "tbl_name";
-  field.type = TType.STRING;
-  field.id = 2;
-  oprot.writeFieldBegin(field);
-  oprot.writeString(this.tbl_name);
-  oprot.writeFieldEnd();
-}
-field.name = "max_parts";
-field.type = TType.I16;
-field.id = 3;
-oprot.writeFieldBegin(field);
-oprot.writeI16(this.max_parts);
-oprot.writeFieldEnd();
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("get_partition_names_args(");
-sb.append("db_name:");
-sb.append(this.db_name);
-sb.append(",tbl_name:");
-sb.append(this.tbl_name);
-sb.append(",max_parts:");
-sb.append(this.max_parts);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class get_partition_names_result implements TBase, java.io.Serializable {
-private List<String> success;
-private MetaException o2;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean success = false;
-public boolean o2 = false;
-}
-
-public get_partition_names_result() {
-}
-
-public get_partition_names_result(
-List<String> success,
-MetaException o2)
-{
-this();
-this.success = success;
-this.__isset.success = true;
-this.o2 = o2;
-this.__isset.o2 = true;
-}
-
-public int getSuccessSize() {
-return (this.success == null) ? 0 : this.success.size();
-}
-
-public java.util.Iterator<String> getSuccessIterator() {
-return (this.success == null) ? null : this.success.iterator();
-}
-
-public void addToSuccess(String elem) {
-if (this.success == null) {
-  this.success = new ArrayList<String>();
-}
-this.success.add(elem);
-this.__isset.success = true;
-}
-
-public List<String> getSuccess() {
-return this.success;
-}
-
-public void setSuccess(List<String> success) {
-this.success = success;
-this.__isset.success = true;
-}
-
-public void unsetSuccess() {
-this.success = null;
-this.__isset.success = false;
-}
-
-public MetaException getO2() {
-return this.o2;
-}
-
-public void setO2(MetaException o2) {
-this.o2 = o2;
-this.__isset.o2 = true;
-}
-
-public void unsetO2() {
-this.o2 = null;
-this.__isset.o2 = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof get_partition_names_result)
-  return this.equals((get_partition_names_result)that);
-return false;
-}
-
-public boolean equals(get_partition_names_result that) {
-if (that == null)
-  return false;
-
-boolean this_present_success = true && (this.success != null);
-boolean that_present_success = true && (that.success != null);
-if (this_present_success || that_present_success) {
-  if (!(this_present_success && that_present_success))
-    return false;
-  if (!this.success.equals(that.success))
-    return false;
-}
-
-boolean this_present_o2 = true && (this.o2 != null);
-boolean that_present_o2 = true && (that.o2 != null);
-if (this_present_o2 || that_present_o2) {
-  if (!(this_present_o2 && that_present_o2))
-    return false;
-  if (!this.o2.equals(that.o2))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 0:
-      if (field.type == TType.LIST) {
-        {
-          TList _list90 = iprot.readListBegin();
-          this.success = new ArrayList<String>(_list90.size);
-          for (int _i91 = 0; _i91 < _list90.size; ++_i91)
-          {
-            String _elem92 = null;
-            _elem92 = iprot.readString();
-            this.success.add(_elem92);
-          }
-          iprot.readListEnd();
-        }
-        this.__isset.success = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    case 1:
-      if (field.type == TType.STRUCT) {
-        this.o2 = new MetaException();
-        this.o2.read(iprot);
-        this.__isset.o2 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
-      }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("get_partition_names_result");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-
-if (this.__isset.success) {
-  if (this.success != null) {
-    field.name = "success";
-    field.type = TType.LIST;
-    field.id = 0;
-    oprot.writeFieldBegin(field);
+    public Database get_database(String name) throws NoSuchObjectException, MetaException, TException
     {
-      oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-      for (String _iter93 : this.success)      {
-        oprot.writeString(_iter93);
-      }
-      oprot.writeListEnd();
+      send_get_database(name);
+      return recv_get_database();
     }
-    oprot.writeFieldEnd();
-  }
-} else if (this.__isset.o2) {
-  if (this.o2 != null) {
-    field.name = "o2";
-    field.type = TType.STRUCT;
-    field.id = 1;
-    oprot.writeFieldBegin(field);
-    this.o2.write(oprot);
-    oprot.writeFieldEnd();
-  }
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
 
-public String toString() {
-StringBuilder sb = new StringBuilder("get_partition_names_result(");
-sb.append("success:");
-sb.append(this.success);
-sb.append(",o2:");
-sb.append(this.o2);
-sb.append(")");
-return sb.toString();
-}
+    public void send_get_database(String name) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("get_database", TMessageType.CALL, seqid_));
+      get_database_args args = new get_database_args();
+      args.name = name;
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
 
-}
-
-public static class alter_partition_args implements TBase, java.io.Serializable {
-private String db_name;
-private String tbl_name;
-private Partition new_part;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean db_name = false;
-public boolean tbl_name = false;
-public boolean new_part = false;
-}
-
-public alter_partition_args() {
-}
-
-public alter_partition_args(
-String db_name,
-String tbl_name,
-Partition new_part)
-{
-this();
-this.db_name = db_name;
-this.__isset.db_name = true;
-this.tbl_name = tbl_name;
-this.__isset.tbl_name = true;
-this.new_part = new_part;
-this.__isset.new_part = true;
-}
-
-public String getDb_name() {
-return this.db_name;
-}
-
-public void setDb_name(String db_name) {
-this.db_name = db_name;
-this.__isset.db_name = true;
-}
-
-public void unsetDb_name() {
-this.__isset.db_name = false;
-}
-
-public String getTbl_name() {
-return this.tbl_name;
-}
-
-public void setTbl_name(String tbl_name) {
-this.tbl_name = tbl_name;
-this.__isset.tbl_name = true;
-}
-
-public void unsetTbl_name() {
-this.__isset.tbl_name = false;
-}
-
-public Partition getNew_part() {
-return this.new_part;
-}
-
-public void setNew_part(Partition new_part) {
-this.new_part = new_part;
-this.__isset.new_part = true;
-}
-
-public void unsetNew_part() {
-this.new_part = null;
-this.__isset.new_part = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof alter_partition_args)
-  return this.equals((alter_partition_args)that);
-return false;
-}
-
-public boolean equals(alter_partition_args that) {
-if (that == null)
-  return false;
-
-boolean this_present_db_name = true && (this.db_name != null);
-boolean that_present_db_name = true && (that.db_name != null);
-if (this_present_db_name || that_present_db_name) {
-  if (!(this_present_db_name && that_present_db_name))
-    return false;
-  if (!this.db_name.equals(that.db_name))
-    return false;
-}
-
-boolean this_present_tbl_name = true && (this.tbl_name != null);
-boolean that_present_tbl_name = true && (that.tbl_name != null);
-if (this_present_tbl_name || that_present_tbl_name) {
-  if (!(this_present_tbl_name && that_present_tbl_name))
-    return false;
-  if (!this.tbl_name.equals(that.tbl_name))
-    return false;
-}
-
-boolean this_present_new_part = true && (this.new_part != null);
-boolean that_present_new_part = true && (that.new_part != null);
-if (this_present_new_part || that_present_new_part) {
-  if (!(this_present_new_part && that_present_new_part))
-    return false;
-  if (!this.new_part.equals(that.new_part))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 1:
-      if (field.type == TType.STRING) {
-        this.db_name = iprot.readString();
-        this.__isset.db_name = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
+    public Database recv_get_database() throws NoSuchObjectException, MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
       }
-      break;
-    case 2:
-      if (field.type == TType.STRING) {
-        this.tbl_name = iprot.readString();
-        this.__isset.tbl_name = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
+      get_database_result result = new get_database_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
       }
-      break;
-    case 3:
-      if (field.type == TType.STRUCT) {
-        this.new_part = new Partition();
-        this.new_part.read(iprot);
-        this.__isset.new_part = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
+      if (result.o1 != null) {
+        throw result.o1;
       }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
-  }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("alter_partition_args");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-if (this.db_name != null) {
-  field.name = "db_name";
-  field.type = TType.STRING;
-  field.id = 1;
-  oprot.writeFieldBegin(field);
-  oprot.writeString(this.db_name);
-  oprot.writeFieldEnd();
-}
-if (this.tbl_name != null) {
-  field.name = "tbl_name";
-  field.type = TType.STRING;
-  field.id = 2;
-  oprot.writeFieldBegin(field);
-  oprot.writeString(this.tbl_name);
-  oprot.writeFieldEnd();
-}
-if (this.new_part != null) {
-  field.name = "new_part";
-  field.type = TType.STRUCT;
-  field.id = 3;
-  oprot.writeFieldBegin(field);
-  this.new_part.write(oprot);
-  oprot.writeFieldEnd();
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
-
-public String toString() {
-StringBuilder sb = new StringBuilder("alter_partition_args(");
-sb.append("db_name:");
-sb.append(this.db_name);
-sb.append(",tbl_name:");
-sb.append(this.tbl_name);
-sb.append(",new_part:");
-sb.append(this.new_part);
-sb.append(")");
-return sb.toString();
-}
-
-}
-
-public static class alter_partition_result implements TBase, java.io.Serializable {
-private InvalidOperationException o1;
-private MetaException o2;
-
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean o1 = false;
-public boolean o2 = false;
-}
-
-public alter_partition_result() {
-}
-
-public alter_partition_result(
-InvalidOperationException o1,
-MetaException o2)
-{
-this();
-this.o1 = o1;
-this.__isset.o1 = true;
-this.o2 = o2;
-this.__isset.o2 = true;
-}
-
-public InvalidOperationException getO1() {
-return this.o1;
-}
-
-public void setO1(InvalidOperationException o1) {
-this.o1 = o1;
-this.__isset.o1 = true;
-}
-
-public void unsetO1() {
-this.o1 = null;
-this.__isset.o1 = false;
-}
-
-public MetaException getO2() {
-return this.o2;
-}
-
-public void setO2(MetaException o2) {
-this.o2 = o2;
-this.__isset.o2 = true;
-}
-
-public void unsetO2() {
-this.o2 = null;
-this.__isset.o2 = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof alter_partition_result)
-  return this.equals((alter_partition_result)that);
-return false;
-}
-
-public boolean equals(alter_partition_result that) {
-if (that == null)
-  return false;
-
-boolean this_present_o1 = true && (this.o1 != null);
-boolean that_present_o1 = true && (that.o1 != null);
-if (this_present_o1 || that_present_o1) {
-  if (!(this_present_o1 && that_present_o1))
-    return false;
-  if (!this.o1.equals(that.o1))
-    return false;
-}
-
-boolean this_present_o2 = true && (this.o2 != null);
-boolean that_present_o2 = true && (that.o2 != null);
-if (this_present_o2 || that_present_o2) {
-  if (!(this_present_o2 && that_present_o2))
-    return false;
-  if (!this.o2.equals(that.o2))
-    return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-  field = iprot.readFieldBegin();
-  if (field.type == TType.STOP) { 
-    break;
-  }
-  switch (field.id)
-  {
-    case 1:
-      if (field.type == TType.STRUCT) {
-        this.o1 = new InvalidOperationException();
-        this.o1.read(iprot);
-        this.__isset.o1 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
+      if (result.o2 != null) {
+        throw result.o2;
       }
-      break;
-    case 2:
-      if (field.type == TType.STRUCT) {
-        this.o2 = new MetaException();
-        this.o2.read(iprot);
-        this.__isset.o2 = true;
-      } else { 
-        TProtocolUtil.skip(iprot, field.type);
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_database failed: unknown result");
+    }
+
+    public boolean drop_database(String name) throws MetaException, TException
+    {
+      send_drop_database(name);
+      return recv_drop_database();
+    }
+
+    public void send_drop_database(String name) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("drop_database", TMessageType.CALL, seqid_));
+      drop_database_args args = new drop_database_args();
+      args.name = name;
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public boolean recv_drop_database() throws MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
       }
-      break;
-    default:
-      TProtocolUtil.skip(iprot, field.type);
-      break;
+      drop_database_result result = new drop_database_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o2 != null) {
+        throw result.o2;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "drop_database failed: unknown result");
+    }
+
+    public List<String> get_databases() throws MetaException, TException
+    {
+      send_get_databases();
+      return recv_get_databases();
+    }
+
+    public void send_get_databases() throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("get_databases", TMessageType.CALL, seqid_));
+      get_databases_args args = new get_databases_args();
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public List<String> recv_get_databases() throws MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      get_databases_result result = new get_databases_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_databases failed: unknown result");
+    }
+
+    public Type get_type(String name) throws MetaException, TException
+    {
+      send_get_type(name);
+      return recv_get_type();
+    }
+
+    public void send_get_type(String name) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("get_type", TMessageType.CALL, seqid_));
+      get_type_args args = new get_type_args();
+      args.name = name;
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public Type recv_get_type() throws MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      get_type_result result = new get_type_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o2 != null) {
+        throw result.o2;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_type failed: unknown result");
+    }
+
+    public boolean create_type(Type type) throws AlreadyExistsException, InvalidObjectException, MetaException, TException
+    {
+      send_create_type(type);
+      return recv_create_type();
+    }
+
+    public void send_create_type(Type type) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("create_type", TMessageType.CALL, seqid_));
+      create_type_args args = new create_type_args();
+      args.type = type;
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public boolean recv_create_type() throws AlreadyExistsException, InvalidObjectException, MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      create_type_result result = new create_type_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      if (result.o2 != null) {
+        throw result.o2;
+      }
+      if (result.o3 != null) {
+        throw result.o3;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "create_type failed: unknown result");
+    }
+
+    public boolean drop_type(String type) throws MetaException, TException
+    {
+      send_drop_type(type);
+      return recv_drop_type();
+    }
+
+    public void send_drop_type(String type) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("drop_type", TMessageType.CALL, seqid_));
+      drop_type_args args = new drop_type_args();
+      args.type = type;
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public boolean recv_drop_type() throws MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      drop_type_result result = new drop_type_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o2 != null) {
+        throw result.o2;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "drop_type failed: unknown result");
+    }
+
+    public Map<String,Type> get_type_all(String name) throws MetaException, TException
+    {
+      send_get_type_all(name);
+      return recv_get_type_all();
+    }
+
+    public void send_get_type_all(String name) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("get_type_all", TMessageType.CALL, seqid_));
+      get_type_all_args args = new get_type_all_args();
+      args.name = name;
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public Map<String,Type> recv_get_type_all() throws MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      get_type_all_result result = new get_type_all_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o2 != null) {
+        throw result.o2;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_type_all failed: unknown result");
+    }
+
+    public List<FieldSchema> get_fields(String db_name, String table_name) throws MetaException, UnknownTableException, UnknownDBException, TException
+    {
+      send_get_fields(db_name, table_name);
+      return recv_get_fields();
+    }
+
+    public void send_get_fields(String db_name, String table_name) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("get_fields", TMessageType.CALL, seqid_));
+      get_fields_args args = new get_fields_args();
+      args.db_name = db_name;
+      args.table_name = table_name;
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public List<FieldSchema> recv_get_fields() throws MetaException, UnknownTableException, UnknownDBException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      get_fields_result result = new get_fields_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      if (result.o2 != null) {
+        throw result.o2;
+      }
+      if (result.o3 != null) {
+        throw result.o3;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_fields failed: unknown result");
+    }
+
+    public void create_table(Table tbl) throws AlreadyExistsException, InvalidObjectException, MetaException, NoSuchObjectException, TException
+    {
+      send_create_table(tbl);
+      recv_create_table();
+    }
+
+    public void send_create_table(Table tbl) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("create_table", TMessageType.CALL, seqid_));
+      create_table_args args = new create_table_args();
+      args.tbl = tbl;
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public void recv_create_table() throws AlreadyExistsException, InvalidObjectException, MetaException, NoSuchObjectException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      create_table_result result = new create_table_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      if (result.o2 != null) {
+        throw result.o2;
+      }
+      if (result.o3 != null) {
+        throw result.o3;
+      }
+      if (result.o4 != null) {
+        throw result.o4;
+      }
+      return;
+    }
+
+    public void drop_table(String dbname, String name, boolean deleteData) throws NoSuchObjectException, MetaException, TException
+    {
+      send_drop_table(dbname, name, deleteData);
+      recv_drop_table();
+    }
+
+    public void send_drop_table(String dbname, String name, boolean deleteData) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("drop_table", TMessageType.CALL, seqid_));
+      drop_table_args args = new drop_table_args();
+      args.dbname = dbname;
+      args.name = name;
+      args.deleteData = deleteData;
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public void recv_drop_table() throws NoSuchObjectException, MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      drop_table_result result = new drop_table_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      if (result.o3 != null) {
+        throw result.o3;
+      }
+      return;
+    }
+
+    public List<String> get_tables(String db_name, String pattern) throws MetaException, TException
+    {
+      send_get_tables(db_name, pattern);
+      return recv_get_tables();
+    }
+
+    public void send_get_tables(String db_name, String pattern) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("get_tables", TMessageType.CALL, seqid_));
+      get_tables_args args = new get_tables_args();
+      args.db_name = db_name;
+      args.pattern = pattern;
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public List<String> recv_get_tables() throws MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      get_tables_result result = new get_tables_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_tables failed: unknown result");
+    }
+
+    public Table get_table(String dbname, String tbl_name) throws MetaException, NoSuchObjectException, TException
+    {
+      send_get_table(dbname, tbl_name);
+      return recv_get_table();
+    }
+
+    public void send_get_table(String dbname, String tbl_name) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("get_table", TMessageType.CALL, seqid_));
+      get_table_args args = new get_table_args();
+      args.dbname = dbname;
+      args.tbl_name = tbl_name;
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public Table recv_get_table() throws MetaException, NoSuchObjectException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      get_table_result result = new get_table_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      if (result.o2 != null) {
+        throw result.o2;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_table failed: unknown result");
+    }
+
+    public void alter_table(String dbname, String tbl_name, Table new_tbl) throws InvalidOperationException, MetaException, TException
+    {
+      send_alter_table(dbname, tbl_name, new_tbl);
+      recv_alter_table();
+    }
+
+    public void send_alter_table(String dbname, String tbl_name, Table new_tbl) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("alter_table", TMessageType.CALL, seqid_));
+      alter_table_args args = new alter_table_args();
+      args.dbname = dbname;
+      args.tbl_name = tbl_name;
+      args.new_tbl = new_tbl;
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public void recv_alter_table() throws InvalidOperationException, MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      alter_table_result result = new alter_table_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      if (result.o2 != null) {
+        throw result.o2;
+      }
+      return;
+    }
+
+    public Partition add_partition(Partition new_part) throws InvalidObjectException, AlreadyExistsException, MetaException, TException
+    {
+      send_add_partition(new_part);
+      return recv_add_partition();
+    }
+
+    public void send_add_partition(Partition new_part) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("add_partition", TMessageType.CALL, seqid_));
+      add_partition_args args = new add_partition_args();
+      args.new_part = new_part;
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public Partition recv_add_partition() throws InvalidObjectException, AlreadyExistsException, MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      add_partition_result result = new add_partition_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      if (result.o2 != null) {
+        throw result.o2;
+      }
+      if (result.o3 != null) {
+        throw result.o3;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "add_partition failed: unknown result");
+    }
+
+    public Partition append_partition(String db_name, String tbl_name, List<String> part_vals) throws InvalidObjectException, AlreadyExistsException, MetaException, TException
+    {
+      send_append_partition(db_name, tbl_name, part_vals);
+      return recv_append_partition();
+    }
+
+    public void send_append_partition(String db_name, String tbl_name, List<String> part_vals) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("append_partition", TMessageType.CALL, seqid_));
+      append_partition_args args = new append_partition_args();
+      args.db_name = db_name;
+      args.tbl_name = tbl_name;
+      args.part_vals = part_vals;
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public Partition recv_append_partition() throws InvalidObjectException, AlreadyExistsException, MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      append_partition_result result = new append_partition_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      if (result.o2 != null) {
+        throw result.o2;
+      }
+      if (result.o3 != null) {
+        throw result.o3;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "append_partition failed: unknown result");
+    }
+
+    public boolean drop_partition(String db_name, String tbl_name, List<String> part_vals, boolean deleteData) throws NoSuchObjectException, MetaException, TException
+    {
+      send_drop_partition(db_name, tbl_name, part_vals, deleteData);
+      return recv_drop_partition();
+    }
+
+    public void send_drop_partition(String db_name, String tbl_name, List<String> part_vals, boolean deleteData) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("drop_partition", TMessageType.CALL, seqid_));
+      drop_partition_args args = new drop_partition_args();
+      args.db_name = db_name;
+      args.tbl_name = tbl_name;
+      args.part_vals = part_vals;
+      args.deleteData = deleteData;
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public boolean recv_drop_partition() throws NoSuchObjectException, MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      drop_partition_result result = new drop_partition_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      if (result.o2 != null) {
+        throw result.o2;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "drop_partition failed: unknown result");
+    }
+
+    public Partition get_partition(String db_name, String tbl_name, List<String> part_vals) throws MetaException, TException
+    {
+      send_get_partition(db_name, tbl_name, part_vals);
+      return recv_get_partition();
+    }
+
+    public void send_get_partition(String db_name, String tbl_name, List<String> part_vals) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("get_partition", TMessageType.CALL, seqid_));
+      get_partition_args args = new get_partition_args();
+      args.db_name = db_name;
+      args.tbl_name = tbl_name;
+      args.part_vals = part_vals;
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public Partition recv_get_partition() throws MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      get_partition_result result = new get_partition_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_partition failed: unknown result");
+    }
+
+    public List<Partition> get_partitions(String db_name, String tbl_name, short max_parts) throws NoSuchObjectException, MetaException, TException
+    {
+      send_get_partitions(db_name, tbl_name, max_parts);
+      return recv_get_partitions();
+    }
+
+    public void send_get_partitions(String db_name, String tbl_name, short max_parts) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("get_partitions", TMessageType.CALL, seqid_));
+      get_partitions_args args = new get_partitions_args();
+      args.db_name = db_name;
+      args.tbl_name = tbl_name;
+      args.max_parts = max_parts;
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public List<Partition> recv_get_partitions() throws NoSuchObjectException, MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      get_partitions_result result = new get_partitions_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      if (result.o2 != null) {
+        throw result.o2;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_partitions failed: unknown result");
+    }
+
+    public List<String> get_partition_names(String db_name, String tbl_name, short max_parts) throws MetaException, TException
+    {
+      send_get_partition_names(db_name, tbl_name, max_parts);
+      return recv_get_partition_names();
+    }
+
+    public void send_get_partition_names(String db_name, String tbl_name, short max_parts) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("get_partition_names", TMessageType.CALL, seqid_));
+      get_partition_names_args args = new get_partition_names_args();
+      args.db_name = db_name;
+      args.tbl_name = tbl_name;
+      args.max_parts = max_parts;
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public List<String> recv_get_partition_names() throws MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      get_partition_names_result result = new get_partition_names_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o2 != null) {
+        throw result.o2;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_partition_names failed: unknown result");
+    }
+
+    public void alter_partition(String db_name, String tbl_name, Partition new_part) throws InvalidOperationException, MetaException, TException
+    {
+      send_alter_partition(db_name, tbl_name, new_part);
+      recv_alter_partition();
+    }
+
+    public void send_alter_partition(String db_name, String tbl_name, Partition new_part) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("alter_partition", TMessageType.CALL, seqid_));
+      alter_partition_args args = new alter_partition_args();
+      args.db_name = db_name;
+      args.tbl_name = tbl_name;
+      args.new_part = new_part;
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public void recv_alter_partition() throws InvalidOperationException, MetaException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      alter_partition_result result = new alter_partition_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      if (result.o2 != null) {
+        throw result.o2;
+      }
+      return;
+    }
+
   }
-  iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
+  public static class Processor extends com.facebook.fb303.FacebookService.Processor implements TProcessor {
+    private static final Logger LOGGER = Logger.getLogger(Processor.class.getName());
+    public Processor(Iface iface)
+    {
+      super(iface);
+      iface_ = iface;
+      processMap_.put("create_database", new create_database());
+      processMap_.put("get_database", new get_database());
+      processMap_.put("drop_database", new drop_database());
+      processMap_.put("get_databases", new get_databases());
+      processMap_.put("get_type", new get_type());
+      processMap_.put("create_type", new create_type());
+      processMap_.put("drop_type", new drop_type());
+      processMap_.put("get_type_all", new get_type_all());
+      processMap_.put("get_fields", new get_fields());
+      processMap_.put("create_table", new create_table());
+      processMap_.put("drop_table", new drop_table());
+      processMap_.put("get_tables", new get_tables());
+      processMap_.put("get_table", new get_table());
+      processMap_.put("alter_table", new alter_table());
+      processMap_.put("add_partition", new add_partition());
+      processMap_.put("append_partition", new append_partition());
+      processMap_.put("drop_partition", new drop_partition());
+      processMap_.put("get_partition", new get_partition());
+      processMap_.put("get_partitions", new get_partitions());
+      processMap_.put("get_partition_names", new get_partition_names());
+      processMap_.put("alter_partition", new alter_partition());
+    }
 
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("alter_partition_result");
-oprot.writeStructBegin(struct);
-TField field = new TField();
+    private Iface iface_;
 
-if (this.__isset.o1) {
-  if (this.o1 != null) {
-    field.name = "o1";
-    field.type = TType.STRUCT;
-    field.id = 1;
-    oprot.writeFieldBegin(field);
-    this.o1.write(oprot);
-    oprot.writeFieldEnd();
+    public boolean process(TProtocol iprot, TProtocol oprot) throws TException
+    {
+      TMessage msg = iprot.readMessageBegin();
+      ProcessFunction fn = processMap_.get(msg.name);
+      if (fn == null) {
+        TProtocolUtil.skip(iprot, TType.STRUCT);
+        iprot.readMessageEnd();
+        TApplicationException x = new TApplicationException(TApplicationException.UNKNOWN_METHOD, "Invalid method name: '"+msg.name+"'");
+        oprot.writeMessageBegin(new TMessage(msg.name, TMessageType.EXCEPTION, msg.seqid));
+        x.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+        return true;
+      }
+      fn.process(msg.seqid, iprot, oprot);
+      return true;
+    }
+
+    private class create_database implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        create_database_args args = new create_database_args();
+        args.read(iprot);
+        iprot.readMessageEnd();
+        create_database_result result = new create_database_result();
+        try {
+          result.success = iface_.create_database(args.name, args.description);
+          result.__isset.success = true;
+        } catch (AlreadyExistsException o1) {
+          result.o1 = o1;
+        } catch (MetaException o2) {
+          result.o2 = o2;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing create_database", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing create_database");
+          oprot.writeMessageBegin(new TMessage("create_database", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("create_database", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class get_database implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        get_database_args args = new get_database_args();
+        args.read(iprot);
+        iprot.readMessageEnd();
+        get_database_result result = new get_database_result();
+        try {
+          result.success = iface_.get_database(args.name);
+        } catch (NoSuchObjectException o1) {
+          result.o1 = o1;
+        } catch (MetaException o2) {
+          result.o2 = o2;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing get_database", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing get_database");
+          oprot.writeMessageBegin(new TMessage("get_database", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("get_database", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class drop_database implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        drop_database_args args = new drop_database_args();
+        args.read(iprot);
+        iprot.readMessageEnd();
+        drop_database_result result = new drop_database_result();
+        try {
+          result.success = iface_.drop_database(args.name);
+          result.__isset.success = true;
+        } catch (MetaException o2) {
+          result.o2 = o2;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing drop_database", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing drop_database");
+          oprot.writeMessageBegin(new TMessage("drop_database", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("drop_database", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class get_databases implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        get_databases_args args = new get_databases_args();
+        args.read(iprot);
+        iprot.readMessageEnd();
+        get_databases_result result = new get_databases_result();
+        try {
+          result.success = iface_.get_databases();
+        } catch (MetaException o1) {
+          result.o1 = o1;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing get_databases", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing get_databases");
+          oprot.writeMessageBegin(new TMessage("get_databases", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("get_databases", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class get_type implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        get_type_args args = new get_type_args();
+        args.read(iprot);
+        iprot.readMessageEnd();
+        get_type_result result = new get_type_result();
+        try {
+          result.success = iface_.get_type(args.name);
+        } catch (MetaException o2) {
+          result.o2 = o2;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing get_type", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing get_type");
+          oprot.writeMessageBegin(new TMessage("get_type", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("get_type", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class create_type implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        create_type_args args = new create_type_args();
+        args.read(iprot);
+        iprot.readMessageEnd();
+        create_type_result result = new create_type_result();
+        try {
+          result.success = iface_.create_type(args.type);
+          result.__isset.success = true;
+        } catch (AlreadyExistsException o1) {
+          result.o1 = o1;
+        } catch (InvalidObjectException o2) {
+          result.o2 = o2;
+        } catch (MetaException o3) {
+          result.o3 = o3;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing create_type", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing create_type");
+          oprot.writeMessageBegin(new TMessage("create_type", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("create_type", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class drop_type implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        drop_type_args args = new drop_type_args();
+        args.read(iprot);
+        iprot.readMessageEnd();
+        drop_type_result result = new drop_type_result();
+        try {
+          result.success = iface_.drop_type(args.type);
+          result.__isset.success = true;
+        } catch (MetaException o2) {
+          result.o2 = o2;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing drop_type", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing drop_type");
+          oprot.writeMessageBegin(new TMessage("drop_type", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("drop_type", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class get_type_all implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        get_type_all_args args = new get_type_all_args();
+        args.read(iprot);
+        iprot.readMessageEnd();
+        get_type_all_result result = new get_type_all_result();
+        try {
+          result.success = iface_.get_type_all(args.name);
+        } catch (MetaException o2) {
+          result.o2 = o2;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing get_type_all", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing get_type_all");
+          oprot.writeMessageBegin(new TMessage("get_type_all", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("get_type_all", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class get_fields implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        get_fields_args args = new get_fields_args();
+        args.read(iprot);
+        iprot.readMessageEnd();
+        get_fields_result result = new get_fields_result();
+        try {
+          result.success = iface_.get_fields(args.db_name, args.table_name);
+        } catch (MetaException o1) {
+          result.o1 = o1;
+        } catch (UnknownTableException o2) {
+          result.o2 = o2;
+        } catch (UnknownDBException o3) {
+          result.o3 = o3;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing get_fields", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing get_fields");
+          oprot.writeMessageBegin(new TMessage("get_fields", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("get_fields", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class create_table implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        create_table_args args = new create_table_args();
+        args.read(iprot);
+        iprot.readMessageEnd();
+        create_table_result result = new create_table_result();
+        try {
+          iface_.create_table(args.tbl);
+        } catch (AlreadyExistsException o1) {
+          result.o1 = o1;
+        } catch (InvalidObjectException o2) {
+          result.o2 = o2;
+        } catch (MetaException o3) {
+          result.o3 = o3;
+        } catch (NoSuchObjectException o4) {
+          result.o4 = o4;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing create_table", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing create_table");
+          oprot.writeMessageBegin(new TMessage("create_table", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("create_table", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class drop_table implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        drop_table_args args = new drop_table_args();
+        args.read(iprot);
+        iprot.readMessageEnd();
+        drop_table_result result = new drop_table_result();
+        try {
+          iface_.drop_table(args.dbname, args.name, args.deleteData);
+        } catch (NoSuchObjectException o1) {
+          result.o1 = o1;
+        } catch (MetaException o3) {
+          result.o3 = o3;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing drop_table", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing drop_table");
+          oprot.writeMessageBegin(new TMessage("drop_table", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("drop_table", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class get_tables implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        get_tables_args args = new get_tables_args();
+        args.read(iprot);
+        iprot.readMessageEnd();
+        get_tables_result result = new get_tables_result();
+        try {
+          result.success = iface_.get_tables(args.db_name, args.pattern);
+        } catch (MetaException o1) {
+          result.o1 = o1;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing get_tables", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing get_tables");
+          oprot.writeMessageBegin(new TMessage("get_tables", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("get_tables", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class get_table implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        get_table_args args = new get_table_args();
+        args.read(iprot);
+        iprot.readMessageEnd();
+        get_table_result result = new get_table_result();
+        try {
+          result.success = iface_.get_table(args.dbname, args.tbl_name);
+        } catch (MetaException o1) {
+          result.o1 = o1;
+        } catch (NoSuchObjectException o2) {
+          result.o2 = o2;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing get_table", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing get_table");
+          oprot.writeMessageBegin(new TMessage("get_table", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("get_table", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class alter_table implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        alter_table_args args = new alter_table_args();
+        args.read(iprot);
+        iprot.readMessageEnd();
+        alter_table_result result = new alter_table_result();
+        try {
+          iface_.alter_table(args.dbname, args.tbl_name, args.new_tbl);
+        } catch (InvalidOperationException o1) {
+          result.o1 = o1;
+        } catch (MetaException o2) {
+          result.o2 = o2;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing alter_table", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing alter_table");
+          oprot.writeMessageBegin(new TMessage("alter_table", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("alter_table", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class add_partition implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        add_partition_args args = new add_partition_args();
+        args.read(iprot);
+        iprot.readMessageEnd();
+        add_partition_result result = new add_partition_result();
+        try {
+          result.success = iface_.add_partition(args.new_part);
+        } catch (InvalidObjectException o1) {
+          result.o1 = o1;
+        } catch (AlreadyExistsException o2) {
+          result.o2 = o2;
+        } catch (MetaException o3) {
+          result.o3 = o3;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing add_partition", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing add_partition");
+          oprot.writeMessageBegin(new TMessage("add_partition", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("add_partition", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class append_partition implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        append_partition_args args = new append_partition_args();
+        args.read(iprot);
+        iprot.readMessageEnd();
+        append_partition_result result = new append_partition_result();
+        try {
+          result.success = iface_.append_partition(args.db_name, args.tbl_name, args.part_vals);
+        } catch (InvalidObjectException o1) {
+          result.o1 = o1;
+        } catch (AlreadyExistsException o2) {
+          result.o2 = o2;
+        } catch (MetaException o3) {
+          result.o3 = o3;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing append_partition", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing append_partition");
+          oprot.writeMessageBegin(new TMessage("append_partition", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("append_partition", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class drop_partition implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        drop_partition_args args = new drop_partition_args();
+        args.read(iprot);
+        iprot.readMessageEnd();
+        drop_partition_result result = new drop_partition_result();
+        try {
+          result.success = iface_.drop_partition(args.db_name, args.tbl_name, args.part_vals, args.deleteData);
+          result.__isset.success = true;
+        } catch (NoSuchObjectException o1) {
+          result.o1 = o1;
+        } catch (MetaException o2) {
+          result.o2 = o2;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing drop_partition", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing drop_partition");
+          oprot.writeMessageBegin(new TMessage("drop_partition", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("drop_partition", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class get_partition implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        get_partition_args args = new get_partition_args();
+        args.read(iprot);
+        iprot.readMessageEnd();
+        get_partition_result result = new get_partition_result();
+        try {
+          result.success = iface_.get_partition(args.db_name, args.tbl_name, args.part_vals);
+        } catch (MetaException o1) {
+          result.o1 = o1;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing get_partition", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing get_partition");
+          oprot.writeMessageBegin(new TMessage("get_partition", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("get_partition", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class get_partitions implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        get_partitions_args args = new get_partitions_args();
+        args.read(iprot);
+        iprot.readMessageEnd();
+        get_partitions_result result = new get_partitions_result();
+        try {
+          result.success = iface_.get_partitions(args.db_name, args.tbl_name, args.max_parts);
+        } catch (NoSuchObjectException o1) {
+          result.o1 = o1;
+        } catch (MetaException o2) {
+          result.o2 = o2;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing get_partitions", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing get_partitions");
+          oprot.writeMessageBegin(new TMessage("get_partitions", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("get_partitions", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class get_partition_names implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        get_partition_names_args args = new get_partition_names_args();
+        args.read(iprot);
+        iprot.readMessageEnd();
+        get_partition_names_result result = new get_partition_names_result();
+        try {
+          result.success = iface_.get_partition_names(args.db_name, args.tbl_name, args.max_parts);
+        } catch (MetaException o2) {
+          result.o2 = o2;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing get_partition_names", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing get_partition_names");
+          oprot.writeMessageBegin(new TMessage("get_partition_names", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("get_partition_names", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class alter_partition implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        alter_partition_args args = new alter_partition_args();
+        args.read(iprot);
+        iprot.readMessageEnd();
+        alter_partition_result result = new alter_partition_result();
+        try {
+          iface_.alter_partition(args.db_name, args.tbl_name, args.new_part);
+        } catch (InvalidOperationException o1) {
+          result.o1 = o1;
+        } catch (MetaException o2) {
+          result.o2 = o2;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing alter_partition", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing alter_partition");
+          oprot.writeMessageBegin(new TMessage("alter_partition", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("alter_partition", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
   }
-} else if (this.__isset.o2) {
-  if (this.o2 != null) {
-    field.name = "o2";
-    field.type = TType.STRUCT;
-    field.id = 2;
-    oprot.writeFieldBegin(field);
-    this.o2.write(oprot);
-    oprot.writeFieldEnd();
+
+  public static class create_database_args implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("create_database_args");
+    private static final TField NAME_FIELD_DESC = new TField("name", TType.STRING, (short)1);
+    private static final TField DESCRIPTION_FIELD_DESC = new TField("description", TType.STRING, (short)2);
+
+    private String name;
+    public static final int NAME = 1;
+    private String description;
+    public static final int DESCRIPTION = 2;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(NAME, new FieldMetaData("name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      put(DESCRIPTION, new FieldMetaData("description", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(create_database_args.class, metaDataMap);
+    }
+
+    public create_database_args() {
+    }
+
+    public create_database_args(
+      String name,
+      String description)
+    {
+      this();
+      this.name = name;
+      this.description = description;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public create_database_args(create_database_args other) {
+      if (other.isSetName()) {
+        this.name = other.name;
+      }
+      if (other.isSetDescription()) {
+        this.description = other.description;
+      }
+    }
+
+    @Override
+    public create_database_args clone() {
+      return new create_database_args(this);
+    }
+
+    public String getName() {
+      return this.name;
+    }
+
+    public void setName(String name) {
+      this.name = name;
+    }
+
+    public void unsetName() {
+      this.name = null;
+    }
+
+    // Returns true if field name is set (has been asigned a value) and false otherwise
+    public boolean isSetName() {
+      return this.name != null;
+    }
+
+    public String getDescription() {
+      return this.description;
+    }
+
+    public void setDescription(String description) {
+      this.description = description;
+    }
+
+    public void unsetDescription() {
+      this.description = null;
+    }
+
+    // Returns true if field description is set (has been asigned a value) and false otherwise
+    public boolean isSetDescription() {
+      return this.description != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case NAME:
+        if (value == null) {
+          unsetName();
+        } else {
+          setName((String)value);
+        }
+        break;
+
+      case DESCRIPTION:
+        if (value == null) {
+          unsetDescription();
+        } else {
+          setDescription((String)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case NAME:
+        return getName();
+
+      case DESCRIPTION:
+        return getDescription();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case NAME:
+        return isSetName();
+      case DESCRIPTION:
+        return isSetDescription();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof create_database_args)
+        return this.equals((create_database_args)that);
+      return false;
+    }
+
+    public boolean equals(create_database_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_name = true && this.isSetName();
+      boolean that_present_name = true && that.isSetName();
+      if (this_present_name || that_present_name) {
+        if (!(this_present_name && that_present_name))
+          return false;
+        if (!this.name.equals(that.name))
+          return false;
+      }
+
+      boolean this_present_description = true && this.isSetDescription();
+      boolean that_present_description = true && that.isSetDescription();
+      if (this_present_description || that_present_description) {
+        if (!(this_present_description && that_present_description))
+          return false;
+        if (!this.description.equals(that.description))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case NAME:
+            if (field.type == TType.STRING) {
+              this.name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case DESCRIPTION:
+            if (field.type == TType.STRING) {
+              this.description = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.name != null) {
+        oprot.writeFieldBegin(NAME_FIELD_DESC);
+        oprot.writeString(this.name);
+        oprot.writeFieldEnd();
+      }
+      if (this.description != null) {
+        oprot.writeFieldBegin(DESCRIPTION_FIELD_DESC);
+        oprot.writeString(this.description);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("create_database_args(");
+      boolean first = true;
+
+      sb.append("name:");
+      if (this.name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("description:");
+      if (this.description == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.description);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
   }
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
 
-public String toString() {
-StringBuilder sb = new StringBuilder("alter_partition_result(");
-sb.append("o1:");
-sb.append(this.o1);
-sb.append(",o2:");
-sb.append(this.o2);
-sb.append(")");
-return sb.toString();
-}
+  public static class create_database_result implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("create_database_result");
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.BOOL, (short)0);
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+    private static final TField O2_FIELD_DESC = new TField("o2", TType.STRUCT, (short)2);
 
-}
+    private boolean success;
+    public static final int SUCCESS = 0;
+    private AlreadyExistsException o1;
+    public static final int O1 = 1;
+    private MetaException o2;
+    public static final int O2 = 2;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+      public boolean success = false;
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.BOOL)));
+      put(O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      put(O2, new FieldMetaData("o2", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(create_database_result.class, metaDataMap);
+    }
+
+    public create_database_result() {
+    }
+
+    public create_database_result(
+      boolean success,
+      AlreadyExistsException o1,
+      MetaException o2)
+    {
+      this();
+      this.success = success;
+      this.__isset.success = true;
+      this.o1 = o1;
+      this.o2 = o2;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public create_database_result(create_database_result other) {
+      __isset.success = other.__isset.success;
+      this.success = other.success;
+      if (other.isSetO1()) {
+        this.o1 = new AlreadyExistsException(other.o1);
+      }
+      if (other.isSetO2()) {
+        this.o2 = new MetaException(other.o2);
+      }
+    }
+
+    @Override
+    public create_database_result clone() {
+      return new create_database_result(this);
+    }
+
+    public boolean isSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(boolean success) {
+      this.success = success;
+      this.__isset.success = true;
+    }
+
+    public void unsetSuccess() {
+      this.__isset.success = false;
+    }
+
+    // Returns true if field success is set (has been asigned a value) and false otherwise
+    public boolean isSetSuccess() {
+      return this.__isset.success;
+    }
+
+    public AlreadyExistsException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(AlreadyExistsException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    // Returns true if field o1 is set (has been asigned a value) and false otherwise
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public MetaException getO2() {
+      return this.o2;
+    }
+
+    public void setO2(MetaException o2) {
+      this.o2 = o2;
+    }
+
+    public void unsetO2() {
+      this.o2 = null;
+    }
+
+    // Returns true if field o2 is set (has been asigned a value) and false otherwise
+    public boolean isSetO2() {
+      return this.o2 != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((Boolean)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((AlreadyExistsException)value);
+        }
+        break;
+
+      case O2:
+        if (value == null) {
+          unsetO2();
+        } else {
+          setO2((MetaException)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return new Boolean(isSuccess());
+
+      case O1:
+        return getO1();
+
+      case O2:
+        return getO2();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      case O2:
+        return isSetO2();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof create_database_result)
+        return this.equals((create_database_result)that);
+      return false;
+    }
+
+    public boolean equals(create_database_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true;
+      boolean that_present_success = true;
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (this.success != that.success)
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      boolean this_present_o2 = true && this.isSetO2();
+      boolean that_present_o2 = true && that.isSetO2();
+      if (this_present_o2 || that_present_o2) {
+        if (!(this_present_o2 && that_present_o2))
+          return false;
+        if (!this.o2.equals(that.o2))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case SUCCESS:
+            if (field.type == TType.BOOL) {
+              this.success = iprot.readBool();
+              this.__isset.success = true;
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O1:
+            if (field.type == TType.STRUCT) {
+              this.o1 = new AlreadyExistsException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O2:
+            if (field.type == TType.STRUCT) {
+              this.o2 = new MetaException();
+              this.o2.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        oprot.writeBool(this.success);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO2()) {
+        oprot.writeFieldBegin(O2_FIELD_DESC);
+        this.o2.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("create_database_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      sb.append(this.success);
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o2:");
+      if (this.o2 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o2);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class get_database_args implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_database_args");
+    private static final TField NAME_FIELD_DESC = new TField("name", TType.STRING, (short)1);
+
+    private String name;
+    public static final int NAME = 1;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(NAME, new FieldMetaData("name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(get_database_args.class, metaDataMap);
+    }
+
+    public get_database_args() {
+    }
+
+    public get_database_args(
+      String name)
+    {
+      this();
+      this.name = name;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_database_args(get_database_args other) {
+      if (other.isSetName()) {
+        this.name = other.name;
+      }
+    }
+
+    @Override
+    public get_database_args clone() {
+      return new get_database_args(this);
+    }
+
+    public String getName() {
+      return this.name;
+    }
+
+    public void setName(String name) {
+      this.name = name;
+    }
+
+    public void unsetName() {
+      this.name = null;
+    }
+
+    // Returns true if field name is set (has been asigned a value) and false otherwise
+    public boolean isSetName() {
+      return this.name != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case NAME:
+        if (value == null) {
+          unsetName();
+        } else {
+          setName((String)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case NAME:
+        return getName();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case NAME:
+        return isSetName();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_database_args)
+        return this.equals((get_database_args)that);
+      return false;
+    }
+
+    public boolean equals(get_database_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_name = true && this.isSetName();
+      boolean that_present_name = true && that.isSetName();
+      if (this_present_name || that_present_name) {
+        if (!(this_present_name && that_present_name))
+          return false;
+        if (!this.name.equals(that.name))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case NAME:
+            if (field.type == TType.STRING) {
+              this.name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.name != null) {
+        oprot.writeFieldBegin(NAME_FIELD_DESC);
+        oprot.writeString(this.name);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_database_args(");
+      boolean first = true;
+
+      sb.append("name:");
+      if (this.name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.name);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class get_database_result implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_database_result");
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.STRUCT, (short)0);
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+    private static final TField O2_FIELD_DESC = new TField("o2", TType.STRUCT, (short)2);
+
+    private Database success;
+    public static final int SUCCESS = 0;
+    private NoSuchObjectException o1;
+    public static final int O1 = 1;
+    private MetaException o2;
+    public static final int O2 = 2;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, Database.class)));
+      put(O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      put(O2, new FieldMetaData("o2", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(get_database_result.class, metaDataMap);
+    }
+
+    public get_database_result() {
+    }
+
+    public get_database_result(
+      Database success,
+      NoSuchObjectException o1,
+      MetaException o2)
+    {
+      this();
+      this.success = success;
+      this.o1 = o1;
+      this.o2 = o2;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_database_result(get_database_result other) {
+      if (other.isSetSuccess()) {
+        this.success = new Database(other.success);
+      }
+      if (other.isSetO1()) {
+        this.o1 = new NoSuchObjectException(other.o1);
+      }
+      if (other.isSetO2()) {
+        this.o2 = new MetaException(other.o2);
+      }
+    }
+
+    @Override
+    public get_database_result clone() {
+      return new get_database_result(this);
+    }
+
+    public Database getSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(Database success) {
+      this.success = success;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    // Returns true if field success is set (has been asigned a value) and false otherwise
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public NoSuchObjectException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(NoSuchObjectException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    // Returns true if field o1 is set (has been asigned a value) and false otherwise
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public MetaException getO2() {
+      return this.o2;
+    }
+
+    public void setO2(MetaException o2) {
+      this.o2 = o2;
+    }
+
+    public void unsetO2() {
+      this.o2 = null;
+    }
+
+    // Returns true if field o2 is set (has been asigned a value) and false otherwise
+    public boolean isSetO2() {
+      return this.o2 != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((Database)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((NoSuchObjectException)value);
+        }
+        break;
+
+      case O2:
+        if (value == null) {
+          unsetO2();
+        } else {
+          setO2((MetaException)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return getSuccess();
+
+      case O1:
+        return getO1();
+
+      case O2:
+        return getO2();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      case O2:
+        return isSetO2();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_database_result)
+        return this.equals((get_database_result)that);
+      return false;
+    }
+
+    public boolean equals(get_database_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      boolean this_present_o2 = true && this.isSetO2();
+      boolean that_present_o2 = true && that.isSetO2();
+      if (this_present_o2 || that_present_o2) {
+        if (!(this_present_o2 && that_present_o2))
+          return false;
+        if (!this.o2.equals(that.o2))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case SUCCESS:
+            if (field.type == TType.STRUCT) {
+              this.success = new Database();
+              this.success.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O1:
+            if (field.type == TType.STRUCT) {
+              this.o1 = new NoSuchObjectException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O2:
+            if (field.type == TType.STRUCT) {
+              this.o2 = new MetaException();
+              this.o2.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        this.success.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO2()) {
+        oprot.writeFieldBegin(O2_FIELD_DESC);
+        this.o2.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_database_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o2:");
+      if (this.o2 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o2);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class drop_database_args implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("drop_database_args");
+    private static final TField NAME_FIELD_DESC = new TField("name", TType.STRING, (short)1);
+
+    private String name;
+    public static final int NAME = 1;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(NAME, new FieldMetaData("name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(drop_database_args.class, metaDataMap);
+    }
+
+    public drop_database_args() {
+    }
+
+    public drop_database_args(
+      String name)
+    {
+      this();
+      this.name = name;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public drop_database_args(drop_database_args other) {
+      if (other.isSetName()) {
+        this.name = other.name;
+      }
+    }
+
+    @Override
+    public drop_database_args clone() {
+      return new drop_database_args(this);
+    }
+
+    public String getName() {
+      return this.name;
+    }
+
+    public void setName(String name) {
+      this.name = name;
+    }
+
+    public void unsetName() {
+      this.name = null;
+    }
+
+    // Returns true if field name is set (has been asigned a value) and false otherwise
+    public boolean isSetName() {
+      return this.name != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case NAME:
+        if (value == null) {
+          unsetName();
+        } else {
+          setName((String)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case NAME:
+        return getName();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case NAME:
+        return isSetName();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof drop_database_args)
+        return this.equals((drop_database_args)that);
+      return false;
+    }
+
+    public boolean equals(drop_database_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_name = true && this.isSetName();
+      boolean that_present_name = true && that.isSetName();
+      if (this_present_name || that_present_name) {
+        if (!(this_present_name && that_present_name))
+          return false;
+        if (!this.name.equals(that.name))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case NAME:
+            if (field.type == TType.STRING) {
+              this.name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.name != null) {
+        oprot.writeFieldBegin(NAME_FIELD_DESC);
+        oprot.writeString(this.name);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("drop_database_args(");
+      boolean first = true;
+
+      sb.append("name:");
+      if (this.name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.name);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class drop_database_result implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("drop_database_result");
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.BOOL, (short)0);
+    private static final TField O2_FIELD_DESC = new TField("o2", TType.STRUCT, (short)2);
+
+    private boolean success;
+    public static final int SUCCESS = 0;
+    private MetaException o2;
+    public static final int O2 = 2;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+      public boolean success = false;
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.BOOL)));
+      put(O2, new FieldMetaData("o2", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(drop_database_result.class, metaDataMap);
+    }
+
+    public drop_database_result() {
+    }
+
+    public drop_database_result(
+      boolean success,
+      MetaException o2)
+    {
+      this();
+      this.success = success;
+      this.__isset.success = true;
+      this.o2 = o2;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public drop_database_result(drop_database_result other) {
+      __isset.success = other.__isset.success;
+      this.success = other.success;
+      if (other.isSetO2()) {
+        this.o2 = new MetaException(other.o2);
+      }
+    }
+
+    @Override
+    public drop_database_result clone() {
+      return new drop_database_result(this);
+    }
+
+    public boolean isSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(boolean success) {
+      this.success = success;
+      this.__isset.success = true;
+    }
+
+    public void unsetSuccess() {
+      this.__isset.success = false;
+    }
+
+    // Returns true if field success is set (has been asigned a value) and false otherwise
+    public boolean isSetSuccess() {
+      return this.__isset.success;
+    }
+
+    public MetaException getO2() {
+      return this.o2;
+    }
+
+    public void setO2(MetaException o2) {
+      this.o2 = o2;
+    }
+
+    public void unsetO2() {
+      this.o2 = null;
+    }
+
+    // Returns true if field o2 is set (has been asigned a value) and false otherwise
+    public boolean isSetO2() {
+      return this.o2 != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((Boolean)value);
+        }
+        break;
+
+      case O2:
+        if (value == null) {
+          unsetO2();
+        } else {
+          setO2((MetaException)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return new Boolean(isSuccess());
+
+      case O2:
+        return getO2();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O2:
+        return isSetO2();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof drop_database_result)
+        return this.equals((drop_database_result)that);
+      return false;
+    }
+
+    public boolean equals(drop_database_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true;
+      boolean that_present_success = true;
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (this.success != that.success)
+          return false;
+      }
+
+      boolean this_present_o2 = true && this.isSetO2();
+      boolean that_present_o2 = true && that.isSetO2();
+      if (this_present_o2 || that_present_o2) {
+        if (!(this_present_o2 && that_present_o2))
+          return false;
+        if (!this.o2.equals(that.o2))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case SUCCESS:
+            if (field.type == TType.BOOL) {
+              this.success = iprot.readBool();
+              this.__isset.success = true;
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O2:
+            if (field.type == TType.STRUCT) {
+              this.o2 = new MetaException();
+              this.o2.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        oprot.writeBool(this.success);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO2()) {
+        oprot.writeFieldBegin(O2_FIELD_DESC);
+        this.o2.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("drop_database_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      sb.append(this.success);
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o2:");
+      if (this.o2 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o2);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class get_databases_args implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_databases_args");
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(get_databases_args.class, metaDataMap);
+    }
+
+    public get_databases_args() {
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_databases_args(get_databases_args other) {
+    }
+
+    @Override
+    public get_databases_args clone() {
+      return new get_databases_args(this);
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_databases_args)
+        return this.equals((get_databases_args)that);
+      return false;
+    }
+
+    public boolean equals(get_databases_args that) {
+      if (that == null)
+        return false;
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_databases_args(");
+      boolean first = true;
+
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class get_databases_result implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_databases_result");
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.LIST, (short)0);
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+
+    private List<String> success;
+    public static final int SUCCESS = 0;
+    private MetaException o1;
+    public static final int O1 = 1;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new ListMetaData(TType.LIST, 
+              new FieldValueMetaData(TType.STRING))));
+      put(O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(get_databases_result.class, metaDataMap);
+    }
+
+    public get_databases_result() {
+    }
+
+    public get_databases_result(
+      List<String> success,
+      MetaException o1)
+    {
+      this();
+      this.success = success;
+      this.o1 = o1;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_databases_result(get_databases_result other) {
+      if (other.isSetSuccess()) {
+        List<String> __this__success = new ArrayList<String>();
+        for (String other_element : other.success) {
+          __this__success.add(other_element);
+        }
+        this.success = __this__success;
+      }
+      if (other.isSetO1()) {
+        this.o1 = new MetaException(other.o1);
+      }
+    }
+
+    @Override
+    public get_databases_result clone() {
+      return new get_databases_result(this);
+    }
+
+    public int getSuccessSize() {
+      return (this.success == null) ? 0 : this.success.size();
+    }
+
+    public java.util.Iterator<String> getSuccessIterator() {
+      return (this.success == null) ? null : this.success.iterator();
+    }
+
+    public void addToSuccess(String elem) {
+      if (this.success == null) {
+        this.success = new ArrayList<String>();
+      }
+      this.success.add(elem);
+    }
+
+    public List<String> getSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(List<String> success) {
+      this.success = success;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    // Returns true if field success is set (has been asigned a value) and false otherwise
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public MetaException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(MetaException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    // Returns true if field o1 is set (has been asigned a value) and false otherwise
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((List<String>)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((MetaException)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return getSuccess();
+
+      case O1:
+        return getO1();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_databases_result)
+        return this.equals((get_databases_result)that);
+      return false;
+    }
+
+    public boolean equals(get_databases_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case SUCCESS:
+            if (field.type == TType.LIST) {
+              {
+                TList _list57 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list57.size);
+                for (int _i58 = 0; _i58 < _list57.size; ++_i58)
+                {
+                  String _elem59;
+                  _elem59 = iprot.readString();
+                  this.success.add(_elem59);
+                }
+                iprot.readListEnd();
+              }
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O1:
+            if (field.type == TType.STRUCT) {
+              this.o1 = new MetaException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
+          for (String _iter60 : this.success)          {
+            oprot.writeString(_iter60);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_databases_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class get_type_args implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_type_args");
+    private static final TField NAME_FIELD_DESC = new TField("name", TType.STRING, (short)1);
+
+    private String name;
+    public static final int NAME = 1;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(NAME, new FieldMetaData("name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(get_type_args.class, metaDataMap);
+    }
+
+    public get_type_args() {
+    }
+
+    public get_type_args(
+      String name)
+    {
+      this();
+      this.name = name;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_type_args(get_type_args other) {
+      if (other.isSetName()) {
+        this.name = other.name;
+      }
+    }
+
+    @Override
+    public get_type_args clone() {
+      return new get_type_args(this);
+    }
+
+    public String getName() {
+      return this.name;
+    }
+
+    public void setName(String name) {
+      this.name = name;
+    }
+
+    public void unsetName() {
+      this.name = null;
+    }
+
+    // Returns true if field name is set (has been asigned a value) and false otherwise
+    public boolean isSetName() {
+      return this.name != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case NAME:
+        if (value == null) {
+          unsetName();
+        } else {
+          setName((String)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case NAME:
+        return getName();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case NAME:
+        return isSetName();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_type_args)
+        return this.equals((get_type_args)that);
+      return false;
+    }
+
+    public boolean equals(get_type_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_name = true && this.isSetName();
+      boolean that_present_name = true && that.isSetName();
+      if (this_present_name || that_present_name) {
+        if (!(this_present_name && that_present_name))
+          return false;
+        if (!this.name.equals(that.name))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case NAME:
+            if (field.type == TType.STRING) {
+              this.name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.name != null) {
+        oprot.writeFieldBegin(NAME_FIELD_DESC);
+        oprot.writeString(this.name);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_type_args(");
+      boolean first = true;
+
+      sb.append("name:");
+      if (this.name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.name);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class get_type_result implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_type_result");
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.STRUCT, (short)0);
+    private static final TField O2_FIELD_DESC = new TField("o2", TType.STRUCT, (short)1);
+
+    private Type success;
+    public static final int SUCCESS = 0;
+    private MetaException o2;
+    public static final int O2 = 1;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, Type.class)));
+      put(O2, new FieldMetaData("o2", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(get_type_result.class, metaDataMap);
+    }
+
+    public get_type_result() {
+    }
+
+    public get_type_result(
+      Type success,
+      MetaException o2)
+    {
+      this();
+      this.success = success;
+      this.o2 = o2;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_type_result(get_type_result other) {
+      if (other.isSetSuccess()) {
+        this.success = new Type(other.success);
+      }
+      if (other.isSetO2()) {
+        this.o2 = new MetaException(other.o2);
+      }
+    }
+
+    @Override
+    public get_type_result clone() {
+      return new get_type_result(this);
+    }
+
+    public Type getSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(Type success) {
+      this.success = success;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    // Returns true if field success is set (has been asigned a value) and false otherwise
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public MetaException getO2() {
+      return this.o2;
+    }
+
+    public void setO2(MetaException o2) {
+      this.o2 = o2;
+    }
+
+    public void unsetO2() {
+      this.o2 = null;
+    }
+
+    // Returns true if field o2 is set (has been asigned a value) and false otherwise
+    public boolean isSetO2() {
+      return this.o2 != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((Type)value);
+        }
+        break;
+
+      case O2:
+        if (value == null) {
+          unsetO2();
+        } else {
+          setO2((MetaException)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return getSuccess();
+
+      case O2:
+        return getO2();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O2:
+        return isSetO2();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_type_result)
+        return this.equals((get_type_result)that);
+      return false;
+    }
+
+    public boolean equals(get_type_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_o2 = true && this.isSetO2();
+      boolean that_present_o2 = true && that.isSetO2();
+      if (this_present_o2 || that_present_o2) {
+        if (!(this_present_o2 && that_present_o2))
+          return false;
+        if (!this.o2.equals(that.o2))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case SUCCESS:
+            if (field.type == TType.STRUCT) {
+              this.success = new Type();
+              this.success.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O2:
+            if (field.type == TType.STRUCT) {
+              this.o2 = new MetaException();
+              this.o2.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        this.success.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO2()) {
+        oprot.writeFieldBegin(O2_FIELD_DESC);
+        this.o2.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_type_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o2:");
+      if (this.o2 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o2);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class create_type_args implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("create_type_args");
+    private static final TField TYPE_FIELD_DESC = new TField("type", TType.STRUCT, (short)1);
+
+    private Type type;
+    public static final int TYPE = 1;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(TYPE, new FieldMetaData("type", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, Type.class)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(create_type_args.class, metaDataMap);
+    }
+
+    public create_type_args() {
+    }
+
+    public create_type_args(
+      Type type)
+    {
+      this();
+      this.type = type;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public create_type_args(create_type_args other) {
+      if (other.isSetType()) {
+        this.type = new Type(other.type);
+      }
+    }
+
+    @Override
+    public create_type_args clone() {
+      return new create_type_args(this);
+    }
+
+    public Type getType() {
+      return this.type;
+    }
+
+    public void setType(Type type) {
+      this.type = type;
+    }
+
+    public void unsetType() {
+      this.type = null;
+    }
+
+    // Returns true if field type is set (has been asigned a value) and false otherwise
+    public boolean isSetType() {
+      return this.type != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case TYPE:
+        if (value == null) {
+          unsetType();
+        } else {
+          setType((Type)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case TYPE:
+        return getType();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case TYPE:
+        return isSetType();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof create_type_args)
+        return this.equals((create_type_args)that);
+      return false;
+    }
+
+    public boolean equals(create_type_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_type = true && this.isSetType();
+      boolean that_present_type = true && that.isSetType();
+      if (this_present_type || that_present_type) {
+        if (!(this_present_type && that_present_type))
+          return false;
+        if (!this.type.equals(that.type))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case TYPE:
+            if (field.type == TType.STRUCT) {
+              this.type = new Type();
+              this.type.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.type != null) {
+        oprot.writeFieldBegin(TYPE_FIELD_DESC);
+        this.type.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("create_type_args(");
+      boolean first = true;
+
+      sb.append("type:");
+      if (this.type == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.type);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class create_type_result implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("create_type_result");
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.BOOL, (short)0);
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+    private static final TField O2_FIELD_DESC = new TField("o2", TType.STRUCT, (short)2);
+    private static final TField O3_FIELD_DESC = new TField("o3", TType.STRUCT, (short)3);
+
+    private boolean success;
+    public static final int SUCCESS = 0;
+    private AlreadyExistsException o1;
+    public static final int O1 = 1;
+    private InvalidObjectException o2;
+    public static final int O2 = 2;
+    private MetaException o3;
+    public static final int O3 = 3;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+      public boolean success = false;
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.BOOL)));
+      put(O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      put(O2, new FieldMetaData("o2", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      put(O3, new FieldMetaData("o3", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(create_type_result.class, metaDataMap);
+    }
+
+    public create_type_result() {
+    }
+
+    public create_type_result(
+      boolean success,
+      AlreadyExistsException o1,
+      InvalidObjectException o2,
+      MetaException o3)
+    {
+      this();
+      this.success = success;
+      this.__isset.success = true;
+      this.o1 = o1;
+      this.o2 = o2;
+      this.o3 = o3;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public create_type_result(create_type_result other) {
+      __isset.success = other.__isset.success;
+      this.success = other.success;
+      if (other.isSetO1()) {
+        this.o1 = new AlreadyExistsException(other.o1);
+      }
+      if (other.isSetO2()) {
+        this.o2 = new InvalidObjectException(other.o2);
+      }
+      if (other.isSetO3()) {
+        this.o3 = new MetaException(other.o3);
+      }
+    }
+
+    @Override
+    public create_type_result clone() {
+      return new create_type_result(this);
+    }
+
+    public boolean isSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(boolean success) {
+      this.success = success;
+      this.__isset.success = true;
+    }
+
+    public void unsetSuccess() {
+      this.__isset.success = false;
+    }
+
+    // Returns true if field success is set (has been asigned a value) and false otherwise
+    public boolean isSetSuccess() {
+      return this.__isset.success;
+    }
+
+    public AlreadyExistsException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(AlreadyExistsException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    // Returns true if field o1 is set (has been asigned a value) and false otherwise
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public InvalidObjectException getO2() {
+      return this.o2;
+    }
+
+    public void setO2(InvalidObjectException o2) {
+      this.o2 = o2;
+    }
+
+    public void unsetO2() {
+      this.o2 = null;
+    }
+
+    // Returns true if field o2 is set (has been asigned a value) and false otherwise
+    public boolean isSetO2() {
+      return this.o2 != null;
+    }
+
+    public MetaException getO3() {
+      return this.o3;
+    }
+
+    public void setO3(MetaException o3) {
+      this.o3 = o3;
+    }
+
+    public void unsetO3() {
+      this.o3 = null;
+    }
+
+    // Returns true if field o3 is set (has been asigned a value) and false otherwise
+    public boolean isSetO3() {
+      return this.o3 != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((Boolean)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((AlreadyExistsException)value);
+        }
+        break;
+
+      case O2:
+        if (value == null) {
+          unsetO2();
+        } else {
+          setO2((InvalidObjectException)value);
+        }
+        break;
+
+      case O3:
+        if (value == null) {
+          unsetO3();
+        } else {
+          setO3((MetaException)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return new Boolean(isSuccess());
+
+      case O1:
+        return getO1();
+
+      case O2:
+        return getO2();
+
+      case O3:
+        return getO3();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      case O2:
+        return isSetO2();
+      case O3:
+        return isSetO3();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof create_type_result)
+        return this.equals((create_type_result)that);
+      return false;
+    }
+
+    public boolean equals(create_type_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true;
+      boolean that_present_success = true;
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (this.success != that.success)
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      boolean this_present_o2 = true && this.isSetO2();
+      boolean that_present_o2 = true && that.isSetO2();
+      if (this_present_o2 || that_present_o2) {
+        if (!(this_present_o2 && that_present_o2))
+          return false;
+        if (!this.o2.equals(that.o2))
+          return false;
+      }
+
+      boolean this_present_o3 = true && this.isSetO3();
+      boolean that_present_o3 = true && that.isSetO3();
+      if (this_present_o3 || that_present_o3) {
+        if (!(this_present_o3 && that_present_o3))
+          return false;
+        if (!this.o3.equals(that.o3))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case SUCCESS:
+            if (field.type == TType.BOOL) {
+              this.success = iprot.readBool();
+              this.__isset.success = true;
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O1:
+            if (field.type == TType.STRUCT) {
+              this.o1 = new AlreadyExistsException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O2:
+            if (field.type == TType.STRUCT) {
+              this.o2 = new InvalidObjectException();
+              this.o2.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O3:
+            if (field.type == TType.STRUCT) {
+              this.o3 = new MetaException();
+              this.o3.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        oprot.writeBool(this.success);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO2()) {
+        oprot.writeFieldBegin(O2_FIELD_DESC);
+        this.o2.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO3()) {
+        oprot.writeFieldBegin(O3_FIELD_DESC);
+        this.o3.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("create_type_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      sb.append(this.success);
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o2:");
+      if (this.o2 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o2);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o3:");
+      if (this.o3 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o3);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class drop_type_args implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("drop_type_args");
+    private static final TField TYPE_FIELD_DESC = new TField("type", TType.STRING, (short)1);
+
+    private String type;
+    public static final int TYPE = 1;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(TYPE, new FieldMetaData("type", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(drop_type_args.class, metaDataMap);
+    }
+
+    public drop_type_args() {
+    }
+
+    public drop_type_args(
+      String type)
+    {
+      this();
+      this.type = type;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public drop_type_args(drop_type_args other) {
+      if (other.isSetType()) {
+        this.type = other.type;
+      }
+    }
+
+    @Override
+    public drop_type_args clone() {
+      return new drop_type_args(this);
+    }
+
+    public String getType() {
+      return this.type;
+    }
+
+    public void setType(String type) {
+      this.type = type;
+    }
+
+    public void unsetType() {
+      this.type = null;
+    }
+
+    // Returns true if field type is set (has been asigned a value) and false otherwise
+    public boolean isSetType() {
+      return this.type != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case TYPE:
+        if (value == null) {
+          unsetType();
+        } else {
+          setType((String)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case TYPE:
+        return getType();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case TYPE:
+        return isSetType();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof drop_type_args)
+        return this.equals((drop_type_args)that);
+      return false;
+    }
+
+    public boolean equals(drop_type_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_type = true && this.isSetType();
+      boolean that_present_type = true && that.isSetType();
+      if (this_present_type || that_present_type) {
+        if (!(this_present_type && that_present_type))
+          return false;
+        if (!this.type.equals(that.type))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case TYPE:
+            if (field.type == TType.STRING) {
+              this.type = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.type != null) {
+        oprot.writeFieldBegin(TYPE_FIELD_DESC);
+        oprot.writeString(this.type);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("drop_type_args(");
+      boolean first = true;
+
+      sb.append("type:");
+      if (this.type == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.type);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class drop_type_result implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("drop_type_result");
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.BOOL, (short)0);
+    private static final TField O2_FIELD_DESC = new TField("o2", TType.STRUCT, (short)1);
+
+    private boolean success;
+    public static final int SUCCESS = 0;
+    private MetaException o2;
+    public static final int O2 = 1;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+      public boolean success = false;
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.BOOL)));
+      put(O2, new FieldMetaData("o2", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(drop_type_result.class, metaDataMap);
+    }
+
+    public drop_type_result() {
+    }
+
+    public drop_type_result(
+      boolean success,
+      MetaException o2)
+    {
+      this();
+      this.success = success;
+      this.__isset.success = true;
+      this.o2 = o2;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public drop_type_result(drop_type_result other) {
+      __isset.success = other.__isset.success;
+      this.success = other.success;
+      if (other.isSetO2()) {
+        this.o2 = new MetaException(other.o2);
+      }
+    }
+
+    @Override
+    public drop_type_result clone() {
+      return new drop_type_result(this);
+    }
+
+    public boolean isSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(boolean success) {
+      this.success = success;
+      this.__isset.success = true;
+    }
+
+    public void unsetSuccess() {
+      this.__isset.success = false;
+    }
+
+    // Returns true if field success is set (has been asigned a value) and false otherwise
+    public boolean isSetSuccess() {
+      return this.__isset.success;
+    }
+
+    public MetaException getO2() {
+      return this.o2;
+    }
+
+    public void setO2(MetaException o2) {
+      this.o2 = o2;
+    }
+
+    public void unsetO2() {
+      this.o2 = null;
+    }
+
+    // Returns true if field o2 is set (has been asigned a value) and false otherwise
+    public boolean isSetO2() {
+      return this.o2 != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((Boolean)value);
+        }
+        break;
+
+      case O2:
+        if (value == null) {
+          unsetO2();
+        } else {
+          setO2((MetaException)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return new Boolean(isSuccess());
+
+      case O2:
+        return getO2();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O2:
+        return isSetO2();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof drop_type_result)
+        return this.equals((drop_type_result)that);
+      return false;
+    }
+
+    public boolean equals(drop_type_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true;
+      boolean that_present_success = true;
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (this.success != that.success)
+          return false;
+      }
+
+      boolean this_present_o2 = true && this.isSetO2();
+      boolean that_present_o2 = true && that.isSetO2();
+      if (this_present_o2 || that_present_o2) {
+        if (!(this_present_o2 && that_present_o2))
+          return false;
+        if (!this.o2.equals(that.o2))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case SUCCESS:
+            if (field.type == TType.BOOL) {
+              this.success = iprot.readBool();
+              this.__isset.success = true;
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O2:
+            if (field.type == TType.STRUCT) {
+              this.o2 = new MetaException();
+              this.o2.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        oprot.writeBool(this.success);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO2()) {
+        oprot.writeFieldBegin(O2_FIELD_DESC);
+        this.o2.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("drop_type_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      sb.append(this.success);
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o2:");
+      if (this.o2 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o2);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class get_type_all_args implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_type_all_args");
+    private static final TField NAME_FIELD_DESC = new TField("name", TType.STRING, (short)1);
+
+    private String name;
+    public static final int NAME = 1;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(NAME, new FieldMetaData("name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(get_type_all_args.class, metaDataMap);
+    }
+
+    public get_type_all_args() {
+    }
+
+    public get_type_all_args(
+      String name)
+    {
+      this();
+      this.name = name;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_type_all_args(get_type_all_args other) {
+      if (other.isSetName()) {
+        this.name = other.name;
+      }
+    }
+
+    @Override
+    public get_type_all_args clone() {
+      return new get_type_all_args(this);
+    }
+
+    public String getName() {
+      return this.name;
+    }
+
+    public void setName(String name) {
+      this.name = name;
+    }
+
+    public void unsetName() {
+      this.name = null;
+    }
+
+    // Returns true if field name is set (has been asigned a value) and false otherwise
+    public boolean isSetName() {
+      return this.name != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case NAME:
+        if (value == null) {
+          unsetName();
+        } else {
+          setName((String)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case NAME:
+        return getName();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case NAME:
+        return isSetName();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_type_all_args)
+        return this.equals((get_type_all_args)that);
+      return false;
+    }
+
+    public boolean equals(get_type_all_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_name = true && this.isSetName();
+      boolean that_present_name = true && that.isSetName();
+      if (this_present_name || that_present_name) {
+        if (!(this_present_name && that_present_name))
+          return false;
+        if (!this.name.equals(that.name))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case NAME:
+            if (field.type == TType.STRING) {
+              this.name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.name != null) {
+        oprot.writeFieldBegin(NAME_FIELD_DESC);
+        oprot.writeString(this.name);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_type_all_args(");
+      boolean first = true;
+
+      sb.append("name:");
+      if (this.name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.name);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class get_type_all_result implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_type_all_result");
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.MAP, (short)0);
+    private static final TField O2_FIELD_DESC = new TField("o2", TType.STRUCT, (short)1);
+
+    private Map<String,Type> success;
+    public static final int SUCCESS = 0;
+    private MetaException o2;
+    public static final int O2 = 1;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new MapMetaData(TType.MAP, 
+              new FieldValueMetaData(TType.STRING), 
+              new StructMetaData(TType.STRUCT, Type.class))));
+      put(O2, new FieldMetaData("o2", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(get_type_all_result.class, metaDataMap);
+    }
+
+    public get_type_all_result() {
+    }
+
+    public get_type_all_result(
+      Map<String,Type> success,
+      MetaException o2)
+    {
+      this();
+      this.success = success;
+      this.o2 = o2;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_type_all_result(get_type_all_result other) {
+      if (other.isSetSuccess()) {
+        Map<String,Type> __this__success = new HashMap<String,Type>();
+        for (Map.Entry<String, Type> other_element : other.success.entrySet()) {
+
+          String other_element_key = other_element.getKey();
+          Type other_element_value = other_element.getValue();
+
+          String __this__success_copy_key = other_element_key;
+
+          Type __this__success_copy_value = new Type(other_element_value);
+
+          __this__success.put(__this__success_copy_key, __this__success_copy_value);
+        }
+        this.success = __this__success;
+      }
+      if (other.isSetO2()) {
+        this.o2 = new MetaException(other.o2);
+      }
+    }
+
+    @Override
+    public get_type_all_result clone() {
+      return new get_type_all_result(this);
+    }
+
+    public int getSuccessSize() {
+      return (this.success == null) ? 0 : this.success.size();
+    }
+
+    public void putToSuccess(String key, Type val) {
+      if (this.success == null) {
+        this.success = new HashMap<String,Type>();
+      }
+      this.success.put(key, val);
+    }
+
+    public Map<String,Type> getSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(Map<String,Type> success) {
+      this.success = success;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    // Returns true if field success is set (has been asigned a value) and false otherwise
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public MetaException getO2() {
+      return this.o2;
+    }
+
+    public void setO2(MetaException o2) {
+      this.o2 = o2;
+    }
+
+    public void unsetO2() {
+      this.o2 = null;
+    }
+
+    // Returns true if field o2 is set (has been asigned a value) and false otherwise
+    public boolean isSetO2() {
+      return this.o2 != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((Map<String,Type>)value);
+        }
+        break;
+
+      case O2:
+        if (value == null) {
+          unsetO2();
+        } else {
+          setO2((MetaException)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return getSuccess();
+
+      case O2:
+        return getO2();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O2:
+        return isSetO2();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_type_all_result)
+        return this.equals((get_type_all_result)that);
+      return false;
+    }
+
+    public boolean equals(get_type_all_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_o2 = true && this.isSetO2();
+      boolean that_present_o2 = true && that.isSetO2();
+      if (this_present_o2 || that_present_o2) {
+        if (!(this_present_o2 && that_present_o2))
+          return false;
+        if (!this.o2.equals(that.o2))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case SUCCESS:
+            if (field.type == TType.MAP) {
+              {
+                TMap _map61 = iprot.readMapBegin();
+                this.success = new HashMap<String,Type>(2*_map61.size);
+                for (int _i62 = 0; _i62 < _map61.size; ++_i62)
+                {
+                  String _key63;
+                  Type _val64;
+                  _key63 = iprot.readString();
+                  _val64 = new Type();
+                  _val64.read(iprot);
+                  this.success.put(_key63, _val64);
+                }
+                iprot.readMapEnd();
+              }
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O2:
+            if (field.type == TType.STRUCT) {
+              this.o2 = new MetaException();
+              this.o2.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        {
+          oprot.writeMapBegin(new TMap(TType.STRING, TType.STRUCT, this.success.size()));
+          for (Map.Entry<String, Type> _iter65 : this.success.entrySet())          {
+            oprot.writeString(_iter65.getKey());
+            _iter65.getValue().write(oprot);
+          }
+          oprot.writeMapEnd();
+        }
+        oprot.writeFieldEnd();
+      } else if (this.isSetO2()) {
+        oprot.writeFieldBegin(O2_FIELD_DESC);
+        this.o2.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_type_all_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o2:");
+      if (this.o2 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o2);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class get_fields_args implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_fields_args");
+    private static final TField DB_NAME_FIELD_DESC = new TField("db_name", TType.STRING, (short)1);
+    private static final TField TABLE_NAME_FIELD_DESC = new TField("table_name", TType.STRING, (short)2);
+
+    private String db_name;
+    public static final int DB_NAME = 1;
+    private String table_name;
+    public static final int TABLE_NAME = 2;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(DB_NAME, new FieldMetaData("db_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      put(TABLE_NAME, new FieldMetaData("table_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(get_fields_args.class, metaDataMap);
+    }
+
+    public get_fields_args() {
+    }
+
+    public get_fields_args(
+      String db_name,
+      String table_name)
+    {
+      this();
+      this.db_name = db_name;
+      this.table_name = table_name;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_fields_args(get_fields_args other) {
+      if (other.isSetDb_name()) {
+        this.db_name = other.db_name;
+      }
+      if (other.isSetTable_name()) {
+        this.table_name = other.table_name;
+      }
+    }
+
+    @Override
+    public get_fields_args clone() {
+      return new get_fields_args(this);
+    }
+
+    public String getDb_name() {
+      return this.db_name;
+    }
+
+    public void setDb_name(String db_name) {
+      this.db_name = db_name;
+    }
+
+    public void unsetDb_name() {
+      this.db_name = null;
+    }
+
+    // Returns true if field db_name is set (has been asigned a value) and false otherwise
+    public boolean isSetDb_name() {
+      return this.db_name != null;
+    }
+
+    public String getTable_name() {
+      return this.table_name;
+    }
+
+    public void setTable_name(String table_name) {
+      this.table_name = table_name;
+    }
+
+    public void unsetTable_name() {
+      this.table_name = null;
+    }
+
+    // Returns true if field table_name is set (has been asigned a value) and false otherwise
+    public boolean isSetTable_name() {
+      return this.table_name != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case DB_NAME:
+        if (value == null) {
+          unsetDb_name();
+        } else {
+          setDb_name((String)value);
+        }
+        break;
+
+      case TABLE_NAME:
+        if (value == null) {
+          unsetTable_name();
+        } else {
+          setTable_name((String)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case DB_NAME:
+        return getDb_name();
+
+      case TABLE_NAME:
+        return getTable_name();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case DB_NAME:
+        return isSetDb_name();
+      case TABLE_NAME:
+        return isSetTable_name();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_fields_args)
+        return this.equals((get_fields_args)that);
+      return false;
+    }
+
+    public boolean equals(get_fields_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_db_name = true && this.isSetDb_name();
+      boolean that_present_db_name = true && that.isSetDb_name();
+      if (this_present_db_name || that_present_db_name) {
+        if (!(this_present_db_name && that_present_db_name))
+          return false;
+        if (!this.db_name.equals(that.db_name))
+          return false;
+      }
+
+      boolean this_present_table_name = true && this.isSetTable_name();
+      boolean that_present_table_name = true && that.isSetTable_name();
+      if (this_present_table_name || that_present_table_name) {
+        if (!(this_present_table_name && that_present_table_name))
+          return false;
+        if (!this.table_name.equals(that.table_name))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case DB_NAME:
+            if (field.type == TType.STRING) {
+              this.db_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case TABLE_NAME:
+            if (field.type == TType.STRING) {
+              this.table_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.db_name != null) {
+        oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
+        oprot.writeString(this.db_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.table_name != null) {
+        oprot.writeFieldBegin(TABLE_NAME_FIELD_DESC);
+        oprot.writeString(this.table_name);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_fields_args(");
+      boolean first = true;
+
+      sb.append("db_name:");
+      if (this.db_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.db_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("table_name:");
+      if (this.table_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.table_name);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class get_fields_result implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_fields_result");
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.LIST, (short)0);
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+    private static final TField O2_FIELD_DESC = new TField("o2", TType.STRUCT, (short)2);
+    private static final TField O3_FIELD_DESC = new TField("o3", TType.STRUCT, (short)3);
+
+    private List<FieldSchema> success;
+    public static final int SUCCESS = 0;
+    private MetaException o1;
+    public static final int O1 = 1;
+    private UnknownTableException o2;
+    public static final int O2 = 2;
+    private UnknownDBException o3;
+    public static final int O3 = 3;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new ListMetaData(TType.LIST, 
+              new StructMetaData(TType.STRUCT, FieldSchema.class))));
+      put(O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      put(O2, new FieldMetaData("o2", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      put(O3, new FieldMetaData("o3", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(get_fields_result.class, metaDataMap);
+    }
+
+    public get_fields_result() {
+    }
+
+    public get_fields_result(
+      List<FieldSchema> success,
+      MetaException o1,
+      UnknownTableException o2,
+      UnknownDBException o3)
+    {
+      this();
+      this.success = success;
+      this.o1 = o1;
+      this.o2 = o2;
+      this.o3 = o3;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_fields_result(get_fields_result other) {
+      if (other.isSetSuccess()) {
+        List<FieldSchema> __this__success = new ArrayList<FieldSchema>();
+        for (FieldSchema other_element : other.success) {
+          __this__success.add(new FieldSchema(other_element));
+        }
+        this.success = __this__success;
+      }
+      if (other.isSetO1()) {
+        this.o1 = new MetaException(other.o1);
+      }
+      if (other.isSetO2()) {
+        this.o2 = new UnknownTableException(other.o2);
+      }
+      if (other.isSetO3()) {
+        this.o3 = new UnknownDBException(other.o3);
+      }
+    }
+
+    @Override
+    public get_fields_result clone() {
+      return new get_fields_result(this);
+    }
+
+    public int getSuccessSize() {
+      return (this.success == null) ? 0 : this.success.size();
+    }
+
+    public java.util.Iterator<FieldSchema> getSuccessIterator() {
+      return (this.success == null) ? null : this.success.iterator();
+    }
+
+    public void addToSuccess(FieldSchema elem) {
+      if (this.success == null) {
+        this.success = new ArrayList<FieldSchema>();
+      }
+      this.success.add(elem);
+    }
+
+    public List<FieldSchema> getSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(List<FieldSchema> success) {
+      this.success = success;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    // Returns true if field success is set (has been asigned a value) and false otherwise
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public MetaException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(MetaException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    // Returns true if field o1 is set (has been asigned a value) and false otherwise
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public UnknownTableException getO2() {
+      return this.o2;
+    }
+
+    public void setO2(UnknownTableException o2) {
+      this.o2 = o2;
+    }
+
+    public void unsetO2() {
+      this.o2 = null;
+    }
+
+    // Returns true if field o2 is set (has been asigned a value) and false otherwise
+    public boolean isSetO2() {
+      return this.o2 != null;
+    }
+
+    public UnknownDBException getO3() {
+      return this.o3;
+    }
+
+    public void setO3(UnknownDBException o3) {
+      this.o3 = o3;
+    }
+
+    public void unsetO3() {
+      this.o3 = null;
+    }
+
+    // Returns true if field o3 is set (has been asigned a value) and false otherwise
+    public boolean isSetO3() {
+      return this.o3 != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((List<FieldSchema>)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((MetaException)value);
+        }
+        break;
+
+      case O2:
+        if (value == null) {
+          unsetO2();
+        } else {
+          setO2((UnknownTableException)value);
+        }
+        break;
+
+      case O3:
+        if (value == null) {
+          unsetO3();
+        } else {
+          setO3((UnknownDBException)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return getSuccess();
+
+      case O1:
+        return getO1();
+
+      case O2:
+        return getO2();
+
+      case O3:
+        return getO3();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      case O2:
+        return isSetO2();
+      case O3:
+        return isSetO3();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_fields_result)
+        return this.equals((get_fields_result)that);
+      return false;
+    }
+
+    public boolean equals(get_fields_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      boolean this_present_o2 = true && this.isSetO2();
+      boolean that_present_o2 = true && that.isSetO2();
+      if (this_present_o2 || that_present_o2) {
+        if (!(this_present_o2 && that_present_o2))
+          return false;
+        if (!this.o2.equals(that.o2))
+          return false;
+      }
+
+      boolean this_present_o3 = true && this.isSetO3();
+      boolean that_present_o3 = true && that.isSetO3();
+      if (this_present_o3 || that_present_o3) {
+        if (!(this_present_o3 && that_present_o3))
+          return false;
+        if (!this.o3.equals(that.o3))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case SUCCESS:
+            if (field.type == TType.LIST) {
+              {
+                TList _list66 = iprot.readListBegin();
+                this.success = new ArrayList<FieldSchema>(_list66.size);
+                for (int _i67 = 0; _i67 < _list66.size; ++_i67)
+                {
+                  FieldSchema _elem68;
+                  _elem68 = new FieldSchema();
+                  _elem68.read(iprot);
+                  this.success.add(_elem68);
+                }
+                iprot.readListEnd();
+              }
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O1:
+            if (field.type == TType.STRUCT) {
+              this.o1 = new MetaException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O2:
+            if (field.type == TType.STRUCT) {
+              this.o2 = new UnknownTableException();
+              this.o2.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O3:
+            if (field.type == TType.STRUCT) {
+              this.o3 = new UnknownDBException();
+              this.o3.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
+          for (FieldSchema _iter69 : this.success)          {
+            _iter69.write(oprot);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO2()) {
+        oprot.writeFieldBegin(O2_FIELD_DESC);
+        this.o2.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO3()) {
+        oprot.writeFieldBegin(O3_FIELD_DESC);
+        this.o3.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_fields_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o2:");
+      if (this.o2 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o2);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o3:");
+      if (this.o3 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o3);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class create_table_args implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("create_table_args");
+    private static final TField TBL_FIELD_DESC = new TField("tbl", TType.STRUCT, (short)1);
+
+    private Table tbl;
+    public static final int TBL = 1;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(TBL, new FieldMetaData("tbl", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, Table.class)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(create_table_args.class, metaDataMap);
+    }
+
+    public create_table_args() {
+    }
+
+    public create_table_args(
+      Table tbl)
+    {
+      this();
+      this.tbl = tbl;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public create_table_args(create_table_args other) {
+      if (other.isSetTbl()) {
+        this.tbl = new Table(other.tbl);
+      }
+    }
+
+    @Override
+    public create_table_args clone() {
+      return new create_table_args(this);
+    }
+
+    public Table getTbl() {
+      return this.tbl;
+    }
+
+    public void setTbl(Table tbl) {
+      this.tbl = tbl;
+    }
+
+    public void unsetTbl() {
+      this.tbl = null;
+    }
+
+    // Returns true if field tbl is set (has been asigned a value) and false otherwise
+    public boolean isSetTbl() {
+      return this.tbl != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case TBL:
+        if (value == null) {
+          unsetTbl();
+        } else {
+          setTbl((Table)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case TBL:
+        return getTbl();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case TBL:
+        return isSetTbl();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof create_table_args)
+        return this.equals((create_table_args)that);
+      return false;
+    }
+
+    public boolean equals(create_table_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_tbl = true && this.isSetTbl();
+      boolean that_present_tbl = true && that.isSetTbl();
+      if (this_present_tbl || that_present_tbl) {
+        if (!(this_present_tbl && that_present_tbl))
+          return false;
+        if (!this.tbl.equals(that.tbl))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case TBL:
+            if (field.type == TType.STRUCT) {
+              this.tbl = new Table();
+              this.tbl.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.tbl != null) {
+        oprot.writeFieldBegin(TBL_FIELD_DESC);
+        this.tbl.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("create_table_args(");
+      boolean first = true;
+
+      sb.append("tbl:");
+      if (this.tbl == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tbl);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class create_table_result implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("create_table_result");
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+    private static final TField O2_FIELD_DESC = new TField("o2", TType.STRUCT, (short)2);
+    private static final TField O3_FIELD_DESC = new TField("o3", TType.STRUCT, (short)3);
+    private static final TField O4_FIELD_DESC = new TField("o4", TType.STRUCT, (short)4);
+
+    private AlreadyExistsException o1;
+    public static final int O1 = 1;
+    private InvalidObjectException o2;
+    public static final int O2 = 2;
+    private MetaException o3;
+    public static final int O3 = 3;
+    private NoSuchObjectException o4;
+    public static final int O4 = 4;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      put(O2, new FieldMetaData("o2", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      put(O3, new FieldMetaData("o3", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      put(O4, new FieldMetaData("o4", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(create_table_result.class, metaDataMap);
+    }
+
+    public create_table_result() {
+    }
+
+    public create_table_result(
+      AlreadyExistsException o1,
+      InvalidObjectException o2,
+      MetaException o3,
+      NoSuchObjectException o4)
+    {
+      this();
+      this.o1 = o1;
+      this.o2 = o2;
+      this.o3 = o3;
+      this.o4 = o4;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public create_table_result(create_table_result other) {
+      if (other.isSetO1()) {
+        this.o1 = new AlreadyExistsException(other.o1);
+      }
+      if (other.isSetO2()) {
+        this.o2 = new InvalidObjectException(other.o2);
+      }
+      if (other.isSetO3()) {
+        this.o3 = new MetaException(other.o3);
+      }
+      if (other.isSetO4()) {
+        this.o4 = new NoSuchObjectException(other.o4);
+      }
+    }
+
+    @Override
+    public create_table_result clone() {
+      return new create_table_result(this);
+    }
+
+    public AlreadyExistsException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(AlreadyExistsException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    // Returns true if field o1 is set (has been asigned a value) and false otherwise
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public InvalidObjectException getO2() {
+      return this.o2;
+    }
+
+    public void setO2(InvalidObjectException o2) {
+      this.o2 = o2;
+    }
+
+    public void unsetO2() {
+      this.o2 = null;
+    }
+
+    // Returns true if field o2 is set (has been asigned a value) and false otherwise
+    public boolean isSetO2() {
+      return this.o2 != null;
+    }
+
+    public MetaException getO3() {
+      return this.o3;
+    }
+
+    public void setO3(MetaException o3) {
+      this.o3 = o3;
+    }
+
+    public void unsetO3() {
+      this.o3 = null;
+    }
+
+    // Returns true if field o3 is set (has been asigned a value) and false otherwise
+    public boolean isSetO3() {
+      return this.o3 != null;
+    }
+
+    public NoSuchObjectException getO4() {
+      return this.o4;
+    }
+
+    public void setO4(NoSuchObjectException o4) {
+      this.o4 = o4;
+    }
+
+    public void unsetO4() {
+      this.o4 = null;
+    }
+
+    // Returns true if field o4 is set (has been asigned a value) and false otherwise
+    public boolean isSetO4() {
+      return this.o4 != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((AlreadyExistsException)value);
+        }
+        break;
+
+      case O2:
+        if (value == null) {
+          unsetO2();
+        } else {
+          setO2((InvalidObjectException)value);
+        }
+        break;
+
+      case O3:
+        if (value == null) {
+          unsetO3();
+        } else {
+          setO3((MetaException)value);
+        }
+        break;
+
+      case O4:
+        if (value == null) {
+          unsetO4();
+        } else {
+          setO4((NoSuchObjectException)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case O1:
+        return getO1();
+
+      case O2:
+        return getO2();
+
+      case O3:
+        return getO3();
+
+      case O4:
+        return getO4();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case O1:
+        return isSetO1();
+      case O2:
+        return isSetO2();
+      case O3:
+        return isSetO3();
+      case O4:
+        return isSetO4();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof create_table_result)
+        return this.equals((create_table_result)that);
+      return false;
+    }
+
+    public boolean equals(create_table_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      boolean this_present_o2 = true && this.isSetO2();
+      boolean that_present_o2 = true && that.isSetO2();
+      if (this_present_o2 || that_present_o2) {
+        if (!(this_present_o2 && that_present_o2))
+          return false;
+        if (!this.o2.equals(that.o2))
+          return false;
+      }
+
+      boolean this_present_o3 = true && this.isSetO3();
+      boolean that_present_o3 = true && that.isSetO3();
+      if (this_present_o3 || that_present_o3) {
+        if (!(this_present_o3 && that_present_o3))
+          return false;
+        if (!this.o3.equals(that.o3))
+          return false;
+      }
+
+      boolean this_present_o4 = true && this.isSetO4();
+      boolean that_present_o4 = true && that.isSetO4();
+      if (this_present_o4 || that_present_o4) {
+        if (!(this_present_o4 && that_present_o4))
+          return false;
+        if (!this.o4.equals(that.o4))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case O1:
+            if (field.type == TType.STRUCT) {
+              this.o1 = new AlreadyExistsException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O2:
+            if (field.type == TType.STRUCT) {
+              this.o2 = new InvalidObjectException();
+              this.o2.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O3:
+            if (field.type == TType.STRUCT) {
+              this.o3 = new MetaException();
+              this.o3.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O4:
+            if (field.type == TType.STRUCT) {
+              this.o4 = new NoSuchObjectException();
+              this.o4.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO2()) {
+        oprot.writeFieldBegin(O2_FIELD_DESC);
+        this.o2.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO3()) {
+        oprot.writeFieldBegin(O3_FIELD_DESC);
+        this.o3.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO4()) {
+        oprot.writeFieldBegin(O4_FIELD_DESC);
+        this.o4.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("create_table_result(");
+      boolean first = true;
+
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o2:");
+      if (this.o2 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o2);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o3:");
+      if (this.o3 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o3);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o4:");
+      if (this.o4 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o4);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class drop_table_args implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("drop_table_args");
+    private static final TField DBNAME_FIELD_DESC = new TField("dbname", TType.STRING, (short)1);
+    private static final TField NAME_FIELD_DESC = new TField("name", TType.STRING, (short)2);
+    private static final TField DELETE_DATA_FIELD_DESC = new TField("deleteData", TType.BOOL, (short)3);
+
+    private String dbname;
+    public static final int DBNAME = 1;
+    private String name;
+    public static final int NAME = 2;
+    private boolean deleteData;
+    public static final int DELETEDATA = 3;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+      public boolean deleteData = false;
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(DBNAME, new FieldMetaData("dbname", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      put(NAME, new FieldMetaData("name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      put(DELETEDATA, new FieldMetaData("deleteData", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.BOOL)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(drop_table_args.class, metaDataMap);
+    }
+
+    public drop_table_args() {
+    }
+
+    public drop_table_args(
+      String dbname,
+      String name,
+      boolean deleteData)
+    {
+      this();
+      this.dbname = dbname;
+      this.name = name;
+      this.deleteData = deleteData;
+      this.__isset.deleteData = true;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public drop_table_args(drop_table_args other) {
+      if (other.isSetDbname()) {
+        this.dbname = other.dbname;
+      }
+      if (other.isSetName()) {
+        this.name = other.name;
+      }
+      __isset.deleteData = other.__isset.deleteData;
+      this.deleteData = other.deleteData;
+    }
+
+    @Override
+    public drop_table_args clone() {
+      return new drop_table_args(this);
+    }
+
+    public String getDbname() {
+      return this.dbname;
+    }
+
+    public void setDbname(String dbname) {
+      this.dbname = dbname;
+    }
+
+    public void unsetDbname() {
+      this.dbname = null;
+    }
+
+    // Returns true if field dbname is set (has been asigned a value) and false otherwise
+    public boolean isSetDbname() {
+      return this.dbname != null;
+    }
+
+    public String getName() {
+      return this.name;
+    }
+
+    public void setName(String name) {
+      this.name = name;
+    }
+
+    public void unsetName() {
+      this.name = null;
+    }
+
+    // Returns true if field name is set (has been asigned a value) and false otherwise
+    public boolean isSetName() {
+      return this.name != null;
+    }
+
+    public boolean isDeleteData() {
+      return this.deleteData;
+    }
+
+    public void setDeleteData(boolean deleteData) {
+      this.deleteData = deleteData;
+      this.__isset.deleteData = true;
+    }
+
+    public void unsetDeleteData() {
+      this.__isset.deleteData = false;
+    }
+
+    // Returns true if field deleteData is set (has been asigned a value) and false otherwise
+    public boolean isSetDeleteData() {
+      return this.__isset.deleteData;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case DBNAME:
+        if (value == null) {
+          unsetDbname();
+        } else {
+          setDbname((String)value);
+        }
+        break;
+
+      case NAME:
+        if (value == null) {
+          unsetName();
+        } else {
+          setName((String)value);
+        }
+        break;
+
+      case DELETEDATA:
+        if (value == null) {
+          unsetDeleteData();
+        } else {
+          setDeleteData((Boolean)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case DBNAME:
+        return getDbname();
+
+      case NAME:
+        return getName();
+
+      case DELETEDATA:
+        return new Boolean(isDeleteData());
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case DBNAME:
+        return isSetDbname();
+      case NAME:
+        return isSetName();
+      case DELETEDATA:
+        return isSetDeleteData();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof drop_table_args)
+        return this.equals((drop_table_args)that);
+      return false;
+    }
+
+    public boolean equals(drop_table_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_dbname = true && this.isSetDbname();
+      boolean that_present_dbname = true && that.isSetDbname();
+      if (this_present_dbname || that_present_dbname) {
+        if (!(this_present_dbname && that_present_dbname))
+          return false;
+        if (!this.dbname.equals(that.dbname))
+          return false;
+      }
+
+      boolean this_present_name = true && this.isSetName();
+      boolean that_present_name = true && that.isSetName();
+      if (this_present_name || that_present_name) {
+        if (!(this_present_name && that_present_name))
+          return false;
+        if (!this.name.equals(that.name))
+          return false;
+      }
+
+      boolean this_present_deleteData = true;
+      boolean that_present_deleteData = true;
+      if (this_present_deleteData || that_present_deleteData) {
+        if (!(this_present_deleteData && that_present_deleteData))
+          return false;
+        if (this.deleteData != that.deleteData)
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case DBNAME:
+            if (field.type == TType.STRING) {
+              this.dbname = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case NAME:
+            if (field.type == TType.STRING) {
+              this.name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case DELETEDATA:
+            if (field.type == TType.BOOL) {
+              this.deleteData = iprot.readBool();
+              this.__isset.deleteData = true;
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.dbname != null) {
+        oprot.writeFieldBegin(DBNAME_FIELD_DESC);
+        oprot.writeString(this.dbname);
+        oprot.writeFieldEnd();
+      }
+      if (this.name != null) {
+        oprot.writeFieldBegin(NAME_FIELD_DESC);
+        oprot.writeString(this.name);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldBegin(DELETE_DATA_FIELD_DESC);
+      oprot.writeBool(this.deleteData);
+      oprot.writeFieldEnd();
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("drop_table_args(");
+      boolean first = true;
+
+      sb.append("dbname:");
+      if (this.dbname == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.dbname);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("name:");
+      if (this.name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("deleteData:");
+      sb.append(this.deleteData);
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class drop_table_result implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("drop_table_result");
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+    private static final TField O3_FIELD_DESC = new TField("o3", TType.STRUCT, (short)2);
+
+    private NoSuchObjectException o1;
+    public static final int O1 = 1;
+    private MetaException o3;
+    public static final int O3 = 2;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      put(O3, new FieldMetaData("o3", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(drop_table_result.class, metaDataMap);
+    }
+
+    public drop_table_result() {
+    }
+
+    public drop_table_result(
+      NoSuchObjectException o1,
+      MetaException o3)
+    {
+      this();
+      this.o1 = o1;
+      this.o3 = o3;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public drop_table_result(drop_table_result other) {
+      if (other.isSetO1()) {
+        this.o1 = new NoSuchObjectException(other.o1);
+      }
+      if (other.isSetO3()) {
+        this.o3 = new MetaException(other.o3);
+      }
+    }
+
+    @Override
+    public drop_table_result clone() {
+      return new drop_table_result(this);
+    }
+
+    public NoSuchObjectException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(NoSuchObjectException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    // Returns true if field o1 is set (has been asigned a value) and false otherwise
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public MetaException getO3() {
+      return this.o3;
+    }
+
+    public void setO3(MetaException o3) {
+      this.o3 = o3;
+    }
+
+    public void unsetO3() {
+      this.o3 = null;
+    }
+
+    // Returns true if field o3 is set (has been asigned a value) and false otherwise
+    public boolean isSetO3() {
+      return this.o3 != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((NoSuchObjectException)value);
+        }
+        break;
+
+      case O3:
+        if (value == null) {
+          unsetO3();
+        } else {
+          setO3((MetaException)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case O1:
+        return getO1();
+
+      case O3:
+        return getO3();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case O1:
+        return isSetO1();
+      case O3:
+        return isSetO3();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof drop_table_result)
+        return this.equals((drop_table_result)that);
+      return false;
+    }
+
+    public boolean equals(drop_table_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      boolean this_present_o3 = true && this.isSetO3();
+      boolean that_present_o3 = true && that.isSetO3();
+      if (this_present_o3 || that_present_o3) {
+        if (!(this_present_o3 && that_present_o3))
+          return false;
+        if (!this.o3.equals(that.o3))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case O1:
+            if (field.type == TType.STRUCT) {
+              this.o1 = new NoSuchObjectException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O3:
+            if (field.type == TType.STRUCT) {
+              this.o3 = new MetaException();
+              this.o3.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO3()) {
+        oprot.writeFieldBegin(O3_FIELD_DESC);
+        this.o3.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("drop_table_result(");
+      boolean first = true;
+
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o3:");
+      if (this.o3 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o3);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class get_tables_args implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_tables_args");
+    private static final TField DB_NAME_FIELD_DESC = new TField("db_name", TType.STRING, (short)1);
+    private static final TField PATTERN_FIELD_DESC = new TField("pattern", TType.STRING, (short)2);
+
+    private String db_name;
+    public static final int DB_NAME = 1;
+    private String pattern;
+    public static final int PATTERN = 2;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(DB_NAME, new FieldMetaData("db_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      put(PATTERN, new FieldMetaData("pattern", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(get_tables_args.class, metaDataMap);
+    }
+
+    public get_tables_args() {
+    }
+
+    public get_tables_args(
+      String db_name,
+      String pattern)
+    {
+      this();
+      this.db_name = db_name;
+      this.pattern = pattern;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_tables_args(get_tables_args other) {
+      if (other.isSetDb_name()) {
+        this.db_name = other.db_name;
+      }
+      if (other.isSetPattern()) {
+        this.pattern = other.pattern;
+      }
+    }
+
+    @Override
+    public get_tables_args clone() {
+      return new get_tables_args(this);
+    }
+
+    public String getDb_name() {
+      return this.db_name;
+    }
+
+    public void setDb_name(String db_name) {
+      this.db_name = db_name;
+    }
+
+    public void unsetDb_name() {
+      this.db_name = null;
+    }
+
+    // Returns true if field db_name is set (has been asigned a value) and false otherwise
+    public boolean isSetDb_name() {
+      return this.db_name != null;
+    }
+
+    public String getPattern() {
+      return this.pattern;
+    }
+
+    public void setPattern(String pattern) {
+      this.pattern = pattern;
+    }
+
+    public void unsetPattern() {
+      this.pattern = null;
+    }
+
+    // Returns true if field pattern is set (has been asigned a value) and false otherwise
+    public boolean isSetPattern() {
+      return this.pattern != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case DB_NAME:
+        if (value == null) {
+          unsetDb_name();
+        } else {
+          setDb_name((String)value);
+        }
+        break;
+
+      case PATTERN:
+        if (value == null) {
+          unsetPattern();
+        } else {
+          setPattern((String)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case DB_NAME:
+        return getDb_name();
+
+      case PATTERN:
+        return getPattern();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case DB_NAME:
+        return isSetDb_name();
+      case PATTERN:
+        return isSetPattern();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_tables_args)
+        return this.equals((get_tables_args)that);
+      return false;
+    }
+
+    public boolean equals(get_tables_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_db_name = true && this.isSetDb_name();
+      boolean that_present_db_name = true && that.isSetDb_name();
+      if (this_present_db_name || that_present_db_name) {
+        if (!(this_present_db_name && that_present_db_name))
+          return false;
+        if (!this.db_name.equals(that.db_name))
+          return false;
+      }
+
+      boolean this_present_pattern = true && this.isSetPattern();
+      boolean that_present_pattern = true && that.isSetPattern();
+      if (this_present_pattern || that_present_pattern) {
+        if (!(this_present_pattern && that_present_pattern))
+          return false;
+        if (!this.pattern.equals(that.pattern))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case DB_NAME:
+            if (field.type == TType.STRING) {
+              this.db_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case PATTERN:
+            if (field.type == TType.STRING) {
+              this.pattern = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.db_name != null) {
+        oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
+        oprot.writeString(this.db_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.pattern != null) {
+        oprot.writeFieldBegin(PATTERN_FIELD_DESC);
+        oprot.writeString(this.pattern);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_tables_args(");
+      boolean first = true;
+
+      sb.append("db_name:");
+      if (this.db_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.db_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("pattern:");
+      if (this.pattern == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.pattern);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class get_tables_result implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_tables_result");
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.LIST, (short)0);
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+
+    private List<String> success;
+    public static final int SUCCESS = 0;
+    private MetaException o1;
+    public static final int O1 = 1;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new ListMetaData(TType.LIST, 
+              new FieldValueMetaData(TType.STRING))));
+      put(O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(get_tables_result.class, metaDataMap);
+    }
+
+    public get_tables_result() {
+    }
+
+    public get_tables_result(
+      List<String> success,
+      MetaException o1)
+    {
+      this();
+      this.success = success;
+      this.o1 = o1;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_tables_result(get_tables_result other) {
+      if (other.isSetSuccess()) {
+        List<String> __this__success = new ArrayList<String>();
+        for (String other_element : other.success) {
+          __this__success.add(other_element);
+        }
+        this.success = __this__success;
+      }
+      if (other.isSetO1()) {
+        this.o1 = new MetaException(other.o1);
+      }
+    }
+
+    @Override
+    public get_tables_result clone() {
+      return new get_tables_result(this);
+    }
+
+    public int getSuccessSize() {
+      return (this.success == null) ? 0 : this.success.size();
+    }
+
+    public java.util.Iterator<String> getSuccessIterator() {
+      return (this.success == null) ? null : this.success.iterator();
+    }
+
+    public void addToSuccess(String elem) {
+      if (this.success == null) {
+        this.success = new ArrayList<String>();
+      }
+      this.success.add(elem);
+    }
+
+    public List<String> getSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(List<String> success) {
+      this.success = success;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    // Returns true if field success is set (has been asigned a value) and false otherwise
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public MetaException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(MetaException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    // Returns true if field o1 is set (has been asigned a value) and false otherwise
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((List<String>)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((MetaException)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return getSuccess();
+
+      case O1:
+        return getO1();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_tables_result)
+        return this.equals((get_tables_result)that);
+      return false;
+    }
+
+    public boolean equals(get_tables_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case SUCCESS:
+            if (field.type == TType.LIST) {
+              {
+                TList _list70 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list70.size);
+                for (int _i71 = 0; _i71 < _list70.size; ++_i71)
+                {
+                  String _elem72;
+                  _elem72 = iprot.readString();
+                  this.success.add(_elem72);
+                }
+                iprot.readListEnd();
+              }
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O1:
+            if (field.type == TType.STRUCT) {
+              this.o1 = new MetaException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
+          for (String _iter73 : this.success)          {
+            oprot.writeString(_iter73);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_tables_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class get_table_args implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_table_args");
+    private static final TField DBNAME_FIELD_DESC = new TField("dbname", TType.STRING, (short)1);
+    private static final TField TBL_NAME_FIELD_DESC = new TField("tbl_name", TType.STRING, (short)2);
+
+    private String dbname;
+    public static final int DBNAME = 1;
+    private String tbl_name;
+    public static final int TBL_NAME = 2;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(DBNAME, new FieldMetaData("dbname", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      put(TBL_NAME, new FieldMetaData("tbl_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(get_table_args.class, metaDataMap);
+    }
+
+    public get_table_args() {
+    }
+
+    public get_table_args(
+      String dbname,
+      String tbl_name)
+    {
+      this();
+      this.dbname = dbname;
+      this.tbl_name = tbl_name;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_table_args(get_table_args other) {
+      if (other.isSetDbname()) {
+        this.dbname = other.dbname;
+      }
+      if (other.isSetTbl_name()) {
+        this.tbl_name = other.tbl_name;
+      }
+    }
+
+    @Override
+    public get_table_args clone() {
+      return new get_table_args(this);
+    }
+
+    public String getDbname() {
+      return this.dbname;
+    }
+
+    public void setDbname(String dbname) {
+      this.dbname = dbname;
+    }
+
+    public void unsetDbname() {
+      this.dbname = null;
+    }
+
+    // Returns true if field dbname is set (has been asigned a value) and false otherwise
+    public boolean isSetDbname() {
+      return this.dbname != null;
+    }
+
+    public String getTbl_name() {
+      return this.tbl_name;
+    }
+
+    public void setTbl_name(String tbl_name) {
+      this.tbl_name = tbl_name;
+    }
+
+    public void unsetTbl_name() {
+      this.tbl_name = null;
+    }
+
+    // Returns true if field tbl_name is set (has been asigned a value) and false otherwise
+    public boolean isSetTbl_name() {
+      return this.tbl_name != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case DBNAME:
+        if (value == null) {
+          unsetDbname();
+        } else {
+          setDbname((String)value);
+        }
+        break;
+
+      case TBL_NAME:
+        if (value == null) {
+          unsetTbl_name();
+        } else {
+          setTbl_name((String)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case DBNAME:
+        return getDbname();
+
+      case TBL_NAME:
+        return getTbl_name();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case DBNAME:
+        return isSetDbname();
+      case TBL_NAME:
+        return isSetTbl_name();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_table_args)
+        return this.equals((get_table_args)that);
+      return false;
+    }
+
+    public boolean equals(get_table_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_dbname = true && this.isSetDbname();
+      boolean that_present_dbname = true && that.isSetDbname();
+      if (this_present_dbname || that_present_dbname) {
+        if (!(this_present_dbname && that_present_dbname))
+          return false;
+        if (!this.dbname.equals(that.dbname))
+          return false;
+      }
+
+      boolean this_present_tbl_name = true && this.isSetTbl_name();
+      boolean that_present_tbl_name = true && that.isSetTbl_name();
+      if (this_present_tbl_name || that_present_tbl_name) {
+        if (!(this_present_tbl_name && that_present_tbl_name))
+          return false;
+        if (!this.tbl_name.equals(that.tbl_name))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case DBNAME:
+            if (field.type == TType.STRING) {
+              this.dbname = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case TBL_NAME:
+            if (field.type == TType.STRING) {
+              this.tbl_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.dbname != null) {
+        oprot.writeFieldBegin(DBNAME_FIELD_DESC);
+        oprot.writeString(this.dbname);
+        oprot.writeFieldEnd();
+      }
+      if (this.tbl_name != null) {
+        oprot.writeFieldBegin(TBL_NAME_FIELD_DESC);
+        oprot.writeString(this.tbl_name);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_table_args(");
+      boolean first = true;
+
+      sb.append("dbname:");
+      if (this.dbname == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.dbname);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("tbl_name:");
+      if (this.tbl_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tbl_name);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class get_table_result implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_table_result");
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.STRUCT, (short)0);
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+    private static final TField O2_FIELD_DESC = new TField("o2", TType.STRUCT, (short)2);
+
+    private Table success;
+    public static final int SUCCESS = 0;
+    private MetaException o1;
+    public static final int O1 = 1;
+    private NoSuchObjectException o2;
+    public static final int O2 = 2;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, Table.class)));
+      put(O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      put(O2, new FieldMetaData("o2", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(get_table_result.class, metaDataMap);
+    }
+
+    public get_table_result() {
+    }
+
+    public get_table_result(
+      Table success,
+      MetaException o1,
+      NoSuchObjectException o2)
+    {
+      this();
+      this.success = success;
+      this.o1 = o1;
+      this.o2 = o2;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_table_result(get_table_result other) {
+      if (other.isSetSuccess()) {
+        this.success = new Table(other.success);
+      }
+      if (other.isSetO1()) {
+        this.o1 = new MetaException(other.o1);
+      }
+      if (other.isSetO2()) {
+        this.o2 = new NoSuchObjectException(other.o2);
+      }
+    }
+
+    @Override
+    public get_table_result clone() {
+      return new get_table_result(this);
+    }
+
+    public Table getSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(Table success) {
+      this.success = success;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    // Returns true if field success is set (has been asigned a value) and false otherwise
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public MetaException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(MetaException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    // Returns true if field o1 is set (has been asigned a value) and false otherwise
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public NoSuchObjectException getO2() {
+      return this.o2;
+    }
+
+    public void setO2(NoSuchObjectException o2) {
+      this.o2 = o2;
+    }
+
+    public void unsetO2() {
+      this.o2 = null;
+    }
+
+    // Returns true if field o2 is set (has been asigned a value) and false otherwise
+    public boolean isSetO2() {
+      return this.o2 != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((Table)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((MetaException)value);
+        }
+        break;
+
+      case O2:
+        if (value == null) {
+          unsetO2();
+        } else {
+          setO2((NoSuchObjectException)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return getSuccess();
+
+      case O1:
+        return getO1();
+
+      case O2:
+        return getO2();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      case O2:
+        return isSetO2();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_table_result)
+        return this.equals((get_table_result)that);
+      return false;
+    }
+
+    public boolean equals(get_table_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      boolean this_present_o2 = true && this.isSetO2();
+      boolean that_present_o2 = true && that.isSetO2();
+      if (this_present_o2 || that_present_o2) {
+        if (!(this_present_o2 && that_present_o2))
+          return false;
+        if (!this.o2.equals(that.o2))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case SUCCESS:
+            if (field.type == TType.STRUCT) {
+              this.success = new Table();
+              this.success.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O1:
+            if (field.type == TType.STRUCT) {
+              this.o1 = new MetaException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O2:
+            if (field.type == TType.STRUCT) {
+              this.o2 = new NoSuchObjectException();
+              this.o2.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        this.success.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO2()) {
+        oprot.writeFieldBegin(O2_FIELD_DESC);
+        this.o2.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_table_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o2:");
+      if (this.o2 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o2);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class alter_table_args implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("alter_table_args");
+    private static final TField DBNAME_FIELD_DESC = new TField("dbname", TType.STRING, (short)1);
+    private static final TField TBL_NAME_FIELD_DESC = new TField("tbl_name", TType.STRING, (short)2);
+    private static final TField NEW_TBL_FIELD_DESC = new TField("new_tbl", TType.STRUCT, (short)3);
+
+    private String dbname;
+    public static final int DBNAME = 1;
+    private String tbl_name;
+    public static final int TBL_NAME = 2;
+    private Table new_tbl;
+    public static final int NEW_TBL = 3;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(DBNAME, new FieldMetaData("dbname", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      put(TBL_NAME, new FieldMetaData("tbl_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      put(NEW_TBL, new FieldMetaData("new_tbl", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, Table.class)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(alter_table_args.class, metaDataMap);
+    }
+
+    public alter_table_args() {
+    }
+
+    public alter_table_args(
+      String dbname,
+      String tbl_name,
+      Table new_tbl)
+    {
+      this();
+      this.dbname = dbname;
+      this.tbl_name = tbl_name;
+      this.new_tbl = new_tbl;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public alter_table_args(alter_table_args other) {
+      if (other.isSetDbname()) {
+        this.dbname = other.dbname;
+      }
+      if (other.isSetTbl_name()) {
+        this.tbl_name = other.tbl_name;
+      }
+      if (other.isSetNew_tbl()) {
+        this.new_tbl = new Table(other.new_tbl);
+      }
+    }
+
+    @Override
+    public alter_table_args clone() {
+      return new alter_table_args(this);
+    }
+
+    public String getDbname() {
+      return this.dbname;
+    }
+
+    public void setDbname(String dbname) {
+      this.dbname = dbname;
+    }
+
+    public void unsetDbname() {
+      this.dbname = null;
+    }
+
+    // Returns true if field dbname is set (has been asigned a value) and false otherwise
+    public boolean isSetDbname() {
+      return this.dbname != null;
+    }
+
+    public String getTbl_name() {
+      return this.tbl_name;
+    }
+
+    public void setTbl_name(String tbl_name) {
+      this.tbl_name = tbl_name;
+    }
+
+    public void unsetTbl_name() {
+      this.tbl_name = null;
+    }
+
+    // Returns true if field tbl_name is set (has been asigned a value) and false otherwise
+    public boolean isSetTbl_name() {
+      return this.tbl_name != null;
+    }
+
+    public Table getNew_tbl() {
+      return this.new_tbl;
+    }
+
+    public void setNew_tbl(Table new_tbl) {
+      this.new_tbl = new_tbl;
+    }
+
+    public void unsetNew_tbl() {
+      this.new_tbl = null;
+    }
+
+    // Returns true if field new_tbl is set (has been asigned a value) and false otherwise
+    public boolean isSetNew_tbl() {
+      return this.new_tbl != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case DBNAME:
+        if (value == null) {
+          unsetDbname();
+        } else {
+          setDbname((String)value);
+        }
+        break;
+
+      case TBL_NAME:
+        if (value == null) {
+          unsetTbl_name();
+        } else {
+          setTbl_name((String)value);
+        }
+        break;
+
+      case NEW_TBL:
+        if (value == null) {
+          unsetNew_tbl();
+        } else {
+          setNew_tbl((Table)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case DBNAME:
+        return getDbname();
+
+      case TBL_NAME:
+        return getTbl_name();
+
+      case NEW_TBL:
+        return getNew_tbl();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case DBNAME:
+        return isSetDbname();
+      case TBL_NAME:
+        return isSetTbl_name();
+      case NEW_TBL:
+        return isSetNew_tbl();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof alter_table_args)
+        return this.equals((alter_table_args)that);
+      return false;
+    }
+
+    public boolean equals(alter_table_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_dbname = true && this.isSetDbname();
+      boolean that_present_dbname = true && that.isSetDbname();
+      if (this_present_dbname || that_present_dbname) {
+        if (!(this_present_dbname && that_present_dbname))
+          return false;
+        if (!this.dbname.equals(that.dbname))
+          return false;
+      }
+
+      boolean this_present_tbl_name = true && this.isSetTbl_name();
+      boolean that_present_tbl_name = true && that.isSetTbl_name();
+      if (this_present_tbl_name || that_present_tbl_name) {
+        if (!(this_present_tbl_name && that_present_tbl_name))
+          return false;
+        if (!this.tbl_name.equals(that.tbl_name))
+          return false;
+      }
+
+      boolean this_present_new_tbl = true && this.isSetNew_tbl();
+      boolean that_present_new_tbl = true && that.isSetNew_tbl();
+      if (this_present_new_tbl || that_present_new_tbl) {
+        if (!(this_present_new_tbl && that_present_new_tbl))
+          return false;
+        if (!this.new_tbl.equals(that.new_tbl))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case DBNAME:
+            if (field.type == TType.STRING) {
+              this.dbname = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case TBL_NAME:
+            if (field.type == TType.STRING) {
+              this.tbl_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case NEW_TBL:
+            if (field.type == TType.STRUCT) {
+              this.new_tbl = new Table();
+              this.new_tbl.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.dbname != null) {
+        oprot.writeFieldBegin(DBNAME_FIELD_DESC);
+        oprot.writeString(this.dbname);
+        oprot.writeFieldEnd();
+      }
+      if (this.tbl_name != null) {
+        oprot.writeFieldBegin(TBL_NAME_FIELD_DESC);
+        oprot.writeString(this.tbl_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.new_tbl != null) {
+        oprot.writeFieldBegin(NEW_TBL_FIELD_DESC);
+        this.new_tbl.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("alter_table_args(");
+      boolean first = true;
+
+      sb.append("dbname:");
+      if (this.dbname == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.dbname);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("tbl_name:");
+      if (this.tbl_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tbl_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("new_tbl:");
+      if (this.new_tbl == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.new_tbl);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class alter_table_result implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("alter_table_result");
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+    private static final TField O2_FIELD_DESC = new TField("o2", TType.STRUCT, (short)2);
+
+    private InvalidOperationException o1;
+    public static final int O1 = 1;
+    private MetaException o2;
+    public static final int O2 = 2;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      put(O2, new FieldMetaData("o2", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(alter_table_result.class, metaDataMap);
+    }
+
+    public alter_table_result() {
+    }
+
+    public alter_table_result(
+      InvalidOperationException o1,
+      MetaException o2)
+    {
+      this();
+      this.o1 = o1;
+      this.o2 = o2;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public alter_table_result(alter_table_result other) {
+      if (other.isSetO1()) {
+        this.o1 = new InvalidOperationException(other.o1);
+      }
+      if (other.isSetO2()) {
+        this.o2 = new MetaException(other.o2);
+      }
+    }
+
+    @Override
+    public alter_table_result clone() {
+      return new alter_table_result(this);
+    }
+
+    public InvalidOperationException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(InvalidOperationException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    // Returns true if field o1 is set (has been asigned a value) and false otherwise
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public MetaException getO2() {
+      return this.o2;
+    }
+
+    public void setO2(MetaException o2) {
+      this.o2 = o2;
+    }
+
+    public void unsetO2() {
+      this.o2 = null;
+    }
+
+    // Returns true if field o2 is set (has been asigned a value) and false otherwise
+    public boolean isSetO2() {
+      return this.o2 != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((InvalidOperationException)value);
+        }
+        break;
+
+      case O2:
+        if (value == null) {
+          unsetO2();
+        } else {
+          setO2((MetaException)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case O1:
+        return getO1();
+
+      case O2:
+        return getO2();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case O1:
+        return isSetO1();
+      case O2:
+        return isSetO2();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof alter_table_result)
+        return this.equals((alter_table_result)that);
+      return false;
+    }
+
+    public boolean equals(alter_table_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      boolean this_present_o2 = true && this.isSetO2();
+      boolean that_present_o2 = true && that.isSetO2();
+      if (this_present_o2 || that_present_o2) {
+        if (!(this_present_o2 && that_present_o2))
+          return false;
+        if (!this.o2.equals(that.o2))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case O1:
+            if (field.type == TType.STRUCT) {
+              this.o1 = new InvalidOperationException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O2:
+            if (field.type == TType.STRUCT) {
+              this.o2 = new MetaException();
+              this.o2.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO2()) {
+        oprot.writeFieldBegin(O2_FIELD_DESC);
+        this.o2.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("alter_table_result(");
+      boolean first = true;
+
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o2:");
+      if (this.o2 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o2);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class add_partition_args implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("add_partition_args");
+    private static final TField NEW_PART_FIELD_DESC = new TField("new_part", TType.STRUCT, (short)1);
+
+    private Partition new_part;
+    public static final int NEW_PART = 1;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(NEW_PART, new FieldMetaData("new_part", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, Partition.class)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(add_partition_args.class, metaDataMap);
+    }
+
+    public add_partition_args() {
+    }
+
+    public add_partition_args(
+      Partition new_part)
+    {
+      this();
+      this.new_part = new_part;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public add_partition_args(add_partition_args other) {
+      if (other.isSetNew_part()) {
+        this.new_part = new Partition(other.new_part);
+      }
+    }
+
+    @Override
+    public add_partition_args clone() {
+      return new add_partition_args(this);
+    }
+
+    public Partition getNew_part() {
+      return this.new_part;
+    }
+
+    public void setNew_part(Partition new_part) {
+      this.new_part = new_part;
+    }
+
+    public void unsetNew_part() {
+      this.new_part = null;
+    }
+
+    // Returns true if field new_part is set (has been asigned a value) and false otherwise
+    public boolean isSetNew_part() {
+      return this.new_part != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case NEW_PART:
+        if (value == null) {
+          unsetNew_part();
+        } else {
+          setNew_part((Partition)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case NEW_PART:
+        return getNew_part();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case NEW_PART:
+        return isSetNew_part();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof add_partition_args)
+        return this.equals((add_partition_args)that);
+      return false;
+    }
+
+    public boolean equals(add_partition_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_new_part = true && this.isSetNew_part();
+      boolean that_present_new_part = true && that.isSetNew_part();
+      if (this_present_new_part || that_present_new_part) {
+        if (!(this_present_new_part && that_present_new_part))
+          return false;
+        if (!this.new_part.equals(that.new_part))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case NEW_PART:
+            if (field.type == TType.STRUCT) {
+              this.new_part = new Partition();
+              this.new_part.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.new_part != null) {
+        oprot.writeFieldBegin(NEW_PART_FIELD_DESC);
+        this.new_part.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("add_partition_args(");
+      boolean first = true;
+
+      sb.append("new_part:");
+      if (this.new_part == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.new_part);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class add_partition_result implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("add_partition_result");
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.STRUCT, (short)0);
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+    private static final TField O2_FIELD_DESC = new TField("o2", TType.STRUCT, (short)2);
+    private static final TField O3_FIELD_DESC = new TField("o3", TType.STRUCT, (short)3);
+
+    private Partition success;
+    public static final int SUCCESS = 0;
+    private InvalidObjectException o1;
+    public static final int O1 = 1;
+    private AlreadyExistsException o2;
+    public static final int O2 = 2;
+    private MetaException o3;
+    public static final int O3 = 3;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, Partition.class)));
+      put(O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      put(O2, new FieldMetaData("o2", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      put(O3, new FieldMetaData("o3", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(add_partition_result.class, metaDataMap);
+    }
+
+    public add_partition_result() {
+    }
+
+    public add_partition_result(
+      Partition success,
+      InvalidObjectException o1,
+      AlreadyExistsException o2,
+      MetaException o3)
+    {
+      this();
+      this.success = success;
+      this.o1 = o1;
+      this.o2 = o2;
+      this.o3 = o3;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public add_partition_result(add_partition_result other) {
+      if (other.isSetSuccess()) {
+        this.success = new Partition(other.success);
+      }
+      if (other.isSetO1()) {
+        this.o1 = new InvalidObjectException(other.o1);
+      }
+      if (other.isSetO2()) {
+        this.o2 = new AlreadyExistsException(other.o2);
+      }
+      if (other.isSetO3()) {
+        this.o3 = new MetaException(other.o3);
+      }
+    }
+
+    @Override
+    public add_partition_result clone() {
+      return new add_partition_result(this);
+    }
+
+    public Partition getSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(Partition success) {
+      this.success = success;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    // Returns true if field success is set (has been asigned a value) and false otherwise
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public InvalidObjectException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(InvalidObjectException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    // Returns true if field o1 is set (has been asigned a value) and false otherwise
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public AlreadyExistsException getO2() {
+      return this.o2;
+    }
+
+    public void setO2(AlreadyExistsException o2) {
+      this.o2 = o2;
+    }
+
+    public void unsetO2() {
+      this.o2 = null;
+    }
+
+    // Returns true if field o2 is set (has been asigned a value) and false otherwise
+    public boolean isSetO2() {
+      return this.o2 != null;
+    }
+
+    public MetaException getO3() {
+      return this.o3;
+    }
+
+    public void setO3(MetaException o3) {
+      this.o3 = o3;
+    }
+
+    public void unsetO3() {
+      this.o3 = null;
+    }
+
+    // Returns true if field o3 is set (has been asigned a value) and false otherwise
+    public boolean isSetO3() {
+      return this.o3 != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((Partition)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((InvalidObjectException)value);
+        }
+        break;
+
+      case O2:
+        if (value == null) {
+          unsetO2();
+        } else {
+          setO2((AlreadyExistsException)value);
+        }
+        break;
+
+      case O3:
+        if (value == null) {
+          unsetO3();
+        } else {
+          setO3((MetaException)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return getSuccess();
+
+      case O1:
+        return getO1();
+
+      case O2:
+        return getO2();
+
+      case O3:
+        return getO3();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      case O2:
+        return isSetO2();
+      case O3:
+        return isSetO3();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof add_partition_result)
+        return this.equals((add_partition_result)that);
+      return false;
+    }
+
+    public boolean equals(add_partition_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      boolean this_present_o2 = true && this.isSetO2();
+      boolean that_present_o2 = true && that.isSetO2();
+      if (this_present_o2 || that_present_o2) {
+        if (!(this_present_o2 && that_present_o2))
+          return false;
+        if (!this.o2.equals(that.o2))
+          return false;
+      }
+
+      boolean this_present_o3 = true && this.isSetO3();
+      boolean that_present_o3 = true && that.isSetO3();
+      if (this_present_o3 || that_present_o3) {
+        if (!(this_present_o3 && that_present_o3))
+          return false;
+        if (!this.o3.equals(that.o3))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case SUCCESS:
+            if (field.type == TType.STRUCT) {
+              this.success = new Partition();
+              this.success.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O1:
+            if (field.type == TType.STRUCT) {
+              this.o1 = new InvalidObjectException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O2:
+            if (field.type == TType.STRUCT) {
+              this.o2 = new AlreadyExistsException();
+              this.o2.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O3:
+            if (field.type == TType.STRUCT) {
+              this.o3 = new MetaException();
+              this.o3.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        this.success.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO2()) {
+        oprot.writeFieldBegin(O2_FIELD_DESC);
+        this.o2.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO3()) {
+        oprot.writeFieldBegin(O3_FIELD_DESC);
+        this.o3.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("add_partition_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o2:");
+      if (this.o2 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o2);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o3:");
+      if (this.o3 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o3);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class append_partition_args implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("append_partition_args");
+    private static final TField DB_NAME_FIELD_DESC = new TField("db_name", TType.STRING, (short)1);
+    private static final TField TBL_NAME_FIELD_DESC = new TField("tbl_name", TType.STRING, (short)2);
+    private static final TField PART_VALS_FIELD_DESC = new TField("part_vals", TType.LIST, (short)3);
+
+    private String db_name;
+    public static final int DB_NAME = 1;
+    private String tbl_name;
+    public static final int TBL_NAME = 2;
+    private List<String> part_vals;
+    public static final int PART_VALS = 3;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(DB_NAME, new FieldMetaData("db_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      put(TBL_NAME, new FieldMetaData("tbl_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      put(PART_VALS, new FieldMetaData("part_vals", TFieldRequirementType.DEFAULT, 
+          new ListMetaData(TType.LIST, 
+              new FieldValueMetaData(TType.STRING))));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(append_partition_args.class, metaDataMap);
+    }
+
+    public append_partition_args() {
+    }
+
+    public append_partition_args(
+      String db_name,
+      String tbl_name,
+      List<String> part_vals)
+    {
+      this();
+      this.db_name = db_name;
+      this.tbl_name = tbl_name;
+      this.part_vals = part_vals;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public append_partition_args(append_partition_args other) {
+      if (other.isSetDb_name()) {
+        this.db_name = other.db_name;
+      }
+      if (other.isSetTbl_name()) {
+        this.tbl_name = other.tbl_name;
+      }
+      if (other.isSetPart_vals()) {
+        List<String> __this__part_vals = new ArrayList<String>();
+        for (String other_element : other.part_vals) {
+          __this__part_vals.add(other_element);
+        }
+        this.part_vals = __this__part_vals;
+      }
+    }
+
+    @Override
+    public append_partition_args clone() {
+      return new append_partition_args(this);
+    }
+
+    public String getDb_name() {
+      return this.db_name;
+    }
+
+    public void setDb_name(String db_name) {
+      this.db_name = db_name;
+    }
+
+    public void unsetDb_name() {
+      this.db_name = null;
+    }
+
+    // Returns true if field db_name is set (has been asigned a value) and false otherwise
+    public boolean isSetDb_name() {
+      return this.db_name != null;
+    }
+
+    public String getTbl_name() {
+      return this.tbl_name;
+    }
+
+    public void setTbl_name(String tbl_name) {
+      this.tbl_name = tbl_name;
+    }
+
+    public void unsetTbl_name() {
+      this.tbl_name = null;
+    }
+
+    // Returns true if field tbl_name is set (has been asigned a value) and false otherwise
+    public boolean isSetTbl_name() {
+      return this.tbl_name != null;
+    }
+
+    public int getPart_valsSize() {
+      return (this.part_vals == null) ? 0 : this.part_vals.size();
+    }
+
+    public java.util.Iterator<String> getPart_valsIterator() {
+      return (this.part_vals == null) ? null : this.part_vals.iterator();
+    }
+
+    public void addToPart_vals(String elem) {
+      if (this.part_vals == null) {
+        this.part_vals = new ArrayList<String>();
+      }
+      this.part_vals.add(elem);
+    }
+
+    public List<String> getPart_vals() {
+      return this.part_vals;
+    }
+
+    public void setPart_vals(List<String> part_vals) {
+      this.part_vals = part_vals;
+    }
+
+    public void unsetPart_vals() {
+      this.part_vals = null;
+    }
+
+    // Returns true if field part_vals is set (has been asigned a value) and false otherwise
+    public boolean isSetPart_vals() {
+      return this.part_vals != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case DB_NAME:
+        if (value == null) {
+          unsetDb_name();
+        } else {
+          setDb_name((String)value);
+        }
+        break;
+
+      case TBL_NAME:
+        if (value == null) {
+          unsetTbl_name();
+        } else {
+          setTbl_name((String)value);
+        }
+        break;
+
+      case PART_VALS:
+        if (value == null) {
+          unsetPart_vals();
+        } else {
+          setPart_vals((List<String>)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case DB_NAME:
+        return getDb_name();
+
+      case TBL_NAME:
+        return getTbl_name();
+
+      case PART_VALS:
+        return getPart_vals();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case DB_NAME:
+        return isSetDb_name();
+      case TBL_NAME:
+        return isSetTbl_name();
+      case PART_VALS:
+        return isSetPart_vals();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof append_partition_args)
+        return this.equals((append_partition_args)that);
+      return false;
+    }
+
+    public boolean equals(append_partition_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_db_name = true && this.isSetDb_name();
+      boolean that_present_db_name = true && that.isSetDb_name();
+      if (this_present_db_name || that_present_db_name) {
+        if (!(this_present_db_name && that_present_db_name))
+          return false;
+        if (!this.db_name.equals(that.db_name))
+          return false;
+      }
+
+      boolean this_present_tbl_name = true && this.isSetTbl_name();
+      boolean that_present_tbl_name = true && that.isSetTbl_name();
+      if (this_present_tbl_name || that_present_tbl_name) {
+        if (!(this_present_tbl_name && that_present_tbl_name))
+          return false;
+        if (!this.tbl_name.equals(that.tbl_name))
+          return false;
+      }
+
+      boolean this_present_part_vals = true && this.isSetPart_vals();
+      boolean that_present_part_vals = true && that.isSetPart_vals();
+      if (this_present_part_vals || that_present_part_vals) {
+        if (!(this_present_part_vals && that_present_part_vals))
+          return false;
+        if (!this.part_vals.equals(that.part_vals))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case DB_NAME:
+            if (field.type == TType.STRING) {
+              this.db_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case TBL_NAME:
+            if (field.type == TType.STRING) {
+              this.tbl_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case PART_VALS:
+            if (field.type == TType.LIST) {
+              {
+                TList _list74 = iprot.readListBegin();
+                this.part_vals = new ArrayList<String>(_list74.size);
+                for (int _i75 = 0; _i75 < _list74.size; ++_i75)
+                {
+                  String _elem76;
+                  _elem76 = iprot.readString();
+                  this.part_vals.add(_elem76);
+                }
+                iprot.readListEnd();
+              }
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.db_name != null) {
+        oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
+        oprot.writeString(this.db_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.tbl_name != null) {
+        oprot.writeFieldBegin(TBL_NAME_FIELD_DESC);
+        oprot.writeString(this.tbl_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.part_vals != null) {
+        oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new TList(TType.STRING, this.part_vals.size()));
+          for (String _iter77 : this.part_vals)          {
+            oprot.writeString(_iter77);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("append_partition_args(");
+      boolean first = true;
+
+      sb.append("db_name:");
+      if (this.db_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.db_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("tbl_name:");
+      if (this.tbl_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tbl_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("part_vals:");
+      if (this.part_vals == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.part_vals);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class append_partition_result implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("append_partition_result");
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.STRUCT, (short)0);
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+    private static final TField O2_FIELD_DESC = new TField("o2", TType.STRUCT, (short)2);
+    private static final TField O3_FIELD_DESC = new TField("o3", TType.STRUCT, (short)3);
+
+    private Partition success;
+    public static final int SUCCESS = 0;
+    private InvalidObjectException o1;
+    public static final int O1 = 1;
+    private AlreadyExistsException o2;
+    public static final int O2 = 2;
+    private MetaException o3;
+    public static final int O3 = 3;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, Partition.class)));
+      put(O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      put(O2, new FieldMetaData("o2", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      put(O3, new FieldMetaData("o3", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(append_partition_result.class, metaDataMap);
+    }
+
+    public append_partition_result() {
+    }
+
+    public append_partition_result(
+      Partition success,
+      InvalidObjectException o1,
+      AlreadyExistsException o2,
+      MetaException o3)
+    {
+      this();
+      this.success = success;
+      this.o1 = o1;
+      this.o2 = o2;
+      this.o3 = o3;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public append_partition_result(append_partition_result other) {
+      if (other.isSetSuccess()) {
+        this.success = new Partition(other.success);
+      }
+      if (other.isSetO1()) {
+        this.o1 = new InvalidObjectException(other.o1);
+      }
+      if (other.isSetO2()) {
+        this.o2 = new AlreadyExistsException(other.o2);
+      }
+      if (other.isSetO3()) {
+        this.o3 = new MetaException(other.o3);
+      }
+    }
+
+    @Override
+    public append_partition_result clone() {
+      return new append_partition_result(this);
+    }
+
+    public Partition getSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(Partition success) {
+      this.success = success;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    // Returns true if field success is set (has been asigned a value) and false otherwise
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public InvalidObjectException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(InvalidObjectException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    // Returns true if field o1 is set (has been asigned a value) and false otherwise
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public AlreadyExistsException getO2() {
+      return this.o2;
+    }
+
+    public void setO2(AlreadyExistsException o2) {
+      this.o2 = o2;
+    }
+
+    public void unsetO2() {
+      this.o2 = null;
+    }
+
+    // Returns true if field o2 is set (has been asigned a value) and false otherwise
+    public boolean isSetO2() {
+      return this.o2 != null;
+    }
+
+    public MetaException getO3() {
+      return this.o3;
+    }
+
+    public void setO3(MetaException o3) {
+      this.o3 = o3;
+    }
+
+    public void unsetO3() {
+      this.o3 = null;
+    }
+
+    // Returns true if field o3 is set (has been asigned a value) and false otherwise
+    public boolean isSetO3() {
+      return this.o3 != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((Partition)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((InvalidObjectException)value);
+        }
+        break;
+
+      case O2:
+        if (value == null) {
+          unsetO2();
+        } else {
+          setO2((AlreadyExistsException)value);
+        }
+        break;
+
+      case O3:
+        if (value == null) {
+          unsetO3();
+        } else {
+          setO3((MetaException)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return getSuccess();
+
+      case O1:
+        return getO1();
+
+      case O2:
+        return getO2();
+
+      case O3:
+        return getO3();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      case O2:
+        return isSetO2();
+      case O3:
+        return isSetO3();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof append_partition_result)
+        return this.equals((append_partition_result)that);
+      return false;
+    }
+
+    public boolean equals(append_partition_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      boolean this_present_o2 = true && this.isSetO2();
+      boolean that_present_o2 = true && that.isSetO2();
+      if (this_present_o2 || that_present_o2) {
+        if (!(this_present_o2 && that_present_o2))
+          return false;
+        if (!this.o2.equals(that.o2))
+          return false;
+      }
+
+      boolean this_present_o3 = true && this.isSetO3();
+      boolean that_present_o3 = true && that.isSetO3();
+      if (this_present_o3 || that_present_o3) {
+        if (!(this_present_o3 && that_present_o3))
+          return false;
+        if (!this.o3.equals(that.o3))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case SUCCESS:
+            if (field.type == TType.STRUCT) {
+              this.success = new Partition();
+              this.success.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O1:
+            if (field.type == TType.STRUCT) {
+              this.o1 = new InvalidObjectException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O2:
+            if (field.type == TType.STRUCT) {
+              this.o2 = new AlreadyExistsException();
+              this.o2.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O3:
+            if (field.type == TType.STRUCT) {
+              this.o3 = new MetaException();
+              this.o3.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        this.success.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO2()) {
+        oprot.writeFieldBegin(O2_FIELD_DESC);
+        this.o2.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO3()) {
+        oprot.writeFieldBegin(O3_FIELD_DESC);
+        this.o3.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("append_partition_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o2:");
+      if (this.o2 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o2);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o3:");
+      if (this.o3 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o3);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class drop_partition_args implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("drop_partition_args");
+    private static final TField DB_NAME_FIELD_DESC = new TField("db_name", TType.STRING, (short)1);
+    private static final TField TBL_NAME_FIELD_DESC = new TField("tbl_name", TType.STRING, (short)2);
+    private static final TField PART_VALS_FIELD_DESC = new TField("part_vals", TType.LIST, (short)3);
+    private static final TField DELETE_DATA_FIELD_DESC = new TField("deleteData", TType.BOOL, (short)4);
+
+    private String db_name;
+    public static final int DB_NAME = 1;
+    private String tbl_name;
+    public static final int TBL_NAME = 2;
+    private List<String> part_vals;
+    public static final int PART_VALS = 3;
+    private boolean deleteData;
+    public static final int DELETEDATA = 4;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+      public boolean deleteData = false;
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(DB_NAME, new FieldMetaData("db_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      put(TBL_NAME, new FieldMetaData("tbl_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      put(PART_VALS, new FieldMetaData("part_vals", TFieldRequirementType.DEFAULT, 
+          new ListMetaData(TType.LIST, 
+              new FieldValueMetaData(TType.STRING))));
+      put(DELETEDATA, new FieldMetaData("deleteData", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.BOOL)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(drop_partition_args.class, metaDataMap);
+    }
+
+    public drop_partition_args() {
+    }
+
+    public drop_partition_args(
+      String db_name,
+      String tbl_name,
+      List<String> part_vals,
+      boolean deleteData)
+    {
+      this();
+      this.db_name = db_name;
+      this.tbl_name = tbl_name;
+      this.part_vals = part_vals;
+      this.deleteData = deleteData;
+      this.__isset.deleteData = true;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public drop_partition_args(drop_partition_args other) {
+      if (other.isSetDb_name()) {
+        this.db_name = other.db_name;
+      }
+      if (other.isSetTbl_name()) {
+        this.tbl_name = other.tbl_name;
+      }
+      if (other.isSetPart_vals()) {
+        List<String> __this__part_vals = new ArrayList<String>();
+        for (String other_element : other.part_vals) {
+          __this__part_vals.add(other_element);
+        }
+        this.part_vals = __this__part_vals;
+      }
+      __isset.deleteData = other.__isset.deleteData;
+      this.deleteData = other.deleteData;
+    }
+
+    @Override
+    public drop_partition_args clone() {
+      return new drop_partition_args(this);
+    }
+
+    public String getDb_name() {
+      return this.db_name;
+    }
+
+    public void setDb_name(String db_name) {
+      this.db_name = db_name;
+    }
+
+    public void unsetDb_name() {
+      this.db_name = null;
+    }
+
+    // Returns true if field db_name is set (has been asigned a value) and false otherwise
+    public boolean isSetDb_name() {
+      return this.db_name != null;
+    }
+
+    public String getTbl_name() {
+      return this.tbl_name;
+    }
+
+    public void setTbl_name(String tbl_name) {
+      this.tbl_name = tbl_name;
+    }
+
+    public void unsetTbl_name() {
+      this.tbl_name = null;
+    }
+
+    // Returns true if field tbl_name is set (has been asigned a value) and false otherwise
+    public boolean isSetTbl_name() {
+      return this.tbl_name != null;
+    }
+
+    public int getPart_valsSize() {
+      return (this.part_vals == null) ? 0 : this.part_vals.size();
+    }
+
+    public java.util.Iterator<String> getPart_valsIterator() {
+      return (this.part_vals == null) ? null : this.part_vals.iterator();
+    }
+
+    public void addToPart_vals(String elem) {
+      if (this.part_vals == null) {
+        this.part_vals = new ArrayList<String>();
+      }
+      this.part_vals.add(elem);
+    }
+
+    public List<String> getPart_vals() {
+      return this.part_vals;
+    }
+
+    public void setPart_vals(List<String> part_vals) {
+      this.part_vals = part_vals;
+    }
+
+    public void unsetPart_vals() {
+      this.part_vals = null;
+    }
+
+    // Returns true if field part_vals is set (has been asigned a value) and false otherwise
+    public boolean isSetPart_vals() {
+      return this.part_vals != null;
+    }
+
+    public boolean isDeleteData() {
+      return this.deleteData;
+    }
+
+    public void setDeleteData(boolean deleteData) {
+      this.deleteData = deleteData;
+      this.__isset.deleteData = true;
+    }
+
+    public void unsetDeleteData() {
+      this.__isset.deleteData = false;
+    }
+
+    // Returns true if field deleteData is set (has been asigned a value) and false otherwise
+    public boolean isSetDeleteData() {
+      return this.__isset.deleteData;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case DB_NAME:
+        if (value == null) {
+          unsetDb_name();
+        } else {
+          setDb_name((String)value);
+        }
+        break;
+
+      case TBL_NAME:
+        if (value == null) {
+          unsetTbl_name();
+        } else {
+          setTbl_name((String)value);
+        }
+        break;
+
+      case PART_VALS:
+        if (value == null) {
+          unsetPart_vals();
+        } else {
+          setPart_vals((List<String>)value);
+        }
+        break;
+
+      case DELETEDATA:
+        if (value == null) {
+          unsetDeleteData();
+        } else {
+          setDeleteData((Boolean)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case DB_NAME:
+        return getDb_name();
+
+      case TBL_NAME:
+        return getTbl_name();
+
+      case PART_VALS:
+        return getPart_vals();
+
+      case DELETEDATA:
+        return new Boolean(isDeleteData());
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case DB_NAME:
+        return isSetDb_name();
+      case TBL_NAME:
+        return isSetTbl_name();
+      case PART_VALS:
+        return isSetPart_vals();
+      case DELETEDATA:
+        return isSetDeleteData();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof drop_partition_args)
+        return this.equals((drop_partition_args)that);
+      return false;
+    }
+
+    public boolean equals(drop_partition_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_db_name = true && this.isSetDb_name();
+      boolean that_present_db_name = true && that.isSetDb_name();
+      if (this_present_db_name || that_present_db_name) {
+        if (!(this_present_db_name && that_present_db_name))
+          return false;
+        if (!this.db_name.equals(that.db_name))
+          return false;
+      }
+
+      boolean this_present_tbl_name = true && this.isSetTbl_name();
+      boolean that_present_tbl_name = true && that.isSetTbl_name();
+      if (this_present_tbl_name || that_present_tbl_name) {
+        if (!(this_present_tbl_name && that_present_tbl_name))
+          return false;
+        if (!this.tbl_name.equals(that.tbl_name))
+          return false;
+      }
+
+      boolean this_present_part_vals = true && this.isSetPart_vals();
+      boolean that_present_part_vals = true && that.isSetPart_vals();
+      if (this_present_part_vals || that_present_part_vals) {
+        if (!(this_present_part_vals && that_present_part_vals))
+          return false;
+        if (!this.part_vals.equals(that.part_vals))
+          return false;
+      }
+
+      boolean this_present_deleteData = true;
+      boolean that_present_deleteData = true;
+      if (this_present_deleteData || that_present_deleteData) {
+        if (!(this_present_deleteData && that_present_deleteData))
+          return false;
+        if (this.deleteData != that.deleteData)
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case DB_NAME:
+            if (field.type == TType.STRING) {
+              this.db_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case TBL_NAME:
+            if (field.type == TType.STRING) {
+              this.tbl_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case PART_VALS:
+            if (field.type == TType.LIST) {
+              {
+                TList _list78 = iprot.readListBegin();
+                this.part_vals = new ArrayList<String>(_list78.size);
+                for (int _i79 = 0; _i79 < _list78.size; ++_i79)
+                {
+                  String _elem80;
+                  _elem80 = iprot.readString();
+                  this.part_vals.add(_elem80);
+                }
+                iprot.readListEnd();
+              }
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case DELETEDATA:
+            if (field.type == TType.BOOL) {
+              this.deleteData = iprot.readBool();
+              this.__isset.deleteData = true;
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.db_name != null) {
+        oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
+        oprot.writeString(this.db_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.tbl_name != null) {
+        oprot.writeFieldBegin(TBL_NAME_FIELD_DESC);
+        oprot.writeString(this.tbl_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.part_vals != null) {
+        oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new TList(TType.STRING, this.part_vals.size()));
+          for (String _iter81 : this.part_vals)          {
+            oprot.writeString(_iter81);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldBegin(DELETE_DATA_FIELD_DESC);
+      oprot.writeBool(this.deleteData);
+      oprot.writeFieldEnd();
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("drop_partition_args(");
+      boolean first = true;
+
+      sb.append("db_name:");
+      if (this.db_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.db_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("tbl_name:");
+      if (this.tbl_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tbl_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("part_vals:");
+      if (this.part_vals == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.part_vals);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("deleteData:");
+      sb.append(this.deleteData);
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class drop_partition_result implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("drop_partition_result");
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.BOOL, (short)0);
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+    private static final TField O2_FIELD_DESC = new TField("o2", TType.STRUCT, (short)2);
+
+    private boolean success;
+    public static final int SUCCESS = 0;
+    private NoSuchObjectException o1;
+    public static final int O1 = 1;
+    private MetaException o2;
+    public static final int O2 = 2;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+      public boolean success = false;
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.BOOL)));
+      put(O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      put(O2, new FieldMetaData("o2", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(drop_partition_result.class, metaDataMap);
+    }
+
+    public drop_partition_result() {
+    }
+
+    public drop_partition_result(
+      boolean success,
+      NoSuchObjectException o1,
+      MetaException o2)
+    {
+      this();
+      this.success = success;
+      this.__isset.success = true;
+      this.o1 = o1;
+      this.o2 = o2;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public drop_partition_result(drop_partition_result other) {
+      __isset.success = other.__isset.success;
+      this.success = other.success;
+      if (other.isSetO1()) {
+        this.o1 = new NoSuchObjectException(other.o1);
+      }
+      if (other.isSetO2()) {
+        this.o2 = new MetaException(other.o2);
+      }
+    }
+
+    @Override
+    public drop_partition_result clone() {
+      return new drop_partition_result(this);
+    }
+
+    public boolean isSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(boolean success) {
+      this.success = success;
+      this.__isset.success = true;
+    }
+
+    public void unsetSuccess() {
+      this.__isset.success = false;
+    }
+
+    // Returns true if field success is set (has been asigned a value) and false otherwise
+    public boolean isSetSuccess() {
+      return this.__isset.success;
+    }
+
+    public NoSuchObjectException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(NoSuchObjectException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    // Returns true if field o1 is set (has been asigned a value) and false otherwise
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public MetaException getO2() {
+      return this.o2;
+    }
+
+    public void setO2(MetaException o2) {
+      this.o2 = o2;
+    }
+
+    public void unsetO2() {
+      this.o2 = null;
+    }
+
+    // Returns true if field o2 is set (has been asigned a value) and false otherwise
+    public boolean isSetO2() {
+      return this.o2 != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((Boolean)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((NoSuchObjectException)value);
+        }
+        break;
+
+      case O2:
+        if (value == null) {
+          unsetO2();
+        } else {
+          setO2((MetaException)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return new Boolean(isSuccess());
+
+      case O1:
+        return getO1();
+
+      case O2:
+        return getO2();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      case O2:
+        return isSetO2();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof drop_partition_result)
+        return this.equals((drop_partition_result)that);
+      return false;
+    }
+
+    public boolean equals(drop_partition_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true;
+      boolean that_present_success = true;
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (this.success != that.success)
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      boolean this_present_o2 = true && this.isSetO2();
+      boolean that_present_o2 = true && that.isSetO2();
+      if (this_present_o2 || that_present_o2) {
+        if (!(this_present_o2 && that_present_o2))
+          return false;
+        if (!this.o2.equals(that.o2))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case SUCCESS:
+            if (field.type == TType.BOOL) {
+              this.success = iprot.readBool();
+              this.__isset.success = true;
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O1:
+            if (field.type == TType.STRUCT) {
+              this.o1 = new NoSuchObjectException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O2:
+            if (field.type == TType.STRUCT) {
+              this.o2 = new MetaException();
+              this.o2.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        oprot.writeBool(this.success);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO2()) {
+        oprot.writeFieldBegin(O2_FIELD_DESC);
+        this.o2.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("drop_partition_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      sb.append(this.success);
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o2:");
+      if (this.o2 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o2);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class get_partition_args implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_partition_args");
+    private static final TField DB_NAME_FIELD_DESC = new TField("db_name", TType.STRING, (short)1);
+    private static final TField TBL_NAME_FIELD_DESC = new TField("tbl_name", TType.STRING, (short)2);
+    private static final TField PART_VALS_FIELD_DESC = new TField("part_vals", TType.LIST, (short)3);
+
+    private String db_name;
+    public static final int DB_NAME = 1;
+    private String tbl_name;
+    public static final int TBL_NAME = 2;
+    private List<String> part_vals;
+    public static final int PART_VALS = 3;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(DB_NAME, new FieldMetaData("db_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      put(TBL_NAME, new FieldMetaData("tbl_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      put(PART_VALS, new FieldMetaData("part_vals", TFieldRequirementType.DEFAULT, 
+          new ListMetaData(TType.LIST, 
+              new FieldValueMetaData(TType.STRING))));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(get_partition_args.class, metaDataMap);
+    }
+
+    public get_partition_args() {
+    }
+
+    public get_partition_args(
+      String db_name,
+      String tbl_name,
+      List<String> part_vals)
+    {
+      this();
+      this.db_name = db_name;
+      this.tbl_name = tbl_name;
+      this.part_vals = part_vals;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_partition_args(get_partition_args other) {
+      if (other.isSetDb_name()) {
+        this.db_name = other.db_name;
+      }
+      if (other.isSetTbl_name()) {
+        this.tbl_name = other.tbl_name;
+      }
+      if (other.isSetPart_vals()) {
+        List<String> __this__part_vals = new ArrayList<String>();
+        for (String other_element : other.part_vals) {
+          __this__part_vals.add(other_element);
+        }
+        this.part_vals = __this__part_vals;
+      }
+    }
+
+    @Override
+    public get_partition_args clone() {
+      return new get_partition_args(this);
+    }
+
+    public String getDb_name() {
+      return this.db_name;
+    }
+
+    public void setDb_name(String db_name) {
+      this.db_name = db_name;
+    }
+
+    public void unsetDb_name() {
+      this.db_name = null;
+    }
+
+    // Returns true if field db_name is set (has been asigned a value) and false otherwise
+    public boolean isSetDb_name() {
+      return this.db_name != null;
+    }
+
+    public String getTbl_name() {
+      return this.tbl_name;
+    }
+
+    public void setTbl_name(String tbl_name) {
+      this.tbl_name = tbl_name;
+    }
+
+    public void unsetTbl_name() {
+      this.tbl_name = null;
+    }
+
+    // Returns true if field tbl_name is set (has been asigned a value) and false otherwise
+    public boolean isSetTbl_name() {
+      return this.tbl_name != null;
+    }
+
+    public int getPart_valsSize() {
+      return (this.part_vals == null) ? 0 : this.part_vals.size();
+    }
+
+    public java.util.Iterator<String> getPart_valsIterator() {
+      return (this.part_vals == null) ? null : this.part_vals.iterator();
+    }
+
+    public void addToPart_vals(String elem) {
+      if (this.part_vals == null) {
+        this.part_vals = new ArrayList<String>();
+      }
+      this.part_vals.add(elem);
+    }
+
+    public List<String> getPart_vals() {
+      return this.part_vals;
+    }
+
+    public void setPart_vals(List<String> part_vals) {
+      this.part_vals = part_vals;
+    }
+
+    public void unsetPart_vals() {
+      this.part_vals = null;
+    }
+
+    // Returns true if field part_vals is set (has been asigned a value) and false otherwise
+    public boolean isSetPart_vals() {
+      return this.part_vals != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case DB_NAME:
+        if (value == null) {
+          unsetDb_name();
+        } else {
+          setDb_name((String)value);
+        }
+        break;
+
+      case TBL_NAME:
+        if (value == null) {
+          unsetTbl_name();
+        } else {
+          setTbl_name((String)value);
+        }
+        break;
+
+      case PART_VALS:
+        if (value == null) {
+          unsetPart_vals();
+        } else {
+          setPart_vals((List<String>)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case DB_NAME:
+        return getDb_name();
+
+      case TBL_NAME:
+        return getTbl_name();
+
+      case PART_VALS:
+        return getPart_vals();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case DB_NAME:
+        return isSetDb_name();
+      case TBL_NAME:
+        return isSetTbl_name();
+      case PART_VALS:
+        return isSetPart_vals();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_partition_args)
+        return this.equals((get_partition_args)that);
+      return false;
+    }
+
+    public boolean equals(get_partition_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_db_name = true && this.isSetDb_name();
+      boolean that_present_db_name = true && that.isSetDb_name();
+      if (this_present_db_name || that_present_db_name) {
+        if (!(this_present_db_name && that_present_db_name))
+          return false;
+        if (!this.db_name.equals(that.db_name))
+          return false;
+      }
+
+      boolean this_present_tbl_name = true && this.isSetTbl_name();
+      boolean that_present_tbl_name = true && that.isSetTbl_name();
+      if (this_present_tbl_name || that_present_tbl_name) {
+        if (!(this_present_tbl_name && that_present_tbl_name))
+          return false;
+        if (!this.tbl_name.equals(that.tbl_name))
+          return false;
+      }
+
+      boolean this_present_part_vals = true && this.isSetPart_vals();
+      boolean that_present_part_vals = true && that.isSetPart_vals();
+      if (this_present_part_vals || that_present_part_vals) {
+        if (!(this_present_part_vals && that_present_part_vals))
+          return false;
+        if (!this.part_vals.equals(that.part_vals))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case DB_NAME:
+            if (field.type == TType.STRING) {
+              this.db_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case TBL_NAME:
+            if (field.type == TType.STRING) {
+              this.tbl_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case PART_VALS:
+            if (field.type == TType.LIST) {
+              {
+                TList _list82 = iprot.readListBegin();
+                this.part_vals = new ArrayList<String>(_list82.size);
+                for (int _i83 = 0; _i83 < _list82.size; ++_i83)
+                {
+                  String _elem84;
+                  _elem84 = iprot.readString();
+                  this.part_vals.add(_elem84);
+                }
+                iprot.readListEnd();
+              }
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.db_name != null) {
+        oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
+        oprot.writeString(this.db_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.tbl_name != null) {
+        oprot.writeFieldBegin(TBL_NAME_FIELD_DESC);
+        oprot.writeString(this.tbl_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.part_vals != null) {
+        oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new TList(TType.STRING, this.part_vals.size()));
+          for (String _iter85 : this.part_vals)          {
+            oprot.writeString(_iter85);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_partition_args(");
+      boolean first = true;
+
+      sb.append("db_name:");
+      if (this.db_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.db_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("tbl_name:");
+      if (this.tbl_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tbl_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("part_vals:");
+      if (this.part_vals == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.part_vals);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class get_partition_result implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_partition_result");
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.STRUCT, (short)0);
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+
+    private Partition success;
+    public static final int SUCCESS = 0;
+    private MetaException o1;
+    public static final int O1 = 1;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, Partition.class)));
+      put(O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(get_partition_result.class, metaDataMap);
+    }
+
+    public get_partition_result() {
+    }
+
+    public get_partition_result(
+      Partition success,
+      MetaException o1)
+    {
+      this();
+      this.success = success;
+      this.o1 = o1;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_partition_result(get_partition_result other) {
+      if (other.isSetSuccess()) {
+        this.success = new Partition(other.success);
+      }
+      if (other.isSetO1()) {
+        this.o1 = new MetaException(other.o1);
+      }
+    }
+
+    @Override
+    public get_partition_result clone() {
+      return new get_partition_result(this);
+    }
+
+    public Partition getSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(Partition success) {
+      this.success = success;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    // Returns true if field success is set (has been asigned a value) and false otherwise
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public MetaException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(MetaException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    // Returns true if field o1 is set (has been asigned a value) and false otherwise
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((Partition)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((MetaException)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return getSuccess();
+
+      case O1:
+        return getO1();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_partition_result)
+        return this.equals((get_partition_result)that);
+      return false;
+    }
+
+    public boolean equals(get_partition_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case SUCCESS:
+            if (field.type == TType.STRUCT) {
+              this.success = new Partition();
+              this.success.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O1:
+            if (field.type == TType.STRUCT) {
+              this.o1 = new MetaException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        this.success.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_partition_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class get_partitions_args implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_partitions_args");
+    private static final TField DB_NAME_FIELD_DESC = new TField("db_name", TType.STRING, (short)1);
+    private static final TField TBL_NAME_FIELD_DESC = new TField("tbl_name", TType.STRING, (short)2);
+    private static final TField MAX_PARTS_FIELD_DESC = new TField("max_parts", TType.I16, (short)3);
+
+    private String db_name;
+    public static final int DB_NAME = 1;
+    private String tbl_name;
+    public static final int TBL_NAME = 2;
+    private short max_parts;
+    public static final int MAX_PARTS = 3;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+      public boolean max_parts = false;
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(DB_NAME, new FieldMetaData("db_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      put(TBL_NAME, new FieldMetaData("tbl_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      put(MAX_PARTS, new FieldMetaData("max_parts", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.I16)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(get_partitions_args.class, metaDataMap);
+    }
+
+    public get_partitions_args() {
+      this.max_parts = (short)-1;
+
+    }
+
+    public get_partitions_args(
+      String db_name,
+      String tbl_name,
+      short max_parts)
+    {
+      this();
+      this.db_name = db_name;
+      this.tbl_name = tbl_name;
+      this.max_parts = max_parts;
+      this.__isset.max_parts = true;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_partitions_args(get_partitions_args other) {
+      if (other.isSetDb_name()) {
+        this.db_name = other.db_name;
+      }
+      if (other.isSetTbl_name()) {
+        this.tbl_name = other.tbl_name;
+      }
+      __isset.max_parts = other.__isset.max_parts;
+      this.max_parts = other.max_parts;
+    }
+
+    @Override
+    public get_partitions_args clone() {
+      return new get_partitions_args(this);
+    }
+
+    public String getDb_name() {
+      return this.db_name;
+    }
+
+    public void setDb_name(String db_name) {
+      this.db_name = db_name;
+    }
+
+    public void unsetDb_name() {
+      this.db_name = null;
+    }
+
+    // Returns true if field db_name is set (has been asigned a value) and false otherwise
+    public boolean isSetDb_name() {
+      return this.db_name != null;
+    }
+
+    public String getTbl_name() {
+      return this.tbl_name;
+    }
+
+    public void setTbl_name(String tbl_name) {
+      this.tbl_name = tbl_name;
+    }
+
+    public void unsetTbl_name() {
+      this.tbl_name = null;
+    }
+
+    // Returns true if field tbl_name is set (has been asigned a value) and false otherwise
+    public boolean isSetTbl_name() {
+      return this.tbl_name != null;
+    }
+
+    public short getMax_parts() {
+      return this.max_parts;
+    }
+
+    public void setMax_parts(short max_parts) {
+      this.max_parts = max_parts;
+      this.__isset.max_parts = true;
+    }
+
+    public void unsetMax_parts() {
+      this.__isset.max_parts = false;
+    }
+
+    // Returns true if field max_parts is set (has been asigned a value) and false otherwise
+    public boolean isSetMax_parts() {
+      return this.__isset.max_parts;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case DB_NAME:
+        if (value == null) {
+          unsetDb_name();
+        } else {
+          setDb_name((String)value);
+        }
+        break;
+
+      case TBL_NAME:
+        if (value == null) {
+          unsetTbl_name();
+        } else {
+          setTbl_name((String)value);
+        }
+        break;
+
+      case MAX_PARTS:
+        if (value == null) {
+          unsetMax_parts();
+        } else {
+          setMax_parts((Short)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case DB_NAME:
+        return getDb_name();
+
+      case TBL_NAME:
+        return getTbl_name();
+
+      case MAX_PARTS:
+        return new Short(getMax_parts());
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case DB_NAME:
+        return isSetDb_name();
+      case TBL_NAME:
+        return isSetTbl_name();
+      case MAX_PARTS:
+        return isSetMax_parts();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_partitions_args)
+        return this.equals((get_partitions_args)that);
+      return false;
+    }
+
+    public boolean equals(get_partitions_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_db_name = true && this.isSetDb_name();
+      boolean that_present_db_name = true && that.isSetDb_name();
+      if (this_present_db_name || that_present_db_name) {
+        if (!(this_present_db_name && that_present_db_name))
+          return false;
+        if (!this.db_name.equals(that.db_name))
+          return false;
+      }
+
+      boolean this_present_tbl_name = true && this.isSetTbl_name();
+      boolean that_present_tbl_name = true && that.isSetTbl_name();
+      if (this_present_tbl_name || that_present_tbl_name) {
+        if (!(this_present_tbl_name && that_present_tbl_name))
+          return false;
+        if (!this.tbl_name.equals(that.tbl_name))
+          return false;
+      }
+
+      boolean this_present_max_parts = true;
+      boolean that_present_max_parts = true;
+      if (this_present_max_parts || that_present_max_parts) {
+        if (!(this_present_max_parts && that_present_max_parts))
+          return false;
+        if (this.max_parts != that.max_parts)
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case DB_NAME:
+            if (field.type == TType.STRING) {
+              this.db_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case TBL_NAME:
+            if (field.type == TType.STRING) {
+              this.tbl_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case MAX_PARTS:
+            if (field.type == TType.I16) {
+              this.max_parts = iprot.readI16();
+              this.__isset.max_parts = true;
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.db_name != null) {
+        oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
+        oprot.writeString(this.db_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.tbl_name != null) {
+        oprot.writeFieldBegin(TBL_NAME_FIELD_DESC);
+        oprot.writeString(this.tbl_name);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldBegin(MAX_PARTS_FIELD_DESC);
+      oprot.writeI16(this.max_parts);
+      oprot.writeFieldEnd();
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_partitions_args(");
+      boolean first = true;
+
+      sb.append("db_name:");
+      if (this.db_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.db_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("tbl_name:");
+      if (this.tbl_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tbl_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("max_parts:");
+      sb.append(this.max_parts);
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class get_partitions_result implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_partitions_result");
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.LIST, (short)0);
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+    private static final TField O2_FIELD_DESC = new TField("o2", TType.STRUCT, (short)2);
+
+    private List<Partition> success;
+    public static final int SUCCESS = 0;
+    private NoSuchObjectException o1;
+    public static final int O1 = 1;
+    private MetaException o2;
+    public static final int O2 = 2;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new ListMetaData(TType.LIST, 
+              new StructMetaData(TType.STRUCT, Partition.class))));
+      put(O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      put(O2, new FieldMetaData("o2", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(get_partitions_result.class, metaDataMap);
+    }
+
+    public get_partitions_result() {
+    }
+
+    public get_partitions_result(
+      List<Partition> success,
+      NoSuchObjectException o1,
+      MetaException o2)
+    {
+      this();
+      this.success = success;
+      this.o1 = o1;
+      this.o2 = o2;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_partitions_result(get_partitions_result other) {
+      if (other.isSetSuccess()) {
+        List<Partition> __this__success = new ArrayList<Partition>();
+        for (Partition other_element : other.success) {
+          __this__success.add(new Partition(other_element));
+        }
+        this.success = __this__success;
+      }
+      if (other.isSetO1()) {
+        this.o1 = new NoSuchObjectException(other.o1);
+      }
+      if (other.isSetO2()) {
+        this.o2 = new MetaException(other.o2);
+      }
+    }
+
+    @Override
+    public get_partitions_result clone() {
+      return new get_partitions_result(this);
+    }
+
+    public int getSuccessSize() {
+      return (this.success == null) ? 0 : this.success.size();
+    }
+
+    public java.util.Iterator<Partition> getSuccessIterator() {
+      return (this.success == null) ? null : this.success.iterator();
+    }
+
+    public void addToSuccess(Partition elem) {
+      if (this.success == null) {
+        this.success = new ArrayList<Partition>();
+      }
+      this.success.add(elem);
+    }
+
+    public List<Partition> getSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(List<Partition> success) {
+      this.success = success;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    // Returns true if field success is set (has been asigned a value) and false otherwise
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public NoSuchObjectException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(NoSuchObjectException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    // Returns true if field o1 is set (has been asigned a value) and false otherwise
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public MetaException getO2() {
+      return this.o2;
+    }
+
+    public void setO2(MetaException o2) {
+      this.o2 = o2;
+    }
+
+    public void unsetO2() {
+      this.o2 = null;
+    }
+
+    // Returns true if field o2 is set (has been asigned a value) and false otherwise
+    public boolean isSetO2() {
+      return this.o2 != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((List<Partition>)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((NoSuchObjectException)value);
+        }
+        break;
+
+      case O2:
+        if (value == null) {
+          unsetO2();
+        } else {
+          setO2((MetaException)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return getSuccess();
+
+      case O1:
+        return getO1();
+
+      case O2:
+        return getO2();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      case O2:
+        return isSetO2();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_partitions_result)
+        return this.equals((get_partitions_result)that);
+      return false;
+    }
+
+    public boolean equals(get_partitions_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      boolean this_present_o2 = true && this.isSetO2();
+      boolean that_present_o2 = true && that.isSetO2();
+      if (this_present_o2 || that_present_o2) {
+        if (!(this_present_o2 && that_present_o2))
+          return false;
+        if (!this.o2.equals(that.o2))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case SUCCESS:
+            if (field.type == TType.LIST) {
+              {
+                TList _list86 = iprot.readListBegin();
+                this.success = new ArrayList<Partition>(_list86.size);
+                for (int _i87 = 0; _i87 < _list86.size; ++_i87)
+                {
+                  Partition _elem88;
+                  _elem88 = new Partition();
+                  _elem88.read(iprot);
+                  this.success.add(_elem88);
+                }
+                iprot.readListEnd();
+              }
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O1:
+            if (field.type == TType.STRUCT) {
+              this.o1 = new NoSuchObjectException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O2:
+            if (field.type == TType.STRUCT) {
+              this.o2 = new MetaException();
+              this.o2.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
+          for (Partition _iter89 : this.success)          {
+            _iter89.write(oprot);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO2()) {
+        oprot.writeFieldBegin(O2_FIELD_DESC);
+        this.o2.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_partitions_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o2:");
+      if (this.o2 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o2);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class get_partition_names_args implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_partition_names_args");
+    private static final TField DB_NAME_FIELD_DESC = new TField("db_name", TType.STRING, (short)1);
+    private static final TField TBL_NAME_FIELD_DESC = new TField("tbl_name", TType.STRING, (short)2);
+    private static final TField MAX_PARTS_FIELD_DESC = new TField("max_parts", TType.I16, (short)3);
+
+    private String db_name;
+    public static final int DB_NAME = 1;
+    private String tbl_name;
+    public static final int TBL_NAME = 2;
+    private short max_parts;
+    public static final int MAX_PARTS = 3;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+      public boolean max_parts = false;
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(DB_NAME, new FieldMetaData("db_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      put(TBL_NAME, new FieldMetaData("tbl_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      put(MAX_PARTS, new FieldMetaData("max_parts", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.I16)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(get_partition_names_args.class, metaDataMap);
+    }
+
+    public get_partition_names_args() {
+      this.max_parts = (short)-1;
+
+    }
+
+    public get_partition_names_args(
+      String db_name,
+      String tbl_name,
+      short max_parts)
+    {
+      this();
+      this.db_name = db_name;
+      this.tbl_name = tbl_name;
+      this.max_parts = max_parts;
+      this.__isset.max_parts = true;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_partition_names_args(get_partition_names_args other) {
+      if (other.isSetDb_name()) {
+        this.db_name = other.db_name;
+      }
+      if (other.isSetTbl_name()) {
+        this.tbl_name = other.tbl_name;
+      }
+      __isset.max_parts = other.__isset.max_parts;
+      this.max_parts = other.max_parts;
+    }
+
+    @Override
+    public get_partition_names_args clone() {
+      return new get_partition_names_args(this);
+    }
+
+    public String getDb_name() {
+      return this.db_name;
+    }
+
+    public void setDb_name(String db_name) {
+      this.db_name = db_name;
+    }
+
+    public void unsetDb_name() {
+      this.db_name = null;
+    }
+
+    // Returns true if field db_name is set (has been asigned a value) and false otherwise
+    public boolean isSetDb_name() {
+      return this.db_name != null;
+    }
+
+    public String getTbl_name() {
+      return this.tbl_name;
+    }
+
+    public void setTbl_name(String tbl_name) {
+      this.tbl_name = tbl_name;
+    }
+
+    public void unsetTbl_name() {
+      this.tbl_name = null;
+    }
+
+    // Returns true if field tbl_name is set (has been asigned a value) and false otherwise
+    public boolean isSetTbl_name() {
+      return this.tbl_name != null;
+    }
+
+    public short getMax_parts() {
+      return this.max_parts;
+    }
+
+    public void setMax_parts(short max_parts) {
+      this.max_parts = max_parts;
+      this.__isset.max_parts = true;
+    }
+
+    public void unsetMax_parts() {
+      this.__isset.max_parts = false;
+    }
+
+    // Returns true if field max_parts is set (has been asigned a value) and false otherwise
+    public boolean isSetMax_parts() {
+      return this.__isset.max_parts;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case DB_NAME:
+        if (value == null) {
+          unsetDb_name();
+        } else {
+          setDb_name((String)value);
+        }
+        break;
+
+      case TBL_NAME:
+        if (value == null) {
+          unsetTbl_name();
+        } else {
+          setTbl_name((String)value);
+        }
+        break;
+
+      case MAX_PARTS:
+        if (value == null) {
+          unsetMax_parts();
+        } else {
+          setMax_parts((Short)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case DB_NAME:
+        return getDb_name();
+
+      case TBL_NAME:
+        return getTbl_name();
+
+      case MAX_PARTS:
+        return new Short(getMax_parts());
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case DB_NAME:
+        return isSetDb_name();
+      case TBL_NAME:
+        return isSetTbl_name();
+      case MAX_PARTS:
+        return isSetMax_parts();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_partition_names_args)
+        return this.equals((get_partition_names_args)that);
+      return false;
+    }
+
+    public boolean equals(get_partition_names_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_db_name = true && this.isSetDb_name();
+      boolean that_present_db_name = true && that.isSetDb_name();
+      if (this_present_db_name || that_present_db_name) {
+        if (!(this_present_db_name && that_present_db_name))
+          return false;
+        if (!this.db_name.equals(that.db_name))
+          return false;
+      }
+
+      boolean this_present_tbl_name = true && this.isSetTbl_name();
+      boolean that_present_tbl_name = true && that.isSetTbl_name();
+      if (this_present_tbl_name || that_present_tbl_name) {
+        if (!(this_present_tbl_name && that_present_tbl_name))
+          return false;
+        if (!this.tbl_name.equals(that.tbl_name))
+          return false;
+      }
+
+      boolean this_present_max_parts = true;
+      boolean that_present_max_parts = true;
+      if (this_present_max_parts || that_present_max_parts) {
+        if (!(this_present_max_parts && that_present_max_parts))
+          return false;
+        if (this.max_parts != that.max_parts)
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case DB_NAME:
+            if (field.type == TType.STRING) {
+              this.db_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case TBL_NAME:
+            if (field.type == TType.STRING) {
+              this.tbl_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case MAX_PARTS:
+            if (field.type == TType.I16) {
+              this.max_parts = iprot.readI16();
+              this.__isset.max_parts = true;
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.db_name != null) {
+        oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
+        oprot.writeString(this.db_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.tbl_name != null) {
+        oprot.writeFieldBegin(TBL_NAME_FIELD_DESC);
+        oprot.writeString(this.tbl_name);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldBegin(MAX_PARTS_FIELD_DESC);
+      oprot.writeI16(this.max_parts);
+      oprot.writeFieldEnd();
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_partition_names_args(");
+      boolean first = true;
+
+      sb.append("db_name:");
+      if (this.db_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.db_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("tbl_name:");
+      if (this.tbl_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tbl_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("max_parts:");
+      sb.append(this.max_parts);
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class get_partition_names_result implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_partition_names_result");
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.LIST, (short)0);
+    private static final TField O2_FIELD_DESC = new TField("o2", TType.STRUCT, (short)1);
+
+    private List<String> success;
+    public static final int SUCCESS = 0;
+    private MetaException o2;
+    public static final int O2 = 1;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new ListMetaData(TType.LIST, 
+              new FieldValueMetaData(TType.STRING))));
+      put(O2, new FieldMetaData("o2", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(get_partition_names_result.class, metaDataMap);
+    }
+
+    public get_partition_names_result() {
+    }
+
+    public get_partition_names_result(
+      List<String> success,
+      MetaException o2)
+    {
+      this();
+      this.success = success;
+      this.o2 = o2;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_partition_names_result(get_partition_names_result other) {
+      if (other.isSetSuccess()) {
+        List<String> __this__success = new ArrayList<String>();
+        for (String other_element : other.success) {
+          __this__success.add(other_element);
+        }
+        this.success = __this__success;
+      }
+      if (other.isSetO2()) {
+        this.o2 = new MetaException(other.o2);
+      }
+    }
+
+    @Override
+    public get_partition_names_result clone() {
+      return new get_partition_names_result(this);
+    }
+
+    public int getSuccessSize() {
+      return (this.success == null) ? 0 : this.success.size();
+    }
+
+    public java.util.Iterator<String> getSuccessIterator() {
+      return (this.success == null) ? null : this.success.iterator();
+    }
+
+    public void addToSuccess(String elem) {
+      if (this.success == null) {
+        this.success = new ArrayList<String>();
+      }
+      this.success.add(elem);
+    }
+
+    public List<String> getSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(List<String> success) {
+      this.success = success;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    // Returns true if field success is set (has been asigned a value) and false otherwise
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public MetaException getO2() {
+      return this.o2;
+    }
+
+    public void setO2(MetaException o2) {
+      this.o2 = o2;
+    }
+
+    public void unsetO2() {
+      this.o2 = null;
+    }
+
+    // Returns true if field o2 is set (has been asigned a value) and false otherwise
+    public boolean isSetO2() {
+      return this.o2 != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((List<String>)value);
+        }
+        break;
+
+      case O2:
+        if (value == null) {
+          unsetO2();
+        } else {
+          setO2((MetaException)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return getSuccess();
+
+      case O2:
+        return getO2();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O2:
+        return isSetO2();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_partition_names_result)
+        return this.equals((get_partition_names_result)that);
+      return false;
+    }
+
+    public boolean equals(get_partition_names_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_o2 = true && this.isSetO2();
+      boolean that_present_o2 = true && that.isSetO2();
+      if (this_present_o2 || that_present_o2) {
+        if (!(this_present_o2 && that_present_o2))
+          return false;
+        if (!this.o2.equals(that.o2))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case SUCCESS:
+            if (field.type == TType.LIST) {
+              {
+                TList _list90 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list90.size);
+                for (int _i91 = 0; _i91 < _list90.size; ++_i91)
+                {
+                  String _elem92;
+                  _elem92 = iprot.readString();
+                  this.success.add(_elem92);
+                }
+                iprot.readListEnd();
+              }
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O2:
+            if (field.type == TType.STRUCT) {
+              this.o2 = new MetaException();
+              this.o2.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
+          for (String _iter93 : this.success)          {
+            oprot.writeString(_iter93);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      } else if (this.isSetO2()) {
+        oprot.writeFieldBegin(O2_FIELD_DESC);
+        this.o2.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_partition_names_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o2:");
+      if (this.o2 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o2);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class alter_partition_args implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("alter_partition_args");
+    private static final TField DB_NAME_FIELD_DESC = new TField("db_name", TType.STRING, (short)1);
+    private static final TField TBL_NAME_FIELD_DESC = new TField("tbl_name", TType.STRING, (short)2);
+    private static final TField NEW_PART_FIELD_DESC = new TField("new_part", TType.STRUCT, (short)3);
+
+    private String db_name;
+    public static final int DB_NAME = 1;
+    private String tbl_name;
+    public static final int TBL_NAME = 2;
+    private Partition new_part;
+    public static final int NEW_PART = 3;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(DB_NAME, new FieldMetaData("db_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      put(TBL_NAME, new FieldMetaData("tbl_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      put(NEW_PART, new FieldMetaData("new_part", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, Partition.class)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(alter_partition_args.class, metaDataMap);
+    }
+
+    public alter_partition_args() {
+    }
+
+    public alter_partition_args(
+      String db_name,
+      String tbl_name,
+      Partition new_part)
+    {
+      this();
+      this.db_name = db_name;
+      this.tbl_name = tbl_name;
+      this.new_part = new_part;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public alter_partition_args(alter_partition_args other) {
+      if (other.isSetDb_name()) {
+        this.db_name = other.db_name;
+      }
+      if (other.isSetTbl_name()) {
+        this.tbl_name = other.tbl_name;
+      }
+      if (other.isSetNew_part()) {
+        this.new_part = new Partition(other.new_part);
+      }
+    }
+
+    @Override
+    public alter_partition_args clone() {
+      return new alter_partition_args(this);
+    }
+
+    public String getDb_name() {
+      return this.db_name;
+    }
+
+    public void setDb_name(String db_name) {
+      this.db_name = db_name;
+    }
+
+    public void unsetDb_name() {
+      this.db_name = null;
+    }
+
+    // Returns true if field db_name is set (has been asigned a value) and false otherwise
+    public boolean isSetDb_name() {
+      return this.db_name != null;
+    }
+
+    public String getTbl_name() {
+      return this.tbl_name;
+    }
+
+    public void setTbl_name(String tbl_name) {
+      this.tbl_name = tbl_name;
+    }
+
+    public void unsetTbl_name() {
+      this.tbl_name = null;
+    }
+
+    // Returns true if field tbl_name is set (has been asigned a value) and false otherwise
+    public boolean isSetTbl_name() {
+      return this.tbl_name != null;
+    }
+
+    public Partition getNew_part() {
+      return this.new_part;
+    }
+
+    public void setNew_part(Partition new_part) {
+      this.new_part = new_part;
+    }
+
+    public void unsetNew_part() {
+      this.new_part = null;
+    }
+
+    // Returns true if field new_part is set (has been asigned a value) and false otherwise
+    public boolean isSetNew_part() {
+      return this.new_part != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case DB_NAME:
+        if (value == null) {
+          unsetDb_name();
+        } else {
+          setDb_name((String)value);
+        }
+        break;
+
+      case TBL_NAME:
+        if (value == null) {
+          unsetTbl_name();
+        } else {
+          setTbl_name((String)value);
+        }
+        break;
+
+      case NEW_PART:
+        if (value == null) {
+          unsetNew_part();
+        } else {
+          setNew_part((Partition)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case DB_NAME:
+        return getDb_name();
+
+      case TBL_NAME:
+        return getTbl_name();
+
+      case NEW_PART:
+        return getNew_part();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case DB_NAME:
+        return isSetDb_name();
+      case TBL_NAME:
+        return isSetTbl_name();
+      case NEW_PART:
+        return isSetNew_part();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof alter_partition_args)
+        return this.equals((alter_partition_args)that);
+      return false;
+    }
+
+    public boolean equals(alter_partition_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_db_name = true && this.isSetDb_name();
+      boolean that_present_db_name = true && that.isSetDb_name();
+      if (this_present_db_name || that_present_db_name) {
+        if (!(this_present_db_name && that_present_db_name))
+          return false;
+        if (!this.db_name.equals(that.db_name))
+          return false;
+      }
+
+      boolean this_present_tbl_name = true && this.isSetTbl_name();
+      boolean that_present_tbl_name = true && that.isSetTbl_name();
+      if (this_present_tbl_name || that_present_tbl_name) {
+        if (!(this_present_tbl_name && that_present_tbl_name))
+          return false;
+        if (!this.tbl_name.equals(that.tbl_name))
+          return false;
+      }
+
+      boolean this_present_new_part = true && this.isSetNew_part();
+      boolean that_present_new_part = true && that.isSetNew_part();
+      if (this_present_new_part || that_present_new_part) {
+        if (!(this_present_new_part && that_present_new_part))
+          return false;
+        if (!this.new_part.equals(that.new_part))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case DB_NAME:
+            if (field.type == TType.STRING) {
+              this.db_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case TBL_NAME:
+            if (field.type == TType.STRING) {
+              this.tbl_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case NEW_PART:
+            if (field.type == TType.STRUCT) {
+              this.new_part = new Partition();
+              this.new_part.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.db_name != null) {
+        oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
+        oprot.writeString(this.db_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.tbl_name != null) {
+        oprot.writeFieldBegin(TBL_NAME_FIELD_DESC);
+        oprot.writeString(this.tbl_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.new_part != null) {
+        oprot.writeFieldBegin(NEW_PART_FIELD_DESC);
+        this.new_part.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("alter_partition_args(");
+      boolean first = true;
+
+      sb.append("db_name:");
+      if (this.db_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.db_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("tbl_name:");
+      if (this.tbl_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tbl_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("new_part:");
+      if (this.new_part == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.new_part);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class alter_partition_result implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("alter_partition_result");
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+    private static final TField O2_FIELD_DESC = new TField("o2", TType.STRUCT, (short)2);
+
+    private InvalidOperationException o1;
+    public static final int O1 = 1;
+    private MetaException o2;
+    public static final int O2 = 2;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      put(O2, new FieldMetaData("o2", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(alter_partition_result.class, metaDataMap);
+    }
+
+    public alter_partition_result() {
+    }
+
+    public alter_partition_result(
+      InvalidOperationException o1,
+      MetaException o2)
+    {
+      this();
+      this.o1 = o1;
+      this.o2 = o2;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public alter_partition_result(alter_partition_result other) {
+      if (other.isSetO1()) {
+        this.o1 = new InvalidOperationException(other.o1);
+      }
+      if (other.isSetO2()) {
+        this.o2 = new MetaException(other.o2);
+      }
+    }
+
+    @Override
+    public alter_partition_result clone() {
+      return new alter_partition_result(this);
+    }
+
+    public InvalidOperationException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(InvalidOperationException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    // Returns true if field o1 is set (has been asigned a value) and false otherwise
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public MetaException getO2() {
+      return this.o2;
+    }
+
+    public void setO2(MetaException o2) {
+      this.o2 = o2;
+    }
+
+    public void unsetO2() {
+      this.o2 = null;
+    }
+
+    // Returns true if field o2 is set (has been asigned a value) and false otherwise
+    public boolean isSetO2() {
+      return this.o2 != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((InvalidOperationException)value);
+        }
+        break;
+
+      case O2:
+        if (value == null) {
+          unsetO2();
+        } else {
+          setO2((MetaException)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case O1:
+        return getO1();
+
+      case O2:
+        return getO2();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case O1:
+        return isSetO1();
+      case O2:
+        return isSetO2();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof alter_partition_result)
+        return this.equals((alter_partition_result)that);
+      return false;
+    }
+
+    public boolean equals(alter_partition_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      boolean this_present_o2 = true && this.isSetO2();
+      boolean that_present_o2 = true && that.isSetO2();
+      if (this_present_o2 || that_present_o2) {
+        if (!(this_present_o2 && that_present_o2))
+          return false;
+        if (!this.o2.equals(that.o2))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case O1:
+            if (field.type == TType.STRUCT) {
+              this.o1 = new InvalidOperationException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O2:
+            if (field.type == TType.STRUCT) {
+              this.o2 = new MetaException();
+              this.o2.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO2()) {
+        oprot.writeFieldBegin(O2_FIELD_DESC);
+        this.o2.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("alter_partition_result(");
+      boolean first = true;
+
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o2:");
+      if (this.o2 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o2);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
 
 }

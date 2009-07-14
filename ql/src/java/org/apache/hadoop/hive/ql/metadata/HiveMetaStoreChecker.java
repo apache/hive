@@ -19,7 +19,7 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.metadata.CheckResult.PartitionResult;
 import org.apache.hadoop.hive.conf.HiveConf;
 
-import com.facebook.thrift.TException;
+import org.apache.thrift.TException;
 
 /**
  * Verify that the information in the metastore matches what

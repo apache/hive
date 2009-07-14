@@ -68,6 +68,9 @@ Trunk - Unreleased
     HIVE-622. add UDF reverse
     (Emil Ibrishimov via namit)
 
+    HIVE-438. Make Hive work with apache thrift
+    (Raghu Murthy via namit)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 

@@ -11,233 +11,351 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
-import com.facebook.thrift.*;
+import java.util.Collections;
+import org.apache.log4j.Logger;
 
-import com.facebook.thrift.protocol.*;
-import com.facebook.thrift.transport.*;
+import org.apache.thrift.*;
+import org.apache.thrift.meta_data.*;
+import org.apache.thrift.protocol.*;
 
-public class Schema implements TBase, java.io.Serializable {
-private List<FieldSchema> fieldSchemas;
-private Map<String,String> properties;
+public class Schema implements TBase, java.io.Serializable, Cloneable {
+  private static final TStruct STRUCT_DESC = new TStruct("Schema");
+  private static final TField FIELD_SCHEMAS_FIELD_DESC = new TField("fieldSchemas", TType.LIST, (short)1);
+  private static final TField PROPERTIES_FIELD_DESC = new TField("properties", TType.MAP, (short)2);
 
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean fieldSchemas = false;
-public boolean properties = false;
-}
+  private List<FieldSchema> fieldSchemas;
+  public static final int FIELDSCHEMAS = 1;
+  private Map<String,String> properties;
+  public static final int PROPERTIES = 2;
 
-public Schema() {
-}
-
-public Schema(
-List<FieldSchema> fieldSchemas,
-Map<String,String> properties)
-{
-this();
-this.fieldSchemas = fieldSchemas;
-this.__isset.fieldSchemas = true;
-this.properties = properties;
-this.__isset.properties = true;
-}
-
-public int getFieldSchemasSize() {
-return (this.fieldSchemas == null) ? 0 : this.fieldSchemas.size();
-}
-
-public java.util.Iterator<FieldSchema> getFieldSchemasIterator() {
-return (this.fieldSchemas == null) ? null : this.fieldSchemas.iterator();
-}
-
-public void addToFieldSchemas(FieldSchema elem) {
-if (this.fieldSchemas == null) {
-this.fieldSchemas = new ArrayList<FieldSchema>();
-}
-this.fieldSchemas.add(elem);
-this.__isset.fieldSchemas = true;
-}
-
-public List<FieldSchema> getFieldSchemas() {
-return this.fieldSchemas;
-}
-
-public void setFieldSchemas(List<FieldSchema> fieldSchemas) {
-this.fieldSchemas = fieldSchemas;
-this.__isset.fieldSchemas = true;
-}
-
-public void unsetFieldSchemas() {
-this.fieldSchemas = null;
-this.__isset.fieldSchemas = false;
-}
-
-public int getPropertiesSize() {
-return (this.properties == null) ? 0 : this.properties.size();
-}
-
-public void putToProperties(String key, String val) {
-if (this.properties == null) {
-this.properties = new HashMap<String,String>();
-}
-this.properties.put(key, val);
-this.__isset.properties = true;
-}
-
-public Map<String,String> getProperties() {
-return this.properties;
-}
-
-public void setProperties(Map<String,String> properties) {
-this.properties = properties;
-this.__isset.properties = true;
-}
-
-public void unsetProperties() {
-this.properties = null;
-this.__isset.properties = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof Schema)
-  return this.equals((Schema)that);
-return false;
-}
-
-public boolean equals(Schema that) {
-if (that == null)
-  return false;
-
-boolean this_present_fieldSchemas = true && (this.fieldSchemas != null);
-boolean that_present_fieldSchemas = true && (that.fieldSchemas != null);
-if (this_present_fieldSchemas || that_present_fieldSchemas) {
-if (!(this_present_fieldSchemas && that_present_fieldSchemas))
-  return false;
-if (!this.fieldSchemas.equals(that.fieldSchemas))
-  return false;
-}
-
-boolean this_present_properties = true && (this.properties != null);
-boolean that_present_properties = true && (that.properties != null);
-if (this_present_properties || that_present_properties) {
-if (!(this_present_properties && that_present_properties))
-  return false;
-if (!this.properties.equals(that.properties))
-  return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-field = iprot.readFieldBegin();
-if (field.type == TType.STOP) { 
-  break;
-}
-switch (field.id)
-{
-  case 1:
-    if (field.type == TType.LIST) {
-      {
-        TList _list48 = iprot.readListBegin();
-        this.fieldSchemas = new ArrayList<FieldSchema>(_list48.size);
-        for (int _i49 = 0; _i49 < _list48.size; ++_i49)
-        {
-          FieldSchema _elem50 = new FieldSchema();
-          _elem50 = new FieldSchema();
-          _elem50.read(iprot);
-          this.fieldSchemas.add(_elem50);
-        }
-        iprot.readListEnd();
-      }
-      this.__isset.fieldSchemas = true;
-    } else { 
-      TProtocolUtil.skip(iprot, field.type);
-    }
-    break;
-  case 2:
-    if (field.type == TType.MAP) {
-      {
-        TMap _map51 = iprot.readMapBegin();
-        this.properties = new HashMap<String,String>(2*_map51.size);
-        for (int _i52 = 0; _i52 < _map51.size; ++_i52)
-        {
-          String _key53;
-          String _val54;
-          _key53 = iprot.readString();
-          _val54 = iprot.readString();
-          this.properties.put(_key53, _val54);
-        }
-        iprot.readMapEnd();
-      }
-      this.__isset.properties = true;
-    } else { 
-      TProtocolUtil.skip(iprot, field.type);
-    }
-    break;
-  default:
-    TProtocolUtil.skip(iprot, field.type);
-    break;
-}
-iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("Schema");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-if (this.fieldSchemas != null) {
-field.name = "fieldSchemas";
-field.type = TType.LIST;
-field.id = 1;
-oprot.writeFieldBegin(field);
-{
-  oprot.writeListBegin(new TList(TType.STRUCT, this.fieldSchemas.size()));
-  for (FieldSchema _iter55 : this.fieldSchemas)  {
-    _iter55.write(oprot);
+  private final Isset __isset = new Isset();
+  private static final class Isset implements java.io.Serializable {
   }
-  oprot.writeListEnd();
-}
-oprot.writeFieldEnd();
-}
-if (this.properties != null) {
-field.name = "properties";
-field.type = TType.MAP;
-field.id = 2;
-oprot.writeFieldBegin(field);
-{
-  oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.properties.size()));
-  for (String _iter56 : this.properties.keySet())  {
-    oprot.writeString(_iter56);
-    oprot.writeString(this.properties.get(_iter56));
-  }
-  oprot.writeMapEnd();
-}
-oprot.writeFieldEnd();
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
 
-public String toString() {
-StringBuilder sb = new StringBuilder("Schema(");
-sb.append("fieldSchemas:");
-sb.append(this.fieldSchemas);
-sb.append(",properties:");
-sb.append(this.properties);
-sb.append(")");
-return sb.toString();
-}
+  public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+    put(FIELDSCHEMAS, new FieldMetaData("fieldSchemas", TFieldRequirementType.DEFAULT, 
+        new ListMetaData(TType.LIST, 
+            new StructMetaData(TType.STRUCT, FieldSchema.class))));
+    put(PROPERTIES, new FieldMetaData("properties", TFieldRequirementType.DEFAULT, 
+        new MapMetaData(TType.MAP, 
+            new FieldValueMetaData(TType.STRING), 
+            new FieldValueMetaData(TType.STRING))));
+  }});
+
+  static {
+    FieldMetaData.addStructMetaDataMap(Schema.class, metaDataMap);
+  }
+
+  public Schema() {
+  }
+
+  public Schema(
+    List<FieldSchema> fieldSchemas,
+    Map<String,String> properties)
+  {
+    this();
+    this.fieldSchemas = fieldSchemas;
+    this.properties = properties;
+  }
+
+  /**
+   * Performs a deep copy on <i>other</i>.
+   */
+  public Schema(Schema other) {
+    if (other.isSetFieldSchemas()) {
+      List<FieldSchema> __this__fieldSchemas = new ArrayList<FieldSchema>();
+      for (FieldSchema other_element : other.fieldSchemas) {
+        __this__fieldSchemas.add(new FieldSchema(other_element));
+      }
+      this.fieldSchemas = __this__fieldSchemas;
+    }
+    if (other.isSetProperties()) {
+      Map<String,String> __this__properties = new HashMap<String,String>();
+      for (Map.Entry<String, String> other_element : other.properties.entrySet()) {
+
+        String other_element_key = other_element.getKey();
+        String other_element_value = other_element.getValue();
+
+        String __this__properties_copy_key = other_element_key;
+
+        String __this__properties_copy_value = other_element_value;
+
+        __this__properties.put(__this__properties_copy_key, __this__properties_copy_value);
+      }
+      this.properties = __this__properties;
+    }
+  }
+
+  @Override
+  public Schema clone() {
+    return new Schema(this);
+  }
+
+  public int getFieldSchemasSize() {
+    return (this.fieldSchemas == null) ? 0 : this.fieldSchemas.size();
+  }
+
+  public java.util.Iterator<FieldSchema> getFieldSchemasIterator() {
+    return (this.fieldSchemas == null) ? null : this.fieldSchemas.iterator();
+  }
+
+  public void addToFieldSchemas(FieldSchema elem) {
+    if (this.fieldSchemas == null) {
+      this.fieldSchemas = new ArrayList<FieldSchema>();
+    }
+    this.fieldSchemas.add(elem);
+  }
+
+  public List<FieldSchema> getFieldSchemas() {
+    return this.fieldSchemas;
+  }
+
+  public void setFieldSchemas(List<FieldSchema> fieldSchemas) {
+    this.fieldSchemas = fieldSchemas;
+  }
+
+  public void unsetFieldSchemas() {
+    this.fieldSchemas = null;
+  }
+
+  // Returns true if field fieldSchemas is set (has been asigned a value) and false otherwise
+  public boolean isSetFieldSchemas() {
+    return this.fieldSchemas != null;
+  }
+
+  public int getPropertiesSize() {
+    return (this.properties == null) ? 0 : this.properties.size();
+  }
+
+  public void putToProperties(String key, String val) {
+    if (this.properties == null) {
+      this.properties = new HashMap<String,String>();
+    }
+    this.properties.put(key, val);
+  }
+
+  public Map<String,String> getProperties() {
+    return this.properties;
+  }
+
+  public void setProperties(Map<String,String> properties) {
+    this.properties = properties;
+  }
+
+  public void unsetProperties() {
+    this.properties = null;
+  }
+
+  // Returns true if field properties is set (has been asigned a value) and false otherwise
+  public boolean isSetProperties() {
+    return this.properties != null;
+  }
+
+  public void setFieldValue(int fieldID, Object value) {
+    switch (fieldID) {
+    case FIELDSCHEMAS:
+      if (value == null) {
+        unsetFieldSchemas();
+      } else {
+        setFieldSchemas((List<FieldSchema>)value);
+      }
+      break;
+
+    case PROPERTIES:
+      if (value == null) {
+        unsetProperties();
+      } else {
+        setProperties((Map<String,String>)value);
+      }
+      break;
+
+    default:
+      throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+    }
+  }
+
+  public Object getFieldValue(int fieldID) {
+    switch (fieldID) {
+    case FIELDSCHEMAS:
+      return getFieldSchemas();
+
+    case PROPERTIES:
+      return getProperties();
+
+    default:
+      throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+    }
+  }
+
+  // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+  public boolean isSet(int fieldID) {
+    switch (fieldID) {
+    case FIELDSCHEMAS:
+      return isSetFieldSchemas();
+    case PROPERTIES:
+      return isSetProperties();
+    default:
+      throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+    }
+  }
+
+  @Override
+  public boolean equals(Object that) {
+    if (that == null)
+      return false;
+    if (that instanceof Schema)
+      return this.equals((Schema)that);
+    return false;
+  }
+
+  public boolean equals(Schema that) {
+    if (that == null)
+      return false;
+
+    boolean this_present_fieldSchemas = true && this.isSetFieldSchemas();
+    boolean that_present_fieldSchemas = true && that.isSetFieldSchemas();
+    if (this_present_fieldSchemas || that_present_fieldSchemas) {
+      if (!(this_present_fieldSchemas && that_present_fieldSchemas))
+        return false;
+      if (!this.fieldSchemas.equals(that.fieldSchemas))
+        return false;
+    }
+
+    boolean this_present_properties = true && this.isSetProperties();
+    boolean that_present_properties = true && that.isSetProperties();
+    if (this_present_properties || that_present_properties) {
+      if (!(this_present_properties && that_present_properties))
+        return false;
+      if (!this.properties.equals(that.properties))
+        return false;
+    }
+
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    return 0;
+  }
+
+  public void read(TProtocol iprot) throws TException {
+    TField field;
+    iprot.readStructBegin();
+    while (true)
+    {
+      field = iprot.readFieldBegin();
+      if (field.type == TType.STOP) { 
+        break;
+      }
+      switch (field.id)
+      {
+        case FIELDSCHEMAS:
+          if (field.type == TType.LIST) {
+            {
+              TList _list48 = iprot.readListBegin();
+              this.fieldSchemas = new ArrayList<FieldSchema>(_list48.size);
+              for (int _i49 = 0; _i49 < _list48.size; ++_i49)
+              {
+                FieldSchema _elem50;
+                _elem50 = new FieldSchema();
+                _elem50.read(iprot);
+                this.fieldSchemas.add(_elem50);
+              }
+              iprot.readListEnd();
+            }
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case PROPERTIES:
+          if (field.type == TType.MAP) {
+            {
+              TMap _map51 = iprot.readMapBegin();
+              this.properties = new HashMap<String,String>(2*_map51.size);
+              for (int _i52 = 0; _i52 < _map51.size; ++_i52)
+              {
+                String _key53;
+                String _val54;
+                _key53 = iprot.readString();
+                _val54 = iprot.readString();
+                this.properties.put(_key53, _val54);
+              }
+              iprot.readMapEnd();
+            }
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        default:
+          TProtocolUtil.skip(iprot, field.type);
+          break;
+      }
+      iprot.readFieldEnd();
+    }
+    iprot.readStructEnd();
+
+    validate();
+  }
+
+  public void write(TProtocol oprot) throws TException {
+    validate();
+
+    oprot.writeStructBegin(STRUCT_DESC);
+    if (this.fieldSchemas != null) {
+      oprot.writeFieldBegin(FIELD_SCHEMAS_FIELD_DESC);
+      {
+        oprot.writeListBegin(new TList(TType.STRUCT, this.fieldSchemas.size()));
+        for (FieldSchema _iter55 : this.fieldSchemas)        {
+          _iter55.write(oprot);
+        }
+        oprot.writeListEnd();
+      }
+      oprot.writeFieldEnd();
+    }
+    if (this.properties != null) {
+      oprot.writeFieldBegin(PROPERTIES_FIELD_DESC);
+      {
+        oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.properties.size()));
+        for (Map.Entry<String, String> _iter56 : this.properties.entrySet())        {
+          oprot.writeString(_iter56.getKey());
+          oprot.writeString(_iter56.getValue());
+        }
+        oprot.writeMapEnd();
+      }
+      oprot.writeFieldEnd();
+    }
+    oprot.writeFieldStop();
+    oprot.writeStructEnd();
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder("Schema(");
+    boolean first = true;
+
+    sb.append("fieldSchemas:");
+    if (this.fieldSchemas == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.fieldSchemas);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("properties:");
+    if (this.properties == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.properties);
+    }
+    first = false;
+    sb.append(")");
+    return sb.toString();
+  }
+
+  public void validate() throws TException {
+    // check for required fields
+    // check that fields of type enum have valid values
+  }
 
 }
 

@@ -32,9 +32,9 @@ import org.apache.hadoop.io.serializer.*;
 import org.apache.hadoop.conf.*;
 import org.apache.hadoop.util.ReflectionUtils;
 
-import com.facebook.thrift.*;
-import com.facebook.thrift.transport.*;
-import com.facebook.thrift.protocol.*;
+import org.apache.thrift.*;
+import org.apache.thrift.transport.*;
+import org.apache.thrift.protocol.*;
 
 //import org.apache.hadoop.contrib.serialization.thrift.*;
 

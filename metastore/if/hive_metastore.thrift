@@ -6,7 +6,7 @@
 include "thrift/fb303/if/fb303.thrift"
 
 namespace java org.apache.hadoop.hive.metastore.api
-php_namespace metastore
+namespace php metastore
 
 struct Version {
   1: string version,
@@ -101,35 +101,35 @@ struct Schema {
 
 
 exception MetaException {
-  string message
+  1: string message
 }
 
 exception UnknownTableException {
-  string message
+  1: string message
 }
 
 exception UnknownDBException {
-  string message
+  1: string message
 }
 
 exception AlreadyExistsException {
-  string message
+  1: string message
 }
 
 exception InvalidObjectException {
-  string message
+  1: string message
 }
 
 exception NoSuchObjectException {
-  string message
+  1: string message
 }
 
 exception IndexAlreadyExistsException {
-  string message
+  1: string message
 }
 
 exception InvalidOperationException {
-  string message
+  1: string message
 }
 
 /**
@@ -150,7 +150,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   map<string, Type> get_type_all(1:string name) 
                                 throws(1:MetaException o2)
 
-  list<FieldSchema> get_fields(string db_name, string table_name) throws (MetaException o1, UnknownTableException o2, UnknownDBException o3),
+  list<FieldSchema> get_fields(1: string db_name, 2: string table_name) throws (1: MetaException o1, 2: UnknownTableException o2, 3: UnknownDBException o3),
 
   // create a Hive table. Following fields must be set
   // tableName
@@ -165,8 +165,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // delete data (including partitions) if deleteData is set to true
   void drop_table(1:string dbname, 2:string name, 3:bool deleteData) 
                        throws(1:NoSuchObjectException o1, 2:MetaException o3)
-  list<string> get_tables(string db_name, string pattern) 
-                       throws (MetaException o1)
+  list<string> get_tables(1: string db_name, 2: string pattern) 
+                       throws (1: MetaException o1)
 
   Table get_table(1:string dbname, 2:string tbl_name) 
                        throws (1:MetaException o1, 2:NoSuchObjectException o2)

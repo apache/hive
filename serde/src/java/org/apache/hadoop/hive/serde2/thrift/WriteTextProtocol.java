@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.serde2.thrift;
 
 import org.apache.hadoop.io.Text;
 
-import com.facebook.thrift.TException;
+import org.apache.thrift.TException;
 
 /**
  * An interface for TProtocols that can write out data in hadoop Text objects

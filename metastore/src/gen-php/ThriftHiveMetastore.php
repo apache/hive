@@ -2741,11 +2741,11 @@ class metastore_ThriftHiveMetastore_get_fields_args {
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
-        -1 => array(
+        1 => array(
           'var' => 'db_name',
           'type' => TType::STRING,
           ),
-        -2 => array(
+        2 => array(
           'var' => 'table_name',
           'type' => TType::STRING,
           ),
@@ -2780,14 +2780,14 @@ class metastore_ThriftHiveMetastore_get_fields_args {
       }
       switch ($fid)
       {
-        case -1:
+        case 1:
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->db_name);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
-        case -2:
+        case 2:
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->table_name);
           } else {
@@ -2808,12 +2808,12 @@ class metastore_ThriftHiveMetastore_get_fields_args {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_fields_args');
     if ($this->db_name !== null) {
-      $xfer += $output->writeFieldBegin('db_name', TType::STRING, -1);
+      $xfer += $output->writeFieldBegin('db_name', TType::STRING, 1);
       $xfer += $output->writeString($this->db_name);
       $xfer += $output->writeFieldEnd();
     }
     if ($this->table_name !== null) {
-      $xfer += $output->writeFieldBegin('table_name', TType::STRING, -2);
+      $xfer += $output->writeFieldBegin('table_name', TType::STRING, 2);
       $xfer += $output->writeString($this->table_name);
       $xfer += $output->writeFieldEnd();
     }
@@ -2844,17 +2844,17 @@ class metastore_ThriftHiveMetastore_get_fields_result {
             'class' => 'metastore_FieldSchema',
             ),
           ),
-        -3 => array(
+        1 => array(
           'var' => 'o1',
           'type' => TType::STRUCT,
           'class' => 'metastore_MetaException',
           ),
-        -4 => array(
+        2 => array(
           'var' => 'o2',
           'type' => TType::STRUCT,
           'class' => 'metastore_UnknownTableException',
           ),
-        -5 => array(
+        3 => array(
           'var' => 'o3',
           'type' => TType::STRUCT,
           'class' => 'metastore_UnknownDBException',
@@ -2914,7 +2914,7 @@ class metastore_ThriftHiveMetastore_get_fields_result {
             $xfer += $input->skip($ftype);
           }
           break;
-        case -3:
+        case 1:
           if ($ftype == TType::STRUCT) {
             $this->o1 = new metastore_MetaException();
             $xfer += $this->o1->read($input);
@@ -2922,7 +2922,7 @@ class metastore_ThriftHiveMetastore_get_fields_result {
             $xfer += $input->skip($ftype);
           }
           break;
-        case -4:
+        case 2:
           if ($ftype == TType::STRUCT) {
             $this->o2 = new metastore_UnknownTableException();
             $xfer += $this->o2->read($input);
@@ -2930,7 +2930,7 @@ class metastore_ThriftHiveMetastore_get_fields_result {
             $xfer += $input->skip($ftype);
           }
           break;
-        case -5:
+        case 3:
           if ($ftype == TType::STRUCT) {
             $this->o3 = new metastore_UnknownDBException();
             $xfer += $this->o3->read($input);
@@ -2969,17 +2969,17 @@ class metastore_ThriftHiveMetastore_get_fields_result {
       $xfer += $output->writeFieldEnd();
     }
     if ($this->o1 !== null) {
-      $xfer += $output->writeFieldBegin('o1', TType::STRUCT, -3);
+      $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
       $xfer += $this->o1->write($output);
       $xfer += $output->writeFieldEnd();
     }
     if ($this->o2 !== null) {
-      $xfer += $output->writeFieldBegin('o2', TType::STRUCT, -4);
+      $xfer += $output->writeFieldBegin('o2', TType::STRUCT, 2);
       $xfer += $this->o2->write($output);
       $xfer += $output->writeFieldEnd();
     }
     if ($this->o3 !== null) {
-      $xfer += $output->writeFieldBegin('o3', TType::STRUCT, -5);
+      $xfer += $output->writeFieldBegin('o3', TType::STRUCT, 3);
       $xfer += $this->o3->write($output);
       $xfer += $output->writeFieldEnd();
     }
@@ -3424,11 +3424,11 @@ class metastore_ThriftHiveMetastore_get_tables_args {
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
-        -1 => array(
+        1 => array(
           'var' => 'db_name',
           'type' => TType::STRING,
           ),
-        -2 => array(
+        2 => array(
           'var' => 'pattern',
           'type' => TType::STRING,
           ),
@@ -3463,14 +3463,14 @@ class metastore_ThriftHiveMetastore_get_tables_args {
       }
       switch ($fid)
       {
-        case -1:
+        case 1:
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->db_name);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
-        case -2:
+        case 2:
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->pattern);
           } else {
@@ -3491,12 +3491,12 @@ class metastore_ThriftHiveMetastore_get_tables_args {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_tables_args');
     if ($this->db_name !== null) {
-      $xfer += $output->writeFieldBegin('db_name', TType::STRING, -1);
+      $xfer += $output->writeFieldBegin('db_name', TType::STRING, 1);
       $xfer += $output->writeString($this->db_name);
       $xfer += $output->writeFieldEnd();
     }
     if ($this->pattern !== null) {
-      $xfer += $output->writeFieldBegin('pattern', TType::STRING, -2);
+      $xfer += $output->writeFieldBegin('pattern', TType::STRING, 2);
       $xfer += $output->writeString($this->pattern);
       $xfer += $output->writeFieldEnd();
     }
@@ -3524,7 +3524,7 @@ class metastore_ThriftHiveMetastore_get_tables_result {
             'type' => TType::STRING,
             ),
           ),
-        -3 => array(
+        1 => array(
           'var' => 'o1',
           'type' => TType::STRUCT,
           'class' => 'metastore_MetaException',
@@ -3577,7 +3577,7 @@ class metastore_ThriftHiveMetastore_get_tables_result {
             $xfer += $input->skip($ftype);
           }
           break;
-        case -3:
+        case 1:
           if ($ftype == TType::STRUCT) {
             $this->o1 = new metastore_MetaException();
             $xfer += $this->o1->read($input);
@@ -3616,7 +3616,7 @@ class metastore_ThriftHiveMetastore_get_tables_result {
       $xfer += $output->writeFieldEnd();
     }
     if ($this->o1 !== null) {
-      $xfer += $output->writeFieldBegin('o1', TType::STRUCT, -3);
+      $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
       $xfer += $this->o1->write($output);
       $xfer += $output->writeFieldEnd();
     }
@@ -5766,363 +5766,4 @@ class metastore_ThriftHiveMetastore_alter_partition_result {
 
 }
 
-class ThriftHiveMetastoreProcessor extends FacebookServiceProcessor {
-  public function __construct($handler) {
-    parent::__construct($handler);
-  }
-
-  public function process($input, $output) {
-    $rseqid = 0;
-    $fname = null;
-    $mtype = 0;
-
-    $input->readMessageBegin($fname, $mtype, $rseqid);
-    $methodname = 'process_'.$fname;
-    if (!method_exists($this, $methodname)) {
-      $input->skip(TType::STRUCT);
-      $input->readMessageEnd();
-      $x = new TApplicationException('Function '.$fname.' not implemented.', TApplicationException::UNKNOWN_METHOD);
-      $output->writeMessageBegin($fname, TMessageType::EXCEPTION, $rseqid);
-      $x->write($output);
-      $output->writeMessageEnd();
-      $output->getTransport()->flush();
-      return;
-    }
-    $this->$methodname($rseqid, $input, $output);
-    return true;
-  }
-
-  protected function process_create_database($seqid, $input, $output) {
-    $args = new metastore_ThriftHiveMetastore_create_database_args();
-    $args->read($input);
-    $input->readMessageEnd();
-    $result = new metastore_ThriftHiveMetastore_create_database_result();
-    try {
-      $result->success = $this->handler_->create_database($args->name, $args->description);
-    } catch (metastore_AlreadyExistsException $o1) {
-      $result->o1 = $o1;
-        } catch (metastore_MetaException $o2) {
-      $result->o2 = $o2;
-    }
-    $output->writeMessageBegin('create_database', TMessageType::REPLY, $seqid);
-    $result->write($output);
-    $output->getTransport()->flush();
-  }
-  protected function process_get_database($seqid, $input, $output) {
-    $args = new metastore_ThriftHiveMetastore_get_database_args();
-    $args->read($input);
-    $input->readMessageEnd();
-    $result = new metastore_ThriftHiveMetastore_get_database_result();
-    try {
-      $result->success = $this->handler_->get_database($args->name);
-    } catch (metastore_NoSuchObjectException $o1) {
-      $result->o1 = $o1;
-        } catch (metastore_MetaException $o2) {
-      $result->o2 = $o2;
-    }
-    $output->writeMessageBegin('get_database', TMessageType::REPLY, $seqid);
-    $result->write($output);
-    $output->getTransport()->flush();
-  }
-  protected function process_drop_database($seqid, $input, $output) {
-    $args = new metastore_ThriftHiveMetastore_drop_database_args();
-    $args->read($input);
-    $input->readMessageEnd();
-    $result = new metastore_ThriftHiveMetastore_drop_database_result();
-    try {
-      $result->success = $this->handler_->drop_database($args->name);
-    } catch (metastore_MetaException $o2) {
-      $result->o2 = $o2;
-    }
-    $output->writeMessageBegin('drop_database', TMessageType::REPLY, $seqid);
-    $result->write($output);
-    $output->getTransport()->flush();
-  }
-  protected function process_get_databases($seqid, $input, $output) {
-    $args = new metastore_ThriftHiveMetastore_get_databases_args();
-    $args->read($input);
-    $input->readMessageEnd();
-    $result = new metastore_ThriftHiveMetastore_get_databases_result();
-    try {
-      $result->success = $this->handler_->get_databases();
-    } catch (metastore_MetaException $o1) {
-      $result->o1 = $o1;
-    }
-    $output->writeMessageBegin('get_databases', TMessageType::REPLY, $seqid);
-    $result->write($output);
-    $output->getTransport()->flush();
-  }
-  protected function process_get_type($seqid, $input, $output) {
-    $args = new metastore_ThriftHiveMetastore_get_type_args();
-    $args->read($input);
-    $input->readMessageEnd();
-    $result = new metastore_ThriftHiveMetastore_get_type_result();
-    try {
-      $result->success = $this->handler_->get_type($args->name);
-    } catch (metastore_MetaException $o2) {
-      $result->o2 = $o2;
-    }
-    $output->writeMessageBegin('get_type', TMessageType::REPLY, $seqid);
-    $result->write($output);
-    $output->getTransport()->flush();
-  }
-  protected function process_create_type($seqid, $input, $output) {
-    $args = new metastore_ThriftHiveMetastore_create_type_args();
-    $args->read($input);
-    $input->readMessageEnd();
-    $result = new metastore_ThriftHiveMetastore_create_type_result();
-    try {
-      $result->success = $this->handler_->create_type($args->type);
-    } catch (metastore_AlreadyExistsException $o1) {
-      $result->o1 = $o1;
-        } catch (metastore_InvalidObjectException $o2) {
-      $result->o2 = $o2;
-        } catch (metastore_MetaException $o3) {
-      $result->o3 = $o3;
-    }
-    $output->writeMessageBegin('create_type', TMessageType::REPLY, $seqid);
-    $result->write($output);
-    $output->getTransport()->flush();
-  }
-  protected function process_drop_type($seqid, $input, $output) {
-    $args = new metastore_ThriftHiveMetastore_drop_type_args();
-    $args->read($input);
-    $input->readMessageEnd();
-    $result = new metastore_ThriftHiveMetastore_drop_type_result();
-    try {
-      $result->success = $this->handler_->drop_type($args->type);
-    } catch (metastore_MetaException $o2) {
-      $result->o2 = $o2;
-    }
-    $output->writeMessageBegin('drop_type', TMessageType::REPLY, $seqid);
-    $result->write($output);
-    $output->getTransport()->flush();
-  }
-  protected function process_get_type_all($seqid, $input, $output) {
-    $args = new metastore_ThriftHiveMetastore_get_type_all_args();
-    $args->read($input);
-    $input->readMessageEnd();
-    $result = new metastore_ThriftHiveMetastore_get_type_all_result();
-    try {
-      $result->success = $this->handler_->get_type_all($args->name);
-    } catch (metastore_MetaException $o2) {
-      $result->o2 = $o2;
-    }
-    $output->writeMessageBegin('get_type_all', TMessageType::REPLY, $seqid);
-    $result->write($output);
-    $output->getTransport()->flush();
-  }
-  protected function process_get_fields($seqid, $input, $output) {
-    $args = new metastore_ThriftHiveMetastore_get_fields_args();
-    $args->read($input);
-    $input->readMessageEnd();
-    $result = new metastore_ThriftHiveMetastore_get_fields_result();
-    try {
-      $result->success = $this->handler_->get_fields($args->db_name, $args->table_name);
-    } catch (metastore_MetaException $o1) {
-      $result->o1 = $o1;
-        } catch (metastore_UnknownTableException $o2) {
-      $result->o2 = $o2;
-        } catch (metastore_UnknownDBException $o3) {
-      $result->o3 = $o3;
-    }
-    $output->writeMessageBegin('get_fields', TMessageType::REPLY, $seqid);
-    $result->write($output);
-    $output->getTransport()->flush();
-  }
-  protected function process_create_table($seqid, $input, $output) {
-    $args = new metastore_ThriftHiveMetastore_create_table_args();
-    $args->read($input);
-    $input->readMessageEnd();
-    $result = new metastore_ThriftHiveMetastore_create_table_result();
-    try {
-      $this->handler_->create_table($args->tbl);
-    } catch (metastore_AlreadyExistsException $o1) {
-      $result->o1 = $o1;
-        } catch (metastore_InvalidObjectException $o2) {
-      $result->o2 = $o2;
-        } catch (metastore_MetaException $o3) {
-      $result->o3 = $o3;
-        } catch (metastore_NoSuchObjectException $o4) {
-      $result->o4 = $o4;
-    }
-    $output->writeMessageBegin('create_table', TMessageType::REPLY, $seqid);
-    $result->write($output);
-    $output->getTransport()->flush();
-  }
-  protected function process_drop_table($seqid, $input, $output) {
-    $args = new metastore_ThriftHiveMetastore_drop_table_args();
-    $args->read($input);
-    $input->readMessageEnd();
-    $result = new metastore_ThriftHiveMetastore_drop_table_result();
-    try {
-      $this->handler_->drop_table($args->dbname, $args->name, $args->deleteData);
-    } catch (metastore_NoSuchObjectException $o1) {
-      $result->o1 = $o1;
-        } catch (metastore_MetaException $o3) {
-      $result->o3 = $o3;
-    }
-    $output->writeMessageBegin('drop_table', TMessageType::REPLY, $seqid);
-    $result->write($output);
-    $output->getTransport()->flush();
-  }
-  protected function process_get_tables($seqid, $input, $output) {
-    $args = new metastore_ThriftHiveMetastore_get_tables_args();
-    $args->read($input);
-    $input->readMessageEnd();
-    $result = new metastore_ThriftHiveMetastore_get_tables_result();
-    try {
-      $result->success = $this->handler_->get_tables($args->db_name, $args->pattern);
-    } catch (metastore_MetaException $o1) {
-      $result->o1 = $o1;
-    }
-    $output->writeMessageBegin('get_tables', TMessageType::REPLY, $seqid);
-    $result->write($output);
-    $output->getTransport()->flush();
-  }
-  protected function process_get_table($seqid, $input, $output) {
-    $args = new metastore_ThriftHiveMetastore_get_table_args();
-    $args->read($input);
-    $input->readMessageEnd();
-    $result = new metastore_ThriftHiveMetastore_get_table_result();
-    try {
-      $result->success = $this->handler_->get_table($args->dbname, $args->tbl_name);
-    } catch (metastore_MetaException $o1) {
-      $result->o1 = $o1;
-        } catch (metastore_NoSuchObjectException $o2) {
-      $result->o2 = $o2;
-    }
-    $output->writeMessageBegin('get_table', TMessageType::REPLY, $seqid);
-    $result->write($output);
-    $output->getTransport()->flush();
-  }
-  protected function process_alter_table($seqid, $input, $output) {
-    $args = new metastore_ThriftHiveMetastore_alter_table_args();
-    $args->read($input);
-    $input->readMessageEnd();
-    $result = new metastore_ThriftHiveMetastore_alter_table_result();
-    try {
-      $this->handler_->alter_table($args->dbname, $args->tbl_name, $args->new_tbl);
-    } catch (metastore_InvalidOperationException $o1) {
-      $result->o1 = $o1;
-        } catch (metastore_MetaException $o2) {
-      $result->o2 = $o2;
-    }
-    $output->writeMessageBegin('alter_table', TMessageType::REPLY, $seqid);
-    $result->write($output);
-    $output->getTransport()->flush();
-  }
-  protected function process_add_partition($seqid, $input, $output) {
-    $args = new metastore_ThriftHiveMetastore_add_partition_args();
-    $args->read($input);
-    $input->readMessageEnd();
-    $result = new metastore_ThriftHiveMetastore_add_partition_result();
-    try {
-      $result->success = $this->handler_->add_partition($args->new_part);
-    } catch (metastore_InvalidObjectException $o1) {
-      $result->o1 = $o1;
-        } catch (metastore_AlreadyExistsException $o2) {
-      $result->o2 = $o2;
-        } catch (metastore_MetaException $o3) {
-      $result->o3 = $o3;
-    }
-    $output->writeMessageBegin('add_partition', TMessageType::REPLY, $seqid);
-    $result->write($output);
-    $output->getTransport()->flush();
-  }
-  protected function process_append_partition($seqid, $input, $output) {
-    $args = new metastore_ThriftHiveMetastore_append_partition_args();
-    $args->read($input);
-    $input->readMessageEnd();
-    $result = new metastore_ThriftHiveMetastore_append_partition_result();
-    try {
-      $result->success = $this->handler_->append_partition($args->db_name, $args->tbl_name, $args->part_vals);
-    } catch (metastore_InvalidObjectException $o1) {
-      $result->o1 = $o1;
-        } catch (metastore_AlreadyExistsException $o2) {
-      $result->o2 = $o2;
-        } catch (metastore_MetaException $o3) {
-      $result->o3 = $o3;
-    }
-    $output->writeMessageBegin('append_partition', TMessageType::REPLY, $seqid);
-    $result->write($output);
-    $output->getTransport()->flush();
-  }
-  protected function process_drop_partition($seqid, $input, $output) {
-    $args = new metastore_ThriftHiveMetastore_drop_partition_args();
-    $args->read($input);
-    $input->readMessageEnd();
-    $result = new metastore_ThriftHiveMetastore_drop_partition_result();
-    try {
-      $result->success = $this->handler_->drop_partition($args->db_name, $args->tbl_name, $args->part_vals, $args->deleteData);
-    } catch (metastore_NoSuchObjectException $o1) {
-      $result->o1 = $o1;
-        } catch (metastore_MetaException $o2) {
-      $result->o2 = $o2;
-    }
-    $output->writeMessageBegin('drop_partition', TMessageType::REPLY, $seqid);
-    $result->write($output);
-    $output->getTransport()->flush();
-  }
-  protected function process_get_partition($seqid, $input, $output) {
-    $args = new metastore_ThriftHiveMetastore_get_partition_args();
-    $args->read($input);
-    $input->readMessageEnd();
-    $result = new metastore_ThriftHiveMetastore_get_partition_result();
-    try {
-      $result->success = $this->handler_->get_partition($args->db_name, $args->tbl_name, $args->part_vals);
-    } catch (metastore_MetaException $o1) {
-      $result->o1 = $o1;
-    }
-    $output->writeMessageBegin('get_partition', TMessageType::REPLY, $seqid);
-    $result->write($output);
-    $output->getTransport()->flush();
-  }
-  protected function process_get_partitions($seqid, $input, $output) {
-    $args = new metastore_ThriftHiveMetastore_get_partitions_args();
-    $args->read($input);
-    $input->readMessageEnd();
-    $result = new metastore_ThriftHiveMetastore_get_partitions_result();
-    try {
-      $result->success = $this->handler_->get_partitions($args->db_name, $args->tbl_name, $args->max_parts);
-    } catch (metastore_NoSuchObjectException $o1) {
-      $result->o1 = $o1;
-        } catch (metastore_MetaException $o2) {
-      $result->o2 = $o2;
-    }
-    $output->writeMessageBegin('get_partitions', TMessageType::REPLY, $seqid);
-    $result->write($output);
-    $output->getTransport()->flush();
-  }
-  protected function process_get_partition_names($seqid, $input, $output) {
-    $args = new metastore_ThriftHiveMetastore_get_partition_names_args();
-    $args->read($input);
-    $input->readMessageEnd();
-    $result = new metastore_ThriftHiveMetastore_get_partition_names_result();
-    try {
-      $result->success = $this->handler_->get_partition_names($args->db_name, $args->tbl_name, $args->max_parts);
-    } catch (metastore_MetaException $o2) {
-      $result->o2 = $o2;
-    }
-    $output->writeMessageBegin('get_partition_names', TMessageType::REPLY, $seqid);
-    $result->write($output);
-    $output->getTransport()->flush();
-  }
-  protected function process_alter_partition($seqid, $input, $output) {
-    $args = new metastore_ThriftHiveMetastore_alter_partition_args();
-    $args->read($input);
-    $input->readMessageEnd();
-    $result = new metastore_ThriftHiveMetastore_alter_partition_result();
-    try {
-      $this->handler_->alter_partition($args->db_name, $args->tbl_name, $args->new_part);
-    } catch (metastore_InvalidOperationException $o1) {
-      $result->o1 = $o1;
-        } catch (metastore_MetaException $o2) {
-      $result->o2 = $o2;
-    }
-    $output->writeMessageBegin('alter_partition', TMessageType::REPLY, $seqid);
-    $result->write($output);
-    $output->getTransport()->flush();
-  }
-}
 ?>

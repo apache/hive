@@ -24,10 +24,10 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.io.Text;
 
-import com.facebook.thrift.TException;
-import com.facebook.thrift.transport.*;
-import com.facebook.thrift.*;
-import com.facebook.thrift.protocol.*;
+import org.apache.thrift.TException;
+import org.apache.thrift.transport.*;
+import org.apache.thrift.*;
+import org.apache.thrift.protocol.*;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
@@ -49,6 +49,8 @@ public class TCTLSeparatedProtocol extends TProtocol
   implements ConfigurableTProtocol, WriteNullsProtocol, SkippableTProtocol {
 
   final static Log LOG = LogFactory.getLog(TCTLSeparatedProtocol.class.getName());
+
+  static byte ORDERED_TYPE = (byte)-1;
   
   /**
    * Factory for JSON protocol objects
@@ -596,9 +598,8 @@ public class TCTLSeparatedProtocol extends TProtocol
 
   public TField readFieldBegin() throws TException {
     assert( !inner);
-    TField f = new TField();
+    TField f = new TField("", ORDERED_TYPE, (short)-1);
     // slight hack to communicate to DynamicSerDe that the field ids are not being set but things are ordered.
-    f.type = -1;
     return  f;
   }
 
@@ -615,13 +616,11 @@ public class TCTLSeparatedProtocol extends TProtocol
       if(returnNulls) {
         return null;
       }
-      map.size = 0;
     } else if(columns[index].isEmpty()) {
-      map.size = 0;
       index++;
     } else {
       fields = mapPattern.split(columns[index++]);
-      map.size = fields.length/2;
+      map = new TMap(ORDERED_TYPE, ORDERED_TYPE, fields.length/2);
     }
     innerIndex = 0;
     inner = true;
@@ -643,13 +642,11 @@ public class TCTLSeparatedProtocol extends TProtocol
       if(returnNulls) {
         return null;
       }
-     list.size = 0;
     } else if(columns[index].isEmpty()) {
-      list.size = 0;
       index++;
     } else {
       fields = secondaryPattern.split(columns[index++]);
-      list.size = fields.length ;
+      list = new TList(ORDERED_TYPE, fields.length);
     }
     innerIndex = 0;
     inner = true;
@@ -669,13 +666,11 @@ public class TCTLSeparatedProtocol extends TProtocol
       if(returnNulls) {
         return null;
       }
-      set.size = 0;
     } else if(columns[index].isEmpty()) {
-      set.size = 0;
       index++;
     } else {
       fields = secondaryPattern.split(columns[index++]);
-      set.size = fields.length ;
+      set = new TSet(ORDERED_TYPE, fields.length);
     }
     inner = true;
     innerIndex = 0;

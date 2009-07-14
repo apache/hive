@@ -17,7 +17,7 @@ class HiveServerException extends TException {
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
-        -1 => array(
+        1 => array(
           'var' => 'message',
           'type' => TType::STRING,
           ),
@@ -49,7 +49,7 @@ class HiveServerException extends TException {
       }
       switch ($fid)
       {
-        case -1:
+        case 1:
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->message);
           } else {
@@ -70,7 +70,7 @@ class HiveServerException extends TException {
     $xfer = 0;
     $xfer += $output->writeStructBegin('HiveServerException');
     if ($this->message !== null) {
-      $xfer += $output->writeFieldBegin('message', TType::STRING, -1);
+      $xfer += $output->writeFieldBegin('message', TType::STRING, 1);
       $xfer += $output->writeString($this->message);
       $xfer += $output->writeFieldEnd();
     }

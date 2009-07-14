@@ -11,27 +11,62 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
-import com.facebook.thrift.*;
+import java.util.Collections;
+import org.apache.log4j.Logger;
 
-import com.facebook.thrift.protocol.*;
-import com.facebook.thrift.transport.*;
+import org.apache.thrift.*;
+import org.apache.thrift.meta_data.*;
+import org.apache.thrift.protocol.*;
 
-public class Complex implements TBase, java.io.Serializable {
+public class Complex implements TBase, java.io.Serializable, Cloneable {
+  private static final TStruct STRUCT_DESC = new TStruct("Complex");
+  private static final TField AINT_FIELD_DESC = new TField("aint", TType.I32, (short)1);
+  private static final TField A_STRING_FIELD_DESC = new TField("aString", TType.STRING, (short)2);
+  private static final TField LINT_FIELD_DESC = new TField("lint", TType.LIST, (short)3);
+  private static final TField L_STRING_FIELD_DESC = new TField("lString", TType.LIST, (short)4);
+  private static final TField LINT_STRING_FIELD_DESC = new TField("lintString", TType.LIST, (short)5);
+  private static final TField M_STRING_STRING_FIELD_DESC = new TField("mStringString", TType.MAP, (short)6);
+
   public int aint;
+  public static final int AINT = 1;
   public String aString;
+  public static final int ASTRING = 2;
   public List<Integer> lint;
+  public static final int LINT = 3;
   public List<String> lString;
+  public static final int LSTRING = 4;
   public List<IntString> lintString;
+  public static final int LINTSTRING = 5;
   public Map<String,String> mStringString;
+  public static final int MSTRINGSTRING = 6;
 
-  public final Isset __isset = new Isset();
-  public static final class Isset implements java.io.Serializable {
+  private final Isset __isset = new Isset();
+  private static final class Isset implements java.io.Serializable {
     public boolean aint = false;
-    public boolean aString = false;
-    public boolean lint = false;
-    public boolean lString = false;
-    public boolean lintString = false;
-    public boolean mStringString = false;
+  }
+
+  public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+    put(AINT, new FieldMetaData("aint", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.I32)));
+    put(ASTRING, new FieldMetaData("aString", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.STRING)));
+    put(LINT, new FieldMetaData("lint", TFieldRequirementType.DEFAULT, 
+        new ListMetaData(TType.LIST, 
+            new FieldValueMetaData(TType.I32))));
+    put(LSTRING, new FieldMetaData("lString", TFieldRequirementType.DEFAULT, 
+        new ListMetaData(TType.LIST, 
+            new FieldValueMetaData(TType.STRING))));
+    put(LINTSTRING, new FieldMetaData("lintString", TFieldRequirementType.DEFAULT, 
+        new ListMetaData(TType.LIST, 
+            new StructMetaData(TType.STRUCT, IntString.class))));
+    put(MSTRINGSTRING, new FieldMetaData("mStringString", TFieldRequirementType.DEFAULT, 
+        new MapMetaData(TType.MAP, 
+            new FieldValueMetaData(TType.STRING), 
+            new FieldValueMetaData(TType.STRING))));
+  }});
+
+  static {
+    FieldMetaData.addStructMetaDataMap(Complex.class, metaDataMap);
   }
 
   public Complex() {
@@ -49,17 +84,358 @@ public class Complex implements TBase, java.io.Serializable {
     this.aint = aint;
     this.__isset.aint = true;
     this.aString = aString;
-    this.__isset.aString = true;
     this.lint = lint;
-    this.__isset.lint = true;
     this.lString = lString;
-    this.__isset.lString = true;
     this.lintString = lintString;
-    this.__isset.lintString = true;
     this.mStringString = mStringString;
-    this.__isset.mStringString = true;
   }
 
+  /**
+   * Performs a deep copy on <i>other</i>.
+   */
+  public Complex(Complex other) {
+    __isset.aint = other.__isset.aint;
+    this.aint = other.aint;
+    if (other.isSetAString()) {
+      this.aString = other.aString;
+    }
+    if (other.isSetLint()) {
+      List<Integer> __this__lint = new ArrayList<Integer>();
+      for (Integer other_element : other.lint) {
+        __this__lint.add(other_element);
+      }
+      this.lint = __this__lint;
+    }
+    if (other.isSetLString()) {
+      List<String> __this__lString = new ArrayList<String>();
+      for (String other_element : other.lString) {
+        __this__lString.add(other_element);
+      }
+      this.lString = __this__lString;
+    }
+    if (other.isSetLintString()) {
+      List<IntString> __this__lintString = new ArrayList<IntString>();
+      for (IntString other_element : other.lintString) {
+        __this__lintString.add(new IntString(other_element));
+      }
+      this.lintString = __this__lintString;
+    }
+    if (other.isSetMStringString()) {
+      Map<String,String> __this__mStringString = new HashMap<String,String>();
+      for (Map.Entry<String, String> other_element : other.mStringString.entrySet()) {
+
+        String other_element_key = other_element.getKey();
+        String other_element_value = other_element.getValue();
+
+        String __this__mStringString_copy_key = other_element_key;
+
+        String __this__mStringString_copy_value = other_element_value;
+
+        __this__mStringString.put(__this__mStringString_copy_key, __this__mStringString_copy_value);
+      }
+      this.mStringString = __this__mStringString;
+    }
+  }
+
+  @Override
+  public Complex clone() {
+    return new Complex(this);
+  }
+
+  public int getAint() {
+    return this.aint;
+  }
+
+  public void setAint(int aint) {
+    this.aint = aint;
+    this.__isset.aint = true;
+  }
+
+  public void unsetAint() {
+    this.__isset.aint = false;
+  }
+
+  // Returns true if field aint is set (has been asigned a value) and false otherwise
+  public boolean isSetAint() {
+    return this.__isset.aint;
+  }
+
+  public void setAintIsSet(boolean value) {
+    this.__isset.aint = value;
+  }
+
+  public String getAString() {
+    return this.aString;
+  }
+
+  public void setAString(String aString) {
+    this.aString = aString;
+  }
+
+  public void unsetAString() {
+    this.aString = null;
+  }
+
+  // Returns true if field aString is set (has been asigned a value) and false otherwise
+  public boolean isSetAString() {
+    return this.aString != null;
+  }
+
+  public void setAStringIsSet(boolean value) {
+    if (!value) {
+      this.aString = null;
+    }
+  }
+
+  public int getLintSize() {
+    return (this.lint == null) ? 0 : this.lint.size();
+  }
+
+  public java.util.Iterator<Integer> getLintIterator() {
+    return (this.lint == null) ? null : this.lint.iterator();
+  }
+
+  public void addToLint(int elem) {
+    if (this.lint == null) {
+      this.lint = new ArrayList<Integer>();
+    }
+    this.lint.add(elem);
+  }
+
+  public List<Integer> getLint() {
+    return this.lint;
+  }
+
+  public void setLint(List<Integer> lint) {
+    this.lint = lint;
+  }
+
+  public void unsetLint() {
+    this.lint = null;
+  }
+
+  // Returns true if field lint is set (has been asigned a value) and false otherwise
+  public boolean isSetLint() {
+    return this.lint != null;
+  }
+
+  public void setLintIsSet(boolean value) {
+    if (!value) {
+      this.lint = null;
+    }
+  }
+
+  public int getLStringSize() {
+    return (this.lString == null) ? 0 : this.lString.size();
+  }
+
+  public java.util.Iterator<String> getLStringIterator() {
+    return (this.lString == null) ? null : this.lString.iterator();
+  }
+
+  public void addToLString(String elem) {
+    if (this.lString == null) {
+      this.lString = new ArrayList<String>();
+    }
+    this.lString.add(elem);
+  }
+
+  public List<String> getLString() {
+    return this.lString;
+  }
+
+  public void setLString(List<String> lString) {
+    this.lString = lString;
+  }
+
+  public void unsetLString() {
+    this.lString = null;
+  }
+
+  // Returns true if field lString is set (has been asigned a value) and false otherwise
+  public boolean isSetLString() {
+    return this.lString != null;
+  }
+
+  public void setLStringIsSet(boolean value) {
+    if (!value) {
+      this.lString = null;
+    }
+  }
+
+  public int getLintStringSize() {
+    return (this.lintString == null) ? 0 : this.lintString.size();
+  }
+
+  public java.util.Iterator<IntString> getLintStringIterator() {
+    return (this.lintString == null) ? null : this.lintString.iterator();
+  }
+
+  public void addToLintString(IntString elem) {
+    if (this.lintString == null) {
+      this.lintString = new ArrayList<IntString>();
+    }
+    this.lintString.add(elem);
+  }
+
+  public List<IntString> getLintString() {
+    return this.lintString;
+  }
+
+  public void setLintString(List<IntString> lintString) {
+    this.lintString = lintString;
+  }
+
+  public void unsetLintString() {
+    this.lintString = null;
+  }
+
+  // Returns true if field lintString is set (has been asigned a value) and false otherwise
+  public boolean isSetLintString() {
+    return this.lintString != null;
+  }
+
+  public void setLintStringIsSet(boolean value) {
+    if (!value) {
+      this.lintString = null;
+    }
+  }
+
+  public int getMStringStringSize() {
+    return (this.mStringString == null) ? 0 : this.mStringString.size();
+  }
+
+  public void putToMStringString(String key, String val) {
+    if (this.mStringString == null) {
+      this.mStringString = new HashMap<String,String>();
+    }
+    this.mStringString.put(key, val);
+  }
+
+  public Map<String,String> getMStringString() {
+    return this.mStringString;
+  }
+
+  public void setMStringString(Map<String,String> mStringString) {
+    this.mStringString = mStringString;
+  }
+
+  public void unsetMStringString() {
+    this.mStringString = null;
+  }
+
+  // Returns true if field mStringString is set (has been asigned a value) and false otherwise
+  public boolean isSetMStringString() {
+    return this.mStringString != null;
+  }
+
+  public void setMStringStringIsSet(boolean value) {
+    if (!value) {
+      this.mStringString = null;
+    }
+  }
+
+  public void setFieldValue(int fieldID, Object value) {
+    switch (fieldID) {
+    case AINT:
+      if (value == null) {
+        unsetAint();
+      } else {
+        setAint((Integer)value);
+      }
+      break;
+
+    case ASTRING:
+      if (value == null) {
+        unsetAString();
+      } else {
+        setAString((String)value);
+      }
+      break;
+
+    case LINT:
+      if (value == null) {
+        unsetLint();
+      } else {
+        setLint((List<Integer>)value);
+      }
+      break;
+
+    case LSTRING:
+      if (value == null) {
+        unsetLString();
+      } else {
+        setLString((List<String>)value);
+      }
+      break;
+
+    case LINTSTRING:
+      if (value == null) {
+        unsetLintString();
+      } else {
+        setLintString((List<IntString>)value);
+      }
+      break;
+
+    case MSTRINGSTRING:
+      if (value == null) {
+        unsetMStringString();
+      } else {
+        setMStringString((Map<String,String>)value);
+      }
+      break;
+
+    default:
+      throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+    }
+  }
+
+  public Object getFieldValue(int fieldID) {
+    switch (fieldID) {
+    case AINT:
+      return new Integer(getAint());
+
+    case ASTRING:
+      return getAString();
+
+    case LINT:
+      return getLint();
+
+    case LSTRING:
+      return getLString();
+
+    case LINTSTRING:
+      return getLintString();
+
+    case MSTRINGSTRING:
+      return getMStringString();
+
+    default:
+      throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+    }
+  }
+
+  // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+  public boolean isSet(int fieldID) {
+    switch (fieldID) {
+    case AINT:
+      return isSetAint();
+    case ASTRING:
+      return isSetAString();
+    case LINT:
+      return isSetLint();
+    case LSTRING:
+      return isSetLString();
+    case LINTSTRING:
+      return isSetLintString();
+    case MSTRINGSTRING:
+      return isSetMStringString();
+    default:
+      throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+    }
+  }
+
+  @Override
   public boolean equals(Object that) {
     if (that == null)
       return false;
@@ -81,8 +457,8 @@ public class Complex implements TBase, java.io.Serializable {
         return false;
     }
 
-    boolean this_present_aString = true && (this.aString != null);
-    boolean that_present_aString = true && (that.aString != null);
+    boolean this_present_aString = true && this.isSetAString();
+    boolean that_present_aString = true && that.isSetAString();
     if (this_present_aString || that_present_aString) {
       if (!(this_present_aString && that_present_aString))
         return false;
@@ -90,8 +466,8 @@ public class Complex implements TBase, java.io.Serializable {
         return false;
     }
 
-    boolean this_present_lint = true && (this.lint != null);
-    boolean that_present_lint = true && (that.lint != null);
+    boolean this_present_lint = true && this.isSetLint();
+    boolean that_present_lint = true && that.isSetLint();
     if (this_present_lint || that_present_lint) {
       if (!(this_present_lint && that_present_lint))
         return false;
@@ -99,8 +475,8 @@ public class Complex implements TBase, java.io.Serializable {
         return false;
     }
 
-    boolean this_present_lString = true && (this.lString != null);
-    boolean that_present_lString = true && (that.lString != null);
+    boolean this_present_lString = true && this.isSetLString();
+    boolean that_present_lString = true && that.isSetLString();
     if (this_present_lString || that_present_lString) {
       if (!(this_present_lString && that_present_lString))
         return false;
@@ -108,8 +484,8 @@ public class Complex implements TBase, java.io.Serializable {
         return false;
     }
 
-    boolean this_present_lintString = true && (this.lintString != null);
-    boolean that_present_lintString = true && (that.lintString != null);
+    boolean this_present_lintString = true && this.isSetLintString();
+    boolean that_present_lintString = true && that.isSetLintString();
     if (this_present_lintString || that_present_lintString) {
       if (!(this_present_lintString && that_present_lintString))
         return false;
@@ -117,8 +493,8 @@ public class Complex implements TBase, java.io.Serializable {
         return false;
     }
 
-    boolean this_present_mStringString = true && (this.mStringString != null);
-    boolean that_present_mStringString = true && (that.mStringString != null);
+    boolean this_present_mStringString = true && this.isSetMStringString();
+    boolean that_present_mStringString = true && that.isSetMStringString();
     if (this_present_mStringString || that_present_mStringString) {
       if (!(this_present_mStringString && that_present_mStringString))
         return false;
@@ -129,6 +505,7 @@ public class Complex implements TBase, java.io.Serializable {
     return true;
   }
 
+  @Override
   public int hashCode() {
     return 0;
   }
@@ -144,7 +521,7 @@ public class Complex implements TBase, java.io.Serializable {
       }
       switch (field.id)
       {
-        case 1:
+        case AINT:
           if (field.type == TType.I32) {
             this.aint = iprot.readI32();
             this.__isset.aint = true;
@@ -152,70 +529,66 @@ public class Complex implements TBase, java.io.Serializable {
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 2:
+        case ASTRING:
           if (field.type == TType.STRING) {
             this.aString = iprot.readString();
-            this.__isset.aString = true;
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 3:
+        case LINT:
           if (field.type == TType.LIST) {
             {
               TList _list0 = iprot.readListBegin();
               this.lint = new ArrayList<Integer>(_list0.size);
               for (int _i1 = 0; _i1 < _list0.size; ++_i1)
               {
-                int _elem2 = 0;
+                int _elem2;
                 _elem2 = iprot.readI32();
                 this.lint.add(_elem2);
               }
               iprot.readListEnd();
             }
-            this.__isset.lint = true;
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 4:
+        case LSTRING:
           if (field.type == TType.LIST) {
             {
               TList _list3 = iprot.readListBegin();
               this.lString = new ArrayList<String>(_list3.size);
               for (int _i4 = 0; _i4 < _list3.size; ++_i4)
               {
-                String _elem5 = null;
+                String _elem5;
                 _elem5 = iprot.readString();
                 this.lString.add(_elem5);
               }
               iprot.readListEnd();
             }
-            this.__isset.lString = true;
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 5:
+        case LINTSTRING:
           if (field.type == TType.LIST) {
             {
               TList _list6 = iprot.readListBegin();
               this.lintString = new ArrayList<IntString>(_list6.size);
               for (int _i7 = 0; _i7 < _list6.size; ++_i7)
               {
-                IntString _elem8 = new IntString();
+                IntString _elem8;
                 _elem8 = new IntString();
                 _elem8.read(iprot);
                 this.lintString.add(_elem8);
               }
               iprot.readListEnd();
             }
-            this.__isset.lintString = true;
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 6:
+        case MSTRINGSTRING:
           if (field.type == TType.MAP) {
             {
               TMap _map9 = iprot.readMapBegin();
@@ -230,7 +603,6 @@ public class Complex implements TBase, java.io.Serializable {
               }
               iprot.readMapEnd();
             }
-            this.__isset.mStringString = true;
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
@@ -242,31 +614,26 @@ public class Complex implements TBase, java.io.Serializable {
       iprot.readFieldEnd();
     }
     iprot.readStructEnd();
+
+
+    // check for required fields of primitive type, which can't be checked in the validate method
+    validate();
   }
 
   public void write(TProtocol oprot) throws TException {
-    TStruct struct = new TStruct("Complex");
-    oprot.writeStructBegin(struct);
-    TField field = new TField();
-    field.name = "aint";
-    field.type = TType.I32;
-    field.id = 1;
-    oprot.writeFieldBegin(field);
+    validate();
+
+    oprot.writeStructBegin(STRUCT_DESC);
+    oprot.writeFieldBegin(AINT_FIELD_DESC);
     oprot.writeI32(this.aint);
     oprot.writeFieldEnd();
     if (this.aString != null) {
-      field.name = "aString";
-      field.type = TType.STRING;
-      field.id = 2;
-      oprot.writeFieldBegin(field);
+      oprot.writeFieldBegin(A_STRING_FIELD_DESC);
       oprot.writeString(this.aString);
       oprot.writeFieldEnd();
     }
     if (this.lint != null) {
-      field.name = "lint";
-      field.type = TType.LIST;
-      field.id = 3;
-      oprot.writeFieldBegin(field);
+      oprot.writeFieldBegin(LINT_FIELD_DESC);
       {
         oprot.writeListBegin(new TList(TType.I32, this.lint.size()));
         for (int _iter13 : this.lint)        {
@@ -277,10 +644,7 @@ public class Complex implements TBase, java.io.Serializable {
       oprot.writeFieldEnd();
     }
     if (this.lString != null) {
-      field.name = "lString";
-      field.type = TType.LIST;
-      field.id = 4;
-      oprot.writeFieldBegin(field);
+      oprot.writeFieldBegin(L_STRING_FIELD_DESC);
       {
         oprot.writeListBegin(new TList(TType.STRING, this.lString.size()));
         for (String _iter14 : this.lString)        {
@@ -291,10 +655,7 @@ public class Complex implements TBase, java.io.Serializable {
       oprot.writeFieldEnd();
     }
     if (this.lintString != null) {
-      field.name = "lintString";
-      field.type = TType.LIST;
-      field.id = 5;
-      oprot.writeFieldBegin(field);
+      oprot.writeFieldBegin(LINT_STRING_FIELD_DESC);
       {
         oprot.writeListBegin(new TList(TType.STRUCT, this.lintString.size()));
         for (IntString _iter15 : this.lintString)        {
@@ -305,15 +666,12 @@ public class Complex implements TBase, java.io.Serializable {
       oprot.writeFieldEnd();
     }
     if (this.mStringString != null) {
-      field.name = "mStringString";
-      field.type = TType.MAP;
-      field.id = 6;
-      oprot.writeFieldBegin(field);
+      oprot.writeFieldBegin(M_STRING_STRING_FIELD_DESC);
       {
         oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.mStringString.size()));
-        for (String _iter16 : this.mStringString.keySet())        {
-          oprot.writeString(_iter16);
-          oprot.writeString(this.mStringString.get(_iter16));
+        for (Map.Entry<String, String> _iter16 : this.mStringString.entrySet())        {
+          oprot.writeString(_iter16.getKey());
+          oprot.writeString(_iter16.getValue());
         }
         oprot.writeMapEnd();
       }
@@ -323,22 +681,61 @@ public class Complex implements TBase, java.io.Serializable {
     oprot.writeStructEnd();
   }
 
+  @Override
   public String toString() {
     StringBuilder sb = new StringBuilder("Complex(");
+    boolean first = true;
+
     sb.append("aint:");
     sb.append(this.aint);
-    sb.append(",aString:");
-    sb.append(this.aString);
-    sb.append(",lint:");
-    sb.append(this.lint);
-    sb.append(",lString:");
-    sb.append(this.lString);
-    sb.append(",lintString:");
-    sb.append(this.lintString);
-    sb.append(",mStringString:");
-    sb.append(this.mStringString);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("aString:");
+    if (this.aString == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.aString);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("lint:");
+    if (this.lint == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.lint);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("lString:");
+    if (this.lString == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.lString);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("lintString:");
+    if (this.lintString == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.lintString);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("mStringString:");
+    if (this.mStringString == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.mStringString);
+    }
+    first = false;
     sb.append(")");
     return sb.toString();
+  }
+
+  public void validate() throws TException {
+    // check for required fields
+    // check that fields of type enum have valid values
   }
 
 }

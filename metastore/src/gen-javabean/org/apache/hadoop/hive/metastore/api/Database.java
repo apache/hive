@@ -11,167 +11,270 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
-import com.facebook.thrift.*;
+import java.util.Collections;
+import org.apache.log4j.Logger;
 
-import com.facebook.thrift.protocol.*;
-import com.facebook.thrift.transport.*;
+import org.apache.thrift.*;
+import org.apache.thrift.meta_data.*;
+import org.apache.thrift.protocol.*;
 
-public class Database implements TBase, java.io.Serializable {
-private String name;
-private String description;
+public class Database implements TBase, java.io.Serializable, Cloneable {
+  private static final TStruct STRUCT_DESC = new TStruct("Database");
+  private static final TField NAME_FIELD_DESC = new TField("name", TType.STRING, (short)1);
+  private static final TField DESCRIPTION_FIELD_DESC = new TField("description", TType.STRING, (short)2);
 
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean name = false;
-public boolean description = false;
-}
+  private String name;
+  public static final int NAME = 1;
+  private String description;
+  public static final int DESCRIPTION = 2;
 
-public Database() {
-}
+  private final Isset __isset = new Isset();
+  private static final class Isset implements java.io.Serializable {
+  }
 
-public Database(
-String name,
-String description)
-{
-this();
-this.name = name;
-this.__isset.name = true;
-this.description = description;
-this.__isset.description = true;
-}
+  public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+    put(NAME, new FieldMetaData("name", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.STRING)));
+    put(DESCRIPTION, new FieldMetaData("description", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.STRING)));
+  }});
 
-public String getName() {
-return this.name;
-}
+  static {
+    FieldMetaData.addStructMetaDataMap(Database.class, metaDataMap);
+  }
 
-public void setName(String name) {
-this.name = name;
-this.__isset.name = true;
-}
+  public Database() {
+  }
 
-public void unsetName() {
-this.__isset.name = false;
-}
+  public Database(
+    String name,
+    String description)
+  {
+    this();
+    this.name = name;
+    this.description = description;
+  }
 
-public String getDescription() {
-return this.description;
-}
-
-public void setDescription(String description) {
-this.description = description;
-this.__isset.description = true;
-}
-
-public void unsetDescription() {
-this.__isset.description = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof Database)
-  return this.equals((Database)that);
-return false;
-}
-
-public boolean equals(Database that) {
-if (that == null)
-  return false;
-
-boolean this_present_name = true && (this.name != null);
-boolean that_present_name = true && (that.name != null);
-if (this_present_name || that_present_name) {
-if (!(this_present_name && that_present_name))
-  return false;
-if (!this.name.equals(that.name))
-  return false;
-}
-
-boolean this_present_description = true && (this.description != null);
-boolean that_present_description = true && (that.description != null);
-if (this_present_description || that_present_description) {
-if (!(this_present_description && that_present_description))
-  return false;
-if (!this.description.equals(that.description))
-  return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-field = iprot.readFieldBegin();
-if (field.type == TType.STOP) { 
-  break;
-}
-switch (field.id)
-{
-  case 1:
-    if (field.type == TType.STRING) {
-      this.name = iprot.readString();
-      this.__isset.name = true;
-    } else { 
-      TProtocolUtil.skip(iprot, field.type);
+  /**
+   * Performs a deep copy on <i>other</i>.
+   */
+  public Database(Database other) {
+    if (other.isSetName()) {
+      this.name = other.name;
     }
-    break;
-  case 2:
-    if (field.type == TType.STRING) {
-      this.description = iprot.readString();
-      this.__isset.description = true;
-    } else { 
-      TProtocolUtil.skip(iprot, field.type);
+    if (other.isSetDescription()) {
+      this.description = other.description;
     }
-    break;
-  default:
-    TProtocolUtil.skip(iprot, field.type);
-    break;
-}
-iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
+  }
 
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("Database");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-if (this.name != null) {
-field.name = "name";
-field.type = TType.STRING;
-field.id = 1;
-oprot.writeFieldBegin(field);
-oprot.writeString(this.name);
-oprot.writeFieldEnd();
-}
-if (this.description != null) {
-field.name = "description";
-field.type = TType.STRING;
-field.id = 2;
-oprot.writeFieldBegin(field);
-oprot.writeString(this.description);
-oprot.writeFieldEnd();
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
+  @Override
+  public Database clone() {
+    return new Database(this);
+  }
 
-public String toString() {
-StringBuilder sb = new StringBuilder("Database(");
-sb.append("name:");
-sb.append(this.name);
-sb.append(",description:");
-sb.append(this.description);
-sb.append(")");
-return sb.toString();
-}
+  public String getName() {
+    return this.name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public void unsetName() {
+    this.name = null;
+  }
+
+  // Returns true if field name is set (has been asigned a value) and false otherwise
+  public boolean isSetName() {
+    return this.name != null;
+  }
+
+  public String getDescription() {
+    return this.description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  public void unsetDescription() {
+    this.description = null;
+  }
+
+  // Returns true if field description is set (has been asigned a value) and false otherwise
+  public boolean isSetDescription() {
+    return this.description != null;
+  }
+
+  public void setFieldValue(int fieldID, Object value) {
+    switch (fieldID) {
+    case NAME:
+      if (value == null) {
+        unsetName();
+      } else {
+        setName((String)value);
+      }
+      break;
+
+    case DESCRIPTION:
+      if (value == null) {
+        unsetDescription();
+      } else {
+        setDescription((String)value);
+      }
+      break;
+
+    default:
+      throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+    }
+  }
+
+  public Object getFieldValue(int fieldID) {
+    switch (fieldID) {
+    case NAME:
+      return getName();
+
+    case DESCRIPTION:
+      return getDescription();
+
+    default:
+      throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+    }
+  }
+
+  // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+  public boolean isSet(int fieldID) {
+    switch (fieldID) {
+    case NAME:
+      return isSetName();
+    case DESCRIPTION:
+      return isSetDescription();
+    default:
+      throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+    }
+  }
+
+  @Override
+  public boolean equals(Object that) {
+    if (that == null)
+      return false;
+    if (that instanceof Database)
+      return this.equals((Database)that);
+    return false;
+  }
+
+  public boolean equals(Database that) {
+    if (that == null)
+      return false;
+
+    boolean this_present_name = true && this.isSetName();
+    boolean that_present_name = true && that.isSetName();
+    if (this_present_name || that_present_name) {
+      if (!(this_present_name && that_present_name))
+        return false;
+      if (!this.name.equals(that.name))
+        return false;
+    }
+
+    boolean this_present_description = true && this.isSetDescription();
+    boolean that_present_description = true && that.isSetDescription();
+    if (this_present_description || that_present_description) {
+      if (!(this_present_description && that_present_description))
+        return false;
+      if (!this.description.equals(that.description))
+        return false;
+    }
+
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    return 0;
+  }
+
+  public void read(TProtocol iprot) throws TException {
+    TField field;
+    iprot.readStructBegin();
+    while (true)
+    {
+      field = iprot.readFieldBegin();
+      if (field.type == TType.STOP) { 
+        break;
+      }
+      switch (field.id)
+      {
+        case NAME:
+          if (field.type == TType.STRING) {
+            this.name = iprot.readString();
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case DESCRIPTION:
+          if (field.type == TType.STRING) {
+            this.description = iprot.readString();
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        default:
+          TProtocolUtil.skip(iprot, field.type);
+          break;
+      }
+      iprot.readFieldEnd();
+    }
+    iprot.readStructEnd();
+
+    validate();
+  }
+
+  public void write(TProtocol oprot) throws TException {
+    validate();
+
+    oprot.writeStructBegin(STRUCT_DESC);
+    if (this.name != null) {
+      oprot.writeFieldBegin(NAME_FIELD_DESC);
+      oprot.writeString(this.name);
+      oprot.writeFieldEnd();
+    }
+    if (this.description != null) {
+      oprot.writeFieldBegin(DESCRIPTION_FIELD_DESC);
+      oprot.writeString(this.description);
+      oprot.writeFieldEnd();
+    }
+    oprot.writeFieldStop();
+    oprot.writeStructEnd();
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder("Database(");
+    boolean first = true;
+
+    sb.append("name:");
+    if (this.name == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.name);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("description:");
+    if (this.description == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.description);
+    }
+    first = false;
+    sb.append(")");
+    return sb.toString();
+  }
+
+  public void validate() throws TException {
+    // check for required fields
+    // check that fields of type enum have valid values
+  }
 
 }
 

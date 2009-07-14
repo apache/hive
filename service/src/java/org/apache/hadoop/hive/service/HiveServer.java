@@ -28,16 +28,16 @@ import org.apache.hadoop.hive.service.ThriftHive;
 import org.apache.hadoop.hive.service.HiveServerException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
-import com.facebook.thrift.TException;
-import com.facebook.thrift.TProcessor;
-import com.facebook.thrift.TProcessorFactory;
-import com.facebook.thrift.protocol.TBinaryProtocol;
-import com.facebook.thrift.server.TServer;
-import com.facebook.thrift.server.TThreadPoolServer;
-import com.facebook.thrift.transport.TServerSocket;
-import com.facebook.thrift.transport.TServerTransport;
-import com.facebook.thrift.transport.TTransport;
-import com.facebook.thrift.transport.TTransportFactory;
+import org.apache.thrift.TException;
+import org.apache.thrift.TProcessor;
+import org.apache.thrift.TProcessorFactory;
+import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.server.TServer;
+import org.apache.thrift.server.TThreadPoolServer;
+import org.apache.thrift.transport.TServerSocket;
+import org.apache.thrift.transport.TServerTransport;
+import org.apache.thrift.transport.TTransport;
+import org.apache.thrift.transport.TTransportFactory;
 
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;

@@ -142,7 +142,7 @@
            </void> 
            <void method="put"> 
             <string>serialization.format</string> 
-            <string>com.facebook.thrift.protocol.TBinaryProtocol</string> 
+            <string>org.apache.thrift.protocol.TBinaryProtocol</string> 
            </void> 
            <void method="put"> 
             <string>serialization.class</string> 

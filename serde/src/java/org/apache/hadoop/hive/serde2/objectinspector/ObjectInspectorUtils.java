@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -237,6 +239,24 @@ public class ObjectInspectorUtils {
     }
     throw new RuntimeException("cannot find field " + fieldName + " from " + fields); 
     // return null;
+  }
+
+  /**
+   * Get all the declared non-static fields of Class c
+   */
+  public static Field[] getDeclaredNonStaticFields(Class<?> c) {
+    Field[] f = c.getDeclaredFields();
+    ArrayList<Field> af = new ArrayList<Field>();
+    for (int i = 0; i < f.length; ++i) {
+      if (!Modifier.isStatic(f[i].getModifiers())) {
+        af.add(f[i]);
+      }
+    }
+    Field[] r = new Field[af.size()];
+    for (int i = 0; i < af.size(); ++i) {
+      r[i] = af.get(i);
+    }
+    return r;
   }
   
   /**

@@ -8,28 +8,28 @@ include_once $GLOBALS['THRIFT_ROOT'].'/packages/hive_metastore/hive_metastore_ty
 
 $GLOBALS['hive_metastore_CONSTANTS'] = array();
 
-$GLOBALS['hive_metastore_CONSTANTS']['META_TABLE_COLUMNS'] = 'columns';
+$GLOBALS['hive_metastore_CONSTANTS']['META_TABLE_COLUMNS'] = "columns";
 
-$GLOBALS['hive_metastore_CONSTANTS']['META_TABLE_COLUMN_TYPES'] = 'columns.types';
+$GLOBALS['hive_metastore_CONSTANTS']['META_TABLE_COLUMN_TYPES'] = "columns.types";
 
-$GLOBALS['hive_metastore_CONSTANTS']['BUCKET_FIELD_NAME'] = 'bucket_field_name';
+$GLOBALS['hive_metastore_CONSTANTS']['BUCKET_FIELD_NAME'] = "bucket_field_name";
 
-$GLOBALS['hive_metastore_CONSTANTS']['BUCKET_COUNT'] = 'bucket_count';
+$GLOBALS['hive_metastore_CONSTANTS']['BUCKET_COUNT'] = "bucket_count";
 
-$GLOBALS['hive_metastore_CONSTANTS']['FIELD_TO_DIMENSION'] = 'field_to_dimension';
+$GLOBALS['hive_metastore_CONSTANTS']['FIELD_TO_DIMENSION'] = "field_to_dimension";
 
-$GLOBALS['hive_metastore_CONSTANTS']['META_TABLE_NAME'] = 'name';
+$GLOBALS['hive_metastore_CONSTANTS']['META_TABLE_NAME'] = "name";
 
-$GLOBALS['hive_metastore_CONSTANTS']['META_TABLE_DB'] = 'db';
+$GLOBALS['hive_metastore_CONSTANTS']['META_TABLE_DB'] = "db";
 
-$GLOBALS['hive_metastore_CONSTANTS']['META_TABLE_LOCATION'] = 'location';
+$GLOBALS['hive_metastore_CONSTANTS']['META_TABLE_LOCATION'] = "location";
 
-$GLOBALS['hive_metastore_CONSTANTS']['META_TABLE_SERDE'] = 'serde';
+$GLOBALS['hive_metastore_CONSTANTS']['META_TABLE_SERDE'] = "serde";
 
-$GLOBALS['hive_metastore_CONSTANTS']['META_TABLE_PARTITION_COLUMNS'] = 'partition_columns';
+$GLOBALS['hive_metastore_CONSTANTS']['META_TABLE_PARTITION_COLUMNS'] = "partition_columns";
 
-$GLOBALS['hive_metastore_CONSTANTS']['FILE_INPUT_FORMAT'] = 'file.inputformat';
+$GLOBALS['hive_metastore_CONSTANTS']['FILE_INPUT_FORMAT'] = "file.inputformat";
 
-$GLOBALS['hive_metastore_CONSTANTS']['FILE_OUTPUT_FORMAT'] = 'file.outputformat';
+$GLOBALS['hive_metastore_CONSTANTS']['FILE_OUTPUT_FORMAT'] = "file.outputformat";
 
 ?>

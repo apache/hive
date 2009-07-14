@@ -18,11 +18,11 @@
 
 package org.apache.hadoop.hive.serde2.dynamic_type;
 
-import com.facebook.thrift.TException;
-import com.facebook.thrift.TApplicationException;
-import com.facebook.thrift.protocol.*;
-import com.facebook.thrift.server.*;
-import com.facebook.thrift.transport.*;
+import org.apache.thrift.TException;
+import org.apache.thrift.TApplicationException;
+import org.apache.thrift.protocol.*;
+import org.apache.thrift.server.*;
+import org.apache.thrift.transport.*;
 import java.util.*;
 import java.io.*;
 import org.apache.hadoop.hive.serde2.*;
@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 import java.lang.reflect.*;
-import com.facebook.thrift.protocol.TType;
+import org.apache.thrift.protocol.TType;
 
 public class DynamicSerDeTypeSet extends DynamicSerDeTypeBase {
 
@@ -99,7 +99,7 @@ public class DynamicSerDeTypeSet extends DynamicSerDeTypeBase {
    *  The code uses ListObjectInspector right now. We need to change it to 
    *  SetObjectInspector when that is done.
    */
-  TSet tset = new TSet();
+  TSet tset = null;
   @Override
   public void serialize(Object o, ObjectInspector oi, TProtocol oprot)
   throws TException, SerDeException, NoSuchFieldException,
@@ -109,8 +109,7 @@ public class DynamicSerDeTypeSet extends DynamicSerDeTypeBase {
 
     Set<Object> set = (Set<Object>)o;
     DynamicSerDeTypeBase mt = this.getElementType();
-    tset.elemType = mt.getType();
-    tset.size = set.size();
+    tset = new TSet(mt.getType(), set.size());
     oprot.writeSetBegin(tset);
     for(Object element: set) {
       mt.serialize(element, loi.getListElementObjectInspector(), oprot);

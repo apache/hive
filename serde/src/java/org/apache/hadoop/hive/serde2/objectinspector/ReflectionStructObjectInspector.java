@@ -87,7 +87,7 @@ public class ReflectionStructObjectInspector implements StructObjectInspector {
     assert(!Map.class.isAssignableFrom(objectClass));
     
     this.objectClass = objectClass;
-    Field[] reflectionFields = objectClass.getDeclaredFields();
+    Field[] reflectionFields = ObjectInspectorUtils.getDeclaredNonStaticFields(objectClass);
     fields = new ArrayList<MyField>(structFieldObjectInspectors.size());
     int used = 0;
     for (int i=0; i<reflectionFields.length; i++) {

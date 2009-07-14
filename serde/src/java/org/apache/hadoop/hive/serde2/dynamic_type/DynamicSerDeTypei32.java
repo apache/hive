@@ -18,11 +18,11 @@
 
 package org.apache.hadoop.hive.serde2.dynamic_type;
 
-import com.facebook.thrift.TException;
-import com.facebook.thrift.TApplicationException;
-import com.facebook.thrift.protocol.*;
-import com.facebook.thrift.server.*;
-import com.facebook.thrift.transport.*;
+import org.apache.thrift.TException;
+import org.apache.thrift.TApplicationException;
+import org.apache.thrift.protocol.*;
+import org.apache.thrift.server.*;
+import org.apache.thrift.transport.*;
 import java.util.*;
 import java.io.*;
 import org.apache.hadoop.hive.serde2.*;
@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspecto
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 
 import java.lang.reflect.*;
-import com.facebook.thrift.protocol.TType;
+import org.apache.thrift.protocol.TType;
 
 public class DynamicSerDeTypei32 extends DynamicSerDeTypeBase {
 

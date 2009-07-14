@@ -54,7 +54,7 @@ import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.util.StringUtils;
 
-import com.facebook.thrift.TException;
+import org.apache.thrift.TException;
 
 /**
  * The Hive class contains information about this instance of Hive.

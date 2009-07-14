@@ -18,14 +18,14 @@
 
 package org.apache.hadoop.hive.serde2.dynamic_type;
 
-import com.facebook.thrift.TException;
-import com.facebook.thrift.protocol.*;
+import org.apache.thrift.TException;
+import org.apache.thrift.protocol.*;
 import org.apache.hadoop.hive.serde2.*;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 
-import com.facebook.thrift.protocol.TType;
+import org.apache.thrift.protocol.TType;
 
 public class DynamicSerDeTypeBool extends DynamicSerDeTypeBase {
 

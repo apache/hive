@@ -77,16 +77,16 @@ public class TestDynamicSerDe extends TestCase {
       additionalParams.add(makeHashMap("serialization.sort.order", "------"));
 
 
-      protocols.add(com.facebook.thrift.protocol.TBinaryProtocol.class.getName());
+      protocols.add(org.apache.thrift.protocol.TBinaryProtocol.class.getName());
       isBinaries.add(true);
       additionalParams.add(null);
       
-      protocols.add(com.facebook.thrift.protocol.TJSONProtocol.class.getName());
+      protocols.add(org.apache.thrift.protocol.TJSONProtocol.class.getName());
       isBinaries.add(false);
       additionalParams.add(null);
 
       // TSimpleJSONProtocol does not support deserialization.
-      // protocols.add(com.facebook.thrift.protocol.TSimpleJSONProtocol.class.getName());
+      // protocols.add(org.apache.thrift.protocol.TSimpleJSONProtocol.class.getName());
       // isBinaries.add(false);
       // additionalParams.add(null);
       
@@ -646,8 +646,8 @@ public class TestDynamicSerDe extends TestCase {
 
 
       Properties schema = new Properties();
-      //      schema.setProperty(Constants.SERIALIZATION_FORMAT, com.facebook.thrift.protocol.TJSONProtocol.class.getName());
-      schema.setProperty(Constants.SERIALIZATION_FORMAT, com.facebook.thrift.protocol.TBinaryProtocol.class.getName());
+      //      schema.setProperty(Constants.SERIALIZATION_FORMAT, org.apache.thrift.protocol.TJSONProtocol.class.getName());
+      schema.setProperty(Constants.SERIALIZATION_FORMAT, org.apache.thrift.protocol.TBinaryProtocol.class.getName());
       schema.setProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME, "test");
       schema.setProperty(Constants.SERIALIZATION_DDL,
                          "struct inner { i32 field1, string field2 },struct  test {inner foo,  i32 hello, list<string> bye, map<string,i32> another}");

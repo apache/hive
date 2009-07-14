@@ -25,10 +25,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.io.Writable;
 
-import com.facebook.thrift.TBase;
-import com.facebook.thrift.protocol.TProtocol;
-import com.facebook.thrift.protocol.TProtocolFactory;
-import com.facebook.thrift.transport.TIOStreamTransport;
+import org.apache.thrift.TBase;
+import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.protocol.TProtocolFactory;
+import org.apache.thrift.transport.TIOStreamTransport;
 
 public class ThriftByteStreamTypedSerDe extends ByteStreamTypedSerDe {
 

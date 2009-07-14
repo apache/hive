@@ -50,20 +50,20 @@ import org.apache.hadoop.util.StringUtils;
 import com.facebook.fb303.FacebookBase;
 import com.facebook.fb303.FacebookService;
 import com.facebook.fb303.fb_status;
-import com.facebook.thrift.TException;
-import com.facebook.thrift.protocol.TBinaryProtocol;
-import com.facebook.thrift.server.TServer;
-import com.facebook.thrift.server.TThreadPoolServer;
-import com.facebook.thrift.transport.TServerSocket;
-import com.facebook.thrift.transport.TServerTransport;
-import com.facebook.thrift.transport.TTransportFactory;
+import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.server.TServer;
+import org.apache.thrift.server.TThreadPoolServer;
+import org.apache.thrift.transport.TServerSocket;
+import org.apache.thrift.transport.TServerTransport;
+import org.apache.thrift.transport.TTransportFactory;
 
 /**
  * TODO:pc remove application logic to a separate interface. 
  */
 public class HiveMetaStore extends ThriftHiveMetastore {
   
-    public static class HMSHandler extends FacebookBase implements ThriftHiveMetastore.Iface{
+    public static class HMSHandler extends FacebookBase implements ThriftHiveMetastore.Iface {
       public static final Log LOG = LogFactory.getLog(HiveMetaStore.class.getName());
       private static boolean createDefaultDB = false;
       private String rawStoreClassName;
@@ -652,6 +652,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           StringUtils.stringifyException(e);
           throw new MetaException(e.getMessage());
         }
+      }
+
+      public String getCpuProfile(int profileDurationInSec) throws TException {
+        return "";
       }
   }
     

@@ -38,7 +38,7 @@ import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 
-import com.facebook.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TBinaryProtocol;
 
 public class PlanUtils {
 

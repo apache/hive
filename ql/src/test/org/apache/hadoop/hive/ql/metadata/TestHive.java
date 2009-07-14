@@ -40,7 +40,7 @@ import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.util.StringUtils;
 
-import com.facebook.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TBinaryProtocol;
 
 public class TestHive extends TestCase {
   private Hive hm;

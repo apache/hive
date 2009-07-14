@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 
-import com.facebook.thrift.TException;
+import org.apache.thrift.TException;
 
 /**
  * TODO Unnecessary when the server sides for both dbstore and filestore are merged

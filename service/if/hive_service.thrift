@@ -30,7 +30,7 @@ include "metastore/if/hive_metastore.thrift"
 namespace java org.apache.hadoop.hive.service
 
 exception HiveServerException {
-  string message
+  1: string message
 }
 
 # Interface for Thrift Hive Server

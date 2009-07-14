@@ -11,23 +11,47 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
-import com.facebook.thrift.*;
+import java.util.Collections;
+import org.apache.log4j.Logger;
 
-import com.facebook.thrift.protocol.*;
-import com.facebook.thrift.transport.*;
+import org.apache.thrift.*;
+import org.apache.thrift.meta_data.*;
+import org.apache.thrift.protocol.*;
 
-public class Type implements TBase, java.io.Serializable {
+public class Type implements TBase, java.io.Serializable, Cloneable {
+  private static final TStruct STRUCT_DESC = new TStruct("Type");
+  private static final TField NAME_FIELD_DESC = new TField("name", TType.STRING, (short)1);
+  private static final TField TYPE1_FIELD_DESC = new TField("type1", TType.STRING, (short)2);
+  private static final TField TYPE2_FIELD_DESC = new TField("type2", TType.STRING, (short)3);
+  private static final TField FIELDS_FIELD_DESC = new TField("fields", TType.LIST, (short)4);
+
   private String name;
+  public static final int NAME = 1;
   private String type1;
+  public static final int TYPE1 = 2;
   private String type2;
+  public static final int TYPE2 = 3;
   private List<FieldSchema> fields;
+  public static final int FIELDS = 4;
 
-  public final Isset __isset = new Isset();
-  public static final class Isset implements java.io.Serializable {
-    public boolean name = false;
-    public boolean type1 = false;
-    public boolean type2 = false;
-    public boolean fields = false;
+  private final Isset __isset = new Isset();
+  private static final class Isset implements java.io.Serializable {
+  }
+
+  public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+    put(NAME, new FieldMetaData("name", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.STRING)));
+    put(TYPE1, new FieldMetaData("type1", TFieldRequirementType.OPTIONAL, 
+        new FieldValueMetaData(TType.STRING)));
+    put(TYPE2, new FieldMetaData("type2", TFieldRequirementType.OPTIONAL, 
+        new FieldValueMetaData(TType.STRING)));
+    put(FIELDS, new FieldMetaData("fields", TFieldRequirementType.OPTIONAL, 
+        new ListMetaData(TType.LIST, 
+            new StructMetaData(TType.STRUCT, FieldSchema.class))));
+  }});
+
+  static {
+    FieldMetaData.addStructMetaDataMap(Type.class, metaDataMap);
   }
 
   public Type() {
@@ -41,13 +65,36 @@ public class Type implements TBase, java.io.Serializable {
   {
     this();
     this.name = name;
-    this.__isset.name = true;
     this.type1 = type1;
-    this.__isset.type1 = true;
     this.type2 = type2;
-    this.__isset.type2 = true;
     this.fields = fields;
-    this.__isset.fields = true;
+  }
+
+  /**
+   * Performs a deep copy on <i>other</i>.
+   */
+  public Type(Type other) {
+    if (other.isSetName()) {
+      this.name = other.name;
+    }
+    if (other.isSetType1()) {
+      this.type1 = other.type1;
+    }
+    if (other.isSetType2()) {
+      this.type2 = other.type2;
+    }
+    if (other.isSetFields()) {
+      List<FieldSchema> __this__fields = new ArrayList<FieldSchema>();
+      for (FieldSchema other_element : other.fields) {
+        __this__fields.add(new FieldSchema(other_element));
+      }
+      this.fields = __this__fields;
+    }
+  }
+
+  @Override
+  public Type clone() {
+    return new Type(this);
   }
 
   public String getName() {
@@ -56,11 +103,15 @@ public class Type implements TBase, java.io.Serializable {
 
   public void setName(String name) {
     this.name = name;
-    this.__isset.name = true;
   }
 
   public void unsetName() {
-    this.__isset.name = false;
+    this.name = null;
+  }
+
+  // Returns true if field name is set (has been asigned a value) and false otherwise
+  public boolean isSetName() {
+    return this.name != null;
   }
 
   public String getType1() {
@@ -69,11 +120,15 @@ public class Type implements TBase, java.io.Serializable {
 
   public void setType1(String type1) {
     this.type1 = type1;
-    this.__isset.type1 = true;
   }
 
   public void unsetType1() {
-    this.__isset.type1 = false;
+    this.type1 = null;
+  }
+
+  // Returns true if field type1 is set (has been asigned a value) and false otherwise
+  public boolean isSetType1() {
+    return this.type1 != null;
   }
 
   public String getType2() {
@@ -82,11 +137,15 @@ public class Type implements TBase, java.io.Serializable {
 
   public void setType2(String type2) {
     this.type2 = type2;
-    this.__isset.type2 = true;
   }
 
   public void unsetType2() {
-    this.__isset.type2 = false;
+    this.type2 = null;
+  }
+
+  // Returns true if field type2 is set (has been asigned a value) and false otherwise
+  public boolean isSetType2() {
+    return this.type2 != null;
   }
 
   public int getFieldsSize() {
@@ -102,7 +161,6 @@ public class Type implements TBase, java.io.Serializable {
       this.fields = new ArrayList<FieldSchema>();
     }
     this.fields.add(elem);
-    this.__isset.fields = true;
   }
 
   public List<FieldSchema> getFields() {
@@ -111,14 +169,92 @@ public class Type implements TBase, java.io.Serializable {
 
   public void setFields(List<FieldSchema> fields) {
     this.fields = fields;
-    this.__isset.fields = true;
   }
 
   public void unsetFields() {
     this.fields = null;
-    this.__isset.fields = false;
   }
 
+  // Returns true if field fields is set (has been asigned a value) and false otherwise
+  public boolean isSetFields() {
+    return this.fields != null;
+  }
+
+  public void setFieldValue(int fieldID, Object value) {
+    switch (fieldID) {
+    case NAME:
+      if (value == null) {
+        unsetName();
+      } else {
+        setName((String)value);
+      }
+      break;
+
+    case TYPE1:
+      if (value == null) {
+        unsetType1();
+      } else {
+        setType1((String)value);
+      }
+      break;
+
+    case TYPE2:
+      if (value == null) {
+        unsetType2();
+      } else {
+        setType2((String)value);
+      }
+      break;
+
+    case FIELDS:
+      if (value == null) {
+        unsetFields();
+      } else {
+        setFields((List<FieldSchema>)value);
+      }
+      break;
+
+    default:
+      throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+    }
+  }
+
+  public Object getFieldValue(int fieldID) {
+    switch (fieldID) {
+    case NAME:
+      return getName();
+
+    case TYPE1:
+      return getType1();
+
+    case TYPE2:
+      return getType2();
+
+    case FIELDS:
+      return getFields();
+
+    default:
+      throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+    }
+  }
+
+  // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+  public boolean isSet(int fieldID) {
+    switch (fieldID) {
+    case NAME:
+      return isSetName();
+    case TYPE1:
+      return isSetType1();
+    case TYPE2:
+      return isSetType2();
+    case FIELDS:
+      return isSetFields();
+    default:
+      throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+    }
+  }
+
+  @Override
   public boolean equals(Object that) {
     if (that == null)
       return false;
@@ -131,8 +267,8 @@ public class Type implements TBase, java.io.Serializable {
     if (that == null)
       return false;
 
-    boolean this_present_name = true && (this.name != null);
-    boolean that_present_name = true && (that.name != null);
+    boolean this_present_name = true && this.isSetName();
+    boolean that_present_name = true && that.isSetName();
     if (this_present_name || that_present_name) {
       if (!(this_present_name && that_present_name))
         return false;
@@ -140,8 +276,8 @@ public class Type implements TBase, java.io.Serializable {
         return false;
     }
 
-    boolean this_present_type1 = true && (this.__isset.type1) && (this.type1 != null);
-    boolean that_present_type1 = true && (that.__isset.type1) && (that.type1 != null);
+    boolean this_present_type1 = true && this.isSetType1();
+    boolean that_present_type1 = true && that.isSetType1();
     if (this_present_type1 || that_present_type1) {
       if (!(this_present_type1 && that_present_type1))
         return false;
@@ -149,8 +285,8 @@ public class Type implements TBase, java.io.Serializable {
         return false;
     }
 
-    boolean this_present_type2 = true && (this.__isset.type2) && (this.type2 != null);
-    boolean that_present_type2 = true && (that.__isset.type2) && (that.type2 != null);
+    boolean this_present_type2 = true && this.isSetType2();
+    boolean that_present_type2 = true && that.isSetType2();
     if (this_present_type2 || that_present_type2) {
       if (!(this_present_type2 && that_present_type2))
         return false;
@@ -158,8 +294,8 @@ public class Type implements TBase, java.io.Serializable {
         return false;
     }
 
-    boolean this_present_fields = true && (this.__isset.fields) && (this.fields != null);
-    boolean that_present_fields = true && (that.__isset.fields) && (that.fields != null);
+    boolean this_present_fields = true && this.isSetFields();
+    boolean that_present_fields = true && that.isSetFields();
     if (this_present_fields || that_present_fields) {
       if (!(this_present_fields && that_present_fields))
         return false;
@@ -170,6 +306,7 @@ public class Type implements TBase, java.io.Serializable {
     return true;
   }
 
+  @Override
   public int hashCode() {
     return 0;
   }
@@ -185,45 +322,41 @@ public class Type implements TBase, java.io.Serializable {
       }
       switch (field.id)
       {
-        case 1:
+        case NAME:
           if (field.type == TType.STRING) {
             this.name = iprot.readString();
-            this.__isset.name = true;
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 2:
+        case TYPE1:
           if (field.type == TType.STRING) {
             this.type1 = iprot.readString();
-            this.__isset.type1 = true;
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 3:
+        case TYPE2:
           if (field.type == TType.STRING) {
             this.type2 = iprot.readString();
-            this.__isset.type2 = true;
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 4:
+        case FIELDS:
           if (field.type == TType.LIST) {
             {
               TList _list0 = iprot.readListBegin();
               this.fields = new ArrayList<FieldSchema>(_list0.size);
               for (int _i1 = 0; _i1 < _list0.size; ++_i1)
               {
-                FieldSchema _elem2 = new FieldSchema();
+                FieldSchema _elem2;
                 _elem2 = new FieldSchema();
                 _elem2.read(iprot);
                 this.fields.add(_elem2);
               }
               iprot.readListEnd();
             }
-            this.__isset.fields = true;
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
@@ -235,73 +368,100 @@ public class Type implements TBase, java.io.Serializable {
       iprot.readFieldEnd();
     }
     iprot.readStructEnd();
+
+    validate();
   }
 
   public void write(TProtocol oprot) throws TException {
-    TStruct struct = new TStruct("Type");
-    oprot.writeStructBegin(struct);
-    TField field = new TField();
+    validate();
+
+    oprot.writeStructBegin(STRUCT_DESC);
     if (this.name != null) {
-      field.name = "name";
-      field.type = TType.STRING;
-      field.id = 1;
-      oprot.writeFieldBegin(field);
+      oprot.writeFieldBegin(NAME_FIELD_DESC);
       oprot.writeString(this.name);
       oprot.writeFieldEnd();
     }
     if (this.type1 != null) {
-      if (this.__isset.type1) {
-      field.name = "type1";
-      field.type = TType.STRING;
-      field.id = 2;
-      oprot.writeFieldBegin(field);
-      oprot.writeString(this.type1);
-      oprot.writeFieldEnd();
+      if (isSetType1()) {
+        oprot.writeFieldBegin(TYPE1_FIELD_DESC);
+        oprot.writeString(this.type1);
+        oprot.writeFieldEnd();
+      }
     }
-  }
-  if (this.type2 != null) {
-    if (this.__isset.type2) {
-    field.name = "type2";
-    field.type = TType.STRING;
-    field.id = 3;
-    oprot.writeFieldBegin(field);
-    oprot.writeString(this.type2);
-    oprot.writeFieldEnd();
-  }
-}
-if (this.fields != null) {
-  if (this.__isset.fields) {
-  field.name = "fields";
-  field.type = TType.LIST;
-  field.id = 4;
-  oprot.writeFieldBegin(field);
-  {
-    oprot.writeListBegin(new TList(TType.STRUCT, this.fields.size()));
-    for (FieldSchema _iter3 : this.fields)    {
-      _iter3.write(oprot);
+    if (this.type2 != null) {
+      if (isSetType2()) {
+        oprot.writeFieldBegin(TYPE2_FIELD_DESC);
+        oprot.writeString(this.type2);
+        oprot.writeFieldEnd();
+      }
     }
-    oprot.writeListEnd();
+    if (this.fields != null) {
+      if (isSetFields()) {
+        oprot.writeFieldBegin(FIELDS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new TList(TType.STRUCT, this.fields.size()));
+          for (FieldSchema _iter3 : this.fields)          {
+            _iter3.write(oprot);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      }
+    }
+    oprot.writeFieldStop();
+    oprot.writeStructEnd();
   }
-  oprot.writeFieldEnd();
-}
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
 
-public String toString() {
-StringBuilder sb = new StringBuilder("Type(");
-sb.append("name:");
-sb.append(this.name);
-sb.append(",type1:");
-sb.append(this.type1);
-sb.append(",type2:");
-sb.append(this.type2);
-sb.append(",fields:");
-sb.append(this.fields);
-sb.append(")");
-return sb.toString();
-}
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder("Type(");
+    boolean first = true;
+
+    sb.append("name:");
+    if (this.name == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.name);
+    }
+    first = false;
+    if (isSetType1()) {
+      if (!first) sb.append(", ");
+      sb.append("type1:");
+      if (this.type1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.type1);
+      }
+      first = false;
+    }
+    if (isSetType2()) {
+      if (!first) sb.append(", ");
+      sb.append("type2:");
+      if (this.type2 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.type2);
+      }
+      first = false;
+    }
+    if (isSetFields()) {
+      if (!first) sb.append(", ");
+      sb.append("fields:");
+      if (this.fields == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.fields);
+      }
+      first = false;
+    }
+    sb.append(")");
+    return sb.toString();
+  }
+
+  public void validate() throws TException {
+    // check for required fields
+    // check that fields of type enum have valid values
+  }
 
 }
 

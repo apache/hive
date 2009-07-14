@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.serde2.thrift;
 
 import org.apache.hadoop.conf.Configuration;
 import java.util.Properties;
-import com.facebook.thrift.TException;
+import org.apache.thrift.TException;
 
 /**
  * An interface for TProtocols that need to have properties passed in to 

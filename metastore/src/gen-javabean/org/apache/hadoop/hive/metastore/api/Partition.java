@@ -11,455 +11,690 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
-import com.facebook.thrift.*;
+import java.util.Collections;
+import org.apache.log4j.Logger;
 
-import com.facebook.thrift.protocol.*;
-import com.facebook.thrift.transport.*;
+import org.apache.thrift.*;
+import org.apache.thrift.meta_data.*;
+import org.apache.thrift.protocol.*;
 
-public class Partition implements TBase, java.io.Serializable {
-private List<String> values;
-private String dbName;
-private String tableName;
-private int createTime;
-private int lastAccessTime;
-private StorageDescriptor sd;
-private Map<String,String> parameters;
+public class Partition implements TBase, java.io.Serializable, Cloneable {
+  private static final TStruct STRUCT_DESC = new TStruct("Partition");
+  private static final TField VALUES_FIELD_DESC = new TField("values", TType.LIST, (short)1);
+  private static final TField DB_NAME_FIELD_DESC = new TField("dbName", TType.STRING, (short)2);
+  private static final TField TABLE_NAME_FIELD_DESC = new TField("tableName", TType.STRING, (short)3);
+  private static final TField CREATE_TIME_FIELD_DESC = new TField("createTime", TType.I32, (short)4);
+  private static final TField LAST_ACCESS_TIME_FIELD_DESC = new TField("lastAccessTime", TType.I32, (short)5);
+  private static final TField SD_FIELD_DESC = new TField("sd", TType.STRUCT, (short)6);
+  private static final TField PARAMETERS_FIELD_DESC = new TField("parameters", TType.MAP, (short)7);
 
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean values = false;
-public boolean dbName = false;
-public boolean tableName = false;
-public boolean createTime = false;
-public boolean lastAccessTime = false;
-public boolean sd = false;
-public boolean parameters = false;
-}
+  private List<String> values;
+  public static final int VALUES = 1;
+  private String dbName;
+  public static final int DBNAME = 2;
+  private String tableName;
+  public static final int TABLENAME = 3;
+  private int createTime;
+  public static final int CREATETIME = 4;
+  private int lastAccessTime;
+  public static final int LASTACCESSTIME = 5;
+  private StorageDescriptor sd;
+  public static final int SD = 6;
+  private Map<String,String> parameters;
+  public static final int PARAMETERS = 7;
 
-public Partition() {
-}
-
-public Partition(
-List<String> values,
-String dbName,
-String tableName,
-int createTime,
-int lastAccessTime,
-StorageDescriptor sd,
-Map<String,String> parameters)
-{
-this();
-this.values = values;
-this.__isset.values = true;
-this.dbName = dbName;
-this.__isset.dbName = true;
-this.tableName = tableName;
-this.__isset.tableName = true;
-this.createTime = createTime;
-this.__isset.createTime = true;
-this.lastAccessTime = lastAccessTime;
-this.__isset.lastAccessTime = true;
-this.sd = sd;
-this.__isset.sd = true;
-this.parameters = parameters;
-this.__isset.parameters = true;
-}
-
-public int getValuesSize() {
-return (this.values == null) ? 0 : this.values.size();
-}
-
-public java.util.Iterator<String> getValuesIterator() {
-return (this.values == null) ? null : this.values.iterator();
-}
-
-public void addToValues(String elem) {
-if (this.values == null) {
-this.values = new ArrayList<String>();
-}
-this.values.add(elem);
-this.__isset.values = true;
-}
-
-public List<String> getValues() {
-return this.values;
-}
-
-public void setValues(List<String> values) {
-this.values = values;
-this.__isset.values = true;
-}
-
-public void unsetValues() {
-this.values = null;
-this.__isset.values = false;
-}
-
-public String getDbName() {
-return this.dbName;
-}
-
-public void setDbName(String dbName) {
-this.dbName = dbName;
-this.__isset.dbName = true;
-}
-
-public void unsetDbName() {
-this.__isset.dbName = false;
-}
-
-public String getTableName() {
-return this.tableName;
-}
-
-public void setTableName(String tableName) {
-this.tableName = tableName;
-this.__isset.tableName = true;
-}
-
-public void unsetTableName() {
-this.__isset.tableName = false;
-}
-
-public int getCreateTime() {
-return this.createTime;
-}
-
-public void setCreateTime(int createTime) {
-this.createTime = createTime;
-this.__isset.createTime = true;
-}
-
-public void unsetCreateTime() {
-this.__isset.createTime = false;
-}
-
-public int getLastAccessTime() {
-return this.lastAccessTime;
-}
-
-public void setLastAccessTime(int lastAccessTime) {
-this.lastAccessTime = lastAccessTime;
-this.__isset.lastAccessTime = true;
-}
-
-public void unsetLastAccessTime() {
-this.__isset.lastAccessTime = false;
-}
-
-public StorageDescriptor getSd() {
-return this.sd;
-}
-
-public void setSd(StorageDescriptor sd) {
-this.sd = sd;
-this.__isset.sd = true;
-}
-
-public void unsetSd() {
-this.sd = null;
-this.__isset.sd = false;
-}
-
-public int getParametersSize() {
-return (this.parameters == null) ? 0 : this.parameters.size();
-}
-
-public void putToParameters(String key, String val) {
-if (this.parameters == null) {
-this.parameters = new HashMap<String,String>();
-}
-this.parameters.put(key, val);
-this.__isset.parameters = true;
-}
-
-public Map<String,String> getParameters() {
-return this.parameters;
-}
-
-public void setParameters(Map<String,String> parameters) {
-this.parameters = parameters;
-this.__isset.parameters = true;
-}
-
-public void unsetParameters() {
-this.parameters = null;
-this.__isset.parameters = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof Partition)
-  return this.equals((Partition)that);
-return false;
-}
-
-public boolean equals(Partition that) {
-if (that == null)
-  return false;
-
-boolean this_present_values = true && (this.values != null);
-boolean that_present_values = true && (that.values != null);
-if (this_present_values || that_present_values) {
-if (!(this_present_values && that_present_values))
-  return false;
-if (!this.values.equals(that.values))
-  return false;
-}
-
-boolean this_present_dbName = true && (this.dbName != null);
-boolean that_present_dbName = true && (that.dbName != null);
-if (this_present_dbName || that_present_dbName) {
-if (!(this_present_dbName && that_present_dbName))
-  return false;
-if (!this.dbName.equals(that.dbName))
-  return false;
-}
-
-boolean this_present_tableName = true && (this.tableName != null);
-boolean that_present_tableName = true && (that.tableName != null);
-if (this_present_tableName || that_present_tableName) {
-if (!(this_present_tableName && that_present_tableName))
-  return false;
-if (!this.tableName.equals(that.tableName))
-  return false;
-}
-
-boolean this_present_createTime = true;
-boolean that_present_createTime = true;
-if (this_present_createTime || that_present_createTime) {
-if (!(this_present_createTime && that_present_createTime))
-  return false;
-if (this.createTime != that.createTime)
-  return false;
-}
-
-boolean this_present_lastAccessTime = true;
-boolean that_present_lastAccessTime = true;
-if (this_present_lastAccessTime || that_present_lastAccessTime) {
-if (!(this_present_lastAccessTime && that_present_lastAccessTime))
-  return false;
-if (this.lastAccessTime != that.lastAccessTime)
-  return false;
-}
-
-boolean this_present_sd = true && (this.sd != null);
-boolean that_present_sd = true && (that.sd != null);
-if (this_present_sd || that_present_sd) {
-if (!(this_present_sd && that_present_sd))
-  return false;
-if (!this.sd.equals(that.sd))
-  return false;
-}
-
-boolean this_present_parameters = true && (this.parameters != null);
-boolean that_present_parameters = true && (that.parameters != null);
-if (this_present_parameters || that_present_parameters) {
-if (!(this_present_parameters && that_present_parameters))
-  return false;
-if (!this.parameters.equals(that.parameters))
-  return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-field = iprot.readFieldBegin();
-if (field.type == TType.STOP) { 
-  break;
-}
-switch (field.id)
-{
-  case 1:
-    if (field.type == TType.LIST) {
-      {
-        TList _list35 = iprot.readListBegin();
-        this.values = new ArrayList<String>(_list35.size);
-        for (int _i36 = 0; _i36 < _list35.size; ++_i36)
-        {
-          String _elem37 = null;
-          _elem37 = iprot.readString();
-          this.values.add(_elem37);
-        }
-        iprot.readListEnd();
-      }
-      this.__isset.values = true;
-    } else { 
-      TProtocolUtil.skip(iprot, field.type);
-    }
-    break;
-  case 2:
-    if (field.type == TType.STRING) {
-      this.dbName = iprot.readString();
-      this.__isset.dbName = true;
-    } else { 
-      TProtocolUtil.skip(iprot, field.type);
-    }
-    break;
-  case 3:
-    if (field.type == TType.STRING) {
-      this.tableName = iprot.readString();
-      this.__isset.tableName = true;
-    } else { 
-      TProtocolUtil.skip(iprot, field.type);
-    }
-    break;
-  case 4:
-    if (field.type == TType.I32) {
-      this.createTime = iprot.readI32();
-      this.__isset.createTime = true;
-    } else { 
-      TProtocolUtil.skip(iprot, field.type);
-    }
-    break;
-  case 5:
-    if (field.type == TType.I32) {
-      this.lastAccessTime = iprot.readI32();
-      this.__isset.lastAccessTime = true;
-    } else { 
-      TProtocolUtil.skip(iprot, field.type);
-    }
-    break;
-  case 6:
-    if (field.type == TType.STRUCT) {
-      this.sd = new StorageDescriptor();
-      this.sd.read(iprot);
-      this.__isset.sd = true;
-    } else { 
-      TProtocolUtil.skip(iprot, field.type);
-    }
-    break;
-  case 7:
-    if (field.type == TType.MAP) {
-      {
-        TMap _map38 = iprot.readMapBegin();
-        this.parameters = new HashMap<String,String>(2*_map38.size);
-        for (int _i39 = 0; _i39 < _map38.size; ++_i39)
-        {
-          String _key40;
-          String _val41;
-          _key40 = iprot.readString();
-          _val41 = iprot.readString();
-          this.parameters.put(_key40, _val41);
-        }
-        iprot.readMapEnd();
-      }
-      this.__isset.parameters = true;
-    } else { 
-      TProtocolUtil.skip(iprot, field.type);
-    }
-    break;
-  default:
-    TProtocolUtil.skip(iprot, field.type);
-    break;
-}
-iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("Partition");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-if (this.values != null) {
-field.name = "values";
-field.type = TType.LIST;
-field.id = 1;
-oprot.writeFieldBegin(field);
-{
-  oprot.writeListBegin(new TList(TType.STRING, this.values.size()));
-  for (String _iter42 : this.values)  {
-    oprot.writeString(_iter42);
+  private final Isset __isset = new Isset();
+  private static final class Isset implements java.io.Serializable {
+    public boolean createTime = false;
+    public boolean lastAccessTime = false;
   }
-  oprot.writeListEnd();
-}
-oprot.writeFieldEnd();
-}
-if (this.dbName != null) {
-field.name = "dbName";
-field.type = TType.STRING;
-field.id = 2;
-oprot.writeFieldBegin(field);
-oprot.writeString(this.dbName);
-oprot.writeFieldEnd();
-}
-if (this.tableName != null) {
-field.name = "tableName";
-field.type = TType.STRING;
-field.id = 3;
-oprot.writeFieldBegin(field);
-oprot.writeString(this.tableName);
-oprot.writeFieldEnd();
-}
-field.name = "createTime";
-field.type = TType.I32;
-field.id = 4;
-oprot.writeFieldBegin(field);
-oprot.writeI32(this.createTime);
-oprot.writeFieldEnd();
-field.name = "lastAccessTime";
-field.type = TType.I32;
-field.id = 5;
-oprot.writeFieldBegin(field);
-oprot.writeI32(this.lastAccessTime);
-oprot.writeFieldEnd();
-if (this.sd != null) {
-field.name = "sd";
-field.type = TType.STRUCT;
-field.id = 6;
-oprot.writeFieldBegin(field);
-this.sd.write(oprot);
-oprot.writeFieldEnd();
-}
-if (this.parameters != null) {
-field.name = "parameters";
-field.type = TType.MAP;
-field.id = 7;
-oprot.writeFieldBegin(field);
-{
-  oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.parameters.size()));
-  for (String _iter43 : this.parameters.keySet())  {
-    oprot.writeString(_iter43);
-    oprot.writeString(this.parameters.get(_iter43));
-  }
-  oprot.writeMapEnd();
-}
-oprot.writeFieldEnd();
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
 
-public String toString() {
-StringBuilder sb = new StringBuilder("Partition(");
-sb.append("values:");
-sb.append(this.values);
-sb.append(",dbName:");
-sb.append(this.dbName);
-sb.append(",tableName:");
-sb.append(this.tableName);
-sb.append(",createTime:");
-sb.append(this.createTime);
-sb.append(",lastAccessTime:");
-sb.append(this.lastAccessTime);
-sb.append(",sd:");
-sb.append(this.sd);
-sb.append(",parameters:");
-sb.append(this.parameters);
-sb.append(")");
-return sb.toString();
-}
+  public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+    put(VALUES, new FieldMetaData("values", TFieldRequirementType.DEFAULT, 
+        new ListMetaData(TType.LIST, 
+            new FieldValueMetaData(TType.STRING))));
+    put(DBNAME, new FieldMetaData("dbName", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.STRING)));
+    put(TABLENAME, new FieldMetaData("tableName", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.STRING)));
+    put(CREATETIME, new FieldMetaData("createTime", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.I32)));
+    put(LASTACCESSTIME, new FieldMetaData("lastAccessTime", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.I32)));
+    put(SD, new FieldMetaData("sd", TFieldRequirementType.DEFAULT, 
+        new StructMetaData(TType.STRUCT, StorageDescriptor.class)));
+    put(PARAMETERS, new FieldMetaData("parameters", TFieldRequirementType.DEFAULT, 
+        new MapMetaData(TType.MAP, 
+            new FieldValueMetaData(TType.STRING), 
+            new FieldValueMetaData(TType.STRING))));
+  }});
+
+  static {
+    FieldMetaData.addStructMetaDataMap(Partition.class, metaDataMap);
+  }
+
+  public Partition() {
+  }
+
+  public Partition(
+    List<String> values,
+    String dbName,
+    String tableName,
+    int createTime,
+    int lastAccessTime,
+    StorageDescriptor sd,
+    Map<String,String> parameters)
+  {
+    this();
+    this.values = values;
+    this.dbName = dbName;
+    this.tableName = tableName;
+    this.createTime = createTime;
+    this.__isset.createTime = true;
+    this.lastAccessTime = lastAccessTime;
+    this.__isset.lastAccessTime = true;
+    this.sd = sd;
+    this.parameters = parameters;
+  }
+
+  /**
+   * Performs a deep copy on <i>other</i>.
+   */
+  public Partition(Partition other) {
+    if (other.isSetValues()) {
+      List<String> __this__values = new ArrayList<String>();
+      for (String other_element : other.values) {
+        __this__values.add(other_element);
+      }
+      this.values = __this__values;
+    }
+    if (other.isSetDbName()) {
+      this.dbName = other.dbName;
+    }
+    if (other.isSetTableName()) {
+      this.tableName = other.tableName;
+    }
+    __isset.createTime = other.__isset.createTime;
+    this.createTime = other.createTime;
+    __isset.lastAccessTime = other.__isset.lastAccessTime;
+    this.lastAccessTime = other.lastAccessTime;
+    if (other.isSetSd()) {
+      this.sd = new StorageDescriptor(other.sd);
+    }
+    if (other.isSetParameters()) {
+      Map<String,String> __this__parameters = new HashMap<String,String>();
+      for (Map.Entry<String, String> other_element : other.parameters.entrySet()) {
+
+        String other_element_key = other_element.getKey();
+        String other_element_value = other_element.getValue();
+
+        String __this__parameters_copy_key = other_element_key;
+
+        String __this__parameters_copy_value = other_element_value;
+
+        __this__parameters.put(__this__parameters_copy_key, __this__parameters_copy_value);
+      }
+      this.parameters = __this__parameters;
+    }
+  }
+
+  @Override
+  public Partition clone() {
+    return new Partition(this);
+  }
+
+  public int getValuesSize() {
+    return (this.values == null) ? 0 : this.values.size();
+  }
+
+  public java.util.Iterator<String> getValuesIterator() {
+    return (this.values == null) ? null : this.values.iterator();
+  }
+
+  public void addToValues(String elem) {
+    if (this.values == null) {
+      this.values = new ArrayList<String>();
+    }
+    this.values.add(elem);
+  }
+
+  public List<String> getValues() {
+    return this.values;
+  }
+
+  public void setValues(List<String> values) {
+    this.values = values;
+  }
+
+  public void unsetValues() {
+    this.values = null;
+  }
+
+  // Returns true if field values is set (has been asigned a value) and false otherwise
+  public boolean isSetValues() {
+    return this.values != null;
+  }
+
+  public String getDbName() {
+    return this.dbName;
+  }
+
+  public void setDbName(String dbName) {
+    this.dbName = dbName;
+  }
+
+  public void unsetDbName() {
+    this.dbName = null;
+  }
+
+  // Returns true if field dbName is set (has been asigned a value) and false otherwise
+  public boolean isSetDbName() {
+    return this.dbName != null;
+  }
+
+  public String getTableName() {
+    return this.tableName;
+  }
+
+  public void setTableName(String tableName) {
+    this.tableName = tableName;
+  }
+
+  public void unsetTableName() {
+    this.tableName = null;
+  }
+
+  // Returns true if field tableName is set (has been asigned a value) and false otherwise
+  public boolean isSetTableName() {
+    return this.tableName != null;
+  }
+
+  public int getCreateTime() {
+    return this.createTime;
+  }
+
+  public void setCreateTime(int createTime) {
+    this.createTime = createTime;
+    this.__isset.createTime = true;
+  }
+
+  public void unsetCreateTime() {
+    this.__isset.createTime = false;
+  }
+
+  // Returns true if field createTime is set (has been asigned a value) and false otherwise
+  public boolean isSetCreateTime() {
+    return this.__isset.createTime;
+  }
+
+  public int getLastAccessTime() {
+    return this.lastAccessTime;
+  }
+
+  public void setLastAccessTime(int lastAccessTime) {
+    this.lastAccessTime = lastAccessTime;
+    this.__isset.lastAccessTime = true;
+  }
+
+  public void unsetLastAccessTime() {
+    this.__isset.lastAccessTime = false;
+  }
+
+  // Returns true if field lastAccessTime is set (has been asigned a value) and false otherwise
+  public boolean isSetLastAccessTime() {
+    return this.__isset.lastAccessTime;
+  }
+
+  public StorageDescriptor getSd() {
+    return this.sd;
+  }
+
+  public void setSd(StorageDescriptor sd) {
+    this.sd = sd;
+  }
+
+  public void unsetSd() {
+    this.sd = null;
+  }
+
+  // Returns true if field sd is set (has been asigned a value) and false otherwise
+  public boolean isSetSd() {
+    return this.sd != null;
+  }
+
+  public int getParametersSize() {
+    return (this.parameters == null) ? 0 : this.parameters.size();
+  }
+
+  public void putToParameters(String key, String val) {
+    if (this.parameters == null) {
+      this.parameters = new HashMap<String,String>();
+    }
+    this.parameters.put(key, val);
+  }
+
+  public Map<String,String> getParameters() {
+    return this.parameters;
+  }
+
+  public void setParameters(Map<String,String> parameters) {
+    this.parameters = parameters;
+  }
+
+  public void unsetParameters() {
+    this.parameters = null;
+  }
+
+  // Returns true if field parameters is set (has been asigned a value) and false otherwise
+  public boolean isSetParameters() {
+    return this.parameters != null;
+  }
+
+  public void setFieldValue(int fieldID, Object value) {
+    switch (fieldID) {
+    case VALUES:
+      if (value == null) {
+        unsetValues();
+      } else {
+        setValues((List<String>)value);
+      }
+      break;
+
+    case DBNAME:
+      if (value == null) {
+        unsetDbName();
+      } else {
+        setDbName((String)value);
+      }
+      break;
+
+    case TABLENAME:
+      if (value == null) {
+        unsetTableName();
+      } else {
+        setTableName((String)value);
+      }
+      break;
+
+    case CREATETIME:
+      if (value == null) {
+        unsetCreateTime();
+      } else {
+        setCreateTime((Integer)value);
+      }
+      break;
+
+    case LASTACCESSTIME:
+      if (value == null) {
+        unsetLastAccessTime();
+      } else {
+        setLastAccessTime((Integer)value);
+      }
+      break;
+
+    case SD:
+      if (value == null) {
+        unsetSd();
+      } else {
+        setSd((StorageDescriptor)value);
+      }
+      break;
+
+    case PARAMETERS:
+      if (value == null) {
+        unsetParameters();
+      } else {
+        setParameters((Map<String,String>)value);
+      }
+      break;
+
+    default:
+      throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+    }
+  }
+
+  public Object getFieldValue(int fieldID) {
+    switch (fieldID) {
+    case VALUES:
+      return getValues();
+
+    case DBNAME:
+      return getDbName();
+
+    case TABLENAME:
+      return getTableName();
+
+    case CREATETIME:
+      return new Integer(getCreateTime());
+
+    case LASTACCESSTIME:
+      return new Integer(getLastAccessTime());
+
+    case SD:
+      return getSd();
+
+    case PARAMETERS:
+      return getParameters();
+
+    default:
+      throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+    }
+  }
+
+  // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+  public boolean isSet(int fieldID) {
+    switch (fieldID) {
+    case VALUES:
+      return isSetValues();
+    case DBNAME:
+      return isSetDbName();
+    case TABLENAME:
+      return isSetTableName();
+    case CREATETIME:
+      return isSetCreateTime();
+    case LASTACCESSTIME:
+      return isSetLastAccessTime();
+    case SD:
+      return isSetSd();
+    case PARAMETERS:
+      return isSetParameters();
+    default:
+      throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+    }
+  }
+
+  @Override
+  public boolean equals(Object that) {
+    if (that == null)
+      return false;
+    if (that instanceof Partition)
+      return this.equals((Partition)that);
+    return false;
+  }
+
+  public boolean equals(Partition that) {
+    if (that == null)
+      return false;
+
+    boolean this_present_values = true && this.isSetValues();
+    boolean that_present_values = true && that.isSetValues();
+    if (this_present_values || that_present_values) {
+      if (!(this_present_values && that_present_values))
+        return false;
+      if (!this.values.equals(that.values))
+        return false;
+    }
+
+    boolean this_present_dbName = true && this.isSetDbName();
+    boolean that_present_dbName = true && that.isSetDbName();
+    if (this_present_dbName || that_present_dbName) {
+      if (!(this_present_dbName && that_present_dbName))
+        return false;
+      if (!this.dbName.equals(that.dbName))
+        return false;
+    }
+
+    boolean this_present_tableName = true && this.isSetTableName();
+    boolean that_present_tableName = true && that.isSetTableName();
+    if (this_present_tableName || that_present_tableName) {
+      if (!(this_present_tableName && that_present_tableName))
+        return false;
+      if (!this.tableName.equals(that.tableName))
+        return false;
+    }
+
+    boolean this_present_createTime = true;
+    boolean that_present_createTime = true;
+    if (this_present_createTime || that_present_createTime) {
+      if (!(this_present_createTime && that_present_createTime))
+        return false;
+      if (this.createTime != that.createTime)
+        return false;
+    }
+
+    boolean this_present_lastAccessTime = true;
+    boolean that_present_lastAccessTime = true;
+    if (this_present_lastAccessTime || that_present_lastAccessTime) {
+      if (!(this_present_lastAccessTime && that_present_lastAccessTime))
+        return false;
+      if (this.lastAccessTime != that.lastAccessTime)
+        return false;
+    }
+
+    boolean this_present_sd = true && this.isSetSd();
+    boolean that_present_sd = true && that.isSetSd();
+    if (this_present_sd || that_present_sd) {
+      if (!(this_present_sd && that_present_sd))
+        return false;
+      if (!this.sd.equals(that.sd))
+        return false;
+    }
+
+    boolean this_present_parameters = true && this.isSetParameters();
+    boolean that_present_parameters = true && that.isSetParameters();
+    if (this_present_parameters || that_present_parameters) {
+      if (!(this_present_parameters && that_present_parameters))
+        return false;
+      if (!this.parameters.equals(that.parameters))
+        return false;
+    }
+
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    return 0;
+  }
+
+  public void read(TProtocol iprot) throws TException {
+    TField field;
+    iprot.readStructBegin();
+    while (true)
+    {
+      field = iprot.readFieldBegin();
+      if (field.type == TType.STOP) { 
+        break;
+      }
+      switch (field.id)
+      {
+        case VALUES:
+          if (field.type == TType.LIST) {
+            {
+              TList _list35 = iprot.readListBegin();
+              this.values = new ArrayList<String>(_list35.size);
+              for (int _i36 = 0; _i36 < _list35.size; ++_i36)
+              {
+                String _elem37;
+                _elem37 = iprot.readString();
+                this.values.add(_elem37);
+              }
+              iprot.readListEnd();
+            }
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case DBNAME:
+          if (field.type == TType.STRING) {
+            this.dbName = iprot.readString();
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case TABLENAME:
+          if (field.type == TType.STRING) {
+            this.tableName = iprot.readString();
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case CREATETIME:
+          if (field.type == TType.I32) {
+            this.createTime = iprot.readI32();
+            this.__isset.createTime = true;
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case LASTACCESSTIME:
+          if (field.type == TType.I32) {
+            this.lastAccessTime = iprot.readI32();
+            this.__isset.lastAccessTime = true;
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case SD:
+          if (field.type == TType.STRUCT) {
+            this.sd = new StorageDescriptor();
+            this.sd.read(iprot);
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case PARAMETERS:
+          if (field.type == TType.MAP) {
+            {
+              TMap _map38 = iprot.readMapBegin();
+              this.parameters = new HashMap<String,String>(2*_map38.size);
+              for (int _i39 = 0; _i39 < _map38.size; ++_i39)
+              {
+                String _key40;
+                String _val41;
+                _key40 = iprot.readString();
+                _val41 = iprot.readString();
+                this.parameters.put(_key40, _val41);
+              }
+              iprot.readMapEnd();
+            }
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        default:
+          TProtocolUtil.skip(iprot, field.type);
+          break;
+      }
+      iprot.readFieldEnd();
+    }
+    iprot.readStructEnd();
+
+    validate();
+  }
+
+  public void write(TProtocol oprot) throws TException {
+    validate();
+
+    oprot.writeStructBegin(STRUCT_DESC);
+    if (this.values != null) {
+      oprot.writeFieldBegin(VALUES_FIELD_DESC);
+      {
+        oprot.writeListBegin(new TList(TType.STRING, this.values.size()));
+        for (String _iter42 : this.values)        {
+          oprot.writeString(_iter42);
+        }
+        oprot.writeListEnd();
+      }
+      oprot.writeFieldEnd();
+    }
+    if (this.dbName != null) {
+      oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
+      oprot.writeString(this.dbName);
+      oprot.writeFieldEnd();
+    }
+    if (this.tableName != null) {
+      oprot.writeFieldBegin(TABLE_NAME_FIELD_DESC);
+      oprot.writeString(this.tableName);
+      oprot.writeFieldEnd();
+    }
+    oprot.writeFieldBegin(CREATE_TIME_FIELD_DESC);
+    oprot.writeI32(this.createTime);
+    oprot.writeFieldEnd();
+    oprot.writeFieldBegin(LAST_ACCESS_TIME_FIELD_DESC);
+    oprot.writeI32(this.lastAccessTime);
+    oprot.writeFieldEnd();
+    if (this.sd != null) {
+      oprot.writeFieldBegin(SD_FIELD_DESC);
+      this.sd.write(oprot);
+      oprot.writeFieldEnd();
+    }
+    if (this.parameters != null) {
+      oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
+      {
+        oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.parameters.size()));
+        for (Map.Entry<String, String> _iter43 : this.parameters.entrySet())        {
+          oprot.writeString(_iter43.getKey());
+          oprot.writeString(_iter43.getValue());
+        }
+        oprot.writeMapEnd();
+      }
+      oprot.writeFieldEnd();
+    }
+    oprot.writeFieldStop();
+    oprot.writeStructEnd();
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder("Partition(");
+    boolean first = true;
+
+    sb.append("values:");
+    if (this.values == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.values);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("dbName:");
+    if (this.dbName == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.dbName);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("tableName:");
+    if (this.tableName == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.tableName);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("createTime:");
+    sb.append(this.createTime);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("lastAccessTime:");
+    sb.append(this.lastAccessTime);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("sd:");
+    if (this.sd == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.sd);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("parameters:");
+    if (this.parameters == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.parameters);
+    }
+    first = false;
+    sb.append(")");
+    return sb.toString();
+  }
+
+  public void validate() throws TException {
+    // check for required fields
+    // check that fields of type enum have valid values
+  }
 
 }
 

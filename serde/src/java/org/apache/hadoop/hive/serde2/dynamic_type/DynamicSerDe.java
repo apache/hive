@@ -36,8 +36,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.*;
 import org.apache.hadoop.util.StringUtils;
 
-import com.facebook.thrift.protocol.*;
-import com.facebook.thrift.transport.*;
+import org.apache.thrift.protocol.*;
+import org.apache.thrift.transport.*;
 
 public class DynamicSerDe implements SerDe, Serializable {
 
@@ -69,8 +69,10 @@ public class DynamicSerDe implements SerDe, Serializable {
       String protoName = tbl.getProperty(Constants.SERIALIZATION_FORMAT);
 
       if(protoName == null) {
-        protoName = "com.facebook.thrift.protocol.TBinaryProtocol";
+        protoName = "org.apache.thrift.protocol.TBinaryProtocol";
       }
+      // For backward compatibility
+      protoName = protoName.replace("com.facebook.thrift.protocol", "org.apache.thrift.protocol");
       TProtocolFactory protFactory = TReflectionUtils.getProtocolFactoryByName(protoName);
       bos_ = new ByteStream.Output();
       bis_ = new ByteStream.Input();

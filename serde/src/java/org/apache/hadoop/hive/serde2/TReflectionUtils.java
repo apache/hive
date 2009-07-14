@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.serde2;
 
-import com.facebook.thrift.protocol.TProtocolFactory;
+import org.apache.thrift.protocol.TProtocolFactory;
 
 
 public class TReflectionUtils {
@@ -29,7 +29,7 @@ public class TReflectionUtils {
   static {
     try {
       thriftRWParams = new Class [] {
-      Class.forName("com.facebook.thrift.protocol.TProtocol")
+      Class.forName("org.apache.thrift.protocol.TProtocol")
       };
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);

@@ -4,8 +4,8 @@ package org.apache.hadoop.hive.serde2.dynamic_type;
 import java.util.*;
 import java.io.*;
 import java.net.*;
-import com.facebook.thrift.protocol.*;
-import com.facebook.thrift.transport.*;
+import org.apache.thrift.protocol.*;
+import org.apache.thrift.transport.*;
 import org.apache.hadoop.hive.serde2.dynamic_type.*;
 
 public class thrift_grammar/*@bgen(jjtree)*/implements thrift_grammarTreeConstants, thrift_grammarConstants {/*@bgen(jjtree)*/

@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.serde2.dynamic_type;
 
-import com.facebook.thrift.protocol.TMessageType;
+import org.apache.thrift.protocol.TMessageType;
 
 public class DynamicSerDeFunction extends DynamicSerDeStructBase {
 

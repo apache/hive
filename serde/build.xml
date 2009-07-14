@@ -59,11 +59,15 @@ to call at top-level: ant deploy-contrib compile-core-test
   <target name="thriftif">
     <echo>Executing thrift (which needs to be in your path) to build java serde Constants... </echo>
     <exec executable="thrift"  failonerror="true" dir=".">
-      <arg line="--gen py -php --gen java -o ${src.dir} if/serde.thrift " />
+      <arg line="--gen py --gen php --gen java -o ${src.dir} if/serde.thrift " />
     </exec>
-    <echo>Executing thrift (which needs to be in your path) to build thrift test classes... </echo>
+    <echo>Executing thrift (which needs to be in your path) to build complex.thrift test classes... </echo>
     <exec executable="thrift"  failonerror="true" dir=".">
       <arg line="--gen java -o ${src.dir} if/test/complex.thrift " />
+    </exec>
+    <echo>Executing thrift (which needs to be in your path) to build testthrift.thrift classes... </echo>
+    <exec executable="thrift"  failonerror="true" dir=".">
+      <arg line="--gen java -o ${src.dir} if/test/testthrift.thrift " />
     </exec>
   </target>
 

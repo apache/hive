@@ -3,11 +3,11 @@ namespace java org.apache.hadoop.hive.serde.test
 
 
 struct InnerStruct {
-  i32 field0
+  1: i32 field0
 }
 
 struct ThriftTestObj {
-  i32 field1,
-  string field2,
-  list<InnerStruct> field3
+  1: i32 field1,
+  2: string field2,
+  3: list<InnerStruct> field3
 }

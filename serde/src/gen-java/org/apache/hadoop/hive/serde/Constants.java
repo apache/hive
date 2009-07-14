@@ -11,7 +11,8 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
-import com.facebook.thrift.*;
+import java.util.Collections;
+import org.apache.log4j.Logger;
 
 public class Constants {
 
@@ -70,9 +71,9 @@ public class Constants {
   public static final String MAP_TYPE_NAME = "map";
 
   public static final String STRUCT_TYPE_NAME = "struct";
-  
+
   public static final String LIST_COLUMNS = "columns";
-  
+
   public static final String LIST_COLUMN_TYPES = "columns.types";
 
   public static final Set<String> PrimitiveTypes = new HashSet<String>();

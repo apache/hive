@@ -20,12 +20,15 @@ package org.apache.hadoop.hive.serde2.objectinspector;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.swing.event.ListSelectionEvent;
 
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
@@ -140,7 +143,7 @@ public class ObjectInspectorFactory {
     }
     // put it into the cache BEFORE it is initialized to make sure we can catch recursive types. 
     objectInspectorCache.put(t, oi);
-    Field[] fields = c.getDeclaredFields();
+    Field[] fields = ObjectInspectorUtils.getDeclaredNonStaticFields(c);
     ArrayList<ObjectInspector> structFieldObjectInspectors = new ArrayList<ObjectInspector>(fields.length);
     for(int i=0; i<fields.length; i++) {
       if (!oi.shouldIgnoreField(fields[i].getName())) {

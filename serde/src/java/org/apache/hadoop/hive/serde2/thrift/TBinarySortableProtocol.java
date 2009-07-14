@@ -22,9 +22,9 @@ package org.apache.hadoop.hive.serde2.thrift;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.facebook.thrift.TException;
-import com.facebook.thrift.transport.*;
-import com.facebook.thrift.protocol.*;
+import org.apache.thrift.TException;
+import org.apache.thrift.transport.*;
+import org.apache.thrift.protocol.*;
 import java.util.*;
 import java.io.*;
 
@@ -68,6 +68,8 @@ public class TBinarySortableProtocol extends TProtocol implements ConfigurableTP
     WriteNullsProtocol, WriteTextProtocol {
 
   final static Log LOG = LogFactory.getLog(TBinarySortableProtocol.class.getName());
+
+  static byte ORDERED_TYPE = (byte)-1;
   
   /**
    * Factory for TBinarySortableProtocol objects
@@ -339,10 +341,10 @@ public class TBinarySortableProtocol extends TProtocol implements ConfigurableTP
     stackLevel --;
   }
 
-  TField f = new TField();
+  TField f = null;
   public TField readFieldBegin() throws TException {
     // slight hack to communicate to DynamicSerDe that the field ids are not being set but things are ordered.
-    f.type = -1;
+    f = new TField("", ORDERED_TYPE, (short)-1);
     return  f;
   }
 
@@ -353,14 +355,14 @@ public class TBinarySortableProtocol extends TProtocol implements ConfigurableTP
     }
   }
 
-  private TMap tmap = new TMap();
+  private TMap tmap = null;
   /**
    * This method always return the same instance of TMap to avoid creating new instances.
    * It is the responsibility of the caller to read the value before calling this method again.
    */
   public TMap readMapBegin() throws TException {
     stackLevel ++;
-    tmap.size = readI32();
+    tmap = new TMap(ORDERED_TYPE, ORDERED_TYPE, readI32());
     if (tmap.size == 0 && lastPrimitiveWasNull()) {
       return null;
     }
@@ -371,14 +373,14 @@ public class TBinarySortableProtocol extends TProtocol implements ConfigurableTP
     stackLevel --;
   }
 
-  private TList tlist = new TList();
+  private TList tlist = null;
   /**
    * This method always return the same instance of TList to avoid creating new instances.
    * It is the responsibility of the caller to read the value before calling this method again.
    */
   public TList readListBegin() throws TException {
     stackLevel ++;
-    tlist.size = readI32();
+    tlist = new TList(ORDERED_TYPE, readI32());
     if (tlist.size == 0 && lastPrimitiveWasNull()) {
       return null;
     }    
@@ -389,14 +391,14 @@ public class TBinarySortableProtocol extends TProtocol implements ConfigurableTP
     stackLevel --;
   }
 
-  private TSet set = new TSet();
+  private TSet set = null;
   /**
    * This method always return the same instance of TSet to avoid creating new instances.
    * It is the responsibility of the caller to read the value before calling this method again.
    */
   public TSet readSetBegin() throws TException {
     stackLevel ++;
-    set.size = readI32();
+    set = new TSet(ORDERED_TYPE, readI32());
     if (set.size == 0 && lastPrimitiveWasNull()) {
       return null;
     }    

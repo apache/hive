@@ -18,11 +18,11 @@
 
 package org.apache.hadoop.hive.serde2.dynamic_type;
 
-import com.facebook.thrift.TException;
-import com.facebook.thrift.TApplicationException;
-import com.facebook.thrift.protocol.*;
-import com.facebook.thrift.server.*;
-import com.facebook.thrift.transport.*;
+import org.apache.thrift.TException;
+import org.apache.thrift.TApplicationException;
+import org.apache.thrift.protocol.*;
+import org.apache.thrift.server.*;
+import org.apache.thrift.transport.*;
 import java.util.*;
 import java.io.*;
 import org.apache.hadoop.hive.serde2.*;
@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 import java.lang.reflect.*;
-import com.facebook.thrift.protocol.TType.*;
+import org.apache.thrift.protocol.TType.*;
 
 public class DynamicSerDeFieldList extends DynamicSerDeSimpleNode implements Serializable {
 
@@ -237,9 +237,7 @@ public class DynamicSerDeFieldList extends DynamicSerDeSimpleNode implements Ser
       }
 
       if(thrift_mode) {
-        field.name = mt.name;
-        field.type = mt.getType();
-        field.id = (short)mt.fieldid;
+        field = new TField(mt.name, mt.getType(), (short)mt.fieldid);
         oprot.writeFieldBegin(field);
       }
 

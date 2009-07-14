@@ -1,25 +1,29 @@
-/**
- * fb303.thrift
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
  *
- * Copyright (c) 2006- Facebook
- * Distributed under the Thrift Software License
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * See accompanying file LICENSE or visit the Thrift site at:
- * http://developers.facebook.com/thrift/
- *
- *
- * Definition of common Facebook data types and status reporting mechanisms
- * common to all Facebook services. In some cases, these methods are
- * provided in the base implementation, and in other cases they simply define
- * methods that inheriting applications should implement (i.e. status report)
- *
- * @author Mark Slee <mcslee@facebook.com>
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
-include "thrift/if/reflection_limited.thrift"
+/**
+ * fb303.thrift
+ */
 
 namespace java com.facebook.fb303
 namespace cpp facebook.fb303
+namespace perl Facebook.FB303
 
 /**
  * Common status reporting mechanism across all services
@@ -85,24 +89,24 @@ service FacebookService {
   map<string, string> getOptions(),
 
   /**
+   * Returns a CPU profile over the given time interval (client and server
+   * must agree on the profile format).
+   */
+  string getCpuProfile(1: i32 profileDurationInSec),
+
+  /**
    * Returns the unix time that the server has been running since
    */
   i64 aliveSince(),
 
   /**
-   * Returns a limited description of this service.
-   */
-  reflection_limited.Service
-  getLimitedReflection(),
-
-  /**
    * Tell the server to reload its configuration, reopen log files, etc
    */
-  async void reinitialize()
+  oneway void reinitialize(),
 
   /**
    * Suggest a shutdown to the server
    */
-  async void shutdown()
+  oneway void shutdown(),
 
 }

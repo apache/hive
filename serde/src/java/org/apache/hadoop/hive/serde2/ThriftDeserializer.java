@@ -24,7 +24,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Writable;
-import com.facebook.thrift.protocol.TProtocolFactory;
+import org.apache.thrift.protocol.TProtocolFactory;
 
 public class ThriftDeserializer implements Deserializer {
 
@@ -45,6 +45,8 @@ public class ThriftDeserializer implements Deserializer {
       if (protoName == null) {
         protoName = "TBinaryProtocol";
       }
+      // For backward compatibility
+      protoName = protoName.replace("com.facebook.thrift.protocol", "org.apache.thrift.protocol");
 
       TProtocolFactory tp = TReflectionUtils.getProtocolFactoryByName(protoName);
       tsd = new ThriftByteStreamTypedSerDe(recordClass, tp, tp);

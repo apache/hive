@@ -18,15 +18,15 @@
 
 package org.apache.hadoop.hive.serde2.dynamic_type;
 
-import com.facebook.thrift.TException;
-import com.facebook.thrift.protocol.*;
+import org.apache.thrift.TException;
+import org.apache.thrift.protocol.*;
 import java.util.*;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.*;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
-import com.facebook.thrift.protocol.TType;
+import org.apache.thrift.protocol.TType;
 
 public class DynamicSerDeTypeList extends DynamicSerDeTypeBase {
 
@@ -100,7 +100,7 @@ public class DynamicSerDeTypeList extends DynamicSerDeTypeBase {
     
     if (o instanceof List) {
       List<?> list = (List<?>)o;
-      oprot.writeListBegin(new TList(mt.getType(),list.size()));
+      oprot.writeListBegin(new TList(mt.getType(), list.size()));
       for (Object element: list) {
         if (element == null) {
           assert(nullProtocol != null);

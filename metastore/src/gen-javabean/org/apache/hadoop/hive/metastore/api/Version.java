@@ -11,19 +11,36 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
-import com.facebook.thrift.*;
+import java.util.Collections;
+import org.apache.log4j.Logger;
 
-import com.facebook.thrift.protocol.*;
-import com.facebook.thrift.transport.*;
+import org.apache.thrift.*;
+import org.apache.thrift.meta_data.*;
+import org.apache.thrift.protocol.*;
 
-public class Version implements TBase, java.io.Serializable {
+public class Version implements TBase, java.io.Serializable, Cloneable {
+  private static final TStruct STRUCT_DESC = new TStruct("Version");
+  private static final TField VERSION_FIELD_DESC = new TField("version", TType.STRING, (short)1);
+  private static final TField COMMENTS_FIELD_DESC = new TField("comments", TType.STRING, (short)2);
+
   private String version;
+  public static final int VERSION = 1;
   private String comments;
+  public static final int COMMENTS = 2;
 
-  public final Isset __isset = new Isset();
-  public static final class Isset implements java.io.Serializable {
-    public boolean version = false;
-    public boolean comments = false;
+  private final Isset __isset = new Isset();
+  private static final class Isset implements java.io.Serializable {
+  }
+
+  public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+    put(VERSION, new FieldMetaData("version", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.STRING)));
+    put(COMMENTS, new FieldMetaData("comments", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.STRING)));
+  }});
+
+  static {
+    FieldMetaData.addStructMetaDataMap(Version.class, metaDataMap);
   }
 
   public Version() {
@@ -35,9 +52,24 @@ public class Version implements TBase, java.io.Serializable {
   {
     this();
     this.version = version;
-    this.__isset.version = true;
     this.comments = comments;
-    this.__isset.comments = true;
+  }
+
+  /**
+   * Performs a deep copy on <i>other</i>.
+   */
+  public Version(Version other) {
+    if (other.isSetVersion()) {
+      this.version = other.version;
+    }
+    if (other.isSetComments()) {
+      this.comments = other.comments;
+    }
+  }
+
+  @Override
+  public Version clone() {
+    return new Version(this);
   }
 
   public String getVersion() {
@@ -46,11 +78,15 @@ public class Version implements TBase, java.io.Serializable {
 
   public void setVersion(String version) {
     this.version = version;
-    this.__isset.version = true;
   }
 
   public void unsetVersion() {
-    this.__isset.version = false;
+    this.version = null;
+  }
+
+  // Returns true if field version is set (has been asigned a value) and false otherwise
+  public boolean isSetVersion() {
+    return this.version != null;
   }
 
   public String getComments() {
@@ -59,13 +95,66 @@ public class Version implements TBase, java.io.Serializable {
 
   public void setComments(String comments) {
     this.comments = comments;
-    this.__isset.comments = true;
   }
 
   public void unsetComments() {
-    this.__isset.comments = false;
+    this.comments = null;
   }
 
+  // Returns true if field comments is set (has been asigned a value) and false otherwise
+  public boolean isSetComments() {
+    return this.comments != null;
+  }
+
+  public void setFieldValue(int fieldID, Object value) {
+    switch (fieldID) {
+    case VERSION:
+      if (value == null) {
+        unsetVersion();
+      } else {
+        setVersion((String)value);
+      }
+      break;
+
+    case COMMENTS:
+      if (value == null) {
+        unsetComments();
+      } else {
+        setComments((String)value);
+      }
+      break;
+
+    default:
+      throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+    }
+  }
+
+  public Object getFieldValue(int fieldID) {
+    switch (fieldID) {
+    case VERSION:
+      return getVersion();
+
+    case COMMENTS:
+      return getComments();
+
+    default:
+      throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+    }
+  }
+
+  // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+  public boolean isSet(int fieldID) {
+    switch (fieldID) {
+    case VERSION:
+      return isSetVersion();
+    case COMMENTS:
+      return isSetComments();
+    default:
+      throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+    }
+  }
+
+  @Override
   public boolean equals(Object that) {
     if (that == null)
       return false;
@@ -78,8 +167,8 @@ public class Version implements TBase, java.io.Serializable {
     if (that == null)
       return false;
 
-    boolean this_present_version = true && (this.version != null);
-    boolean that_present_version = true && (that.version != null);
+    boolean this_present_version = true && this.isSetVersion();
+    boolean that_present_version = true && that.isSetVersion();
     if (this_present_version || that_present_version) {
       if (!(this_present_version && that_present_version))
         return false;
@@ -87,8 +176,8 @@ public class Version implements TBase, java.io.Serializable {
         return false;
     }
 
-    boolean this_present_comments = true && (this.comments != null);
-    boolean that_present_comments = true && (that.comments != null);
+    boolean this_present_comments = true && this.isSetComments();
+    boolean that_present_comments = true && that.isSetComments();
     if (this_present_comments || that_present_comments) {
       if (!(this_present_comments && that_present_comments))
         return false;
@@ -99,6 +188,7 @@ public class Version implements TBase, java.io.Serializable {
     return true;
   }
 
+  @Override
   public int hashCode() {
     return 0;
   }
@@ -114,18 +204,16 @@ public class Version implements TBase, java.io.Serializable {
       }
       switch (field.id)
       {
-        case 1:
+        case VERSION:
           if (field.type == TType.STRING) {
             this.version = iprot.readString();
-            this.__isset.version = true;
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 2:
+        case COMMENTS:
           if (field.type == TType.STRING) {
             this.comments = iprot.readString();
-            this.__isset.comments = true;
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
@@ -137,25 +225,21 @@ public class Version implements TBase, java.io.Serializable {
       iprot.readFieldEnd();
     }
     iprot.readStructEnd();
+
+    validate();
   }
 
   public void write(TProtocol oprot) throws TException {
-    TStruct struct = new TStruct("Version");
-    oprot.writeStructBegin(struct);
-    TField field = new TField();
+    validate();
+
+    oprot.writeStructBegin(STRUCT_DESC);
     if (this.version != null) {
-      field.name = "version";
-      field.type = TType.STRING;
-      field.id = 1;
-      oprot.writeFieldBegin(field);
+      oprot.writeFieldBegin(VERSION_FIELD_DESC);
       oprot.writeString(this.version);
       oprot.writeFieldEnd();
     }
     if (this.comments != null) {
-      field.name = "comments";
-      field.type = TType.STRING;
-      field.id = 2;
-      oprot.writeFieldBegin(field);
+      oprot.writeFieldBegin(COMMENTS_FIELD_DESC);
       oprot.writeString(this.comments);
       oprot.writeFieldEnd();
     }
@@ -163,14 +247,33 @@ public class Version implements TBase, java.io.Serializable {
     oprot.writeStructEnd();
   }
 
+  @Override
   public String toString() {
     StringBuilder sb = new StringBuilder("Version(");
+    boolean first = true;
+
     sb.append("version:");
-    sb.append(this.version);
-    sb.append(",comments:");
-    sb.append(this.comments);
+    if (this.version == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.version);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("comments:");
+    if (this.comments == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.comments);
+    }
+    first = false;
     sb.append(")");
     return sb.toString();
+  }
+
+  public void validate() throws TException {
+    // check for required fields
+    // check that fields of type enum have valid values
   }
 
 }

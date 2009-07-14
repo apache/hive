@@ -27,11 +27,11 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol;
 
-import com.facebook.thrift.protocol.TField;
-import com.facebook.thrift.protocol.TList;
-import com.facebook.thrift.protocol.TMap;
-import com.facebook.thrift.protocol.TStruct;
-import com.facebook.thrift.transport.TMemoryBuffer;
+import org.apache.thrift.protocol.TField;
+import org.apache.thrift.protocol.TList;
+import org.apache.thrift.protocol.TMap;
+import org.apache.thrift.protocol.TStruct;
+import org.apache.thrift.transport.TMemoryBuffer;
 
 public class TestTCTLSeparatedProtocol extends TestCase {
 

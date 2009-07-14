@@ -17,75 +17,187 @@ except:
 
 
 class Iface(fb303.FacebookService.Iface):
+  """
+  This interface is live.
+  """
   def create_database(self, name, description):
+    """
+    Parameters:
+     - name
+     - description
+    """
     pass
 
   def get_database(self, name):
+    """
+    Parameters:
+     - name
+    """
     pass
 
   def drop_database(self, name):
+    """
+    Parameters:
+     - name
+    """
     pass
 
   def get_databases(self, ):
     pass
 
   def get_type(self, name):
+    """
+    Parameters:
+     - name
+    """
     pass
 
   def create_type(self, type):
+    """
+    Parameters:
+     - type
+    """
     pass
 
   def drop_type(self, type):
+    """
+    Parameters:
+     - type
+    """
     pass
 
   def get_type_all(self, name):
+    """
+    Parameters:
+     - name
+    """
     pass
 
   def get_fields(self, db_name, table_name):
+    """
+    Parameters:
+     - db_name
+     - table_name
+    """
     pass
 
   def create_table(self, tbl):
+    """
+    Parameters:
+     - tbl
+    """
     pass
 
   def drop_table(self, dbname, name, deleteData):
+    """
+    Parameters:
+     - dbname
+     - name
+     - deleteData
+    """
     pass
 
   def get_tables(self, db_name, pattern):
+    """
+    Parameters:
+     - db_name
+     - pattern
+    """
     pass
 
   def get_table(self, dbname, tbl_name):
+    """
+    Parameters:
+     - dbname
+     - tbl_name
+    """
     pass
 
   def alter_table(self, dbname, tbl_name, new_tbl):
+    """
+    Parameters:
+     - dbname
+     - tbl_name
+     - new_tbl
+    """
     pass
 
   def add_partition(self, new_part):
+    """
+    Parameters:
+     - new_part
+    """
     pass
 
   def append_partition(self, db_name, tbl_name, part_vals):
+    """
+    Parameters:
+     - db_name
+     - tbl_name
+     - part_vals
+    """
     pass
 
   def drop_partition(self, db_name, tbl_name, part_vals, deleteData):
+    """
+    Parameters:
+     - db_name
+     - tbl_name
+     - part_vals
+     - deleteData
+    """
     pass
 
   def get_partition(self, db_name, tbl_name, part_vals):
+    """
+    Parameters:
+     - db_name
+     - tbl_name
+     - part_vals
+    """
     pass
 
   def get_partitions(self, db_name, tbl_name, max_parts):
+    """
+    Parameters:
+     - db_name
+     - tbl_name
+     - max_parts
+    """
     pass
 
   def get_partition_names(self, db_name, tbl_name, max_parts):
+    """
+    Parameters:
+     - db_name
+     - tbl_name
+     - max_parts
+    """
     pass
 
   def alter_partition(self, db_name, tbl_name, new_part):
+    """
+    Parameters:
+     - db_name
+     - tbl_name
+     - new_part
+    """
     pass
 
 
 class Client(fb303.FacebookService.Client, Iface):
+  """
+  This interface is live.
+  """
   def __init__(self, iprot, oprot=None):
     fb303.FacebookService.Client.__init__(self, iprot, oprot)
 
   def create_database(self, name, description):
+    """
+    Parameters:
+     - name
+     - description
+    """
     self.send_create_database(name, description)
     return self.recv_create_database()
 
@@ -117,6 +229,10 @@ class Client(fb303.FacebookService.Client, Iface):
     raise TApplicationException(TApplicationException.MISSING_RESULT, "create_database failed: unknown result");
 
   def get_database(self, name):
+    """
+    Parameters:
+     - name
+    """
     self.send_get_database(name)
     return self.recv_get_database()
 
@@ -147,6 +263,10 @@ class Client(fb303.FacebookService.Client, Iface):
     raise TApplicationException(TApplicationException.MISSING_RESULT, "get_database failed: unknown result");
 
   def drop_database(self, name):
+    """
+    Parameters:
+     - name
+    """
     self.send_drop_database(name)
     return self.recv_drop_database()
 
@@ -202,6 +322,10 @@ class Client(fb303.FacebookService.Client, Iface):
     raise TApplicationException(TApplicationException.MISSING_RESULT, "get_databases failed: unknown result");
 
   def get_type(self, name):
+    """
+    Parameters:
+     - name
+    """
     self.send_get_type(name)
     return self.recv_get_type()
 
@@ -230,6 +354,10 @@ class Client(fb303.FacebookService.Client, Iface):
     raise TApplicationException(TApplicationException.MISSING_RESULT, "get_type failed: unknown result");
 
   def create_type(self, type):
+    """
+    Parameters:
+     - type
+    """
     self.send_create_type(type)
     return self.recv_create_type()
 
@@ -262,6 +390,10 @@ class Client(fb303.FacebookService.Client, Iface):
     raise TApplicationException(TApplicationException.MISSING_RESULT, "create_type failed: unknown result");
 
   def drop_type(self, type):
+    """
+    Parameters:
+     - type
+    """
     self.send_drop_type(type)
     return self.recv_drop_type()
 
@@ -290,6 +422,10 @@ class Client(fb303.FacebookService.Client, Iface):
     raise TApplicationException(TApplicationException.MISSING_RESULT, "drop_type failed: unknown result");
 
   def get_type_all(self, name):
+    """
+    Parameters:
+     - name
+    """
     self.send_get_type_all(name)
     return self.recv_get_type_all()
 
@@ -318,6 +454,11 @@ class Client(fb303.FacebookService.Client, Iface):
     raise TApplicationException(TApplicationException.MISSING_RESULT, "get_type_all failed: unknown result");
 
   def get_fields(self, db_name, table_name):
+    """
+    Parameters:
+     - db_name
+     - table_name
+    """
     self.send_get_fields(db_name, table_name)
     return self.recv_get_fields()
 
@@ -351,6 +492,10 @@ class Client(fb303.FacebookService.Client, Iface):
     raise TApplicationException(TApplicationException.MISSING_RESULT, "get_fields failed: unknown result");
 
   def create_table(self, tbl):
+    """
+    Parameters:
+     - tbl
+    """
     self.send_create_table(tbl)
     self.recv_create_table()
 
@@ -383,6 +528,12 @@ class Client(fb303.FacebookService.Client, Iface):
     return
 
   def drop_table(self, dbname, name, deleteData):
+    """
+    Parameters:
+     - dbname
+     - name
+     - deleteData
+    """
     self.send_drop_table(dbname, name, deleteData)
     self.recv_drop_table()
 
@@ -413,6 +564,11 @@ class Client(fb303.FacebookService.Client, Iface):
     return
 
   def get_tables(self, db_name, pattern):
+    """
+    Parameters:
+     - db_name
+     - pattern
+    """
     self.send_get_tables(db_name, pattern)
     return self.recv_get_tables()
 
@@ -442,6 +598,11 @@ class Client(fb303.FacebookService.Client, Iface):
     raise TApplicationException(TApplicationException.MISSING_RESULT, "get_tables failed: unknown result");
 
   def get_table(self, dbname, tbl_name):
+    """
+    Parameters:
+     - dbname
+     - tbl_name
+    """
     self.send_get_table(dbname, tbl_name)
     return self.recv_get_table()
 
@@ -473,6 +634,12 @@ class Client(fb303.FacebookService.Client, Iface):
     raise TApplicationException(TApplicationException.MISSING_RESULT, "get_table failed: unknown result");
 
   def alter_table(self, dbname, tbl_name, new_tbl):
+    """
+    Parameters:
+     - dbname
+     - tbl_name
+     - new_tbl
+    """
     self.send_alter_table(dbname, tbl_name, new_tbl)
     self.recv_alter_table()
 
@@ -503,6 +670,10 @@ class Client(fb303.FacebookService.Client, Iface):
     return
 
   def add_partition(self, new_part):
+    """
+    Parameters:
+     - new_part
+    """
     self.send_add_partition(new_part)
     return self.recv_add_partition()
 
@@ -535,6 +706,12 @@ class Client(fb303.FacebookService.Client, Iface):
     raise TApplicationException(TApplicationException.MISSING_RESULT, "add_partition failed: unknown result");
 
   def append_partition(self, db_name, tbl_name, part_vals):
+    """
+    Parameters:
+     - db_name
+     - tbl_name
+     - part_vals
+    """
     self.send_append_partition(db_name, tbl_name, part_vals)
     return self.recv_append_partition()
 
@@ -569,6 +746,13 @@ class Client(fb303.FacebookService.Client, Iface):
     raise TApplicationException(TApplicationException.MISSING_RESULT, "append_partition failed: unknown result");
 
   def drop_partition(self, db_name, tbl_name, part_vals, deleteData):
+    """
+    Parameters:
+     - db_name
+     - tbl_name
+     - part_vals
+     - deleteData
+    """
     self.send_drop_partition(db_name, tbl_name, part_vals, deleteData)
     return self.recv_drop_partition()
 
@@ -602,6 +786,12 @@ class Client(fb303.FacebookService.Client, Iface):
     raise TApplicationException(TApplicationException.MISSING_RESULT, "drop_partition failed: unknown result");
 
   def get_partition(self, db_name, tbl_name, part_vals):
+    """
+    Parameters:
+     - db_name
+     - tbl_name
+     - part_vals
+    """
     self.send_get_partition(db_name, tbl_name, part_vals)
     return self.recv_get_partition()
 
@@ -632,6 +822,12 @@ class Client(fb303.FacebookService.Client, Iface):
     raise TApplicationException(TApplicationException.MISSING_RESULT, "get_partition failed: unknown result");
 
   def get_partitions(self, db_name, tbl_name, max_parts):
+    """
+    Parameters:
+     - db_name
+     - tbl_name
+     - max_parts
+    """
     self.send_get_partitions(db_name, tbl_name, max_parts)
     return self.recv_get_partitions()
 
@@ -664,6 +860,12 @@ class Client(fb303.FacebookService.Client, Iface):
     raise TApplicationException(TApplicationException.MISSING_RESULT, "get_partitions failed: unknown result");
 
   def get_partition_names(self, db_name, tbl_name, max_parts):
+    """
+    Parameters:
+     - db_name
+     - tbl_name
+     - max_parts
+    """
     self.send_get_partition_names(db_name, tbl_name, max_parts)
     return self.recv_get_partition_names()
 
@@ -694,6 +896,12 @@ class Client(fb303.FacebookService.Client, Iface):
     raise TApplicationException(TApplicationException.MISSING_RESULT, "get_partition_names failed: unknown result");
 
   def alter_partition(self, db_name, tbl_name, new_part):
+    """
+    Parameters:
+     - db_name
+     - tbl_name
+     - new_part
+    """
     self.send_alter_partition(db_name, tbl_name, new_part)
     self.recv_alter_partition()
 
@@ -1100,6 +1308,11 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
 # HELPER FUNCTIONS AND STRUCTURES
 
 class create_database_args:
+  """
+  Attributes:
+   - name
+   - description
+  """
 
   thrift_spec = (
     None, # 0
@@ -1107,14 +1320,9 @@ class create_database_args:
     (2, TType.STRING, 'description', None, None, ), # 2
   )
 
-  def __init__(self, d=None):
-    self.name = None
-    self.description = None
-    if isinstance(d, dict):
-      if 'name' in d:
-        self.name = d['name']
-      if 'description' in d:
-        self.description = d['description']
+  def __init__(self, name=None, description=None,):
+    self.name = name
+    self.description = description
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1156,11 +1364,10 @@ class create_database_args:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -1169,6 +1376,12 @@ class create_database_args:
     return not (self == other)
 
 class create_database_result:
+  """
+  Attributes:
+   - success
+   - o1
+   - o2
+  """
 
   thrift_spec = (
     (0, TType.BOOL, 'success', None, None, ), # 0
@@ -1176,17 +1389,10 @@ class create_database_result:
     (2, TType.STRUCT, 'o2', (MetaException, MetaException.thrift_spec), None, ), # 2
   )
 
-  def __init__(self, d=None):
-    self.success = None
-    self.o1 = None
-    self.o2 = None
-    if isinstance(d, dict):
-      if 'success' in d:
-        self.success = d['success']
-      if 'o1' in d:
-        self.o1 = d['o1']
-      if 'o2' in d:
-        self.o2 = d['o2']
+  def __init__(self, success=None, o1=None, o2=None,):
+    self.success = success
+    self.o1 = o1
+    self.o2 = o2
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1239,11 +1445,10 @@ class create_database_result:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -1252,17 +1457,18 @@ class create_database_result:
     return not (self == other)
 
 class get_database_args:
+  """
+  Attributes:
+   - name
+  """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRING, 'name', None, None, ), # 1
   )
 
-  def __init__(self, d=None):
-    self.name = None
-    if isinstance(d, dict):
-      if 'name' in d:
-        self.name = d['name']
+  def __init__(self, name=None,):
+    self.name = name
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1295,11 +1501,10 @@ class get_database_args:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -1308,6 +1513,12 @@ class get_database_args:
     return not (self == other)
 
 class get_database_result:
+  """
+  Attributes:
+   - success
+   - o1
+   - o2
+  """
 
   thrift_spec = (
     (0, TType.STRUCT, 'success', (Database, Database.thrift_spec), None, ), # 0
@@ -1315,17 +1526,10 @@ class get_database_result:
     (2, TType.STRUCT, 'o2', (MetaException, MetaException.thrift_spec), None, ), # 2
   )
 
-  def __init__(self, d=None):
-    self.success = None
-    self.o1 = None
-    self.o2 = None
-    if isinstance(d, dict):
-      if 'success' in d:
-        self.success = d['success']
-      if 'o1' in d:
-        self.o1 = d['o1']
-      if 'o2' in d:
-        self.o2 = d['o2']
+  def __init__(self, success=None, o1=None, o2=None,):
+    self.success = success
+    self.o1 = o1
+    self.o2 = o2
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1379,11 +1583,10 @@ class get_database_result:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -1392,17 +1595,18 @@ class get_database_result:
     return not (self == other)
 
 class drop_database_args:
+  """
+  Attributes:
+   - name
+  """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRING, 'name', None, None, ), # 1
   )
 
-  def __init__(self, d=None):
-    self.name = None
-    if isinstance(d, dict):
-      if 'name' in d:
-        self.name = d['name']
+  def __init__(self, name=None,):
+    self.name = name
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1435,11 +1639,10 @@ class drop_database_args:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -1448,6 +1651,11 @@ class drop_database_args:
     return not (self == other)
 
 class drop_database_result:
+  """
+  Attributes:
+   - success
+   - o2
+  """
 
   thrift_spec = (
     (0, TType.BOOL, 'success', None, None, ), # 0
@@ -1455,14 +1663,9 @@ class drop_database_result:
     (2, TType.STRUCT, 'o2', (MetaException, MetaException.thrift_spec), None, ), # 2
   )
 
-  def __init__(self, d=None):
-    self.success = None
-    self.o2 = None
-    if isinstance(d, dict):
-      if 'success' in d:
-        self.success = d['success']
-      if 'o2' in d:
-        self.o2 = d['o2']
+  def __init__(self, success=None, o2=None,):
+    self.success = success
+    self.o2 = o2
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1505,11 +1708,10 @@ class drop_database_result:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -1521,9 +1723,6 @@ class get_databases_args:
 
   thrift_spec = (
   )
-
-  def __init__(self, d=None):
-    pass
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1547,11 +1746,10 @@ class get_databases_args:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -1560,20 +1758,20 @@ class get_databases_args:
     return not (self == other)
 
 class get_databases_result:
+  """
+  Attributes:
+   - success
+   - o1
+  """
 
   thrift_spec = (
     (0, TType.LIST, 'success', (TType.STRING,None), None, ), # 0
     (1, TType.STRUCT, 'o1', (MetaException, MetaException.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, d=None):
-    self.success = None
-    self.o1 = None
-    if isinstance(d, dict):
-      if 'success' in d:
-        self.success = d['success']
-      if 'o1' in d:
-        self.o1 = d['o1']
+  def __init__(self, success=None, o1=None,):
+    self.success = success
+    self.o1 = o1
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1624,11 +1822,10 @@ class get_databases_result:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -1637,17 +1834,18 @@ class get_databases_result:
     return not (self == other)
 
 class get_type_args:
+  """
+  Attributes:
+   - name
+  """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRING, 'name', None, None, ), # 1
   )
 
-  def __init__(self, d=None):
-    self.name = None
-    if isinstance(d, dict):
-      if 'name' in d:
-        self.name = d['name']
+  def __init__(self, name=None,):
+    self.name = name
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1680,11 +1878,10 @@ class get_type_args:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -1693,20 +1890,20 @@ class get_type_args:
     return not (self == other)
 
 class get_type_result:
+  """
+  Attributes:
+   - success
+   - o2
+  """
 
   thrift_spec = (
     (0, TType.STRUCT, 'success', (Type, Type.thrift_spec), None, ), # 0
     (1, TType.STRUCT, 'o2', (MetaException, MetaException.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, d=None):
-    self.success = None
-    self.o2 = None
-    if isinstance(d, dict):
-      if 'success' in d:
-        self.success = d['success']
-      if 'o2' in d:
-        self.o2 = d['o2']
+  def __init__(self, success=None, o2=None,):
+    self.success = success
+    self.o2 = o2
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1750,11 +1947,10 @@ class get_type_result:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -1763,17 +1959,18 @@ class get_type_result:
     return not (self == other)
 
 class create_type_args:
+  """
+  Attributes:
+   - type
+  """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRUCT, 'type', (Type, Type.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, d=None):
-    self.type = None
-    if isinstance(d, dict):
-      if 'type' in d:
-        self.type = d['type']
+  def __init__(self, type=None,):
+    self.type = type
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1807,11 +2004,10 @@ class create_type_args:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -1820,6 +2016,13 @@ class create_type_args:
     return not (self == other)
 
 class create_type_result:
+  """
+  Attributes:
+   - success
+   - o1
+   - o2
+   - o3
+  """
 
   thrift_spec = (
     (0, TType.BOOL, 'success', None, None, ), # 0
@@ -1828,20 +2031,11 @@ class create_type_result:
     (3, TType.STRUCT, 'o3', (MetaException, MetaException.thrift_spec), None, ), # 3
   )
 
-  def __init__(self, d=None):
-    self.success = None
-    self.o1 = None
-    self.o2 = None
-    self.o3 = None
-    if isinstance(d, dict):
-      if 'success' in d:
-        self.success = d['success']
-      if 'o1' in d:
-        self.o1 = d['o1']
-      if 'o2' in d:
-        self.o2 = d['o2']
-      if 'o3' in d:
-        self.o3 = d['o3']
+  def __init__(self, success=None, o1=None, o2=None, o3=None,):
+    self.success = success
+    self.o1 = o1
+    self.o2 = o2
+    self.o3 = o3
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1904,11 +2098,10 @@ class create_type_result:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -1917,17 +2110,18 @@ class create_type_result:
     return not (self == other)
 
 class drop_type_args:
+  """
+  Attributes:
+   - type
+  """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRING, 'type', None, None, ), # 1
   )
 
-  def __init__(self, d=None):
-    self.type = None
-    if isinstance(d, dict):
-      if 'type' in d:
-        self.type = d['type']
+  def __init__(self, type=None,):
+    self.type = type
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1960,11 +2154,10 @@ class drop_type_args:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -1973,20 +2166,20 @@ class drop_type_args:
     return not (self == other)
 
 class drop_type_result:
+  """
+  Attributes:
+   - success
+   - o2
+  """
 
   thrift_spec = (
     (0, TType.BOOL, 'success', None, None, ), # 0
     (1, TType.STRUCT, 'o2', (MetaException, MetaException.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, d=None):
-    self.success = None
-    self.o2 = None
-    if isinstance(d, dict):
-      if 'success' in d:
-        self.success = d['success']
-      if 'o2' in d:
-        self.o2 = d['o2']
+  def __init__(self, success=None, o2=None,):
+    self.success = success
+    self.o2 = o2
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -2029,11 +2222,10 @@ class drop_type_result:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -2042,17 +2234,18 @@ class drop_type_result:
     return not (self == other)
 
 class get_type_all_args:
+  """
+  Attributes:
+   - name
+  """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRING, 'name', None, None, ), # 1
   )
 
-  def __init__(self, d=None):
-    self.name = None
-    if isinstance(d, dict):
-      if 'name' in d:
-        self.name = d['name']
+  def __init__(self, name=None,):
+    self.name = name
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -2085,11 +2278,10 @@ class get_type_all_args:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -2098,20 +2290,20 @@ class get_type_all_args:
     return not (self == other)
 
 class get_type_all_result:
+  """
+  Attributes:
+   - success
+   - o2
+  """
 
   thrift_spec = (
     (0, TType.MAP, 'success', (TType.STRING,None,TType.STRUCT,(Type, Type.thrift_spec)), None, ), # 0
     (1, TType.STRUCT, 'o2', (MetaException, MetaException.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, d=None):
-    self.success = None
-    self.o2 = None
-    if isinstance(d, dict):
-      if 'success' in d:
-        self.success = d['success']
-      if 'o2' in d:
-        self.o2 = d['o2']
+  def __init__(self, success=None, o2=None,):
+    self.success = success
+    self.o2 = o2
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -2165,11 +2357,10 @@ class get_type_all_result:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -2178,16 +2369,21 @@ class get_type_all_result:
     return not (self == other)
 
 class get_fields_args:
+  """
+  Attributes:
+   - db_name
+   - table_name
+  """
 
-  thrift_spec = None
-  def __init__(self, d=None):
-    self.db_name = None
-    self.table_name = None
-    if isinstance(d, dict):
-      if 'db_name' in d:
-        self.db_name = d['db_name']
-      if 'table_name' in d:
-        self.table_name = d['table_name']
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'db_name', None, None, ), # 1
+    (2, TType.STRING, 'table_name', None, None, ), # 2
+  )
+
+  def __init__(self, db_name=None, table_name=None,):
+    self.db_name = db_name
+    self.table_name = table_name
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -2198,12 +2394,12 @@ class get_fields_args:
       (fname, ftype, fid) = iprot.readFieldBegin()
       if ftype == TType.STOP:
         break
-      if fid == -1:
+      if fid == 1:
         if ftype == TType.STRING:
           self.db_name = iprot.readString();
         else:
           iprot.skip(ftype)
-      elif fid == -2:
+      elif fid == 2:
         if ftype == TType.STRING:
           self.table_name = iprot.readString();
         else:
@@ -2219,21 +2415,20 @@ class get_fields_args:
       return
     oprot.writeStructBegin('get_fields_args')
     if self.db_name != None:
-      oprot.writeFieldBegin('db_name', TType.STRING, -1)
+      oprot.writeFieldBegin('db_name', TType.STRING, 1)
       oprot.writeString(self.db_name)
       oprot.writeFieldEnd()
     if self.table_name != None:
-      oprot.writeFieldBegin('table_name', TType.STRING, -2)
+      oprot.writeFieldBegin('table_name', TType.STRING, 2)
       oprot.writeString(self.table_name)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -2242,22 +2437,26 @@ class get_fields_args:
     return not (self == other)
 
 class get_fields_result:
+  """
+  Attributes:
+   - success
+   - o1
+   - o2
+   - o3
+  """
 
-  thrift_spec = None
-  def __init__(self, d=None):
-    self.success = None
-    self.o1 = None
-    self.o2 = None
-    self.o3 = None
-    if isinstance(d, dict):
-      if 'success' in d:
-        self.success = d['success']
-      if 'o1' in d:
-        self.o1 = d['o1']
-      if 'o2' in d:
-        self.o2 = d['o2']
-      if 'o3' in d:
-        self.o3 = d['o3']
+  thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRUCT,(FieldSchema, FieldSchema.thrift_spec)), None, ), # 0
+    (1, TType.STRUCT, 'o1', (MetaException, MetaException.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'o2', (UnknownTableException, UnknownTableException.thrift_spec), None, ), # 2
+    (3, TType.STRUCT, 'o3', (UnknownDBException, UnknownDBException.thrift_spec), None, ), # 3
+  )
+
+  def __init__(self, success=None, o1=None, o2=None, o3=None,):
+    self.success = success
+    self.o1 = o1
+    self.o2 = o2
+    self.o3 = o3
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -2279,19 +2478,19 @@ class get_fields_result:
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
-      elif fid == -3:
+      elif fid == 1:
         if ftype == TType.STRUCT:
           self.o1 = MetaException()
           self.o1.read(iprot)
         else:
           iprot.skip(ftype)
-      elif fid == -4:
+      elif fid == 2:
         if ftype == TType.STRUCT:
           self.o2 = UnknownTableException()
           self.o2.read(iprot)
         else:
           iprot.skip(ftype)
-      elif fid == -5:
+      elif fid == 3:
         if ftype == TType.STRUCT:
           self.o3 = UnknownDBException()
           self.o3.read(iprot)
@@ -2315,25 +2514,24 @@ class get_fields_result:
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 != None:
-      oprot.writeFieldBegin('o1', TType.STRUCT, -3)
+      oprot.writeFieldBegin('o1', TType.STRUCT, 1)
       self.o1.write(oprot)
       oprot.writeFieldEnd()
     if self.o2 != None:
-      oprot.writeFieldBegin('o2', TType.STRUCT, -4)
+      oprot.writeFieldBegin('o2', TType.STRUCT, 2)
       self.o2.write(oprot)
       oprot.writeFieldEnd()
     if self.o3 != None:
-      oprot.writeFieldBegin('o3', TType.STRUCT, -5)
+      oprot.writeFieldBegin('o3', TType.STRUCT, 3)
       self.o3.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -2342,17 +2540,18 @@ class get_fields_result:
     return not (self == other)
 
 class create_table_args:
+  """
+  Attributes:
+   - tbl
+  """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRUCT, 'tbl', (Table, Table.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, d=None):
-    self.tbl = None
-    if isinstance(d, dict):
-      if 'tbl' in d:
-        self.tbl = d['tbl']
+  def __init__(self, tbl=None,):
+    self.tbl = tbl
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -2386,11 +2585,10 @@ class create_table_args:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -2399,6 +2597,13 @@ class create_table_args:
     return not (self == other)
 
 class create_table_result:
+  """
+  Attributes:
+   - o1
+   - o2
+   - o3
+   - o4
+  """
 
   thrift_spec = (
     None, # 0
@@ -2408,20 +2613,11 @@ class create_table_result:
     (4, TType.STRUCT, 'o4', (NoSuchObjectException, NoSuchObjectException.thrift_spec), None, ), # 4
   )
 
-  def __init__(self, d=None):
-    self.o1 = None
-    self.o2 = None
-    self.o3 = None
-    self.o4 = None
-    if isinstance(d, dict):
-      if 'o1' in d:
-        self.o1 = d['o1']
-      if 'o2' in d:
-        self.o2 = d['o2']
-      if 'o3' in d:
-        self.o3 = d['o3']
-      if 'o4' in d:
-        self.o4 = d['o4']
+  def __init__(self, o1=None, o2=None, o3=None, o4=None,):
+    self.o1 = o1
+    self.o2 = o2
+    self.o3 = o3
+    self.o4 = o4
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -2485,11 +2681,10 @@ class create_table_result:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -2498,6 +2693,12 @@ class create_table_result:
     return not (self == other)
 
 class drop_table_args:
+  """
+  Attributes:
+   - dbname
+   - name
+   - deleteData
+  """
 
   thrift_spec = (
     None, # 0
@@ -2506,17 +2707,10 @@ class drop_table_args:
     (3, TType.BOOL, 'deleteData', None, None, ), # 3
   )
 
-  def __init__(self, d=None):
-    self.dbname = None
-    self.name = None
-    self.deleteData = None
-    if isinstance(d, dict):
-      if 'dbname' in d:
-        self.dbname = d['dbname']
-      if 'name' in d:
-        self.name = d['name']
-      if 'deleteData' in d:
-        self.deleteData = d['deleteData']
+  def __init__(self, dbname=None, name=None, deleteData=None,):
+    self.dbname = dbname
+    self.name = name
+    self.deleteData = deleteData
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -2567,11 +2761,10 @@ class drop_table_args:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -2580,6 +2773,11 @@ class drop_table_args:
     return not (self == other)
 
 class drop_table_result:
+  """
+  Attributes:
+   - o1
+   - o3
+  """
 
   thrift_spec = (
     None, # 0
@@ -2587,14 +2785,9 @@ class drop_table_result:
     (2, TType.STRUCT, 'o3', (MetaException, MetaException.thrift_spec), None, ), # 2
   )
 
-  def __init__(self, d=None):
-    self.o1 = None
-    self.o3 = None
-    if isinstance(d, dict):
-      if 'o1' in d:
-        self.o1 = d['o1']
-      if 'o3' in d:
-        self.o3 = d['o3']
+  def __init__(self, o1=None, o3=None,):
+    self.o1 = o1
+    self.o3 = o3
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -2638,11 +2831,10 @@ class drop_table_result:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -2651,16 +2843,21 @@ class drop_table_result:
     return not (self == other)
 
 class get_tables_args:
+  """
+  Attributes:
+   - db_name
+   - pattern
+  """
 
-  thrift_spec = None
-  def __init__(self, d=None):
-    self.db_name = None
-    self.pattern = None
-    if isinstance(d, dict):
-      if 'db_name' in d:
-        self.db_name = d['db_name']
-      if 'pattern' in d:
-        self.pattern = d['pattern']
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'db_name', None, None, ), # 1
+    (2, TType.STRING, 'pattern', None, None, ), # 2
+  )
+
+  def __init__(self, db_name=None, pattern=None,):
+    self.db_name = db_name
+    self.pattern = pattern
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -2671,12 +2868,12 @@ class get_tables_args:
       (fname, ftype, fid) = iprot.readFieldBegin()
       if ftype == TType.STOP:
         break
-      if fid == -1:
+      if fid == 1:
         if ftype == TType.STRING:
           self.db_name = iprot.readString();
         else:
           iprot.skip(ftype)
-      elif fid == -2:
+      elif fid == 2:
         if ftype == TType.STRING:
           self.pattern = iprot.readString();
         else:
@@ -2692,21 +2889,20 @@ class get_tables_args:
       return
     oprot.writeStructBegin('get_tables_args')
     if self.db_name != None:
-      oprot.writeFieldBegin('db_name', TType.STRING, -1)
+      oprot.writeFieldBegin('db_name', TType.STRING, 1)
       oprot.writeString(self.db_name)
       oprot.writeFieldEnd()
     if self.pattern != None:
-      oprot.writeFieldBegin('pattern', TType.STRING, -2)
+      oprot.writeFieldBegin('pattern', TType.STRING, 2)
       oprot.writeString(self.pattern)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -2715,16 +2911,20 @@ class get_tables_args:
     return not (self == other)
 
 class get_tables_result:
+  """
+  Attributes:
+   - success
+   - o1
+  """
 
-  thrift_spec = None
-  def __init__(self, d=None):
-    self.success = None
-    self.o1 = None
-    if isinstance(d, dict):
-      if 'success' in d:
-        self.success = d['success']
-      if 'o1' in d:
-        self.o1 = d['o1']
+  thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRING,None), None, ), # 0
+    (1, TType.STRUCT, 'o1', (MetaException, MetaException.thrift_spec), None, ), # 1
+  )
+
+  def __init__(self, success=None, o1=None,):
+    self.success = success
+    self.o1 = o1
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -2745,7 +2945,7 @@ class get_tables_result:
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
-      elif fid == -3:
+      elif fid == 1:
         if ftype == TType.STRUCT:
           self.o1 = MetaException()
           self.o1.read(iprot)
@@ -2769,17 +2969,16 @@ class get_tables_result:
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 != None:
-      oprot.writeFieldBegin('o1', TType.STRUCT, -3)
+      oprot.writeFieldBegin('o1', TType.STRUCT, 1)
       self.o1.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -2788,6 +2987,11 @@ class get_tables_result:
     return not (self == other)
 
 class get_table_args:
+  """
+  Attributes:
+   - dbname
+   - tbl_name
+  """
 
   thrift_spec = (
     None, # 0
@@ -2795,14 +2999,9 @@ class get_table_args:
     (2, TType.STRING, 'tbl_name', None, None, ), # 2
   )
 
-  def __init__(self, d=None):
-    self.dbname = None
-    self.tbl_name = None
-    if isinstance(d, dict):
-      if 'dbname' in d:
-        self.dbname = d['dbname']
-      if 'tbl_name' in d:
-        self.tbl_name = d['tbl_name']
+  def __init__(self, dbname=None, tbl_name=None,):
+    self.dbname = dbname
+    self.tbl_name = tbl_name
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -2844,11 +3043,10 @@ class get_table_args:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -2857,6 +3055,12 @@ class get_table_args:
     return not (self == other)
 
 class get_table_result:
+  """
+  Attributes:
+   - success
+   - o1
+   - o2
+  """
 
   thrift_spec = (
     (0, TType.STRUCT, 'success', (Table, Table.thrift_spec), None, ), # 0
@@ -2864,17 +3068,10 @@ class get_table_result:
     (2, TType.STRUCT, 'o2', (NoSuchObjectException, NoSuchObjectException.thrift_spec), None, ), # 2
   )
 
-  def __init__(self, d=None):
-    self.success = None
-    self.o1 = None
-    self.o2 = None
-    if isinstance(d, dict):
-      if 'success' in d:
-        self.success = d['success']
-      if 'o1' in d:
-        self.o1 = d['o1']
-      if 'o2' in d:
-        self.o2 = d['o2']
+  def __init__(self, success=None, o1=None, o2=None,):
+    self.success = success
+    self.o1 = o1
+    self.o2 = o2
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -2928,11 +3125,10 @@ class get_table_result:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -2941,6 +3137,12 @@ class get_table_result:
     return not (self == other)
 
 class alter_table_args:
+  """
+  Attributes:
+   - dbname
+   - tbl_name
+   - new_tbl
+  """
 
   thrift_spec = (
     None, # 0
@@ -2949,17 +3151,10 @@ class alter_table_args:
     (3, TType.STRUCT, 'new_tbl', (Table, Table.thrift_spec), None, ), # 3
   )
 
-  def __init__(self, d=None):
-    self.dbname = None
-    self.tbl_name = None
-    self.new_tbl = None
-    if isinstance(d, dict):
-      if 'dbname' in d:
-        self.dbname = d['dbname']
-      if 'tbl_name' in d:
-        self.tbl_name = d['tbl_name']
-      if 'new_tbl' in d:
-        self.new_tbl = d['new_tbl']
+  def __init__(self, dbname=None, tbl_name=None, new_tbl=None,):
+    self.dbname = dbname
+    self.tbl_name = tbl_name
+    self.new_tbl = new_tbl
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3011,11 +3206,10 @@ class alter_table_args:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -3024,6 +3218,11 @@ class alter_table_args:
     return not (self == other)
 
 class alter_table_result:
+  """
+  Attributes:
+   - o1
+   - o2
+  """
 
   thrift_spec = (
     None, # 0
@@ -3031,14 +3230,9 @@ class alter_table_result:
     (2, TType.STRUCT, 'o2', (MetaException, MetaException.thrift_spec), None, ), # 2
   )
 
-  def __init__(self, d=None):
-    self.o1 = None
-    self.o2 = None
-    if isinstance(d, dict):
-      if 'o1' in d:
-        self.o1 = d['o1']
-      if 'o2' in d:
-        self.o2 = d['o2']
+  def __init__(self, o1=None, o2=None,):
+    self.o1 = o1
+    self.o2 = o2
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3082,11 +3276,10 @@ class alter_table_result:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -3095,17 +3288,18 @@ class alter_table_result:
     return not (self == other)
 
 class add_partition_args:
+  """
+  Attributes:
+   - new_part
+  """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRUCT, 'new_part', (Partition, Partition.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, d=None):
-    self.new_part = None
-    if isinstance(d, dict):
-      if 'new_part' in d:
-        self.new_part = d['new_part']
+  def __init__(self, new_part=None,):
+    self.new_part = new_part
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3139,11 +3333,10 @@ class add_partition_args:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -3152,6 +3345,13 @@ class add_partition_args:
     return not (self == other)
 
 class add_partition_result:
+  """
+  Attributes:
+   - success
+   - o1
+   - o2
+   - o3
+  """
 
   thrift_spec = (
     (0, TType.STRUCT, 'success', (Partition, Partition.thrift_spec), None, ), # 0
@@ -3160,20 +3360,11 @@ class add_partition_result:
     (3, TType.STRUCT, 'o3', (MetaException, MetaException.thrift_spec), None, ), # 3
   )
 
-  def __init__(self, d=None):
-    self.success = None
-    self.o1 = None
-    self.o2 = None
-    self.o3 = None
-    if isinstance(d, dict):
-      if 'success' in d:
-        self.success = d['success']
-      if 'o1' in d:
-        self.o1 = d['o1']
-      if 'o2' in d:
-        self.o2 = d['o2']
-      if 'o3' in d:
-        self.o3 = d['o3']
+  def __init__(self, success=None, o1=None, o2=None, o3=None,):
+    self.success = success
+    self.o1 = o1
+    self.o2 = o2
+    self.o3 = o3
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3237,11 +3428,10 @@ class add_partition_result:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -3250,6 +3440,12 @@ class add_partition_result:
     return not (self == other)
 
 class append_partition_args:
+  """
+  Attributes:
+   - db_name
+   - tbl_name
+   - part_vals
+  """
 
   thrift_spec = (
     None, # 0
@@ -3258,17 +3454,10 @@ class append_partition_args:
     (3, TType.LIST, 'part_vals', (TType.STRING,None), None, ), # 3
   )
 
-  def __init__(self, d=None):
-    self.db_name = None
-    self.tbl_name = None
-    self.part_vals = None
-    if isinstance(d, dict):
-      if 'db_name' in d:
-        self.db_name = d['db_name']
-      if 'tbl_name' in d:
-        self.tbl_name = d['tbl_name']
-      if 'part_vals' in d:
-        self.part_vals = d['part_vals']
+  def __init__(self, db_name=None, tbl_name=None, part_vals=None,):
+    self.db_name = db_name
+    self.tbl_name = tbl_name
+    self.part_vals = part_vals
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3327,11 +3516,10 @@ class append_partition_args:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -3340,6 +3528,13 @@ class append_partition_args:
     return not (self == other)
 
 class append_partition_result:
+  """
+  Attributes:
+   - success
+   - o1
+   - o2
+   - o3
+  """
 
   thrift_spec = (
     (0, TType.STRUCT, 'success', (Partition, Partition.thrift_spec), None, ), # 0
@@ -3348,20 +3543,11 @@ class append_partition_result:
     (3, TType.STRUCT, 'o3', (MetaException, MetaException.thrift_spec), None, ), # 3
   )
 
-  def __init__(self, d=None):
-    self.success = None
-    self.o1 = None
-    self.o2 = None
-    self.o3 = None
-    if isinstance(d, dict):
-      if 'success' in d:
-        self.success = d['success']
-      if 'o1' in d:
-        self.o1 = d['o1']
-      if 'o2' in d:
-        self.o2 = d['o2']
-      if 'o3' in d:
-        self.o3 = d['o3']
+  def __init__(self, success=None, o1=None, o2=None, o3=None,):
+    self.success = success
+    self.o1 = o1
+    self.o2 = o2
+    self.o3 = o3
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3425,11 +3611,10 @@ class append_partition_result:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -3438,6 +3623,13 @@ class append_partition_result:
     return not (self == other)
 
 class drop_partition_args:
+  """
+  Attributes:
+   - db_name
+   - tbl_name
+   - part_vals
+   - deleteData
+  """
 
   thrift_spec = (
     None, # 0
@@ -3447,20 +3639,11 @@ class drop_partition_args:
     (4, TType.BOOL, 'deleteData', None, None, ), # 4
   )
 
-  def __init__(self, d=None):
-    self.db_name = None
-    self.tbl_name = None
-    self.part_vals = None
-    self.deleteData = None
-    if isinstance(d, dict):
-      if 'db_name' in d:
-        self.db_name = d['db_name']
-      if 'tbl_name' in d:
-        self.tbl_name = d['tbl_name']
-      if 'part_vals' in d:
-        self.part_vals = d['part_vals']
-      if 'deleteData' in d:
-        self.deleteData = d['deleteData']
+  def __init__(self, db_name=None, tbl_name=None, part_vals=None, deleteData=None,):
+    self.db_name = db_name
+    self.tbl_name = tbl_name
+    self.part_vals = part_vals
+    self.deleteData = deleteData
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3528,11 +3711,10 @@ class drop_partition_args:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -3541,6 +3723,12 @@ class drop_partition_args:
     return not (self == other)
 
 class drop_partition_result:
+  """
+  Attributes:
+   - success
+   - o1
+   - o2
+  """
 
   thrift_spec = (
     (0, TType.BOOL, 'success', None, None, ), # 0
@@ -3548,17 +3736,10 @@ class drop_partition_result:
     (2, TType.STRUCT, 'o2', (MetaException, MetaException.thrift_spec), None, ), # 2
   )
 
-  def __init__(self, d=None):
-    self.success = None
-    self.o1 = None
-    self.o2 = None
-    if isinstance(d, dict):
-      if 'success' in d:
-        self.success = d['success']
-      if 'o1' in d:
-        self.o1 = d['o1']
-      if 'o2' in d:
-        self.o2 = d['o2']
+  def __init__(self, success=None, o1=None, o2=None,):
+    self.success = success
+    self.o1 = o1
+    self.o2 = o2
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3611,11 +3792,10 @@ class drop_partition_result:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -3624,6 +3804,12 @@ class drop_partition_result:
     return not (self == other)
 
 class get_partition_args:
+  """
+  Attributes:
+   - db_name
+   - tbl_name
+   - part_vals
+  """
 
   thrift_spec = (
     None, # 0
@@ -3632,17 +3818,10 @@ class get_partition_args:
     (3, TType.LIST, 'part_vals', (TType.STRING,None), None, ), # 3
   )
 
-  def __init__(self, d=None):
-    self.db_name = None
-    self.tbl_name = None
-    self.part_vals = None
-    if isinstance(d, dict):
-      if 'db_name' in d:
-        self.db_name = d['db_name']
-      if 'tbl_name' in d:
-        self.tbl_name = d['tbl_name']
-      if 'part_vals' in d:
-        self.part_vals = d['part_vals']
+  def __init__(self, db_name=None, tbl_name=None, part_vals=None,):
+    self.db_name = db_name
+    self.tbl_name = tbl_name
+    self.part_vals = part_vals
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3701,11 +3880,10 @@ class get_partition_args:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -3714,20 +3892,20 @@ class get_partition_args:
     return not (self == other)
 
 class get_partition_result:
+  """
+  Attributes:
+   - success
+   - o1
+  """
 
   thrift_spec = (
     (0, TType.STRUCT, 'success', (Partition, Partition.thrift_spec), None, ), # 0
     (1, TType.STRUCT, 'o1', (MetaException, MetaException.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, d=None):
-    self.success = None
-    self.o1 = None
-    if isinstance(d, dict):
-      if 'success' in d:
-        self.success = d['success']
-      if 'o1' in d:
-        self.o1 = d['o1']
+  def __init__(self, success=None, o1=None,):
+    self.success = success
+    self.o1 = o1
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3771,11 +3949,10 @@ class get_partition_result:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -3784,25 +3961,24 @@ class get_partition_result:
     return not (self == other)
 
 class get_partitions_args:
+  """
+  Attributes:
+   - db_name
+   - tbl_name
+   - max_parts
+  """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRING, 'db_name', None, None, ), # 1
     (2, TType.STRING, 'tbl_name', None, None, ), # 2
-    (3, TType.I16, 'max_parts', None, None, ), # 3
+    (3, TType.I16, 'max_parts', None, -1, ), # 3
   )
 
-  def __init__(self, d=None):
-    self.db_name = None
-    self.tbl_name = None
-    self.max_parts = -1
-    if isinstance(d, dict):
-      if 'db_name' in d:
-        self.db_name = d['db_name']
-      if 'tbl_name' in d:
-        self.tbl_name = d['tbl_name']
-      if 'max_parts' in d:
-        self.max_parts = d['max_parts']
+  def __init__(self, db_name=None, tbl_name=None, max_parts=thrift_spec[3][4],):
+    self.db_name = db_name
+    self.tbl_name = tbl_name
+    self.max_parts = max_parts
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3853,11 +4029,10 @@ class get_partitions_args:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -3866,6 +4041,12 @@ class get_partitions_args:
     return not (self == other)
 
 class get_partitions_result:
+  """
+  Attributes:
+   - success
+   - o1
+   - o2
+  """
 
   thrift_spec = (
     (0, TType.LIST, 'success', (TType.STRUCT,(Partition, Partition.thrift_spec)), None, ), # 0
@@ -3873,17 +4054,10 @@ class get_partitions_result:
     (2, TType.STRUCT, 'o2', (MetaException, MetaException.thrift_spec), None, ), # 2
   )
 
-  def __init__(self, d=None):
-    self.success = None
-    self.o1 = None
-    self.o2 = None
-    if isinstance(d, dict):
-      if 'success' in d:
-        self.success = d['success']
-      if 'o1' in d:
-        self.o1 = d['o1']
-      if 'o2' in d:
-        self.o2 = d['o2']
+  def __init__(self, success=None, o1=None, o2=None,):
+    self.success = success
+    self.o1 = o1
+    self.o2 = o2
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3945,11 +4119,10 @@ class get_partitions_result:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -3958,25 +4131,24 @@ class get_partitions_result:
     return not (self == other)
 
 class get_partition_names_args:
+  """
+  Attributes:
+   - db_name
+   - tbl_name
+   - max_parts
+  """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRING, 'db_name', None, None, ), # 1
     (2, TType.STRING, 'tbl_name', None, None, ), # 2
-    (3, TType.I16, 'max_parts', None, None, ), # 3
+    (3, TType.I16, 'max_parts', None, -1, ), # 3
   )
 
-  def __init__(self, d=None):
-    self.db_name = None
-    self.tbl_name = None
-    self.max_parts = -1
-    if isinstance(d, dict):
-      if 'db_name' in d:
-        self.db_name = d['db_name']
-      if 'tbl_name' in d:
-        self.tbl_name = d['tbl_name']
-      if 'max_parts' in d:
-        self.max_parts = d['max_parts']
+  def __init__(self, db_name=None, tbl_name=None, max_parts=thrift_spec[3][4],):
+    self.db_name = db_name
+    self.tbl_name = tbl_name
+    self.max_parts = max_parts
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -4027,11 +4199,10 @@ class get_partition_names_args:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -4040,20 +4211,20 @@ class get_partition_names_args:
     return not (self == other)
 
 class get_partition_names_result:
+  """
+  Attributes:
+   - success
+   - o2
+  """
 
   thrift_spec = (
     (0, TType.LIST, 'success', (TType.STRING,None), None, ), # 0
     (1, TType.STRUCT, 'o2', (MetaException, MetaException.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, d=None):
-    self.success = None
-    self.o2 = None
-    if isinstance(d, dict):
-      if 'success' in d:
-        self.success = d['success']
-      if 'o2' in d:
-        self.o2 = d['o2']
+  def __init__(self, success=None, o2=None,):
+    self.success = success
+    self.o2 = o2
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -4104,11 +4275,10 @@ class get_partition_names_result:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -4117,6 +4287,12 @@ class get_partition_names_result:
     return not (self == other)
 
 class alter_partition_args:
+  """
+  Attributes:
+   - db_name
+   - tbl_name
+   - new_part
+  """
 
   thrift_spec = (
     None, # 0
@@ -4125,17 +4301,10 @@ class alter_partition_args:
     (3, TType.STRUCT, 'new_part', (Partition, Partition.thrift_spec), None, ), # 3
   )
 
-  def __init__(self, d=None):
-    self.db_name = None
-    self.tbl_name = None
-    self.new_part = None
-    if isinstance(d, dict):
-      if 'db_name' in d:
-        self.db_name = d['db_name']
-      if 'tbl_name' in d:
-        self.tbl_name = d['tbl_name']
-      if 'new_part' in d:
-        self.new_part = d['new_part']
+  def __init__(self, db_name=None, tbl_name=None, new_part=None,):
+    self.db_name = db_name
+    self.tbl_name = tbl_name
+    self.new_part = new_part
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -4187,11 +4356,10 @@ class alter_partition_args:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -4200,6 +4368,11 @@ class alter_partition_args:
     return not (self == other)
 
 class alter_partition_result:
+  """
+  Attributes:
+   - o1
+   - o2
+  """
 
   thrift_spec = (
     None, # 0
@@ -4207,14 +4380,9 @@ class alter_partition_result:
     (2, TType.STRUCT, 'o2', (MetaException, MetaException.thrift_spec), None, ), # 2
   )
 
-  def __init__(self, d=None):
-    self.o1 = None
-    self.o2 = None
-    if isinstance(d, dict):
-      if 'o1' in d:
-        self.o1 = d['o1']
-      if 'o2' in d:
-        self.o2 = d['o2']
+  def __init__(self, o1=None, o2=None,):
+    self.o1 = o1
+    self.o2 = o2
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -4258,11 +4426,10 @@ class alter_partition_result:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__

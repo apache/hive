@@ -18,12 +18,20 @@ except:
 
 class Iface(hive_metastore.ThriftHiveMetastore.Iface):
   def execute(self, query):
+    """
+    Parameters:
+     - query
+    """
     pass
 
   def fetchOne(self, ):
     pass
 
   def fetchN(self, numRows):
+    """
+    Parameters:
+     - numRows
+    """
     pass
 
   def fetchAll(self, ):
@@ -38,6 +46,10 @@ class Client(hive_metastore.ThriftHiveMetastore.Client, Iface):
     hive_metastore.ThriftHiveMetastore.Client.__init__(self, iprot, oprot)
 
   def execute(self, query):
+    """
+    Parameters:
+     - query
+    """
     self.send_execute(query)
     self.recv_execute()
 
@@ -91,6 +103,10 @@ class Client(hive_metastore.ThriftHiveMetastore.Client, Iface):
     raise TApplicationException(TApplicationException.MISSING_RESULT, "fetchOne failed: unknown result");
 
   def fetchN(self, numRows):
+    """
+    Parameters:
+     - numRows
+    """
     self.send_fetchN(numRows)
     return self.recv_fetchN()
 
@@ -271,17 +287,18 @@ class Processor(hive_metastore.ThriftHiveMetastore.Processor, Iface, TProcessor)
 # HELPER FUNCTIONS AND STRUCTURES
 
 class execute_args:
+  """
+  Attributes:
+   - query
+  """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRING, 'query', None, None, ), # 1
   )
 
-  def __init__(self, d=None):
-    self.query = None
-    if isinstance(d, dict):
-      if 'query' in d:
-        self.query = d['query']
+  def __init__(self, query=None,):
+    self.query = query
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -314,11 +331,10 @@ class execute_args:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -327,17 +343,18 @@ class execute_args:
     return not (self == other)
 
 class execute_result:
+  """
+  Attributes:
+   - ex
+  """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRUCT, 'ex', (HiveServerException, HiveServerException.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, d=None):
-    self.ex = None
-    if isinstance(d, dict):
-      if 'ex' in d:
-        self.ex = d['ex']
+  def __init__(self, ex=None,):
+    self.ex = ex
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -371,11 +388,10 @@ class execute_result:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -387,9 +403,6 @@ class fetchOne_args:
 
   thrift_spec = (
   )
-
-  def __init__(self, d=None):
-    pass
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -413,11 +426,10 @@ class fetchOne_args:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -426,20 +438,20 @@ class fetchOne_args:
     return not (self == other)
 
 class fetchOne_result:
+  """
+  Attributes:
+   - success
+   - ex
+  """
 
   thrift_spec = (
     (0, TType.STRING, 'success', None, None, ), # 0
     (1, TType.STRUCT, 'ex', (HiveServerException, HiveServerException.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, d=None):
-    self.success = None
-    self.ex = None
-    if isinstance(d, dict):
-      if 'success' in d:
-        self.success = d['success']
-      if 'ex' in d:
-        self.ex = d['ex']
+  def __init__(self, success=None, ex=None,):
+    self.success = success
+    self.ex = ex
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -482,11 +494,10 @@ class fetchOne_result:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -495,17 +506,18 @@ class fetchOne_result:
     return not (self == other)
 
 class fetchN_args:
+  """
+  Attributes:
+   - numRows
+  """
 
   thrift_spec = (
     None, # 0
     (1, TType.I32, 'numRows', None, None, ), # 1
   )
 
-  def __init__(self, d=None):
-    self.numRows = None
-    if isinstance(d, dict):
-      if 'numRows' in d:
-        self.numRows = d['numRows']
+  def __init__(self, numRows=None,):
+    self.numRows = numRows
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -538,11 +550,10 @@ class fetchN_args:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -551,20 +562,20 @@ class fetchN_args:
     return not (self == other)
 
 class fetchN_result:
+  """
+  Attributes:
+   - success
+   - ex
+  """
 
   thrift_spec = (
     (0, TType.LIST, 'success', (TType.STRING,None), None, ), # 0
     (1, TType.STRUCT, 'ex', (HiveServerException, HiveServerException.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, d=None):
-    self.success = None
-    self.ex = None
-    if isinstance(d, dict):
-      if 'success' in d:
-        self.success = d['success']
-      if 'ex' in d:
-        self.ex = d['ex']
+  def __init__(self, success=None, ex=None,):
+    self.success = success
+    self.ex = ex
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -615,11 +626,10 @@ class fetchN_result:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -631,9 +641,6 @@ class fetchAll_args:
 
   thrift_spec = (
   )
-
-  def __init__(self, d=None):
-    pass
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -657,11 +664,10 @@ class fetchAll_args:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -670,20 +676,20 @@ class fetchAll_args:
     return not (self == other)
 
 class fetchAll_result:
+  """
+  Attributes:
+   - success
+   - ex
+  """
 
   thrift_spec = (
     (0, TType.LIST, 'success', (TType.STRING,None), None, ), # 0
     (1, TType.STRUCT, 'ex', (HiveServerException, HiveServerException.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, d=None):
-    self.success = None
-    self.ex = None
-    if isinstance(d, dict):
-      if 'success' in d:
-        self.success = d['success']
-      if 'ex' in d:
-        self.ex = d['ex']
+  def __init__(self, success=None, ex=None,):
+    self.success = success
+    self.ex = ex
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -734,11 +740,10 @@ class fetchAll_result:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -750,9 +755,6 @@ class getSchema_args:
 
   thrift_spec = (
   )
-
-  def __init__(self, d=None):
-    pass
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -776,11 +778,10 @@ class getSchema_args:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
@@ -789,20 +790,20 @@ class getSchema_args:
     return not (self == other)
 
 class getSchema_result:
+  """
+  Attributes:
+   - success
+   - ex
+  """
 
   thrift_spec = (
     (0, TType.STRUCT, 'success', (hive_metastore.ttypes.Schema, hive_metastore.ttypes.Schema.thrift_spec), None, ), # 0
     (1, TType.STRUCT, 'ex', (HiveServerException, HiveServerException.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, d=None):
-    self.success = None
-    self.ex = None
-    if isinstance(d, dict):
-      if 'success' in d:
-        self.success = d['success']
-      if 'ex' in d:
-        self.ex = d['ex']
+  def __init__(self, success=None, ex=None,):
+    self.success = success
+    self.ex = ex
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -846,11 +847,10 @@ class getSchema_result:
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
-  def __str__(self): 
-    return str(self.__dict__)
-
-  def __repr__(self): 
-    return repr(self.__dict__)
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
 
   def __eq__(self, other):
     return isinstance(other, self.__class__) and self.__dict__ == other.__dict__

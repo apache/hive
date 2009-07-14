@@ -44,7 +44,7 @@
            </void> 
            <void method="put"> 
             <string>serialization.format</string> 
-            <string>com.facebook.thrift.protocol.TBinaryProtocol</string> 
+            <string>org.apache.thrift.protocol.TBinaryProtocol</string> 
            </void> 
            <void method="put"> 
             <string>serialization.class</string> 
@@ -68,7 +68,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/test/data/warehouse/src_thrift</string> 
+            <string>file:/data/users/rmurthy/hive/build/ql/test/data/warehouse/src_thrift</string> 
            </void> 
           </object> 
          </void> 
@@ -96,7 +96,7 @@
                 <void property="conf"> 
                  <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                   <void property="dirName"> 
-                   <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/1162019634/10001</string> 
+                   <string>file:/data/users/rmurthy/hive/build/ql/tmp/1776654577/10001</string> 
                   </void> 
                   <void property="tableInfo"> 
                    <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -494,7 +494,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/test/data/warehouse/src_thrift</string> 
+       <string>file:/data/users/rmurthy/hive/build/ql/test/data/warehouse/src_thrift</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src_thrift</string> 
@@ -506,7 +506,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/test/data/warehouse/src_thrift</string> 
+       <string>file:/data/users/rmurthy/hive/build/ql/test/data/warehouse/src_thrift</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap0"/> 

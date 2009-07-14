@@ -18,7 +18,7 @@ import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.mapred.TextOutputFormat;
 
-import com.facebook.thrift.TException;
+import org.apache.thrift.TException;
 
 public class TestHiveMetaStoreChecker extends TestCase {
 

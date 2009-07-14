@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.serde2.dynamic_type;
 
-import com.facebook.thrift.TException;
-import com.facebook.thrift.protocol.*;
+import org.apache.thrift.TException;
+import org.apache.thrift.protocol.*;
 import java.io.*;
 import java.util.List;
 

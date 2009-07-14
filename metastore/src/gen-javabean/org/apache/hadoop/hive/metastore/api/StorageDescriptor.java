@@ -11,658 +11,971 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
-import com.facebook.thrift.*;
+import java.util.Collections;
+import org.apache.log4j.Logger;
 
-import com.facebook.thrift.protocol.*;
-import com.facebook.thrift.transport.*;
+import org.apache.thrift.*;
+import org.apache.thrift.meta_data.*;
+import org.apache.thrift.protocol.*;
 
-public class StorageDescriptor implements TBase, java.io.Serializable {
-private List<FieldSchema> cols;
-private String location;
-private String inputFormat;
-private String outputFormat;
-private boolean compressed;
-private int numBuckets;
-private SerDeInfo serdeInfo;
-private List<String> bucketCols;
-private List<Order> sortCols;
-private Map<String,String> parameters;
+public class StorageDescriptor implements TBase, java.io.Serializable, Cloneable {
+  private static final TStruct STRUCT_DESC = new TStruct("StorageDescriptor");
+  private static final TField COLS_FIELD_DESC = new TField("cols", TType.LIST, (short)1);
+  private static final TField LOCATION_FIELD_DESC = new TField("location", TType.STRING, (short)2);
+  private static final TField INPUT_FORMAT_FIELD_DESC = new TField("inputFormat", TType.STRING, (short)3);
+  private static final TField OUTPUT_FORMAT_FIELD_DESC = new TField("outputFormat", TType.STRING, (short)4);
+  private static final TField COMPRESSED_FIELD_DESC = new TField("compressed", TType.BOOL, (short)5);
+  private static final TField NUM_BUCKETS_FIELD_DESC = new TField("numBuckets", TType.I32, (short)6);
+  private static final TField SERDE_INFO_FIELD_DESC = new TField("serdeInfo", TType.STRUCT, (short)7);
+  private static final TField BUCKET_COLS_FIELD_DESC = new TField("bucketCols", TType.LIST, (short)8);
+  private static final TField SORT_COLS_FIELD_DESC = new TField("sortCols", TType.LIST, (short)9);
+  private static final TField PARAMETERS_FIELD_DESC = new TField("parameters", TType.MAP, (short)10);
 
-public final Isset __isset = new Isset();
-public static final class Isset implements java.io.Serializable {
-public boolean cols = false;
-public boolean location = false;
-public boolean inputFormat = false;
-public boolean outputFormat = false;
-public boolean compressed = false;
-public boolean numBuckets = false;
-public boolean serdeInfo = false;
-public boolean bucketCols = false;
-public boolean sortCols = false;
-public boolean parameters = false;
-}
+  private List<FieldSchema> cols;
+  public static final int COLS = 1;
+  private String location;
+  public static final int LOCATION = 2;
+  private String inputFormat;
+  public static final int INPUTFORMAT = 3;
+  private String outputFormat;
+  public static final int OUTPUTFORMAT = 4;
+  private boolean compressed;
+  public static final int COMPRESSED = 5;
+  private int numBuckets;
+  public static final int NUMBUCKETS = 6;
+  private SerDeInfo serdeInfo;
+  public static final int SERDEINFO = 7;
+  private List<String> bucketCols;
+  public static final int BUCKETCOLS = 8;
+  private List<Order> sortCols;
+  public static final int SORTCOLS = 9;
+  private Map<String,String> parameters;
+  public static final int PARAMETERS = 10;
 
-public StorageDescriptor() {
-}
-
-public StorageDescriptor(
-List<FieldSchema> cols,
-String location,
-String inputFormat,
-String outputFormat,
-boolean compressed,
-int numBuckets,
-SerDeInfo serdeInfo,
-List<String> bucketCols,
-List<Order> sortCols,
-Map<String,String> parameters)
-{
-this();
-this.cols = cols;
-this.__isset.cols = true;
-this.location = location;
-this.__isset.location = true;
-this.inputFormat = inputFormat;
-this.__isset.inputFormat = true;
-this.outputFormat = outputFormat;
-this.__isset.outputFormat = true;
-this.compressed = compressed;
-this.__isset.compressed = true;
-this.numBuckets = numBuckets;
-this.__isset.numBuckets = true;
-this.serdeInfo = serdeInfo;
-this.__isset.serdeInfo = true;
-this.bucketCols = bucketCols;
-this.__isset.bucketCols = true;
-this.sortCols = sortCols;
-this.__isset.sortCols = true;
-this.parameters = parameters;
-this.__isset.parameters = true;
-}
-
-public int getColsSize() {
-return (this.cols == null) ? 0 : this.cols.size();
-}
-
-public java.util.Iterator<FieldSchema> getColsIterator() {
-return (this.cols == null) ? null : this.cols.iterator();
-}
-
-public void addToCols(FieldSchema elem) {
-if (this.cols == null) {
-this.cols = new ArrayList<FieldSchema>();
-}
-this.cols.add(elem);
-this.__isset.cols = true;
-}
-
-public List<FieldSchema> getCols() {
-return this.cols;
-}
-
-public void setCols(List<FieldSchema> cols) {
-this.cols = cols;
-this.__isset.cols = true;
-}
-
-public void unsetCols() {
-this.cols = null;
-this.__isset.cols = false;
-}
-
-public String getLocation() {
-return this.location;
-}
-
-public void setLocation(String location) {
-this.location = location;
-this.__isset.location = true;
-}
-
-public void unsetLocation() {
-this.__isset.location = false;
-}
-
-public String getInputFormat() {
-return this.inputFormat;
-}
-
-public void setInputFormat(String inputFormat) {
-this.inputFormat = inputFormat;
-this.__isset.inputFormat = true;
-}
-
-public void unsetInputFormat() {
-this.__isset.inputFormat = false;
-}
-
-public String getOutputFormat() {
-return this.outputFormat;
-}
-
-public void setOutputFormat(String outputFormat) {
-this.outputFormat = outputFormat;
-this.__isset.outputFormat = true;
-}
-
-public void unsetOutputFormat() {
-this.__isset.outputFormat = false;
-}
-
-public boolean isCompressed() {
-return this.compressed;
-}
-
-public void setCompressed(boolean compressed) {
-this.compressed = compressed;
-this.__isset.compressed = true;
-}
-
-public void unsetCompressed() {
-this.__isset.compressed = false;
-}
-
-public int getNumBuckets() {
-return this.numBuckets;
-}
-
-public void setNumBuckets(int numBuckets) {
-this.numBuckets = numBuckets;
-this.__isset.numBuckets = true;
-}
-
-public void unsetNumBuckets() {
-this.__isset.numBuckets = false;
-}
-
-public SerDeInfo getSerdeInfo() {
-return this.serdeInfo;
-}
-
-public void setSerdeInfo(SerDeInfo serdeInfo) {
-this.serdeInfo = serdeInfo;
-this.__isset.serdeInfo = true;
-}
-
-public void unsetSerdeInfo() {
-this.serdeInfo = null;
-this.__isset.serdeInfo = false;
-}
-
-public int getBucketColsSize() {
-return (this.bucketCols == null) ? 0 : this.bucketCols.size();
-}
-
-public java.util.Iterator<String> getBucketColsIterator() {
-return (this.bucketCols == null) ? null : this.bucketCols.iterator();
-}
-
-public void addToBucketCols(String elem) {
-if (this.bucketCols == null) {
-this.bucketCols = new ArrayList<String>();
-}
-this.bucketCols.add(elem);
-this.__isset.bucketCols = true;
-}
-
-public List<String> getBucketCols() {
-return this.bucketCols;
-}
-
-public void setBucketCols(List<String> bucketCols) {
-this.bucketCols = bucketCols;
-this.__isset.bucketCols = true;
-}
-
-public void unsetBucketCols() {
-this.bucketCols = null;
-this.__isset.bucketCols = false;
-}
-
-public int getSortColsSize() {
-return (this.sortCols == null) ? 0 : this.sortCols.size();
-}
-
-public java.util.Iterator<Order> getSortColsIterator() {
-return (this.sortCols == null) ? null : this.sortCols.iterator();
-}
-
-public void addToSortCols(Order elem) {
-if (this.sortCols == null) {
-this.sortCols = new ArrayList<Order>();
-}
-this.sortCols.add(elem);
-this.__isset.sortCols = true;
-}
-
-public List<Order> getSortCols() {
-return this.sortCols;
-}
-
-public void setSortCols(List<Order> sortCols) {
-this.sortCols = sortCols;
-this.__isset.sortCols = true;
-}
-
-public void unsetSortCols() {
-this.sortCols = null;
-this.__isset.sortCols = false;
-}
-
-public int getParametersSize() {
-return (this.parameters == null) ? 0 : this.parameters.size();
-}
-
-public void putToParameters(String key, String val) {
-if (this.parameters == null) {
-this.parameters = new HashMap<String,String>();
-}
-this.parameters.put(key, val);
-this.__isset.parameters = true;
-}
-
-public Map<String,String> getParameters() {
-return this.parameters;
-}
-
-public void setParameters(Map<String,String> parameters) {
-this.parameters = parameters;
-this.__isset.parameters = true;
-}
-
-public void unsetParameters() {
-this.parameters = null;
-this.__isset.parameters = false;
-}
-
-public boolean equals(Object that) {
-if (that == null)
-  return false;
-if (that instanceof StorageDescriptor)
-  return this.equals((StorageDescriptor)that);
-return false;
-}
-
-public boolean equals(StorageDescriptor that) {
-if (that == null)
-  return false;
-
-boolean this_present_cols = true && (this.cols != null);
-boolean that_present_cols = true && (that.cols != null);
-if (this_present_cols || that_present_cols) {
-if (!(this_present_cols && that_present_cols))
-  return false;
-if (!this.cols.equals(that.cols))
-  return false;
-}
-
-boolean this_present_location = true && (this.location != null);
-boolean that_present_location = true && (that.location != null);
-if (this_present_location || that_present_location) {
-if (!(this_present_location && that_present_location))
-  return false;
-if (!this.location.equals(that.location))
-  return false;
-}
-
-boolean this_present_inputFormat = true && (this.inputFormat != null);
-boolean that_present_inputFormat = true && (that.inputFormat != null);
-if (this_present_inputFormat || that_present_inputFormat) {
-if (!(this_present_inputFormat && that_present_inputFormat))
-  return false;
-if (!this.inputFormat.equals(that.inputFormat))
-  return false;
-}
-
-boolean this_present_outputFormat = true && (this.outputFormat != null);
-boolean that_present_outputFormat = true && (that.outputFormat != null);
-if (this_present_outputFormat || that_present_outputFormat) {
-if (!(this_present_outputFormat && that_present_outputFormat))
-  return false;
-if (!this.outputFormat.equals(that.outputFormat))
-  return false;
-}
-
-boolean this_present_compressed = true;
-boolean that_present_compressed = true;
-if (this_present_compressed || that_present_compressed) {
-if (!(this_present_compressed && that_present_compressed))
-  return false;
-if (this.compressed != that.compressed)
-  return false;
-}
-
-boolean this_present_numBuckets = true;
-boolean that_present_numBuckets = true;
-if (this_present_numBuckets || that_present_numBuckets) {
-if (!(this_present_numBuckets && that_present_numBuckets))
-  return false;
-if (this.numBuckets != that.numBuckets)
-  return false;
-}
-
-boolean this_present_serdeInfo = true && (this.serdeInfo != null);
-boolean that_present_serdeInfo = true && (that.serdeInfo != null);
-if (this_present_serdeInfo || that_present_serdeInfo) {
-if (!(this_present_serdeInfo && that_present_serdeInfo))
-  return false;
-if (!this.serdeInfo.equals(that.serdeInfo))
-  return false;
-}
-
-boolean this_present_bucketCols = true && (this.bucketCols != null);
-boolean that_present_bucketCols = true && (that.bucketCols != null);
-if (this_present_bucketCols || that_present_bucketCols) {
-if (!(this_present_bucketCols && that_present_bucketCols))
-  return false;
-if (!this.bucketCols.equals(that.bucketCols))
-  return false;
-}
-
-boolean this_present_sortCols = true && (this.sortCols != null);
-boolean that_present_sortCols = true && (that.sortCols != null);
-if (this_present_sortCols || that_present_sortCols) {
-if (!(this_present_sortCols && that_present_sortCols))
-  return false;
-if (!this.sortCols.equals(that.sortCols))
-  return false;
-}
-
-boolean this_present_parameters = true && (this.parameters != null);
-boolean that_present_parameters = true && (that.parameters != null);
-if (this_present_parameters || that_present_parameters) {
-if (!(this_present_parameters && that_present_parameters))
-  return false;
-if (!this.parameters.equals(that.parameters))
-  return false;
-}
-
-return true;
-}
-
-public int hashCode() {
-return 0;
-}
-
-public void read(TProtocol iprot) throws TException {
-TField field;
-iprot.readStructBegin();
-while (true)
-{
-field = iprot.readFieldBegin();
-if (field.type == TType.STOP) { 
-  break;
-}
-switch (field.id)
-{
-  case 1:
-    if (field.type == TType.LIST) {
-      {
-        TList _list9 = iprot.readListBegin();
-        this.cols = new ArrayList<FieldSchema>(_list9.size);
-        for (int _i10 = 0; _i10 < _list9.size; ++_i10)
-        {
-          FieldSchema _elem11 = new FieldSchema();
-          _elem11 = new FieldSchema();
-          _elem11.read(iprot);
-          this.cols.add(_elem11);
-        }
-        iprot.readListEnd();
-      }
-      this.__isset.cols = true;
-    } else { 
-      TProtocolUtil.skip(iprot, field.type);
-    }
-    break;
-  case 2:
-    if (field.type == TType.STRING) {
-      this.location = iprot.readString();
-      this.__isset.location = true;
-    } else { 
-      TProtocolUtil.skip(iprot, field.type);
-    }
-    break;
-  case 3:
-    if (field.type == TType.STRING) {
-      this.inputFormat = iprot.readString();
-      this.__isset.inputFormat = true;
-    } else { 
-      TProtocolUtil.skip(iprot, field.type);
-    }
-    break;
-  case 4:
-    if (field.type == TType.STRING) {
-      this.outputFormat = iprot.readString();
-      this.__isset.outputFormat = true;
-    } else { 
-      TProtocolUtil.skip(iprot, field.type);
-    }
-    break;
-  case 5:
-    if (field.type == TType.BOOL) {
-      this.compressed = iprot.readBool();
-      this.__isset.compressed = true;
-    } else { 
-      TProtocolUtil.skip(iprot, field.type);
-    }
-    break;
-  case 6:
-    if (field.type == TType.I32) {
-      this.numBuckets = iprot.readI32();
-      this.__isset.numBuckets = true;
-    } else { 
-      TProtocolUtil.skip(iprot, field.type);
-    }
-    break;
-  case 7:
-    if (field.type == TType.STRUCT) {
-      this.serdeInfo = new SerDeInfo();
-      this.serdeInfo.read(iprot);
-      this.__isset.serdeInfo = true;
-    } else { 
-      TProtocolUtil.skip(iprot, field.type);
-    }
-    break;
-  case 8:
-    if (field.type == TType.LIST) {
-      {
-        TList _list12 = iprot.readListBegin();
-        this.bucketCols = new ArrayList<String>(_list12.size);
-        for (int _i13 = 0; _i13 < _list12.size; ++_i13)
-        {
-          String _elem14 = null;
-          _elem14 = iprot.readString();
-          this.bucketCols.add(_elem14);
-        }
-        iprot.readListEnd();
-      }
-      this.__isset.bucketCols = true;
-    } else { 
-      TProtocolUtil.skip(iprot, field.type);
-    }
-    break;
-  case 9:
-    if (field.type == TType.LIST) {
-      {
-        TList _list15 = iprot.readListBegin();
-        this.sortCols = new ArrayList<Order>(_list15.size);
-        for (int _i16 = 0; _i16 < _list15.size; ++_i16)
-        {
-          Order _elem17 = new Order();
-          _elem17 = new Order();
-          _elem17.read(iprot);
-          this.sortCols.add(_elem17);
-        }
-        iprot.readListEnd();
-      }
-      this.__isset.sortCols = true;
-    } else { 
-      TProtocolUtil.skip(iprot, field.type);
-    }
-    break;
-  case 10:
-    if (field.type == TType.MAP) {
-      {
-        TMap _map18 = iprot.readMapBegin();
-        this.parameters = new HashMap<String,String>(2*_map18.size);
-        for (int _i19 = 0; _i19 < _map18.size; ++_i19)
-        {
-          String _key20;
-          String _val21;
-          _key20 = iprot.readString();
-          _val21 = iprot.readString();
-          this.parameters.put(_key20, _val21);
-        }
-        iprot.readMapEnd();
-      }
-      this.__isset.parameters = true;
-    } else { 
-      TProtocolUtil.skip(iprot, field.type);
-    }
-    break;
-  default:
-    TProtocolUtil.skip(iprot, field.type);
-    break;
-}
-iprot.readFieldEnd();
-}
-iprot.readStructEnd();
-}
-
-public void write(TProtocol oprot) throws TException {
-TStruct struct = new TStruct("StorageDescriptor");
-oprot.writeStructBegin(struct);
-TField field = new TField();
-if (this.cols != null) {
-field.name = "cols";
-field.type = TType.LIST;
-field.id = 1;
-oprot.writeFieldBegin(field);
-{
-  oprot.writeListBegin(new TList(TType.STRUCT, this.cols.size()));
-  for (FieldSchema _iter22 : this.cols)  {
-    _iter22.write(oprot);
+  private final Isset __isset = new Isset();
+  private static final class Isset implements java.io.Serializable {
+    public boolean compressed = false;
+    public boolean numBuckets = false;
   }
-  oprot.writeListEnd();
-}
-oprot.writeFieldEnd();
-}
-if (this.location != null) {
-field.name = "location";
-field.type = TType.STRING;
-field.id = 2;
-oprot.writeFieldBegin(field);
-oprot.writeString(this.location);
-oprot.writeFieldEnd();
-}
-if (this.inputFormat != null) {
-field.name = "inputFormat";
-field.type = TType.STRING;
-field.id = 3;
-oprot.writeFieldBegin(field);
-oprot.writeString(this.inputFormat);
-oprot.writeFieldEnd();
-}
-if (this.outputFormat != null) {
-field.name = "outputFormat";
-field.type = TType.STRING;
-field.id = 4;
-oprot.writeFieldBegin(field);
-oprot.writeString(this.outputFormat);
-oprot.writeFieldEnd();
-}
-field.name = "compressed";
-field.type = TType.BOOL;
-field.id = 5;
-oprot.writeFieldBegin(field);
-oprot.writeBool(this.compressed);
-oprot.writeFieldEnd();
-field.name = "numBuckets";
-field.type = TType.I32;
-field.id = 6;
-oprot.writeFieldBegin(field);
-oprot.writeI32(this.numBuckets);
-oprot.writeFieldEnd();
-if (this.serdeInfo != null) {
-field.name = "serdeInfo";
-field.type = TType.STRUCT;
-field.id = 7;
-oprot.writeFieldBegin(field);
-this.serdeInfo.write(oprot);
-oprot.writeFieldEnd();
-}
-if (this.bucketCols != null) {
-field.name = "bucketCols";
-field.type = TType.LIST;
-field.id = 8;
-oprot.writeFieldBegin(field);
-{
-  oprot.writeListBegin(new TList(TType.STRING, this.bucketCols.size()));
-  for (String _iter23 : this.bucketCols)  {
-    oprot.writeString(_iter23);
-  }
-  oprot.writeListEnd();
-}
-oprot.writeFieldEnd();
-}
-if (this.sortCols != null) {
-field.name = "sortCols";
-field.type = TType.LIST;
-field.id = 9;
-oprot.writeFieldBegin(field);
-{
-  oprot.writeListBegin(new TList(TType.STRUCT, this.sortCols.size()));
-  for (Order _iter24 : this.sortCols)  {
-    _iter24.write(oprot);
-  }
-  oprot.writeListEnd();
-}
-oprot.writeFieldEnd();
-}
-if (this.parameters != null) {
-field.name = "parameters";
-field.type = TType.MAP;
-field.id = 10;
-oprot.writeFieldBegin(field);
-{
-  oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.parameters.size()));
-  for (String _iter25 : this.parameters.keySet())  {
-    oprot.writeString(_iter25);
-    oprot.writeString(this.parameters.get(_iter25));
-  }
-  oprot.writeMapEnd();
-}
-oprot.writeFieldEnd();
-}
-oprot.writeFieldStop();
-oprot.writeStructEnd();
-}
 
-public String toString() {
-StringBuilder sb = new StringBuilder("StorageDescriptor(");
-sb.append("cols:");
-sb.append(this.cols);
-sb.append(",location:");
-sb.append(this.location);
-sb.append(",inputFormat:");
-sb.append(this.inputFormat);
-sb.append(",outputFormat:");
-sb.append(this.outputFormat);
-sb.append(",compressed:");
-sb.append(this.compressed);
-sb.append(",numBuckets:");
-sb.append(this.numBuckets);
-sb.append(",serdeInfo:");
-sb.append(this.serdeInfo);
-sb.append(",bucketCols:");
-sb.append(this.bucketCols);
-sb.append(",sortCols:");
-sb.append(this.sortCols);
-sb.append(",parameters:");
-sb.append(this.parameters);
-sb.append(")");
-return sb.toString();
-}
+  public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+    put(COLS, new FieldMetaData("cols", TFieldRequirementType.DEFAULT, 
+        new ListMetaData(TType.LIST, 
+            new StructMetaData(TType.STRUCT, FieldSchema.class))));
+    put(LOCATION, new FieldMetaData("location", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.STRING)));
+    put(INPUTFORMAT, new FieldMetaData("inputFormat", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.STRING)));
+    put(OUTPUTFORMAT, new FieldMetaData("outputFormat", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.STRING)));
+    put(COMPRESSED, new FieldMetaData("compressed", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.BOOL)));
+    put(NUMBUCKETS, new FieldMetaData("numBuckets", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.I32)));
+    put(SERDEINFO, new FieldMetaData("serdeInfo", TFieldRequirementType.DEFAULT, 
+        new StructMetaData(TType.STRUCT, SerDeInfo.class)));
+    put(BUCKETCOLS, new FieldMetaData("bucketCols", TFieldRequirementType.DEFAULT, 
+        new ListMetaData(TType.LIST, 
+            new FieldValueMetaData(TType.STRING))));
+    put(SORTCOLS, new FieldMetaData("sortCols", TFieldRequirementType.DEFAULT, 
+        new ListMetaData(TType.LIST, 
+            new StructMetaData(TType.STRUCT, Order.class))));
+    put(PARAMETERS, new FieldMetaData("parameters", TFieldRequirementType.DEFAULT, 
+        new MapMetaData(TType.MAP, 
+            new FieldValueMetaData(TType.STRING), 
+            new FieldValueMetaData(TType.STRING))));
+  }});
+
+  static {
+    FieldMetaData.addStructMetaDataMap(StorageDescriptor.class, metaDataMap);
+  }
+
+  public StorageDescriptor() {
+  }
+
+  public StorageDescriptor(
+    List<FieldSchema> cols,
+    String location,
+    String inputFormat,
+    String outputFormat,
+    boolean compressed,
+    int numBuckets,
+    SerDeInfo serdeInfo,
+    List<String> bucketCols,
+    List<Order> sortCols,
+    Map<String,String> parameters)
+  {
+    this();
+    this.cols = cols;
+    this.location = location;
+    this.inputFormat = inputFormat;
+    this.outputFormat = outputFormat;
+    this.compressed = compressed;
+    this.__isset.compressed = true;
+    this.numBuckets = numBuckets;
+    this.__isset.numBuckets = true;
+    this.serdeInfo = serdeInfo;
+    this.bucketCols = bucketCols;
+    this.sortCols = sortCols;
+    this.parameters = parameters;
+  }
+
+  /**
+   * Performs a deep copy on <i>other</i>.
+   */
+  public StorageDescriptor(StorageDescriptor other) {
+    if (other.isSetCols()) {
+      List<FieldSchema> __this__cols = new ArrayList<FieldSchema>();
+      for (FieldSchema other_element : other.cols) {
+        __this__cols.add(new FieldSchema(other_element));
+      }
+      this.cols = __this__cols;
+    }
+    if (other.isSetLocation()) {
+      this.location = other.location;
+    }
+    if (other.isSetInputFormat()) {
+      this.inputFormat = other.inputFormat;
+    }
+    if (other.isSetOutputFormat()) {
+      this.outputFormat = other.outputFormat;
+    }
+    __isset.compressed = other.__isset.compressed;
+    this.compressed = other.compressed;
+    __isset.numBuckets = other.__isset.numBuckets;
+    this.numBuckets = other.numBuckets;
+    if (other.isSetSerdeInfo()) {
+      this.serdeInfo = new SerDeInfo(other.serdeInfo);
+    }
+    if (other.isSetBucketCols()) {
+      List<String> __this__bucketCols = new ArrayList<String>();
+      for (String other_element : other.bucketCols) {
+        __this__bucketCols.add(other_element);
+      }
+      this.bucketCols = __this__bucketCols;
+    }
+    if (other.isSetSortCols()) {
+      List<Order> __this__sortCols = new ArrayList<Order>();
+      for (Order other_element : other.sortCols) {
+        __this__sortCols.add(new Order(other_element));
+      }
+      this.sortCols = __this__sortCols;
+    }
+    if (other.isSetParameters()) {
+      Map<String,String> __this__parameters = new HashMap<String,String>();
+      for (Map.Entry<String, String> other_element : other.parameters.entrySet()) {
+
+        String other_element_key = other_element.getKey();
+        String other_element_value = other_element.getValue();
+
+        String __this__parameters_copy_key = other_element_key;
+
+        String __this__parameters_copy_value = other_element_value;
+
+        __this__parameters.put(__this__parameters_copy_key, __this__parameters_copy_value);
+      }
+      this.parameters = __this__parameters;
+    }
+  }
+
+  @Override
+  public StorageDescriptor clone() {
+    return new StorageDescriptor(this);
+  }
+
+  public int getColsSize() {
+    return (this.cols == null) ? 0 : this.cols.size();
+  }
+
+  public java.util.Iterator<FieldSchema> getColsIterator() {
+    return (this.cols == null) ? null : this.cols.iterator();
+  }
+
+  public void addToCols(FieldSchema elem) {
+    if (this.cols == null) {
+      this.cols = new ArrayList<FieldSchema>();
+    }
+    this.cols.add(elem);
+  }
+
+  public List<FieldSchema> getCols() {
+    return this.cols;
+  }
+
+  public void setCols(List<FieldSchema> cols) {
+    this.cols = cols;
+  }
+
+  public void unsetCols() {
+    this.cols = null;
+  }
+
+  // Returns true if field cols is set (has been asigned a value) and false otherwise
+  public boolean isSetCols() {
+    return this.cols != null;
+  }
+
+  public String getLocation() {
+    return this.location;
+  }
+
+  public void setLocation(String location) {
+    this.location = location;
+  }
+
+  public void unsetLocation() {
+    this.location = null;
+  }
+
+  // Returns true if field location is set (has been asigned a value) and false otherwise
+  public boolean isSetLocation() {
+    return this.location != null;
+  }
+
+  public String getInputFormat() {
+    return this.inputFormat;
+  }
+
+  public void setInputFormat(String inputFormat) {
+    this.inputFormat = inputFormat;
+  }
+
+  public void unsetInputFormat() {
+    this.inputFormat = null;
+  }
+
+  // Returns true if field inputFormat is set (has been asigned a value) and false otherwise
+  public boolean isSetInputFormat() {
+    return this.inputFormat != null;
+  }
+
+  public String getOutputFormat() {
+    return this.outputFormat;
+  }
+
+  public void setOutputFormat(String outputFormat) {
+    this.outputFormat = outputFormat;
+  }
+
+  public void unsetOutputFormat() {
+    this.outputFormat = null;
+  }
+
+  // Returns true if field outputFormat is set (has been asigned a value) and false otherwise
+  public boolean isSetOutputFormat() {
+    return this.outputFormat != null;
+  }
+
+  public boolean isCompressed() {
+    return this.compressed;
+  }
+
+  public void setCompressed(boolean compressed) {
+    this.compressed = compressed;
+    this.__isset.compressed = true;
+  }
+
+  public void unsetCompressed() {
+    this.__isset.compressed = false;
+  }
+
+  // Returns true if field compressed is set (has been asigned a value) and false otherwise
+  public boolean isSetCompressed() {
+    return this.__isset.compressed;
+  }
+
+  public int getNumBuckets() {
+    return this.numBuckets;
+  }
+
+  public void setNumBuckets(int numBuckets) {
+    this.numBuckets = numBuckets;
+    this.__isset.numBuckets = true;
+  }
+
+  public void unsetNumBuckets() {
+    this.__isset.numBuckets = false;
+  }
+
+  // Returns true if field numBuckets is set (has been asigned a value) and false otherwise
+  public boolean isSetNumBuckets() {
+    return this.__isset.numBuckets;
+  }
+
+  public SerDeInfo getSerdeInfo() {
+    return this.serdeInfo;
+  }
+
+  public void setSerdeInfo(SerDeInfo serdeInfo) {
+    this.serdeInfo = serdeInfo;
+  }
+
+  public void unsetSerdeInfo() {
+    this.serdeInfo = null;
+  }
+
+  // Returns true if field serdeInfo is set (has been asigned a value) and false otherwise
+  public boolean isSetSerdeInfo() {
+    return this.serdeInfo != null;
+  }
+
+  public int getBucketColsSize() {
+    return (this.bucketCols == null) ? 0 : this.bucketCols.size();
+  }
+
+  public java.util.Iterator<String> getBucketColsIterator() {
+    return (this.bucketCols == null) ? null : this.bucketCols.iterator();
+  }
+
+  public void addToBucketCols(String elem) {
+    if (this.bucketCols == null) {
+      this.bucketCols = new ArrayList<String>();
+    }
+    this.bucketCols.add(elem);
+  }
+
+  public List<String> getBucketCols() {
+    return this.bucketCols;
+  }
+
+  public void setBucketCols(List<String> bucketCols) {
+    this.bucketCols = bucketCols;
+  }
+
+  public void unsetBucketCols() {
+    this.bucketCols = null;
+  }
+
+  // Returns true if field bucketCols is set (has been asigned a value) and false otherwise
+  public boolean isSetBucketCols() {
+    return this.bucketCols != null;
+  }
+
+  public int getSortColsSize() {
+    return (this.sortCols == null) ? 0 : this.sortCols.size();
+  }
+
+  public java.util.Iterator<Order> getSortColsIterator() {
+    return (this.sortCols == null) ? null : this.sortCols.iterator();
+  }
+
+  public void addToSortCols(Order elem) {
+    if (this.sortCols == null) {
+      this.sortCols = new ArrayList<Order>();
+    }
+    this.sortCols.add(elem);
+  }
+
+  public List<Order> getSortCols() {
+    return this.sortCols;
+  }
+
+  public void setSortCols(List<Order> sortCols) {
+    this.sortCols = sortCols;
+  }
+
+  public void unsetSortCols() {
+    this.sortCols = null;
+  }
+
+  // Returns true if field sortCols is set (has been asigned a value) and false otherwise
+  public boolean isSetSortCols() {
+    return this.sortCols != null;
+  }
+
+  public int getParametersSize() {
+    return (this.parameters == null) ? 0 : this.parameters.size();
+  }
+
+  public void putToParameters(String key, String val) {
+    if (this.parameters == null) {
+      this.parameters = new HashMap<String,String>();
+    }
+    this.parameters.put(key, val);
+  }
+
+  public Map<String,String> getParameters() {
+    return this.parameters;
+  }
+
+  public void setParameters(Map<String,String> parameters) {
+    this.parameters = parameters;
+  }
+
+  public void unsetParameters() {
+    this.parameters = null;
+  }
+
+  // Returns true if field parameters is set (has been asigned a value) and false otherwise
+  public boolean isSetParameters() {
+    return this.parameters != null;
+  }
+
+  public void setFieldValue(int fieldID, Object value) {
+    switch (fieldID) {
+    case COLS:
+      if (value == null) {
+        unsetCols();
+      } else {
+        setCols((List<FieldSchema>)value);
+      }
+      break;
+
+    case LOCATION:
+      if (value == null) {
+        unsetLocation();
+      } else {
+        setLocation((String)value);
+      }
+      break;
+
+    case INPUTFORMAT:
+      if (value == null) {
+        unsetInputFormat();
+      } else {
+        setInputFormat((String)value);
+      }
+      break;
+
+    case OUTPUTFORMAT:
+      if (value == null) {
+        unsetOutputFormat();
+      } else {
+        setOutputFormat((String)value);
+      }
+      break;
+
+    case COMPRESSED:
+      if (value == null) {
+        unsetCompressed();
+      } else {
+        setCompressed((Boolean)value);
+      }
+      break;
+
+    case NUMBUCKETS:
+      if (value == null) {
+        unsetNumBuckets();
+      } else {
+        setNumBuckets((Integer)value);
+      }
+      break;
+
+    case SERDEINFO:
+      if (value == null) {
+        unsetSerdeInfo();
+      } else {
+        setSerdeInfo((SerDeInfo)value);
+      }
+      break;
+
+    case BUCKETCOLS:
+      if (value == null) {
+        unsetBucketCols();
+      } else {
+        setBucketCols((List<String>)value);
+      }
+      break;
+
+    case SORTCOLS:
+      if (value == null) {
+        unsetSortCols();
+      } else {
+        setSortCols((List<Order>)value);
+      }
+      break;
+
+    case PARAMETERS:
+      if (value == null) {
+        unsetParameters();
+      } else {
+        setParameters((Map<String,String>)value);
+      }
+      break;
+
+    default:
+      throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+    }
+  }
+
+  public Object getFieldValue(int fieldID) {
+    switch (fieldID) {
+    case COLS:
+      return getCols();
+
+    case LOCATION:
+      return getLocation();
+
+    case INPUTFORMAT:
+      return getInputFormat();
+
+    case OUTPUTFORMAT:
+      return getOutputFormat();
+
+    case COMPRESSED:
+      return new Boolean(isCompressed());
+
+    case NUMBUCKETS:
+      return new Integer(getNumBuckets());
+
+    case SERDEINFO:
+      return getSerdeInfo();
+
+    case BUCKETCOLS:
+      return getBucketCols();
+
+    case SORTCOLS:
+      return getSortCols();
+
+    case PARAMETERS:
+      return getParameters();
+
+    default:
+      throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+    }
+  }
+
+  // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+  public boolean isSet(int fieldID) {
+    switch (fieldID) {
+    case COLS:
+      return isSetCols();
+    case LOCATION:
+      return isSetLocation();
+    case INPUTFORMAT:
+      return isSetInputFormat();
+    case OUTPUTFORMAT:
+      return isSetOutputFormat();
+    case COMPRESSED:
+      return isSetCompressed();
+    case NUMBUCKETS:
+      return isSetNumBuckets();
+    case SERDEINFO:
+      return isSetSerdeInfo();
+    case BUCKETCOLS:
+      return isSetBucketCols();
+    case SORTCOLS:
+      return isSetSortCols();
+    case PARAMETERS:
+      return isSetParameters();
+    default:
+      throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+    }
+  }
+
+  @Override
+  public boolean equals(Object that) {
+    if (that == null)
+      return false;
+    if (that instanceof StorageDescriptor)
+      return this.equals((StorageDescriptor)that);
+    return false;
+  }
+
+  public boolean equals(StorageDescriptor that) {
+    if (that == null)
+      return false;
+
+    boolean this_present_cols = true && this.isSetCols();
+    boolean that_present_cols = true && that.isSetCols();
+    if (this_present_cols || that_present_cols) {
+      if (!(this_present_cols && that_present_cols))
+        return false;
+      if (!this.cols.equals(that.cols))
+        return false;
+    }
+
+    boolean this_present_location = true && this.isSetLocation();
+    boolean that_present_location = true && that.isSetLocation();
+    if (this_present_location || that_present_location) {
+      if (!(this_present_location && that_present_location))
+        return false;
+      if (!this.location.equals(that.location))
+        return false;
+    }
+
+    boolean this_present_inputFormat = true && this.isSetInputFormat();
+    boolean that_present_inputFormat = true && that.isSetInputFormat();
+    if (this_present_inputFormat || that_present_inputFormat) {
+      if (!(this_present_inputFormat && that_present_inputFormat))
+        return false;
+      if (!this.inputFormat.equals(that.inputFormat))
+        return false;
+    }
+
+    boolean this_present_outputFormat = true && this.isSetOutputFormat();
+    boolean that_present_outputFormat = true && that.isSetOutputFormat();
+    if (this_present_outputFormat || that_present_outputFormat) {
+      if (!(this_present_outputFormat && that_present_outputFormat))
+        return false;
+      if (!this.outputFormat.equals(that.outputFormat))
+        return false;
+    }
+
+    boolean this_present_compressed = true;
+    boolean that_present_compressed = true;
+    if (this_present_compressed || that_present_compressed) {
+      if (!(this_present_compressed && that_present_compressed))
+        return false;
+      if (this.compressed != that.compressed)
+        return false;
+    }
+
+    boolean this_present_numBuckets = true;
+    boolean that_present_numBuckets = true;
+    if (this_present_numBuckets || that_present_numBuckets) {
+      if (!(this_present_numBuckets && that_present_numBuckets))
+        return false;
+      if (this.numBuckets != that.numBuckets)
+        return false;
+    }
+
+    boolean this_present_serdeInfo = true && this.isSetSerdeInfo();
+    boolean that_present_serdeInfo = true && that.isSetSerdeInfo();
+    if (this_present_serdeInfo || that_present_serdeInfo) {
+      if (!(this_present_serdeInfo && that_present_serdeInfo))
+        return false;
+      if (!this.serdeInfo.equals(that.serdeInfo))
+        return false;
+    }
+
+    boolean this_present_bucketCols = true && this.isSetBucketCols();
+    boolean that_present_bucketCols = true && that.isSetBucketCols();
+    if (this_present_bucketCols || that_present_bucketCols) {
+      if (!(this_present_bucketCols && that_present_bucketCols))
+        return false;
+      if (!this.bucketCols.equals(that.bucketCols))
+        return false;
+    }
+
+    boolean this_present_sortCols = true && this.isSetSortCols();
+    boolean that_present_sortCols = true && that.isSetSortCols();
+    if (this_present_sortCols || that_present_sortCols) {
+      if (!(this_present_sortCols && that_present_sortCols))
+        return false;
+      if (!this.sortCols.equals(that.sortCols))
+        return false;
+    }
+
+    boolean this_present_parameters = true && this.isSetParameters();
+    boolean that_present_parameters = true && that.isSetParameters();
+    if (this_present_parameters || that_present_parameters) {
+      if (!(this_present_parameters && that_present_parameters))
+        return false;
+      if (!this.parameters.equals(that.parameters))
+        return false;
+    }
+
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    return 0;
+  }
+
+  public void read(TProtocol iprot) throws TException {
+    TField field;
+    iprot.readStructBegin();
+    while (true)
+    {
+      field = iprot.readFieldBegin();
+      if (field.type == TType.STOP) { 
+        break;
+      }
+      switch (field.id)
+      {
+        case COLS:
+          if (field.type == TType.LIST) {
+            {
+              TList _list9 = iprot.readListBegin();
+              this.cols = new ArrayList<FieldSchema>(_list9.size);
+              for (int _i10 = 0; _i10 < _list9.size; ++_i10)
+              {
+                FieldSchema _elem11;
+                _elem11 = new FieldSchema();
+                _elem11.read(iprot);
+                this.cols.add(_elem11);
+              }
+              iprot.readListEnd();
+            }
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case LOCATION:
+          if (field.type == TType.STRING) {
+            this.location = iprot.readString();
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case INPUTFORMAT:
+          if (field.type == TType.STRING) {
+            this.inputFormat = iprot.readString();
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case OUTPUTFORMAT:
+          if (field.type == TType.STRING) {
+            this.outputFormat = iprot.readString();
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case COMPRESSED:
+          if (field.type == TType.BOOL) {
+            this.compressed = iprot.readBool();
+            this.__isset.compressed = true;
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case NUMBUCKETS:
+          if (field.type == TType.I32) {
+            this.numBuckets = iprot.readI32();
+            this.__isset.numBuckets = true;
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case SERDEINFO:
+          if (field.type == TType.STRUCT) {
+            this.serdeInfo = new SerDeInfo();
+            this.serdeInfo.read(iprot);
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case BUCKETCOLS:
+          if (field.type == TType.LIST) {
+            {
+              TList _list12 = iprot.readListBegin();
+              this.bucketCols = new ArrayList<String>(_list12.size);
+              for (int _i13 = 0; _i13 < _list12.size; ++_i13)
+              {
+                String _elem14;
+                _elem14 = iprot.readString();
+                this.bucketCols.add(_elem14);
+              }
+              iprot.readListEnd();
+            }
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case SORTCOLS:
+          if (field.type == TType.LIST) {
+            {
+              TList _list15 = iprot.readListBegin();
+              this.sortCols = new ArrayList<Order>(_list15.size);
+              for (int _i16 = 0; _i16 < _list15.size; ++_i16)
+              {
+                Order _elem17;
+                _elem17 = new Order();
+                _elem17.read(iprot);
+                this.sortCols.add(_elem17);
+              }
+              iprot.readListEnd();
+            }
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case PARAMETERS:
+          if (field.type == TType.MAP) {
+            {
+              TMap _map18 = iprot.readMapBegin();
+              this.parameters = new HashMap<String,String>(2*_map18.size);
+              for (int _i19 = 0; _i19 < _map18.size; ++_i19)
+              {
+                String _key20;
+                String _val21;
+                _key20 = iprot.readString();
+                _val21 = iprot.readString();
+                this.parameters.put(_key20, _val21);
+              }
+              iprot.readMapEnd();
+            }
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        default:
+          TProtocolUtil.skip(iprot, field.type);
+          break;
+      }
+      iprot.readFieldEnd();
+    }
+    iprot.readStructEnd();
+
+    validate();
+  }
+
+  public void write(TProtocol oprot) throws TException {
+    validate();
+
+    oprot.writeStructBegin(STRUCT_DESC);
+    if (this.cols != null) {
+      oprot.writeFieldBegin(COLS_FIELD_DESC);
+      {
+        oprot.writeListBegin(new TList(TType.STRUCT, this.cols.size()));
+        for (FieldSchema _iter22 : this.cols)        {
+          _iter22.write(oprot);
+        }
+        oprot.writeListEnd();
+      }
+      oprot.writeFieldEnd();
+    }
+    if (this.location != null) {
+      oprot.writeFieldBegin(LOCATION_FIELD_DESC);
+      oprot.writeString(this.location);
+      oprot.writeFieldEnd();
+    }
+    if (this.inputFormat != null) {
+      oprot.writeFieldBegin(INPUT_FORMAT_FIELD_DESC);
+      oprot.writeString(this.inputFormat);
+      oprot.writeFieldEnd();
+    }
+    if (this.outputFormat != null) {
+      oprot.writeFieldBegin(OUTPUT_FORMAT_FIELD_DESC);
+      oprot.writeString(this.outputFormat);
+      oprot.writeFieldEnd();
+    }
+    oprot.writeFieldBegin(COMPRESSED_FIELD_DESC);
+    oprot.writeBool(this.compressed);
+    oprot.writeFieldEnd();
+    oprot.writeFieldBegin(NUM_BUCKETS_FIELD_DESC);
+    oprot.writeI32(this.numBuckets);
+    oprot.writeFieldEnd();
+    if (this.serdeInfo != null) {
+      oprot.writeFieldBegin(SERDE_INFO_FIELD_DESC);
+      this.serdeInfo.write(oprot);
+      oprot.writeFieldEnd();
+    }
+    if (this.bucketCols != null) {
+      oprot.writeFieldBegin(BUCKET_COLS_FIELD_DESC);
+      {
+        oprot.writeListBegin(new TList(TType.STRING, this.bucketCols.size()));
+        for (String _iter23 : this.bucketCols)        {
+          oprot.writeString(_iter23);
+        }
+        oprot.writeListEnd();
+      }
+      oprot.writeFieldEnd();
+    }
+    if (this.sortCols != null) {
+      oprot.writeFieldBegin(SORT_COLS_FIELD_DESC);
+      {
+        oprot.writeListBegin(new TList(TType.STRUCT, this.sortCols.size()));
+        for (Order _iter24 : this.sortCols)        {
+          _iter24.write(oprot);
+        }
+        oprot.writeListEnd();
+      }
+      oprot.writeFieldEnd();
+    }
+    if (this.parameters != null) {
+      oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
+      {
+        oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.parameters.size()));
+        for (Map.Entry<String, String> _iter25 : this.parameters.entrySet())        {
+          oprot.writeString(_iter25.getKey());
+          oprot.writeString(_iter25.getValue());
+        }
+        oprot.writeMapEnd();
+      }
+      oprot.writeFieldEnd();
+    }
+    oprot.writeFieldStop();
+    oprot.writeStructEnd();
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder("StorageDescriptor(");
+    boolean first = true;
+
+    sb.append("cols:");
+    if (this.cols == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.cols);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("location:");
+    if (this.location == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.location);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("inputFormat:");
+    if (this.inputFormat == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.inputFormat);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("outputFormat:");
+    if (this.outputFormat == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.outputFormat);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("compressed:");
+    sb.append(this.compressed);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("numBuckets:");
+    sb.append(this.numBuckets);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("serdeInfo:");
+    if (this.serdeInfo == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.serdeInfo);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("bucketCols:");
+    if (this.bucketCols == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.bucketCols);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("sortCols:");
+    if (this.sortCols == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.sortCols);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("parameters:");
+    if (this.parameters == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.parameters);
+    }
+    first = false;
+    sb.append(")");
+    return sb.toString();
+  }
+
+  public void validate() throws TException {
+    // check for required fields
+    // check that fields of type enum have valid values
+  }
 
 }
 

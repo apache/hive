@@ -19,8 +19,8 @@
 package org.apache.hadoop.hive.serde2.dynamic_type;
 
 import org.apache.hadoop.hive.serde2.*;
-import com.facebook.thrift.TException;
-import com.facebook.thrift.protocol.TProtocol;
+import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TProtocol;
 
 public class DynamicSerDeField extends DynamicSerDeSimpleNode {
 

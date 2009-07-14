@@ -11,21 +11,41 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
-import com.facebook.thrift.*;
+import java.util.Collections;
+import org.apache.log4j.Logger;
 
-import com.facebook.thrift.protocol.*;
-import com.facebook.thrift.transport.*;
+import org.apache.thrift.*;
+import org.apache.thrift.meta_data.*;
+import org.apache.thrift.protocol.*;
 
-public class FieldSchema implements TBase, java.io.Serializable {
+public class FieldSchema implements TBase, java.io.Serializable, Cloneable {
+  private static final TStruct STRUCT_DESC = new TStruct("FieldSchema");
+  private static final TField NAME_FIELD_DESC = new TField("name", TType.STRING, (short)1);
+  private static final TField TYPE_FIELD_DESC = new TField("type", TType.STRING, (short)2);
+  private static final TField COMMENT_FIELD_DESC = new TField("comment", TType.STRING, (short)3);
+
   private String name;
+  public static final int NAME = 1;
   private String type;
+  public static final int TYPE = 2;
   private String comment;
+  public static final int COMMENT = 3;
 
-  public final Isset __isset = new Isset();
-  public static final class Isset implements java.io.Serializable {
-    public boolean name = false;
-    public boolean type = false;
-    public boolean comment = false;
+  private final Isset __isset = new Isset();
+  private static final class Isset implements java.io.Serializable {
+  }
+
+  public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+    put(NAME, new FieldMetaData("name", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.STRING)));
+    put(TYPE, new FieldMetaData("type", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.STRING)));
+    put(COMMENT, new FieldMetaData("comment", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.STRING)));
+  }});
+
+  static {
+    FieldMetaData.addStructMetaDataMap(FieldSchema.class, metaDataMap);
   }
 
   public FieldSchema() {
@@ -38,11 +58,28 @@ public class FieldSchema implements TBase, java.io.Serializable {
   {
     this();
     this.name = name;
-    this.__isset.name = true;
     this.type = type;
-    this.__isset.type = true;
     this.comment = comment;
-    this.__isset.comment = true;
+  }
+
+  /**
+   * Performs a deep copy on <i>other</i>.
+   */
+  public FieldSchema(FieldSchema other) {
+    if (other.isSetName()) {
+      this.name = other.name;
+    }
+    if (other.isSetType()) {
+      this.type = other.type;
+    }
+    if (other.isSetComment()) {
+      this.comment = other.comment;
+    }
+  }
+
+  @Override
+  public FieldSchema clone() {
+    return new FieldSchema(this);
   }
 
   public String getName() {
@@ -51,11 +88,15 @@ public class FieldSchema implements TBase, java.io.Serializable {
 
   public void setName(String name) {
     this.name = name;
-    this.__isset.name = true;
   }
 
   public void unsetName() {
-    this.__isset.name = false;
+    this.name = null;
+  }
+
+  // Returns true if field name is set (has been asigned a value) and false otherwise
+  public boolean isSetName() {
+    return this.name != null;
   }
 
   public String getType() {
@@ -64,11 +105,15 @@ public class FieldSchema implements TBase, java.io.Serializable {
 
   public void setType(String type) {
     this.type = type;
-    this.__isset.type = true;
   }
 
   public void unsetType() {
-    this.__isset.type = false;
+    this.type = null;
+  }
+
+  // Returns true if field type is set (has been asigned a value) and false otherwise
+  public boolean isSetType() {
+    return this.type != null;
   }
 
   public String getComment() {
@@ -77,13 +122,79 @@ public class FieldSchema implements TBase, java.io.Serializable {
 
   public void setComment(String comment) {
     this.comment = comment;
-    this.__isset.comment = true;
   }
 
   public void unsetComment() {
-    this.__isset.comment = false;
+    this.comment = null;
   }
 
+  // Returns true if field comment is set (has been asigned a value) and false otherwise
+  public boolean isSetComment() {
+    return this.comment != null;
+  }
+
+  public void setFieldValue(int fieldID, Object value) {
+    switch (fieldID) {
+    case NAME:
+      if (value == null) {
+        unsetName();
+      } else {
+        setName((String)value);
+      }
+      break;
+
+    case TYPE:
+      if (value == null) {
+        unsetType();
+      } else {
+        setType((String)value);
+      }
+      break;
+
+    case COMMENT:
+      if (value == null) {
+        unsetComment();
+      } else {
+        setComment((String)value);
+      }
+      break;
+
+    default:
+      throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+    }
+  }
+
+  public Object getFieldValue(int fieldID) {
+    switch (fieldID) {
+    case NAME:
+      return getName();
+
+    case TYPE:
+      return getType();
+
+    case COMMENT:
+      return getComment();
+
+    default:
+      throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+    }
+  }
+
+  // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+  public boolean isSet(int fieldID) {
+    switch (fieldID) {
+    case NAME:
+      return isSetName();
+    case TYPE:
+      return isSetType();
+    case COMMENT:
+      return isSetComment();
+    default:
+      throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+    }
+  }
+
+  @Override
   public boolean equals(Object that) {
     if (that == null)
       return false;
@@ -96,8 +207,8 @@ public class FieldSchema implements TBase, java.io.Serializable {
     if (that == null)
       return false;
 
-    boolean this_present_name = true && (this.name != null);
-    boolean that_present_name = true && (that.name != null);
+    boolean this_present_name = true && this.isSetName();
+    boolean that_present_name = true && that.isSetName();
     if (this_present_name || that_present_name) {
       if (!(this_present_name && that_present_name))
         return false;
@@ -105,8 +216,8 @@ public class FieldSchema implements TBase, java.io.Serializable {
         return false;
     }
 
-    boolean this_present_type = true && (this.type != null);
-    boolean that_present_type = true && (that.type != null);
+    boolean this_present_type = true && this.isSetType();
+    boolean that_present_type = true && that.isSetType();
     if (this_present_type || that_present_type) {
       if (!(this_present_type && that_present_type))
         return false;
@@ -114,8 +225,8 @@ public class FieldSchema implements TBase, java.io.Serializable {
         return false;
     }
 
-    boolean this_present_comment = true && (this.comment != null);
-    boolean that_present_comment = true && (that.comment != null);
+    boolean this_present_comment = true && this.isSetComment();
+    boolean that_present_comment = true && that.isSetComment();
     if (this_present_comment || that_present_comment) {
       if (!(this_present_comment && that_present_comment))
         return false;
@@ -126,6 +237,7 @@ public class FieldSchema implements TBase, java.io.Serializable {
     return true;
   }
 
+  @Override
   public int hashCode() {
     return 0;
   }
@@ -141,26 +253,23 @@ public class FieldSchema implements TBase, java.io.Serializable {
       }
       switch (field.id)
       {
-        case 1:
+        case NAME:
           if (field.type == TType.STRING) {
             this.name = iprot.readString();
-            this.__isset.name = true;
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 2:
+        case TYPE:
           if (field.type == TType.STRING) {
             this.type = iprot.readString();
-            this.__isset.type = true;
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 3:
+        case COMMENT:
           if (field.type == TType.STRING) {
             this.comment = iprot.readString();
-            this.__isset.comment = true;
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
@@ -172,33 +281,26 @@ public class FieldSchema implements TBase, java.io.Serializable {
       iprot.readFieldEnd();
     }
     iprot.readStructEnd();
+
+    validate();
   }
 
   public void write(TProtocol oprot) throws TException {
-    TStruct struct = new TStruct("FieldSchema");
-    oprot.writeStructBegin(struct);
-    TField field = new TField();
+    validate();
+
+    oprot.writeStructBegin(STRUCT_DESC);
     if (this.name != null) {
-      field.name = "name";
-      field.type = TType.STRING;
-      field.id = 1;
-      oprot.writeFieldBegin(field);
+      oprot.writeFieldBegin(NAME_FIELD_DESC);
       oprot.writeString(this.name);
       oprot.writeFieldEnd();
     }
     if (this.type != null) {
-      field.name = "type";
-      field.type = TType.STRING;
-      field.id = 2;
-      oprot.writeFieldBegin(field);
+      oprot.writeFieldBegin(TYPE_FIELD_DESC);
       oprot.writeString(this.type);
       oprot.writeFieldEnd();
     }
     if (this.comment != null) {
-      field.name = "comment";
-      field.type = TType.STRING;
-      field.id = 3;
-      oprot.writeFieldBegin(field);
+      oprot.writeFieldBegin(COMMENT_FIELD_DESC);
       oprot.writeString(this.comment);
       oprot.writeFieldEnd();
     }
@@ -206,16 +308,41 @@ public class FieldSchema implements TBase, java.io.Serializable {
     oprot.writeStructEnd();
   }
 
+  @Override
   public String toString() {
     StringBuilder sb = new StringBuilder("FieldSchema(");
+    boolean first = true;
+
     sb.append("name:");
-    sb.append(this.name);
-    sb.append(",type:");
-    sb.append(this.type);
-    sb.append(",comment:");
-    sb.append(this.comment);
+    if (this.name == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.name);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("type:");
+    if (this.type == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.type);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("comment:");
+    if (this.comment == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.comment);
+    }
+    first = false;
     sb.append(")");
     return sb.toString();
+  }
+
+  public void validate() throws TException {
+    // check for required fields
+    // check that fields of type enum have valid values
   }
 
 }

@@ -24,10 +24,10 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.service.HiveClient;
 import org.apache.hadoop.hive.service.HiveServer;
 import org.apache.hadoop.hive.service.HiveInterface;
-import com.facebook.thrift.protocol.TProtocol;
-import com.facebook.thrift.protocol.TBinaryProtocol;
-import com.facebook.thrift.transport.TSocket;
-import com.facebook.thrift.transport.TTransport;
+import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.transport.TSocket;
+import org.apache.thrift.transport.TTransport;
 import org.apache.hadoop.hive.conf.HiveConf;
 import java.net.URI;
 

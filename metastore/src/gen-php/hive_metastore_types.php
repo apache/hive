@@ -1971,7 +1971,7 @@ class metastore_MetaException extends TException {
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
-        -1 => array(
+        1 => array(
           'var' => 'message',
           'type' => TType::STRING,
           ),
@@ -2003,7 +2003,7 @@ class metastore_MetaException extends TException {
       }
       switch ($fid)
       {
-        case -1:
+        case 1:
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->message);
           } else {
@@ -2024,7 +2024,7 @@ class metastore_MetaException extends TException {
     $xfer = 0;
     $xfer += $output->writeStructBegin('MetaException');
     if ($this->message !== null) {
-      $xfer += $output->writeFieldBegin('message', TType::STRING, -1);
+      $xfer += $output->writeFieldBegin('message', TType::STRING, 1);
       $xfer += $output->writeString($this->message);
       $xfer += $output->writeFieldEnd();
     }
@@ -2043,7 +2043,7 @@ class metastore_UnknownTableException extends TException {
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
-        -1 => array(
+        1 => array(
           'var' => 'message',
           'type' => TType::STRING,
           ),
@@ -2075,7 +2075,7 @@ class metastore_UnknownTableException extends TException {
       }
       switch ($fid)
       {
-        case -1:
+        case 1:
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->message);
           } else {
@@ -2096,7 +2096,7 @@ class metastore_UnknownTableException extends TException {
     $xfer = 0;
     $xfer += $output->writeStructBegin('UnknownTableException');
     if ($this->message !== null) {
-      $xfer += $output->writeFieldBegin('message', TType::STRING, -1);
+      $xfer += $output->writeFieldBegin('message', TType::STRING, 1);
       $xfer += $output->writeString($this->message);
       $xfer += $output->writeFieldEnd();
     }
@@ -2115,7 +2115,7 @@ class metastore_UnknownDBException extends TException {
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
-        -1 => array(
+        1 => array(
           'var' => 'message',
           'type' => TType::STRING,
           ),
@@ -2147,7 +2147,7 @@ class metastore_UnknownDBException extends TException {
       }
       switch ($fid)
       {
-        case -1:
+        case 1:
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->message);
           } else {
@@ -2168,7 +2168,7 @@ class metastore_UnknownDBException extends TException {
     $xfer = 0;
     $xfer += $output->writeStructBegin('UnknownDBException');
     if ($this->message !== null) {
-      $xfer += $output->writeFieldBegin('message', TType::STRING, -1);
+      $xfer += $output->writeFieldBegin('message', TType::STRING, 1);
       $xfer += $output->writeString($this->message);
       $xfer += $output->writeFieldEnd();
     }
@@ -2187,7 +2187,7 @@ class metastore_AlreadyExistsException extends TException {
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
-        -1 => array(
+        1 => array(
           'var' => 'message',
           'type' => TType::STRING,
           ),
@@ -2219,7 +2219,7 @@ class metastore_AlreadyExistsException extends TException {
       }
       switch ($fid)
       {
-        case -1:
+        case 1:
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->message);
           } else {
@@ -2240,7 +2240,7 @@ class metastore_AlreadyExistsException extends TException {
     $xfer = 0;
     $xfer += $output->writeStructBegin('AlreadyExistsException');
     if ($this->message !== null) {
-      $xfer += $output->writeFieldBegin('message', TType::STRING, -1);
+      $xfer += $output->writeFieldBegin('message', TType::STRING, 1);
       $xfer += $output->writeString($this->message);
       $xfer += $output->writeFieldEnd();
     }
@@ -2259,7 +2259,7 @@ class metastore_InvalidObjectException extends TException {
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
-        -1 => array(
+        1 => array(
           'var' => 'message',
           'type' => TType::STRING,
           ),
@@ -2291,7 +2291,7 @@ class metastore_InvalidObjectException extends TException {
       }
       switch ($fid)
       {
-        case -1:
+        case 1:
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->message);
           } else {
@@ -2312,7 +2312,7 @@ class metastore_InvalidObjectException extends TException {
     $xfer = 0;
     $xfer += $output->writeStructBegin('InvalidObjectException');
     if ($this->message !== null) {
-      $xfer += $output->writeFieldBegin('message', TType::STRING, -1);
+      $xfer += $output->writeFieldBegin('message', TType::STRING, 1);
       $xfer += $output->writeString($this->message);
       $xfer += $output->writeFieldEnd();
     }
@@ -2331,7 +2331,7 @@ class metastore_NoSuchObjectException extends TException {
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
-        -1 => array(
+        1 => array(
           'var' => 'message',
           'type' => TType::STRING,
           ),
@@ -2363,7 +2363,7 @@ class metastore_NoSuchObjectException extends TException {
       }
       switch ($fid)
       {
-        case -1:
+        case 1:
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->message);
           } else {
@@ -2384,7 +2384,7 @@ class metastore_NoSuchObjectException extends TException {
     $xfer = 0;
     $xfer += $output->writeStructBegin('NoSuchObjectException');
     if ($this->message !== null) {
-      $xfer += $output->writeFieldBegin('message', TType::STRING, -1);
+      $xfer += $output->writeFieldBegin('message', TType::STRING, 1);
       $xfer += $output->writeString($this->message);
       $xfer += $output->writeFieldEnd();
     }
@@ -2403,7 +2403,7 @@ class metastore_IndexAlreadyExistsException extends TException {
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
-        -1 => array(
+        1 => array(
           'var' => 'message',
           'type' => TType::STRING,
           ),
@@ -2435,7 +2435,7 @@ class metastore_IndexAlreadyExistsException extends TException {
       }
       switch ($fid)
       {
-        case -1:
+        case 1:
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->message);
           } else {
@@ -2456,7 +2456,7 @@ class metastore_IndexAlreadyExistsException extends TException {
     $xfer = 0;
     $xfer += $output->writeStructBegin('IndexAlreadyExistsException');
     if ($this->message !== null) {
-      $xfer += $output->writeFieldBegin('message', TType::STRING, -1);
+      $xfer += $output->writeFieldBegin('message', TType::STRING, 1);
       $xfer += $output->writeString($this->message);
       $xfer += $output->writeFieldEnd();
     }
@@ -2475,7 +2475,7 @@ class metastore_InvalidOperationException extends TException {
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
-        -1 => array(
+        1 => array(
           'var' => 'message',
           'type' => TType::STRING,
           ),
@@ -2507,7 +2507,7 @@ class metastore_InvalidOperationException extends TException {
       }
       switch ($fid)
       {
-        case -1:
+        case 1:
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->message);
           } else {
@@ -2528,7 +2528,7 @@ class metastore_InvalidOperationException extends TException {
     $xfer = 0;
     $xfer += $output->writeStructBegin('InvalidOperationException');
     if ($this->message !== null) {
-      $xfer += $output->writeFieldBegin('message', TType::STRING, -1);
+      $xfer += $output->writeFieldBegin('message', TType::STRING, 1);
       $xfer += $output->writeString($this->message);
       $xfer += $output->writeFieldEnd();
     }

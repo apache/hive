@@ -11,10 +11,12 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
-import com.facebook.thrift.*;
+import java.util.Collections;
+import org.apache.log4j.Logger;
 
-import com.facebook.thrift.protocol.*;
-import com.facebook.thrift.transport.*;
+import org.apache.thrift.*;
+import org.apache.thrift.meta_data.*;
+import org.apache.thrift.protocol.*;
 
 public class ThriftHive {
 
@@ -70,7 +72,7 @@ public class ThriftHive {
       execute_result result = new execute_result();
       result.read(iprot_);
       iprot_.readMessageEnd();
-      if (result.__isset.ex) {
+      if (result.ex != null) {
         throw result.ex;
       }
       return;
@@ -102,10 +104,10 @@ public class ThriftHive {
       fetchOne_result result = new fetchOne_result();
       result.read(iprot_);
       iprot_.readMessageEnd();
-      if (result.__isset.success) {
+      if (result.isSetSuccess()) {
         return result.success;
       }
-      if (result.__isset.ex) {
+      if (result.ex != null) {
         throw result.ex;
       }
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "fetchOne failed: unknown result");
@@ -138,10 +140,10 @@ public class ThriftHive {
       fetchN_result result = new fetchN_result();
       result.read(iprot_);
       iprot_.readMessageEnd();
-      if (result.__isset.success) {
+      if (result.isSetSuccess()) {
         return result.success;
       }
-      if (result.__isset.ex) {
+      if (result.ex != null) {
         throw result.ex;
       }
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "fetchN failed: unknown result");
@@ -173,10 +175,10 @@ public class ThriftHive {
       fetchAll_result result = new fetchAll_result();
       result.read(iprot_);
       iprot_.readMessageEnd();
-      if (result.__isset.success) {
+      if (result.isSetSuccess()) {
         return result.success;
       }
-      if (result.__isset.ex) {
+      if (result.ex != null) {
         throw result.ex;
       }
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "fetchAll failed: unknown result");
@@ -208,10 +210,10 @@ public class ThriftHive {
       getSchema_result result = new getSchema_result();
       result.read(iprot_);
       iprot_.readMessageEnd();
-      if (result.__isset.success) {
+      if (result.isSetSuccess()) {
         return result.success;
       }
-      if (result.__isset.ex) {
+      if (result.ex != null) {
         throw result.ex;
       }
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "getSchema failed: unknown result");
@@ -219,6 +221,7 @@ public class ThriftHive {
 
   }
   public static class Processor extends org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Processor implements TProcessor {
+    private static final Logger LOGGER = Logger.getLogger(Processor.class.getName());
     public Processor(Iface iface)
     {
       super(iface);
@@ -261,7 +264,14 @@ public class ThriftHive {
           iface_.execute(args.query);
         } catch (HiveServerException ex) {
           result.ex = ex;
-          result.__isset.ex = true;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing execute", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing execute");
+          oprot.writeMessageBegin(new TMessage("execute", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
         }
         oprot.writeMessageBegin(new TMessage("execute", TMessageType.REPLY, seqid));
         result.write(oprot);
@@ -280,10 +290,16 @@ public class ThriftHive {
         fetchOne_result result = new fetchOne_result();
         try {
           result.success = iface_.fetchOne();
-          result.__isset.success = true;
         } catch (HiveServerException ex) {
           result.ex = ex;
-          result.__isset.ex = true;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing fetchOne", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing fetchOne");
+          oprot.writeMessageBegin(new TMessage("fetchOne", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
         }
         oprot.writeMessageBegin(new TMessage("fetchOne", TMessageType.REPLY, seqid));
         result.write(oprot);
@@ -302,10 +318,16 @@ public class ThriftHive {
         fetchN_result result = new fetchN_result();
         try {
           result.success = iface_.fetchN(args.numRows);
-          result.__isset.success = true;
         } catch (HiveServerException ex) {
           result.ex = ex;
-          result.__isset.ex = true;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing fetchN", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing fetchN");
+          oprot.writeMessageBegin(new TMessage("fetchN", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
         }
         oprot.writeMessageBegin(new TMessage("fetchN", TMessageType.REPLY, seqid));
         result.write(oprot);
@@ -324,10 +346,16 @@ public class ThriftHive {
         fetchAll_result result = new fetchAll_result();
         try {
           result.success = iface_.fetchAll();
-          result.__isset.success = true;
         } catch (HiveServerException ex) {
           result.ex = ex;
-          result.__isset.ex = true;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing fetchAll", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing fetchAll");
+          oprot.writeMessageBegin(new TMessage("fetchAll", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
         }
         oprot.writeMessageBegin(new TMessage("fetchAll", TMessageType.REPLY, seqid));
         result.write(oprot);
@@ -346,10 +374,16 @@ public class ThriftHive {
         getSchema_result result = new getSchema_result();
         try {
           result.success = iface_.getSchema();
-          result.__isset.success = true;
         } catch (HiveServerException ex) {
           result.ex = ex;
-          result.__isset.ex = true;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing getSchema", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing getSchema");
+          oprot.writeMessageBegin(new TMessage("getSchema", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
         }
         oprot.writeMessageBegin(new TMessage("getSchema", TMessageType.REPLY, seqid));
         result.write(oprot);
@@ -361,12 +395,24 @@ public class ThriftHive {
 
   }
 
-  public static class execute_args implements TBase, java.io.Serializable   {
-    private String query;
+  public static class execute_args implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("execute_args");
+    private static final TField QUERY_FIELD_DESC = new TField("query", TType.STRING, (short)1);
 
-    public final Isset __isset = new Isset();
-    public static final class Isset implements java.io.Serializable {
-      public boolean query = false;
+    private String query;
+    public static final int QUERY = 1;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(QUERY, new FieldMetaData("query", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(execute_args.class, metaDataMap);
     }
 
     public execute_args() {
@@ -377,7 +423,20 @@ public class ThriftHive {
     {
       this();
       this.query = query;
-      this.__isset.query = true;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public execute_args(execute_args other) {
+      if (other.isSetQuery()) {
+        this.query = other.query;
+      }
+    }
+
+    @Override
+    public execute_args clone() {
+      return new execute_args(this);
     }
 
     public String getQuery() {
@@ -386,13 +445,53 @@ public class ThriftHive {
 
     public void setQuery(String query) {
       this.query = query;
-      this.__isset.query = true;
     }
 
     public void unsetQuery() {
-      this.__isset.query = false;
+      this.query = null;
     }
 
+    // Returns true if field query is set (has been asigned a value) and false otherwise
+    public boolean isSetQuery() {
+      return this.query != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case QUERY:
+        if (value == null) {
+          unsetQuery();
+        } else {
+          setQuery((String)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case QUERY:
+        return getQuery();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case QUERY:
+        return isSetQuery();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -405,8 +504,8 @@ public class ThriftHive {
       if (that == null)
         return false;
 
-      boolean this_present_query = true && (this.query != null);
-      boolean that_present_query = true && (that.query != null);
+      boolean this_present_query = true && this.isSetQuery();
+      boolean that_present_query = true && that.isSetQuery();
       if (this_present_query || that_present_query) {
         if (!(this_present_query && that_present_query))
           return false;
@@ -417,6 +516,7 @@ public class ThriftHive {
       return true;
     }
 
+    @Override
     public int hashCode() {
       return 0;
     }
@@ -432,10 +532,9 @@ public class ThriftHive {
         }
         switch (field.id)
         {
-          case 1:
+          case QUERY:
             if (field.type == TType.STRING) {
               this.query = iprot.readString();
-              this.__isset.query = true;
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
@@ -447,17 +546,16 @@ public class ThriftHive {
         iprot.readFieldEnd();
       }
       iprot.readStructEnd();
+
+      validate();
     }
 
     public void write(TProtocol oprot) throws TException {
-      TStruct struct = new TStruct("execute_args");
-      oprot.writeStructBegin(struct);
-      TField field = new TField();
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
       if (this.query != null) {
-        field.name = "query";
-        field.type = TType.STRING;
-        field.id = 1;
-        oprot.writeFieldBegin(field);
+        oprot.writeFieldBegin(QUERY_FIELD_DESC);
         oprot.writeString(this.query);
         oprot.writeFieldEnd();
       }
@@ -465,22 +563,47 @@ public class ThriftHive {
       oprot.writeStructEnd();
     }
 
+    @Override
     public String toString() {
       StringBuilder sb = new StringBuilder("execute_args(");
+      boolean first = true;
+
       sb.append("query:");
-      sb.append(this.query);
+      if (this.query == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.query);
+      }
+      first = false;
       sb.append(")");
       return sb.toString();
     }
 
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
   }
 
-  public static class execute_result implements TBase, java.io.Serializable   {
-    private HiveServerException ex;
+  public static class execute_result implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("execute_result");
+    private static final TField EX_FIELD_DESC = new TField("ex", TType.STRUCT, (short)1);
 
-    public final Isset __isset = new Isset();
-    public static final class Isset implements java.io.Serializable {
-      public boolean ex = false;
+    private HiveServerException ex;
+    public static final int EX = 1;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(EX, new FieldMetaData("ex", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(execute_result.class, metaDataMap);
     }
 
     public execute_result() {
@@ -491,7 +614,20 @@ public class ThriftHive {
     {
       this();
       this.ex = ex;
-      this.__isset.ex = true;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public execute_result(execute_result other) {
+      if (other.isSetEx()) {
+        this.ex = new HiveServerException(other.ex);
+      }
+    }
+
+    @Override
+    public execute_result clone() {
+      return new execute_result(this);
     }
 
     public HiveServerException getEx() {
@@ -500,14 +636,53 @@ public class ThriftHive {
 
     public void setEx(HiveServerException ex) {
       this.ex = ex;
-      this.__isset.ex = true;
     }
 
     public void unsetEx() {
       this.ex = null;
-      this.__isset.ex = false;
     }
 
+    // Returns true if field ex is set (has been asigned a value) and false otherwise
+    public boolean isSetEx() {
+      return this.ex != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case EX:
+        if (value == null) {
+          unsetEx();
+        } else {
+          setEx((HiveServerException)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case EX:
+        return getEx();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case EX:
+        return isSetEx();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -520,8 +695,8 @@ public class ThriftHive {
       if (that == null)
         return false;
 
-      boolean this_present_ex = true && (this.ex != null);
-      boolean that_present_ex = true && (that.ex != null);
+      boolean this_present_ex = true && this.isSetEx();
+      boolean that_present_ex = true && that.isSetEx();
       if (this_present_ex || that_present_ex) {
         if (!(this_present_ex && that_present_ex))
           return false;
@@ -532,6 +707,7 @@ public class ThriftHive {
       return true;
     }
 
+    @Override
     public int hashCode() {
       return 0;
     }
@@ -547,11 +723,10 @@ public class ThriftHive {
         }
         switch (field.id)
         {
-          case 1:
+          case EX:
             if (field.type == TType.STRUCT) {
               this.ex = new HiveServerException();
               this.ex.read(iprot);
-              this.__isset.ex = true;
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
@@ -563,41 +738,92 @@ public class ThriftHive {
         iprot.readFieldEnd();
       }
       iprot.readStructEnd();
+
+      validate();
     }
 
     public void write(TProtocol oprot) throws TException {
-      TStruct struct = new TStruct("execute_result");
-      oprot.writeStructBegin(struct);
-      TField field = new TField();
+      oprot.writeStructBegin(STRUCT_DESC);
 
-      if (this.__isset.ex) {
-        if (this.ex != null) {
-          field.name = "ex";
-          field.type = TType.STRUCT;
-          field.id = 1;
-          oprot.writeFieldBegin(field);
-          this.ex.write(oprot);
-          oprot.writeFieldEnd();
-        }
+      if (this.isSetEx()) {
+        oprot.writeFieldBegin(EX_FIELD_DESC);
+        this.ex.write(oprot);
+        oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
 
+    @Override
     public String toString() {
       StringBuilder sb = new StringBuilder("execute_result(");
+      boolean first = true;
+
       sb.append("ex:");
-      sb.append(this.ex);
+      if (this.ex == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ex);
+      }
+      first = false;
       sb.append(")");
       return sb.toString();
     }
 
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
   }
 
-  public static class fetchOne_args implements TBase, java.io.Serializable   {
+  public static class fetchOne_args implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("fetchOne_args");
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(fetchOne_args.class, metaDataMap);
+    }
+
     public fetchOne_args() {
     }
 
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public fetchOne_args(fetchOne_args other) {
+    }
+
+    @Override
+    public fetchOne_args clone() {
+      return new fetchOne_args(this);
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -613,6 +839,7 @@ public class ThriftHive {
       return true;
     }
 
+    @Override
     public int hashCode() {
       return 0;
     }
@@ -635,31 +862,57 @@ public class ThriftHive {
         iprot.readFieldEnd();
       }
       iprot.readStructEnd();
+
+      validate();
     }
 
     public void write(TProtocol oprot) throws TException {
-      TStruct struct = new TStruct("fetchOne_args");
-      oprot.writeStructBegin(struct);
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
 
+    @Override
     public String toString() {
       StringBuilder sb = new StringBuilder("fetchOne_args(");
+      boolean first = true;
+
       sb.append(")");
       return sb.toString();
     }
 
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
   }
 
-  public static class fetchOne_result implements TBase, java.io.Serializable   {
-    private String success;
-    private HiveServerException ex;
+  public static class fetchOne_result implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("fetchOne_result");
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.STRING, (short)0);
+    private static final TField EX_FIELD_DESC = new TField("ex", TType.STRUCT, (short)1);
 
-    public final Isset __isset = new Isset();
-    public static final class Isset implements java.io.Serializable {
-      public boolean success = false;
-      public boolean ex = false;
+    private String success;
+    public static final int SUCCESS = 0;
+    private HiveServerException ex;
+    public static final int EX = 1;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      put(EX, new FieldMetaData("ex", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(fetchOne_result.class, metaDataMap);
     }
 
     public fetchOne_result() {
@@ -671,9 +924,24 @@ public class ThriftHive {
     {
       this();
       this.success = success;
-      this.__isset.success = true;
       this.ex = ex;
-      this.__isset.ex = true;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public fetchOne_result(fetchOne_result other) {
+      if (other.isSetSuccess()) {
+        this.success = other.success;
+      }
+      if (other.isSetEx()) {
+        this.ex = new HiveServerException(other.ex);
+      }
+    }
+
+    @Override
+    public fetchOne_result clone() {
+      return new fetchOne_result(this);
     }
 
     public String getSuccess() {
@@ -682,11 +950,15 @@ public class ThriftHive {
 
     public void setSuccess(String success) {
       this.success = success;
-      this.__isset.success = true;
     }
 
     public void unsetSuccess() {
-      this.__isset.success = false;
+      this.success = null;
+    }
+
+    // Returns true if field success is set (has been asigned a value) and false otherwise
+    public boolean isSetSuccess() {
+      return this.success != null;
     }
 
     public HiveServerException getEx() {
@@ -695,14 +967,66 @@ public class ThriftHive {
 
     public void setEx(HiveServerException ex) {
       this.ex = ex;
-      this.__isset.ex = true;
     }
 
     public void unsetEx() {
       this.ex = null;
-      this.__isset.ex = false;
     }
 
+    // Returns true if field ex is set (has been asigned a value) and false otherwise
+    public boolean isSetEx() {
+      return this.ex != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((String)value);
+        }
+        break;
+
+      case EX:
+        if (value == null) {
+          unsetEx();
+        } else {
+          setEx((HiveServerException)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return getSuccess();
+
+      case EX:
+        return getEx();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return isSetSuccess();
+      case EX:
+        return isSetEx();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -715,8 +1039,8 @@ public class ThriftHive {
       if (that == null)
         return false;
 
-      boolean this_present_success = true && (this.success != null);
-      boolean that_present_success = true && (that.success != null);
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
       if (this_present_success || that_present_success) {
         if (!(this_present_success && that_present_success))
           return false;
@@ -724,8 +1048,8 @@ public class ThriftHive {
           return false;
       }
 
-      boolean this_present_ex = true && (this.ex != null);
-      boolean that_present_ex = true && (that.ex != null);
+      boolean this_present_ex = true && this.isSetEx();
+      boolean that_present_ex = true && that.isSetEx();
       if (this_present_ex || that_present_ex) {
         if (!(this_present_ex && that_present_ex))
           return false;
@@ -736,6 +1060,7 @@ public class ThriftHive {
       return true;
     }
 
+    @Override
     public int hashCode() {
       return 0;
     }
@@ -751,19 +1076,17 @@ public class ThriftHive {
         }
         switch (field.id)
         {
-          case 0:
+          case SUCCESS:
             if (field.type == TType.STRING) {
               this.success = iprot.readString();
-              this.__isset.success = true;
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 1:
+          case EX:
             if (field.type == TType.STRUCT) {
               this.ex = new HiveServerException();
               this.ex.read(iprot);
-              this.__isset.ex = true;
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
@@ -775,54 +1098,76 @@ public class ThriftHive {
         iprot.readFieldEnd();
       }
       iprot.readStructEnd();
+
+      validate();
     }
 
     public void write(TProtocol oprot) throws TException {
-      TStruct struct = new TStruct("fetchOne_result");
-      oprot.writeStructBegin(struct);
-      TField field = new TField();
+      oprot.writeStructBegin(STRUCT_DESC);
 
-      if (this.__isset.success) {
-        if (this.success != null) {
-          field.name = "success";
-          field.type = TType.STRING;
-          field.id = 0;
-          oprot.writeFieldBegin(field);
-          oprot.writeString(this.success);
-          oprot.writeFieldEnd();
-        }
-      } else if (this.__isset.ex) {
-        if (this.ex != null) {
-          field.name = "ex";
-          field.type = TType.STRUCT;
-          field.id = 1;
-          oprot.writeFieldBegin(field);
-          this.ex.write(oprot);
-          oprot.writeFieldEnd();
-        }
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        oprot.writeString(this.success);
+        oprot.writeFieldEnd();
+      } else if (this.isSetEx()) {
+        oprot.writeFieldBegin(EX_FIELD_DESC);
+        this.ex.write(oprot);
+        oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
 
+    @Override
     public String toString() {
       StringBuilder sb = new StringBuilder("fetchOne_result(");
+      boolean first = true;
+
       sb.append("success:");
-      sb.append(this.success);
-      sb.append(",ex:");
-      sb.append(this.ex);
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("ex:");
+      if (this.ex == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ex);
+      }
+      first = false;
       sb.append(")");
       return sb.toString();
     }
 
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
   }
 
-  public static class fetchN_args implements TBase, java.io.Serializable   {
-    private int numRows;
+  public static class fetchN_args implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("fetchN_args");
+    private static final TField NUM_ROWS_FIELD_DESC = new TField("numRows", TType.I32, (short)1);
 
-    public final Isset __isset = new Isset();
-    public static final class Isset implements java.io.Serializable {
+    private int numRows;
+    public static final int NUMROWS = 1;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
       public boolean numRows = false;
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(NUMROWS, new FieldMetaData("numRows", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.I32)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(fetchN_args.class, metaDataMap);
     }
 
     public fetchN_args() {
@@ -834,6 +1179,19 @@ public class ThriftHive {
       this();
       this.numRows = numRows;
       this.__isset.numRows = true;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public fetchN_args(fetchN_args other) {
+      __isset.numRows = other.__isset.numRows;
+      this.numRows = other.numRows;
+    }
+
+    @Override
+    public fetchN_args clone() {
+      return new fetchN_args(this);
     }
 
     public int getNumRows() {
@@ -849,6 +1207,47 @@ public class ThriftHive {
       this.__isset.numRows = false;
     }
 
+    // Returns true if field numRows is set (has been asigned a value) and false otherwise
+    public boolean isSetNumRows() {
+      return this.__isset.numRows;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case NUMROWS:
+        if (value == null) {
+          unsetNumRows();
+        } else {
+          setNumRows((Integer)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case NUMROWS:
+        return new Integer(getNumRows());
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case NUMROWS:
+        return isSetNumRows();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -873,6 +1272,7 @@ public class ThriftHive {
       return true;
     }
 
+    @Override
     public int hashCode() {
       return 0;
     }
@@ -888,7 +1288,7 @@ public class ThriftHive {
         }
         switch (field.id)
         {
-          case 1:
+          case NUMROWS:
             if (field.type == TType.I32) {
               this.numRows = iprot.readI32();
               this.__isset.numRows = true;
@@ -903,40 +1303,64 @@ public class ThriftHive {
         iprot.readFieldEnd();
       }
       iprot.readStructEnd();
+
+      validate();
     }
 
     public void write(TProtocol oprot) throws TException {
-      TStruct struct = new TStruct("fetchN_args");
-      oprot.writeStructBegin(struct);
-      TField field = new TField();
-      field.name = "numRows";
-      field.type = TType.I32;
-      field.id = 1;
-      oprot.writeFieldBegin(field);
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      oprot.writeFieldBegin(NUM_ROWS_FIELD_DESC);
       oprot.writeI32(this.numRows);
       oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
 
+    @Override
     public String toString() {
       StringBuilder sb = new StringBuilder("fetchN_args(");
+      boolean first = true;
+
       sb.append("numRows:");
       sb.append(this.numRows);
+      first = false;
       sb.append(")");
       return sb.toString();
     }
 
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
   }
 
-  public static class fetchN_result implements TBase, java.io.Serializable   {
-    private List<String> success;
-    private HiveServerException ex;
+  public static class fetchN_result implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("fetchN_result");
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.LIST, (short)0);
+    private static final TField EX_FIELD_DESC = new TField("ex", TType.STRUCT, (short)1);
 
-    public final Isset __isset = new Isset();
-    public static final class Isset implements java.io.Serializable {
-      public boolean success = false;
-      public boolean ex = false;
+    private List<String> success;
+    public static final int SUCCESS = 0;
+    private HiveServerException ex;
+    public static final int EX = 1;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new ListMetaData(TType.LIST, 
+              new FieldValueMetaData(TType.STRING))));
+      put(EX, new FieldMetaData("ex", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(fetchN_result.class, metaDataMap);
     }
 
     public fetchN_result() {
@@ -948,9 +1372,28 @@ public class ThriftHive {
     {
       this();
       this.success = success;
-      this.__isset.success = true;
       this.ex = ex;
-      this.__isset.ex = true;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public fetchN_result(fetchN_result other) {
+      if (other.isSetSuccess()) {
+        List<String> __this__success = new ArrayList<String>();
+        for (String other_element : other.success) {
+          __this__success.add(other_element);
+        }
+        this.success = __this__success;
+      }
+      if (other.isSetEx()) {
+        this.ex = new HiveServerException(other.ex);
+      }
+    }
+
+    @Override
+    public fetchN_result clone() {
+      return new fetchN_result(this);
     }
 
     public int getSuccessSize() {
@@ -966,7 +1409,6 @@ public class ThriftHive {
         this.success = new ArrayList<String>();
       }
       this.success.add(elem);
-      this.__isset.success = true;
     }
 
     public List<String> getSuccess() {
@@ -975,12 +1417,15 @@ public class ThriftHive {
 
     public void setSuccess(List<String> success) {
       this.success = success;
-      this.__isset.success = true;
     }
 
     public void unsetSuccess() {
       this.success = null;
-      this.__isset.success = false;
+    }
+
+    // Returns true if field success is set (has been asigned a value) and false otherwise
+    public boolean isSetSuccess() {
+      return this.success != null;
     }
 
     public HiveServerException getEx() {
@@ -989,14 +1434,66 @@ public class ThriftHive {
 
     public void setEx(HiveServerException ex) {
       this.ex = ex;
-      this.__isset.ex = true;
     }
 
     public void unsetEx() {
       this.ex = null;
-      this.__isset.ex = false;
     }
 
+    // Returns true if field ex is set (has been asigned a value) and false otherwise
+    public boolean isSetEx() {
+      return this.ex != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((List<String>)value);
+        }
+        break;
+
+      case EX:
+        if (value == null) {
+          unsetEx();
+        } else {
+          setEx((HiveServerException)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return getSuccess();
+
+      case EX:
+        return getEx();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return isSetSuccess();
+      case EX:
+        return isSetEx();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -1009,8 +1506,8 @@ public class ThriftHive {
       if (that == null)
         return false;
 
-      boolean this_present_success = true && (this.success != null);
-      boolean that_present_success = true && (that.success != null);
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
       if (this_present_success || that_present_success) {
         if (!(this_present_success && that_present_success))
           return false;
@@ -1018,8 +1515,8 @@ public class ThriftHive {
           return false;
       }
 
-      boolean this_present_ex = true && (this.ex != null);
-      boolean that_present_ex = true && (that.ex != null);
+      boolean this_present_ex = true && this.isSetEx();
+      boolean that_present_ex = true && that.isSetEx();
       if (this_present_ex || that_present_ex) {
         if (!(this_present_ex && that_present_ex))
           return false;
@@ -1030,6 +1527,7 @@ public class ThriftHive {
       return true;
     }
 
+    @Override
     public int hashCode() {
       return 0;
     }
@@ -1045,29 +1543,27 @@ public class ThriftHive {
         }
         switch (field.id)
         {
-          case 0:
+          case SUCCESS:
             if (field.type == TType.LIST) {
               {
                 TList _list0 = iprot.readListBegin();
                 this.success = new ArrayList<String>(_list0.size);
                 for (int _i1 = 0; _i1 < _list0.size; ++_i1)
                 {
-                  String _elem2 = null;
+                  String _elem2;
                   _elem2 = iprot.readString();
                   this.success.add(_elem2);
                 }
                 iprot.readListEnd();
               }
-              this.__isset.success = true;
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 1:
+          case EX:
             if (field.type == TType.STRUCT) {
               this.ex = new HiveServerException();
               this.ex.read(iprot);
-              this.__isset.ex = true;
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
@@ -1079,58 +1575,110 @@ public class ThriftHive {
         iprot.readFieldEnd();
       }
       iprot.readStructEnd();
+
+      validate();
     }
 
     public void write(TProtocol oprot) throws TException {
-      TStruct struct = new TStruct("fetchN_result");
-      oprot.writeStructBegin(struct);
-      TField field = new TField();
+      oprot.writeStructBegin(STRUCT_DESC);
 
-      if (this.__isset.success) {
-        if (this.success != null) {
-          field.name = "success";
-          field.type = TType.LIST;
-          field.id = 0;
-          oprot.writeFieldBegin(field);
-          {
-            oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-            for (String _iter3 : this.success)            {
-              oprot.writeString(_iter3);
-            }
-            oprot.writeListEnd();
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
+          for (String _iter3 : this.success)          {
+            oprot.writeString(_iter3);
           }
-          oprot.writeFieldEnd();
+          oprot.writeListEnd();
         }
-      } else if (this.__isset.ex) {
-        if (this.ex != null) {
-          field.name = "ex";
-          field.type = TType.STRUCT;
-          field.id = 1;
-          oprot.writeFieldBegin(field);
-          this.ex.write(oprot);
-          oprot.writeFieldEnd();
-        }
+        oprot.writeFieldEnd();
+      } else if (this.isSetEx()) {
+        oprot.writeFieldBegin(EX_FIELD_DESC);
+        this.ex.write(oprot);
+        oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
 
+    @Override
     public String toString() {
       StringBuilder sb = new StringBuilder("fetchN_result(");
+      boolean first = true;
+
       sb.append("success:");
-      sb.append(this.success);
-      sb.append(",ex:");
-      sb.append(this.ex);
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("ex:");
+      if (this.ex == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ex);
+      }
+      first = false;
       sb.append(")");
       return sb.toString();
     }
 
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
   }
 
-  public static class fetchAll_args implements TBase, java.io.Serializable   {
+  public static class fetchAll_args implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("fetchAll_args");
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(fetchAll_args.class, metaDataMap);
+    }
+
     public fetchAll_args() {
     }
 
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public fetchAll_args(fetchAll_args other) {
+    }
+
+    @Override
+    public fetchAll_args clone() {
+      return new fetchAll_args(this);
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -1146,6 +1694,7 @@ public class ThriftHive {
       return true;
     }
 
+    @Override
     public int hashCode() {
       return 0;
     }
@@ -1168,31 +1717,58 @@ public class ThriftHive {
         iprot.readFieldEnd();
       }
       iprot.readStructEnd();
+
+      validate();
     }
 
     public void write(TProtocol oprot) throws TException {
-      TStruct struct = new TStruct("fetchAll_args");
-      oprot.writeStructBegin(struct);
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
 
+    @Override
     public String toString() {
       StringBuilder sb = new StringBuilder("fetchAll_args(");
+      boolean first = true;
+
       sb.append(")");
       return sb.toString();
     }
 
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
   }
 
-  public static class fetchAll_result implements TBase, java.io.Serializable   {
-    private List<String> success;
-    private HiveServerException ex;
+  public static class fetchAll_result implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("fetchAll_result");
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.LIST, (short)0);
+    private static final TField EX_FIELD_DESC = new TField("ex", TType.STRUCT, (short)1);
 
-    public final Isset __isset = new Isset();
-    public static final class Isset implements java.io.Serializable {
-      public boolean success = false;
-      public boolean ex = false;
+    private List<String> success;
+    public static final int SUCCESS = 0;
+    private HiveServerException ex;
+    public static final int EX = 1;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new ListMetaData(TType.LIST, 
+              new FieldValueMetaData(TType.STRING))));
+      put(EX, new FieldMetaData("ex", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(fetchAll_result.class, metaDataMap);
     }
 
     public fetchAll_result() {
@@ -1204,9 +1780,28 @@ public class ThriftHive {
     {
       this();
       this.success = success;
-      this.__isset.success = true;
       this.ex = ex;
-      this.__isset.ex = true;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public fetchAll_result(fetchAll_result other) {
+      if (other.isSetSuccess()) {
+        List<String> __this__success = new ArrayList<String>();
+        for (String other_element : other.success) {
+          __this__success.add(other_element);
+        }
+        this.success = __this__success;
+      }
+      if (other.isSetEx()) {
+        this.ex = new HiveServerException(other.ex);
+      }
+    }
+
+    @Override
+    public fetchAll_result clone() {
+      return new fetchAll_result(this);
     }
 
     public int getSuccessSize() {
@@ -1222,7 +1817,6 @@ public class ThriftHive {
         this.success = new ArrayList<String>();
       }
       this.success.add(elem);
-      this.__isset.success = true;
     }
 
     public List<String> getSuccess() {
@@ -1231,12 +1825,15 @@ public class ThriftHive {
 
     public void setSuccess(List<String> success) {
       this.success = success;
-      this.__isset.success = true;
     }
 
     public void unsetSuccess() {
       this.success = null;
-      this.__isset.success = false;
+    }
+
+    // Returns true if field success is set (has been asigned a value) and false otherwise
+    public boolean isSetSuccess() {
+      return this.success != null;
     }
 
     public HiveServerException getEx() {
@@ -1245,14 +1842,66 @@ public class ThriftHive {
 
     public void setEx(HiveServerException ex) {
       this.ex = ex;
-      this.__isset.ex = true;
     }
 
     public void unsetEx() {
       this.ex = null;
-      this.__isset.ex = false;
     }
 
+    // Returns true if field ex is set (has been asigned a value) and false otherwise
+    public boolean isSetEx() {
+      return this.ex != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((List<String>)value);
+        }
+        break;
+
+      case EX:
+        if (value == null) {
+          unsetEx();
+        } else {
+          setEx((HiveServerException)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return getSuccess();
+
+      case EX:
+        return getEx();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return isSetSuccess();
+      case EX:
+        return isSetEx();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -1265,8 +1914,8 @@ public class ThriftHive {
       if (that == null)
         return false;
 
-      boolean this_present_success = true && (this.success != null);
-      boolean that_present_success = true && (that.success != null);
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
       if (this_present_success || that_present_success) {
         if (!(this_present_success && that_present_success))
           return false;
@@ -1274,8 +1923,8 @@ public class ThriftHive {
           return false;
       }
 
-      boolean this_present_ex = true && (this.ex != null);
-      boolean that_present_ex = true && (that.ex != null);
+      boolean this_present_ex = true && this.isSetEx();
+      boolean that_present_ex = true && that.isSetEx();
       if (this_present_ex || that_present_ex) {
         if (!(this_present_ex && that_present_ex))
           return false;
@@ -1286,6 +1935,7 @@ public class ThriftHive {
       return true;
     }
 
+    @Override
     public int hashCode() {
       return 0;
     }
@@ -1301,29 +1951,27 @@ public class ThriftHive {
         }
         switch (field.id)
         {
-          case 0:
+          case SUCCESS:
             if (field.type == TType.LIST) {
               {
                 TList _list4 = iprot.readListBegin();
                 this.success = new ArrayList<String>(_list4.size);
                 for (int _i5 = 0; _i5 < _list4.size; ++_i5)
                 {
-                  String _elem6 = null;
+                  String _elem6;
                   _elem6 = iprot.readString();
                   this.success.add(_elem6);
                 }
                 iprot.readListEnd();
               }
-              this.__isset.success = true;
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 1:
+          case EX:
             if (field.type == TType.STRUCT) {
               this.ex = new HiveServerException();
               this.ex.read(iprot);
-              this.__isset.ex = true;
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
@@ -1335,58 +1983,110 @@ public class ThriftHive {
         iprot.readFieldEnd();
       }
       iprot.readStructEnd();
+
+      validate();
     }
 
     public void write(TProtocol oprot) throws TException {
-      TStruct struct = new TStruct("fetchAll_result");
-      oprot.writeStructBegin(struct);
-      TField field = new TField();
+      oprot.writeStructBegin(STRUCT_DESC);
 
-      if (this.__isset.success) {
-        if (this.success != null) {
-          field.name = "success";
-          field.type = TType.LIST;
-          field.id = 0;
-          oprot.writeFieldBegin(field);
-          {
-            oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-            for (String _iter7 : this.success)            {
-              oprot.writeString(_iter7);
-            }
-            oprot.writeListEnd();
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
+          for (String _iter7 : this.success)          {
+            oprot.writeString(_iter7);
           }
-          oprot.writeFieldEnd();
+          oprot.writeListEnd();
         }
-      } else if (this.__isset.ex) {
-        if (this.ex != null) {
-          field.name = "ex";
-          field.type = TType.STRUCT;
-          field.id = 1;
-          oprot.writeFieldBegin(field);
-          this.ex.write(oprot);
-          oprot.writeFieldEnd();
-        }
+        oprot.writeFieldEnd();
+      } else if (this.isSetEx()) {
+        oprot.writeFieldBegin(EX_FIELD_DESC);
+        this.ex.write(oprot);
+        oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
 
+    @Override
     public String toString() {
       StringBuilder sb = new StringBuilder("fetchAll_result(");
+      boolean first = true;
+
       sb.append("success:");
-      sb.append(this.success);
-      sb.append(",ex:");
-      sb.append(this.ex);
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("ex:");
+      if (this.ex == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ex);
+      }
+      first = false;
       sb.append(")");
       return sb.toString();
     }
 
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
   }
 
-  public static class getSchema_args implements TBase, java.io.Serializable   {
+  public static class getSchema_args implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("getSchema_args");
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(getSchema_args.class, metaDataMap);
+    }
+
     public getSchema_args() {
     }
 
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public getSchema_args(getSchema_args other) {
+    }
+
+    @Override
+    public getSchema_args clone() {
+      return new getSchema_args(this);
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -1402,6 +2102,7 @@ public class ThriftHive {
       return true;
     }
 
+    @Override
     public int hashCode() {
       return 0;
     }
@@ -1424,31 +2125,57 @@ public class ThriftHive {
         iprot.readFieldEnd();
       }
       iprot.readStructEnd();
+
+      validate();
     }
 
     public void write(TProtocol oprot) throws TException {
-      TStruct struct = new TStruct("getSchema_args");
-      oprot.writeStructBegin(struct);
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
 
+    @Override
     public String toString() {
       StringBuilder sb = new StringBuilder("getSchema_args(");
+      boolean first = true;
+
       sb.append(")");
       return sb.toString();
     }
 
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
   }
 
-  public static class getSchema_result implements TBase, java.io.Serializable   {
-    private org.apache.hadoop.hive.metastore.api.Schema success;
-    private HiveServerException ex;
+  public static class getSchema_result implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("getSchema_result");
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.STRUCT, (short)0);
+    private static final TField EX_FIELD_DESC = new TField("ex", TType.STRUCT, (short)1);
 
-    public final Isset __isset = new Isset();
-    public static final class Isset implements java.io.Serializable {
-      public boolean success = false;
-      public boolean ex = false;
+    private org.apache.hadoop.hive.metastore.api.Schema success;
+    public static final int SUCCESS = 0;
+    private HiveServerException ex;
+    public static final int EX = 1;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, org.apache.hadoop.hive.metastore.api.Schema.class)));
+      put(EX, new FieldMetaData("ex", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(getSchema_result.class, metaDataMap);
     }
 
     public getSchema_result() {
@@ -1460,9 +2187,24 @@ public class ThriftHive {
     {
       this();
       this.success = success;
-      this.__isset.success = true;
       this.ex = ex;
-      this.__isset.ex = true;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public getSchema_result(getSchema_result other) {
+      if (other.isSetSuccess()) {
+        this.success = new org.apache.hadoop.hive.metastore.api.Schema(other.success);
+      }
+      if (other.isSetEx()) {
+        this.ex = new HiveServerException(other.ex);
+      }
+    }
+
+    @Override
+    public getSchema_result clone() {
+      return new getSchema_result(this);
     }
 
     public org.apache.hadoop.hive.metastore.api.Schema getSuccess() {
@@ -1471,12 +2213,15 @@ public class ThriftHive {
 
     public void setSuccess(org.apache.hadoop.hive.metastore.api.Schema success) {
       this.success = success;
-      this.__isset.success = true;
     }
 
     public void unsetSuccess() {
       this.success = null;
-      this.__isset.success = false;
+    }
+
+    // Returns true if field success is set (has been asigned a value) and false otherwise
+    public boolean isSetSuccess() {
+      return this.success != null;
     }
 
     public HiveServerException getEx() {
@@ -1485,14 +2230,66 @@ public class ThriftHive {
 
     public void setEx(HiveServerException ex) {
       this.ex = ex;
-      this.__isset.ex = true;
     }
 
     public void unsetEx() {
       this.ex = null;
-      this.__isset.ex = false;
     }
 
+    // Returns true if field ex is set (has been asigned a value) and false otherwise
+    public boolean isSetEx() {
+      return this.ex != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((org.apache.hadoop.hive.metastore.api.Schema)value);
+        }
+        break;
+
+      case EX:
+        if (value == null) {
+          unsetEx();
+        } else {
+          setEx((HiveServerException)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return getSuccess();
+
+      case EX:
+        return getEx();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return isSetSuccess();
+      case EX:
+        return isSetEx();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
     public boolean equals(Object that) {
       if (that == null)
         return false;
@@ -1505,8 +2302,8 @@ public class ThriftHive {
       if (that == null)
         return false;
 
-      boolean this_present_success = true && (this.success != null);
-      boolean that_present_success = true && (that.success != null);
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
       if (this_present_success || that_present_success) {
         if (!(this_present_success && that_present_success))
           return false;
@@ -1514,8 +2311,8 @@ public class ThriftHive {
           return false;
       }
 
-      boolean this_present_ex = true && (this.ex != null);
-      boolean that_present_ex = true && (that.ex != null);
+      boolean this_present_ex = true && this.isSetEx();
+      boolean that_present_ex = true && that.isSetEx();
       if (this_present_ex || that_present_ex) {
         if (!(this_present_ex && that_present_ex))
           return false;
@@ -1526,6 +2323,7 @@ public class ThriftHive {
       return true;
     }
 
+    @Override
     public int hashCode() {
       return 0;
     }
@@ -1541,20 +2339,18 @@ public class ThriftHive {
         }
         switch (field.id)
         {
-          case 0:
+          case SUCCESS:
             if (field.type == TType.STRUCT) {
               this.success = new org.apache.hadoop.hive.metastore.api.Schema();
               this.success.read(iprot);
-              this.__isset.success = true;
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 1:
+          case EX:
             if (field.type == TType.STRUCT) {
               this.ex = new HiveServerException();
               this.ex.read(iprot);
-              this.__isset.ex = true;
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
@@ -1566,44 +2362,53 @@ public class ThriftHive {
         iprot.readFieldEnd();
       }
       iprot.readStructEnd();
+
+      validate();
     }
 
     public void write(TProtocol oprot) throws TException {
-      TStruct struct = new TStruct("getSchema_result");
-      oprot.writeStructBegin(struct);
-      TField field = new TField();
+      oprot.writeStructBegin(STRUCT_DESC);
 
-      if (this.__isset.success) {
-        if (this.success != null) {
-          field.name = "success";
-          field.type = TType.STRUCT;
-          field.id = 0;
-          oprot.writeFieldBegin(field);
-          this.success.write(oprot);
-          oprot.writeFieldEnd();
-        }
-      } else if (this.__isset.ex) {
-        if (this.ex != null) {
-          field.name = "ex";
-          field.type = TType.STRUCT;
-          field.id = 1;
-          oprot.writeFieldBegin(field);
-          this.ex.write(oprot);
-          oprot.writeFieldEnd();
-        }
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        this.success.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetEx()) {
+        oprot.writeFieldBegin(EX_FIELD_DESC);
+        this.ex.write(oprot);
+        oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
 
+    @Override
     public String toString() {
       StringBuilder sb = new StringBuilder("getSchema_result(");
+      boolean first = true;
+
       sb.append("success:");
-      sb.append(this.success);
-      sb.append(",ex:");
-      sb.append(this.ex);
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("ex:");
+      if (this.ex == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ex);
+      }
+      first = false;
       sb.append(")");
       return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
     }
 
   }

@@ -34,8 +34,8 @@ import org.apache.hadoop.util.StringUtils;
 import com.facebook.fb303.FacebookBase;
 import com.facebook.fb303.FacebookService;
 import com.facebook.fb303.fb_status;
-import com.facebook.thrift.TException;
-import com.facebook.thrift.protocol.TProtocol;
+import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TProtocol;
 
 import org.apache.hadoop.hive.metastore.api.*;
 

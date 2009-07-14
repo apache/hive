@@ -407,7 +407,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
 
       fixedRowSize += javaObjectOverHead;
       Class<? extends UDAFEvaluator> agg = aggregationClasses[i];
-      Field[] fArr = agg.getDeclaredFields();
+      Field[] fArr = ObjectInspectorUtils.getDeclaredNonStaticFields(agg);
       for (Field f : fArr) {
         fixedRowSize += getSize(i, f.getType(), f);
       }
