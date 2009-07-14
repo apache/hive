@@ -46,9 +46,12 @@ public class Optimizer {
 	 */
 	public void initialize(HiveConf hiveConf) {
 		transformations = new ArrayList<Transform>();
-		transformations.add(new ColumnPruner());
-    if (hiveConf.getBoolean("hive.optimize.ppd", false))
+		if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCP)) {
+		  transformations.add(new ColumnPruner());
+		}
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPD)) {
       transformations.add(new PredicatePushDown());
+    }
     transformations.add(new UnionProcessor());
 		transformations.add(new MapJoinProcessor());
 	}

@@ -150,7 +150,8 @@ public class HiveConf extends Configuration {
     HIVESENDHEARTBEAT("hive.heartbeat.interval", 1000),
 
     // Optimizer
-    HIVEOPTPPD("hive.optimize.ppd", false); // predicate pushdown
+    HIVEOPTCP("hive.optimize.cp", true), // column pruner
+    HIVEOPTPPD("hive.optimize.ppd", true); // predicate pushdown
     
     
     public final String varname;

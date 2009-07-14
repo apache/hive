@@ -253,6 +253,12 @@ datanucleus.cache.level2.type=SOFT
 </property>
 
 <property>
+  <name>hive.optimize.cp</name>
+  <value>true</value>
+  <description>Whether to enable column pruner</description>
+</property>
+
+<property>
   <name>hive.optimize.ppd</name>
   <value>true</value>
   <description>Whether to enable predicate pushdown</description>

@@ -39,5 +39,5 @@ STAGE PLANS:
 query: SELECT TRANSFORM(src.key, src.value) USING '../data/scripts/error_script' AS (tkey, tvalue)
 FROM src
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/35582581/85175665.10000
+Output: file:/Users/char/Documents/workspace/Hive-Clean/build/ql/tmp/1352070559/10000
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask

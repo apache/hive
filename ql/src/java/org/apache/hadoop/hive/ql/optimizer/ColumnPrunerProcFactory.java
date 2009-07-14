@@ -540,8 +540,8 @@ public class ColumnPrunerProcFactory {
       }
     }
 
-    for (int i = 0; i < childColLists.size(); i++) {
-      String internalName = childColLists.get(i);
+    for (int i = 0; i < outputCols.size(); i++) {
+      String internalName = outputCols.get(i);
       String[] nm = joinRR.reverseLookup(internalName);
       ColumnInfo col = joinRR.get(nm[0], nm[1]);
       newJoinRR.put(nm[0], nm[1], col);

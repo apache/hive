@@ -1,0 +1,140 @@
+query: drop table hive_foo
+query: drop table hive_bar
+query: drop table hive_count
+query: create table hive_foo (foo_id int, foo_name string, foo_a string, foo_b string, 
+foo_c string, foo_d string) row format delimited fields terminated by ','
+stored as textfile
+query: create table hive_bar (bar_id int, bar_0 int, foo_id int, bar_1 int, bar_name
+string, bar_a string, bar_b string, bar_c string, bar_d string) row format 
+delimited fields terminated by ',' stored as textfile
+query: create table hive_count (bar_id int, n int) row format delimited fields 
+terminated by ',' stored as textfile
+query: load data local inpath '../data/files/hive_626_foo.txt' overwrite into table hive_foo
+query: load data local inpath '../data/files/hive_626_bar.txt' overwrite into table hive_bar
+query: load data local inpath '../data/files/hive_626_count.txt' overwrite into table hive_count
+query: explain
+select hive_foo.foo_name, hive_bar.bar_name, n from hive_foo join hive_bar on hive_foo.foo_id =
+hive_bar.foo_id join hive_count on hive_count.bar_id = hive_bar.bar_id
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF hive_foo) (TOK_TABREF hive_bar) (= (. (TOK_TABLE_OR_COL hive_foo) foo_id) (. (TOK_TABLE_OR_COL hive_bar) foo_id))) (TOK_TABREF hive_count) (= (. (TOK_TABLE_OR_COL hive_count) bar_id) (. (TOK_TABLE_OR_COL hive_bar) bar_id)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL hive_foo) foo_name)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL hive_bar) bar_name)) (TOK_SELEXPR (TOK_TABLE_OR_COL n)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        hive_foo 
+            Reduce Output Operator
+              key expressions:
+                    expr: foo_id
+                    type: int
+              sort order: +
+              Map-reduce partition columns:
+                    expr: foo_id
+                    type: int
+              tag: 0
+              value expressions:
+                    expr: foo_name
+                    type: string
+        hive_bar 
+            Reduce Output Operator
+              key expressions:
+                    expr: foo_id
+                    type: int
+              sort order: +
+              Map-reduce partition columns:
+                    expr: foo_id
+                    type: int
+              tag: 1
+              value expressions:
+                    expr: bar_id
+                    type: int
+                    expr: bar_name
+                    type: string
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          condition expressions:
+            0 {VALUE._col1}
+            1 {VALUE._col0} {VALUE._col4}
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                name: binary_table
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        $INTNAME 
+            Reduce Output Operator
+              key expressions:
+                    expr: _col6
+                    type: int
+              sort order: +
+              Map-reduce partition columns:
+                    expr: _col6
+                    type: int
+              tag: 0
+              value expressions:
+                    expr: _col1
+                    type: string
+                    expr: _col10
+                    type: string
+        hive_count 
+            Reduce Output Operator
+              key expressions:
+                    expr: bar_id
+                    type: int
+              sort order: +
+              Map-reduce partition columns:
+                    expr: bar_id
+                    type: int
+              tag: 1
+              value expressions:
+                    expr: n
+                    type: int
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          condition expressions:
+            0 {VALUE._col1} {VALUE._col10}
+            1 {VALUE._col1}
+          Select Operator
+            expressions:
+                  expr: _col1
+                  type: string
+                  expr: _col10
+                  type: string
+                  expr: _col16
+                  type: int
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+query: select hive_foo.foo_name, hive_bar.bar_name, n from hive_foo join hive_bar on hive_foo.foo_id =
+hive_bar.foo_id join hive_count on hive_count.bar_id = hive_bar.bar_id
+Input: default/hive_foo
+Input: default/hive_count
+Input: default/hive_bar
+Output: file:/Users/char/Documents/workspace/Hive-Clean/build/ql/tmp/512847523/10000
+foo1	bar10	2
+query: drop table hive_foo
+query: drop table hive_bar
+query: drop table hive_count
