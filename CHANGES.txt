@@ -347,6 +347,9 @@ Trunk - Unreleased
 
     HIVE-626. Fix Column Pruner column order bug. (Yongqiang He via zshao)
 
+    HIVE-623. optimize UDF reverse and UDF length
+    (Emil Ibrishimov via namit)
+
     HIVE-632. Make conditional task serializable. (Namit Jain via zshao)
 
 Release 0.3.1 - Unreleased

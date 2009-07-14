@@ -19,28 +19,49 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUtils;
 import org.apache.hadoop.io.Text;
 
 public class UDFReverse extends UDF { 
   private Text result = new Text();
   
-  public Text evaluate(Text s) {      
+  /**
+   * Reverse a portion of an array in-place.
+   * 
+   * @param arr The array where the data will be reversed. 
+   * @param first The beginning of the portion (inclusive).
+   * @param last The end of the portion (inclusive).
+   */
+  private void reverse(byte[] arr, int first, int last) {
+    for(int i = 0; i < (last-first+1)/2; i++) {
+      byte temp = arr[last - i];
+      arr[last - i] = arr[first + i];
+      arr[first + i] = temp;
+    }
+  }
+  
+  public Text evaluate(Text s) {
     if (s == null) {
       return null;
     }
-
-    // Use a string because Text.getLength() returns the number of bytes.
-    // This can be optimized by walking over the utf8 characters and not
-    // creating a string at all.
-    String text = s.toString();
     
-    // Append the text to a StringBuffer in reverse order.
-    StringBuffer revBuff = new StringBuffer();
-    for (int i = text.length() - 1; i >= 0; i--) {
-      revBuff.append(text.charAt(i));
+    // set() will only allocate memory if the buffer of result is smaller than
+    // s.getLength() and will never resize the buffer down.
+    result.set(s);
+    
+    // Now do an in-place reversal in result.getBytes(). First, reverse every
+    // character, then reverse the whole string.
+    byte[] data = result.getBytes();
+    int prev = 0; // The index where the current char starts
+    for(int i = 1; i < result.getLength(); i++) {
+      if( GenericUDFUtils.isUtfStartByte(data[i]) ) {
+        reverse(data, prev, i-1);
+        prev = i;
+      }
     }
+    reverse(data, prev, result.getLength() - 1);
+    reverse(data, 0, result.getLength() - 1);
     
-    result.set(revBuff.toString());
     return result;
   }
 }

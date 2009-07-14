@@ -1,8 +1,7 @@
 query: CREATE TABLE dest1(len INT)
-query: EXPLAIN
-FROM src INSERT OVERWRITE TABLE dest1 SELECT length(src.value)
+query: EXPLAIN FROM src1 INSERT OVERWRITE TABLE dest1 SELECT length(src1.value)
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION length (. (TOK_TABLE_OR_COL src) value))))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src1)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION length (. (TOK_TABLE_OR_COL src1) value))))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -13,7 +12,7 @@ STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
-        src 
+        src1 
             Select Operator
               expressions:
                     expr: length(value)
@@ -33,10 +32,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/emil/hive1/hive1/build/ql/tmp/809193894/10000
+                destination: file:/data/users/emil/hive1/hive1/build/ql/tmp/891633093/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/emil/hive1/hive1/build/ql/tmp/353629462/10002 
+              file:/data/users/emil/hive1/hive1/build/ql/tmp/988560065/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -68,510 +67,72 @@ STAGE PLANS:
               name: dest1
 
 
-query: FROM src INSERT OVERWRITE TABLE dest1 SELECT length(src.value)
-Input: default/src
+query: FROM src1 INSERT OVERWRITE TABLE dest1 SELECT length(src1.value)
+Input: default/src1
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/emil/hive1/hive1/build/ql/tmp/1493924198/10000
+Output: file:/data/users/emil/hive1/hive1/build/ql/tmp/469108904/10000
 7
-6
-7
-6
-7
-7
-7
-7
-6
-7
-7
-7
-7
-7
-7
-7
-7
-6
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-6
-7
-7
-7
-7
-6
-6
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-6
-7
-7
-7
-7
-5
-7
-7
-7
-7
-6
-7
-7
-7
-7
-7
-7
-7
-6
-7
-7
-7
-7
-6
-7
-6
-6
-5
-7
-6
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-6
-7
-6
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-6
-7
-7
-7
-7
-7
-7
-6
-7
-7
-7
-6
-7
-7
-6
-7
-7
-7
-7
-7
-7
-7
-7
-7
-6
-7
-7
-6
-5
-7
-7
-7
-7
-6
-7
-7
-7
-7
-6
-7
-7
-7
-7
-5
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-6
-6
-7
-7
-7
-7
-7
-7
-6
-7
-6
-7
-7
-7
-7
-7
-6
-7
-7
-7
-7
-6
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-6
-6
-5
-7
-6
-7
-7
-7
-7
-7
-7
-7
-7
-7
-6
-7
-6
-6
+0
 7
 6
 7
-6
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-5
-7
-7
-7
-7
-7
-6
-6
-7
-6
-6
-7
-6
-7
-7
-7
-7
-7
-7
-7
-7
-6
-7
-7
-7
-7
-7
-6
-6
-6
-7
-7
-7
-7
-7
-7
-7
-7
-6
-7
-6
-7
-6
-6
-7
-6
-7
-6
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-6
-7
-7
-7
-7
-7
-5
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-5
-6
-7
-7
-7
-6
-6
-7
-7
-7
-7
-7
-7
-7
-7
-7
-6
-7
-7
-7
-7
 7
 7
 7
-7
-7
-6
-7
-7
-7
-7
-6
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-5
-6
-7
-7
-7
-6
-7
-7
-7
-6
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-6
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-7
-6
-7
-6
-7
-7
-6
-7
-7
-7
-7
-5
-7
-7
-7
-7
-7
-7
-7
-7
-7
 6
 7
 7
 7
 7
-6
-7
-7
-6
-6
-6
-7
 7
 7
-7
-7
-7
-7
-7
-7
+0
+0
 6
+0
 7
 7
 7
-7
-6
+0
+0
+0
+query: DROP TABLE dest1
+query: -- Test with non-ascii characters. 
+CREATE TABLE dest1(name STRING) STORED AS TEXTFILE
+query: LOAD DATA LOCAL INPATH '../data/files/kv4.txt' INTO TABLE dest1
+query: EXPLAIN SELECT length(dest1.name) FROM dest1
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF dest1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION length (. (TOK_TABLE_OR_COL dest1) name))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        dest1 
+            Select Operator
+              expressions:
+                    expr: length(name)
+                    type: int
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+query: SELECT length(dest1.name) FROM dest1
+Input: default/dest1
+Output: file:/data/users/emil/hive1/hive1/build/ql/tmp/1552330536/10000
+2
 query: DROP TABLE dest1

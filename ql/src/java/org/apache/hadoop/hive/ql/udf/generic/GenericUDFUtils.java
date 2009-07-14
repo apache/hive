@@ -40,7 +40,14 @@ public class GenericUDFUtils {
 
   private static Log LOG = LogFactory.getLog(GenericUDFUtils.class.getName());
 
-
+  /**
+   * Checks if b is the first byte of a UTF-8 character.
+   * 
+   */
+  public static boolean isUtfStartByte(byte b) {
+    return (b & 0xC0) != 0x80;
+  }
+  
   /**
    * This class helps to find the return ObjectInspector for a GenericUDF.
    * 

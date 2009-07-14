@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUtils;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
@@ -29,7 +30,15 @@ public class UDFLength extends UDF {
       return null;
     }
 
-    result.set(s.toString().length());
+    byte[] data = s.getBytes();
+    int len = 0;
+    for(int i = 0; i < s.getLength(); i++) {
+      if( GenericUDFUtils.isUtfStartByte(data[i]) ) {
+        len++;
+      }
+    }
+    
+    result.set(len);
     return result;
   }
 }
