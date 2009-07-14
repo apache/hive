@@ -55,7 +55,7 @@ public class ConditionalTask extends Task<ConditionalWork> implements Serializab
   }
   
   public void initialize (HiveConf conf) {
-    resTask = listTasks.get(resolver.getTaskId(resolverCtx));
+    resTask = listTasks.get(resolver.getTaskId(conf, resolverCtx));
     resTask.initialize(conf);
   }
   

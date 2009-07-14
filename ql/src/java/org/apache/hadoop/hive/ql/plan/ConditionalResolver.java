@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+
 /**
  * Conditional task resolution interface. This is invoked at run time to get the task to invoke. 
  * Developers can plug in their own resolvers
@@ -28,5 +30,5 @@ public interface ConditionalResolver {
 	 * @param pctx opaque context
 	 * @return position of the task
 	 */
-	public int getTaskId(Object ctx);
+	public int getTaskId(HiveConf conf, Object ctx);
 }

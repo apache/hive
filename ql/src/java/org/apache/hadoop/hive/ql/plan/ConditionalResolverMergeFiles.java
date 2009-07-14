@@ -24,31 +24,31 @@ import java.util.List;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext;
 
 /**
  * Conditional task resolution interface. This is invoked at run time to get the task to invoke. 
  * Developers can plug in their own resolvers
  */
-public class ConditionalResolverMergeFiles implements ConditionalResolver {
-
-  public static class ConditionalResolverMergeFilesCtx {
-    private GenMRProcContext ctx;
+public class ConditionalResolverMergeFiles implements ConditionalResolver, Serializable {
+  private static final long serialVersionUID = 1L;
+  public ConditionalResolverMergeFiles() {  
+  }
+  
+  public static class ConditionalResolverMergeFilesCtx implements Serializable {
+    private static final long serialVersionUID = 1L;
     List<Task<? extends Serializable>> listTasks;
     private String dir;
-
-    public ConditionalResolverMergeFilesCtx() {  
+    
+    public ConditionalResolverMergeFilesCtx() {      
     }
     
     /**
      * @param dir
      */
-    public ConditionalResolverMergeFilesCtx(GenMRProcContext ctx, List<Task<? extends Serializable>> listTasks, String dir) {
-      this.ctx = ctx;
+    public ConditionalResolverMergeFilesCtx(List<Task<? extends Serializable>> listTasks, String dir) {
       this.listTasks = listTasks;
       this.dir = dir;
     }
@@ -66,21 +66,7 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver {
     public void setDir(String dir) {
       this.dir = dir;
     }
-
-    /**
-     * @return the ctx
-     */
-    public GenMRProcContext getCtx() {
-      return ctx;
-    }
-
-    /**
-     * @param ctx the ctx to set
-     */
-    public void setCtx(GenMRProcContext ctx) {
-      this.ctx = ctx;
-    }
-
+    
     /**
      * @return the listTasks
      */
@@ -96,14 +82,12 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver {
     }
   }
   
-	public int getTaskId(Object objCtx) {
+	public int getTaskId(HiveConf conf, Object objCtx) {
     ConditionalResolverMergeFilesCtx ctx = (ConditionalResolverMergeFilesCtx)objCtx;
     String dirName = ctx.getDir();
-    GenMRProcContext opProcCtx = ctx.getCtx();
     
     // check if a map-reduce job is needed to merge the files
     // If the current size is smaller than the target, merge
-    HiveConf conf = opProcCtx.getConf();
     long trgtSize = conf.getLongVar(HiveConf.ConfVars.HIVEMERGEMAPFILESSIZE);
     
     try {

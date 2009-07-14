@@ -175,7 +175,7 @@ public class GenMRFileSink1 implements NodeProcessor {
     cndTsk.setListTasks(listTasks);
     
     cndTsk.setResolver(new ConditionalResolverMergeFiles());
-    cndTsk.setResolverCtx(new ConditionalResolverMergeFilesCtx(ctx, listTasks, fsOp.getConf().getDirName()));
+    cndTsk.setResolverCtx(new ConditionalResolverMergeFilesCtx(listTasks, fsOp.getConf().getDirName()));
     
     currTask.addDependentTask(cndTsk);
     
