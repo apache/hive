@@ -120,6 +120,9 @@ Trunk - Unreleased
     HIVE-461. Optimize RCFile reading by using column pruning results.
     (Yongqiang He via zshao)
 
+    HIVE-628. Remove stray lines from hive-default.xml.
+    (Prasad Chakka via zshao)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).

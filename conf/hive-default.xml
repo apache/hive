@@ -96,22 +96,6 @@
   <description>class implementing the jdo persistence</description>
 </property>
 
-=true
-javax.jdo.option.NontransactionalRead=true
-javax.jdo.option.ConnectionDriverName=org.apache.derby.jdbc.EmbeddedDriver
-javax.jdo.option.ConnectionURL=jdbc:derby:;databaseName=test_metastore_db;create=true
-=APP
-javax.jdo.option.ConnectionPassword=mine
-datanucleus.validateTables=false
-datanucleus.validateColumns=false
-datanucleus.validateConstraints=false
-datanucleus.storeManagerType=rdbms
-datanucleus.autoCreateSchema=true
-datanucleus.autoStartMechanismMode=checked
-datanucleus.transactionIsolation=read-committed
-datanucleus.cache.level2=true
-datanucleus.cache.level2.type=SOFT
-
 <property>
   <name>javax.jdo.option.DetachAllOnCommit</name>
   <value>true</value>
