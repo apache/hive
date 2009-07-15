@@ -67,7 +67,7 @@ Input: default/srcbucket
 Output: default/tst_dest31
 query: select * from tst_dest31
 Input: default/tst_dest31
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/2046635781/10000
-500
+Output: file:/Users/rmurthy/workspace/hive/build/ql/tmp/1005816917/10000
+493
 query: drop table tst_dest31
 query: drop table dest31

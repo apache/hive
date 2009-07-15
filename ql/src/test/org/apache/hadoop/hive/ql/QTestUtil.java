@@ -281,6 +281,16 @@ public class QTestUtil {
 
     return;
   }
+  
+  private void runCreateTableCmd(String createTableCmd) throws Exception {
+    int ecode = 0;
+    ecode = drv.run(createTableCmd);
+    if(ecode != 0) {
+       throw new Exception("create table command: " + createTableCmd + " failed with exit code= " + ecode);
+    }
+
+    return;
+  }
 
   public void createSources() throws Exception {
     // Next create the three tables src, dest1 and dest2 each with two columns
@@ -316,9 +326,10 @@ public class QTestUtil {
     }
     ArrayList<String> bucketCols = new ArrayList<String>();
     bucketCols.add("key");
-    db.createTable("srcbucket", cols, null, TextInputFormat.class, IgnoreKeyTextOutputFormat.class, 2, bucketCols);
+    runCreateTableCmd("CREATE TABLE srcbucket(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE");
+    //db.createTable("srcbucket", cols, null, TextInputFormat.class, IgnoreKeyTextOutputFormat.class, 2, bucketCols);
     srcTables.add("srcbucket");
-    for (String fname: new String [] {"kv1.txt", "kv2.txt"}) {
+    for (String fname: new String [] {"srcbucket0.txt", "srcbucket1.txt"}) {
       fpath = new Path(testFiles, fname);
       newfpath = new Path(tmppath, fname);
       fs.copyFromLocalFile(false, true, fpath, newfpath);

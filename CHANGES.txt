@@ -355,6 +355,8 @@ Trunk - Unreleased
 
     HIVE-632. Make conditional task serializable. (Namit Jain via zshao)
 
+    HIVE-160. Bug in sampling for subqueries. (Raghu Murthy via namit)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

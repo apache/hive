@@ -50,6 +50,10 @@ public class SamplePruner {
   @SuppressWarnings("nls")
   private static final Log LOG = LogFactory.getLog("hive.ql.parse.SamplePruner");
 
+  public SamplePruner() {
+    
+  }
+  
   /**
    * Constructs the SamplePruner given the table alias and the table sample
    * 	

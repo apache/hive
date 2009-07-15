@@ -3596,6 +3596,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           && (num == den || den <= numBuckets && numBuckets % den == 0)) { 
         // input pruning is enough; no need for filter
         LOG.info("No need for sample filter");
+        // TODO sample predicate is not needed, but we are adding it anyway since
+        // input pruning is broken for subqueries. will remove this once we move
+        // compilation of sampling to use the operator tree
+        exprNodeDesc samplePredicate = genSamplePredicate(ts, tabBucketCols, colsEqual, alias, rwsch, qb.getMetaData(), null);
+        tableOp = OperatorFactory.getAndMakeChild(
+            new filterDesc(samplePredicate), 
+            top);
       }
       else {
         // need to add filter
