@@ -32,10 +32,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/emil/hive1/hive1/build/ql/tmp/1153507358/10000
+                destination: file:/data/users/emil/hive1/hive1/build/ql/tmp/1959443599/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/emil/hive1/hive1/build/ql/tmp/1576575969/10002 
+              file:/data/users/emil/hive1/hive1/build/ql/tmp/267748880/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -72,7 +72,7 @@ Input: default/src1
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/emil/hive1/hive1/build/ql/tmp/1185835654/10000
+Output: file:/data/users/emil/hive1/hive1/build/ql/tmp/1650627948/10000
 832_lav
 
 113_lav
@@ -104,62 +104,8 @@ query: -- Test with non-ascii characters
 -- 0xE993AEE982B5
 CREATE TABLE dest1(name STRING) STORED AS TEXTFILE
 query: LOAD DATA LOCAL INPATH '../data/files/kv4.txt' INTO TABLE dest1
-query: EXPLAIN SELECT count(1) FROM dest1 
-	WHERE reverse(dest1.name) = _UTF-8 0xE993AEE982B5
-ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF dest1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_FUNCTION reverse (. (TOK_TABLE_OR_COL dest1) name)) (TOK_CHARSETLITERAL _UTF-8 0xE993AEE982B5)))))
-
-STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 is a root stage
-
-STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        dest1 
-            Filter Operator
-              predicate:
-                  expr: (reverse(name) = '??')
-                  type: boolean
-              Filter Operator
-                predicate:
-                    expr: (reverse(name) = '??')
-                    type: boolean
-                Select Operator
-                  Group By Operator
-                    aggregations:
-                          expr: count(1)
-                    mode: hash
-                    Reduce Output Operator
-                      sort order: 
-                      tag: -1
-                      value expressions:
-                            expr: _col0
-                            type: bigint
-      Reduce Operator Tree:
-        Group By Operator
-          aggregations:
-                expr: count(VALUE._col0)
-          mode: mergepartial
-          Select Operator
-            expressions:
-                  expr: _col0
-                  type: bigint
-            File Output Operator
-              compressed: false
-              GlobalTableId: 0
-              table:
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-
-  Stage: Stage-0
-    Fetch Operator
-      limit: -1
-
-
 query: SELECT count(1) FROM dest1 WHERE reverse(dest1.name) = _UTF-8 0xE993AEE982B5
 Input: default/dest1
-Output: file:/data/users/emil/hive1/hive1/build/ql/tmp/491483710/10000
+Output: file:/data/users/emil/hive1/hive1/build/ql/tmp/617908822/10000
 1
 query: DROP TABLE dest1
