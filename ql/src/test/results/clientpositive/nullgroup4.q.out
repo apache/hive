@@ -52,19 +52,18 @@ STAGE PLANS:
           aggregations:
                 expr: count(VALUE._col0)
                 expr: count(DISTINCT KEY._col0)
-          mode: partial2
+          mode: partials
           File Output Operator
             compressed: false
             GlobalTableId: 0
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                name: binary_table
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/630845842/10002 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1530804093/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -99,7 +98,7 @@ STAGE PLANS:
 
 query: select count(1), count(distinct x.value) from src x where x.key = 9999
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1938635713/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/429769664/10000
 0	0
 query: explain
 select count(1), count(distinct x.value) from src x where x.key = 9999
@@ -172,7 +171,7 @@ STAGE PLANS:
 
 query: select count(1), count(distinct x.value) from src x where x.key = 9999
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/2019754835/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1474714748/10000
 0	0
 query: explain
 select count(1), count(distinct x.value) from src x where x.key = 9999
@@ -225,12 +224,11 @@ STAGE PLANS:
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                name: binary_table
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1425841757/10002 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1775276557/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -265,7 +263,7 @@ STAGE PLANS:
 
 query: select count(1), count(distinct x.value) from src x where x.key = 9999
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/2042822876/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/559124922/10000
 0	0
 query: explain
 select count(1), count(distinct x.value) from src x where x.key = 9999
@@ -328,5 +326,5 @@ STAGE PLANS:
 
 query: select count(1), count(distinct x.value) from src x where x.key = 9999
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/2013029014/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/2134992556/10000
 0	0

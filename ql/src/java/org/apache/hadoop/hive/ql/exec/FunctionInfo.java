@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 
 public class FunctionInfo {
@@ -29,33 +30,33 @@ public class FunctionInfo {
   private boolean isOperator;
   
   private Class<? extends UDF> udfClass;
-
-  private Class<? extends UDAF> udafClass;
   
   private Class<? extends GenericUDF> genericUDFClass;
 
+  private GenericUDAFResolver genericUDAFResolver;
+
   public static enum OperatorType { NO_OP, PREFIX, INFIX, POSTFIX };
 
-  public FunctionInfo(String displayName, Class<? extends UDF> udfClass, Class<? extends UDAF> udafClass,
+  public FunctionInfo(String displayName, Class<? extends UDF> udfClass,
       Class<? extends GenericUDF> genericUdfClass) {
-    assert(udfClass == null || udafClass == null);
     this.displayName = displayName;
     opType = OperatorType.NO_OP;
     isOperator = false;
     this.udfClass = udfClass;
-    this.udafClass = udafClass;
     this.genericUDFClass = genericUdfClass;
+    this.genericUDAFResolver = null;
   }
 
-  public FunctionInfo(String displayName, OperatorType opType, Class<? extends UDF> udfClass) {
+  public FunctionInfo(String displayName, GenericUDAFResolver genericUDAFResolver) {
     this.displayName = displayName;
-    this.opType = opType;
-    this.udfClass = udfClass;
-    this.udafClass = null;
+    this.opType = OperatorType.NO_OP;
+    this.udfClass = null;
+    this.genericUDFClass = null;
+    this.genericUDAFResolver = genericUDAFResolver;
   }
 
   public boolean isAggFunction() {
-    return (udafClass != null && udfClass == null);
+    return genericUDAFResolver != null;
   }
 
   public boolean isOperator() {
@@ -78,12 +79,12 @@ public class FunctionInfo {
     return udfClass;
   }
 
-  public Class<? extends UDAF> getUDAFClass() {
-    return udafClass;
-  }
-  
   public Class<? extends GenericUDF> getGenericUDFClass() {
     return genericUDFClass;
+  }
+  
+  public GenericUDAFResolver getGenericUDAFResolver() {
+    return genericUDAFResolver;
   }
   
   public String getDisplayName() {

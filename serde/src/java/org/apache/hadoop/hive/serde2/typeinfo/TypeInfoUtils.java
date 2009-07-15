@@ -223,7 +223,7 @@ public class TypeInfoUtils {
    * Returns the standard object inspector that can be used to translate an object of that typeInfo
    * to a standard object type.  
    */
-  public static ObjectInspector getStandardObjectInspectorFromTypeInfo(TypeInfo typeInfo) {
+  public static ObjectInspector getStandardWritableObjectInspectorFromTypeInfo(TypeInfo typeInfo) {
     ObjectInspector result = cachedStandardObjectInspector.get(typeInfo);
     if (result == null) {
       switch(typeInfo.getCategory()) {
@@ -233,15 +233,15 @@ public class TypeInfoUtils {
           break;
         }
         case LIST: {
-          ObjectInspector elementObjectInspector = getStandardObjectInspectorFromTypeInfo(
+          ObjectInspector elementObjectInspector = getStandardWritableObjectInspectorFromTypeInfo(
               ((ListTypeInfo)typeInfo).getListElementTypeInfo());
           result = ObjectInspectorFactory.getStandardListObjectInspector(elementObjectInspector);
           break;
         }
         case MAP: {
           MapTypeInfo mapTypeInfo = (MapTypeInfo)typeInfo;
-          ObjectInspector keyObjectInspector = getStandardObjectInspectorFromTypeInfo(mapTypeInfo.getMapKeyTypeInfo());
-          ObjectInspector valueObjectInspector = getStandardObjectInspectorFromTypeInfo(mapTypeInfo.getMapValueTypeInfo());
+          ObjectInspector keyObjectInspector = getStandardWritableObjectInspectorFromTypeInfo(mapTypeInfo.getMapKeyTypeInfo());
+          ObjectInspector valueObjectInspector = getStandardWritableObjectInspectorFromTypeInfo(mapTypeInfo.getMapValueTypeInfo());
           result = ObjectInspectorFactory.getStandardMapObjectInspector(keyObjectInspector, valueObjectInspector);
           break;
         }
@@ -251,7 +251,7 @@ public class TypeInfoUtils {
           List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
           List<ObjectInspector> fieldObjectInspectors = new ArrayList<ObjectInspector>(fieldTypeInfos.size());
           for(int i=0; i<fieldTypeInfos.size(); i++) {
-            fieldObjectInspectors.add(getStandardObjectInspectorFromTypeInfo(fieldTypeInfos.get(i)));
+            fieldObjectInspectors.add(getStandardWritableObjectInspectorFromTypeInfo(fieldTypeInfos.get(i)));
           }
           result = ObjectInspectorFactory.getStandardStructObjectInspector(fieldNames, fieldObjectInspectors);
           break;

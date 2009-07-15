@@ -51,19 +51,18 @@ STAGE PLANS:
           keys:
                 expr: KEY._col0
                 type: string
-          mode: partial2
+          mode: partials
           File Output Operator
             compressed: false
             GlobalTableId: 0
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                name: binary_table
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/728386179/10002 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/994469608/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -101,10 +100,9 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/284238698/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/307851852/10000
 query: explain
 select x.key, count(1) from src x where x.key > 9999 group by x.key
 ABSTRACT SYNTAX TREE:
@@ -178,7 +176,7 @@ STAGE PLANS:
 
 query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1931999488/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1608573572/10000
 query: explain
 select x.key, count(1) from src x where x.key > 9999 group by x.key
 ABSTRACT SYNTAX TREE:
@@ -232,12 +230,11 @@ STAGE PLANS:
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                name: binary_table
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1264700371/10002 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/360265532/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -278,7 +275,7 @@ STAGE PLANS:
 
 query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/192620128/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/208705197/10000
 query: explain
 select x.key, count(1) from src x where x.key > 9999 group by x.key
 ABSTRACT SYNTAX TREE:
@@ -345,4 +342,4 @@ STAGE PLANS:
 
 query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/5517742/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1575645808/10000

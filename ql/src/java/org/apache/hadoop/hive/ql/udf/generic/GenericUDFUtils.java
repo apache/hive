@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 
 import org.apache.commons.logging.Log;
@@ -27,9 +29,13 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
@@ -121,7 +127,7 @@ public class GenericUDFUtils {
         return false;
       }
 
-      returnObjectInspector = TypeInfoUtils.getStandardObjectInspectorFromTypeInfo(commonTypeInfo);
+      returnObjectInspector = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(commonTypeInfo);
       
       return true;
     }
@@ -162,5 +168,60 @@ public class GenericUDFUtils {
     }
     
   }
+  
+  /**
+   * Convert primitive parameters between Java and Writable when needed. 
+   */
+  public static class PrimitiveConversionHelper {
+
+    private Method m;
+    private ObjectInspector[] parameters;
+    
+    Converter[] converters; 
+    Object[] convertedParameters;
+    
+    /**
+     * Create a PrimitiveConversionHelper for Method m.  The ObjectInspector's
+     * input parameters are specified in parameters.
+     */
+    public PrimitiveConversionHelper(Method m, ObjectInspector[] parameters) {
+      this.m = m;
+      this.parameters = parameters;
+      
+      Type[] acceptedParameters = m.getGenericParameterTypes();
+      assert(parameters.length == acceptedParameters.length);
+      
+      for (int i = 0; i < parameters.length; i++) {
+        ObjectInspector acceptedParameterOI = PrimitiveObjectInspectorFactory
+            .getPrimitiveObjectInspectorFromClass((Class<?>)acceptedParameters[i]);
+        Converter pc = ObjectInspectorConverters
+            .getConverter(parameters[i], acceptedParameterOI);
+        // Conversion is needed?
+        if (pc != null) {
+          if (converters == null) {
+            // init converters only if needed.
+            converters = new Converter[parameters.length];
+            convertedParameters = new Object[parameters.length];
+          }
+          converters[i] = pc;
+        }
+      }
+    }
+    
+    public Object[] convertIfNecessary(Object... parameters) {
+      if (converters == null) {
+        return parameters;
+      } else {
+        assert(parameters.length == convertedParameters.length);
+        for(int i = 0; i < parameters.length; i++) {
+          convertedParameters[i] =
+            converters[i] == null 
+            ? parameters[i]
+            : converters[i].convert(parameters[i]); 
+        }
+        return convertedParameters;
+      }
+    }
+  };
   
 }

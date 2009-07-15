@@ -96,7 +96,6 @@ STAGE PLANS:
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                name: binary_table
 
   Stage: Stage-2
     Map Reduce
@@ -187,7 +186,7 @@ JOIN
 ON src1.c2 = src3.c6
 WHERE src1.c1 <> '311' and (src1.c2 <> 'val_50' or src1.c1 > '1') and (src2.c3 <> '10' or src1.c1 <> '10') and (src2.c3 <> '14') and (sqrt(src3.c5) <> 13)
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/976262349/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1593170677/10000
 0	val_0
 0	val_0
 0	val_0

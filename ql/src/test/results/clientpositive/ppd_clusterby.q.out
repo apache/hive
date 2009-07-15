@@ -56,7 +56,7 @@ STAGE PLANS:
 
 query: SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/673778413/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1968231476/10000
 10	val_10
 query: EXPLAIN 
 SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key)  where x.key = 20 CLUSTER BY v1
@@ -129,12 +129,11 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    name: binary_table
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1323731431/10002 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/955520378/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col1
@@ -167,5 +166,5 @@ STAGE PLANS:
 
 query: SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1056466885/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1619244792/10000
 20	val_20	20

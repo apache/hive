@@ -59,12 +59,11 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  name: binary_table
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1330132213/10002 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/881693184/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -98,7 +97,7 @@ FROM src a JOIN src b
 ON a.key = b.key
 ORDER BY key LIMIT 10
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/303679320/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1098336610/10000
 5
 5
 5

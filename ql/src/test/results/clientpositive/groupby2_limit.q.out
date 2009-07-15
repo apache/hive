@@ -20,7 +20,7 @@ STAGE PLANS:
                     type: string
               Group By Operator
                 aggregations:
-                      expr: sum(UDFToDouble(substr(value, 5)))
+                      expr: sum(substr(value, 5))
                 keys:
                       expr: key
                       type: string
@@ -66,7 +66,7 @@ STAGE PLANS:
 
 query: SELECT src.key, sum(substr(src.value,5)) FROM src GROUP BY src.key LIMIT 5
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/165818417/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/116834924/10000
 0	0.0
 10	10.0
 100	200.0

@@ -65,12 +65,11 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  name: binary_table
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1203288551/10002 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/570921339/10002 
             Common Join Operator
               condition map:
                    Inner Join 0 to 1
@@ -90,11 +89,11 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
-            file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1203288551/10004 
+            file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/570921339/10004 
               Fetch Operator
                 limit: -1
           Alias -> Map Local Operator Tree:
-            file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1203288551/10004 
+            file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/570921339/10004 
                 Common Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -115,7 +114,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1203288551/10003 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/570921339/10003 
           Select Operator
             expressions:
                   expr: _col0
@@ -227,7 +226,6 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  name: binary_table
 
 
 query: INSERT OVERWRITE TABLE dest_j1 
@@ -240,7 +238,7 @@ Input: default/src1
 Output: default/dest_j1
 query: select * from dest_j1 x order by x.key
 Input: default/dest_j1
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1617117942/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/944474467/10000
 128	1
 146	1
 150	1

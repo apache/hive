@@ -63,12 +63,11 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    name: binary_table
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/926752707/10002 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/792304338/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0

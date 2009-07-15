@@ -61,12 +61,11 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  name: binary_table
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/998416025/10002 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1656753029/10002 
           Union
             Select Operator
               expressions:
@@ -84,7 +83,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/998416025/10003 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1656753029/10003 
           Union
             Select Operator
               expressions:
@@ -147,7 +146,6 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  name: binary_table
 
   Stage: Stage-0
     Fetch Operator
@@ -160,7 +158,7 @@ query: select * from (
   select * from srcpart b where b.ds = '2008-04-08' and b.hr = '14' limit 5
 )subq
 Input: default/srcpart/ds=2008-04-08/hr=11
-Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/122967309/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1769087452/10000
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11

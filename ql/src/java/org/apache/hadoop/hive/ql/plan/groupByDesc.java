@@ -21,34 +21,30 @@ package org.apache.hadoop.hive.ql.plan;
 @explain(displayName="Group By Operator")
 public class groupByDesc implements java.io.Serializable {
   /** Group-by Mode:
-   *  COMPLETE: complete 1-phase aggregation: aggregate, evaluate
-   *  PARTIAL1: partial aggregation - first phase:  aggregate, evaluatePartial
-   *  PARTIAL2: partial aggregation - second phase: aggregatePartial, evaluatePartial
-   *  FINAL: partial aggregation - final phase: aggregatePartial, evaluate
-   *  HASH: the same as PARTIAL1 but use hash-table-based aggregation  
+   *  COMPLETE: complete 1-phase aggregation: iterate, terminate
+   *  PARTIAL1: partial aggregation - first phase:  iterate, terminatePartial
+   *  PARTIAL2: partial aggregation - second phase: merge, terminatePartial
+   *  PARTIALS: For non-distinct the same as PARTIAL2, for distinct the same as PARTIAL1
+   *  FINAL: partial aggregation - final phase: merge, terminate
+   *  HASH: For non-distinct the same as PARTIAL1 but use hash-table-based aggregation
+   *  MERGEPARTIAL: FINAL for non-distinct aggregations, COMPLETE for distinct aggregations  
    */
   private static final long serialVersionUID = 1L;
-  public static enum Mode { COMPLETE, PARTIAL1, PARTIAL2, FINAL, HASH, MERGEPARTIAL };
+  public static enum Mode { COMPLETE, PARTIAL1, PARTIAL2, PARTIALS, FINAL, HASH, MERGEPARTIAL };
   private Mode mode;
   private java.util.ArrayList<exprNodeDesc> keys;
   private java.util.ArrayList<org.apache.hadoop.hive.ql.plan.aggregationDesc> aggregators;
-  private java.util.ArrayList<String> evalMethods;
-  private java.util.ArrayList<String> aggMethods;
   private java.util.ArrayList<java.lang.String> outputColumnNames;
   public groupByDesc() { }
   public groupByDesc(
     final Mode mode,
     final java.util.ArrayList<java.lang.String> outputColumnNames,
     final java.util.ArrayList<exprNodeDesc> keys,
-    final java.util.ArrayList<org.apache.hadoop.hive.ql.plan.aggregationDesc> aggregators,
-    final java.util.ArrayList<String> evalMethods,
-    final java.util.ArrayList<String> aggMethods) {
+    final java.util.ArrayList<org.apache.hadoop.hive.ql.plan.aggregationDesc> aggregators) {
     this.mode = mode;
     this.outputColumnNames = outputColumnNames;
     this.keys = keys;
     this.aggregators = aggregators;
-    this.evalMethods = evalMethods;
-    this.aggMethods = aggMethods;
   }
   public Mode getMode() {
     return this.mode;
@@ -62,6 +58,8 @@ public class groupByDesc implements java.io.Serializable {
       return "partial1";
     case PARTIAL2:
       return "partial2";
+    case PARTIALS:
+      return "partials";
     case HASH:
       return "hash";
     case FINAL:
@@ -98,18 +96,5 @@ public class groupByDesc implements java.io.Serializable {
   public void setAggregators(final java.util.ArrayList<org.apache.hadoop.hive.ql.plan.aggregationDesc> aggregators) {
     this.aggregators = aggregators;
   }
-  
-  public java.util.ArrayList<String> getEvalMethods() {
-    return this.evalMethods;
-  }
-  public void setEvalMethods(final java.util.ArrayList<String> evalMethods) {
-    this.evalMethods = evalMethods;
-  }
-  
-  public java.util.ArrayList<String> getAggMethods() {
-    return this.aggMethods;
-  }
-  public void setAggMethods(final java.util.ArrayList<String> aggMethods) {
-    this.aggMethods = aggMethods;
-  }
+
 }

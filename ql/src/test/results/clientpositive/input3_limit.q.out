@@ -56,12 +56,11 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    name: binary_table
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive4/hive4/build/ql/tmp/2087941217/10002 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1327788868/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -98,7 +97,7 @@ Input: default/t1
 Output: default/t2
 query: SELECT * FROM T2 SORT BY key, value
 Input: default/t2
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1213849877/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1102190511/10000
 0	val_0
 0	val_0
 0	val_0

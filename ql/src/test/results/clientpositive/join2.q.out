@@ -53,7 +53,6 @@ STAGE PLANS:
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                name: binary_table
 
   Stage: Stage-2
     Map Reduce
@@ -129,7 +128,7 @@ Input: default/src
 Output: default/dest_j2
 query: SELECT dest_j2.* FROM dest_j2
 Input: default/dest_j2
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/47427829/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1158599181/10000
 0	val_0
 0	val_0
 0	val_0

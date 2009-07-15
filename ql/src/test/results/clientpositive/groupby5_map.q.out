@@ -19,7 +19,7 @@ STAGE PLANS:
                     type: string
               Group By Operator
                 aggregations:
-                      expr: sum(UDFToDouble(key))
+                      expr: sum(key)
                 mode: hash
                 Reduce Output Operator
                   sort order: 
@@ -65,5 +65,5 @@ Input: default/src
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1649758304/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/430800667/10000
 130091

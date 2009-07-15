@@ -110,7 +110,10 @@ import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.ql.plan.tableScanDesc;
 import org.apache.hadoop.hive.ql.plan.unionDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFHash;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -284,7 +287,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       assert (expressionTree.getChildCount() != 0);
       if (expressionTree.getChild(0).getType() == HiveParser.Identifier) {
         String functionName = unescapeIdentifier(expressionTree.getChild(0).getText());
-        if (FunctionRegistry.getUDAF(functionName) != null) {
+        if (FunctionRegistry.getGenericUDAFResolver(functionName) != null) {
           aggregations.put(expressionTree.toStringTree(), expressionTree);
           return;
         }
@@ -972,7 +975,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("nls")
-  public Operator<? extends Serializable> putOpInsertMap(Operator<? extends Serializable> op, RowResolver rr) 
+  public <T extends Serializable> Operator<T> putOpInsertMap(Operator<T> op, RowResolver rr) 
   {
     OpParseContext ctx = new OpParseContext(rr);
     opParseCtx.put(op, ctx);
@@ -1347,93 +1350,123 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
-   * Class to store UDAF related information.
+   * Class to store GenericUDAF related information.
    */
-  static class UDAFInfo {
+  static class GenericUDAFInfo {
     ArrayList<exprNodeDesc> convertedParameters;
-    Class<?> retType;
-    Class<? extends UDAFEvaluator> evalClass;
-    Method evalMethod;
-    Method aggMethod;
+    GenericUDAFEvaluator genericUDAFEvaluator;
+    TypeInfo returnType;
   }
 
   /**
-   * Returns the UDAFInfo struct for the aggregation
+   * Convert exprNodeDesc array to Typeinfo array. 
+   */
+  static ArrayList<TypeInfo> getTypeInfo(ArrayList<exprNodeDesc> exprs) {
+    ArrayList<TypeInfo> result = new ArrayList<TypeInfo>();
+    for(exprNodeDesc expr: exprs) {
+      result.add(expr.getTypeInfo());
+    }
+    return result;
+  }
+  
+  /**
+   * Convert exprNodeDesc array to Typeinfo array. 
+   */
+  static ObjectInspector[] getStandardObjectInspector(ArrayList<TypeInfo> exprs) {
+    ObjectInspector[] result = new ObjectInspector[exprs.size()];
+    for (int i=0; i<exprs.size(); i++) {
+      result[i] = TypeInfoUtils
+          .getStandardWritableObjectInspectorFromTypeInfo(exprs.get(i));
+    }
+    return result;
+  }
+  
+  /**
+   * Returns the GenericUDAFEvaluator for the aggregation.
+   * This is called once for each GroupBy aggregation.
+   */
+  static GenericUDAFEvaluator getGenericUDAFEvaluator(String aggName, 
+      ArrayList<exprNodeDesc> aggParameters, 
+      ASTNode aggTree) throws SemanticException {
+    ArrayList<TypeInfo> originalParameterTypeInfos = getTypeInfo(aggParameters);
+    GenericUDAFEvaluator result = FunctionRegistry.getGenericUDAFEvaluator(
+        aggName, originalParameterTypeInfos);
+    if (null == result) {
+      String reason = "Looking for UDAF Evaluator\"" + aggName + "\" with parameters " 
+          + originalParameterTypeInfos;
+      throw new SemanticException(ErrorMsg.INVALID_FUNCTION_SIGNATURE.
+          getMsg((ASTNode)aggTree.getChild(0), reason));
+    }
+    return result;
+  }
+  
+  /**
+   * Returns the GenericUDAFInfo struct for the aggregation.
    * @param aggName  The name of the UDAF.
-   * @param mode     The mode of the aggregation. This affects the evaluate method.
-   * @param aggParameters  The actual exprNodeDesc of the parameters.
+   * @param aggParameters  The exprNodeDesc of the original parameters 
    * @param aggTree   The ASTNode node of the UDAF in the query.
-   * @return UDAFInfo
+   * @return GenericUDAFInfo 
    * @throws SemanticException when the UDAF is not found or has problems.
    */
-  UDAFInfo getUDAFInfo(String aggName, groupByDesc.Mode mode,
-      ArrayList<exprNodeDesc> aggParameters, ASTNode aggTree) throws SemanticException {
-    UDAFInfo r = new UDAFInfo();
-    ArrayList<TypeInfo> aggTypeInfos = new ArrayList<TypeInfo>();
-    for(exprNodeDesc expr: aggParameters) {
-      aggTypeInfos.add(expr.getTypeInfo());
-    }
-    r.evalClass = FunctionRegistry.getUDAFEvaluator(aggName, aggTypeInfos);
-    if (null == r.evalClass) {
-      String reason = "Looking for UDAF Evaluator\"" + aggName + "\" with parameters " + aggTypeInfos;
-      throw new SemanticException(ErrorMsg.INVALID_FUNCTION_SIGNATURE.getMsg((ASTNode)aggTree.getChild(0), reason));
-    }
+  static GenericUDAFInfo getGenericUDAFInfo(GenericUDAFEvaluator evaluator, 
+      GenericUDAFEvaluator.Mode emode, ArrayList<exprNodeDesc> aggParameters) 
+      throws SemanticException {
     
-    r.aggMethod = null;
-    String funcName = (((mode == groupByDesc.Mode.PARTIAL1) || (mode == groupByDesc.Mode.HASH) ||
-                        (mode == groupByDesc.Mode.COMPLETE)) ? "iterate" : "merge");
-    if (aggTree.getToken().getType() == HiveParser.TOK_FUNCTIONDI && (mode != groupByDesc.Mode.FINAL))
-        funcName = "iterate";
-
-    for(Method m: r.evalClass.getMethods()) {
-      if (m.getName().equalsIgnoreCase(funcName)) {
-        r.aggMethod = m;
-      }
-    }
+    GenericUDAFInfo r = new GenericUDAFInfo();
     
-    if (null == r.aggMethod) {
-      String reason = "Looking for UDAF Evaluator Iterator\"" + aggName + "\" with parameters " + aggTypeInfos;
-      throw new SemanticException(ErrorMsg.INVALID_FUNCTION_SIGNATURE.getMsg((ASTNode)aggTree.getChild(0), reason));
-    }
+    // set r.genericUDAFEvaluator
+    r.genericUDAFEvaluator = evaluator;
 
-    r.convertedParameters = convertParameters(r.aggMethod, aggParameters);
-
-    funcName = ((mode == groupByDesc.Mode.PARTIAL1 || mode == groupByDesc.Mode.HASH ||
-                 mode == groupByDesc.Mode.PARTIAL2) ? "terminatePartial" : "terminate");
-    r.evalMethod = null;
-    for(Method m: r.evalClass.getMethods()) {
-      if (m.getName().equalsIgnoreCase(funcName)) {
-        r.evalMethod = m;
-      }
+    // set r.returnType
+    ObjectInspector returnOI = null;
+    try {
+      ObjectInspector[] aggObjectInspectors = 
+          getStandardObjectInspector(getTypeInfo(aggParameters));
+      returnOI = r.genericUDAFEvaluator.init(emode, aggObjectInspectors);
+      r.returnType = TypeInfoUtils.getTypeInfoFromObjectInspector(returnOI);
+    } catch (HiveException e) {
+      throw new SemanticException(e);
     }
-    if (r.evalMethod == null) {
-      String reason = "UDAF \"" + aggName + "\" does not have terminate()/terminatePartial() methods.";
-      throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg((ASTNode)aggTree.getChild(0), reason)); 
-    }
-    r.retType = r.evalMethod.getReturnType();
+    // set r.convertedParameters
+    // TODO: type conversion
+    r.convertedParameters = aggParameters;
     
     return r;
   }
-  
+
+  private static GenericUDAFEvaluator.Mode groupByDescModeToUDAFMode(groupByDesc.Mode mode, boolean isDistinct) {
+    switch (mode) {
+      case COMPLETE: return GenericUDAFEvaluator.Mode.COMPLETE;
+      case PARTIAL1: return GenericUDAFEvaluator.Mode.PARTIAL1;
+      case PARTIAL2: return GenericUDAFEvaluator.Mode.PARTIAL2;
+      case PARTIALS: return isDistinct ? GenericUDAFEvaluator.Mode.PARTIAL1 : GenericUDAFEvaluator.Mode.PARTIAL2;
+      case FINAL: return GenericUDAFEvaluator.Mode.FINAL;
+      case HASH: return GenericUDAFEvaluator.Mode.PARTIAL1;
+      case MERGEPARTIAL: return isDistinct ? GenericUDAFEvaluator.Mode.COMPLETE : GenericUDAFEvaluator.Mode.FINAL;
+      default:
+        throw new RuntimeException("internal error in groupByDescModeToUDAFMode");
+    }
+  }
   /**
    * Generate the GroupByOperator for the Query Block (parseInfo.getXXX(dest)).
    * The new GroupByOperator will be a child of the reduceSinkOperatorInfo.
    * 
    * @param mode The mode of the aggregation (PARTIAL1 or COMPLETE)
+   * @param genericUDAFEvaluators  If not null, this function will store the mapping
+   *            from Aggregation StringTree to the genericUDAFEvaluator in this parameter,
+   *            so it can be used in the next-stage GroupBy aggregations. 
    * @return the new GroupByOperator
    */
   @SuppressWarnings("nls")
   private Operator genGroupByPlanGroupByOperator(
         QBParseInfo parseInfo, String dest, Operator reduceSinkOperatorInfo,
-        groupByDesc.Mode mode)
+        groupByDesc.Mode mode, Map<String, GenericUDAFEvaluator> genericUDAFEvaluators)
     throws SemanticException {
     RowResolver groupByInputRowResolver = opParseCtx.get(reduceSinkOperatorInfo).getRR();
     RowResolver groupByOutputRowResolver = new RowResolver();
     groupByOutputRowResolver.setIsExprResolver(true);
     ArrayList<exprNodeDesc> groupByKeys = new ArrayList<exprNodeDesc>();
     ArrayList<aggregationDesc> aggregations = new ArrayList<aggregationDesc>();
-    ArrayList<String> evalMethods = new ArrayList<String>();
-    ArrayList<String> aggMethods = new ArrayList<String>();
     ArrayList<String> outputColumnNames = new ArrayList<String>();
     Map<String, exprNodeDesc> colExprMap = new HashMap<String, exprNodeDesc>();
     List<ASTNode> grpByExprs = getGroupByForClause(parseInfo, dest);
@@ -1459,9 +1492,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     assert (aggregationTrees != null);
     for (Map.Entry<String, ASTNode> entry : aggregationTrees.entrySet()) {
       ASTNode value = entry.getValue();
+      
+      // This is the GenericUDAF name
       String aggName = value.getChild(0).getText();
-      Class<? extends UDAF> aggClass = FunctionRegistry.getUDAF(aggName);
-      assert (aggClass != null);
+      
+      // Convert children to aggParameters
       ArrayList<exprNodeDesc> aggParameters = new ArrayList<exprNodeDesc>();
       // 0 is the function name
       for (int i = 1; i < value.getChildCount(); i++) {
@@ -1476,22 +1511,27 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         assert(paraExpression != null);
         aggParameters.add(new exprNodeColumnDesc(paraExprInfo.getType(), paraExprInfo.getInternalName()));
       }
-
-      UDAFInfo udaf = getUDAFInfo(aggName, mode, aggParameters, value);
       
-      aggregations.add(new aggregationDesc(udaf.evalClass, udaf.convertedParameters,
-          value.getToken().getType() == HiveParser.TOK_FUNCTIONDI));
-      evalMethods.add(udaf.evalMethod.getName());
-      aggMethods.add(udaf.aggMethod.getName());
+      boolean isDistinct = value.getType() == HiveParser.TOK_FUNCTIONDI;
+      Mode amode = groupByDescModeToUDAFMode(mode, isDistinct);
+      GenericUDAFEvaluator genericUDAFEvaluator = getGenericUDAFEvaluator(aggName, aggParameters, value);
+      assert(genericUDAFEvaluator != null);
+      GenericUDAFInfo udaf = getGenericUDAFInfo(genericUDAFEvaluator, amode, aggParameters);
+      aggregations.add(new aggregationDesc(aggName.toLowerCase(), udaf.genericUDAFEvaluator, udaf.convertedParameters,
+          isDistinct, amode));
       String field = getColumnInternalName(groupByKeys.size() + aggregations.size() -1);
       outputColumnNames.add(field);
       groupByOutputRowResolver.put("",value.toStringTree(),
                                    new ColumnInfo(field,
-                                       udaf.retType));
+                                       udaf.returnType));
+      // Save the evaluator so that it can be used by the next-stage GroupByOperators 
+      if (genericUDAFEvaluators != null) {
+        genericUDAFEvaluators.put(entry.getKey(), genericUDAFEvaluator);
+      }
     }
 
     Operator op =  
-      putOpInsertMap(OperatorFactory.getAndMakeChild(new groupByDesc(mode, outputColumnNames, groupByKeys, aggregations, evalMethods, aggMethods),
+      putOpInsertMap(OperatorFactory.getAndMakeChild(new groupByDesc(mode, outputColumnNames, groupByKeys, aggregations),
                                                      new RowSchema(groupByOutputRowResolver.getColumnInfos()),
                                                      reduceSinkOperatorInfo),
         groupByOutputRowResolver
@@ -1504,13 +1544,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * Generate the GroupByOperator for the Query Block (parseInfo.getXXX(dest)).
    * The new GroupByOperator will be a child of the reduceSinkOperatorInfo.
    * 
-   * @param mode The mode of the aggregation (PARTIAL2)
+   * @param mode The mode of the aggregation (MERGEPARTIAL, PARTIAL2)
+   * @param genericUDAFEvaluators  The mapping from Aggregation StringTree to the 
+   *            genericUDAFEvaluator. 
    * @return the new GroupByOperator
    */
   @SuppressWarnings("nls")
   private Operator genGroupByPlanGroupByOperator1(
         QBParseInfo parseInfo, String dest, Operator reduceSinkOperatorInfo,
-        groupByDesc.Mode mode)
+        groupByDesc.Mode mode, Map<String, GenericUDAFEvaluator> genericUDAFEvaluators)
     throws SemanticException {
     ArrayList<String> outputColumnNames = new ArrayList<String>();
     RowResolver groupByInputRowResolver = opParseCtx.get(reduceSinkOperatorInfo).getRR();
@@ -1518,8 +1560,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     groupByOutputRowResolver.setIsExprResolver(true);
     ArrayList<exprNodeDesc> groupByKeys = new ArrayList<exprNodeDesc>();
     ArrayList<aggregationDesc> aggregations = new ArrayList<aggregationDesc>();
-    ArrayList<String> evalMethods = new ArrayList<String>();
-    ArrayList<String> aggMethods = new ArrayList<String>();
     List<ASTNode> grpByExprs = getGroupByForClause(parseInfo, dest);
     Map<String, exprNodeDesc> colExprMap = new HashMap<String, exprNodeDesc>();
     for (int i = 0; i < grpByExprs.size(); ++i) {
@@ -1544,8 +1584,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (Map.Entry<String, ASTNode> entry : aggregationTrees.entrySet()) {
       ASTNode value = entry.getValue();
       String aggName = value.getChild(0).getText();
-      Class<? extends UDAF> aggClass = FunctionRegistry.getUDAF(aggName);
-      assert (aggClass != null);
       ArrayList<exprNodeDesc> aggParameters = new ArrayList<exprNodeDesc>();
 
       if (value.getToken().getType() == HiveParser.TOK_FUNCTIONDI) {
@@ -1574,21 +1612,22 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         assert(paraExpression != null);
         aggParameters.add(new exprNodeColumnDesc(paraExprInfo.getType(), paraExpression));
       }
-
-      UDAFInfo udaf = getUDAFInfo(aggName, mode, aggParameters, value);
-      aggregations.add(new aggregationDesc(udaf.evalClass, udaf.convertedParameters, 
-          ((mode == groupByDesc.Mode.FINAL) ? false : (value.getToken().getType() == HiveParser.TOK_FUNCTIONDI))));
-      evalMethods.add(udaf.evalMethod.getName());
-      aggMethods.add(udaf.aggMethod.getName());
+      boolean isDistinct = (value.getType() == HiveParser.TOK_FUNCTIONDI);
+      Mode amode = groupByDescModeToUDAFMode(mode, isDistinct); 
+      GenericUDAFEvaluator genericUDAFEvaluator = genericUDAFEvaluators.get(entry.getKey());
+      assert(genericUDAFEvaluator != null);
+      GenericUDAFInfo udaf = getGenericUDAFInfo(genericUDAFEvaluator, amode, aggParameters);
+      aggregations.add(new aggregationDesc(aggName.toLowerCase(), udaf.genericUDAFEvaluator, udaf.convertedParameters, 
+          (mode != groupByDesc.Mode.FINAL && isDistinct), amode));
       String field = getColumnInternalName(groupByKeys.size() + aggregations.size() - 1);
       outputColumnNames.add(field);
       groupByOutputRowResolver.put("", value.toStringTree(),
                                     new ColumnInfo(field,
-                                        udaf.retType));
+                                        udaf.returnType));
     }
 
     Operator op = putOpInsertMap(
-        OperatorFactory.getAndMakeChild(new groupByDesc(mode, outputColumnNames, groupByKeys, aggregations, evalMethods, aggMethods),
+        OperatorFactory.getAndMakeChild(new groupByDesc(mode, outputColumnNames, groupByKeys, aggregations),
                                         new RowSchema(groupByOutputRowResolver.getColumnInfos()),
                                         reduceSinkOperatorInfo),
         groupByOutputRowResolver);
@@ -1601,11 +1640,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * The new GroupByOperator will be a child of the inputOperatorInfo.
    * 
    * @param mode The mode of the aggregation (HASH)
+   * @param genericUDAFEvaluators  If not null, this function will store the mapping
+   *            from Aggregation StringTree to the genericUDAFEvaluator in this parameter,
+   *            so it can be used in the next-stage GroupBy aggregations. 
    * @return the new GroupByOperator
    */
   @SuppressWarnings("nls")
   private Operator genGroupByPlanMapGroupByOperator(QB qb, String dest, Operator inputOperatorInfo, 
-                                                    groupByDesc.Mode mode) throws SemanticException {
+        groupByDesc.Mode mode, Map<String, GenericUDAFEvaluator> genericUDAFEvaluators) throws SemanticException {
 
     RowResolver groupByInputRowResolver = opParseCtx.get(inputOperatorInfo).getRR();
     QBParseInfo parseInfo = qb.getParseInfo();
@@ -1614,8 +1656,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ArrayList<exprNodeDesc> groupByKeys = new ArrayList<exprNodeDesc>();
     ArrayList<String> outputColumnNames = new ArrayList<String>();
     ArrayList<aggregationDesc> aggregations = new ArrayList<aggregationDesc>();
-    ArrayList<String> evalMethods = new ArrayList<String>();
-    ArrayList<String> aggMethods = new ArrayList<String>();
     Map<String, exprNodeDesc> colExprMap = new HashMap<String, exprNodeDesc>();
     List<ASTNode> grpByExprs = getGroupByForClause(parseInfo, dest);
     for (int i = 0; i < grpByExprs.size(); ++i) {
@@ -1658,8 +1698,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (Map.Entry<String, ASTNode> entry : aggregationTrees.entrySet()) {
       ASTNode value = entry.getValue();
       String aggName = value.getChild(0).getText();
-      Class<? extends UDAF> aggClass = FunctionRegistry.getUDAF(aggName);
-      assert (aggClass != null);
       ArrayList<exprNodeDesc> aggParameters = new ArrayList<exprNodeDesc>();
       ArrayList<Class<?>> aggClasses = new ArrayList<Class<?>>();
       // 0 is the function name
@@ -1670,21 +1708,27 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         aggParameters.add(paraExprNode);
       }
 
-      UDAFInfo udaf = getUDAFInfo(aggName, mode, aggParameters, value);
-      
-      aggregations.add(new aggregationDesc(udaf.evalClass, udaf.convertedParameters,
-                                           value.getToken().getType() == HiveParser.TOK_FUNCTIONDI));
-      evalMethods.add(udaf.evalMethod.getName());
-      aggMethods.add(udaf.aggMethod.getName());
+      boolean isDistinct = value.getType() == HiveParser.TOK_FUNCTIONDI;
+      Mode amode = groupByDescModeToUDAFMode(mode, isDistinct);
+
+      GenericUDAFEvaluator genericUDAFEvaluator = getGenericUDAFEvaluator(aggName, aggParameters, value);
+      assert(genericUDAFEvaluator != null);
+      GenericUDAFInfo udaf = getGenericUDAFInfo(genericUDAFEvaluator, amode, aggParameters);
+      aggregations.add(new aggregationDesc(aggName.toLowerCase(), udaf.genericUDAFEvaluator, udaf.convertedParameters,
+          isDistinct, amode));
       String field = getColumnInternalName(groupByKeys.size() + aggregations.size() -1);
       outputColumnNames.add(field);
       groupByOutputRowResolver.put("",value.toStringTree(),
                                    new ColumnInfo(field,
-                                       udaf.retType));
+                                       udaf.returnType));
+      // Save the evaluator so that it can be used by the next-stage GroupByOperators 
+      if (genericUDAFEvaluators != null) {
+        genericUDAFEvaluators.put(entry.getKey(), genericUDAFEvaluator);
+      }
     }
 
     Operator op = putOpInsertMap(
-      OperatorFactory.getAndMakeChild(new groupByDesc(mode, outputColumnNames, groupByKeys, aggregations, evalMethods, aggMethods),
+      OperatorFactory.getAndMakeChild(new groupByDesc(mode, outputColumnNames, groupByKeys, aggregations),
                                       new RowSchema(groupByOutputRowResolver.getColumnInfos()),
                                       inputOperatorInfo),
       groupByOutputRowResolver);
@@ -1880,20 +1924,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * results.
    * 
    * @param mode the mode of aggregation (FINAL)  
+   * @param genericUDAFEvaluators  The mapping from Aggregation StringTree to the 
+   *            genericUDAFEvaluator. 
    * @return the new GroupByOperator
    * @throws SemanticException
    */
   @SuppressWarnings("nls")
   private Operator genGroupByPlanGroupByOperator2MR(
-    QBParseInfo parseInfo, String dest, Operator reduceSinkOperatorInfo2, groupByDesc.Mode mode)
-    throws SemanticException {
+        QBParseInfo parseInfo, String dest, Operator reduceSinkOperatorInfo2, 
+        groupByDesc.Mode mode, Map<String, GenericUDAFEvaluator> genericUDAFEvaluators)
+        throws SemanticException {
     RowResolver groupByInputRowResolver2 = opParseCtx.get(reduceSinkOperatorInfo2).getRR();
     RowResolver groupByOutputRowResolver2 = new RowResolver();
     groupByOutputRowResolver2.setIsExprResolver(true);
     ArrayList<exprNodeDesc> groupByKeys = new ArrayList<exprNodeDesc>();
     ArrayList<aggregationDesc> aggregations = new ArrayList<aggregationDesc>();
-    ArrayList<String> evalMethods = new ArrayList<String>();
-    ArrayList<String> aggMethods = new ArrayList<String>();
     Map<String, exprNodeDesc> colExprMap = new HashMap<String, exprNodeDesc>();
     List<ASTNode> grpByExprs = getGroupByForClause(parseInfo, dest);
     ArrayList<String> outputColumnNames = new ArrayList<String>(); 
@@ -1928,23 +1973,24 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       aggParameters.add(new exprNodeColumnDesc(paraExprInfo.getType(), paraExpression));
 
       String aggName = value.getChild(0).getText();
-      Class<? extends UDAF> aggClass = FunctionRegistry.getUDAF(aggName);
-      assert (aggClass != null);
 
-      UDAFInfo udaf = getUDAFInfo(aggName, mode, aggParameters, value);      
-      aggregations.add(new aggregationDesc(udaf.evalClass, udaf.convertedParameters, 
-                                           ((mode == groupByDesc.Mode.FINAL) ? false : (value.getToken().getType() == HiveParser.TOK_FUNCTIONDI))));
-      evalMethods.add(udaf.evalMethod.getName());
-      aggMethods.add(udaf.aggMethod.getName());
+      boolean isDistinct = value.getType() == HiveParser.TOK_FUNCTIONDI;
+      Mode amode = groupByDescModeToUDAFMode(mode, isDistinct); 
+      GenericUDAFEvaluator genericUDAFEvaluator = genericUDAFEvaluators.get(entry.getKey());
+      assert(genericUDAFEvaluator != null);
+      GenericUDAFInfo udaf = getGenericUDAFInfo(genericUDAFEvaluator, amode, aggParameters);
+      aggregations.add(new aggregationDesc(aggName.toLowerCase(), udaf.genericUDAFEvaluator, udaf.convertedParameters, 
+                                           (mode != groupByDesc.Mode.FINAL && value.getToken().getType() == HiveParser.TOK_FUNCTIONDI),
+                                           amode));
       String field = getColumnInternalName(groupByKeys.size() + aggregations.size() - 1);
       outputColumnNames.add(field);
       groupByOutputRowResolver2.put("", value.toStringTree(),
                                     new ColumnInfo(field,
-                                        udaf.retType));
+                                        udaf.returnType));
     }
 
     Operator op = putOpInsertMap(
-      OperatorFactory.getAndMakeChild(new groupByDesc(mode, outputColumnNames, groupByKeys, aggregations, evalMethods, aggMethods),
+      OperatorFactory.getAndMakeChild(new groupByDesc(mode, outputColumnNames, groupByKeys, aggregations),
                                       new RowSchema(groupByOutputRowResolver2.getColumnInfos()),
                                       reduceSinkOperatorInfo2),
         groupByOutputRowResolver2
@@ -1999,11 +2045,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // ////// 2. Generate GroupbyOperator
     Operator groupByOperatorInfo = genGroupByPlanGroupByOperator(parseInfo,
-        dest, reduceSinkOperatorInfo, groupByDesc.Mode.COMPLETE);
+        dest, reduceSinkOperatorInfo, groupByDesc.Mode.COMPLETE, null);
 
     return groupByOperatorInfo;
   }
 
+  static ArrayList<GenericUDAFEvaluator> getUDAFEvaluators(ArrayList<aggregationDesc> aggs) {
+    ArrayList<GenericUDAFEvaluator> result = new ArrayList<GenericUDAFEvaluator>();
+    for (int i=0; i<aggs.size(); i++) {
+      result.add(aggs.get(i).createGenericUDAFEvaluator());
+    }
+    return result;
+  }
+  
   /**
    * Generate a Group-By plan using a 2 map-reduce jobs (5 operators will be
    * inserted):
@@ -2067,9 +2121,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                         : Integer.MAX_VALUE), -1, false);
 
     // ////// 2. Generate GroupbyOperator
-    Operator groupByOperatorInfo = genGroupByPlanGroupByOperator(parseInfo,
-        dest, reduceSinkOperatorInfo, groupByDesc.Mode.PARTIAL1);
-
+    Map<String, GenericUDAFEvaluator> genericUDAFEvaluators = 
+      new LinkedHashMap<String, GenericUDAFEvaluator>();
+    GroupByOperator groupByOperatorInfo = (GroupByOperator)genGroupByPlanGroupByOperator(parseInfo,
+        dest, reduceSinkOperatorInfo, groupByDesc.Mode.PARTIAL1, genericUDAFEvaluators);
+    
     int numReducers = -1;
     List<ASTNode> grpByExprs = getGroupByForClause(parseInfo, dest);
     if (grpByExprs.isEmpty())
@@ -2081,7 +2137,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // ////// 4. Generate GroupbyOperator2
     Operator groupByOperatorInfo2 = 
-      genGroupByPlanGroupByOperator2MR(parseInfo, dest, reduceSinkOperatorInfo2, groupByDesc.Mode.FINAL);
+      genGroupByPlanGroupByOperator2MR(parseInfo, dest, reduceSinkOperatorInfo2, 
+          groupByDesc.Mode.FINAL, genericUDAFEvaluators);
 
     return groupByOperatorInfo2;
   }
@@ -2126,8 +2183,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     QBParseInfo parseInfo = qb.getParseInfo();
 
     // ////// Generate GroupbyOperator for a map-side partial aggregation
-    Operator groupByOperatorInfo = genGroupByPlanMapGroupByOperator(qb,
-      dest, inputOperatorInfo, groupByDesc.Mode.HASH);
+    Map<String, GenericUDAFEvaluator> genericUDAFEvaluators = 
+      new LinkedHashMap<String, GenericUDAFEvaluator>();
+    GroupByOperator groupByOperatorInfo = (GroupByOperator)genGroupByPlanMapGroupByOperator(qb,
+      dest, inputOperatorInfo, groupByDesc.Mode.HASH, genericUDAFEvaluators);
 
     int numReducers = -1;
 
@@ -2138,13 +2197,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     
     // ////// Generate ReduceSink Operator
     Operator reduceSinkOperatorInfo = 
-      genGroupByPlanReduceSinkOperator(qb, dest, groupByOperatorInfo, grpByExprs.size(), numReducers, true);
+      genGroupByPlanReduceSinkOperator(qb, dest, groupByOperatorInfo, 
+          grpByExprs.size(), numReducers, true);
     
     // This is a 1-stage map-reduce processing of the groupby. Tha map-side aggregates was just used to
     // reduce output data. In case of distincts, partial results are not used, and so iterate is again
     // invoked on the reducer. In case of non-distincts, partial results are used, and merge is invoked
     // on the reducer.
-    return genGroupByPlanGroupByOperator1(parseInfo, dest, reduceSinkOperatorInfo, groupByDesc.Mode.MERGEPARTIAL);
+    return genGroupByPlanGroupByOperator1(parseInfo, dest, 
+        reduceSinkOperatorInfo, groupByDesc.Mode.MERGEPARTIAL,
+        genericUDAFEvaluators);
   }
 
   /**
@@ -2172,7 +2234,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * 
    *   Reducer: iterate/terminatePartial if DISTINCT
    *            merge/terminatePartial if NO DISTINCT
-   *   (mode = PARTIAL2)
+   *   (mode = MERGEPARTIAL)
    * 
    *   STAGE 2
    *
@@ -2193,9 +2255,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     QBParseInfo parseInfo = qb.getParseInfo();
 
     // ////// Generate GroupbyOperator for a map-side partial aggregation
-    Operator groupByOperatorInfo = genGroupByPlanMapGroupByOperator(qb,
-      dest, inputOperatorInfo, groupByDesc.Mode.HASH);
-
+    Map<String, GenericUDAFEvaluator> genericUDAFEvaluators = 
+      new LinkedHashMap<String, GenericUDAFEvaluator>();
+    GroupByOperator groupByOperatorInfo = (GroupByOperator)genGroupByPlanMapGroupByOperator(qb,
+      dest, inputOperatorInfo, groupByDesc.Mode.HASH, genericUDAFEvaluators);
+    
     // Optimize the scenario when there are no grouping keys and no distinct - 2 map-reduce jobs are not needed
     // For eg: select count(1) from T where t.ds = ....
     if (!optimizeMapAggrGroupBy(dest, qb)) {
@@ -2207,8 +2271,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                                           : Integer.MAX_VALUE), -1, true);
       
       // ////// Generate GroupbyOperator for a partial aggregation
-      Operator groupByOperatorInfo2 = genGroupByPlanGroupByOperator1(parseInfo, dest, reduceSinkOperatorInfo, 
-                                                                         groupByDesc.Mode.PARTIAL2);
+      Operator groupByOperatorInfo2 = genGroupByPlanGroupByOperator1(parseInfo,
+          dest, reduceSinkOperatorInfo, groupByDesc.Mode.PARTIALS,
+          genericUDAFEvaluators);
 
       int numReducers = -1;
       List<ASTNode> grpByExprs = getGroupByForClause(parseInfo, dest);
@@ -2220,14 +2285,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                                                                              grpByExprs.size(), numReducers);
 
       // ////// Generate GroupbyOperator3
-      return genGroupByPlanGroupByOperator2MR(parseInfo, dest, reduceSinkOperatorInfo2, groupByDesc.Mode.FINAL);
+      return genGroupByPlanGroupByOperator2MR(parseInfo, dest, reduceSinkOperatorInfo2, groupByDesc.Mode.FINAL, genericUDAFEvaluators);
     }
     else {
       // ////// Generate ReduceSink Operator
       Operator reduceSinkOperatorInfo = 
         genGroupByPlanReduceSinkOperator(qb, dest, groupByOperatorInfo, getGroupByForClause(parseInfo, dest).size(), 1, true);
       
-      return genGroupByPlanGroupByOperator2MR(parseInfo, dest, reduceSinkOperatorInfo, groupByDesc.Mode.FINAL);
+      return genGroupByPlanGroupByOperator2MR(parseInfo, dest, reduceSinkOperatorInfo, groupByDesc.Mode.FINAL, genericUDAFEvaluators);
     }
   }
 
@@ -2834,7 +2899,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       reduceSinkDesc now = ((ReduceSinkOperator)(oi)).getConf();
 
       now.setKeySerializeInfo(
-          PlanUtils.getBinarySortableTableDesc(
+          PlanUtils.getReduceKeyTableDesc(
               PlanUtils.getFieldSchemasFromColumnList(now.getKeyCols(), "joinkey"),
               now.getOrder()
           )

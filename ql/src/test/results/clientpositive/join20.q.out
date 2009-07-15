@@ -103,12 +103,11 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  name: binary_table
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/281582968/10002 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/644565255/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -155,7 +154,7 @@ STAGE PLANS:
 query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 Input: default/src
-Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/105019591/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/2039570057/10000
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	11	val_11
 NULL	NULL	NULL	NULL	12	val_12
@@ -337,12 +336,11 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  name: binary_table
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1417429723/10002 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/256148947/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -389,7 +387,7 @@ STAGE PLANS:
 query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key < 15) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 Input: default/src
-Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1953761211/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1492340440/10000
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	11	val_11
 NULL	NULL	NULL	NULL	12	val_12

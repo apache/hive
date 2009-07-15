@@ -113,8 +113,8 @@ public class GenMRUnion1 implements NodeProcessor {
       uPlan = (mapredWork)uTask.getWork();
     }
 
-    tableDesc tt_desc = 
-      PlanUtils.getBinaryTableDesc(PlanUtils.getFieldSchemasFromRowSchema(parent.getSchema(), "temporarycol")); 
+    tableDesc tt_desc = PlanUtils.getIntermediateFileTableDesc(
+          PlanUtils.getFieldSchemasFromRowSchema(parent.getSchema(), "temporarycol")); 
     
     // generate the temporary file
     Context baseCtx = parseCtx.getContext();

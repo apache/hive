@@ -35,7 +35,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: sum(UDFToDouble(VALUE._col0))
+                expr: sum(VALUE._col0)
           keys:
                 expr: KEY._col0
                 type: string
@@ -46,12 +46,11 @@ STAGE PLANS:
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                name: binary_table
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        invalidscheme:/data/users/njain/hive4/hive4/build/ql/tmp/1209036250/10002 
+        invalidscheme:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/698528309/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -109,7 +108,7 @@ Input: default/src
 Output: default/dest_g1
 query: SELECT dest_g1.* FROM dest_g1
 Input: default/dest_g1
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/971071489/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1819734290/10000
 0	0.0
 10	10.0
 100	200.0

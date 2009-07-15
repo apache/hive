@@ -615,7 +615,7 @@ public class GenMapRedUtils {
     
     Operator<? extends Serializable> parent = op.getParentOperators().get(posn);
     tableDesc tt_desc = 
-      PlanUtils.getBinaryTableDesc(PlanUtils.getFieldSchemasFromRowSchema(parent.getSchema(), "temporarycol")); 
+      PlanUtils.getIntermediateFileTableDesc(PlanUtils.getFieldSchemasFromRowSchema(parent.getSchema(), "temporarycol")); 
     
     // Create a file sink operator for this file name
     Operator<? extends Serializable> fs_op =

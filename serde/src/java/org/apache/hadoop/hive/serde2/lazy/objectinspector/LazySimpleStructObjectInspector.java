@@ -39,7 +39,7 @@ import org.apache.hadoop.io.Text;
  * Always use the ObjectInspectorFactory to create new ObjectInspector objects, instead
  * of directly creating an instance of this class.
  */
-public class LazySimpleStructObjectInspector implements StructObjectInspector {
+public class LazySimpleStructObjectInspector extends StructObjectInspector {
 
   public static final Log LOG = LogFactory.getLog(LazySimpleStructObjectInspector.class.getName());
   

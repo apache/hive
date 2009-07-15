@@ -32,12 +32,11 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    name: binary_table
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/427160604/10002 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1103651888/10002 
           Union
             Select Operator
               expressions:
@@ -62,7 +61,7 @@ STAGE PLANS:
                   value expressions:
                         expr: _col1
                         type: bigint
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/427160604/10003 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1103651888/10003 
           Union
             Select Operator
               expressions:
@@ -140,7 +139,6 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  name: binary_table
 
   Stage: Stage-0
     Fetch Operator
@@ -153,7 +151,7 @@ query: select unionsrc.key, count(1) FROM (select s2.key as key, s2.value as val
   unionsrc group by unionsrc.key
 Input: default/src1
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/332041097/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/452775957/10000
 	10
 128	1
 146	1

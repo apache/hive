@@ -404,7 +404,7 @@ public class ColumnPrunerProcFactory {
     reduce.getSchema().setSignature(sig);
     reduceConf.setOutputValueColumnNames(newOutputColNames);
     reduceConf.setValueCols(newValueEval);
-    tableDesc newValueTable = PlanUtils.getLazySimpleSerDeTableDesc(PlanUtils.getFieldSchemasFromColumnList(
+    tableDesc newValueTable = PlanUtils.getReduceValueTableDesc(PlanUtils.getFieldSchemasFromColumnList(
         reduceConf.getValueCols(), newOutputColNames, 0, ""));
     reduceConf.setValueSerializeInfo(newValueTable);
   }
@@ -508,7 +508,7 @@ public class ColumnPrunerProcFactory {
         }
 
         tableDesc valueTableDesc = PlanUtils
-            .getLazySimpleSerDeTableDesc(PlanUtils
+            .getMapJoinValueTableDesc(PlanUtils
                 .getFieldSchemasFromColumnList(valueCols, "mapjoinvalue"));
 
         valueTableDescs.add(valueTableDesc);

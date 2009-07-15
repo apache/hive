@@ -64,7 +64,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/zshao/tools/553-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
+            <string>file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
            </void> 
           </object> 
          </void> 
@@ -132,7 +132,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/zshao/tools/553-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
+            <string>file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
            </void> 
           </object> 
          </void> 
@@ -200,7 +200,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/zshao/tools/553-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
+            <string>file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
            </void> 
           </object> 
          </void> 
@@ -361,6 +361,10 @@
                               <void method="put"> 
                                <string>columns.types</string> 
                                <string>string,string</string> 
+                              </void> 
+                              <void method="put"> 
+                               <string>escape.delim</string> 
+                               <string>\</string> 
                               </void> 
                              </object> 
                             </void> 
@@ -1115,6 +1119,10 @@
                                <string>columns.types</string> 
                                <string>string,string</string> 
                               </void> 
+                              <void method="put"> 
+                               <string>escape.delim</string> 
+                               <string>\</string> 
+                              </void> 
                              </object> 
                             </void> 
                            </object> 
@@ -1856,6 +1864,10 @@
                                <string>columns.types</string> 
                                <string>string,string</string> 
                               </void> 
+                              <void method="put"> 
+                               <string>escape.delim</string> 
+                               <string>\</string> 
+                              </void> 
                              </object> 
                             </void> 
                            </object> 
@@ -2464,7 +2476,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/tools/553-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>c:a:src1</string> 
@@ -2482,7 +2494,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/tools/553-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap0"/> 
@@ -2527,7 +2539,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>file:/data/users/zshao/tools/553-trunk-apache-hive/build/ql/tmp/1732970569/10001</string> 
+                     <string>file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/245344500/10001</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 

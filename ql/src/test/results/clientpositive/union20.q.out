@@ -59,12 +59,11 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  name: binary_table
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/579163613/10002 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/2117443883/10002 
           Union
             Reduce Output Operator
               key expressions:
@@ -80,7 +79,7 @@ STAGE PLANS:
                     type: string
                     expr: _col1
                     type: string
-        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/579163613/10003 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/2117443883/10003 
           Union
             Reduce Output Operator
               key expressions:
@@ -159,7 +158,6 @@ STAGE PLANS:
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        name: binary_table
 
   Stage: Stage-4
     Map Reduce
@@ -185,12 +183,11 @@ STAGE PLANS:
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        name: binary_table
 
   Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/579163613/10004 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/2117443883/10004 
           Union
             File Output Operator
               compressed: false
@@ -198,8 +195,7 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  name: binary_table
-        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/579163613/10006 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/2117443883/10006 
           Union
             File Output Operator
               compressed: false
@@ -207,7 +203,6 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  name: binary_table
 
   Stage: Stage-6
     Map Reduce
@@ -241,7 +236,6 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  name: binary_table
 
   Stage: Stage-0
     Fetch Operator
@@ -258,7 +252,7 @@ JOIN
       select s4.key as key, s4.value as value from src s4 where s4.key < 10) unionsrc2
 ON (unionsrc1.key = unionsrc2.key)
 Input: default/src
-Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1483573814/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/2027041799/10000
 0	val_0	0	val_0
 0	val_0	0	val_0
 0	val_0	0	val_0

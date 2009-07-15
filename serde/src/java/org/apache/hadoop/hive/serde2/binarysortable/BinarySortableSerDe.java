@@ -124,7 +124,7 @@ public class BinarySortableSerDe implements SerDe {
     // Create row related objects
     rowTypeInfo = TypeInfoFactory.getStructTypeInfo(columnNames, columnTypes);
     rowObjectInspector = (StructObjectInspector)TypeInfoUtils
-        .getStandardObjectInspectorFromTypeInfo(rowTypeInfo);
+        .getStandardWritableObjectInspectorFromTypeInfo(rowTypeInfo);
     row = new ArrayList<Object>(columnNames.size());
     for (int i=0; i<columnNames.size(); i++) {
       row.add(null);

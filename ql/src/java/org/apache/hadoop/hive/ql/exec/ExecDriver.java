@@ -339,8 +339,6 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
     job.setMapperClass(ExecMapper.class);
 
     job.setMapOutputKeyClass(HiveKey.class);
-    // LazySimpleSerDe writes to Text
-    // Revert to DynamicSerDe: job.setMapOutputValueClass(BytesWritable.class); 
     job.setMapOutputValueClass(Text.class);
 
     job.setNumReduceTasks(work.getNumReduceTasks().intValue());

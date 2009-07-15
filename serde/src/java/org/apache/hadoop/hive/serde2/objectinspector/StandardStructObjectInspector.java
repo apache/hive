@@ -35,7 +35,7 @@ import org.apache.commons.logging.LogFactory;
  * Always use the ObjectInspectorFactory to create new ObjectInspector objects, instead
  * of directly creating an instance of this class. 
  */
-public class StandardStructObjectInspector implements StructObjectInspector {
+public class StandardStructObjectInspector extends StructObjectInspector {
 
   public static final Log LOG = LogFactory.getLog(StandardStructObjectInspector.class.getName());
   

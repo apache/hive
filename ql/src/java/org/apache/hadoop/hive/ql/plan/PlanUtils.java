@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.*;
 import java.io.*;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -28,10 +29,12 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
+import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
@@ -114,9 +117,9 @@ public class PlanUtils {
   }
 
   /** 
-   * Generate the table descriptor of DynamicSerDe and TBinarySortableProtocol.
+   * Generate the table descriptor for reduce key.
    */
-  public static tableDesc getBinarySortableTableDesc(List<FieldSchema> fieldSchemas, String order) {
+  public static tableDesc getReduceKeyTableDesc(List<FieldSchema> fieldSchemas, String order) {
     return new tableDesc(
         BinarySortableSerDe.class,
         SequenceFileInputFormat.class,
@@ -132,36 +135,70 @@ public class PlanUtils {
   }
 
   /** 
-   * Generate the table descriptor of DynamicSerDe and TBinaryProtocol.
+   * Generate the table descriptor for Map-side join key.
    */
-  public static tableDesc getBinaryTableDesc(List<FieldSchema> fieldSchemas) {
-    String structName = "binary_table";
-    return new tableDesc(
-        DynamicSerDe.class,
-        SequenceFileInputFormat.class,
-        SequenceFileOutputFormat.class,
-        Utilities.makeProperties(
-            "name", structName,
-            org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, TBinaryProtocol.class.getName(),
-            org.apache.hadoop.hive.serde.Constants.SERIALIZATION_DDL, 
-              MetaStoreUtils.getDDLFromFieldSchema(structName, fieldSchemas)
-        ));    
-  }
-
-  /** 
-   * Generate the table descriptor of LazySimpleSerDe.
-   */
-  public static tableDesc getLazySimpleSerDeTableDesc(List<FieldSchema> fieldSchemas) {
+  public static tableDesc getMapJoinKeyTableDesc(List<FieldSchema> fieldSchemas) {
     return new tableDesc(
         LazySimpleSerDe.class,
         SequenceFileInputFormat.class,
         SequenceFileOutputFormat.class,
         Utilities.makeProperties(
             "columns", MetaStoreUtils.getColumnNamesFromFieldSchema(fieldSchemas),
-            "columns.types", MetaStoreUtils.getColumnTypesFromFieldSchema(fieldSchemas)
+            "columns.types", MetaStoreUtils.getColumnTypesFromFieldSchema(fieldSchemas),
+            Constants.ESCAPE_CHAR, "\\"
         ));
   }
 
+  /** 
+   * Generate the table descriptor for Map-side join key.
+   */
+  public static tableDesc getMapJoinValueTableDesc(List<FieldSchema> fieldSchemas) {
+    return new tableDesc(
+        LazySimpleSerDe.class,
+        SequenceFileInputFormat.class,
+        SequenceFileOutputFormat.class,
+        Utilities.makeProperties(
+            "columns", MetaStoreUtils.getColumnNamesFromFieldSchema(fieldSchemas),
+            "columns.types", MetaStoreUtils.getColumnTypesFromFieldSchema(fieldSchemas),
+            Constants.ESCAPE_CHAR, "\\"
+        ));
+  }
+
+  /** 
+   * Generate the table descriptor for intermediate files.
+   */
+  public static tableDesc getIntermediateFileTableDesc(List<FieldSchema> fieldSchemas) {
+    return new tableDesc(
+        LazySimpleSerDe.class,
+        SequenceFileInputFormat.class,
+        SequenceFileOutputFormat.class,
+        Utilities.makeProperties(
+            Constants.LIST_COLUMNS,
+              MetaStoreUtils.getColumnNamesFromFieldSchema(fieldSchemas),
+            Constants.LIST_COLUMN_TYPES,
+              MetaStoreUtils.getColumnTypesFromFieldSchema(fieldSchemas),
+            Constants.ESCAPE_CHAR,
+              "\\"              
+        ));
+  }
+  
+  /** 
+   * Generate the table descriptor for intermediate files.
+   */
+  public static tableDesc getReduceValueTableDesc(List<FieldSchema> fieldSchemas) {
+    return new tableDesc(
+        LazySimpleSerDe.class,
+        SequenceFileInputFormat.class,
+        SequenceFileOutputFormat.class,
+        Utilities.makeProperties(
+            Constants.LIST_COLUMNS,
+              MetaStoreUtils.getColumnNamesFromFieldSchema(fieldSchemas),
+            Constants.LIST_COLUMN_TYPES,
+              MetaStoreUtils.getColumnTypesFromFieldSchema(fieldSchemas),
+            Constants.ESCAPE_CHAR,
+              "\\"              
+        ));
+  }
   
   /** 
    * Convert the ColumnList to FieldSchema list.
@@ -246,19 +283,19 @@ public class PlanUtils {
     ArrayList<String> outputKeyCols = new ArrayList<String>();
     ArrayList<String> outputValCols = new ArrayList<String>();
     if (includeKeyCols) {
-      keyTable = getBinarySortableTableDesc(getFieldSchemasFromColumnList(
+      keyTable = getReduceKeyTableDesc(getFieldSchemasFromColumnList(
           keyCols, outputColumnNames, 0, ""), order);
       outputKeyCols.addAll(outputColumnNames.subList(0, keyCols.size()));
-      valueTable = getLazySimpleSerDeTableDesc(getFieldSchemasFromColumnList(
+      valueTable = getReduceValueTableDesc(getFieldSchemasFromColumnList(
           valueCols, outputColumnNames, keyCols.size(), ""));
       outputValCols.addAll(outputColumnNames.subList(keyCols.size(), outputColumnNames.size()));
     } else {
-      keyTable = getBinarySortableTableDesc(getFieldSchemasFromColumnList(
+      keyTable = getReduceKeyTableDesc(getFieldSchemasFromColumnList(
           keyCols, "reducesinkkey"), order);
       for (int i = 0; i < keyCols.size(); i++) {
         outputKeyCols.add("reducesinkkey"+i);
       }
-      valueTable = getLazySimpleSerDeTableDesc(getFieldSchemasFromColumnList(
+      valueTable = getReduceValueTableDesc(getFieldSchemasFromColumnList(
           valueCols, outputColumnNames, 0, ""));
       outputValCols.addAll(outputColumnNames);
     }
@@ -306,6 +343,6 @@ public class PlanUtils {
     return getReduceSinkDesc(keyCols, valueCols, outputColumnNames, includeKey, tag, partitionCols, order.toString(),
          numReducers);
   }
-  
+
 }
   

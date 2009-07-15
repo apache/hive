@@ -241,12 +241,11 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  name: binary_table
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1521077193/10002 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/54303527/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -281,7 +280,7 @@ Input: default/srcpart/ds=2008-04-08/hr=11
 Input: default/srcpart/ds=2008-04-08/hr=12
 Input: default/srcpart/ds=2008-04-09/hr=11
 Input: default/srcpart/ds=2008-04-09/hr=12
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1366398818/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1566516401/10000
 2008-04-08	11
 2008-04-08	11
 2008-04-08	11
@@ -445,7 +444,7 @@ Input: default/srcpart/ds=2008-04-08/hr=11
 Input: default/srcpart/ds=2008-04-08/hr=12
 Input: default/srcpart/ds=2008-04-09/hr=11
 Input: default/srcpart/ds=2008-04-09/hr=12
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/544471444/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/332258618/10000
 0	val_0
 0	val_0
 0	val_0

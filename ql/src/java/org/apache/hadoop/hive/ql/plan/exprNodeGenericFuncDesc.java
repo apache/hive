@@ -127,7 +127,7 @@ public class exprNodeGenericFuncDesc extends exprNodeDesc implements Serializabl
       List<exprNodeDesc> children) throws UDFArgumentException {
     ObjectInspector[] childrenOIs = new ObjectInspector[children.size()];
     for(int i=0; i<childrenOIs.length; i++) {
-      childrenOIs[i] = TypeInfoUtils.getStandardObjectInspectorFromTypeInfo(
+      childrenOIs[i] = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(
           children.get(i).getTypeInfo());
     }
     GenericUDF genericUDF = (GenericUDF) ReflectionUtils.newInstance(genericUDFClass, null);

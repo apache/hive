@@ -20,23 +20,36 @@ package org.apache.hadoop.hive.serde2.objectinspector;
 import java.util.List;
 
 
-public interface StructObjectInspector extends ObjectInspector {
+public abstract class StructObjectInspector implements ObjectInspector {
 
   // ** Methods that does not need a data object **
   /** Returns all the fields. 
    */
-  public List<? extends StructField> getAllStructFieldRefs();
+  abstract public List<? extends StructField> getAllStructFieldRefs();
 
   /** Look up a field.
    */
-  public StructField getStructFieldRef(String fieldName);
+  abstract public StructField getStructFieldRef(String fieldName);
 
   // ** Methods that need a data object **
   /** returns null for data = null.
    */
-  public Object getStructFieldData(Object data, StructField fieldRef);
+  abstract public Object getStructFieldData(Object data, StructField fieldRef);
 
   /** returns null for data = null.
    */
-  public List<Object> getStructFieldsDataAsList(Object data);
+  abstract public List<Object> getStructFieldsDataAsList(Object data);
+  
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    List<? extends StructField> fields = getAllStructFieldRefs();
+    sb.append(getClass().getName());
+    sb.append("<");
+    for (int i=0; i<fields.size(); i++) {
+      if (i>0) sb.append(",");
+      sb.append(fields.get(i).getFieldObjectInspector().toString());
+    }
+    sb.append(">");
+    return sb.toString();
+  }
 }

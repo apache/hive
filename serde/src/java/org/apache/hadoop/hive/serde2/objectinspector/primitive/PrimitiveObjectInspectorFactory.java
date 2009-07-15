@@ -19,8 +19,12 @@
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import java.util.HashMap;
+
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableBooleanObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
+import org.apache.hadoop.io.Writable;
 
 
 /**
@@ -136,7 +140,35 @@ public class PrimitiveObjectInspectorFactory {
     return result;
   }
 
-
+  /**
+   * Returns an ObjectInspector for a primitive Class.
+   * The Class can be a Hive Writable class, or a Java Primitive Class.
+   * 
+   * A runtimeException will be thrown if the class is not recognized
+   * as a primitive type by Hive.
+   */
+  public static PrimitiveObjectInspector 
+      getPrimitiveObjectInspectorFromClass(Class<?> c) {
+    if (Writable.class.isAssignableFrom(c)) {
+      // It is a writable class
+      PrimitiveTypeEntry te = PrimitiveObjectInspectorUtils
+          .getTypeEntryFromPrimitiveWritableClass(c);
+      if (te == null) {
+        throw new RuntimeException("Internal error: Cannot recognize " + c);
+      }
+      return PrimitiveObjectInspectorFactory
+          .getPrimitiveWritableObjectInspector(te.primitiveCategory);
+    } else {
+      // It is a Java class
+      PrimitiveTypeEntry te = PrimitiveObjectInspectorUtils
+          .getTypeEntryFromPrimitiveJavaClass(c);
+      if (te == null) {
+        throw new RuntimeException("Internal error: Cannot recognize " + c);
+      }
+      return PrimitiveObjectInspectorFactory
+          .getPrimitiveJavaObjectInspector(te.primitiveCategory);
+    }
+  }
   
   
 }

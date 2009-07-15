@@ -57,7 +57,7 @@ public class FunctionTask extends Task<FunctionWork> {
                                               (Class<? extends GenericUDF>) udfClass);
           return 0;
         } else if(UDAF.class.isAssignableFrom(udfClass)) {
-          FunctionRegistry.registerUDAF(createFunctionDesc.getFunctionName(), 
+          FunctionRegistry.registerUDAF(createFunctionDesc.getFunctionName(),
                                         (Class<? extends UDAF>) udfClass);
           return 0;
         } 

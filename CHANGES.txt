@@ -71,6 +71,9 @@ Trunk - Unreleased
     HIVE-438. Make Hive work with apache thrift
     (Raghu Murthy via namit)
 
+    HIVE-522. Extend GenericUDAF to support complex types
+    (Zheng Shao via namit)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 

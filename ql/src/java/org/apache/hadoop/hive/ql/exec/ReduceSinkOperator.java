@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.reduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -204,8 +205,9 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
     }
     
     try {
-      if (out != null)
+      if (out != null) {
         out.collect(keyWritable, value);
+      }
     } catch (IOException e) {
       throw new HiveException (e);
     }

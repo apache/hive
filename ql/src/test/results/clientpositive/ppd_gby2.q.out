@@ -87,12 +87,11 @@ STAGE PLANS:
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        name: binary_table
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1551152352/10002 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1611172064/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -137,7 +136,7 @@ FROM
 WHERE src1.c1 > 'val_200' AND (src1.c2 > 30 OR src1.c1 < 'val_400')
 GROUP BY src1.c2
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/455848953/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/283923095/10000
 val_4	1
 val_399	2
 val_396	3

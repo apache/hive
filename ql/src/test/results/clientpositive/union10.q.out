@@ -59,12 +59,11 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  name: binary_table
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive4/hive4/build/ql/tmp/1047259223/10002 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/663445085/10002 
           Union
             Select Operator
               expressions:
@@ -86,7 +85,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
-        file:/data/users/njain/hive4/hive4/build/ql/tmp/1047259223/10004 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/663445085/10004 
           Union
             Select Operator
               expressions:
@@ -108,7 +107,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
-        file:/data/users/njain/hive4/hive4/build/ql/tmp/1047259223/10005 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/663445085/10005 
           Union
             Select Operator
               expressions:
@@ -137,10 +136,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/njain/hive4/hive4/build/ql/tmp/899550883/10000
+                destination: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1900390672/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/njain/hive4/hive4/build/ql/tmp/1047259223/10003 
+              file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/663445085/10003 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -205,7 +204,6 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  name: binary_table
 
   Stage: Stage-7
     Map Reduce
@@ -239,7 +237,6 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  name: binary_table
 
 
 query: insert overwrite table tmptable
@@ -252,7 +249,7 @@ Input: default/src
 Output: default/tmptable
 query: select * from tmptable x sort by x.key
 Input: default/tmptable
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1029379727/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1983301805/10000
 tst1	500
 tst2	500
 tst3	500

@@ -51,12 +51,11 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  name: binary_table
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/500235306/10002 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/44626625/10002 
           Union
             Select Operator
               expressions:
@@ -81,7 +80,7 @@ STAGE PLANS:
                   value expressions:
                         expr: _col1
                         type: bigint
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/500235306/10003 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/44626625/10003 
           Union
             Select Operator
               expressions:
@@ -106,7 +105,7 @@ STAGE PLANS:
                   value expressions:
                         expr: _col1
                         type: bigint
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/500235306/10004 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/44626625/10004 
           Union
             Select Operator
               expressions:
@@ -168,7 +167,6 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    name: binary_table
 
   Stage: Stage-4
     Map Reduce
@@ -186,7 +184,6 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    name: binary_table
 
   Stage: Stage-0
     Fetch Operator
@@ -200,7 +197,7 @@ query: select unionsrc.key, count(1) FROM (select 'tst1' as key, cast(count(1) a
                                             select s3.key as key, s3.value as value from src1 s3) unionsrc group by unionsrc.key
 Input: default/src
 Input: default/src1
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/439174720/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1736666761/10000
 	20
 128	2
 146	2

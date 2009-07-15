@@ -24,7 +24,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: count(DISTINCT substr(value, 5))
-                      expr: sum(UDFToDouble(substr(value, 5)))
+                      expr: sum(substr(value, 5))
                 keys:
                       expr: substr(key, 1, 1)
                       type: string
@@ -57,19 +57,18 @@ STAGE PLANS:
           keys:
                 expr: KEY._col0
                 type: string
-          mode: partial2
+          mode: partials
           File Output Operator
             compressed: false
             GlobalTableId: 0
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                name: binary_table
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive4/hive4/build/ql/tmp/1061186966/10002 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1932947221/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -135,7 +134,7 @@ Input: default/src
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/714202455/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1637903963/10000
 0	1	00.0
 1	71	116414.0
 2	69	225571.0

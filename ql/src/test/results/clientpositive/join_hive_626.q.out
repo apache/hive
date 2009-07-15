@@ -68,7 +68,6 @@ STAGE PLANS:
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                name: binary_table
 
   Stage: Stage-2
     Map Reduce
@@ -133,7 +132,7 @@ hive_bar.foo_id join hive_count on hive_count.bar_id = hive_bar.bar_id
 Input: default/hive_foo
 Input: default/hive_count
 Input: default/hive_bar
-Output: file:/Users/char/Documents/workspace/Hive-Clean/build/ql/tmp/512847523/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/677923597/10000
 foo1	bar10	2
 query: drop table hive_foo
 query: drop table hive_bar

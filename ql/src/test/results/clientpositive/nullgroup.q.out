@@ -54,7 +54,7 @@ STAGE PLANS:
 
 query: select count(1) from src x where x.key > 9999
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1268175684/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1008591078/10000
 0
 query: explain
 select count(1) from src x where x.key > 9999
@@ -112,7 +112,7 @@ STAGE PLANS:
 
 query: select count(1) from src x where x.key > 9999
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1223713151/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/2013896638/10000
 0
 query: explain
 select count(1) from src x where x.key > 9999
@@ -158,12 +158,11 @@ STAGE PLANS:
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                name: binary_table
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/163149910/10002 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1522558889/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -193,7 +192,7 @@ STAGE PLANS:
 
 query: select count(1) from src x where x.key > 9999
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1599407772/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1698315525/10000
 0
 query: explain
 select count(1) from src x where x.key > 9999
@@ -247,5 +246,5 @@ STAGE PLANS:
 
 query: select count(1) from src x where x.key > 9999
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1652857331/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1010160157/10000
 0

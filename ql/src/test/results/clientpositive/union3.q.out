@@ -64,12 +64,11 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    name: binary_table
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive4/hive4/build/ql/tmp/312943406/10002 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1599706373/10002 
           Union
             Select Operator
               expressions:
@@ -81,7 +80,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/data/users/njain/hive4/hive4/build/ql/tmp/312943406/10003 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1599706373/10003 
           Union
             Select Operator
               expressions:
@@ -93,7 +92,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/data/users/njain/hive4/hive4/build/ql/tmp/312943406/10005 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1599706373/10005 
           Union
             Select Operator
               expressions:
@@ -105,7 +104,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/data/users/njain/hive4/hive4/build/ql/tmp/312943406/10007 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1599706373/10007 
           Union
             Select Operator
               expressions:
@@ -150,7 +149,6 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    name: binary_table
 
   Stage: Stage-4
     Map Reduce
@@ -184,12 +182,11 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    name: binary_table
 
   Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive4/hive4/build/ql/tmp/312943406/10004 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1599706373/10004 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -210,7 +207,6 @@ STAGE PLANS:
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                name: binary_table
 
   Stage: Stage-6
     Map Reduce
@@ -244,12 +240,11 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    name: binary_table
 
   Stage: Stage-7
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive4/hive4/build/ql/tmp/312943406/10006 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1599706373/10006 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -270,7 +265,6 @@ STAGE PLANS:
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                name: binary_table
 
   Stage: Stage-0
     Fetch Operator
@@ -300,7 +294,7 @@ Input: default/src
 Output: default/union_out
 query: select * from union_out cluster by id
 Input: default/union_out
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1024406189/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1772585743/10000
 1
 2
 3

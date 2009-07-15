@@ -36,7 +36,7 @@ import org.apache.hadoop.io.Text;
  * Always use the ObjectInspectorFactory to create new ObjectInspector objects,
  * instead of directly creating an instance of this class.
  */
-class ColumnarStructObjectInspector implements StructObjectInspector {
+class ColumnarStructObjectInspector extends StructObjectInspector {
 
   public static final Log LOG = LogFactory
       .getLog(ColumnarStructObjectInspector.class.getName());

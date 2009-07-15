@@ -85,7 +85,7 @@ public class TestExpressionEvaluator extends TestCase {
       
       r = new InspectableObject();
       r.o = data;
-      r.oi = TypeInfoUtils.getStandardObjectInspectorFromTypeInfo(dataType);
+      r.oi = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(dataType);
     } catch (Throwable e) {
       e.printStackTrace();
       throw new RuntimeException (e);

@@ -59,12 +59,11 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  name: binary_table
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/717433292/10002 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1576345941/10002 
           Union
             Select Operator
               expressions:
@@ -80,7 +79,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/data/users/pchakka/workspace/oshive/build/ql/tmp/717433292/10003 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1576345941/10003 
           Union
             Select Operator
               expressions:
@@ -137,7 +136,6 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  name: binary_table
 
   Stage: Stage-0
     Fetch Operator
@@ -151,5 +149,5 @@ query: select * from (
 ) subq
 Input: default/tst/d=2009-01-01
 Input: default/tst/d=2009-02-02
-Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/273314648/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1172948551/10000
 query: drop table tst

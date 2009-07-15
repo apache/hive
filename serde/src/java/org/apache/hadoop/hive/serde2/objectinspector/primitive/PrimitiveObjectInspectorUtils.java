@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
 import org.apache.hadoop.hive.serde2.lazy.LazyLong;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -478,6 +479,7 @@ public class PrimitiveObjectInspectorUtils {
     }
     return result;
   }
+
   
   /**
    * Get the long value out of a primitive object. 
@@ -600,5 +602,6 @@ public class PrimitiveObjectInspectorUtils {
   public static float getFloat(Object o, PrimitiveObjectInspector oi) throws NumberFormatException {
     return (float)getDouble(o, oi);
   }
+
 
 }

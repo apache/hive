@@ -225,7 +225,7 @@ public class MapJoinProcessor implements Transform {
     }
     
     tableDesc keyTableDesc = 
-      PlanUtils.getLazySimpleSerDeTableDesc(PlanUtils.getFieldSchemasFromColumnList(keyCols, "mapjoinkey"));
+      PlanUtils.getMapJoinKeyTableDesc(PlanUtils.getFieldSchemasFromColumnList(keyCols, "mapjoinkey"));
 
     List<tableDesc> valueTableDescs = new ArrayList<tableDesc>();
     
@@ -237,7 +237,7 @@ public class MapJoinProcessor implements Transform {
       }
               
       tableDesc valueTableDesc = 
-        PlanUtils.getLazySimpleSerDeTableDesc(PlanUtils.getFieldSchemasFromColumnList(valueCols, "mapjoinvalue"));
+        PlanUtils.getMapJoinValueTableDesc(PlanUtils.getFieldSchemasFromColumnList(valueCols, "mapjoinvalue"));
     
       valueTableDescs.add(valueTableDesc);
     }

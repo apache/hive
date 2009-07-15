@@ -37,7 +37,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: sum(UDFToDouble(VALUE._col0))
+                expr: sum(VALUE._col0)
           keys:
                 expr: KEY._col0
                 type: string
@@ -82,7 +82,7 @@ Input: default/src
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/990860736/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1880216237/10000
 0	0.0
 10	10.0
 100	200.0

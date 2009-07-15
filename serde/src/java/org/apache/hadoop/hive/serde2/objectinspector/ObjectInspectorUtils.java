@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.AbstractPrimitiveWritableObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
@@ -347,6 +348,26 @@ public class ObjectInspectorUtils {
     }
   }
 
+  /**
+   * Compare two arrays of objects with their respective arrays of ObjectInspectors.
+   */
+  public static int compare(Object[] o1, ObjectInspector[] oi1, Object[] o2, ObjectInspector[] oi2) {
+    assert(o1.length == oi1.length);
+    assert(o2.length == oi2.length);
+    assert(o1.length == o2.length);
+    
+    for (int i=0; i<o1.length; i++) {
+      int r = compare(o1[i], oi1[i], o2[i], oi2[i]);
+      if (r != 0) {
+        return r;
+      }
+    }
+    return 0;
+  }
+
+  /**
+   * Compare two objects with their respective ObjectInspectors.
+   */
   public static int compare(Object o1, ObjectInspector oi1, Object o2, ObjectInspector oi2) {
     if (oi1.getCategory() != oi2.getCategory()) {
       return oi1.getCategory().compareTo(oi2.getCategory());

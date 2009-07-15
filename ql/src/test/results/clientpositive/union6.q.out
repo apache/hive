@@ -53,12 +53,11 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  name: binary_table
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive4/hive4/build/ql/tmp/411854408/10002 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/76493251/10002 
           Union
             Select Operator
               expressions:
@@ -74,7 +73,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: tmptable
-        file:/data/users/njain/hive4/hive4/build/ql/tmp/411854408/10004 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/76493251/10004 
           Union
             Select Operator
               expressions:
@@ -97,10 +96,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/njain/hive4/hive4/build/ql/tmp/1482963287/10000
+                destination: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1900876768/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/njain/hive4/hive4/build/ql/tmp/411854408/10003 
+              file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/76493251/10003 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -149,7 +148,6 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                    name: binary_table
 
 
 query: insert overwrite table tmptable
@@ -161,7 +159,7 @@ Input: default/src1
 Output: default/tmptable
 query: select * from tmptable x sort by x.key, x.value
 Input: default/tmptable
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/779348526/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1362569604/10000
 	
 	
 	

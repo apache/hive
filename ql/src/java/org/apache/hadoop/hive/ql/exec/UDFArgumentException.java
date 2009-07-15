@@ -18,12 +18,12 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**                                                                                     
  * exception class, thrown when udf argument have something wrong.
  */
-public class UDFArgumentException extends HiveException {
+public class UDFArgumentException extends SemanticException {
 
   public UDFArgumentException() {
     super();

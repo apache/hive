@@ -74,7 +74,6 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  name: binary_table
 
   Stage: Stage-2
     Map Reduce
@@ -182,7 +181,6 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  name: binary_table
 
   Stage: Stage-0
     Fetch Operator
@@ -202,8 +200,8 @@ query: SELECT a.key, a.value, b.key, b.value
  ON (a.key = b.key)
 Input: default/src1
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/724709493/10000
-NULL	NULL		6
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/838858920/10000
+NULL	NULL		7
 0	3	NULL	NULL
 10	1	NULL	NULL
 100	2	NULL	NULL
@@ -221,7 +219,7 @@ NULL	NULL		6
 120	2	NULL	NULL
 125	2	NULL	NULL
 126	1	NULL	NULL
-128	3	128	0
+128	3	128	1
 129	2	NULL	NULL
 131	1	NULL	NULL
 133	1	NULL	NULL
@@ -295,7 +293,7 @@ NULL	NULL		6
 221	2	NULL	NULL
 222	1	NULL	NULL
 223	2	NULL	NULL
-224	2	224	0
+224	2	224	1
 226	1	NULL	NULL
 228	1	NULL	NULL
 229	2	NULL	NULL
@@ -388,7 +386,7 @@ NULL	NULL		6
 366	1	NULL	NULL
 367	2	NULL	NULL
 368	1	NULL	NULL
-369	3	369	0
+369	3	369	1
 37	2	NULL	NULL
 373	1	NULL	NULL
 374	1	NULL	NULL

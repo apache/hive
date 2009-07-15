@@ -40,12 +40,11 @@ STAGE PLANS:
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                name: binary_table
 
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive4/hive4/build/ql/tmp/1494846209/10002 
+        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/2034874876/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -91,7 +90,7 @@ Input: default/src
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1921611682/10000
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/770471577/10000
 0
 1
 2

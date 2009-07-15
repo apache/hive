@@ -5,6 +5,6 @@ Input: default/src
 Output: default/tst1
 query: SELECT sum(a.cnt)  FROM tst1 a JOIN tst1 b ON a.key = b.key
 Input: default/tst1
-Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/148610721/785047285.10000
-500.0
+Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/2016366076/10000
+500
 query: drop table tst1

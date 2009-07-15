@@ -30,6 +30,7 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.FunctionInfo.OperatorType;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.groupByDesc;
 import org.apache.hadoop.hive.ql.udf.*;
 import org.apache.hadoop.hive.ql.udf.generic.*;
@@ -38,6 +39,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.util.ReflectionUtils;
 
 public class FunctionRegistry {
 
@@ -154,11 +156,11 @@ public class FunctionRegistry {
                 UDFToString.class.getSimpleName());
 
     // Aggregate functions
-    registerUDAF("sum", UDAFSum.class);
-    registerUDAF("count", UDAFCount.class);
+    registerGenericUDAF("sum", new GenericUDAFSum());
+    registerGenericUDAF("count", new GenericUDAFCount());
+    registerGenericUDAF("avg", new GenericUDAFAverage());
     registerUDAF("max", UDAFMax.class);
     registerUDAF("min", UDAFMin.class);
-    registerUDAF("avg", UDAFAvg.class);
     
     // Generic UDFs
     registerGenericUDF("case", GenericUDFCase.class);
@@ -168,23 +170,11 @@ public class FunctionRegistry {
     registerGenericUDF("index", GenericUDFIndex.class);
   }
 
-  public static FunctionInfo getInfo(Class<?> fClass) {
+  public static FunctionInfo getUDFInfo(Class<?> fClass) {
     for(Map.Entry<String, FunctionInfo> ent: mFunctions.entrySet()) {
       FunctionInfo val = ent.getValue();
       if (val.getUDFClass() == fClass) {
         return val;
-      }
-      // Otherwise this is potentially an aggregate evaluator
-      if (val.getUDAFClass() == fClass) {
-        return val;
-      }
-      // Otherwise check if the aggregator is one of the classes within the UDAF
-      if (val.getUDAFClass() != null) {
-        for(Class<?> c: val.getUDAFClass().getClasses()) {
-          if (c == fClass) {
-            return val;
-          }
-        }
       }
     }
 
@@ -194,7 +184,7 @@ public class FunctionRegistry {
   public static void registerUDF(String functionName, Class<? extends UDF> UDFClass,
                                  FunctionInfo.OperatorType opt, boolean isOperator) {
     if (UDF.class.isAssignableFrom(UDFClass)) {
-      FunctionInfo fI = new FunctionInfo(functionName.toLowerCase(), UDFClass, null, null);
+      FunctionInfo fI = new FunctionInfo(functionName.toLowerCase(), UDFClass, null);
       fI.setIsOperator(isOperator);
       fI.setOpType(opt);
       mFunctions.put(functionName.toLowerCase(), fI);
@@ -207,7 +197,7 @@ public class FunctionRegistry {
                                  FunctionInfo.OperatorType opt, boolean isOperator,
                                  String displayName) {
     if (UDF.class.isAssignableFrom(UDFClass)) {
-      FunctionInfo fI = new FunctionInfo(displayName, UDFClass, null, null);
+      FunctionInfo fI = new FunctionInfo(displayName, UDFClass, null);
       fI.setIsOperator(isOperator);
       fI.setOpType(opt);
       mFunctions.put(functionName.toLowerCase(), fI);
@@ -218,7 +208,7 @@ public class FunctionRegistry {
 
   public static void registerGenericUDF(String functionName, Class<? extends GenericUDF> genericUDFClass) {
     if (GenericUDF.class.isAssignableFrom(genericUDFClass)) {
-      FunctionInfo fI = new FunctionInfo(functionName, null, null, genericUDFClass);
+      FunctionInfo fI = new FunctionInfo(functionName, null, genericUDFClass);
       mFunctions.put(functionName.toLowerCase(), fI);
     } else {
       throw new RuntimeException("Registering GenericUDF Class " + genericUDFClass
@@ -343,25 +333,21 @@ public class FunctionRegistry {
   }
 
   /**
-   * Get the UDAF evaluator for the name and argumentClasses.
+   * Get the GenericUDAF evaluator for the name and argumentClasses.
    * @param name the name of the UDAF
    * @param argumentTypeInfos
    * @return The UDAF evaluator
    */
-  public static Class<? extends UDAFEvaluator> getUDAFEvaluator(String name, List<TypeInfo> argumentTypeInfos) {
-    Class<? extends UDAF> udf = getUDAF(name);
-    if (udf == null) return null;
+  public static GenericUDAFEvaluator getGenericUDAFEvaluator(String name, List<TypeInfo> argumentTypeInfos) 
+      throws SemanticException {
+    GenericUDAFResolver udaf = getGenericUDAFResolver(name);
+    if (udaf == null) return null;
 
-    Class<? extends UDAFEvaluator> evalClass = null;
-    try {
-      evalClass = udf.newInstance().getResolver().getEvaluatorClass(argumentTypeInfos);
+    TypeInfo[] parameters = new TypeInfo[argumentTypeInfos.size()];
+    for(int i=0; i<parameters.length; i++) {
+      parameters[i] = argumentTypeInfos.get(i);
     }
-    catch (AmbiguousMethodException e) {
-    }
-    catch (Exception e) {
-      throw new RuntimeException("Cannot get UDAF for " + name + argumentTypeInfos, e);
-    }
-    return evalClass;
+    return udaf.getEvaluator(parameters);
   }
 
   /**
@@ -385,66 +371,28 @@ public class FunctionRegistry {
     return getUDFMethod(name, Arrays.asList(argumentClasses));
   }
 
-  public static void registerUDAF(String functionName, Class<? extends UDAF> UDAFClass) {
-
-    if (UDAF.class.isAssignableFrom(UDAFClass)) {
-      mFunctions.put(functionName.toLowerCase(), new FunctionInfo(functionName
-                                                                  .toLowerCase(), null, UDAFClass, null));
-    } else {
-      throw new RuntimeException("Registering UDAF Class " + UDAFClass
-                                 + " which does not extends " + UDAF.class);
-    }
-    mFunctions.put(functionName.toLowerCase(), new FunctionInfo(functionName
-                                                                .toLowerCase(), null, UDAFClass, null));
+  public static void registerGenericUDAF(String functionName, GenericUDAFResolver genericUDAFResolver) {
+    mFunctions.put(functionName.toLowerCase(), 
+        new FunctionInfo(functionName.toLowerCase(), genericUDAFResolver));
   }
 
-  public static Class<? extends UDAF> getUDAF(String functionName) {
-    LOG.debug("Looking up UDAF: " + functionName);
+  public static void registerUDAF(String functionName, Class<? extends UDAF> udafClass) {
+    mFunctions.put(functionName.toLowerCase(), 
+        new FunctionInfo(functionName.toLowerCase(), 
+            new GenericUDAFBridge((UDAF)ReflectionUtils.newInstance(udafClass, null))));
+  }
+
+  public static GenericUDAFResolver getGenericUDAFResolver(String functionName) {
+    LOG.debug("Looking up GenericUDAF: " + functionName);
     FunctionInfo finfo = mFunctions.get(functionName.toLowerCase());
     if (finfo == null) {
       return null;
     }
-    Class<? extends UDAF> result = finfo.getUDAFClass();
+    GenericUDAFResolver result = finfo.getGenericUDAFResolver();
     return result;
   }
 
-  /**
-   * Returns the "iterate" method of the UDAF.
-   */
-  public static Method getUDAFMethod(String name, List<TypeInfo> argumentClasses) {
-    Class<? extends UDAF> udaf = getUDAF(name);
-    if (udaf == null)
-      return null;
-    return FunctionRegistry.getMethodInternal(udaf, "iterate", false,
-                                         argumentClasses);
-  }
-
-  /**
-   * Returns the evaluate method for the UDAF based on the aggregation mode.
-   * See groupByDesc.Mode for details.
-   *
-   * @param name  name of the UDAF
-   * @param mode  the mode of the aggregation
-   * @return      null if no such UDAF is found
-   */
-  public static Method getUDAFEvaluateMethod(String name, groupByDesc.Mode mode) {
-    Class<? extends UDAF> udaf = getUDAF(name);
-    if (udaf == null)
-      return null;
-    return FunctionRegistry.getMethodInternal(udaf,
-        (mode == groupByDesc.Mode.COMPLETE || mode == groupByDesc.Mode.FINAL)
-        ? "terminate" : "terminatePartial", true,
-        new ArrayList<TypeInfo>() );
-  }
-
-  /**
-   * Returns the "aggregate" method of the UDAF.
-   */
-  public static Method getUDAFMethod(String name, TypeInfo... argumentClasses) {
-    return getUDAFMethod(name, Arrays.asList(argumentClasses));
-  }
-
-  public static Object invoke(Method m, Object thisObject, Object[] arguments) throws HiveException {
+  public static Object invoke(Method m, Object thisObject, Object... arguments) throws HiveException {
     Object o;
     try {
       o = m.invoke(thisObject, arguments);

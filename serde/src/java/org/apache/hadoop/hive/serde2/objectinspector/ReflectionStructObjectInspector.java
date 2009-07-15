@@ -32,7 +32,7 @@ import java.util.Map;
  * of directly creating an instance of this class. 
  *
  */
-public class ReflectionStructObjectInspector implements StructObjectInspector {
+public class ReflectionStructObjectInspector extends StructObjectInspector {
 
   public static class MyField implements StructField {
     protected Field field;

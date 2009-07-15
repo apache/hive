@@ -31,7 +31,7 @@ import java.util.List;
  * Always use the ObjectInspectorFactory to create new ObjectInspector objects, instead
  * of directly creating an instance of this class. 
  */
-public class UnionStructObjectInspector implements StructObjectInspector {
+public class UnionStructObjectInspector extends StructObjectInspector {
 
   public static class MyField implements StructField {
     public int structID;

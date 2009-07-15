@@ -94,7 +94,7 @@ public class exprNodeFuncDesc extends exprNodeDesc implements Serializable {
   @explain(displayName="expr")
   @Override
   public String getExprString() {
-    FunctionInfo fI = FunctionRegistry.getInfo(UDFClass);
+    FunctionInfo fI = FunctionRegistry.getUDFInfo(UDFClass);
     StringBuilder sb = new StringBuilder();
     
     if (fI.getOpType() == FunctionInfo.OperatorType.PREFIX ||
