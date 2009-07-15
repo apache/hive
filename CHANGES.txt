@@ -357,6 +357,9 @@ Trunk - Unreleased
 
     HIVE-160. Bug in sampling for subqueries. (Raghu Murthy via namit)
 
+    HIVE-636. Fix concatenation task with partitioned table.
+    (Namit Jain via zshao)
+
     HIVE-641. fix test udf_reverse.q
     (Emil Ibrishimov via namit)
 

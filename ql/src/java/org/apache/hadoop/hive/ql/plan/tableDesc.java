@@ -19,15 +19,15 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import java.util.Enumeration;
+import java.util.Properties;
 
 import org.apache.hadoop.mapred.InputFormat;
-import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.serde2.Deserializer;
-import org.apache.hadoop.hive.serde2.SerDe;
 
-public class tableDesc implements Serializable {
+public class tableDesc implements Serializable, Cloneable {
   private static final long serialVersionUID = 1L;
   private Class<? extends Deserializer> deserializerClass;
   private Class<? extends InputFormat> inputFileFormatClass;
@@ -50,7 +50,7 @@ public class tableDesc implements Serializable {
   public Class<? extends Deserializer> getDeserializerClass() {
     return this.deserializerClass;
   }
-  public void setDeserializerClass(final Class<? extends SerDe> serdeClass) {
+  public void setDeserializerClass(final Class<? extends Deserializer> serdeClass) {
     this.deserializerClass = serdeClass;
   }
   public Class<? extends InputFormat> getInputFileFormatClass() {
@@ -108,5 +108,22 @@ public class tableDesc implements Serializable {
   @explain(displayName="output format")
   public String getOutputFileFormatClassName() {
     return getOutputFileFormatClass().getName();
+  }
+  
+  public Object clone() {
+    tableDesc ret = new tableDesc();
+    ret.setSerdeClassName(serdeClassName);
+    ret.setDeserializerClass(deserializerClass);
+    ret.setInputFileFormatClass(inputFileFormatClass);
+    ret.setOutputFileFormatClass(outputFileFormatClass);
+    Properties newProp = new Properties();
+    Enumeration<Object> keysProp = properties.keys(); 
+    while (keysProp.hasMoreElements()) {
+      Object key = keysProp.nextElement();
+      newProp.put(key, properties.get(key));
+    }
+
+    ret.setProperties(newProp);
+    return ret;
   }
 }

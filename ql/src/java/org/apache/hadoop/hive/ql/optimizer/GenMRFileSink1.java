@@ -147,9 +147,11 @@ public class GenMRFileSink1 implements NodeProcessor {
         new extractDesc(new exprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, Utilities.ReduceField.VALUE.toString())),
         new RowSchema(out_rwsch.getColumnInfos()));
     
+    tableDesc ts = (tableDesc)fsConf.getTableInfo().clone();
+    fsConf.getTableInfo().getProperties().remove(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_PARTITION_COLUMNS);
     FileSinkOperator newOutput = 
       (FileSinkOperator)OperatorFactory.getAndMakeChild(
-         new fileSinkDesc(finalName, fsConf.getTableInfo(), 
+         new fileSinkDesc(finalName, ts, 
                           parseCtx.getConf().getBoolVar(HiveConf.ConfVars.COMPRESSINTERMEDIATE)),
          fsRS, extract);
 
