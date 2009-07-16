@@ -83,11 +83,13 @@ public class GenMRFileSink1 implements NodeProcessor {
     boolean chDir = false;
     Task<? extends Serializable> currTask = ctx.getCurrTask();
 
-    if ((parseCtx.getConf().getBoolVar(HiveConf.ConfVars.HIVEMERGEMAPFILES)) &&
-        (ctx.getMvTask() != null) && (!ctx.getMvTask().isEmpty())) {
-      if (((ctx.getSeenFileSinkOps() == null) ||
-           (!ctx.getSeenFileSinkOps().contains((FileSinkOperator)nd))) &&
-          (((mapredWork)currTask.getWork()).getReducer() == null))
+    // Has the user enabled merging of files for map-only jobs or for all jobs
+    if (((ctx.getMvTask() != null) && (!ctx.getMvTask().isEmpty())) &&
+        ((ctx.getSeenFileSinkOps() == null) ||
+           (!ctx.getSeenFileSinkOps().contains((FileSinkOperator)nd)))) {
+      if ((parseCtx.getConf().getBoolVar(HiveConf.ConfVars.HIVEMERGEMAPFILES) &&
+          (((mapredWork)currTask.getWork()).getReducer() == null)) ||
+          parseCtx.getConf().getBoolVar(HiveConf.ConfVars.HIVEMERGEMAPREDFILES))
         chDir = true;
     }
 

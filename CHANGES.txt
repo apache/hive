@@ -126,6 +126,8 @@ Trunk - Unreleased
     HIVE-628. Remove stray lines from hive-default.xml.
     (Prasad Chakka via zshao)
 
+    HIVE-629. Concat files for map-reduce jobs. (Namit Jain via zshao)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).

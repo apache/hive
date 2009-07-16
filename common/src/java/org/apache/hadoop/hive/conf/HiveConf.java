@@ -145,7 +145,8 @@ public class HiveConf extends Configuration {
     HIVETESTMODENOSAMPLE("hive.test.mode.nosamplelist", ""),
 
     HIVEMERGEMAPFILES("hive.merge.mapfiles", true),
-    HIVEMERGEMAPFILESSIZE("hive.merge.size.per.mapper", (long)(1000*1000*1000)),
+    HIVEMERGEMAPREDFILES("hive.merge.mapredfiles", false),
+    HIVEMERGEMAPFILESSIZE("hive.merge.size.per.task", (long)(1000*1000*1000)),
       
     HIVESENDHEARTBEAT("hive.heartbeat.interval", 1000),
 

@@ -305,7 +305,13 @@
 <property>
   <name>hive.merge.mapfiles</name>
   <value>true</value>
-  <description>Merge small files at the end of the job</description>
+  <description>Merge small files at the end of a map-only job</description>
+</property>
+
+<property>
+  <name>hive.merge.mapredfiles</name>
+  <value>false</value>
+  <description>Merge small files at the end of any job(map only or map-reduce)</description>
 </property>
 
 <property>
@@ -315,7 +321,7 @@
 </property>
 
 <property>
-  <name>hive.merge.size.per.mapper</name>
+  <name>hive.merge.size.per.task</name>
   <value>1000000000</value>
   <description>Size of merged files at the end of the job</description>
 </property>
