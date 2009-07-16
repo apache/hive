@@ -365,6 +365,9 @@ Trunk - Unreleased
     HIVE-641. fix test udf_reverse.q
     (Emil Ibrishimov via namit)
 
+    HIVE-635. fix union accepting multiple objectinspectors
+    (Zheng Shao via namit)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES
