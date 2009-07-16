@@ -322,7 +322,7 @@
 
 <property>
   <name>hive.merge.size.per.task</name>
-  <value>1000000000</value>
+  <value>256000000</value>
   <description>Size of merged files at the end of the job</description>
 </property>
 

@@ -131,6 +131,9 @@ Trunk - Unreleased
 
     HIVE-629. Concat files for map-reduce jobs. (Namit Jain via zshao)
 
+    HIVE-644. Change default size for merging files to 256MB.
+    (Namit Jain via zshao)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).
