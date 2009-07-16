@@ -74,6 +74,9 @@ Trunk - Unreleased
     HIVE-522. Extend GenericUDAF to support complex types
     (Zheng Shao via namit)
 
+    HIVE-541. add UDF locate and instr
+    (Min Zhou via namit)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 

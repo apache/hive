@@ -1,0 +1,85 @@
+query: EXPLAIN
+SELECT instr('abcd', 'abc'),
+       instr('abcabc', 'ccc'),
+       instr(123, '23'),
+       instr(123, 23),
+       instr(TRUE, 1),
+       instr(FALSE, 1),
+       instr('12345', CAST('2' AS TINYINT)),
+       instr(CAST('12345' AS SMALLINT), '34'),
+       instr(CAST('123456789012' AS BIGINT), '456'),
+       instr(CAST(1.25 AS FLOAT), '.25'),
+       instr(CAST(16.0 AS DOUBLE), '.0'),
+       instr(null, 'abc'),
+       instr('abcd', null)
+FROM src LIMIT 1
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION instr 'abcd' 'abc')) (TOK_SELEXPR (TOK_FUNCTION instr 'abcabc' 'ccc')) (TOK_SELEXPR (TOK_FUNCTION instr 123 '23')) (TOK_SELEXPR (TOK_FUNCTION instr 123 23)) (TOK_SELEXPR (TOK_FUNCTION instr TRUE 1)) (TOK_SELEXPR (TOK_FUNCTION instr FALSE 1)) (TOK_SELEXPR (TOK_FUNCTION instr '12345' (TOK_FUNCTION TOK_TINYINT '2'))) (TOK_SELEXPR (TOK_FUNCTION instr (TOK_FUNCTION TOK_SMALLINT '12345') '34')) (TOK_SELEXPR (TOK_FUNCTION instr (TOK_FUNCTION TOK_BIGINT '123456789012') '456')) (TOK_SELEXPR (TOK_FUNCTION instr (TOK_FUNCTION TOK_FLOAT 1.25) '.25')) (TOK_SELEXPR (TOK_FUNCTION instr (TOK_FUNCTION TOK_DOUBLE 16.0) '.0')) (TOK_SELEXPR (TOK_FUNCTION instr TOK_NULL 'abc')) (TOK_SELEXPR (TOK_FUNCTION instr 'abcd' TOK_NULL))) (TOK_LIMIT 1)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src 
+            Select Operator
+              expressions:
+                    expr: instr('abcd''abc')
+                    type: int
+                    expr: instr('abcabc''ccc')
+                    type: int
+                    expr: instr(123'23')
+                    type: int
+                    expr: instr(12323)
+                    type: int
+                    expr: instr(true1)
+                    type: int
+                    expr: instr(false1)
+                    type: int
+                    expr: instr('12345'UDFToByte('2'))
+                    type: int
+                    expr: instr(UDFToShort('12345')'34')
+                    type: int
+                    expr: instr(UDFToLong('123456789012')'456')
+                    type: int
+                    expr: instr(UDFToFloat(1.25)'.25')
+                    type: int
+                    expr: instr(16.0'.0')
+                    type: int
+                    expr: instr(null'abc')
+                    type: int
+                    expr: instr('abcd'null)
+                    type: int
+              Limit
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+
+
+query: SELECT instr('abcd', 'abc'),
+       instr('abcabc', 'ccc'),
+       instr(123, '23'),
+       instr(123, 23),
+       instr(TRUE, 1),
+       instr(FALSE, 1),
+       instr('12345', CAST('2' AS TINYINT)),
+       instr(CAST('12345' AS SMALLINT), '34'),
+       instr(CAST('123456789012' AS BIGINT), '456'),
+       instr(CAST(1.25 AS FLOAT), '.25'),
+       instr(CAST(16.0 AS DOUBLE), '.0'),
+       instr(null, 'abc'),
+       instr('abcd', null)
+FROM src LIMIT 1
+Input: default/src
+Output: file:/home/test/hive-trunk/build/ql/tmp/1662937560/10000
+1	0	2	2	0	0	2	3	4	2	3	NULL	NULL

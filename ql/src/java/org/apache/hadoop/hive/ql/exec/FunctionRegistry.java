@@ -168,6 +168,8 @@ public class FunctionRegistry {
     registerGenericUDF("hash", GenericUDFHash.class);
     registerGenericUDF("coalesce", GenericUDFCoalesce.class);
     registerGenericUDF("index", GenericUDFIndex.class);
+    registerGenericUDF("instr", GenericUDFInstr.class);
+    registerGenericUDF("locate", GenericUDFLocate.class);
   }
 
   public static FunctionInfo getUDFInfo(Class<?> fClass) {
