@@ -18,10 +18,11 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.*;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.unionDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUtils.ReturnObjectInspectorResolver;
@@ -29,8 +30,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.conf.Configuration;
 
 /**
  * Union Operator
@@ -46,8 +45,6 @@ public class UnionOperator extends  Operator<unionDesc>  implements Serializable
   boolean[] needsTransform;
   
   ArrayList<Object> outputRow;
-  ObjectInspector outputOI;
-
 
   /** UnionOperator will transform the input rows if the inputObjInspectors
    *  from different parents are different.
@@ -55,15 +52,13 @@ public class UnionOperator extends  Operator<unionDesc>  implements Serializable
    *  ObjectInspector, then we don't need to do transformation for that parent.
    *  This information is recorded in needsTransform[].
    */
-  @Override
-  public void initializeOp(Configuration hconf, Reporter reporter,
-      ObjectInspector[] inputObjInspector) throws HiveException {
+  protected void initializeOp(Configuration hconf) throws HiveException {
     
-    int parents = inputObjInspector.length;
+    int parents = parentOperators.size();
     parentObjInspectors = new StructObjectInspector[parents];
     parentFields = new List[parents];
     for (int p = 0; p < parents; p++) {
-      parentObjInspectors[p] = (StructObjectInspector)inputObjInspector[p];
+      parentObjInspectors[p] = (StructObjectInspector)inputObjInspectors[p];
       parentFields[p] = parentObjInspectors[p].getAllStructFieldRefs();
     }
     
@@ -93,7 +88,7 @@ public class UnionOperator extends  Operator<unionDesc>  implements Serializable
     }
     
     // create output row ObjectInspector
-    outputOI = ObjectInspectorFactory.getStandardStructObjectInspector(
+    outputObjInspector = ObjectInspectorFactory.getStandardStructObjectInspector(
         columnNames, outputFieldOIs);
     outputRow = new ArrayList<Object>(columns);
     for (int c = 0; c < columns; c++) {
@@ -105,34 +100,31 @@ public class UnionOperator extends  Operator<unionDesc>  implements Serializable
     for (int p = 0; p < parents; p++) {
       // Testing using != is good enough, because we use ObjectInspectorFactory to
       // create ObjectInspectors.
-      needsTransform[p] = (inputObjInspector[p] != outputOI);
+      needsTransform[p] = (inputObjInspectors[p] != outputObjInspector);
       if (needsTransform[p]) {
         LOG.info("Union Operator needs to transform row from parent[" + p + "] from "
-            + inputObjInspector[p] + " to " + outputOI);
+            + inputObjInspectors[p] + " to " + outputObjInspector);
       }
     }
-
-    // initialize the children
-    initializeChildren(hconf, reporter, new ObjectInspector[] {outputOI});
+    initializeChildren(hconf);
   }
   
   @Override
-  public void process(Object row, ObjectInspector rowInspector, int tag)
-      throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
 
-    if (needsTransform[tag]) {
-      StructObjectInspector soi = parentObjInspectors[tag];
+    StructObjectInspector soi = parentObjInspectors[tag];
       List<? extends StructField> fields = parentFields[tag];
-    
-      for (int c = 0; c < fields.size(); c++) {
-        outputRow.set(c, columnTypeResolvers[c].convertIfNecessary(
-            soi.getStructFieldData(row, fields.get(c)),
-            fields.get(c).getFieldObjectInspector()));
+
+      if (needsTransform[tag]) {
+        for (int c = 0; c < fields.size(); c++) {
+          outputRow.set(c, columnTypeResolvers[c].convertIfNecessary(
+              soi.getStructFieldData(row, fields.get(c)),
+              fields.get(c).getFieldObjectInspector()));
+        }
+        forward(outputRow, outputObjInspector);
+      } else {
+        forward(row, inputObjInspectors[tag]);
       }
-      forward(outputRow, outputOI);
-    } else {
-      forward(row, rowInspector);
-    }
   }
 
   /**

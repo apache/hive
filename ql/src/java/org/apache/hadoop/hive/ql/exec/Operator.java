@@ -22,21 +22,18 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Vector;
 import java.util.Map;
-import org.apache.hadoop.hive.ql.lib.Node;
+import java.util.Vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.explain;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.mapredWork;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.OutputCollector;
@@ -112,16 +109,6 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     return parentOperators;
   }
 
-  public void allocateParentOperatorsInitArray() {
-    if ((parentOperators == null) || (parentsObjectInspector != null))
-      return;
-    parentsObjectInspector = new ParentInit[parentOperators.size()];
-    for (int pos = 0; pos < parentOperators.size(); pos++) {
-      parentsObjectInspector[pos] = new ParentInit();
-      parentsObjectInspector[pos].done = false;
-    }
-  }
-  
   protected T conf;
   protected boolean done;
 
@@ -157,12 +144,14 @@ public abstract class Operator <T extends Serializable> implements Serializable,
 
   transient protected HashMap<Enum<?>, LongWritable> statsMap = new HashMap<Enum<?>, LongWritable> ();
   transient protected OutputCollector out;
-  transient protected Log LOG = LogFactory.getLog(this.getClass().getName());;
-  transient protected mapredWork gWork;
+  transient protected Log LOG = LogFactory.getLog(this.getClass().getName());
   transient protected String alias;
-  transient protected String joinAlias;
   transient protected Reporter reporter;
   transient protected String id;
+  // object inspectors for input rows
+  transient protected ObjectInspector[] inputObjInspectors = new ObjectInspector[Byte.MAX_VALUE];
+  // for output rows of this operator
+  transient protected ObjectInspector outputObjInspector; 
 
   /**
    * A map of output column name to input expression map. This is used by optimizer
@@ -183,6 +172,18 @@ public abstract class Operator <T extends Serializable> implements Serializable,
    */
   public String getIdentifier() { return id; }
   
+  public void setReporter(Reporter rep) {
+    reporter = rep;
+
+    // the collector is same across all operators
+    if(childOperators == null)
+      return;
+
+    for(Operator<? extends Serializable> op: childOperators) {
+      op.setReporter(rep);
+    }
+  }
+  
   public void setOutputCollector(OutputCollector out) {
     this.out = out;
 
@@ -192,23 +193,6 @@ public abstract class Operator <T extends Serializable> implements Serializable,
 
     for(Operator<? extends Serializable> op: childOperators) {
       op.setOutputCollector(out);
-    }
-  }
-
-  /**
-   * Operators often need access to global variables. This allows
-   * us to put global config information in the root configuration
-   * object and have that be accessible to all the operators in the
-   * tree.
-   */
-  public void setMapredWork(mapredWork gWork) {
-    this.gWork = gWork;
-
-    if(childOperators == null)
-      return;
-
-    for(Operator<? extends Serializable> op: childOperators) {
-      op.setMapredWork(gWork);
     }
   }
 
@@ -226,22 +210,6 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     }
   }
 
-  /**
-   * Store the join alias this operator is working on behalf of
-   */
-  public void setJoinAlias(String joinAlias) {
-    this.joinAlias = joinAlias;
-
-    if(childOperators == null)
-      return;
-
-    for(Operator<? extends Serializable> op: childOperators) {
-      op.setJoinAlias(joinAlias);
-    }
-  }
-
-
-
   public Map<Enum<?>, Long> getStats() {
     HashMap<Enum<?>, Long> ret = new HashMap<Enum<?>, Long> ();
     for(Enum<?> one: statsMap.keySet()) {
@@ -250,44 +218,55 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     return(ret);
   }
 
-  public abstract void initializeOp (Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException;
-
-  public void initialize(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
-    if (state == state.INIT) {
-      LOG.info("Already Initialized");
-      return;
+  /**
+   * checks whether all parent operators are initialized or not
+   * @return true if there are no parents or all parents are initialized. false otherwise
+   */
+  protected boolean areAllParentsInitialized() {
+    if (parentOperators == null) {
+      return true;
     }
-
-    LOG.info("Initializing Self " + id);
-    this.reporter = reporter;
-    
-    initializeOp(hconf, reporter, inputObjInspector);
-    state = State.INIT;
-
-    LOG.info("Initialization Done " + id);
+    for(Operator<? extends Serializable> parent: parentOperators) {
+      if (parent.state != State.INIT) {
+        return false;
+      }
+    }
+    return true;
   }
 
-  /** 
-   * The default implementation assumes that the first inspector in the array is the output inspector as well. Specific operators can override this
-   * to pass their own output object inspectors. 
+  /**
+   * Initializes operators only if all parents have been initialized.
+   * Calls operator specific initializer which then initializes child ops.
+   * 
+   * @param hconf
+   * @param inputOIs input object inspector array indexes by tag id. null value is ignored.
+   * @throws HiveException
    */
-  public void initializeChildren (Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
-    if (childOperators == null) {
+  public void initialize(Configuration hconf, ObjectInspector[] inputOIs) throws HiveException {
+    if (state == State.INIT) {
       return;
     }
 
-    LOG.info("Initializing children:");
-    // Copy operators from List to Array for faster access
-    if (childOperatorsArray == null && childOperators != null) {
+    if(!areAllParentsInitialized()) {
+      return;
+    }
+    LOG.info("Initializing Self " + id + " " + getName());
+    
+    if (inputOIs != null) {
+      inputObjInspectors = inputOIs;
+    }
+    
+    // initialize structure to maintain child op info. operator tree changes while
+    // initializing so this need to be done here instead of initialize() method
+    if (childOperators != null) {
       childOperatorsArray = new Operator[childOperators.size()];
       for (int i=0; i<childOperatorsArray.length; i++) {
         childOperatorsArray[i] = childOperators.get(i); 
-        childOperatorsArray[i].allocateParentOperatorsInitArray();
       }
       childOperatorsTag = new int[childOperatorsArray.length];
       for (int i=0; i<childOperatorsArray.length; i++) {
         List<Operator<? extends Serializable>> parentOperators = 
-            childOperatorsArray[i].getParentOperators();
+          childOperatorsArray[i].getParentOperators();
         if (parentOperators == null) {
           throw new HiveException("Hive internal error: parent is null in " 
               + childOperatorsArray[i].getClass() + "!");
@@ -299,47 +278,58 @@ public abstract class Operator <T extends Serializable> implements Serializable,
       }
     }
     
-    for (int i = 0; i < childOperatorsArray.length; i++) {
-      Operator<? extends Serializable> op = childOperatorsArray[i];
-      op.initialize(hconf, reporter, inputObjInspector == null ? null : inputObjInspector[0], childOperatorsTag[i]);
-    }    
-  }
-
-  static private class ParentInit {
-    boolean           done;
-    ObjectInspector   parIns;
-  }
-  
-  transient protected ParentInit[] parentsObjectInspector = null; 
-
-  public void initialize(Configuration hconf, Reporter reporter, ObjectInspector inputObjInspector, int parentId) throws HiveException {
-    parentsObjectInspector[parentId].parIns = inputObjInspector;
-    parentsObjectInspector[parentId].done = true;
-
-    LOG.info("parent " + parentId + " initialized");
-    
-    // If all the parents have been initialied, go ahead
-    for (ParentInit par : parentsObjectInspector)
-      if (par.done == false)
-        return;
-
-    LOG.info("start Initializing " + id);
-    
-    ObjectInspector[] par = new ObjectInspector[parentsObjectInspector.length];
-    for (int pos = 0; pos < par.length; pos++)
-      par[pos] = parentsObjectInspector[pos].parIns;
-    initialize(hconf, reporter, par);    
-    LOG.info("done Initializing " + id);
+    if (inputObjInspectors.length == 0) {
+      throw new HiveException("Internal Error during operator initialization.");
+    }
+    // derived classes can set this to different object if needed
+    outputObjInspector = inputObjInspectors[0];
+    initializeOp(hconf);
+    LOG.info("Initialization Done " + id + " " + getName());
   }
 
   /**
+   * Operator specific initialization.
+   */
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    initializeChildren(hconf);
+  }
+ 
+  /**
+   * Calls initialize on each of the children with outputObjetInspector as the output row format
+   */
+  protected void initializeChildren(Configuration hconf) throws HiveException {
+    state = State.INIT;
+    LOG.info("Operator " + id + " " + getName() + " initialized");
+    if (childOperators == null) {
+      return;
+    }
+    LOG.info("Initializing children of " + id + " " + getName());
+    for (int i = 0; i < childOperatorsArray.length; i++) {
+      childOperatorsArray[i].initialize(hconf, outputObjInspector, childOperatorsTag[i]);
+    }
+  }
+
+  /**
+   * Collects all the parent's output object inspectors and calls actual initialization method
+   * @param hconf
+   * @param inputOI OI of the row that this parent will pass to this op
+   * @param parentId parent operator id
+   * @throws HiveException
+   */
+  private void initialize(Configuration hconf, ObjectInspector inputOI, int parentId) throws HiveException {
+    LOG.info("Initializing child " + id + " " + getName());
+    inputObjInspectors[parentId] = inputOI;
+    // call the actual operator initialization function
+    initialize(hconf, null);    
+  }
+
+   /**
    * Process the row.
    * @param row  The object representing the row.
-   * @param rowInspector  The inspector for the row object, will be deprecated soon.
    * @param tag  The tag of the row usually means which parent this row comes from.
    *             Rows with the same tag should have exactly the same rowInspector all the time.
    */
-  public abstract void process(Object row, ObjectInspector rowInspector, int tag) throws HiveException;
+  public abstract void process(Object row, int tag) throws HiveException;
  
   // If a operator wants to do some work at the beginning of a group
   public void startGroup() throws HiveException {
@@ -356,8 +346,7 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   }  
   
   // If a operator wants to do some work at the beginning of a group
-  public void endGroup() throws HiveException
-  {
+  public void endGroup() throws HiveException {
     LOG.debug("Ending group");
     
     if (childOperators == null)
@@ -371,7 +360,7 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   }
 
   public void close(boolean abort) throws HiveException {
-    if (state == state.CLOSE) 
+    if (state == State.CLOSE) 
       return;
 
     try {
@@ -411,7 +400,7 @@ public abstract class Operator <T extends Serializable> implements Serializable,
    *  Cache childOperators in an array for faster access. childOperatorsArray is accessed
    *  per row, so it's important to make the access efficient.
    */
-  transient protected Operator<? extends Serializable>[] childOperatorsArray;
+  transient protected Operator<? extends Serializable>[] childOperatorsArray = null;
   transient protected int[] childOperatorsTag; 
 
    /**
@@ -457,26 +446,9 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     // For debugging purposes:
     // System.out.println("" + this.getClass() + ": " + SerDeUtils.getJSONString(row, rowInspector));
     // System.out.println("" + this.getClass() + ">> " + ObjectInspectorUtils.getObjectInspectorName(rowInspector));
-    
-    // Copy operators from List to Array for faster access
+ 
     if (childOperatorsArray == null && childOperators != null) {
-      childOperatorsArray = new Operator[childOperators.size()];
-      for (int i=0; i<childOperatorsArray.length; i++) {
-        childOperatorsArray[i] = childOperators.get(i); 
-      }
-      childOperatorsTag = new int[childOperatorsArray.length];
-      for (int i=0; i<childOperatorsArray.length; i++) {
-        List<Operator<? extends Serializable>> parentOperators = 
-            childOperatorsArray[i].getParentOperators();
-        if (parentOperators == null) {
-          throw new HiveException("Hive internal error: parent is null in " 
-              + childOperatorsArray[i].getClass() + "!");
-        }
-        childOperatorsTag[i] = parentOperators.indexOf(this);
-        if (childOperatorsTag[i] == -1) {
-          throw new HiveException("Hive internal error: cannot find parent in the child operator!");
-        }
-      }
+      throw new HiveException("Internal Hive error during operator initialization.");
     }
     
     if((childOperatorsArray == null) || (getDone())) {
@@ -489,7 +461,7 @@ public abstract class Operator <T extends Serializable> implements Serializable,
       if (o.getDone()) {
         childrenDone ++;
       } else {
-        o.process(row, rowInspector, childOperatorsTag[i]);
+        o.process(row, childOperatorsTag[i]);
       }
     }
     
@@ -545,26 +517,45 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     this.colExprMap = colExprMap;
   }
   
-  public String dump() {
+  private String getLevelString(int level) {
+    if (level == 0) {
+      return "\n";
+    }
     StringBuilder s = new StringBuilder();
+    s.append("\n");
+    while(level > 0) {
+      s.append("  ");
+      level--;
+    }
+    return s.toString();
+  }
+  
+  public String dump(int level) {
+    StringBuilder s = new StringBuilder();
+    String ls = getLevelString(level);
+    s.append(ls);
     s.append("<" + getName() + ">");
     s.append("Id =" + id);
     if (childOperators != null) {
-      s.append("<Children>");
+      s.append(ls);
+      s.append("  <Children>");
       for (Operator<? extends Serializable> o : childOperators) {
-        s.append(o.dump());
+        s.append(o.dump(level+2));
       }
-      s.append("<\\Children>");
+      s.append(ls);
+      s.append("  <\\Children>");
     }
 
     if (parentOperators != null) {
-      s.append("<Parent>");
+      s.append(ls);
+      s.append("  <Parent>");
       for (Operator<? extends Serializable> o : parentOperators) {
         s.append("Id = " + o.id + " ");
       }
       s.append("<\\Parent>");
     }
 
+    s.append(ls);
     s.append("<\\" + getName() + ">");
     return s.toString();
   }

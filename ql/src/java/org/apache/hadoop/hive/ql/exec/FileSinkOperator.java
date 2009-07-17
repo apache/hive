@@ -18,26 +18,25 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Properties;
 
-import org.apache.hadoop.io.*;
-import org.apache.hadoop.mapred.*;
-import org.apache.hadoop.fs.*;
 import org.apache.hadoop.conf.Configuration;
-
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
+import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.fileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.tableDesc;
-import org.apache.hadoop.hive.ql.exec.FilterOperator.Counter;
-import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
-import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
-import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
-import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.Serializer;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.mapred.JobConf;
 
 /**
  * File Sink operator implementation
@@ -72,34 +71,7 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
     LOG.info("Committed to output file: " + finalPath);
   }
 
-  public void close(boolean abort) throws HiveException {
-    if (state == state.CLOSE) 
-      return;
-
-    state = state.CLOSE;
-    if (!abort) {
-      if (outWriter != null) {
-        try {
-          outWriter.close(abort);
-          commit();
-        } catch (IOException e) {
-          throw new HiveException(e);
-        }
-      }
-    } else {
-      // Will come here if an Exception was thrown in map() or reduce().
-      // Hadoop always call close() even if an Exception was thrown in map() or reduce(). 
-      try {
-        outWriter.close(abort);
-        if(!autoDelete)
-          fs.delete(outPath, true);
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    }
-  }
-
-  public void initializeOp(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
+  protected void initializeOp(Configuration hconf) throws HiveException {
     try {
       serializer = (Serializer)conf.getTableInfo().getDeserializerClass().newInstance();
       serializer.initialize(null, conf.getTableInfo().getProperties());
@@ -128,7 +100,7 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
       finalPath = new Path(tmpPath, taskId);
       outPath = new Path(tmpPath, Utilities.toTempPath(taskId));
 
-      LOG.info("Writing to temp file: " + outPath);
+      LOG.info("Writing to temp file: FS " + outPath);
 
       HiveOutputFormat<?, ?> hiveOutputFormat = conf.getTableInfo().getOutputFileFormatClass().newInstance();
       final Class<? extends Writable> outputClass = serializer.getSerializedClass();
@@ -142,7 +114,7 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
       finalPath = HiveFileFormatUtils.getOutputFormatFinalPath(parent, jc, hiveOutputFormat, isCompressed, finalPath);
       tableDesc tableInfo = conf.getTableInfo();
 
-      this.outWriter = getRecordWriter(jc, hiveOutputFormat, outputClass, isCompressed, tableInfo.getProperties(), outPath);
+      outWriter = getRecordWriter(jc, hiveOutputFormat, outputClass, isCompressed, tableInfo.getProperties(), outPath);
 
       // in recent hadoop versions, use deleteOnExit to clean tmp files.
       try {
@@ -152,14 +124,13 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
         autoDelete = true;
       } catch (Exception e) {}
 
+      initializeChildren(hconf);
     } catch (HiveException e) {
       throw e;
     } catch (Exception e) {
       e.printStackTrace();
       throw new HiveException(e);
     }
-    
-    initializeChildren(hconf, reporter, inputObjInspector);
   }
 
   public static RecordWriter getRecordWriter(JobConf jc, HiveOutputFormat<?, ?> hiveOutputFormat,
@@ -172,12 +143,12 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
   }
 
   Writable recordValue; 
-  public void process(Object row, ObjectInspector rowInspector, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     try {
       if (reporter != null)
         reporter.progress();
       // user SerDe to serialize r, and write it out
-      recordValue = serializer.serialize(row, rowInspector);
+      recordValue = serializer.serialize(row, inputObjInspectors[tag]);
       if (row_count != null){
         row_count.set(row_count.get()+ 1);
       }
@@ -187,6 +158,33 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
       throw new HiveException (e);
     } catch (SerDeException e) {
       throw new HiveException (e);
+    }
+  }
+
+  public void close(boolean abort) throws HiveException {
+    if (state == State.CLOSE) 
+      return;
+  
+    state = State.CLOSE;
+    if (!abort) {
+      if (outWriter != null) {
+        try {
+          outWriter.close(abort);
+          commit();
+        } catch (IOException e) {
+          throw new HiveException(e);
+        }
+      }
+    } else {
+      // Will come here if an Exception was thrown in map() or reduce().
+      // Hadoop always call close() even if an Exception was thrown in map() or reduce(). 
+      try {
+        outWriter.close(abort);
+        if(!autoDelete)
+          fs.delete(outPath, true);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
     }
   }
 
@@ -220,7 +218,7 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
             Utilities.renameOrMoveFiles(fs, intermediatePath, finalPath);
           }
         } else {
-          fs.delete(tmpPath);
+          fs.delete(tmpPath, true);
         }
       }
     } catch (IOException e) {

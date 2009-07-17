@@ -18,22 +18,26 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.Serializable;
 import java.net.URLClassLoader;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.apache.hadoop.io.*;
-import org.apache.hadoop.mapred.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import org.apache.hadoop.hive.ql.plan.mapredWork;
-import org.apache.hadoop.hive.ql.plan.mapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.fetchWork;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.hive.ql.plan.mapredLocalWork;
+import org.apache.hadoop.hive.ql.plan.mapredWork;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.MapReduceBase;
+import org.apache.hadoop.mapred.Mapper;
+import org.apache.hadoop.mapred.OutputCollector;
+import org.apache.hadoop.mapred.Reporter;
 
 public class ExecMapper extends MapReduceBase implements Mapper {
 
@@ -46,15 +50,6 @@ public class ExecMapper extends MapReduceBase implements Mapper {
   public static final Log l4j = LogFactory.getLog("ExecMapper");
   private static boolean done;
 
-  private void init() {
-    mo = null;
-    fetchOperators = null;
-    oc = null;
-    jc = null;
-    abort = false;
-    rp = null;
-  }
-  
   public void configure(JobConf job) {
     try {
       l4j.info("conf classpath = " 
@@ -65,58 +60,61 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       l4j.info("cannot get classpath: " + e.getMessage());
     }
     try {
-      init();
       jc = job;
+      // create map and fetch operators
       mapredWork mrwork = Utilities.getMapRedWork(job);
       mo = new MapOperator();
       mo.setConf(mrwork);
-      mapredLocalWork mlo = mrwork.getMapLocalWork();
-      if (mlo != null) {
-        fetchOperators = new HashMap<String, FetchOperator>();
-        Map<String, fetchWork> aliasToFetchWork = mlo.getAliasToFetchWork();
-        Iterator<Map.Entry<String, fetchWork>> fetchWorkSet = aliasToFetchWork
-            .entrySet().iterator();
-        while (fetchWorkSet.hasNext()) {
-          Map.Entry<String, fetchWork> entry = fetchWorkSet.next();
-          String alias = entry.getKey();
-          fetchWork fWork = entry.getValue();
-          fetchOperators.put(alias, new FetchOperator(fWork, job));
-          l4j.info("fetchoperator for " + alias + " initialized");
-        }
-      }
+      // initialize map operator
+      mo.setChildren(job);
+      l4j.info(mo.dump(0));
+      mo.initialize(jc, null);
 
-      // we don't initialize the operator until we have set the output collector
-    } catch (Exception e) {
-      // Bail out ungracefully - we should never hit
-      // this here - but would have hit it in SemanticAnalyzer
-      throw new RuntimeException(e);
+      // initialize map local work
+      mapredLocalWork localWork = mrwork.getMapLocalWork();
+      if (localWork == null) {
+        return;
+      }
+      fetchOperators = new HashMap<String, FetchOperator>();
+      // create map local operators
+      for (Map.Entry<String, fetchWork> entry : localWork.getAliasToFetchWork().entrySet()) {
+        fetchOperators.put(entry.getKey(), new FetchOperator(entry.getValue(), job));
+        l4j.info("fetchoperator for " + entry.getKey() + " created");
+      }
+      // initialize map local operators
+      for (Map.Entry<String, FetchOperator> entry : fetchOperators.entrySet()) {
+        Operator<? extends Serializable> forwardOp = localWork.getAliasToWork().get(entry.getKey()); 
+        // All the operators need to be initialized before process
+        forwardOp.initialize(jc, new ObjectInspector[]{entry.getValue().getOutputObjectInspector()});
+        l4j.info("fetchoperator for " + entry.getKey() + " initialized");
+      }
+      // defer processing of map local operators to first row if in case there is no input (??)
+    } catch (Throwable e) {
+      abort = true;
+      if (e instanceof OutOfMemoryError) {
+        // will this be true here?
+        // Don't create a new object if we are already out of memory 
+        throw (OutOfMemoryError) e; 
+      } else {
+        throw new RuntimeException ("Map operator initialization failed", e);
+      }
     }
+
   }
 
   public void map(Object key, Object value,
                   OutputCollector output,
                   Reporter reporter) throws IOException {
     if(oc == null) {
-      try {
-        oc = output;
-        mo.setOutputCollector(oc);
-        mo.initialize(jc, reporter, null);
-        if (fetchOperators != null) {
-          mapredWork mrwork = Utilities.getMapRedWork(jc);
-          mapredLocalWork localWork = mrwork.getMapLocalWork();
-          Iterator<Map.Entry<String, FetchOperator>> fetchOps = fetchOperators.entrySet().iterator();
-          while (fetchOps.hasNext()) {
-            Map.Entry<String, FetchOperator> entry = fetchOps.next();
-            String alias = entry.getKey();
-            FetchOperator fetchOp = entry.getValue();
-            Operator<? extends Serializable> forwardOp = localWork.getAliasToWork().get(alias); 
-            // All the operators need to be initialized before process
-            forwardOp.initialize(jc, reporter, new ObjectInspector[]{fetchOp.getOutputObjectInspector()});
-          }
-
-          fetchOps = fetchOperators.entrySet().iterator();
-          while (fetchOps.hasNext()) {
-            Map.Entry<String, FetchOperator> entry = fetchOps.next();
+      oc = output;
+      rp = reporter;
+      mo.setOutputCollector(oc);
+      mo.setReporter(rp);
+      // process map local operators
+      if (fetchOperators != null) {
+        try {
+          mapredLocalWork localWork = mo.getConf().getMapLocalWork();
+          for (Map.Entry<String, FetchOperator> entry : fetchOperators.entrySet()) {
             String alias = entry.getKey();
             FetchOperator fetchOp = entry.getValue();
             Operator<? extends Serializable> forwardOp = localWork.getAliasToWork().get(alias); 
@@ -127,20 +125,17 @@ public class ExecMapper extends MapReduceBase implements Mapper {
                 break;
               }
 
-              forwardOp.process(row.o, row.oi, 0);
+              forwardOp.process(row.o, 0);
             }
           }
-        }
-
-        rp = reporter;
-      } catch (Throwable e) {
-        abort = true;
-        e.printStackTrace();
-        if (e instanceof OutOfMemoryError) {
-          // Don't create a new object if we are already out of memory 
-          throw (OutOfMemoryError) e; 
-        } else {
-          throw new RuntimeException ("Map operator initialization failed", e);
+        } catch (Throwable e) {
+          abort = true;
+          if (e instanceof OutOfMemoryError) {
+            // Don't create a new object if we are already out of memory 
+            throw (OutOfMemoryError) e; 
+          } else {
+            throw new RuntimeException ("Map local work failed", e);
+          }
         }
       }
     }
@@ -166,20 +161,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
   public void close() {
     // No row was processed
     if(oc == null) {
-      try {
-        l4j.trace("Close called no row");
-        mo.initialize(jc, null, null);
-        rp = null;
-      } catch (Throwable e) {
-        abort = true;
-        e.printStackTrace();
-        if (e instanceof OutOfMemoryError) {
-          // Don't create a new object if we are already out of memory 
-          throw (OutOfMemoryError) e; 
-        } else {
-          throw new RuntimeException ("Map operator close failed during initialize", e);
-        }
-      }
+      l4j.trace("Close called. no row processed by map.");
     }
 
     // detecting failed executions by exceptions thrown by the operator tree
@@ -187,13 +169,9 @@ public class ExecMapper extends MapReduceBase implements Mapper {
     try {
       mo.close(abort);
       if (fetchOperators != null) {
-        mapredWork mrwork = Utilities.getMapRedWork(jc);
-        mapredLocalWork localWork = mrwork.getMapLocalWork();
-        Iterator<Map.Entry<String, FetchOperator>> fetchOps = fetchOperators.entrySet().iterator();
-        while (fetchOps.hasNext()) {
-          Map.Entry<String, FetchOperator> entry = fetchOps.next();
-          String alias = entry.getKey();
-          Operator<? extends Serializable> forwardOp = localWork.getAliasToWork().get(alias); 
+        mapredLocalWork localWork = mo.getConf().getMapLocalWork();
+        for (Map.Entry<String, FetchOperator> entry : fetchOperators.entrySet()) {
+          Operator<? extends Serializable> forwardOp = localWork.getAliasToWork().get(entry.getKey()); 
           forwardOp.close(abort);
         }
       }

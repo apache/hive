@@ -18,13 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.*;
+import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.tableScanDesc;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.conf.Configuration;
 
 /**
  * Table Scan Operator
@@ -33,10 +30,6 @@ import org.apache.hadoop.conf.Configuration;
  **/
 public class TableScanOperator extends Operator<tableScanDesc> implements Serializable {
   private static final long serialVersionUID = 1L;
-  public void initializeOp(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
-    initializeChildren(hconf, reporter, inputObjInspector);
-    // nothing to do really ..
-  }
 
   /**
    * Currently, the table scan operator does not do anything special other than just forwarding the row. Since the 
@@ -44,9 +37,9 @@ public class TableScanOperator extends Operator<tableScanDesc> implements Serial
    * i.e table data is not only read by the mapper, this operator will be enhanced to read the table.
    **/
   @Override
-  public void process(Object row, ObjectInspector rowInspector, int tag)
+  public void process(Object row, int tag)
       throws HiveException {
-    forward(row, rowInspector);    
+    forward(row, inputObjInspectors[tag]);    
   }
 
   /**

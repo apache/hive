@@ -137,6 +137,8 @@ Trunk - Unreleased
     HIVE-644. Change default size for merging files to 256MB.
     (Namit Jain via zshao)
 
+    HIVE-405. Cleanup operator initialization. (Prasad Chakka via zshao)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).

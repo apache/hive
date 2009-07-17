@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
-import org.apache.hadoop.mapred.Reporter;
 
 /**
  * Join operator implementation.
@@ -99,7 +98,6 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
   transient private ArrayList<ArrayList<Object>>[] dummyObjVectors;
   transient private Stack<Iterator<ArrayList<Object>>> iterators;
   transient protected int totalSz; // total size of the composite object
-  transient ObjectInspector joinOutputObjectInspector;  // The OI for the output row 
   
   // keys are the column names. basically this maps the position of the column in 
   // the output of the CommonJoinOperator to the input columnInfo.
@@ -181,8 +179,8 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
     return joinOutputObjectInspector;
   }
   
-  public void initializeOp(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
-    LOG.info("COMMONJOIN " + ((StructObjectInspector)inputObjInspector[0]).getTypeName());   
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    LOG.info("COMMONJOIN " + ((StructObjectInspector)inputObjInspectors[0]).getTypeName());   
     totalSz = 0;
     // Map that contains the rows for each alias
     storage = new HashMap<Byte, ArrayList<ArrayList<Object>>>();
@@ -201,7 +199,7 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
 
     totalSz = populateJoinKeyValue(joinValues, conf.getExprs());
 
-    joinValuesObjectInspectors = getObjectInspectorsFromEvaluators(joinValues, inputObjInspector);
+    joinValuesObjectInspectors = getObjectInspectorsFromEvaluators(joinValues, inputObjInspectors);
     joinValuesStandardObjectInspectors = getStandardObjectInspectors(joinValuesObjectInspectors);
       
     dummyObj = new Object[numAliases];
@@ -227,8 +225,8 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
     
     forwardCache = new Object[totalSz];
     
-    joinOutputObjectInspector = getJoinOutputObjectInspector(order, joinValuesStandardObjectInspectors, conf);
-    LOG.info("JOIN " + ((StructObjectInspector)joinOutputObjectInspector).getTypeName() + " totalsz = " + totalSz);
+    outputObjInspector = getJoinOutputObjectInspector(order, joinValuesStandardObjectInspectors, conf);
+    LOG.info("JOIN " + ((StructObjectInspector)outputObjInspector).getTypeName() + " totalsz = " + totalSz);
   }
 
   public void startGroup() throws HiveException {
@@ -286,7 +284,7 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
         }
       }
     }
-    forward(forwardCache, joinOutputObjectInspector);
+    forward(forwardCache, outputObjInspector);
   }
 
   private void copyOldArray(boolean[] src, boolean[] dest) {

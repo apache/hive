@@ -70,6 +70,9 @@ public class ExecReducer extends MapReduceBase implements Reducer {
   }
 
   public void configure(JobConf job) {
+    ObjectInspector[] rowObjectInspector = new ObjectInspector[Byte.MAX_VALUE];
+    ObjectInspector[] valueObjectInspector = new ObjectInspector[Byte.MAX_VALUE];
+    ObjectInspector keyObjectInspector;
     try {
       l4j.info("conf classpath = " 
           + Arrays.asList(((URLClassLoader)job.getClassLoader()).getURLs()));
@@ -81,7 +84,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
     jc = job;
     mapredWork gWork = Utilities.getMapRedWork(job);
     reducer = gWork.getReducer();
-    reducer.setMapredWork(gWork);
+    reducer.setParentOperators(null); // clear out any parents as reducer is the root
     isTagged = gWork.getNeedsTagging();
     try {
       tableDesc keyTableDesc = gWork.getKeyDesc();
@@ -104,14 +107,25 @@ public class ExecReducer extends MapReduceBase implements Reducer {
       }
     } catch (Exception e) {
       throw new RuntimeException(e);
-    }    
+    }
+    
+    //initialize reduce operator tree
+    try {
+      l4j.info(reducer.dump(0));
+      reducer.initialize(jc, rowObjectInspector);
+    } catch (Throwable e) {
+      abort = true;
+      if (e instanceof OutOfMemoryError) {
+        // Don't create a new object if we are already out of memory 
+        throw (OutOfMemoryError) e; 
+      } else {
+        throw new RuntimeException ("Reduce operator initialization failed", e);
+      }
+    }
   }
 
   private Object keyObject;
-  private ObjectInspector keyObjectInspector;
   private Object[] valueObject = new Object[Byte.MAX_VALUE];
-  private ObjectInspector[] valueObjectInspector = new ObjectInspector[Byte.MAX_VALUE];
-  private ObjectInspector[] rowObjectInspector = new ObjectInspector[Byte.MAX_VALUE];
   
   private BytesWritable groupKey;
   
@@ -122,21 +136,11 @@ public class ExecReducer extends MapReduceBase implements Reducer {
                      Reporter reporter) throws IOException {
 
     if(oc == null) {
-      try {
-        oc = output;
-        reducer.setOutputCollector(oc);
-        reducer.initialize(jc, reporter, rowObjectInspector);
-        rp = reporter;
-      } catch (Throwable e) {
-        abort = true;
-        e.printStackTrace();
-        if (e instanceof OutOfMemoryError) {
-          // Don't create a new object if we are already out of memory 
-          throw (OutOfMemoryError) e; 
-        } else {
-          throw new RuntimeException ("Reduce operator initialization failed");
-        }
-      }
+      // propagete reporter and output collector to all operators
+      oc = output;
+      rp = reporter;
+      reducer.setOutputCollector(oc);
+      reducer.setReporter(rp);
     }
 
     try {
@@ -186,7 +190,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
           l4j.info("ExecReducer: processing " + cntr + " rows");
           nextCntr = getNextCntr(cntr);
         }
-        reducer.process(row, rowObjectInspector[tag.get()], tag.get());
+        reducer.process(row, tag.get());
       }
 
     } catch (Throwable e) {
@@ -213,20 +217,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
 
     // No row was processed
     if(oc == null) {
-      try {
-        l4j.trace("Close called no row");
-        reducer.initialize(jc, null, rowObjectInspector);
-        rp = null;
-      } catch (Throwable e) {
-        abort = true;
-        e.printStackTrace();
-        if (e instanceof OutOfMemoryError) {
-          // Don't create a new object if we are already out of memory 
-          throw (OutOfMemoryError) e; 
-        } else {
-          throw new RuntimeException ("Reduce operator close failed during initialize", e);
-        }
-      }
+      l4j.trace("Close called no row");
     }
 
     try {

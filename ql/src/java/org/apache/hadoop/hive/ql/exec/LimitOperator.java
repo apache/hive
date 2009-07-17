@@ -18,16 +18,11 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.*;
-import java.util.HashMap;
+import java.io.Serializable;
 
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.parse.OpParseContext;
-import org.apache.hadoop.hive.ql.parse.RowResolver;
-import org.apache.hadoop.hive.ql.plan.limitDesc;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.limitDesc;
 
 /**
  * Limit operator implementation
@@ -39,15 +34,15 @@ public class LimitOperator extends Operator<limitDesc> implements Serializable {
   transient protected int limit;
   transient protected int currCount;
 
-  public void initializeOp(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
     limit = conf.getLimit();
     currCount = 0;
-    initializeChildren(hconf, reporter, inputObjInspector);
   }
 
-  public void process(Object row, ObjectInspector rowInspector, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     if (currCount < limit) {
-      forward(row, rowInspector);
+      forward(row, inputObjInspectors[tag]);
       currCount++;
     }
     else

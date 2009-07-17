@@ -18,24 +18,34 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.util.*;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.ql.plan.scriptDesc;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.scriptDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.LineRecordReader.LineReader;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.hadoop.fs.FileUtil;
 
 
 public class ScriptOperator extends Operator<scriptDesc> implements Serializable {
@@ -166,7 +176,7 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
     }
   }
 
-  public void initializeOp(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
+  protected void initializeOp(Configuration hconf) throws HiveException {
 
     statsMap.put(Counter.DESERIALIZE_ERRORS, deserialize_error_count);
     statsMap.put(Counter.SERIALIZE_ERRORS, serialize_error_count);
@@ -180,7 +190,7 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
       scriptInputSerializer = (Serializer)conf.getScriptInputInfo().getDeserializerClass().newInstance();
       scriptInputSerializer.initialize(hconf, conf.getScriptInputInfo().getProperties());
 
-      initializeChildren(hconf, reporter, new ObjectInspector[]{scriptOutputDeserializer.getObjectInspector()});
+      outputObjInspector = scriptOutputDeserializer.getObjectInspector();
 
       String [] cmdArgs = splitArgs(conf.getScriptCmd());
 
@@ -214,12 +224,10 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
       scriptErr = new DataInputStream(new BufferedInputStream(scriptPid.getErrorStream()));
       outThread = new StreamThread(scriptIn, new OutputStreamProcessor(
           scriptOutputDeserializer.getObjectInspector()), "OutputProcessor");
-      outThread.start();
       errThread = new StreamThread(scriptErr,
                                    new ErrorStreamProcessor
                                    (HiveConf.getIntVar(hconf, HiveConf.ConfVars.SCRIPTERRORLIMIT)),
                                    "ErrorProcessor");
-      errThread.start();
       
       /* Timer that reports every 5 minutes to the jobtracker. This ensures that even if
          the user script is not returning rows for greater than that duration, a progress
@@ -236,19 +244,24 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
 
       rpTimer = new Timer(true);
       rpTimer.scheduleAtFixedRate(new ReporterTask(reporter), 0, exp_interval);
+
+      // initialize all children before starting the script
+      initializeChildren(hconf);
+      outThread.start();
+      errThread.start();
     } catch (Exception e) {
-      e.printStackTrace();
       throw new HiveException ("Cannot initialize ScriptOperator", e);
     }
   }
 
   Text text = new Text();
-  public void process(Object row, ObjectInspector rowInspector, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
+
     if(scriptError != null) {
       throw new HiveException(scriptError);
     }
     try {
-      text = (Text) scriptInputSerializer.serialize(row, rowInspector);
+      text = (Text) scriptInputSerializer.serialize(row, inputObjInspectors[tag]);
       scriptOut.write(text.getBytes(), 0, text.getLength());
       scriptOut.write(Utilities.newLineCode);
     } catch (SerDeException e) {

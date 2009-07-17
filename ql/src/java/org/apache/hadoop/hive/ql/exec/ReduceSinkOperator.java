@@ -29,16 +29,14 @@ import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.reduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 
 /**
  * Reduce Sink Operator sends output to the reduce stage
@@ -72,8 +70,7 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
   transient int tag;
   transient byte[] tagByte = new byte[1];
   
-  public void initializeOp(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
-    LOG.info("Initializing Self");
+  protected void initializeOp(Configuration hconf) throws HiveException {
 
     try {
       keyEval = new ExprNodeEvaluator[conf.getKeyCols().size()];
@@ -108,8 +105,7 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
       valueSerializer.initialize(null, valueTableDesc.getProperties());
       
       firstRow = true;
-      initializeChildren(hconf, reporter, inputObjInspector);
-      LOG.info("Initialization Done");
+      initializeChildren(hconf);
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException(e);
@@ -130,9 +126,9 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
   boolean firstRow;
   
   transient Random random;
-  
-  public void process(Object row, ObjectInspector rowInspector, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     try {
+      ObjectInspector rowInspector = inputObjInspectors[tag];
       if (firstRow) {
         firstRow = false;
         keyObjectInspector = initEvaluatorsAndReturnStruct(keyEval, conf.getOutputKeyColumnNames(), rowInspector);

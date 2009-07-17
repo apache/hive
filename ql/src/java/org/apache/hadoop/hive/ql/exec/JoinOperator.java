@@ -24,10 +24,8 @@ import java.util.ArrayList;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.joinDesc;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.mapred.Reporter;
 
 
 /**
@@ -37,13 +35,12 @@ public class JoinOperator extends CommonJoinOperator<joinDesc> implements Serial
   private static final long serialVersionUID = 1L;
   
   @Override
-  public void initializeOp(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
-    super.initializeOp(hconf, reporter, inputObjInspector);
-
-    initializeChildren(hconf, reporter, new ObjectInspector[]{joinOutputObjectInspector});
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
+    initializeChildren(hconf);
   }
   
-  public void process(Object row, ObjectInspector rowInspector, int tag)
+  public void process(Object row, int tag)
       throws HiveException {
     try {
       // get alias
@@ -72,7 +69,7 @@ public class JoinOperator extends CommonJoinOperator<joinDesc> implements Serial
           // Output a warning if we reached at least 1000 rows for a join operand
           // We won't output a warning for the last join operand since the size
           // will never goes to joinEmitInterval.
-          StructObjectInspector soi = (StructObjectInspector)rowInspector;
+          StructObjectInspector soi = (StructObjectInspector)inputObjInspectors[tag];
           StructField sf = soi.getStructFieldRef(Utilities.ReduceField.KEY.toString());
           Object keyObject = soi.getStructFieldData(row, sf);
           LOG.warn("table " + alias + " has " + sz + " rows for join key " + keyObject);

@@ -20,16 +20,13 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.filterDesc;
-import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.mapred.Reporter;
 
 /**
  * Filter operator implementation
@@ -51,23 +48,21 @@ public class FilterOperator extends Operator <filterDesc> implements Serializabl
     consecutiveFails = 0;
   }
 
-  public void initializeOp(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
-    this.reporter = reporter;
-
+  protected void initializeOp(Configuration hconf) throws HiveException {
     try {
       heartbeatInterval = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVESENDHEARTBEAT);
       this.conditionEvaluator = ExprNodeEvaluatorFactory.get(conf.getPredicate());
       statsMap.put(Counter.FILTERED, filtered_count);
       statsMap.put(Counter.PASSED, passed_count);
       conditionInspector = null;
-      initializeChildren(hconf, reporter, inputObjInspector);
     } catch (Throwable e) {
-      e.printStackTrace();
-      throw new RuntimeException(e);
+      throw new HiveException(e);
     }
+    initializeChildren(hconf);
   }
 
-  public void process(Object row, ObjectInspector rowInspector, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
+    ObjectInspector rowInspector = inputObjInspectors[tag];
     if (conditionInspector == null) {
       conditionInspector = (PrimitiveObjectInspector)conditionEvaluator.initialize(rowInspector);
     }
@@ -82,7 +77,7 @@ public class FilterOperator extends Operator <filterDesc> implements Serializabl
       consecutiveFails++;
       
       // In case of a lot of consecutive failures, send a heartbeat in order to avoid timeout
-      if ((consecutiveFails % heartbeatInterval) == 0)
+      if (((consecutiveFails % heartbeatInterval) == 0) && (reporter != null))
         reporter.progress();
     }
   }

@@ -20,23 +20,25 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.Exception;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
-import java.util.Random;
-import java.util.ArrayList;
-import java.util.ArrayList;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.mapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.tableDesc;
-import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.util.jdbm.RecordManager;
+import org.apache.hadoop.hive.ql.util.jdbm.RecordManagerFactory;
+import org.apache.hadoop.hive.ql.util.jdbm.RecordManagerOptions;
+import org.apache.hadoop.hive.ql.util.jdbm.htree.HTree;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -45,13 +47,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
-import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.hadoop.hive.ql.util.jdbm.htree.HTree;
-import org.apache.hadoop.hive.ql.util.jdbm.helper.FastIterator;
-import org.apache.hadoop.hive.ql.util.jdbm.RecordManager;
-import org.apache.hadoop.hive.ql.util.jdbm.RecordManagerFactory;
-import org.apache.hadoop.hive.ql.util.jdbm.RecordManagerOptions;
 
 /**
  * Map side Join operator implementation.
@@ -123,9 +119,8 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
   transient int      heartbeatInterval;
   
   @Override
-  public void initializeOp(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
-    super.initializeOp(hconf, reporter, inputObjInspector);
-    this.reporter=reporter;
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
     numMapRowsRead = 0;
   
     firstRow = true;
@@ -135,7 +130,7 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
       joinKeys  = new HashMap<Byte, List<ExprNodeEvaluator>>();
       
       populateJoinKeyValue(joinKeys, conf.getKeys());
-      joinKeysObjectInspectors = getObjectInspectorsFromEvaluators(joinKeys, inputObjInspector);
+      joinKeysObjectInspectors = getObjectInspectorsFromEvaluators(joinKeys, inputObjInspectors);
       joinKeysStandardObjectInspectors = getStandardObjectInspectors(joinKeysObjectInspectors); 
         
       // all other tables are small, and are cached in the hash table
@@ -179,7 +174,7 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
       
       mapJoinRowsKey = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEMAPJOINROWSIZE);
       
-      List<? extends StructField> structFields = ((StructObjectInspector)joinOutputObjectInspector).getAllStructFieldRefs();
+      List<? extends StructField> structFields = ((StructObjectInspector)outputObjInspector).getAllStructFieldRefs();
       if (conf.getOutputColumnNames().size() < structFields.size()) {
         List<ObjectInspector> structFieldObjectInspectors = new ArrayList<ObjectInspector>();
         for (Byte alias : order) {
@@ -191,20 +186,18 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
                 .getFieldObjectInspector());
           }
         }
-        joinOutputObjectInspector = ObjectInspectorFactory
+        outputObjInspector = ObjectInspectorFactory
             .getStandardStructObjectInspector(conf.getOutputColumnNames(),
                 structFieldObjectInspectors);
       }
-      
-      initializeChildren(hconf, reporter, new ObjectInspector[]{joinOutputObjectInspector});
+      initializeChildren(hconf);
     } catch (IOException e) {
-      e.printStackTrace();
       throw new HiveException(e);
     }
   }
 
   @Override
-  public void process(Object row, ObjectInspector rowInspector, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     try {
 
       // get alias
@@ -237,7 +230,7 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
         
         // Send some status perodically 
         numMapRowsRead++;
-        if ((numMapRowsRead % heartbeatInterval) == 0)
+        if (((numMapRowsRead % heartbeatInterval) == 0) && (reporter != null))
           reporter.progress();
 
         HTree hashTable = mapJoinTables.get(alias);

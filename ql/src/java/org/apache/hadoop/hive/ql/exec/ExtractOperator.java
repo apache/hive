@@ -18,14 +18,11 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.*;
+import java.io.Serializable;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.extractDesc;
-import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.conf.Configuration;
 
 /**
  * Extract operator implementation
@@ -35,15 +32,14 @@ public class ExtractOperator extends Operator<extractDesc> implements Serializab
   private static final long serialVersionUID = 1L;
   transient protected ExprNodeEvaluator eval;
 
-  public void initializeOp(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
+  protected void initializeOp(Configuration hconf) throws HiveException {
     eval = ExprNodeEvaluatorFactory.get(conf.getCol());
-    outputRowInspector = eval.initialize(inputObjInspector[0]);
-    initializeChildren(hconf, reporter, new ObjectInspector[]{outputRowInspector});
+    outputObjInspector = eval.initialize(inputObjInspectors[0]);
+    initializeChildren(hconf);
   }
 
-  ObjectInspector outputRowInspector;
-  public void process(Object row, ObjectInspector rowInspector, int tag) throws HiveException {
-    forward(eval.evaluate(row), outputRowInspector);
+  public void process(Object row, int tag) throws HiveException {
+    forward(eval.evaluate(row), outputObjInspector);
   }
 
   

@@ -18,13 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.*;
+import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.forwardDesc;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.conf.Configuration;
 
 /**
  * Forward Operator
@@ -32,14 +29,10 @@ import org.apache.hadoop.conf.Configuration;
  **/
 public class ForwardOperator extends  Operator<forwardDesc>  implements Serializable {
   private static final long serialVersionUID = 1L;
-  public void initializeOp(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
-    initializeChildren(hconf, reporter, inputObjInspector);
-    // nothing to do really ..
-  }
 
   @Override
-  public void process(Object row, ObjectInspector rowInspector, int tag)
+  public void process(Object row, int tag)
       throws HiveException {
-    forward(row, rowInspector);    
+    forward(row, inputObjInspectors[tag]);    
   }
 }

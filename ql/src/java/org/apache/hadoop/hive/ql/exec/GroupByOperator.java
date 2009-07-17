@@ -46,7 +46,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.Reporter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -75,7 +74,6 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
   transient GenericUDAFEvaluator[] aggregationEvaluators;
   
   transient protected ArrayList<ObjectInspector> objectInspectors;
-  transient protected ObjectInspector outputObjectInspector;
   transient ArrayList<String> fieldNames;
 
   // Used by sort-based GroupBy: Mode = COMPLETE, PARTIAL1, PARTIAL2, MERGEPARTIAL
@@ -134,14 +132,13 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
   transient int           numEntriesVarSize;
   transient int           numEntriesHashTable;
   
-  public void initializeOp(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
-
+  protected void initializeOp(Configuration hconf) throws HiveException {
     totalMemory = Runtime.getRuntime().totalMemory();
     numRowsInput = 0;
     numRowsHashTbl = 0;
 
-    assert(inputObjInspector.length == 1);
-    ObjectInspector rowInspector = inputObjInspector[0];
+    assert(inputObjInspectors.length == 1);
+    ObjectInspector rowInspector = inputObjInspectors[0];
 
     // init keyFields
     keyFields = new ExprNodeEvaluator[conf.getKeys().size()];
@@ -235,7 +232,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     currentKeyObjectInspector = 
         ObjectInspectorFactory.getStandardStructObjectInspector(keyNames, Arrays.asList(currentKeyObjectInspectors));
     
-    outputObjectInspector = 
+    outputObjInspector = 
       ObjectInspectorFactory.getStandardStructObjectInspector(fieldNames, objectInspectors);
 	
     firstRow = true;
@@ -243,8 +240,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     // is not known, estimate that based on the number of entries
     if (conf.getMode() == groupByDesc.Mode.HASH)
       computeMaxEntriesHashAggr(hconf);
-    
-    initializeChildren(hconf, reporter, new ObjectInspector[]{outputObjectInspector});
+    initializeChildren(hconf);
   }
 
   /**
@@ -428,8 +424,9 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     }
   }
   
-  public void process(Object row, ObjectInspector rowInspector, int tag) throws HiveException {
+  public void process(Object row, int tag) throws HiveException {
     firstRow = false;
+    ObjectInspector rowInspector = inputObjInspectors[tag];
     // Total number of input rows is needed for hash aggregation only
     if (hashAggr) {
       numRowsInput++;
@@ -654,7 +651,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     for(int i=0; i<aggs.length; i++) {
       forwardCache[keys.size() + i] = aggregationEvaluators[i].evaluate(aggs[i]);
     }
-    forward(forwardCache, outputObjectInspector);
+    forward(forwardCache, outputObjInspector);
   }
   
   /**

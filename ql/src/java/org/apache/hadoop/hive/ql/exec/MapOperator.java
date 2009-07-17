@@ -18,28 +18,32 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.util.*;
-import java.io.*;
-import java.net.URLClassLoader;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Map.Entry;
 
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.plan.mapredWork;
-import org.apache.hadoop.hive.ql.plan.tableDesc;
-import org.apache.hadoop.hive.ql.plan.partitionDesc;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.mapredWork;
+import org.apache.hadoop.hive.ql.plan.partitionDesc;
+import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 
 /**
  * Map operator. This triggers overall map side processing.
@@ -57,6 +61,7 @@ public class MapOperator extends Operator <mapredWork> implements Serializable {
   transient private Object[] rowWithPart;
   transient private StructObjectInspector rowObjectInspector;
   transient private boolean isPartitioned;
+  private Map<MapInputPath, MapOpCtx> opCtxMap;
   
   private static class MapInputPath {
     String path;
@@ -96,6 +101,8 @@ public class MapOperator extends Operator <mapredWork> implements Serializable {
     StructObjectInspector rowObjectInspector;
     Object[]              rowWithPart;
     Deserializer          deserializer;
+    public String tableName;
+    public String partName;
     
     /**
      * @param isPartitioned
@@ -139,32 +146,50 @@ public class MapOperator extends Operator <mapredWork> implements Serializable {
     }
   }
   
-  private MapOpCtx initObjectInspector(Configuration hconf, String onefile) throws HiveException, ClassNotFoundException, InstantiationException, IllegalAccessException, SerDeException {
+  /**
+   * Initializes this map op as the root of the tree. It sets JobConf & MapRedWork
+   * and starts initialization of the operator tree rooted at this op.
+   * @param hconf
+   * @param mrwork
+   * @throws HiveException
+   */
+  public void initializeAsRoot(Configuration hconf, mapredWork mrwork) throws HiveException {
+    setConf(mrwork);
+    setChildren(hconf);
+    initialize(hconf, null);
+  }
+  
+  private static MapOpCtx initObjectInspector(mapredWork conf, Configuration hconf, String onefile) 
+    throws HiveException, ClassNotFoundException, InstantiationException, IllegalAccessException, SerDeException {
     partitionDesc pd = conf.getPathToPartitionInfo().get(onefile);
     LinkedHashMap<String, String> partSpec = pd.getPartSpec();
     tableDesc td = pd.getTableDesc();
-    Properties p = td.getProperties();
+    Properties tblProps = td.getProperties();
 
-    // Add alias, table name, and partitions to hadoop conf
-    HiveConf.setVar(hconf, HiveConf.ConfVars.HIVETABLENAME, String.valueOf(p.getProperty("name")));
-    HiveConf.setVar(hconf, HiveConf.ConfVars.HIVEPARTITIONNAME, String.valueOf(partSpec));
     Class sdclass = td.getDeserializerClass();
     if(sdclass == null) {
       String className = td.getSerdeClassName();
       if ((className == "") || (className == null)) {
-        throw new HiveException("SerDe class or the SerDe class name is not set for table: " + td.getProperties().getProperty("name"));
+        throw new HiveException("SerDe class or the SerDe class name is not set for table: " 
+            + td.getProperties().getProperty("name"));
       }
       sdclass = hconf.getClassByName(className);
     }
     
-    deserializer = (Deserializer) sdclass.newInstance();
-    deserializer.initialize(hconf, p);
-    rowObjectInspector = (StructObjectInspector)deserializer.getObjectInspector();
-    
+    String tableName = String.valueOf(tblProps.getProperty("name"));
+    String partName = String.valueOf(partSpec);
+    //HiveConf.setVar(hconf, HiveConf.ConfVars.HIVETABLENAME, tableName);
+    //HiveConf.setVar(hconf, HiveConf.ConfVars.HIVEPARTITIONNAME, partName);
+    Deserializer deserializer = (Deserializer) sdclass.newInstance();
+    deserializer.initialize(hconf, tblProps);
+    StructObjectInspector rowObjectInspector = (StructObjectInspector)deserializer.getObjectInspector();
+
+    MapOpCtx opCtx = null;
     // Next check if this table has partitions and if so
     // get the list of partition names as well as allocate
     // the serdes for the partition columns
-    String pcols = p.getProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_PARTITION_COLUMNS);
+    String pcols = tblProps.getProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_PARTITION_COLUMNS);
+    //Log LOG = LogFactory.getLog(MapOperator.class.getName());
     if (pcols != null && pcols.length() > 0) {
       String[] partKeys = pcols.trim().split("/");
       List<String> partNames = new ArrayList<String>(partKeys.length);
@@ -176,79 +201,67 @@ public class MapOperator extends Operator <mapredWork> implements Serializable {
         partValues[i] = new Text(partSpec.get(key));
         partObjectInspectors.add(PrimitiveObjectInspectorFactory.writableStringObjectInspector);
       }
-      StructObjectInspector partObjectInspector = ObjectInspectorFactory.getStandardStructObjectInspector(partNames, partObjectInspectors);
+      StructObjectInspector partObjectInspector = ObjectInspectorFactory
+                  .getStandardStructObjectInspector(partNames, partObjectInspectors);
       
-      rowWithPart = new Object[2];
+      Object[] rowWithPart = new Object[2];
       rowWithPart[1] = partValues;
-      rowObjectInspector = ObjectInspectorFactory.getUnionStructObjectInspector(Arrays.asList(new StructObjectInspector[]{
-                                                                                                rowObjectInspector, 
-                                                                                                partObjectInspector}));
-      return new MapOpCtx(true, rowObjectInspector, rowWithPart, deserializer);
+      rowObjectInspector = ObjectInspectorFactory
+                                .getUnionStructObjectInspector(
+                                    Arrays.asList(new StructObjectInspector[]{
+                                                    rowObjectInspector, 
+                                                    partObjectInspector}));
+      //LOG.info("dump " + tableName + " " + partName + " " + rowObjectInspector.getTypeName());
+      opCtx = new MapOpCtx(true, rowObjectInspector, rowWithPart, deserializer);
     }
     else {
-      return new MapOpCtx(false, rowObjectInspector, null, deserializer);
+      //LOG.info("dump2 " + tableName + " " + partName + " " + rowObjectInspector.getTypeName());
+      opCtx = new MapOpCtx(false, rowObjectInspector, null, deserializer);
     }
+    opCtx.tableName = tableName;
+    opCtx.partName = partName;
+    return opCtx;
   }  
-
-  public void initializeOp(Configuration hconf, Reporter reporter,
-      ObjectInspector[] inputObjInspector) throws HiveException {
+  
+  public void setChildren(Configuration hconf) throws HiveException {
+    
     Path fpath = new Path((new Path(HiveConf.getVar(hconf,
         HiveConf.ConfVars.HADOOPMAPFILENAME))).toUri().getPath());
-    ArrayList<Operator<? extends Serializable>> todo = new ArrayList<Operator<? extends Serializable>>();
-    Map<MapInputPath, MapOpCtx> opCtx = new HashMap<MapInputPath, MapOpCtx>();
+    ArrayList<Operator<? extends Serializable>> children = 
+        new ArrayList<Operator<? extends Serializable>>();
+    opCtxMap = new HashMap<MapInputPath, MapOpCtx>();
     statsMap.put(Counter.DESERIALIZE_ERRORS, deserialize_error_count);
 
     try {
-      // initialize the complete subtree
+      boolean done = false;
       for (String onefile : conf.getPathToAliases().keySet()) {
-        MapOpCtx ctx = initObjectInspector(hconf, onefile);
-
+        MapOpCtx opCtx = initObjectInspector(conf, hconf, onefile);
+        Path onepath = new Path(new Path(onefile).toUri().getPath());
         List<String> aliases = conf.getPathToAliases().get(onefile);
         for (String onealias : aliases) {
           Operator<? extends Serializable> op = conf.getAliasToWork().get(
               onealias);
-          opCtx.put(new MapInputPath(onefile, onealias, op), ctx);
-        }
-      }
-
-      boolean done = false;
-      // for each configuration path that fpath can be relativized against ..
-      for (String onefile : conf.getPathToAliases().keySet()) {
-        Path onepath = new Path(new Path(onefile).toUri().getPath());
-        if (!onepath.toUri().relativize(fpath.toUri()).equals(fpath.toUri())) {
-
-          // pick up work corresponding to this configuration path
-          List<String> aliases = conf.getPathToAliases().get(onefile);
-          for (String onealias : aliases) {
-            LOG.info("Adding alias " + onealias + " to work list for file "
-                + fpath.toUri().getPath());
-            Operator<? extends Serializable> op = conf.getAliasToWork().get(
-                onealias);
-            List<Operator<? extends Serializable>> parents = new ArrayList<Operator<? extends Serializable>>();
-            parents.add(this);
-            op.setParentOperators(parents);
-            todo.add(op);
-            MapInputPath inp = new MapInputPath(onefile, onealias, op);
-            LOG.info("dump " + opCtx.get(inp).getRowObjectInspector().getTypeName());
-            op.initialize(hconf, reporter, new ObjectInspector[] { opCtx.get(inp).getRowObjectInspector() });
-
+          LOG.info("Adding alias " + onealias + " to work list for file "
+              + fpath.toUri().getPath());
+          MapInputPath inp = new MapInputPath(onefile, onealias, op);
+          opCtxMap.put(inp, opCtx);
+          op.setParentOperators(new ArrayList<Operator<? extends Serializable>>());
+          op.getParentOperators().add(this);
+          // check for the operators who will process rows coming to this Map Operator
+          if (!onepath.toUri().relativize(fpath.toUri()).equals(fpath.toUri())) {
+            children.add(op);
+            LOG.info("dump " + op.getName() + " " + opCtxMap.get(inp).getRowObjectInspector().getTypeName());
             if (!done) {
-              deserializer = opCtx.get(inp).getDeserializer();
-              isPartitioned = opCtx.get(inp).isPartitioned();
-              rowWithPart = opCtx.get(inp).getRowWithPart();
-              rowObjectInspector = opCtx.get(inp).getRowObjectInspector();
+              deserializer = opCtxMap.get(inp).getDeserializer();
+              isPartitioned = opCtxMap.get(inp).isPartitioned();
+              rowWithPart = opCtxMap.get(inp).getRowWithPart();
+              rowObjectInspector = opCtxMap.get(inp).getRowObjectInspector();
               done = true;
             }
           }
         }
       }
-
-      for (MapInputPath input : opCtx.keySet()) {
-        Operator<? extends Serializable> op = input.op;
-        op.initialize(hconf, reporter, new ObjectInspector[] { opCtx.get(input).getRowObjectInspector() });
-      }
-
-      if (todo.size() == 0) {
+      if (children.size() == 0) {
         // didn't find match for input file path in configuration!
         // serious problem ..
         LOG.error("Configuration does not have any alias for path: "
@@ -256,24 +269,24 @@ public class MapOperator extends Operator <mapredWork> implements Serializable {
         throw new HiveException("Configuration and input path are inconsistent");
       }
 
-      // we found all the operators that we are supposed to process. now
-      // bootstrap
-      this.setChildOperators(todo);
-      // the child operators may need the global mr configuration. set it now so
-      // that they can get access during initiaize.
-      this.setMapredWork(conf);
-      // way hacky - need to inform child operators about output collector
-      this.setOutputCollector(out);
+      // we found all the operators that we are supposed to process.
+      setChildOperators(children);      
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+  
 
-    } catch (SerDeException e) {
-      e.printStackTrace();
-      throw new HiveException(e);
-    } catch (InstantiationException e) {
-      throw new HiveException(e);
-    } catch (IllegalAccessException e) {
-      throw new HiveException(e);
-    } catch (ClassNotFoundException e) {
-      throw new HiveException(e);
+  public void initializeOp(Configuration hconf) throws HiveException {
+    // set that parent initialization is done and call initialize on children
+    state = State.INIT;
+    for (Entry<MapInputPath, MapOpCtx> entry : opCtxMap.entrySet()) {
+      // Add alias, table name, and partitions to hadoop conf so that their children will
+      // inherit these
+      HiveConf.setVar(hconf, HiveConf.ConfVars.HIVETABLENAME, entry.getValue().tableName);
+      HiveConf.setVar(hconf, HiveConf.ConfVars.HIVEPARTITIONNAME, entry.getValue().partName);
+      Operator<? extends Serializable> op = entry.getKey().op;
+      op.initialize(hconf, new ObjectInspector[]{entry.getValue().getRowObjectInspector()});
     }
   }
 
@@ -293,8 +306,12 @@ public class MapOperator extends Operator <mapredWork> implements Serializable {
     }
   }
 
-  public void process(Object row, ObjectInspector rowInspector, int tag)
+  public void process(Object row, int tag)
       throws HiveException {
     throw new HiveException("Hive 2 Internal error: should not be called!");
+  }
+
+  public String getName() {
+    return "MAP";
   }
 }

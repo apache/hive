@@ -18,21 +18,26 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import junit.framework.TestCase;
-import java.io.*;
-import java.util.*;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.Reporter;
+
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.Writable;
-
-
-import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
-import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
-import org.apache.hadoop.hive.ql.plan.*;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
+import org.apache.hadoop.hive.ql.plan.collectDesc;
+import org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc;
+import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.filterDesc;
+import org.apache.hadoop.hive.ql.plan.mapredWork;
+import org.apache.hadoop.hive.ql.plan.partitionDesc;
+import org.apache.hadoop.hive.ql.plan.scriptDesc;
+import org.apache.hadoop.hive.ql.plan.selectDesc;
+import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -40,6 +45,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.mapred.JobConf;
 
 public class TestOperators extends TestCase {
 
@@ -89,10 +97,10 @@ public class TestOperators extends TestCase {
       op.setConf(filterCtx);
 
       // runtime initialization
-      op.initialize(new JobConf(TestOperators.class), null, new ObjectInspector[]{r[0].oi});
+      op.initialize(new JobConf(TestOperators.class), new ObjectInspector[]{r[0].oi});
 
       for(InspectableObject oner: r) {
-        op.process(oner.o, oner.oi, 0);
+        op.process(oner.o, 0);
       }
 
       Map<Enum<?>, Long> results = op.getStats();
@@ -121,7 +129,6 @@ public class TestOperators extends TestCase {
       exprNodeDesc exprDesc1 = TestExecDriver.getStringColumn("col1");
 
       // col2
-      ArrayList<exprNodeDesc> exprDesc2children = new ArrayList<exprNodeDesc>();
       exprNodeDesc expr1 = TestExecDriver.getStringColumn("col0");
       exprNodeDesc expr2 = new exprNodeConstantDesc("1");
       exprNodeDesc exprDesc2 = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("concat", expr1, expr2);
@@ -138,15 +145,15 @@ public class TestOperators extends TestCase {
       op.setConf(selectCtx);
 
       // fileSinkOperator to dump the output of the select
-      fileSinkDesc fsd = new fileSinkDesc ("file:///tmp" + File.separator + System.getProperty("user.name") + File.separator + "TestFileSinkOperator",
-                                           Utilities.defaultTd, false);
-      Operator<fileSinkDesc> flop = OperatorFactory.getAndMakeChild(fsd, op);
+      //fileSinkDesc fsd = new fileSinkDesc ("file:///tmp" + File.separator + System.getProperty("user.name") + File.separator + "TestFileSinkOperator",
+      //                                     Utilities.defaultTd, false);
+      //Operator<fileSinkDesc> flop = OperatorFactory.getAndMakeChild(fsd, op);
       
-      op.initialize(new JobConf(TestOperators.class), Reporter.NULL, new ObjectInspector[]{r[0].oi});
+      op.initialize(new JobConf(TestOperators.class), new ObjectInspector[]{r[0].oi});
 
       // evaluate on row
       for(int i=0; i<5; i++) {
-        op.process(r[i].o, r[i].oi, 0);
+        op.process(r[i].o, 0);
       }
       op.close(false);
 
@@ -191,11 +198,11 @@ public class TestOperators extends TestCase {
       collectDesc cd = new collectDesc (Integer.valueOf(10));
       CollectOperator cdop = (CollectOperator) OperatorFactory.getAndMakeChild(cd, sop);
 
-      op.initialize(new JobConf(TestOperators.class), null, new ObjectInspector[]{r[0].oi});
+      op.initialize(new JobConf(TestOperators.class), new ObjectInspector[]{r[0].oi});
 
       // evaluate on row
       for(int i=0; i<5; i++) {
-        op.process(r[i].o, r[i].oi, 0);
+        op.process(r[i].o, 0);
       }
       op.close(false);
 
@@ -262,8 +269,7 @@ public class TestOperators extends TestCase {
 
       // get map operator and initialize it
       MapOperator mo = new MapOperator();
-      mo.setConf(mrwork);
-      mo.initialize(hconf, null, null);
+      mo.initializeAsRoot(hconf, mrwork);
 
       Text tw = new Text();
       InspectableObject io1 = new InspectableObject();

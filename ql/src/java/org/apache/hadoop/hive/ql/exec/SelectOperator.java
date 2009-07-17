@@ -25,9 +25,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.selectDesc;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.mapred.Reporter;
 
 /**
  * Select operator implementation
@@ -38,12 +36,11 @@ public class SelectOperator extends Operator <selectDesc> implements Serializabl
   transient protected ExprNodeEvaluator[] eval;
 
   transient Object[] output;
-  transient ObjectInspector outputObjectInspector;
   
-  public void initializeOp(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
+  protected void initializeOp(Configuration hconf) throws HiveException {
     // Just forward the row as is
     if (conf.isSelStarNoCompute()) {
-      initializeChildren(hconf, reporter, inputObjInspector);
+    	initializeChildren(hconf);
       return;
     }
     
@@ -54,20 +51,19 @@ public class SelectOperator extends Operator <selectDesc> implements Serializabl
       eval[i] = ExprNodeEvaluatorFactory.get(colList.get(i));
     }
    
-    assert inputObjInspector.length == 1;
     output = new Object[eval.length];
-    LOG.info("SELECT " + ((StructObjectInspector)inputObjInspector[0]).getTypeName());
-    outputObjectInspector = initEvaluatorsAndReturnStruct(eval, conf
-          .getOutputColumnNames(), inputObjInspector[0]);
-    initializeChildren(hconf, reporter, new ObjectInspector[]{outputObjectInspector});
+    LOG.info("SELECT " + ((StructObjectInspector)inputObjInspectors[0]).getTypeName());
+    outputObjInspector = initEvaluatorsAndReturnStruct(eval, conf
+          .getOutputColumnNames(), inputObjInspectors[0]);
+    initializeChildren(hconf);
   }
 
-  public void process(Object row, ObjectInspector rowInspector, int tag)
+  public void process(Object row, int tag)
       throws HiveException {
 
     // Just forward the row as is
     if (conf.isSelStarNoCompute()) {
-      forward(row, rowInspector);
+      forward(row, inputObjInspectors[tag]);
       return;
     }
     
@@ -81,7 +77,7 @@ public class SelectOperator extends Operator <selectDesc> implements Serializabl
             + conf.getColList().get(i).getExprString(), e);
       }
     }
-    forward(output, outputObjectInspector);
+    forward(output, outputObjInspector);
   }
 
   /**

@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.ql.plan.collectDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.conf.Configuration;
 
 /**
@@ -39,15 +38,16 @@ public class CollectOperator extends Operator <collectDesc> implements Serializa
   transient protected ObjectInspector standardRowInspector;
   transient int maxSize;
 
-  public void initializeOp(Configuration hconf, Reporter reporter, ObjectInspector[] inputObjInspector) throws HiveException {
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
     rowList = new ArrayList<Object> ();
     maxSize = conf.getBufferSize().intValue();
-    initializeChildren(hconf, reporter, inputObjInspector);
   }
 
   boolean firstRow = true;
-  public void process(Object row, ObjectInspector rowInspector, int tag)
+  public void process(Object row, int tag)
       throws HiveException {
+    ObjectInspector rowInspector = inputObjInspectors[tag];
     if (firstRow) {
       firstRow = false;
       // Get the standard ObjectInspector of the row
