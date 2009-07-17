@@ -71,6 +71,10 @@ public class FunctionRegistry {
     registerUDF("power", UDFPower.class, OperatorType.PREFIX, false);
     registerUDF("pow", UDFPower.class, OperatorType.PREFIX, false);
 
+    registerUDF("conv", UDFConv.class, OperatorType.PREFIX, false);
+    registerUDF("bin", UDFBin.class, OperatorType.PREFIX, false);
+    registerUDF("hex", UDFHex.class, OperatorType.PREFIX, false);
+    
     registerUDF("upper", UDFUpper.class, OperatorType.PREFIX, false);
     registerUDF("lower", UDFLower.class, OperatorType.PREFIX, false);
     registerUDF("ucase", UDFUpper.class, OperatorType.PREFIX, false);

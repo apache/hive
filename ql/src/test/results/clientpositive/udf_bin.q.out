@@ -1,0 +1,13 @@
+query: SELECT
+  bin(1),
+  bin(0),
+  bin(99992421)
+FROM src LIMIT 1
+Input: default/src
+Output: file:/data/users/emil/hive1/hive1/build/ql/tmp/1248344323/10000
+1	0	101111101011100001101100101
+query: -- Negative numbers should be treated as two's complement (64 bit).
+SELECT bin(-5) FROM src LIMIT 1
+Input: default/src
+Output: file:/data/users/emil/hive1/hive1/build/ql/tmp/1854602523/10000
+1111111111111111111111111111111111111111111111111111111111111011
