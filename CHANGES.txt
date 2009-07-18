@@ -139,6 +139,8 @@ Trunk - Unreleased
 
     HIVE-405. Cleanup operator initialization. (Prasad Chakka via zshao)
 
+    HIVE-652. Turn off auto-merge for insert local. (Namit Jain via zshao)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).

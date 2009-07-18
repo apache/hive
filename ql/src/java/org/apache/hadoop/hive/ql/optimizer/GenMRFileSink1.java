@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMRMapJoinCtx;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.MoveTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
@@ -84,13 +85,27 @@ public class GenMRFileSink1 implements NodeProcessor {
     Task<? extends Serializable> currTask = ctx.getCurrTask();
 
     // Has the user enabled merging of files for map-only jobs or for all jobs
-    if (((ctx.getMvTask() != null) && (!ctx.getMvTask().isEmpty())) &&
-        ((ctx.getSeenFileSinkOps() == null) ||
-           (!ctx.getSeenFileSinkOps().contains((FileSinkOperator)nd)))) {
-      if ((parseCtx.getConf().getBoolVar(HiveConf.ConfVars.HIVEMERGEMAPFILES) &&
-          (((mapredWork)currTask.getWork()).getReducer() == null)) ||
-          parseCtx.getConf().getBoolVar(HiveConf.ConfVars.HIVEMERGEMAPREDFILES))
-        chDir = true;
+    if ((ctx.getMvTask() != null) && (!ctx.getMvTask().isEmpty())) 
+    {
+      List<Task<? extends Serializable>> mvTasks = ctx.getMvTask();
+
+      // In case of unions or map-joins, it is possible that the file has already been seen.
+      // So, no need to attempt to merge the files again.
+      if ((ctx.getSeenFileSinkOps() == null) ||
+          (!ctx.getSeenFileSinkOps().contains((FileSinkOperator)nd)))  {
+        
+        // no need of merging if the move is to a local file system
+        MoveTask mvTask = (MoveTask)findMoveTask(mvTasks, (FileSinkOperator)nd);
+        if ((mvTask != null) && !mvTask.isLocal())
+        {
+          // There are separate configuration parameters to control whether to merge for a map-only job
+          // or for a map-reduce job
+          if ((parseCtx.getConf().getBoolVar(HiveConf.ConfVars.HIVEMERGEMAPFILES) &&
+              (((mapredWork)currTask.getWork()).getReducer() == null)) ||
+              parseCtx.getConf().getBoolVar(HiveConf.ConfVars.HIVEMERGEMAPREDFILES))
+            chDir = true;
+        }
+      }
     }
 
     String finalName = processFS(nd, stack, opProcCtx, chDir);

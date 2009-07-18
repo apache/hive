@@ -144,4 +144,24 @@ public class MoveTask extends Task<moveWork> implements Serializable {
       return (1);
     }
   }
+ 
+  /*
+   * Does the move task involve moving to a local file system
+   */
+  public boolean isLocal() {
+    loadTableDesc tbd = work.getLoadTableWork();
+    if (tbd != null)
+      return false;
+    
+    loadFileDesc lfd = work.getLoadFileWork();
+    if (lfd != null) {
+      if (lfd.getIsDfsDir()) {
+        return false;
+      }
+      else
+        return true;
+    }
+    
+    return false;
+  }
 }
