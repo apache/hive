@@ -1,0 +1,95 @@
+query: EXPLAIN
+SELECT
+    'abc',        "abc",
+    'abc\'',      "abc\"",
+    'abc\\',      "abc\\",
+    'abc\\\'',    "abc\\\"",
+    'abc\\\\',    "abc\\\\",
+    'abc\\\\\'',  "abc\\\\\"",
+    'abc\\\\\\',  "abc\\\\\\",
+    'abc""""\\',  "abc''''\\",
+    "awk '{print NR\"\\t\"$0}'",
+    'tab\ttab',   "tab\ttab"
+FROM src
+LIMIT 1
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'abc') (TOK_SELEXPR "abc") (TOK_SELEXPR 'abc\'') (TOK_SELEXPR "abc\"") (TOK_SELEXPR 'abc\\') (TOK_SELEXPR "abc\\") (TOK_SELEXPR 'abc\\\'') (TOK_SELEXPR "abc\\\"") (TOK_SELEXPR 'abc\\\\') (TOK_SELEXPR "abc\\\\") (TOK_SELEXPR 'abc\\\\\'') (TOK_SELEXPR "abc\\\\\"") (TOK_SELEXPR 'abc\\\\\\') (TOK_SELEXPR "abc\\\\\\") (TOK_SELEXPR 'abc""""\\') (TOK_SELEXPR "abc''''\\") (TOK_SELEXPR "awk '{print NR\"\\t\"$0}'") (TOK_SELEXPR 'tab\ttab') (TOK_SELEXPR "tab\ttab")) (TOK_LIMIT 1)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src 
+            Select Operator
+              expressions:
+                    expr: 'abc'
+                    type: string
+                    expr: 'abc'
+                    type: string
+                    expr: 'abc''
+                    type: string
+                    expr: 'abc"'
+                    type: string
+                    expr: 'abc\'
+                    type: string
+                    expr: 'abc\'
+                    type: string
+                    expr: 'abc\''
+                    type: string
+                    expr: 'abc\"'
+                    type: string
+                    expr: 'abc\\'
+                    type: string
+                    expr: 'abc\\'
+                    type: string
+                    expr: 'abc\\''
+                    type: string
+                    expr: 'abc\\"'
+                    type: string
+                    expr: 'abc\\\'
+                    type: string
+                    expr: 'abc\\\'
+                    type: string
+                    expr: 'abc""""\'
+                    type: string
+                    expr: 'abc''''\'
+                    type: string
+                    expr: 'awk '{print NR"\t"$0}''
+                    type: string
+                    expr: 'tab	tab'
+                    type: string
+                    expr: 'tab	tab'
+                    type: string
+              Limit
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+
+
+query: SELECT
+    'abc',        "abc",
+    'abc\'',      "abc\"",
+    'abc\\',      "abc\\",
+    'abc\\\'',    "abc\\\"",
+    'abc\\\\',    "abc\\\\",
+    'abc\\\\\'',  "abc\\\\\"",
+    'abc\\\\\\',  "abc\\\\\\",
+    'abc""""\\',  "abc''''\\",
+    "awk '{print NR\"\\t\"$0}'",
+    'tab\ttab',   "tab\ttab"
+FROM src
+LIMIT 1
+Input: default/src
+Output: file:/data/users/emil/hive1/hive1/build/ql/tmp/171746919/10000
+abc	abc	abc'	abc"	abc\	abc\	abc\'	abc\"	abc\\	abc\\	abc\\'	abc\\"	abc\\\	abc\\\	abc""""\	abc''''\	awk '{print NR"\t"$0}'	tab	tab	tab	tab

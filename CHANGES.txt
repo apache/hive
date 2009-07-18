@@ -379,6 +379,9 @@ Trunk - Unreleased
     HIVE-635. fix union accepting multiple objectinspectors
     (Zheng Shao via namit)
 
+    HIVE-643. recognize escaped strings
+    (Emil Ibrishimov via namit)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES
