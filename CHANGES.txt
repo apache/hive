@@ -387,6 +387,9 @@ Trunk - Unreleased
     HIVE-592. Renaming internal table should rename HDFS.
     (Prasad Chakka via zshao)
 
+    HIVE-654. renaming thrift serde
+    (Zheng Shao via namit)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

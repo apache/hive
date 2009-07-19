@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 
 import org.apache.hadoop.hive.serde2.thrift.ConfigurableTProtocol;
+import org.apache.hadoop.hive.serde2.thrift.TReflectionUtils;
 
 import java.util.*;
 import java.io.*;

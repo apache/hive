@@ -98,7 +98,7 @@ public class SerDeUtils {
       // loading these classes will automatically register the short names
       Class.forName(org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe.class.getName());
       Class.forName(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
-      Class.forName(org.apache.hadoop.hive.serde2.ThriftDeserializer.class.getName());
+      Class.forName(org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer.class.getName());
     } catch (ClassNotFoundException e) {
       throw new RuntimeException("IMPOSSIBLE Exception: Unable to initialize core serdes", e);
     }

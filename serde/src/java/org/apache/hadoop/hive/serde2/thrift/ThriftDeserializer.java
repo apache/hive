@@ -16,11 +16,12 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.serde2;
+package org.apache.hadoop.hive.serde2.thrift;
 
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Writable;

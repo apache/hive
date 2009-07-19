@@ -16,7 +16,7 @@
        <void property="tableDesc"> 
         <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
          <void property="deserializerClass"> 
-          <class>org.apache.hadoop.hive.serde2.ThriftDeserializer</class> 
+          <class>org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer</class> 
          </void> 
          <void property="inputFileFormatClass"> 
           <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
@@ -56,7 +56,7 @@
            </void> 
            <void method="put"> 
             <string>serialization.lib</string> 
-            <string>org.apache.hadoop.hive.serde2.ThriftDeserializer</string> 
+            <string>org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer</string> 
            </void> 
            <void method="put"> 
             <string>file.inputformat</string> 
@@ -68,12 +68,12 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/rmurthy/hive/build/ql/test/data/warehouse/src_thrift</string> 
+            <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/src_thrift</string> 
            </void> 
           </object> 
          </void> 
          <void property="serdeClassName"> 
-          <string>org.apache.hadoop.hive.serde2.ThriftDeserializer</string> 
+          <string>org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer</string> 
          </void> 
         </object> 
        </void> 
@@ -104,7 +104,7 @@
                         <void property="conf"> 
                          <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                           <void property="dirName"> 
-                           <string>file:/data/users/rmurthy/hive/build/ql/tmp/1050479798/10001</string> 
+                           <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/.ptest_3/build/ql/tmp/179258729/10001</string> 
                           </void> 
                           <void property="tableInfo"> 
                            <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -688,7 +688,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/rmurthy/hive/build/ql/test/data/warehouse/src_thrift</string> 
+       <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/src_thrift</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src_thrift</string> 
@@ -700,7 +700,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/rmurthy/hive/build/ql/test/data/warehouse/src_thrift</string> 
+       <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/src_thrift</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap0"/> 
@@ -708,7 +708,7 @@
         <void property="tableDesc"> 
          <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
           <void property="deserializerClass"> 
-           <class>org.apache.hadoop.hive.serde2.ThriftDeserializer</class> 
+           <class>org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer</class> 
           </void> 
           <void property="inputFileFormatClass"> 
            <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
@@ -720,7 +720,7 @@
            <object idref="Properties0"/> 
           </void> 
           <void property="serdeClassName"> 
-           <string>org.apache.hadoop.hive.serde2.ThriftDeserializer</string> 
+           <string>org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer</string> 
           </void> 
          </object> 
         </void> 

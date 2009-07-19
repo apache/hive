@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.serde2;
+package org.apache.hadoop.hive.serde2.thrift;
 
 import org.apache.thrift.protocol.TProtocolFactory;
 
