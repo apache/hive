@@ -100,6 +100,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
 
       private ClassLoader classLoader;
+      private AlterHandler alterHandler;
       {
         classLoader = Thread.currentThread().getContextClassLoader();
         if (classLoader == null) {
@@ -110,6 +111,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       private boolean init() throws MetaException {
         rawStoreClassName = hiveConf.get("hive.metastore.rawstore.impl");
         checkForDefaultDb = hiveConf.getBoolean("hive.metastore.checkForDefaultDb", true);
+        String alterHandlerName = hiveConf.get("hive.metastore.alter.impl", HiveAlterHandler.class.getName());
+        alterHandler = (AlterHandler) ReflectionUtils.newInstance(getClass(alterHandlerName, AlterHandler.class), hiveConf);
         wh = new Warehouse(hiveConf);
         createDefaultDB();
         return true;
@@ -147,7 +150,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         HMSHandler.createDefaultDB = true;
       }
 
-      private Class<?> getClass(String rawStoreClassName, Class<RawStore> class1) throws MetaException {
+      private Class<?> getClass(String rawStoreClassName, Class<?> class1) throws MetaException {
         try {
           return Class.forName(rawStoreClassName, true, classLoader);
         } catch (ClassNotFoundException e) {
@@ -333,6 +336,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         boolean isExternal = false;
         Path tblPath = null;
         Table tbl = null;
+        isExternal = false;
         try {
           getMS().openTransaction();
           // drop any partitions
@@ -613,16 +617,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           MetaException {
         this.incrementCounter("alter_table");
         logStartFunction("truncate_table: db=" + dbname + " tbl=" + name + " newtbl=" + newTable.getTableName());
-        if(!MetaStoreUtils.validateName(newTable.getTableName()) ||
-            !MetaStoreUtils.validateColNames(newTable.getSd().getCols())) {
-          throw new InvalidOperationException(newTable.getTableName() + " is not a valid object name");
-        }
-        try {
-          getMS().alterTable(dbname, name, newTable);
-        } catch (InvalidObjectException e) {
-          LOG.error(StringUtils.stringifyException(e));
-          throw new InvalidOperationException("alter is not possible");
-        }
+        alterHandler.alterTable(getMS(), wh, dbname, name, newTable);
       }
 
       public List<String> get_tables(String dbname, String pattern) throws MetaException {

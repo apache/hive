@@ -15,7 +15,7 @@ struct Version {
 
 struct FieldSchema {
   1: string name, // name of the field
-  2: string type, // type of the field. primitive types defined above, specify list<TYPE_NAME>, map<TYPE_NAME, TYPE_NAME> for lists & maps 
+  2: string type, // type of the field. primitive types defined above, specify list<TYPE_NAME>, map<TYPE_NAME, TYPE_NAME> for lists & maps
   3: string comment
 }
 
@@ -90,6 +90,7 @@ struct Index {
   3: string       tableName,
   4: string       dbName,
   5: list<string> colNames,  // for now columns will be sorted in the ascending order
+  6: string       partName   // partition name
 }
 
 // schema of the table/query results etc.
@@ -137,7 +138,7 @@ exception InvalidOperationException {
 */
 service ThriftHiveMetastore extends fb303.FacebookService
 {
-  bool create_database(1:string name, 2:string description) 
+  bool create_database(1:string name, 2:string description)
                                        throws(1:AlreadyExistsException o1, 2:MetaException o2)
   Database get_database(1:string name) throws(1:NoSuchObjectException o1, 2:MetaException o2)
   bool drop_database(1:string name)    throws(2:MetaException o2)
@@ -147,7 +148,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   Type get_type(1:string name)  throws(1:MetaException o2)
   bool create_type(1:Type type) throws(1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3)
   bool drop_type(1:string type) throws(1:MetaException o2)
-  map<string, Type> get_type_all(1:string name) 
+  map<string, Type> get_type_all(1:string name)
                                 throws(1:MetaException o2)
 
   list<FieldSchema> get_fields(1: string db_name, 2: string table_name) throws (1: MetaException o1, 2: UnknownTableException o2, 3: UnknownDBException o3),
@@ -163,31 +164,31 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void create_table(1:Table tbl) throws(1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3, 4:NoSuchObjectException o4)
   // drops the table and all the partitions associated with it if the table has partitions
   // delete data (including partitions) if deleteData is set to true
-  void drop_table(1:string dbname, 2:string name, 3:bool deleteData) 
+  void drop_table(1:string dbname, 2:string name, 3:bool deleteData)
                        throws(1:NoSuchObjectException o1, 2:MetaException o3)
-  list<string> get_tables(1: string db_name, 2: string pattern) 
+  list<string> get_tables(1: string db_name, 2: string pattern)
                        throws (1: MetaException o1)
 
-  Table get_table(1:string dbname, 2:string tbl_name) 
+  Table get_table(1:string dbname, 2:string tbl_name)
                        throws (1:MetaException o1, 2:NoSuchObjectException o2)
   // alter table applies to only future partitions not for existing partitions
-  void alter_table(1:string dbname, 2:string tbl_name, 3:Table new_tbl) 
+  void alter_table(1:string dbname, 2:string tbl_name, 3:Table new_tbl)
                        throws (1:InvalidOperationException o1, 2:MetaException o2)
 
   // the following applies to only tables that have partitions
-  Partition add_partition(1:Partition new_part) 
+  Partition add_partition(1:Partition new_part)
                        throws(1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
-  Partition append_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals) 
+  Partition append_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals)
                        throws (1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
-  bool drop_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals, 4:bool deleteData) 
+  bool drop_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals, 4:bool deleteData)
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)
-  Partition get_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals) 
+  Partition get_partition(1:string db_name, 2:string tbl_name, 3:list<string> part_vals)
                        throws(1:MetaException o1)
-  // returns all the partitions for this table in reverse chronological order. 
+  // returns all the partitions for this table in reverse chronological order.
   // if max parts is given then it will return only that many
-  list<Partition> get_partitions(1:string db_name, 2:string tbl_name, 3:i16 max_parts=-1) 
+  list<Partition> get_partitions(1:string db_name, 2:string tbl_name, 3:i16 max_parts=-1)
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)
-  list<string> get_partition_names(1:string db_name, 2:string tbl_name, 3:i16 max_parts=-1) 
+  list<string> get_partition_names(1:string db_name, 2:string tbl_name, 3:i16 max_parts=-1)
                        throws(1:MetaException o2)
 
   // changes the partition to the new partition object. partition is identified from the part values

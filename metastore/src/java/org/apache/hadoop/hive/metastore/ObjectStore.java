@@ -854,14 +854,7 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
       name = name.toLowerCase();
       dbname = dbname.toLowerCase();
-      MTable newt = this.getMTable(newTable.getDbName(), newTable.getTableName());
-      if(newt != null) {
-        if(!newTable.getTableName().equals(name) || !newTable.getDbName().equals(dbname)) {
-          // if the old table and new table aren't the same
-          throw new InvalidObjectException("new table " + newTable.getDbName() +" already exists");
-        }
-      }
-      newt = convertToMTable(newTable);
+      MTable newt = convertToMTable(newTable);
       if(newt == null) {
         throw new InvalidObjectException("new table is invalid");
       }
@@ -878,7 +871,7 @@ public class ObjectStore implements RawStore, Configurable {
       oldt.setSd(newt.getSd());
       oldt.setDatabase(newt.getDatabase());
       oldt.setRetention(newt.getRetention());
-      //oldt.setPartitionKeys(newt.getPartitionKeys()); //this should never be changed for hive 
+      oldt.setPartitionKeys(newt.getPartitionKeys()); 
       
       // commit the changes
       success = commitTransaction();

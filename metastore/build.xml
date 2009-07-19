@@ -77,7 +77,6 @@
 	<jvmarg line="-Dlog4j.configuration=${basedir}/../conf/hive-log4j.properties"/>
     </datanucleusenhancer>
   </target>
-
   <target name="model-jar" depends="model-enhance">
     <echo message="Jar: ${name}"/>
     <jar

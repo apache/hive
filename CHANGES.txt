@@ -384,6 +384,9 @@ Trunk - Unreleased
     HIVE-643. recognize escaped strings
     (Emil Ibrishimov via namit)
 
+    HIVE-592. Renaming internal table should rename HDFS.
+    (Prasad Chakka via zshao)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

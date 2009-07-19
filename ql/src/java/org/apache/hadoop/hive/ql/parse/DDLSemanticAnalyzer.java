@@ -536,7 +536,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       for (int i = 0; i < partspec.getChildCount(); ++i) {
         ASTNode partspec_val = (ASTNode) partspec.getChild(i);
         String val = stripQuotes(partspec_val.getChild(1).getText());
-        partSpec.put(partspec_val.getChild(0).getText(), val);
+        partSpec.put(partspec_val.getChild(0).getText().toLowerCase(), val);
       }
     }
     

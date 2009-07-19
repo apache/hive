@@ -62,7 +62,7 @@ public class Warehouse {
   /**
    * Helper function to convert IOException to MetaException
    */
-  private FileSystem getFs(Path f) throws MetaException {
+  public FileSystem getFs(Path f) throws MetaException {
     try {
       return f.getFileSystem(conf);
     } catch (IOException e) {

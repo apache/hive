@@ -518,12 +518,19 @@ public class TestHiveMetaStore extends TestCase {
         assertTrue("Able to rename table with invalid name: " + invTblName, false);
       }
       // try a valid alter table
-      tbl2.setTableName(tblName);
+      tbl2.setTableName(tblName+"_renamed");
       tbl2.getSd().setCols(cols);
       tbl2.getSd().setNumBuckets(32);
       client.alter_table(dbName, tblName, tbl2);
-      Table tbl3 = client.getTable(dbName, tblName);
-      assertEquals("Alter table didn't succeed. Num buckets ", tbl2.getSd().getNumBuckets(), tbl3.getSd().getNumBuckets());
+      Table tbl3 = client.getTable(dbName, tbl2.getTableName());
+      assertEquals("Alter table didn't succeed. Num buckets is different ",
+          tbl2.getSd().getNumBuckets(), tbl3.getSd().getNumBuckets());
+      // check that data has moved
+      FileSystem fs = FileSystem.get(hiveConf);
+      assertFalse("old table location still exists", fs.exists(new Path(tbl.getSd().getLocation())));
+      assertTrue("data did not move to new location", fs.exists(new Path(tbl3.getSd().getLocation())));
+      assertEquals("alter table didn't move data correct location", tbl3.getSd().getLocation(),
+          tbl2.getSd().getLocation());
     } catch (Exception e) {
       System.err.println(StringUtils.stringifyException(e));
       System.err.println("testSimpleTable() failed.");
