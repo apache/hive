@@ -1,0 +1,77 @@
+query: EXPLAIN
+SELECT elt(2, 'abc', 'defg'),
+       elt(3, 'aa', 'bb', 'cc', 'dd', 'ee', 'ff', 'gg'),
+       elt('1', 'abc', 'defg'),
+       elt(2, 'aa', CAST('2' AS TINYINT)),
+       elt(2, 'aa', CAST('12345' AS SMALLINT)),
+       elt(2, 'aa', CAST('123456789012' AS BIGINT)),
+       elt(2, 'aa', CAST(1.25 AS FLOAT)),
+       elt(2, 'aa', CAST(16.0 AS DOUBLE)),
+       elt(null, 'abc', 'defg'),
+       elt(0, 'abc', 'defg'),
+       elt(3, 'abc', 'defg')
+FROM src LIMIT 1
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION elt 2 'abc' 'defg')) (TOK_SELEXPR (TOK_FUNCTION elt 3 'aa' 'bb' 'cc' 'dd' 'ee' 'ff' 'gg')) (TOK_SELEXPR (TOK_FUNCTION elt '1' 'abc' 'defg')) (TOK_SELEXPR (TOK_FUNCTION elt 2 'aa' (TOK_FUNCTION TOK_TINYINT '2'))) (TOK_SELEXPR (TOK_FUNCTION elt 2 'aa' (TOK_FUNCTION TOK_SMALLINT '12345'))) (TOK_SELEXPR (TOK_FUNCTION elt 2 'aa' (TOK_FUNCTION TOK_BIGINT '123456789012'))) (TOK_SELEXPR (TOK_FUNCTION elt 2 'aa' (TOK_FUNCTION TOK_FLOAT 1.25))) (TOK_SELEXPR (TOK_FUNCTION elt 2 'aa' (TOK_FUNCTION TOK_DOUBLE 16.0))) (TOK_SELEXPR (TOK_FUNCTION elt TOK_NULL 'abc' 'defg')) (TOK_SELEXPR (TOK_FUNCTION elt 0 'abc' 'defg')) (TOK_SELEXPR (TOK_FUNCTION elt 3 'abc' 'defg'))) (TOK_LIMIT 1)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src 
+            Select Operator
+              expressions:
+                    expr: elt(2, 'abc', 'defg')
+                    type: string
+                    expr: elt(3, 'aa', 'bb', 'cc', 'dd', 'ee', 'ff', 'gg')
+                    type: string
+                    expr: elt('1', 'abc', 'defg')
+                    type: string
+                    expr: elt(2, 'aa', UDFToByte('2'))
+                    type: string
+                    expr: elt(2, 'aa', UDFToShort('12345'))
+                    type: string
+                    expr: elt(2, 'aa', UDFToLong('123456789012'))
+                    type: string
+                    expr: elt(2, 'aa', UDFToFloat(1.25))
+                    type: string
+                    expr: elt(2, 'aa', 16.0)
+                    type: string
+                    expr: elt(null, 'abc', 'defg')
+                    type: string
+                    expr: elt(0, 'abc', 'defg')
+                    type: string
+                    expr: elt(3, 'abc', 'defg')
+                    type: string
+              Limit
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+
+
+query: SELECT elt(2, 'abc', 'defg'),
+       elt(3, 'aa', 'bb', 'cc', 'dd', 'ee', 'ff', 'gg'),
+       elt('1', 'abc', 'defg'),
+       elt(2, 'aa', CAST('2' AS TINYINT)),
+       elt(2, 'aa', CAST('12345' AS SMALLINT)),
+       elt(2, 'aa', CAST('123456789012' AS BIGINT)),
+       elt(2, 'aa', CAST(1.25 AS FLOAT)),
+       elt(2, 'aa', CAST(16.0 AS DOUBLE)),
+       elt(null, 'abc', 'defg'),
+       elt(0, 'abc', 'defg'),
+       elt(3, 'abc', 'defg')
+FROM src LIMIT 1
+Input: default/src
+Output: file:/home/zhoumin/hive-trunk/build/ql/tmp/472855229/10000
+defg	cc	abc	2	12345	123456789012	1.25	16.0	NULL	NULL	NULL

@@ -174,6 +174,7 @@ public class FunctionRegistry {
     registerGenericUDF("index", GenericUDFIndex.class);
     registerGenericUDF("instr", GenericUDFInstr.class);
     registerGenericUDF("locate", GenericUDFLocate.class);
+    registerGenericUDF("elt", GenericUDFElt.class);
   }
 
   public static FunctionInfo getUDFInfo(Class<?> fClass) {

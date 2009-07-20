@@ -80,6 +80,9 @@ Trunk - Unreleased
     HIVE-646. add UDF conv, bin and hex
     (Emil Ibrishimov via namit)
 
+    HIVE-646. add UDF elt
+    (Min Zhou via namit)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 
