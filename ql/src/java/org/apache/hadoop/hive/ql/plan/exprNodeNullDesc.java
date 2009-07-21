@@ -45,4 +45,14 @@ public class exprNodeNullDesc extends exprNodeDesc implements Serializable {
   public exprNodeDesc clone() {
     return new exprNodeNullDesc();
   }
+  
+  @Override
+  public boolean isSame(Object o) {
+    if (!(o instanceof exprNodeNullDesc))
+      return false;
+    if (!typeInfo.equals(((exprNodeNullDesc)o).getTypeInfo()))
+      return false;
+    
+    return true; 
+  }
 }

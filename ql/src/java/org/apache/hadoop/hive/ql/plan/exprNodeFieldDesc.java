@@ -92,4 +92,19 @@ public class exprNodeFieldDesc extends exprNodeDesc implements Serializable {
   public exprNodeDesc clone() {
     return new exprNodeFieldDesc(this.typeInfo, this.desc, this.fieldName, this.isList);
   }
+
+  @Override
+  public boolean isSame(Object o) {
+    if (!(o instanceof exprNodeFieldDesc))
+      return false;
+    exprNodeFieldDesc dest = (exprNodeFieldDesc)o;
+    if (!typeInfo.equals(dest.getTypeInfo()))
+      return false;
+    if (!fieldName.equals(dest.getFieldName()) ||
+        !isList.equals(dest.getIsList()) ||
+        !desc.isSame(dest.getDesc()))
+      return false;
+      
+    return true; 
+  }
 }

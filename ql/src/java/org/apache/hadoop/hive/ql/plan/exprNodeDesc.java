@@ -37,6 +37,11 @@ public abstract class exprNodeDesc implements Serializable, Node {
   }
   
   public abstract exprNodeDesc clone();
+
+  // Cant use equals because the walker depends on them being object equal
+  // The default graph walker processes a node after its kids have been processed. That comparison needs
+  // object equality - isSame means that the objects are semantically equal.
+  public abstract boolean isSame(Object o);
   
   public TypeInfo getTypeInfo() {
     return this.typeInfo;

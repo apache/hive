@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Iterator;
 import java.util.Map;
@@ -85,9 +86,17 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
   // Used by hash-based GroupBy: Mode = HASH, PARTIALS
   transient protected HashMap<ArrayList<Object>, AggregationBuffer[]> hashAggregations;
   
+  // Used by hash distinct aggregations when hashGrpKeyNotRedKey is true
+  transient protected HashSet<ArrayList<Object>> keysCurrentGroup;
+  
   transient boolean firstRow;
   transient long    totalMemory;
   transient boolean hashAggr;
+  // The reduction is happening on the reducer, and the grouping key and reduction keys are different.
+  // For example: select a, count(distinct b) from T group by a
+  // The data is sprayed by 'b' and the reducer is grouping it by 'a'
+  transient boolean groupKeyIsNotReduceKey;  
+  transient boolean firstRowInGroup;
   transient long    numRowsInput;
   transient long    numRowsHashTbl;
   transient int     groupbyMapAggrInterval;
@@ -202,6 +211,9 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
       // compare every groupbyMapAggrInterval rows
       numRowsCompareHashAggr = groupbyMapAggrInterval;
       minReductionHashAggr = HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEMAPAGGRHASHMINREDUCTION);
+      groupKeyIsNotReduceKey = conf.getGroupKeyNotReductionKey();
+      if (groupKeyIsNotReduceKey)
+        keysCurrentGroup = new HashSet<ArrayList<Object>>();
     }
 
     // init objectInspectors
@@ -234,7 +246,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     
     outputObjInspector = 
       ObjectInspectorFactory.getStandardStructObjectInspector(fieldNames, objectInspectors);
-	
+
     firstRow = true;
     // estimate the number of hash table entries based on the size of each entry. Since the size of a entry
     // is not known, estimate that based on the number of entries
@@ -385,8 +397,21 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     }
   }
 
-  
-  protected void updateAggregations(AggregationBuffer[] aggs, Object row, ObjectInspector rowInspector, boolean hashAggr, boolean newEntry,
+
+  /*
+   * Update aggregations. 
+   * If the aggregation is for distinct, in case of hash aggregation, the client tells us whether it is a new entry.
+   * For sort-based aggregations, the last row is compared with the current one to figure out whether it has changed. 
+   * As a cleanup, the lastInvoke logic can be pushed in the caller, and this function can be independent of that. The
+   * client should always notify whether it is a different row or not.
+   * 
+   * @param aggs the aggregations to be evaluated
+   * @param row  the row being processed
+   * @param rowInspector the inspector for the row
+   * @param hashAggr whether hash aggregation is being performed or not
+   * @param newEntryForHashAggr only valid if it is a hash aggregation, whether it is a new entry or not
+   */
+  protected void updateAggregations(AggregationBuffer[] aggs, Object row, ObjectInspector rowInspector, boolean hashAggr, boolean newEntryForHashAggr,
                                     Object[][] lastInvoke) throws HiveException {
     
     for(int ai=0; ai<aggs.length; ai++) {
@@ -400,7 +425,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
       // Update the aggregations.
       if (aggregationIsDistinct[ai]) {
         if (hashAggr) {
-          if (newEntry) {
+          if (newEntryForHashAggr) {
             aggregationEvaluators[ai].aggregate(aggs[ai], o);
           }
         }
@@ -423,12 +448,21 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
       }
     }
   }
+
+  public void startGroup() throws HiveException {
+    firstRowInGroup = true;
+  }
+
+  public void endGroup() throws HiveException {
+    if (groupKeyIsNotReduceKey)
+      keysCurrentGroup.clear();
+  }
   
   public void process(Object row, int tag) throws HiveException {
     firstRow = false;
     ObjectInspector rowInspector = inputObjInspectors[tag];
     // Total number of input rows is needed for hash aggregation only
-    if (hashAggr) {
+    if (hashAggr && !groupKeyIsNotReduceKey) {
       numRowsInput++;
       // if hash aggregation is not behaving properly, disable it
       if (numRowsInput == numRowsCompareHashAggr) {
@@ -462,6 +496,8 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
         processHashAggr(row, rowInspector, newKeys);
       else
         processAggr(row, rowInspector, newKeys);
+
+      firstRowInGroup = false;
     } catch (HiveException e) {
       throw e;
     } catch (Exception e) {
@@ -487,7 +523,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
   private void processHashAggr(Object row, ObjectInspector rowInspector, ArrayList<Object> newKeys) throws HiveException {
     // Prepare aggs for updating
     AggregationBuffer[] aggs = null;
-    boolean newEntry = false;
+    boolean newEntryForHashAggr = false;
 
     // hash-based aggregations
     ArrayList<Object> newDefaultKeys = deepCopyElements(keyObjects, keyObjectInspectors, ObjectInspectorCopyOption.WRITABLE);
@@ -495,17 +531,24 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     if (aggs == null) {
       aggs = newAggregations();
       hashAggregations.put(newDefaultKeys, aggs);
-      newEntry = true;
+      newEntryForHashAggr = true;
       numRowsHashTbl++;      // new entry in the hash table
     }
 
-    // Update the aggs
-    updateAggregations(aggs, row, rowInspector, true, newEntry, null);
-    
+    // If the grouping key and the reduction key are different, a set of grouping keys for the current reduction key are maintained in keysCurrentGroup
+    // Peek into the set to find out if a new grouping key is seen for the given reduction key
+    if (groupKeyIsNotReduceKey) {
+      newEntryForHashAggr = keysCurrentGroup.add(newDefaultKeys);
+    }
+
     // based on used-specified parameters, check if the hash table needs to be flushed
-    if (shouldBeFlushed(newKeys)) {
+    // If the grouping key is not the same as reduction key, flushing can only happen at boundaries
+    if ((!groupKeyIsNotReduceKey || firstRowInGroup) && shouldBeFlushed(newKeys)) {
       flush(false);
     }
+
+    // Update the aggs
+    updateAggregations(aggs, row, rowInspector, true, newEntryForHashAggr, null);
   }
 
   // Non-hash aggregation

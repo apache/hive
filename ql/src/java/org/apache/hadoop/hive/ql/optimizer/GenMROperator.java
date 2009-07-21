@@ -46,7 +46,9 @@ public class GenMROperator implements NodeProcessor {
     GenMRProcContext ctx = (GenMRProcContext)procCtx;
 
     Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx.getMapCurrCtx();
-    mapCurrCtx.put((Operator<? extends Serializable>)nd, new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrTopOp(), ctx.getCurrAliasId()));
+    GenMapRedCtx mapredCtx = mapCurrCtx.get((Operator<? extends Serializable>)stack.get(stack.size()-2));
+    mapCurrCtx.put((Operator<? extends Serializable>)nd, 
+        new GenMapRedCtx(mapredCtx.getCurrTask(), mapredCtx.getCurrTopOp(), mapredCtx.getCurrAliasId()));
     return null;
   }
 }

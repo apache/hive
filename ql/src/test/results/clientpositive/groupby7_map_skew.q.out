@@ -11,7 +11,7 @@ STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-3
-  Stage-4 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-2
   Stage-5 depends on stages: Stage-4
   Stage-1 depends on stages: Stage-5
 
@@ -82,7 +82,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/107805350/10004 
+        file:/data/users/njain/deploy/hive2/tools/ahive2-trunk-apache-hive/build/ql/tmp/1032894007/10004 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -137,7 +137,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/107805350/10005 
+        file:/data/users/njain/deploy/hive2/tools/ahive2-trunk-apache-hive/build/ql/tmp/1032894007/10005 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -168,7 +168,7 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/107805350/10006 
+        file:/data/users/njain/deploy/hive2/tools/ahive2-trunk-apache-hive/build/ql/tmp/1032894007/10006 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -229,7 +229,7 @@ Output: default/dest1
 Output: default/dest2
 query: SELECT DEST1.* FROM DEST1
 Input: default/dest1
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/735440976/10000
+Output: file:/data/users/njain/deploy/hive2/tools/ahive2-trunk-apache-hive/build/ql/tmp/887854569/10000
 0	0.0
 10	10.0
 100	200.0
@@ -541,7 +541,7 @@ Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/73544097
 98	196.0
 query: SELECT DEST2.* FROM DEST2
 Input: default/dest2
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/2032949852/10000
+Output: file:/data/users/njain/deploy/hive2/tools/ahive2-trunk-apache-hive/build/ql/tmp/2090687715/10000
 0	0.0
 10	10.0
 100	200.0

@@ -11,86 +11,59 @@ STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
   Stage-0 depends on stages: Stage-3
-  Stage-4 depends on stages: Stage-3
-  Stage-5 depends on stages: Stage-4
-  Stage-1 depends on stages: Stage-5
+  Stage-4 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-4
 
 STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
         src 
-            Select Operator
-              expressions:
+            Reduce Output Operator
+              key expressions:
+                    expr: substr(value, 5)
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: substr(value, 5)
+                    type: string
+              tag: -1
+              value expressions:
                     expr: key
                     type: string
-                    expr: value
-                    type: string
-              Group By Operator
-                aggregations:
-                      expr: count(DISTINCT substr(value, 5))
-                keys:
-                      expr: key
-                      type: string
-                      expr: substr(value, 5)
-                      type: string
-                mode: hash
-                Reduce Output Operator
-                  key expressions:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: string
-                  sort order: ++
-                  Map-reduce partition columns:
-                        expr: _col0
-                        type: string
-                        expr: _col1
-                        type: string
-                  tag: -1
-                  value expressions:
-                        expr: _col2
-                        type: bigint
-            Select Operator
-              expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
-              Group By Operator
-                aggregations:
-                      expr: count(DISTINCT substr(value, 5))
-                keys:
-                      expr: key
-                      type: string
-                      expr: substr(value, 5)
-                      type: string
-                mode: hash
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
       Reduce Operator Tree:
-        Group By Operator
-          aggregations:
-                expr: count(DISTINCT KEY._col1)
-          keys:
-                expr: KEY._col0
-                type: string
-          mode: partials
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+        Forward
+          Group By Operator
+            aggregations:
+                  expr: count(DISTINCT KEY._col0)
+            keys:
+                  expr: VALUE._col0
+                  type: string
+            mode: hash
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+          Group By Operator
+            aggregations:
+                  expr: count(DISTINCT KEY._col0)
+            keys:
+                  expr: VALUE._col0
+                  type: string
+            mode: hash
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1950398352/10004 
+        file:/data/users/njain/deploy/hive2/tools/ahive2-trunk-apache-hive/build/ql/tmp/2105051611/10004 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -145,42 +118,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1950398352/10005 
-            Reduce Output Operator
-              key expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: string
-              sort order: ++
-              Map-reduce partition columns:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: string
-              tag: -1
-              value expressions:
-                    expr: _col2
-                    type: bigint
-      Reduce Operator Tree:
-        Group By Operator
-          aggregations:
-                expr: count(DISTINCT KEY._col1)
-          keys:
-                expr: KEY._col0
-                type: string
-          mode: partials
-          File Output Operator
-            compressed: false
-            GlobalTableId: 0
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-
-  Stage: Stage-5
-    Map Reduce
-      Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1950398352/10006 
+        file:/data/users/njain/deploy/hive2/tools/ahive2-trunk-apache-hive/build/ql/tmp/2105051611/10005 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -241,7 +179,7 @@ Output: default/dest1
 Output: default/dest2
 query: SELECT DEST1.* FROM DEST1
 Input: default/dest1
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/53142172/10000
+Output: file:/data/users/njain/deploy/hive2/tools/ahive2-trunk-apache-hive/build/ql/tmp/1046151185/10000
 0	1
 10	1
 100	1
@@ -553,7 +491,7 @@ Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/53142172
 98	1
 query: SELECT DEST2.* FROM DEST2
 Input: default/dest2
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1788932250/10000
+Output: file:/data/users/njain/deploy/hive2/tools/ahive2-trunk-apache-hive/build/ql/tmp/236348894/10000
 0	1
 10	1
 100	1

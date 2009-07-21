@@ -64,5 +64,15 @@ public class exprNodeColumnDesc extends exprNodeDesc implements Serializable {
   public exprNodeDesc clone() {
     return new exprNodeColumnDesc(this.typeInfo, this.column);
   }
-
+  @Override
+  public boolean isSame(Object o) {
+    if (!(o instanceof exprNodeColumnDesc))
+      return false;
+    exprNodeColumnDesc dest = (exprNodeColumnDesc)o;
+    if (!column.equals(dest.getColumn()))
+      return false;
+    if (!typeInfo.equals(dest.getTypeInfo()))
+      return false;
+    return true; 
+  }
 }

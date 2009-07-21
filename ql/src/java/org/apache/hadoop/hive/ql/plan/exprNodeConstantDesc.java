@@ -71,4 +71,16 @@ public class exprNodeConstantDesc extends exprNodeDesc implements Serializable {
   public exprNodeDesc clone() {
     return new exprNodeConstantDesc(this.typeInfo, this.value);
   }
+  @Override
+  public boolean isSame(Object o) {
+    if (!(o instanceof exprNodeConstantDesc))
+      return false;
+    exprNodeConstantDesc dest = (exprNodeConstantDesc)o;
+    if (!typeInfo.equals(dest.getTypeInfo()))
+      return false;
+    if (!value.equals(dest.getValue()))
+      return false;
+        
+    return true; 
+  }
 }

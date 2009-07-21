@@ -181,6 +181,8 @@ public class MapJoinFactory {
       if (listMapJoinOps.contains(mapJoin)) {
         ctx.setCurrAliasId(null);
         ctx.setCurrTopOp(null);
+        Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx.getMapCurrCtx();
+        mapCurrCtx.put((Operator<? extends Serializable>)nd, new GenMapRedCtx(ctx.getCurrTask(), null, null));
         return null;
       }
 

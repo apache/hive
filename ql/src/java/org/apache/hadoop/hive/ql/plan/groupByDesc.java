@@ -32,6 +32,8 @@ public class groupByDesc implements java.io.Serializable {
   private static final long serialVersionUID = 1L;
   public static enum Mode { COMPLETE, PARTIAL1, PARTIAL2, PARTIALS, FINAL, HASH, MERGEPARTIAL };
   private Mode mode;
+  private boolean groupKeyNotReductionKey;
+
   private java.util.ArrayList<exprNodeDesc> keys;
   private java.util.ArrayList<org.apache.hadoop.hive.ql.plan.aggregationDesc> aggregators;
   private java.util.ArrayList<java.lang.String> outputColumnNames;
@@ -40,11 +42,13 @@ public class groupByDesc implements java.io.Serializable {
     final Mode mode,
     final java.util.ArrayList<java.lang.String> outputColumnNames,
     final java.util.ArrayList<exprNodeDesc> keys,
-    final java.util.ArrayList<org.apache.hadoop.hive.ql.plan.aggregationDesc> aggregators) {
+    final java.util.ArrayList<org.apache.hadoop.hive.ql.plan.aggregationDesc> aggregators,
+    final boolean groupKeyNotReductionKey) {
     this.mode = mode;
     this.outputColumnNames = outputColumnNames;
     this.keys = keys;
     this.aggregators = aggregators;
+    this.groupKeyNotReductionKey = groupKeyNotReductionKey;
   }
   public Mode getMode() {
     return this.mode;
@@ -97,4 +101,11 @@ public class groupByDesc implements java.io.Serializable {
     this.aggregators = aggregators;
   }
 
+
+  public boolean getGroupKeyNotReductionKey() {
+    return this.groupKeyNotReductionKey;
+  }
+  public void setGroupKeyNotReductionKey(final boolean groupKeyNotReductionKey) {
+    this.groupKeyNotReductionKey = groupKeyNotReductionKey;
+  }
 }

@@ -137,4 +137,24 @@ public class exprNodeGenericFuncDesc extends exprNodeDesc implements Serializabl
         genericUDFClass, children);
   }
   
+  @Override
+  public boolean isSame(Object o) {
+    if (!(o instanceof exprNodeGenericFuncDesc))
+      return false;
+    exprNodeGenericFuncDesc dest = (exprNodeGenericFuncDesc)o;
+    if (!typeInfo.equals(dest.getTypeInfo()) ||
+        !genericUDFClass.equals(dest.getGenericUDFClass()))
+      return false;
+    
+    if (childExprs.size() != dest.getChildExprs().size())
+      return false;
+    
+    for (int pos = 0; pos < childExprs.size(); pos++) {
+      if (!childExprs.get(pos).isSame(dest.getChildExprs().get(pos)))
+        return false;
+    }
+    
+    return true; 
+  }
+  
 }

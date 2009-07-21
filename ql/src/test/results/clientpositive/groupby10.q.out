@@ -1,0 +1,249 @@
+query: drop table dest1
+query: drop table dest2
+query: drop table INPUT
+query: CREATE TABLE dest1(key INT, val1 INT, val2 INT)
+query: CREATE TABLE dest2(key INT, val1 INT, val2 INT)
+query: CREATE TABLE INPUT(key INT, value STRING) STORED AS TEXTFILE
+query: LOAD DATA LOCAL INPATH '../data/files/kv5.txt' INTO TABLE INPUT
+query: EXPLAIN
+FROM INPUT 
+INSERT OVERWRITE TABLE dest1 SELECT INPUT.key, count(substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
+INSERT OVERWRITE TABLE dest2 SELECT INPUT.key, sum(substr(INPUT.value,5)), sum(distinct substr(INPUT.value,5))   GROUP BY INPUT.key
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF INPUT)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL INPUT) key)) (TOK_SELEXPR (TOK_FUNCTION count (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL INPUT) value) 5))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL INPUT) value) 5)))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL INPUT) key))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest2)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL INPUT) key)) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL INPUT) value) 5))) (TOK_SELEXPR (TOK_FUNCTIONDI sum (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL INPUT) value) 5)))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL INPUT) key))))
+
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-0 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-4
+
+STAGE PLANS:
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        input 
+            Reduce Output Operator
+              key expressions:
+                    expr: substr(value, 5)
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: substr(value, 5)
+                    type: string
+              tag: -1
+              value expressions:
+                    expr: key
+                    type: int
+      Reduce Operator Tree:
+        Forward
+          Group By Operator
+            aggregations:
+                  expr: count(KEY._col0)
+                  expr: count(DISTINCT KEY._col0)
+            keys:
+                  expr: VALUE._col0
+                  type: int
+            mode: hash
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+          Group By Operator
+            aggregations:
+                  expr: sum(KEY._col0)
+                  expr: sum(DISTINCT KEY._col0)
+            keys:
+                  expr: VALUE._col0
+                  type: int
+            mode: hash
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/njain/deploy/hive2/tools/ahive2-trunk-apache-hive/build/ql/tmp/942735723/10004 
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: int
+              sort order: +
+              Map-reduce partition columns:
+                    expr: _col0
+                    type: int
+              tag: -1
+              value expressions:
+                    expr: _col1
+                    type: bigint
+                    expr: _col2
+                    type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+                expr: count(VALUE._col1)
+          keys:
+                expr: KEY._col0
+                type: int
+          mode: final
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: int
+                  expr: _col1
+                  type: bigint
+                  expr: _col2
+                  type: bigint
+            Select Operator
+              expressions:
+                    expr: _col0
+                    type: int
+                    expr: UDFToInteger(_col1)
+                    type: int
+                    expr: UDFToInteger(_col2)
+                    type: int
+              File Output Operator
+                compressed: false
+                GlobalTableId: 1
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: dest1
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: dest1
+
+  Stage: Stage-4
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/njain/deploy/hive2/tools/ahive2-trunk-apache-hive/build/ql/tmp/942735723/10005 
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: int
+              sort order: +
+              Map-reduce partition columns:
+                    expr: _col0
+                    type: int
+              tag: -1
+              value expressions:
+                    expr: _col1
+                    type: double
+                    expr: _col2
+                    type: double
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: sum(VALUE._col0)
+                expr: sum(VALUE._col1)
+          keys:
+                expr: KEY._col0
+                type: int
+          mode: final
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: int
+                  expr: _col1
+                  type: double
+                  expr: _col2
+                  type: double
+            Select Operator
+              expressions:
+                    expr: _col0
+                    type: int
+                    expr: UDFToInteger(_col1)
+                    type: int
+                    expr: UDFToInteger(_col2)
+                    type: int
+              File Output Operator
+                compressed: false
+                GlobalTableId: 2
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: dest2
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: dest2
+
+
+query: FROM INPUT
+INSERT OVERWRITE TABLE dest1 SELECT INPUT.key, count(substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
+INSERT OVERWRITE TABLE dest2 SELECT INPUT.key, sum(substr(INPUT.value,5)), sum(distinct substr(INPUT.value,5))   GROUP BY INPUT.key
+Input: default/input
+Output: default/dest1
+Output: default/dest2
+query: SELECT * from dest1
+Input: default/dest1
+Output: file:/data/users/njain/deploy/hive2/tools/ahive2-trunk-apache-hive/build/ql/tmp/2076536817/10000
+27	1	1
+66	1	1
+86	1	1
+98	1	1
+128	1	1
+150	1	1
+165	1	1
+193	1	1
+213	3	2
+224	1	1
+238	3	3
+255	1	1
+265	1	1
+273	1	1
+278	1	1
+311	1	1
+369	1	1
+401	1	1
+409	1	1
+484	1	1
+query: SELECT * from dest2
+Input: default/dest2
+Output: file:/data/users/njain/deploy/hive2/tools/ahive2-trunk-apache-hive/build/ql/tmp/719905297/10000
+27	27	27
+66	66	66
+86	86	86
+98	98	98
+128	128	128
+150	150	150
+165	165	165
+193	193	193
+213	640	427
+224	224	224
+238	717	717
+255	255	255
+265	265	265
+273	273	273
+278	278	278
+311	311	311
+369	369	369
+401	401	401
+409	409	409
+484	484	484
+query: drop table INPUT
+query: drop table dest1
+query: drop table dest2

@@ -51,4 +51,14 @@ public abstract class TypeInfo implements Serializable {
     return getTypeName();
   }
 
+  public boolean equals(Object o) {
+   if (!(o instanceof TypeInfo))
+     return false;
+   TypeInfo dest = (TypeInfo)o;
+   if (getCategory() != dest.getCategory())
+     return false;
+   if (getTypeName() != dest.getTypeName())
+     return false;
+   return true;
+  }
 }

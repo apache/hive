@@ -167,4 +167,25 @@ public class exprNodeFuncDesc extends exprNodeDesc implements Serializable {
         this.UDFClass, this.UDFMethod, cloneCh);
     return clone;
   }
+  
+  @Override
+  public boolean isSame(Object o) {
+    if (!(o instanceof exprNodeFuncDesc))
+      return false;
+    exprNodeFuncDesc dest = (exprNodeFuncDesc)o;
+    if (!typeInfo.equals(dest.getTypeInfo()) ||
+        !UDFClass.equals(dest.getUDFClass()) ||
+        !UDFMethod.equals(dest.getUDFMethod()))
+      return false;
+    
+    if (childExprs.size() != dest.getChildExprs().size())
+      return false;
+    
+    for (int pos = 0; pos < childExprs.size(); pos++) {
+      if (!childExprs.get(pos).isSame(dest.getChildExprs().get(pos)))
+        return false;
+    }
+    
+    return true; 
+  }
 }

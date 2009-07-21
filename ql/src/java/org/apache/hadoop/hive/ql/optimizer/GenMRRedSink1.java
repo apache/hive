@@ -51,7 +51,7 @@ public class GenMRRedSink1 implements NodeProcessor {
     GenMRProcContext ctx = (GenMRProcContext)opProcCtx;
 
     Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx.getMapCurrCtx();
-    GenMapRedCtx mapredCtx = mapCurrCtx.get(op.getParentOperators().get(0));
+    GenMapRedCtx mapredCtx = mapCurrCtx.get((Operator<? extends Serializable>)stack.get(stack.size()-2));
     Task<? extends Serializable> currTask    = mapredCtx.getCurrTask();
     mapredWork currPlan = (mapredWork) currTask.getWork();
     Operator<? extends Serializable> currTopOp   = mapredCtx.getCurrTopOp();
