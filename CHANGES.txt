@@ -85,6 +85,8 @@ Trunk - Unreleased
 
     HIVE-609. Optimize multi-group by. (Namit Jain via zshao)
 
+    HIVE-642. add UDF split (Emil Ibrishimov via namit)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 

@@ -1,0 +1,46 @@
+query: EXPLAIN SELECT 
+  split('a b c', ' '),
+  split('oneAtwoBthreeC', '[ABC]'),
+  split('', '.')
+FROM src LIMIT 1
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION split 'a b c' ' ')) (TOK_SELEXPR (TOK_FUNCTION split 'oneAtwoBthreeC' '[ABC]')) (TOK_SELEXPR (TOK_FUNCTION split '' '.'))) (TOK_LIMIT 1)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src 
+            Select Operator
+              expressions:
+                    expr: SPLIT('a b c', ' ')
+                    type: array<string>
+                    expr: SPLIT('oneAtwoBthreeC', '[ABC]')
+                    type: array<string>
+                    expr: SPLIT('', '.')
+                    type: array<string>
+              Limit
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+
+
+query: SELECT 
+  split('a b c', ' '),
+  split('oneAtwoBthreeC', '[ABC]'),
+  split('', '.')
+FROM src LIMIT 1
+Input: default/src
+Output: file:/data/users/emil/hive1/hive1/build/ql/tmp/6715761/10000
+["a","b","c"]	["one","two","three"]	[]
