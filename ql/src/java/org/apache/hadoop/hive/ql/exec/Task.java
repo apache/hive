@@ -80,7 +80,7 @@ public abstract class Task <T extends Serializable> implements Serializable {
   public abstract int execute();
   
   // dummy method - FetchTask overwrites this
-  public boolean fetch(Vector<String> res) { 
+  public boolean fetch(Vector<String> res) throws IOException { 
     assert false;
   	return false;
   }

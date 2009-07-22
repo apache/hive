@@ -1,0 +1,8 @@
+query: CREATE TABLE fetchtask_ioexception (
+  KEY STRING,
+  VALUE STRING) STORED AS SEQUENCEFILE
+query: LOAD DATA LOCAL INPATH '../data/files/kv1_broken.seq' OVERWRITE INTO TABLE fetchtask_ioexception
+query: SELECT * FROM fetchtask_ioexception
+Input: default/fetchtask_ioexception
+Output: file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/1939498833/10000
+Failed with exception java.io.IOException:java.io.EOFException

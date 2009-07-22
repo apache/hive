@@ -118,7 +118,7 @@ public class FetchTask extends Task<fetchWork> implements Serializable {
     this.maxRows = maxRows;
   }
 	
-  public boolean fetch(Vector<String> res) {
+  public boolean fetch(Vector<String> res) throws IOException {
     try {
       int numRows = 0;
       int rowsRet = maxRows;
@@ -144,9 +144,11 @@ public class FetchTask extends Task<fetchWork> implements Serializable {
       totalRows += numRows;
       return true;
     }
+    catch (IOException e) {
+      throw e;
+    }
     catch (Exception e) {
-      console.printError("Failed with exception " + e.getClass().getName() + ":" +   e.getMessage(), "\n" + StringUtils.stringifyException(e));
-      return false;
+      throw new IOException(e);
     }
   }
 }

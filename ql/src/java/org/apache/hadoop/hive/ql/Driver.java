@@ -384,7 +384,7 @@ public class Driver implements CommandProcessor {
     return (0);
   }
 
-  public boolean getResults(Vector<String> res) {
+  public boolean getResults(Vector<String> res) throws IOException {
     if (plan != null && plan.getPlan().getFetchTask() != null) {
       BaseSemanticAnalyzer sem = plan.getPlan();
       if (!sem.getFetchTaskInit()) {

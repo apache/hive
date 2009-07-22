@@ -298,14 +298,19 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
 
 		queryRet = qp.run(this.query);
 		Vector<String> res = new Vector<String>();
-		while (qp.getResults(res)) {
-			for (String row : res) {
-				if (ss.out != null) {
-					ss.out.println(row);
-				}
-			}
-			res.clear();
-		}
+    try {
+  		while (qp.getResults(res)) {
+  			for (String row : res) {
+  				if (ss.out != null) {
+  					ss.out.println(row);
+  				}
+  			}
+  			res.clear();
+  		}
+    } catch (IOException ex) {
+      l4j.error(this.getSessionName() + " getting results "
+          + this.getResultFile() + " caused exception.", ex);
+    }
 		try {
 			if (fos != null) {
 				fos.close();

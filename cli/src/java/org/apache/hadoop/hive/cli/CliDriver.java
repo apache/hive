@@ -126,18 +126,26 @@ public class CliDriver {
           }
         
           Vector<String> res = new Vector<String>();
-          while (qp.getResults(res)) {
-            for (String r:res) {
-              out.println(r);
+          try {
+            while (qp.getResults(res)) {
+              for (String r:res) {
+                out.println(r);
+              }
+              res.clear();
+              if (out.checkError()) {
+                break;
+              }
             }
-            res.clear();
-            if (out.checkError()) {
-              break;
-            }
+          } catch (IOException e) {
+            console.printError("Failed with exception " + e.getClass().getName() + ":" +   e.getMessage(),
+                "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
+            ret = 1;
           }
-      
+            
           int cret = qp.close();
-          ret = cret;
+          if (ret == 0) {
+            ret = cret;
+          }
 
           long end = System.currentTimeMillis();
           if (end > start) {

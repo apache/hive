@@ -245,7 +245,7 @@ public class FetchOperator {
    * @param ctx
    *          fetch context
    **/
-  public InspectableObject getNextRow() {
+  public InspectableObject getNextRow() throws IOException {
     try {
       if (currRecReader == null) {
         currRecReader = getRecordReader();
@@ -272,7 +272,7 @@ public class FetchOperator {
           return getNextRow();
       }
     } catch (Exception e) {
-      return null;
+      throw new IOException(e);
     }
   }
 

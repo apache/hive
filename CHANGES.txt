@@ -397,6 +397,9 @@ Trunk - Unreleased
     HIVE-654. renaming thrift serde
     (Zheng Shao via namit)
 
+    HIVE-666. Propagate errors in FetchTask to client.
+    (Zheng Shao via rmurthy)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

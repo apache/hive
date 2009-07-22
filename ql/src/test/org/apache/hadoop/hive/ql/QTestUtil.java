@@ -264,7 +264,8 @@ public class QTestUtil {
     for(String s: new String [] {"src", "src1", "src_json", "src_thrift", "src_sequencefile", 
                                  "srcpart", "srcbucket", "dest1", "dest2", 
                                  "dest3", "dest4", "dest4_sequencefile",
-                                 "dest_j1", "dest_j2", "dest_g1", "dest_g2"}) {
+                                 "dest_j1", "dest_j2", "dest_g1", "dest_g2",
+                                 "fetchtask_ioexception"}) {
       db.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, s);
     }
     for(String s: new String [] {"dest4.out", "union.out"}) {

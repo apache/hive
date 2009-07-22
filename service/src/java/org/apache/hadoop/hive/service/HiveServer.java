@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.service;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Vector;
 
@@ -143,13 +144,17 @@ public class HiveServer extends ThriftHive {
     public String fetchOne() throws HiveServerException, TException {
       driver.setMaxRows(1);
       Vector<String> result = new Vector<String>();
-      if (driver.getResults(result)) {
-        return result.get(0);
+      try {
+        if (driver.getResults(result)) {
+          return result.get(0);
+        }
+        // TODO: Cannot return null here because thrift cannot handle nulls
+        // TODO: Returning empty string for now. Need to figure out how to
+        // TODO: return null in some other way
+        return "";
+      } catch (IOException e) {
+        throw new HiveServerException(e.getMessage());
       }
-      // TODO: Cannot return null here because thrift cannot handle nulls
-      // TODO: Returning empty string for now. Need to figure out how to
-      // TODO: return null in some other way
-      return "";
     }
 
     /**
@@ -168,7 +173,11 @@ public class HiveServer extends ThriftHive {
       } 
       Vector<String> result = new Vector<String>();
       driver.setMaxRows(numRows);
-      driver.getResults(result);
+      try {
+        driver.getResults(result);
+      } catch (IOException e) {
+        throw new HiveServerException(e.getMessage());
+      }
       return result;
     }
 
@@ -183,9 +192,13 @@ public class HiveServer extends ThriftHive {
     public List<String> fetchAll() throws HiveServerException, TException {
       Vector<String> rows = new Vector<String>();
       Vector<String> result = new Vector<String>();
-      while (driver.getResults(result)) {
-        rows.addAll(result);
-        result.clear();
+      try {
+        while (driver.getResults(result)) {
+          rows.addAll(result);
+          result.clear();
+        }
+      } catch (IOException e) {
+        throw new HiveServerException(e.getMessage());
       }
       return rows;
     }
