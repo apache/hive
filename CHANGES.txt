@@ -87,6 +87,8 @@ Trunk - Unreleased
 
     HIVE-642. add UDF split (Emil Ibrishimov via namit)
 
+    HIVE-639. create contrib directory (Zheng Shao via namit)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 

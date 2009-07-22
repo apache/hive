@@ -62,7 +62,7 @@
     <attribute name="target"/>
     <sequential>
       <subant target="@{target}">
-        <filelist dir="." files="common/build.xml,serde/build.xml,metastore/build.xml,ql/build.xml,cli/build.xml,service/build.xml,jdbc/build.xml,hwi/build.xml,ant/build.xml"/>
+        <filelist dir="." files="common/build.xml,serde/build.xml,metastore/build.xml,ql/build.xml,cli/build.xml,contrib/build.xml,service/build.xml,jdbc/build.xml,hwi/build.xml,ant/build.xml"/>
       </subant>
     </sequential>
   </macrodef>
@@ -71,7 +71,7 @@
     <attribute name="target"/>
     <sequential>
       <subant target="@{target}">
-        <filelist dir="." files="common/build.xml,serde/build.xml,metastore/build.xml,ql/build.xml,cli/build.xml,service/build.xml,jdbc/build.xml,hwi/build.xml"/>
+        <filelist dir="." files="common/build.xml,serde/build.xml,metastore/build.xml,ql/build.xml,cli/build.xml,contrib/build.xml,service/build.xml,jdbc/build.xml,hwi/build.xml"/>
       </subant>
     </sequential>
   </macrodef>
@@ -190,6 +190,7 @@
       <fileset file="${build.dir.hive}/ql/hive_exec.jar"/>
       <fileset file="${build.dir.hive}/metastore/hive_metastore.jar"/>
       <fileset file="${build.dir.hive}/hive_hwi.war"/>
+      <fileset file="${build.dir.hive}/contrib/hive_contrib.jar"/>
     </copy>
     <copy todir="${target.example.dir}/files" preservelastmodified="true" flatten="true">
       <fileset dir="${test.data.dir}/files" includes="*.*" excludes="**/.svn"/>

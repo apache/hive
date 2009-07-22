@@ -9,6 +9,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/json.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/asm-3.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-cli-2.0-SNAPSHOT.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-codec-1.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-lang-2.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-logging-1.0.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-logging-api-1.0.4.jar"/>
@@ -27,6 +28,8 @@
 	<classpathentry kind="src" path="build/ql/test/src"/>
 	<classpathentry kind="src" path="cli/src/java"/>
 	<classpathentry kind="src" path="common/src/java"/>
+	<classpathentry kind="src" path="contrib/src/java"/>
+	<classpathentry kind="src" path="contrib/src/test"/>
 	<classpathentry kind="src" path="metastore/src/gen-javabean"/>
 	<classpathentry kind="src" path="metastore/src/java"/>
 	<classpathentry kind="src" path="metastore/src/model"/>

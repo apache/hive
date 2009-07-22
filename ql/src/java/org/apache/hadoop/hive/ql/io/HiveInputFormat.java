@@ -295,7 +295,9 @@ public class HiveInputFormat<K extends WritableComparable,
         Method validateInput = inputFormat.getClass().getDeclaredMethod("validateInput", newjob.getClass());
         validateInput.setAccessible(true);
         validateInput.invoke(inputFormat, newjob);
-      } catch (Exception e) {}
+      } catch (Exception e) {
+        // Ignore this exception since validateInput is removed from hadoop in 0.18+.
+      }
     }
   }
 

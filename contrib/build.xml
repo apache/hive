@@ -1,0 +1,101 @@
+<?xml version="1.0"?>
+
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+
+<project name="contrib" default="jar">
+
+  <property name="contrib.lib.dir" value="${basedir}/lib"/>
+  <property name="src.dir"  location="${basedir}/src/java"/>
+  <property name="contrib.test.query.dir" location="${basedir}/src/test/queries"/>
+  <property name="ql.test.template.dir" location="${basedir}/../ql/src/test/templates"/>
+  <property name="contrib.test.results.dir" location="${basedir}/src/test/results"/>
+
+  <import file="../build-common.xml"/>
+
+  <path id="test.classpath">
+    <pathelement location="${build.dir.hive}/ql/test/classes" />
+    <pathelement location="${test.build.classes}" />
+    <pathelement location="" />
+    <pathelement location="${hadoop.conf.dir}"/>
+    <pathelement location="${test.data.dir}/conf"/>
+    <pathelement location="${hive.conf.dir}"/>
+    <pathelement location="${hive.root}/cli/lib/jline-0.9.94.jar"/>
+    <pathelement location="${hadoop.test.jar}"/>
+    <pathelement location="${jetty.test.jar}"/>
+    <pathelement location="${servlet.test.jar}"/>
+    <pathelement location="${jasper.test.jar}"/>
+    <pathelement location="${jasperc.test.jar}"/>
+    <pathelement location="${jsp.test.jar}"/>
+    <pathelement location="${common.jar}"/>
+    <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
+    <fileset dir="${hadoop.root}/lib" includes="*.jar"/>
+    <path refid="classpath"/>
+  </path>
+
+  <target name="test-jar" depends="compile-test, jar">
+    <delete file="${test.build.dir}/test-udfs.jar"/>
+    <jar jarfile="${test.build.dir}/test-udfs.jar">
+        <fileset dir="${test.build.classes}" includes="**/udf/*.class"/>
+        <fileset dir="${test.build.classes}" includes="**/udf/generic/*.class"/>
+    </jar>
+  </target>
+
+  <target name="gen-test" depends="deploy-ant-tasks, test-conditions, test-init" >
+    <taskdef name="qtestgen" classname="org.apache.hadoop.hive.ant.QTestGenTask"
+             classpath="${build.dir.hive}/anttasks/hive_anttasks.jar:${hive.root}/lib/velocity-1.5.jar:${hive.root}/lib/commons-collections-3.2.1.jar:${hive.root}/lib/commons-lang-2.4.jar"/>
+    
+    <mkdir dir="${test.build.src}/org/apache/hadoop/hive/ql/parse"/>
+    <mkdir dir="${test.build.src}/org/apache/hadoop/hive/cli"/>
+
+    <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/ql/parse" 
+              templatePath="${ql.test.template.dir}" template="TestParse.vm" 
+              queryDirectory="${contrib.test.query.dir}/positive"
+              queryFile="${qfile}"
+              resultsDirectory="${contrib.test.results.dir}/compiler" className="TestContribParse"
+              logFile="${test.log.dir}/testparsegen.log"
+              logDirectory="${test.log.dir}/positive"/>
+    
+    <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/ql/parse" 
+              templatePath="${ql.test.template.dir}" template="TestParseNegative.vm" 
+              queryDirectory="${contrib.test.query.dir}/negative" 
+              queryFile="${qfile}"
+              resultsDirectory="${contrib.test.results.dir}/compiler/errors" className="TestContribParseNegative"
+              logFile="${test.log.dir}/testparseneggen.log"
+              logDirectory="${test.log.dir}/negative"/>
+
+    <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli" 
+              templatePath="${ql.test.template.dir}" template="TestCliDriver.vm" 
+              queryDirectory="${contrib.test.query.dir}/clientpositive" 
+              queryFile="${qfile}"
+              clusterMode="${clustermode}"
+              resultsDirectory="${contrib.test.results.dir}/clientpositive" className="TestContribCliDriver"
+              logFile="${test.log.dir}/testclidrivergen.log"
+              logDirectory="${test.log.dir}/clientpositive"/>
+
+    <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli" 
+              templatePath="${ql.test.template.dir}" template="TestNegativeCliDriver.vm" 
+              queryDirectory="${contrib.test.query.dir}/clientnegative" 
+              queryFile="${qfile}"
+              resultsDirectory="${contrib.test.results.dir}/clientnegative" className="TestContribNegativeCliDriver"
+              logFile="${test.log.dir}/testnegclidrivergen.log"
+              logDirectory="${test.log.dir}/clientnegative"/>
+
+  </target>
+
+</project>
