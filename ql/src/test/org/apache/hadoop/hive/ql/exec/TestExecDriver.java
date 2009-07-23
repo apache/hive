@@ -157,6 +157,7 @@ public class TestExecDriver extends TestCase {
     ArrayList<exprNodeDesc> children1 = new ArrayList<exprNodeDesc>();
     children1.add(new exprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, column));
     exprNodeDesc lhs = new exprNodeFuncDesc(
+        Constants.DOUBLE_TYPE_NAME,
         TypeInfoFactory.doubleTypeInfo,
         FunctionRegistry.getUDFClass(Constants.DOUBLE_TYPE_NAME),
         FunctionRegistry.getUDFMethod(Constants.DOUBLE_TYPE_NAME, TypeInfoFactory.stringTypeInfo),
@@ -165,6 +166,7 @@ public class TestExecDriver extends TestCase {
     ArrayList<exprNodeDesc> children2 = new ArrayList<exprNodeDesc>();
     children2.add(new exprNodeConstantDesc(TypeInfoFactory.longTypeInfo, Long.valueOf(100)));
     exprNodeDesc rhs = new exprNodeFuncDesc(
+        Constants.DOUBLE_TYPE_NAME,
         TypeInfoFactory.doubleTypeInfo,
         FunctionRegistry.getUDFClass(Constants.DOUBLE_TYPE_NAME),
         FunctionRegistry.getUDFMethod(Constants.DOUBLE_TYPE_NAME, TypeInfoFactory.longTypeInfo),
@@ -175,6 +177,7 @@ public class TestExecDriver extends TestCase {
     children3.add(rhs);
     
     exprNodeDesc desc = new exprNodeFuncDesc(
+        "<",
         TypeInfoFactory.booleanTypeInfo,
         FunctionRegistry.getUDFClass("<"),
         FunctionRegistry.getUDFMethod("<", TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.doubleTypeInfo),

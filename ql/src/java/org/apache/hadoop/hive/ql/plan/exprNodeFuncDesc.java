@@ -41,9 +41,10 @@ public class exprNodeFuncDesc extends exprNodeDesc implements Serializable {
   private Class<? extends UDF> UDFClass;
   private Method UDFMethod;
   private List<exprNodeDesc> childExprs; 
+  private String methodName;
   
   public exprNodeFuncDesc() {}
-  public exprNodeFuncDesc(TypeInfo typeInfo, Class<? extends UDF> UDFClass, 
+  public exprNodeFuncDesc(String methodName, TypeInfo typeInfo, Class<? extends UDF> UDFClass, 
                           Method UDFMethod, List<exprNodeDesc> children) {
     super(typeInfo);
     assert(UDFClass != null);
@@ -51,6 +52,7 @@ public class exprNodeFuncDesc extends exprNodeDesc implements Serializable {
     assert(UDFMethod != null);
     this.UDFMethod = UDFMethod;
     this.childExprs = children;
+    this.methodName = methodName;
   }
   
   public Class<? extends UDF> getUDFClass() {
@@ -94,7 +96,7 @@ public class exprNodeFuncDesc extends exprNodeDesc implements Serializable {
   @explain(displayName="expr")
   @Override
   public String getExprString() {
-    FunctionInfo fI = FunctionRegistry.getUDFInfo(UDFClass);
+    FunctionInfo fI = FunctionRegistry.getFunctionInfo(methodName);
     StringBuilder sb = new StringBuilder();
     
     if (fI.getOpType() == FunctionInfo.OperatorType.PREFIX ||
@@ -157,13 +159,19 @@ public class exprNodeFuncDesc extends exprNodeDesc implements Serializable {
     return colList;
   }
   
+  public String getMethodName() {
+    return methodName;
+  }
+  public void setMethodName(String methodName) {
+    this.methodName = methodName.toLowerCase();
+  }
   @Override
   public exprNodeDesc clone() {
     List<exprNodeDesc> cloneCh = new ArrayList<exprNodeDesc>(childExprs.size());
     for(exprNodeDesc ch :  childExprs) {
       cloneCh.add(ch.clone());
     }
-    exprNodeFuncDesc clone = new exprNodeFuncDesc(this.typeInfo,
+    exprNodeFuncDesc clone = new exprNodeFuncDesc(methodName, this.typeInfo,
         this.UDFClass, this.UDFMethod, cloneCh);
     return clone;
   }

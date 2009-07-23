@@ -402,6 +402,9 @@ Trunk - Unreleased
     HIVE-666. Propagate errors in FetchTask to client.
     (Zheng Shao via rmurthy)
 
+    HIVE-620. bug in displaying function name when more than 1 function points to the same class
+    (Emil Ibrishimov via namit)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

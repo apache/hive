@@ -64,7 +64,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
+            <string>file:/data/users/emil/hive1/hive1/build/ql/test/data/warehouse/src</string> 
            </void> 
           </object> 
          </void> 
@@ -96,7 +96,7 @@
                     <void property="conf"> 
                      <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                       <void property="dirName"> 
-                       <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/1365386357/10001</string> 
+                       <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/404047832/10001</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -267,6 +267,9 @@
                       </void> 
                      </object> 
                     </void> 
+                    <void property="methodName"> 
+                     <string>=</string> 
+                    </void> 
                     <void property="typeInfo"> 
                      <object id="PrimitiveTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
                       <void property="typeName"> 
@@ -327,6 +330,9 @@
                        </object> 
                       </void> 
                      </object> 
+                    </void> 
+                    <void property="methodName"> 
+                     <string>=</string> 
                     </void> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo1"/> 
@@ -400,6 +406,9 @@
                       </void> 
                      </object> 
                     </void> 
+                    <void property="methodName"> 
+                     <string>=</string> 
+                    </void> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo1"/> 
                     </void> 
@@ -456,6 +465,9 @@
                        </object> 
                       </void> 
                      </object> 
+                    </void> 
+                    <void property="methodName"> 
+                     <string>=</string> 
                     </void> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo1"/> 
@@ -578,7 +590,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/emil/hive1/hive1/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src</string> 
@@ -590,7 +602,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/emil/hive1/hive1/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap0"/> 

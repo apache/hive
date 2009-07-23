@@ -4362,7 +4362,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // get the conversion method
         ArrayList<exprNodeDesc> conversionArg = new ArrayList<exprNodeDesc>(1);
         conversionArg.add(descPassed);
-        newParameters.add(new exprNodeFuncDesc(typeInfoAccepted, c, conv, conversionArg));
+        newParameters.add(new exprNodeFuncDesc(to.getTypeName(), typeInfoAccepted, c, conv, conversionArg));
       }
     }
 

@@ -24,7 +24,7 @@ STAGE PLANS:
                   expressions:
                         expr: lower('AbC 123')
                         type: string
-                        expr: ucase('AbC 123')
+                        expr: upper('AbC 123')
                         type: string
                   File Output Operator
                     compressed: false
@@ -40,5 +40,5 @@ STAGE PLANS:
 
 query: SELECT lower('AbC 123'), upper('AbC 123') FROM src WHERE key = 86
 Input: default/src
-Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/894848839/10000
+Output: file:/data/users/emil/hive1/hive1/build/ql/tmp/1693261444/10000
 abc 123	ABC 123

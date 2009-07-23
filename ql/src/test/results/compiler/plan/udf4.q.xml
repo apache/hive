@@ -64,7 +64,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/test/data/warehouse/dest1</string> 
+            <string>file:/data/users/emil/hive1/hive1/build/ql/test/data/warehouse/dest1</string> 
            </void> 
           </object> 
          </void> 
@@ -92,7 +92,7 @@
                 <void property="conf"> 
                  <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                   <void property="dirName"> 
-                   <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/312017041/10001</string> 
+                   <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/475777528/10001</string> 
                   </void> 
                   <void property="tableInfo"> 
                    <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -378,6 +378,9 @@
                   </void> 
                  </object> 
                 </void> 
+                <void property="methodName"> 
+                 <string>sqrt</string> 
+                </void> 
                 <void property="typeInfo"> 
                  <object idref="PrimitiveTypeInfo1"/> 
                 </void> 
@@ -430,12 +433,18 @@
                       </void> 
                      </object> 
                     </void> 
+                    <void property="methodName"> 
+                     <string>negative</string> 
+                    </void> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo1"/> 
                     </void> 
                    </object> 
                   </void> 
                  </object> 
+                </void> 
+                <void property="methodName"> 
+                 <string>sqrt</string> 
                 </void> 
                 <void property="typeInfo"> 
                  <object idref="PrimitiveTypeInfo1"/> 
@@ -471,6 +480,9 @@
                    </object> 
                   </void> 
                  </object> 
+                </void> 
+                <void property="methodName"> 
+                 <string>sqrt</string> 
                 </void> 
                 <void property="typeInfo"> 
                  <object idref="PrimitiveTypeInfo1"/> 
@@ -524,12 +536,18 @@
                       </void> 
                      </object> 
                     </void> 
+                    <void property="methodName"> 
+                     <string>negative</string> 
+                    </void> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo1"/> 
                     </void> 
                    </object> 
                   </void> 
                  </object> 
+                </void> 
+                <void property="methodName"> 
+                 <string>floor</string> 
                 </void> 
                 <void property="typeInfo"> 
                  <object idref="PrimitiveTypeInfo0"/> 
@@ -566,6 +584,9 @@
                   </void> 
                  </object> 
                 </void> 
+                <void property="methodName"> 
+                 <string>floor</string> 
+                </void> 
                 <void property="typeInfo"> 
                  <object idref="PrimitiveTypeInfo0"/> 
                 </void> 
@@ -600,6 +621,9 @@
                    </object> 
                   </void> 
                  </object> 
+                </void> 
+                <void property="methodName"> 
+                 <string>floor</string> 
                 </void> 
                 <void property="typeInfo"> 
                  <object idref="PrimitiveTypeInfo0"/> 
@@ -653,12 +677,18 @@
                       </void> 
                      </object> 
                     </void> 
+                    <void property="methodName"> 
+                     <string>negative</string> 
+                    </void> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo1"/> 
                     </void> 
                    </object> 
                   </void> 
                  </object> 
+                </void> 
+                <void property="methodName"> 
+                 <string>round</string> 
                 </void> 
                 <void property="typeInfo"> 
                  <object idref="PrimitiveTypeInfo0"/> 
@@ -695,6 +725,9 @@
                   </void> 
                  </object> 
                 </void> 
+                <void property="methodName"> 
+                 <string>round</string> 
+                </void> 
                 <void property="typeInfo"> 
                  <object idref="PrimitiveTypeInfo0"/> 
                 </void> 
@@ -729,6 +762,9 @@
                    </object> 
                   </void> 
                  </object> 
+                </void> 
+                <void property="methodName"> 
+                 <string>ceil</string> 
                 </void> 
                 <void property="typeInfo"> 
                  <object idref="PrimitiveTypeInfo0"/> 
@@ -782,12 +818,18 @@
                       </void> 
                      </object> 
                     </void> 
+                    <void property="methodName"> 
+                     <string>bigint</string> 
+                    </void> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo0"/> 
                     </void> 
                    </object> 
                   </void> 
                  </object> 
+                </void> 
+                <void property="methodName"> 
+                 <string>rand</string> 
                 </void> 
                 <void property="typeInfo"> 
                  <object idref="PrimitiveTypeInfo1"/> 
@@ -823,6 +865,9 @@
                    </object> 
                   </void> 
                  </object> 
+                </void> 
+                <void property="methodName"> 
+                 <string>ceiling</string> 
                 </void> 
                 <void property="typeInfo"> 
                  <object idref="PrimitiveTypeInfo0"/> 
@@ -876,12 +921,18 @@
                       </void> 
                      </object> 
                     </void> 
+                    <void property="methodName"> 
+                     <string>negative</string> 
+                    </void> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo1"/> 
                     </void> 
                    </object> 
                   </void> 
                  </object> 
+                </void> 
+                <void property="methodName"> 
+                 <string>ceil</string> 
                 </void> 
                 <void property="typeInfo"> 
                  <object idref="PrimitiveTypeInfo0"/> 
@@ -917,6 +968,9 @@
                    </object> 
                   </void> 
                  </object> 
+                </void> 
+                <void property="methodName"> 
+                 <string>ceil</string> 
                 </void> 
                 <void property="typeInfo"> 
                  <object idref="PrimitiveTypeInfo0"/> 
@@ -983,12 +1037,18 @@
                       </void> 
                      </object> 
                     </void> 
+                    <void property="methodName"> 
+                     <string>negative</string> 
+                    </void> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo2"/> 
                     </void> 
                    </object> 
                   </void> 
                  </object> 
+                </void> 
+                <void property="methodName"> 
+                 <string>+</string> 
                 </void> 
                 <void property="typeInfo"> 
                  <object idref="PrimitiveTypeInfo2"/> 
@@ -1038,6 +1098,9 @@
                   </void> 
                  </object> 
                 </void> 
+                <void property="methodName"> 
+                 <string>+</string> 
+                </void> 
                 <void property="typeInfo"> 
                  <object idref="PrimitiveTypeInfo2"/> 
                 </void> 
@@ -1072,6 +1135,9 @@
                    </object> 
                   </void> 
                  </object> 
+                </void> 
+                <void property="methodName"> 
+                 <string>negative</string> 
                 </void> 
                 <void property="typeInfo"> 
                  <object idref="PrimitiveTypeInfo2"/> 
@@ -1119,6 +1185,9 @@
                   </void> 
                  </object> 
                 </void> 
+                <void property="methodName"> 
+                 <string>round</string> 
+                </void> 
                 <void property="typeInfo"> 
                  <object idref="PrimitiveTypeInfo0"/> 
                 </void> 
@@ -1153,6 +1222,9 @@
                    </object> 
                   </void> 
                  </object> 
+                </void> 
+                <void property="methodName"> 
+                 <string>~</string> 
                 </void> 
                 <void property="typeInfo"> 
                  <object idref="PrimitiveTypeInfo2"/> 
@@ -1538,7 +1610,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/test/data/warehouse/dest1</string> 
+       <string>file:/data/users/emil/hive1/hive1/build/ql/test/data/warehouse/dest1</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>dest1</string> 
@@ -1550,7 +1622,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/test/data/warehouse/dest1</string> 
+       <string>file:/data/users/emil/hive1/hive1/build/ql/test/data/warehouse/dest1</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap0"/> 

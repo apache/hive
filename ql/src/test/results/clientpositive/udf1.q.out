@@ -50,15 +50,15 @@ STAGE PLANS:
                         type: boolean
                         expr: ('ab' like 'a')
                         type: boolean
-                        expr: ('' regexp '.*')
+                        expr: ('' rlike '.*')
                         type: boolean
-                        expr: ('a' regexp '[ab]')
+                        expr: ('a' rlike '[ab]')
                         type: boolean
-                        expr: ('' regexp '[ab]')
+                        expr: ('' rlike '[ab]')
                         type: boolean
-                        expr: ('hadoop' regexp '[a-z]*')
+                        expr: ('hadoop' rlike '[a-z]*')
                         type: boolean
-                        expr: ('hadoop' regexp 'o*')
+                        expr: ('hadoop' rlike 'o*')
                         type: boolean
                         expr: regexp_replace('abc', 'b', 'c')
                         type: string
@@ -72,7 +72,7 @@ STAGE PLANS:
                         type: string
                         expr: regexp_replace('abc', '', 'A')
                         type: string
-                        expr: ('abc' regexp '')
+                        expr: ('abc' rlike '')
                         type: boolean
                   File Output Operator
                     compressed: false
@@ -89,10 +89,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/734075252/10000
+                destination: file:/data/users/emil/hive1/hive1/build/ql/tmp/1012030734/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/pchakka/workspace/oshive/build/ql/tmp/816992741/10002 
+              file:/data/users/emil/hive1/hive1/build/ql/tmp/431659275/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -173,5 +173,5 @@ Input: default/src
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/674207509/10000
+Output: file:/data/users/emil/hive1/hive1/build/ql/tmp/220608265/10000
 true	false	true	true	true	false	false	false	true	true	false	true	false	acc	abc	abb	hive	hadoop	AaAbAcA	false

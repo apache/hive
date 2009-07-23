@@ -120,6 +120,7 @@ public class OpProcFactory {
           children.add(condn);
           children.add((exprNodeDesc) preds.get(i));
           condn = new exprNodeFuncDesc(
+              "AND",
               TypeInfoFactory.booleanTypeInfo,
               FunctionRegistry.getUDFClass("AND"),
               FunctionRegistry.getUDFMethod("AND",

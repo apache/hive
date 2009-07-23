@@ -464,6 +464,7 @@ public class TypeCheckProcFactory {
       }
       
       exprNodeFuncDesc desc = new exprNodeFuncDesc(
+        udfName,
         resultTypeInfo,
         FunctionRegistry.getUDFClass(udfName),
         udfMethod, ch);

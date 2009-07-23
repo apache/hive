@@ -30,7 +30,7 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/tmp/983045819/10000</string> 
+               <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/6003728/10000</string> 
               </void> 
               <void property="table"> 
                <object id="tableDesc0" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -83,7 +83,7 @@
                   </void> 
                   <void method="put"> 
                    <string>location</string> 
-                   <string>file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/test/data/warehouse/dest1</string> 
+                   <string>file:/data/users/emil/hive1/hive1/build/ql/test/data/warehouse/dest1</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -93,7 +93,7 @@
                </object> 
               </void> 
               <void property="tmpDir"> 
-               <string>file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/tmp/983045819/10001</string> 
+               <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/6003728/10001</string> 
               </void> 
              </object> 
             </void> 
@@ -121,10 +121,10 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/tmp/1046375614/10002</string> 
+               <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/1631050253/10002</string> 
               </void> 
               <void property="targetDir"> 
-               <string>file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/tmp/983045819/10000</string> 
+               <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/6003728/10000</string> 
               </void> 
              </object> 
             </void> 
@@ -142,7 +142,7 @@
             <void property="aliasToWork"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/tmp/1046375614/10002</string> 
+               <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/1631050253/10002</string> 
                <object id="TableScanOperator0" class="org.apache.hadoop.hive.ql.exec.TableScanOperator"> 
                 <void property="childOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -213,6 +213,9 @@
                           </void> 
                           <void property="childExprs"> 
                            <object class="java.util.ArrayList"/> 
+                          </void> 
+                          <void property="methodName"> 
+                           <string>rand</string> 
                           </void> 
                           <void property="typeInfo"> 
                            <object id="PrimitiveTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
@@ -342,10 +345,10 @@
             <void property="pathToAliases"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/tmp/1046375614/10002</string> 
+               <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/1631050253/10002</string> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <string>file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/tmp/1046375614/10002</string> 
+                 <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/1631050253/10002</string> 
                 </void> 
                </object> 
               </void> 
@@ -354,7 +357,7 @@
             <void property="pathToPartitionInfo"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/tmp/1046375614/10002</string> 
+               <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/1631050253/10002</string> 
                <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
                 <void property="tableDesc"> 
                  <object idref="tableDesc0"/> 
@@ -372,7 +375,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/tmp/983045819/10000</string> 
+                     <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/6003728/10000</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -421,7 +424,7 @@
                         </void> 
                         <void method="put"> 
                          <string>location</string> 
-                         <string>file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/test/data/warehouse/dest1</string> 
+                         <string>file:/data/users/emil/hive1/hive1/build/ql/test/data/warehouse/dest1</string> 
                         </void> 
                         <void method="put"> 
                          <string>file.outputformat</string> 
@@ -520,7 +523,7 @@
       <void property="resolverCtx"> 
        <object class="org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles$ConditionalResolverMergeFilesCtx"> 
         <void property="dir"> 
-         <string>file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/tmp/1046375614/10002</string> 
+         <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/1631050253/10002</string> 
         </void> 
         <void property="listTasks"> 
          <object idref="ArrayList0"/> 
@@ -608,7 +611,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
+            <string>file:/data/users/emil/hive1/hive1/build/ql/test/data/warehouse/src</string> 
            </void> 
           </object> 
          </void> 
@@ -647,7 +650,7 @@
                            <int>1</int> 
                           </void> 
                           <void property="dirName"> 
-                           <string>file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/tmp/1046375614/10002</string> 
+                           <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/1631050253/10002</string> 
                           </void> 
                           <void property="tableInfo"> 
                            <object idref="tableDesc0"/> 
@@ -808,6 +811,9 @@
                           </void> 
                          </object> 
                         </void> 
+                        <void property="methodName"> 
+                         <string>double</string> 
+                        </void> 
                         <void property="typeInfo"> 
                          <object idref="PrimitiveTypeInfo0"/> 
                         </void> 
@@ -846,12 +852,18 @@
                           </void> 
                          </object> 
                         </void> 
+                        <void property="methodName"> 
+                         <string>double</string> 
+                        </void> 
                         <void property="typeInfo"> 
                          <object idref="PrimitiveTypeInfo0"/> 
                         </void> 
                        </object> 
                       </void> 
                      </object> 
+                    </void> 
+                    <void property="methodName"> 
+                     <string>&lt;</string> 
                     </void> 
                     <void property="typeInfo"> 
                      <object id="PrimitiveTypeInfo3" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
@@ -937,6 +949,9 @@
                       </void> 
                      </object> 
                     </void> 
+                    <void property="methodName"> 
+                     <string>double</string> 
+                    </void> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo0"/> 
                     </void> 
@@ -964,12 +979,18 @@
                       </void> 
                      </object> 
                     </void> 
+                    <void property="methodName"> 
+                     <string>double</string> 
+                    </void> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo0"/> 
                     </void> 
                    </object> 
                   </void> 
                  </object> 
+                </void> 
+                <void property="methodName"> 
+                 <string>&lt;</string> 
                 </void> 
                 <void property="typeInfo"> 
                  <object idref="PrimitiveTypeInfo3"/> 
@@ -1020,7 +1041,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/emil/hive1/hive1/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src</string> 
@@ -1032,7 +1053,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/emil/hive1/hive1/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap0"/> 
