@@ -29,8 +29,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObjectInspector;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 
 public class GenericUDFSplit extends GenericUDF {
+  private ObjectInspectorConverters.Converter[] converters;
+  
   public ObjectInspector initialize(ObjectInspector[] arguments)
   throws UDFArgumentException {    
     if (arguments.length != 2) {
@@ -38,13 +41,10 @@ public class GenericUDFSplit extends GenericUDF {
           "The function SPLIT(s, regexp) takes exactly 2 arguments.");
     }
     
-    if(!(arguments[0] instanceof WritableStringObjectInspector)) {
-      throw new UDFArgumentTypeException(0,
-          "Arguments of SPLIT(s, regexp) must be strings.");
-    }
-    if(!(arguments[1] instanceof WritableStringObjectInspector)) {
-      throw new UDFArgumentTypeException(1,
-          "Arguments of SPLIT(s, regexp) must be strings.");
+    converters = new ObjectInspectorConverters.Converter[arguments.length];
+    for(int i = 0; i < arguments.length; i++) {
+      converters[i] = ObjectInspectorConverters.getConverter(arguments[i],
+          PrimitiveObjectInspectorFactory.writableStringObjectInspector);
     }
     
     return ObjectInspectorFactory.getStandardListObjectInspector(
@@ -58,10 +58,8 @@ public class GenericUDFSplit extends GenericUDF {
       return null;
     }
     
-    Text s = PrimitiveObjectInspectorFactory.writableStringObjectInspector
-                                .getPrimitiveWritableObject(arguments[0].get());
-    Text regex = PrimitiveObjectInspectorFactory.writableStringObjectInspector
-                                .getPrimitiveWritableObject(arguments[1].get());
+    Text s = (Text)converters[0].convert(arguments[0].get()); 
+    Text regex = (Text)converters[1].convert(arguments[1].get());
     
     ArrayList<Text> result = new ArrayList<Text>();
     
@@ -74,7 +72,7 @@ public class GenericUDFSplit extends GenericUDF {
   
   public String getDisplayString(String[] children) {
     assert(children.length == 2);
-    return "SPLIT(" + children[0] + ", " + children[1] + ")";
+    return "split(" + children[0] + ", " + children[1] + ")";
   }
 
 }

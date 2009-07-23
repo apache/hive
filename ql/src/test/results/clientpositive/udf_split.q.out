@@ -1,10 +1,11 @@
 query: EXPLAIN SELECT 
   split('a b c', ' '),
   split('oneAtwoBthreeC', '[ABC]'),
-  split('', '.')
+  split('', '.'),
+  split(50401020, 0)
 FROM src LIMIT 1
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION split 'a b c' ' ')) (TOK_SELEXPR (TOK_FUNCTION split 'oneAtwoBthreeC' '[ABC]')) (TOK_SELEXPR (TOK_FUNCTION split '' '.'))) (TOK_LIMIT 1)))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION split 'a b c' ' ')) (TOK_SELEXPR (TOK_FUNCTION split 'oneAtwoBthreeC' '[ABC]')) (TOK_SELEXPR (TOK_FUNCTION split '' '.')) (TOK_SELEXPR (TOK_FUNCTION split 50401020 0))) (TOK_LIMIT 1)))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -17,11 +18,13 @@ STAGE PLANS:
         src 
             Select Operator
               expressions:
-                    expr: SPLIT('a b c', ' ')
+                    expr: split('a b c', ' ')
                     type: array<string>
-                    expr: SPLIT('oneAtwoBthreeC', '[ABC]')
+                    expr: split('oneAtwoBthreeC', '[ABC]')
                     type: array<string>
-                    expr: SPLIT('', '.')
+                    expr: split('', '.')
+                    type: array<string>
+                    expr: split(50401020, 0)
                     type: array<string>
               Limit
                 File Output Operator
@@ -39,8 +42,9 @@ STAGE PLANS:
 query: SELECT 
   split('a b c', ' '),
   split('oneAtwoBthreeC', '[ABC]'),
-  split('', '.')
+  split('', '.'),
+  split(50401020, 0)
 FROM src LIMIT 1
 Input: default/src
-Output: file:/data/users/emil/hive1/hive1/build/ql/tmp/6715761/10000
-["a","b","c"]	["one","two","three"]	[]
+Output: file:/data/users/emil/hive1/hive1/build/ql/tmp/1744248062/10000
+["a","b","c"]	["one","two","three"]	[]	["5","4","1","2"]

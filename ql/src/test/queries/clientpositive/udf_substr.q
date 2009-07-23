@@ -35,3 +35,12 @@ SELECT
   substr('ABC', -3, 1), substr('ABC', -3, 2), substr('ABC', -3, 3), substr('ABC', -3, 4),
   substr('ABC', -4, 1)
 FROM src LIMIT 1;
+
+-- substring() is a synonim of substr(), so just perform some basic tests
+SELECT
+  substring('ABCDEFG', 3, 4), substring('ABCDEFG', -5, 4),
+  substring('ABCDEFG', 3), substring('ABCDEFG', -5),
+  substring('ABC', 0), substring('ABC', 1), substring('ABC', 2), substring('ABC', 3),
+  substring('ABC', 1, 2147483647), substring('ABC', 2, 2147483647),
+  substring('A', 0), substring('A', 1), substring('A', -1)
+FROM src LIMIT 1;

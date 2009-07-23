@@ -1,0 +1,92 @@
+query: EXPLAIN SELECT
+  lpad('hi', 1, '?'),
+  lpad('hi', 5, '.'),
+  lpad('hi', 6, '123')
+FROM src LIMIT 1
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION lpad 'hi' 1 '?')) (TOK_SELEXPR (TOK_FUNCTION lpad 'hi' 5 '.')) (TOK_SELEXPR (TOK_FUNCTION lpad 'hi' 6 '123'))) (TOK_LIMIT 1)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src 
+            Select Operator
+              expressions:
+                    expr: lpad('hi', 1, '?')
+                    type: string
+                    expr: lpad('hi', 5, '.')
+                    type: string
+                    expr: lpad('hi', 6, '123')
+                    type: string
+              Limit
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+
+
+query: SELECT
+  lpad('hi', 1, '?'),
+  lpad('hi', 5, '.'),
+  lpad('hi', 6, '123')
+FROM src LIMIT 1
+Input: default/src
+Output: file:/data/users/emil/hive1/hive1/build/ql/tmp/328439542/10000
+h	...hi	1231hi
+query: EXPLAIN SELECT
+  rpad('hi', 1, '?'),
+  rpad('hi', 5, '.'),
+  rpad('hi', 6, '123')
+FROM src LIMIT 1
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION rpad 'hi' 1 '?')) (TOK_SELEXPR (TOK_FUNCTION rpad 'hi' 5 '.')) (TOK_SELEXPR (TOK_FUNCTION rpad 'hi' 6 '123'))) (TOK_LIMIT 1)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src 
+            Select Operator
+              expressions:
+                    expr: rpad('hi', 1, '?')
+                    type: string
+                    expr: rpad('hi', 5, '.')
+                    type: string
+                    expr: rpad('hi', 6, '123')
+                    type: string
+              Limit
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+
+
+query: SELECT
+  rpad('hi', 1, '?'),
+  rpad('hi', 5, '.'),
+  rpad('hi', 6, '123')
+FROM src LIMIT 1
+Input: default/src
+Output: file:/data/users/emil/hive1/hive1/build/ql/tmp/368208834/10000
+h	hi...	hi1231

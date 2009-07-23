@@ -1,0 +1,64 @@
+query: EXPLAIN SELECT
+  space(10),
+  space(0),
+  space(1),
+  space(-1),
+  space(-100)
+FROM src LIMIT 1
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION space 10)) (TOK_SELEXPR (TOK_FUNCTION space 0)) (TOK_SELEXPR (TOK_FUNCTION space 1)) (TOK_SELEXPR (TOK_FUNCTION space (- 1))) (TOK_SELEXPR (TOK_FUNCTION space (- 100)))) (TOK_LIMIT 1)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src 
+            Select Operator
+              expressions:
+                    expr: space(10)
+                    type: string
+                    expr: space(0)
+                    type: string
+                    expr: space(1)
+                    type: string
+                    expr: space(- 1)
+                    type: string
+                    expr: space(- 100)
+                    type: string
+              Limit
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+
+
+query: SELECT
+  length(space(10)),
+  length(space(0)),
+  length(space(1)),
+  length(space(-1)),
+  length(space(-100))
+FROM src LIMIT 1
+Input: default/src
+Output: file:/data/users/emil/hive1/hive1/build/ql/tmp/1667425937/10000
+10	0	1	0	0
+query: SELECT
+  space(10),
+  space(0),
+  space(1),
+  space(-1),
+  space(-100)
+FROM src LIMIT 1
+Input: default/src
+Output: file:/data/users/emil/hive1/hive1/build/ql/tmp/540464301/10000
+          		 		

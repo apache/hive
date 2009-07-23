@@ -91,6 +91,8 @@ Trunk - Unreleased
 
     HIVE-674. add UDFs sin, cos, asin, acos (Karan Mangla via namit)
 
+    HIVE-668. add UDFs abs, ascii, repeat, lpad, rpad, space, substring (Emil Ibrishimov via namit)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 

@@ -1,0 +1,100 @@
+query: EXPLAIN SELECT
+  abs(0),
+  abs(-1),
+  abs(123),
+  abs(-9223372036854775807),
+  abs(9223372036854775807)
+FROM src LIMIT 1
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION abs 0)) (TOK_SELEXPR (TOK_FUNCTION abs (- 1))) (TOK_SELEXPR (TOK_FUNCTION abs 123)) (TOK_SELEXPR (TOK_FUNCTION abs (- 9223372036854775807))) (TOK_SELEXPR (TOK_FUNCTION abs 9223372036854775807))) (TOK_LIMIT 1)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src 
+            Select Operator
+              expressions:
+                    expr: abs(0)
+                    type: int
+                    expr: abs(- 1)
+                    type: int
+                    expr: abs(123)
+                    type: int
+                    expr: abs(- 9223372036854775807)
+                    type: bigint
+                    expr: abs(9223372036854775807)
+                    type: bigint
+              Limit
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+
+
+query: SELECT
+  abs(0),
+  abs(-1),
+  abs(123),
+  abs(-9223372036854775807),
+  abs(9223372036854775807)
+FROM src LIMIT 1
+Input: default/src
+Output: file:/data/users/emil/hive1/hive1/build/ql/tmp/1522491061/10000
+0	1	123	9223372036854775807	9223372036854775807
+query: EXPLAIN SELECT
+  abs(0.0),
+  abs(-3.14159265),
+  abs(3.14159265)
+FROM src LIMIT 1
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION abs 0.0)) (TOK_SELEXPR (TOK_FUNCTION abs (- 3.14159265))) (TOK_SELEXPR (TOK_FUNCTION abs 3.14159265))) (TOK_LIMIT 1)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src 
+            Select Operator
+              expressions:
+                    expr: abs(0.0)
+                    type: double
+                    expr: abs(- 3.14159265)
+                    type: double
+                    expr: abs(3.14159265)
+                    type: double
+              Limit
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+
+
+query: SELECT
+  abs(0.0),
+  abs(-3.14159265),
+  abs(3.14159265)
+FROM src LIMIT 1
+Input: default/src
+Output: file:/data/users/emil/hive1/hive1/build/ql/tmp/894722340/10000
+0.0	3.14159265	3.14159265

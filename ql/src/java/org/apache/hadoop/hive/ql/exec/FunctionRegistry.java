@@ -53,7 +53,13 @@ public class FunctionRegistry {
     mFunctions = new HashMap<String, FunctionInfo>();
     registerUDF("concat", UDFConcat.class, OperatorType.PREFIX, false);
     registerUDF("substr", UDFSubstr.class, OperatorType.PREFIX, false);
-
+    registerUDF("substring", UDFSubstr.class, OperatorType.PREFIX, false);
+    registerUDF("space", UDFSpace.class, OperatorType.PREFIX, false);
+    registerUDF("repeat", UDFRepeat.class, OperatorType.PREFIX, false);
+    registerUDF("ascii", UDFAscii.class, OperatorType.PREFIX, false);
+    registerUDF("lpad", UDFLpad.class, OperatorType.PREFIX, false);
+    registerUDF("rpad", UDFRpad.class, OperatorType.PREFIX, false);
+    
     registerGenericUDF("size", GenericUDFSize.class);
 
     registerUDF("round", UDFRound.class, OperatorType.PREFIX, false);
@@ -62,6 +68,7 @@ public class FunctionRegistry {
     registerUDF("ceil", UDFCeil.class, OperatorType.PREFIX, false);
     registerUDF("ceiling", UDFCeil.class, OperatorType.PREFIX, false);
     registerUDF("rand", UDFRand.class, OperatorType.PREFIX, false);
+    registerUDF("abs", UDFAbs.class, OperatorType.PREFIX, false);
 
     registerUDF("ln", UDFLn.class, OperatorType.PREFIX, false);
     registerUDF("log2", UDFLog2.class, OperatorType.PREFIX, false);
