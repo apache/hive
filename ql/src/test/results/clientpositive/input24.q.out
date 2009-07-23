@@ -28,6 +28,7 @@ STAGE PLANS:
                     aggregations:
                           expr: count(1)
                     mode: hash
+                    outputColumnNames: _col0
                     Reduce Output Operator
                       sort order: 
                       tag: -1
@@ -39,10 +40,12 @@ STAGE PLANS:
           aggregations:
                 expr: count(VALUE._col0)
           mode: mergepartial
+          outputColumnNames: _col0
           Select Operator
             expressions:
                   expr: _col0
                   type: bigint
+            outputColumnNames: _col0
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -57,6 +60,6 @@ STAGE PLANS:
 
 query: select count(1) from tst x where x.d='2009-01-01'
 Input: default/tst/d=2009-01-01
-Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1480756599/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/914060511/10000
 0
 query: drop table tst

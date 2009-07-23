@@ -28,6 +28,7 @@ STAGE PLANS:
                 aggregations:
                       expr: count(1)
                 mode: hash
+                outputColumnNames: _col0
                 Reduce Output Operator
                   sort order: 
                   tag: -1
@@ -39,12 +40,14 @@ STAGE PLANS:
           aggregations:
                 expr: count(VALUE._col0)
           mode: mergepartial
+          outputColumnNames: _col0
           Select Operator
             expressions:
                   expr: 'tst1'
                   type: string
                   expr: UDFToString(_col0)
                   type: string
+            outputColumnNames: _col0, _col1
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -55,12 +58,13 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/44626625/10002 
+        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1035950223/10002 
           Union
             Select Operator
               expressions:
                     expr: _col0
                     type: string
+              outputColumnNames: _col0
               Group By Operator
                 aggregations:
                       expr: count(1)
@@ -68,6 +72,7 @@ STAGE PLANS:
                       expr: _col0
                       type: string
                 mode: hash
+                outputColumnNames: _col0, _col1
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -80,12 +85,13 @@ STAGE PLANS:
                   value expressions:
                         expr: _col1
                         type: bigint
-        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/44626625/10003 
+        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1035950223/10003 
           Union
             Select Operator
               expressions:
                     expr: _col0
                     type: string
+              outputColumnNames: _col0
               Group By Operator
                 aggregations:
                       expr: count(1)
@@ -93,6 +99,7 @@ STAGE PLANS:
                       expr: _col0
                       type: string
                 mode: hash
+                outputColumnNames: _col0, _col1
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -105,12 +112,13 @@ STAGE PLANS:
                   value expressions:
                         expr: _col1
                         type: bigint
-        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/44626625/10004 
+        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1035950223/10004 
           Union
             Select Operator
               expressions:
                     expr: _col0
                     type: string
+              outputColumnNames: _col0
               Group By Operator
                 aggregations:
                       expr: count(1)
@@ -118,6 +126,7 @@ STAGE PLANS:
                       expr: _col0
                       type: string
                 mode: hash
+                outputColumnNames: _col0, _col1
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -138,12 +147,14 @@ STAGE PLANS:
                 expr: KEY._col0
                 type: string
           mode: mergepartial
+          outputColumnNames: _col0, _col1
           Select Operator
             expressions:
                   expr: _col0
                   type: string
                   expr: _col1
                   type: bigint
+            outputColumnNames: _col0, _col1
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -161,6 +172,7 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
@@ -178,6 +190,7 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
@@ -197,7 +210,7 @@ query: select unionsrc.key, count(1) FROM (select 'tst1' as key, cast(count(1) a
                                             select s3.key as key, s3.value as value from src1 s3) unionsrc group by unionsrc.key
 Input: default/src
 Input: default/src1
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1736666761/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/878593490/10000
 	20
 128	2
 146	2

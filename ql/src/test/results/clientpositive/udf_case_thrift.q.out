@@ -35,6 +35,7 @@ STAGE PLANS:
                     type: string
                     expr: CASE (lstring[0]) WHEN ('0') THEN (lstring) ELSE (null) END[0]
                     type: string
+              outputColumnNames: _col0, _col1, _col2
               Limit
                 File Output Operator
                   compressed: false
@@ -65,7 +66,7 @@ query: SELECT CASE src_thrift.lint[0]
        END)[0]
 FROM src_thrift LIMIT 3
 Input: default/src_thrift
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1872084071/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/861207644/10000
 1	zero	0
 3	10 is ten	NULL
 100	default	NULL

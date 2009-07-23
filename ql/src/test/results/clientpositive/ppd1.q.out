@@ -24,6 +24,7 @@ STAGE PLANS:
                   expressions:
                         expr: key
                         type: string
+                  outputColumnNames: _col0
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
@@ -38,7 +39,7 @@ STAGE PLANS:
 
 query: SELECT src.key as c3 from src where src.key > '2'
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/529404035/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/1708124764/10000
 238
 86
 311

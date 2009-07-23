@@ -29,6 +29,7 @@ STAGE PLANS:
                         type: int
                         expr: lintstring[0].MYSTRING
                         type: string
+                  outputColumnNames: _col0, _col1
                   File Output Operator
                     compressed: false
                     GlobalTableId: 1
@@ -44,10 +45,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1902470066/10000
+                destination: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/2103484307/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/pchakka/workspace/oshive/build/ql/tmp/2096411960/10002 
+              file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/2009660724/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -87,7 +88,7 @@ Input: default/src_thrift
 Output: default/dest1
 query: SELECT DEST1.* FROM Dest1
 Input: default/dest1
-Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/287581142/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/1564334315/10000
 2	1
 4	8
 6	27

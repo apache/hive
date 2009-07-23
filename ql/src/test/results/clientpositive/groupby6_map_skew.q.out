@@ -19,11 +19,13 @@ STAGE PLANS:
               expressions:
                     expr: value
                     type: string
+              outputColumnNames: value
               Group By Operator
                 keys:
                       expr: substr(value, 5, 1)
                       type: string
                 mode: hash
+                outputColumnNames: _col0
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -39,6 +41,7 @@ STAGE PLANS:
                 expr: KEY._col0
                 type: string
           mode: partials
+          outputColumnNames: _col0
           File Output Operator
             compressed: false
             GlobalTableId: 0
@@ -49,7 +52,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/745628298/10002 
+        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/338642133/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -65,10 +68,12 @@ STAGE PLANS:
                 expr: KEY._col0
                 type: string
           mode: final
+          outputColumnNames: _col0
           Select Operator
             expressions:
                   expr: _col0
                   type: string
+            outputColumnNames: _col0
             File Output Operator
               compressed: false
               GlobalTableId: 1
@@ -95,7 +100,7 @@ Input: default/src
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/6016821/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1181271396/10000
 0
 1
 2

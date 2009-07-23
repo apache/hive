@@ -36,6 +36,7 @@ STAGE PLANS:
                         type: int
                         expr: size(null)
                         type: int
+                  outputColumnNames: _col0, _col1, _col2, _col3
                   Limit
                     File Output Operator
                       compressed: false
@@ -57,5 +58,5 @@ SELECT size(src_thrift.lint),
 WHERE  src_thrift.lint IS NOT NULL 
        AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
 Input: default/src_thrift
-Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/774936511/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/8998980/10000
 3	1	1	-1

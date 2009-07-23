@@ -26,6 +26,7 @@ STAGE PLANS:
               keys:
                 0 
                 1 
+              outputColumnNames: _col0, _col1, _col3
               Position of Big Table: 1
               Select Operator
                 expressions:
@@ -35,6 +36,7 @@ STAGE PLANS:
                       type: string
                       expr: _col3
                       type: string
+                outputColumnNames: _col0, _col1, _col3
                 Select Operator
                   expressions:
                         expr: _col0
@@ -43,6 +45,7 @@ STAGE PLANS:
                         type: string
                         expr: _col3
                         type: string
+                  outputColumnNames: _col0, _col1, _col2
                   Select Operator
                     expressions:
                           expr: UDFToInteger(_col0)
@@ -51,6 +54,7 @@ STAGE PLANS:
                           type: string
                           expr: _col2
                           type: string
+                    outputColumnNames: _col0, _col1, _col2
                     File Output Operator
                       compressed: false
                       GlobalTableId: 1
@@ -76,6 +80,7 @@ STAGE PLANS:
                   keys:
                     0 
                     1 
+                  outputColumnNames: _col0, _col1, _col3
                   Position of Big Table: 1
                   Select Operator
                     expressions:
@@ -85,6 +90,7 @@ STAGE PLANS:
                           type: string
                           expr: _col3
                           type: string
+                    outputColumnNames: _col0, _col1, _col3
                     Select Operator
                       expressions:
                             expr: _col0
@@ -93,6 +99,7 @@ STAGE PLANS:
                             type: string
                             expr: _col3
                             type: string
+                      outputColumnNames: _col0, _col1, _col2
                       Select Operator
                         expressions:
                               expr: UDFToInteger(_col0)
@@ -101,6 +108,7 @@ STAGE PLANS:
                               type: string
                               expr: _col2
                               type: string
+                        outputColumnNames: _col0, _col1, _col2
                         File Output Operator
                           compressed: false
                           GlobalTableId: 1
@@ -116,10 +124,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/tmp/1256637782/10000
+                destination: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/478661829/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/tmp/1722272427/10002 
+              file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/703862692/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -163,7 +171,7 @@ Input: default/src1
 Output: default/dest_j1
 query: select * from dest_j1 x order by x.key, x.value
 Input: default/dest_j1
-Output: file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/tmp/6969413/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/1580756580/10000
 NULL	val_165	val_165
 NULL	val_165	val_165
 NULL	val_193	val_193

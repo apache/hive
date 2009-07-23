@@ -22,6 +22,7 @@ STAGE PLANS:
                       type: string
                       expr: key
                       type: string
+                outputColumnNames: _col0, _col1
                 Filter Operator
                   predicate:
                       expr: (UDFToDouble(_col1) < UDFToDouble(100))
@@ -30,6 +31,7 @@ STAGE PLANS:
                     expressions:
                           expr: _col0
                           type: string
+                    outputColumnNames: _col0
                     File Output Operator
                       compressed: false
                       GlobalTableId: 0
@@ -44,7 +46,7 @@ STAGE PLANS:
 
 query: SELECT c1 FROM (select value as c1, key as c2 from src) x where c2 < 100
 Input: default/src
-Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1322275245/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/1592516174/10000
 val_86
 val_27
 val_98

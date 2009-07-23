@@ -26,6 +26,7 @@ STAGE PLANS:
                         type: string
                         expr: upper('AbC 123')
                         type: string
+                  outputColumnNames: _col0, _col1
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0

@@ -17,10 +17,12 @@ STAGE PLANS:
               expressions:
                     expr: key
                     type: string
+              outputColumnNames: key
               Group By Operator
                 aggregations:
                       expr: sum(key)
                 mode: hash
+                outputColumnNames: _col0
                 Reduce Output Operator
                   sort order: 
                   tag: -1
@@ -32,14 +34,17 @@ STAGE PLANS:
           aggregations:
                 expr: sum(VALUE._col0)
           mode: final
+          outputColumnNames: _col0
           Select Operator
             expressions:
                   expr: _col0
                   type: double
+            outputColumnNames: _col0
             Select Operator
               expressions:
                     expr: UDFToInteger(_col0)
                     type: int
+              outputColumnNames: _col0
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
@@ -65,5 +70,5 @@ Input: default/src
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/535679117/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/949792340/10000
 130091

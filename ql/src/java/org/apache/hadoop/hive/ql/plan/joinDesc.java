@@ -118,6 +118,7 @@ public class joinDesc implements Serializable {
     this.exprs = exprs;
   }
   
+  @explain(displayName="outputColumnNames")
   public java.util.ArrayList<java.lang.String> getOutputColumnNames() {
     return outputColumnNames;
   }

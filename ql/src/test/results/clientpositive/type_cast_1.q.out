@@ -16,6 +16,7 @@ STAGE PLANS:
               expressions:
                     expr: (if(false, 1, UDFToShort(2)) + 3)
                     type: int
+              outputColumnNames: _col0
               Limit
                 File Output Operator
                   compressed: false
@@ -31,5 +32,5 @@ STAGE PLANS:
 
 query: SELECT IF(false, 1, cast(2 as smallint)) + 3 FROM src LIMIT 1
 Input: default/src
-Output: file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/1077571356/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1822579210/10000
 5

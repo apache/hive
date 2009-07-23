@@ -29,6 +29,7 @@ STAGE PLANS:
                     type: string
                     expr: key
                     type: string
+              outputColumnNames: _col0, _col1
               Transform Operator
                 command: cat
                 output info:
@@ -58,6 +59,7 @@ STAGE PLANS:
                   type: string
                   expr: _col1
                   type: string
+            outputColumnNames: _col0, _col1
             Transform Operator
               command: ../data/scripts/input20_script
               output info:
@@ -69,6 +71,7 @@ STAGE PLANS:
                       type: int
                       expr: value
                       type: string
+                outputColumnNames: _col0, _col1
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
@@ -104,7 +107,7 @@ Input: default/src
 Output: default/dest1
 query: SELECT * FROM dest1 SORT BY key, value
 Input: default/dest1
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/2104480316/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/895109430/10000
 1	105_105
 1	10_10
 1	111_111

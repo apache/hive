@@ -19,6 +19,7 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Transform Operator
                 command: ../data/scripts/error_script
                 output info:
@@ -39,5 +40,5 @@ STAGE PLANS:
 query: SELECT TRANSFORM(src.key, src.value) USING '../data/scripts/error_script' AS (tkey, tvalue)
 FROM src
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-Clean/build/ql/tmp/1352070559/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_3/build/ql/tmp/1098616602/10000
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask

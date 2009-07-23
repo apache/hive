@@ -26,6 +26,7 @@ STAGE PLANS:
                     type: array<string>
                     expr: split(50401020, 0)
                     type: array<string>
+              outputColumnNames: _col0, _col1, _col2, _col3
               Limit
                 File Output Operator
                   compressed: false
@@ -46,5 +47,5 @@ query: SELECT
   split(50401020, 0)
 FROM src LIMIT 1
 Input: default/src
-Output: file:/data/users/emil/hive1/hive1/build/ql/tmp/1744248062/10000
+Output: file:/data/users/njain/hive_commit1/hive_commit1/.ptest_1/build/ql/tmp/136874203/10000
 ["a","b","c"]	["one","two","three"]	[]	["5","4","1","2"]

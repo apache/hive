@@ -58,6 +58,7 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0} {VALUE._col1}
             1 {VALUE._col0} {VALUE._col1}
+          outputColumnNames: _col0, _col1, _col2, _col3
           Filter Operator
             predicate:
                 expr: ((((_col0 > '10') and (_col0 < '20')) and (_col2 > '15')) and (_col2 < '25'))
@@ -72,6 +73,7 @@ STAGE PLANS:
                     type: string
                     expr: _col3
                     type: string
+              outputColumnNames: _col0, _col1, _col2, _col3
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
@@ -92,7 +94,7 @@ query: FROM
  SELECT a.key, a.value, b.key, b.value
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25'
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/11935500/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_3/build/ql/tmp/1070507636/10000
 150	val_150	150	val_150
 152	val_152	152	val_152
 152	val_152	152	val_152

@@ -19,6 +19,7 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: key, value
               Reduce Output Operator
                 key expressions:
                       expr: key
@@ -39,18 +40,21 @@ STAGE PLANS:
                 expr: KEY._col0
                 type: string
           mode: complete
+          outputColumnNames: _col0, _col1
           Select Operator
             expressions:
                   expr: _col0
                   type: string
                   expr: _col1
                   type: double
+            outputColumnNames: _col0, _col1
             Select Operator
               expressions:
                     expr: UDFToInteger(_col0)
                     type: int
                     expr: _col1
                     type: double
+              outputColumnNames: _col0, _col1
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
@@ -76,7 +80,7 @@ Input: default/src
 Output: default/dest_g1
 query: SELECT dest_g1.* FROM dest_g1
 Input: default/dest_g1
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/850220067/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1408602511/10000
 0	0.0
 10	10.0
 100	200.0

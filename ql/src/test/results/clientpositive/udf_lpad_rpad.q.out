@@ -23,6 +23,7 @@ STAGE PLANS:
                     type: string
                     expr: lpad('hi', 6, '123')
                     type: string
+              outputColumnNames: _col0, _col1, _col2
               Limit
                 File Output Operator
                   compressed: false
@@ -42,7 +43,7 @@ query: SELECT
   lpad('hi', 6, '123')
 FROM src LIMIT 1
 Input: default/src
-Output: file:/data/users/emil/hive1/hive1/build/ql/tmp/328439542/10000
+Output: file:/data/users/njain/hive_commit1/hive_commit1/.ptest_2/build/ql/tmp/1193063785/10000
 h	...hi	1231hi
 query: EXPLAIN SELECT
   rpad('hi', 1, '?'),
@@ -69,6 +70,7 @@ STAGE PLANS:
                     type: string
                     expr: rpad('hi', 6, '123')
                     type: string
+              outputColumnNames: _col0, _col1, _col2
               Limit
                 File Output Operator
                   compressed: false
@@ -88,5 +90,5 @@ query: SELECT
   rpad('hi', 6, '123')
 FROM src LIMIT 1
 Input: default/src
-Output: file:/data/users/emil/hive1/hive1/build/ql/tmp/368208834/10000
+Output: file:/data/users/njain/hive_commit1/hive_commit1/.ptest_2/build/ql/tmp/1051346108/10000
 h	hi...	hi1231

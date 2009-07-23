@@ -30,6 +30,7 @@ STAGE PLANS:
                         type: string
                         expr: hr
                         type: string
+                  outputColumnNames: _col0, _col1, _col2, _col3
                   Limit
                     File Output Operator
                       compressed: false
@@ -48,4 +49,4 @@ Input: default/srcpart/ds=2008-04-08/hr=11
 Input: default/srcpart/ds=2008-04-08/hr=12
 Input: default/srcpart/ds=2008-04-09/hr=11
 Input: default/srcpart/ds=2008-04-09/hr=12
-Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/495001163/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/447936279/10000

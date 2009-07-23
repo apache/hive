@@ -20,6 +20,7 @@ STAGE PLANS:
               expressions:
                     expr: key
                     type: string
+              outputColumnNames: _col0
               Transform Operator
                 command: /bin/cat
                 output info:
@@ -39,7 +40,7 @@ STAGE PLANS:
 
 query: select transform(key) using '/bin/cat' as key1 from nullscript
 Input: default/nullscript
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/318391745/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/809630857/10000
 238
 86
 311

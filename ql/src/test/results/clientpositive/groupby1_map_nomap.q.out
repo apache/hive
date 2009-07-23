@@ -19,6 +19,7 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: key, value
               Group By Operator
                 aggregations:
                       expr: sum(substr(value, 5))
@@ -26,6 +27,7 @@ STAGE PLANS:
                       expr: key
                       type: string
                 mode: hash
+                outputColumnNames: _col0, _col1
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -46,18 +48,21 @@ STAGE PLANS:
                 expr: KEY._col0
                 type: string
           mode: mergepartial
+          outputColumnNames: _col0, _col1
           Select Operator
             expressions:
                   expr: _col0
                   type: string
                   expr: _col1
                   type: double
+            outputColumnNames: _col0, _col1
             Select Operator
               expressions:
                     expr: UDFToInteger(_col0)
                     type: int
                     expr: _col1
                     type: double
+              outputColumnNames: _col0, _col1
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
@@ -83,7 +88,7 @@ Input: default/src
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/2041437713/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1003792766/10000
 0	0.0
 10	10.0
 100	200.0

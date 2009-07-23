@@ -25,6 +25,7 @@ STAGE PLANS:
                     type: array<int>
                     expr: lintstring
                     type: array<struct<myint:int,mystring:string,underscore_int:int>>
+              outputColumnNames: _col0, _col1
               Transform Operator
                 command: /bin/cat
                 output info:
@@ -52,6 +53,7 @@ STAGE PLANS:
                   type: string
                   expr: _col1
                   type: string
+            outputColumnNames: _col0, _col1
             File Output Operator
               compressed: false
               GlobalTableId: 1
@@ -83,7 +85,7 @@ Input: default/src_thrift
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/534092272/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/915690046/10000
 [0,0,0]	[{"myint":0,"mystring":"0","underscore_int":0}]
 [1,2,3]	[{"myint":1,"mystring":"1","underscore_int":1}]
 [2,4,6]	[{"myint":4,"mystring":"8","underscore_int":2}]

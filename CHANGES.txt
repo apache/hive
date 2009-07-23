@@ -409,6 +409,9 @@ Trunk - Unreleased
     HIVE-620. bug in displaying function name when more than 1 function points to the same class
     (Emil Ibrishimov via namit)
 
+    HIVE-670. dump output column names in explain 
+    (Zheng Shao via namit)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

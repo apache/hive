@@ -29,6 +29,7 @@ STAGE PLANS:
                   expressions:
                         expr: trim(trim(trim(trim(trim(trim(trim(trim(trim(trim('  abc  '))))))))))
                         type: string
+                  outputColumnNames: _col0
                   File Output Operator
                     compressed: false
                     GlobalTableId: 1
@@ -44,10 +45,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1489774447/10000
+                destination: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/2072143204/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1596742883/10002 
+              file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1442248983/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:

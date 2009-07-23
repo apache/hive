@@ -21,12 +21,14 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Select Operator
                 expressions:
                       expr: UDFToInteger(_col0)
                       type: int
                       expr: _col1
                       type: string
+                outputColumnNames: _col0, _col1
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
@@ -42,10 +44,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/njain/hive4/hive4/build/ql/tmp/830567240/10000
+                destination: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1551879808/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/njain/hive4/hive4/build/ql/tmp/218710063/10002 
+              file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/333825755/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -85,7 +87,7 @@ Input: default/src
 Output: default/dest4_sequencefile
 query: SELECT dest4_sequencefile.* FROM dest4_sequencefile
 Input: default/dest4_sequencefile
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/2001342467/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1330571265/10000
 238	val_238
 86	val_86
 311	val_311

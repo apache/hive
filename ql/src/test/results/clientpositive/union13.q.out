@@ -21,6 +21,7 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   expressions:
@@ -28,6 +29,7 @@ STAGE PLANS:
                         type: string
                         expr: _col1
                         type: string
+                  outputColumnNames: _col0, _col1
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
@@ -41,6 +43,7 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   expressions:
@@ -48,6 +51,7 @@ STAGE PLANS:
                         type: string
                         expr: _col1
                         type: string
+                  outputColumnNames: _col0, _col1
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
@@ -63,7 +67,7 @@ STAGE PLANS:
 query: select unionsrc.key, unionsrc.value FROM (select s1.key as key, s1.value as value from src s1 UNION  ALL  
                                           select s2.key as key, s2.value as value from src s2) unionsrc
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/302836026/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/362764706/10000
 238	val_238
 238	val_238
 86	val_86

@@ -40,6 +40,7 @@ STAGE PLANS:
                   expr: VALUE._col0
                   type: string
             mode: hash
+            outputColumnNames: _col0, _col1
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -53,6 +54,7 @@ STAGE PLANS:
                   expr: VALUE._col0
                   type: string
             mode: hash
+            outputColumnNames: _col0, _col1
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -63,7 +65,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/deploy/hive2/tools/ahive2-trunk-apache-hive/build/ql/tmp/2105051611/10004 
+        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/405462104/10004 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -84,18 +86,21 @@ STAGE PLANS:
                 expr: KEY._col0
                 type: string
           mode: final
+          outputColumnNames: _col0, _col1
           Select Operator
             expressions:
                   expr: _col0
                   type: string
                   expr: _col1
                   type: bigint
+            outputColumnNames: _col0, _col1
             Select Operator
               expressions:
                     expr: UDFToInteger(_col0)
                     type: int
                     expr: _col1
                     type: bigint
+              outputColumnNames: _col0, _col1
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
@@ -118,7 +123,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/deploy/hive2/tools/ahive2-trunk-apache-hive/build/ql/tmp/2105051611/10005 
+        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/405462104/10005 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -139,18 +144,21 @@ STAGE PLANS:
                 expr: KEY._col0
                 type: string
           mode: final
+          outputColumnNames: _col0, _col1
           Select Operator
             expressions:
                   expr: _col0
                   type: string
                   expr: _col1
                   type: bigint
+            outputColumnNames: _col0, _col1
             Select Operator
               expressions:
                     expr: UDFToInteger(_col0)
                     type: int
                     expr: _col1
                     type: bigint
+              outputColumnNames: _col0, _col1
               File Output Operator
                 compressed: false
                 GlobalTableId: 2
@@ -179,7 +187,7 @@ Output: default/dest1
 Output: default/dest2
 query: SELECT DEST1.* FROM DEST1
 Input: default/dest1
-Output: file:/data/users/njain/deploy/hive2/tools/ahive2-trunk-apache-hive/build/ql/tmp/1046151185/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1228344007/10000
 0	1
 10	1
 100	1
@@ -491,7 +499,7 @@ Output: file:/data/users/njain/deploy/hive2/tools/ahive2-trunk-apache-hive/build
 98	1
 query: SELECT DEST2.* FROM DEST2
 Input: default/dest2
-Output: file:/data/users/njain/deploy/hive2/tools/ahive2-trunk-apache-hive/build/ql/tmp/236348894/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1951309908/10000
 0	1
 10	1
 100	1

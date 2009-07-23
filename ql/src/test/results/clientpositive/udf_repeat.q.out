@@ -26,6 +26,7 @@ STAGE PLANS:
                     type: string
                     expr: repeat('asdf', - 1)
                     type: string
+              outputColumnNames: _col0, _col1, _col2, _col3
               Limit
                 File Output Operator
                   compressed: false
@@ -46,5 +47,5 @@ query: SELECT
   repeat("asdf", -1)
 FROM src LIMIT 1
 Input: default/src
-Output: file:/data/users/emil/hive1/hive1/build/ql/tmp/1180088338/10000
+Output: file:/data/users/njain/hive_commit1/hive_commit1/.ptest_1/build/ql/tmp/1216905646/10000
 FacebookFacebookFacebook			

@@ -25,6 +25,7 @@ STAGE PLANS:
                   expressions:
                         expr: value
                         type: string
+                  outputColumnNames: value
                   Group By Operator
                     aggregations:
                           expr: count(1)
@@ -33,6 +34,7 @@ STAGE PLANS:
                           expr: value
                           type: string
                     mode: hash
+                    outputColumnNames: _col0, _col1, _col2
                     Reduce Output Operator
                       key expressions:
                             expr: _col0
@@ -53,6 +55,7 @@ STAGE PLANS:
                 expr: count(VALUE._col0)
                 expr: count(DISTINCT KEY._col0)
           mode: partials
+          outputColumnNames: _col0, _col1
           File Output Operator
             compressed: false
             GlobalTableId: 0
@@ -63,7 +66,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1530804093/10002 
+        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/1323444401/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -78,12 +81,14 @@ STAGE PLANS:
                 expr: count(VALUE._col0)
                 expr: count(VALUE._col1)
           mode: final
+          outputColumnNames: _col0, _col1
           Select Operator
             expressions:
                   expr: _col0
                   type: bigint
                   expr: _col1
                   type: bigint
+            outputColumnNames: _col0, _col1
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -95,10 +100,9 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 query: select count(1), count(distinct x.value) from src x where x.key = 9999
 Input: default/src
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/429769664/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/1255708315/10000
 0	0
 query: explain
 select count(1), count(distinct x.value) from src x where x.key = 9999
@@ -126,6 +130,7 @@ STAGE PLANS:
                   expressions:
                         expr: value
                         type: string
+                  outputColumnNames: value
                   Group By Operator
                     aggregations:
                           expr: count(1)
@@ -134,6 +139,7 @@ STAGE PLANS:
                           expr: value
                           type: string
                     mode: hash
+                    outputColumnNames: _col0, _col1, _col2
                     Reduce Output Operator
                       key expressions:
                             expr: _col0
@@ -151,12 +157,14 @@ STAGE PLANS:
                 expr: count(VALUE._col0)
                 expr: count(DISTINCT KEY._col0)
           mode: mergepartial
+          outputColumnNames: _col0, _col1
           Select Operator
             expressions:
                   expr: _col0
                   type: bigint
                   expr: _col1
                   type: bigint
+            outputColumnNames: _col0, _col1
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -171,7 +179,7 @@ STAGE PLANS:
 
 query: select count(1), count(distinct x.value) from src x where x.key = 9999
 Input: default/src
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1474714748/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/1506391866/10000
 0	0
 query: explain
 select count(1), count(distinct x.value) from src x where x.key = 9999
@@ -200,6 +208,7 @@ STAGE PLANS:
                   expressions:
                         expr: value
                         type: string
+                  outputColumnNames: value
                   Reduce Output Operator
                     key expressions:
                           expr: value
@@ -218,6 +227,7 @@ STAGE PLANS:
                 expr: count(VALUE._col0)
                 expr: count(DISTINCT KEY._col0)
           mode: partial1
+          outputColumnNames: _col0, _col1
           File Output Operator
             compressed: false
             GlobalTableId: 0
@@ -228,7 +238,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1775276557/10002 
+        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/1355680596/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -243,12 +253,14 @@ STAGE PLANS:
                 expr: count(VALUE._col0)
                 expr: count(VALUE._col1)
           mode: final
+          outputColumnNames: _col0, _col1
           Select Operator
             expressions:
                   expr: _col0
                   type: bigint
                   expr: _col1
                   type: bigint
+            outputColumnNames: _col0, _col1
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -263,7 +275,7 @@ STAGE PLANS:
 
 query: select count(1), count(distinct x.value) from src x where x.key = 9999
 Input: default/src
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/559124922/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/474355320/10000
 0	0
 query: explain
 select count(1), count(distinct x.value) from src x where x.key = 9999
@@ -291,6 +303,7 @@ STAGE PLANS:
                   expressions:
                         expr: value
                         type: string
+                  outputColumnNames: value
                   Reduce Output Operator
                     key expressions:
                           expr: value
@@ -306,12 +319,14 @@ STAGE PLANS:
                 expr: count(VALUE._col0)
                 expr: count(DISTINCT KEY._col0)
           mode: complete
+          outputColumnNames: _col0, _col1
           Select Operator
             expressions:
                   expr: _col0
                   type: bigint
                   expr: _col1
                   type: bigint
+            outputColumnNames: _col0, _col1
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -326,5 +341,5 @@ STAGE PLANS:
 
 query: select count(1), count(distinct x.value) from src x where x.key = 9999
 Input: default/src
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/2134992556/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/1587094101/10000
 0	0

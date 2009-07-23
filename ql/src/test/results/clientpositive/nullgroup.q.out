@@ -25,6 +25,7 @@ STAGE PLANS:
                     aggregations:
                           expr: count(1)
                     mode: hash
+                    outputColumnNames: _col0
                     Reduce Output Operator
                       sort order: 
                       tag: -1
@@ -36,10 +37,12 @@ STAGE PLANS:
           aggregations:
                 expr: count(VALUE._col0)
           mode: final
+          outputColumnNames: _col0
           Select Operator
             expressions:
                   expr: _col0
                   type: bigint
+            outputColumnNames: _col0
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -54,7 +57,7 @@ STAGE PLANS:
 
 query: select count(1) from src x where x.key > 9999
 Input: default/src
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1008591078/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/289311164/10000
 0
 query: explain
 select count(1) from src x where x.key > 9999
@@ -83,6 +86,7 @@ STAGE PLANS:
                     aggregations:
                           expr: count(1)
                     mode: hash
+                    outputColumnNames: _col0
                     Reduce Output Operator
                       sort order: 
                       tag: -1
@@ -94,10 +98,12 @@ STAGE PLANS:
           aggregations:
                 expr: count(VALUE._col0)
           mode: mergepartial
+          outputColumnNames: _col0
           Select Operator
             expressions:
                   expr: _col0
                   type: bigint
+            outputColumnNames: _col0
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -112,7 +118,7 @@ STAGE PLANS:
 
 query: select count(1) from src x where x.key > 9999
 Input: default/src
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/2013896638/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1460273503/10000
 0
 query: explain
 select count(1) from src x where x.key > 9999
@@ -152,6 +158,7 @@ STAGE PLANS:
           aggregations:
                 expr: count(VALUE._col0)
           mode: partial1
+          outputColumnNames: _col0
           File Output Operator
             compressed: false
             GlobalTableId: 0
@@ -162,7 +169,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1522558889/10002 
+        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/419295241/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -174,10 +181,12 @@ STAGE PLANS:
           aggregations:
                 expr: count(VALUE._col0)
           mode: final
+          outputColumnNames: _col0
           Select Operator
             expressions:
                   expr: _col0
                   type: bigint
+            outputColumnNames: _col0
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -192,7 +201,7 @@ STAGE PLANS:
 
 query: select count(1) from src x where x.key > 9999
 Input: default/src
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1698315525/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1216265581/10000
 0
 query: explain
 select count(1) from src x where x.key > 9999
@@ -228,10 +237,12 @@ STAGE PLANS:
           aggregations:
                 expr: count(VALUE._col0)
           mode: complete
+          outputColumnNames: _col0
           Select Operator
             expressions:
                   expr: _col0
                   type: bigint
+            outputColumnNames: _col0
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -246,5 +257,5 @@ STAGE PLANS:
 
 query: select count(1) from src x where x.key > 9999
 Input: default/src
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1010160157/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1618872238/10000
 0

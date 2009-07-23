@@ -28,6 +28,7 @@ STAGE PLANS:
                         type: string
                         expr: value
                         type: string
+                  outputColumnNames: _col0, _col1
                   Limit
                     Reduce Output Operator
                       sort order: 
@@ -46,6 +47,7 @@ STAGE PLANS:
                     type: int
                     expr: _col1
                     type: string
+              outputColumnNames: _col0, _col1
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
@@ -72,7 +74,7 @@ Input: default/src
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/600180376/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/469291801/10000
 86	val_86
 27	val_27
 98	val_98

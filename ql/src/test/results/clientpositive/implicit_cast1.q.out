@@ -29,6 +29,7 @@ STAGE PLANS:
                         type: bigint
                         expr: b
                         type: string
+                  outputColumnNames: _col0, _col1
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
@@ -45,5 +46,5 @@ query: SELECT implicit_test1.*
 FROM implicit_test1
 WHERE implicit_test1.a <> 0
 Input: default/implicit_test1
-Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/351758098/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/2080135303/10000
 query: DROP TABLE implicit_test1

@@ -22,6 +22,7 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   expressions:
@@ -29,6 +30,7 @@ STAGE PLANS:
                         type: string
                         expr: _col1
                         type: string
+                  outputColumnNames: _col0, _col1
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
@@ -42,6 +44,7 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   expressions:
@@ -49,6 +52,7 @@ STAGE PLANS:
                         type: string
                         expr: _col1
                         type: string
+                  outputColumnNames: _col0, _col1
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
@@ -62,6 +66,7 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   expressions:
@@ -69,6 +74,7 @@ STAGE PLANS:
                         type: string
                         expr: _col1
                         type: string
+                  outputColumnNames: _col0, _col1
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
@@ -85,7 +91,7 @@ query: select unionsrc.key, unionsrc.value FROM (select s1.key as key, s1.value 
                                           select s2.key as key, s2.value as value from src s2 UNION  ALL  
                                           select s3.key as key, s3.value as value from src s3) unionsrc
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1857756775/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/397719358/10000
 238	val_238
 238	val_238
 238	val_238

@@ -36,6 +36,7 @@ STAGE PLANS:
                 aggregations:
                       expr: count(1)
                 mode: hash
+                outputColumnNames: _col0
                 Reduce Output Operator
                   sort order: 
                   tag: -1
@@ -47,12 +48,14 @@ STAGE PLANS:
           aggregations:
                 expr: count(VALUE._col0)
           mode: mergepartial
+          outputColumnNames: _col0
           Select Operator
             expressions:
                   expr: 'tst1'
                   type: string
                   expr: _col0
                   type: bigint
+            outputColumnNames: _col0, _col1
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -63,7 +66,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/663445085/10002 
+        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/1622224278/10002 
           Union
             Select Operator
               expressions:
@@ -71,12 +74,14 @@ STAGE PLANS:
                     type: string
                     expr: _col1
                     type: bigint
+              outputColumnNames: _col0, _col1
               Select Operator
                 expressions:
                       expr: _col0
                       type: string
                       expr: UDFToInteger(_col1)
                       type: int
+                outputColumnNames: _col0, _col1
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
@@ -85,7 +90,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
-        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/663445085/10004 
+        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/1622224278/10004 
           Union
             Select Operator
               expressions:
@@ -93,12 +98,14 @@ STAGE PLANS:
                     type: string
                     expr: _col1
                     type: bigint
+              outputColumnNames: _col0, _col1
               Select Operator
                 expressions:
                       expr: _col0
                       type: string
                       expr: UDFToInteger(_col1)
                       type: int
+                outputColumnNames: _col0, _col1
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
@@ -107,7 +114,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
-        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/663445085/10005 
+        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/1622224278/10005 
           Union
             Select Operator
               expressions:
@@ -115,12 +122,14 @@ STAGE PLANS:
                     type: string
                     expr: _col1
                     type: bigint
+              outputColumnNames: _col0, _col1
               Select Operator
                 expressions:
                       expr: _col0
                       type: string
                       expr: UDFToInteger(_col1)
                       type: int
+                outputColumnNames: _col0, _col1
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
@@ -136,10 +145,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1900390672/10000
+                destination: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/1160998678/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/663445085/10003 
+              file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/1622224278/10003 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -181,6 +190,7 @@ STAGE PLANS:
                 aggregations:
                       expr: count(1)
                 mode: hash
+                outputColumnNames: _col0
                 Reduce Output Operator
                   sort order: 
                   tag: -1
@@ -192,12 +202,14 @@ STAGE PLANS:
           aggregations:
                 expr: count(VALUE._col0)
           mode: mergepartial
+          outputColumnNames: _col0
           Select Operator
             expressions:
                   expr: 'tst2'
                   type: string
                   expr: _col0
                   type: bigint
+            outputColumnNames: _col0, _col1
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -214,6 +226,7 @@ STAGE PLANS:
                 aggregations:
                       expr: count(1)
                 mode: hash
+                outputColumnNames: _col0
                 Reduce Output Operator
                   sort order: 
                   tag: -1
@@ -225,12 +238,14 @@ STAGE PLANS:
           aggregations:
                 expr: count(VALUE._col0)
           mode: mergepartial
+          outputColumnNames: _col0
           Select Operator
             expressions:
                   expr: 'tst3'
                   type: string
                   expr: _col0
                   type: bigint
+            outputColumnNames: _col0, _col1
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -249,7 +264,7 @@ Input: default/src
 Output: default/tmptable
 query: select * from tmptable x sort by x.key
 Input: default/tmptable
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1983301805/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/1108373371/10000
 tst1	500
 tst2	500
 tst3	500

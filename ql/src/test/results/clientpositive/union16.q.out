@@ -47,12 +47,14 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   Group By Operator
                     aggregations:
                           expr: count(1)
                     mode: hash
+                    outputColumnNames: _col0
                     Reduce Output Operator
                       sort order: 
                       tag: -1
@@ -66,12 +68,14 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   Group By Operator
                     aggregations:
                           expr: count(1)
                     mode: hash
+                    outputColumnNames: _col0
                     Reduce Output Operator
                       sort order: 
                       tag: -1
@@ -85,12 +89,14 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   Group By Operator
                     aggregations:
                           expr: count(1)
                     mode: hash
+                    outputColumnNames: _col0
                     Reduce Output Operator
                       sort order: 
                       tag: -1
@@ -104,12 +110,14 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   Group By Operator
                     aggregations:
                           expr: count(1)
                     mode: hash
+                    outputColumnNames: _col0
                     Reduce Output Operator
                       sort order: 
                       tag: -1
@@ -123,12 +131,14 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   Group By Operator
                     aggregations:
                           expr: count(1)
                     mode: hash
+                    outputColumnNames: _col0
                     Reduce Output Operator
                       sort order: 
                       tag: -1
@@ -142,12 +152,14 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   Group By Operator
                     aggregations:
                           expr: count(1)
                     mode: hash
+                    outputColumnNames: _col0
                     Reduce Output Operator
                       sort order: 
                       tag: -1
@@ -161,12 +173,14 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   Group By Operator
                     aggregations:
                           expr: count(1)
                     mode: hash
+                    outputColumnNames: _col0
                     Reduce Output Operator
                       sort order: 
                       tag: -1
@@ -180,12 +194,14 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   Group By Operator
                     aggregations:
                           expr: count(1)
                     mode: hash
+                    outputColumnNames: _col0
                     Reduce Output Operator
                       sort order: 
                       tag: -1
@@ -199,12 +215,14 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   Group By Operator
                     aggregations:
                           expr: count(1)
                     mode: hash
+                    outputColumnNames: _col0
                     Reduce Output Operator
                       sort order: 
                       tag: -1
@@ -218,12 +236,14 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   Group By Operator
                     aggregations:
                           expr: count(1)
                     mode: hash
+                    outputColumnNames: _col0
                     Reduce Output Operator
                       sort order: 
                       tag: -1
@@ -237,12 +257,14 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   Group By Operator
                     aggregations:
                           expr: count(1)
                     mode: hash
+                    outputColumnNames: _col0
                     Reduce Output Operator
                       sort order: 
                       tag: -1
@@ -256,12 +278,14 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   Group By Operator
                     aggregations:
                           expr: count(1)
                     mode: hash
+                    outputColumnNames: _col0
                     Reduce Output Operator
                       sort order: 
                       tag: -1
@@ -275,12 +299,14 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   Group By Operator
                     aggregations:
                           expr: count(1)
                     mode: hash
+                    outputColumnNames: _col0
                     Reduce Output Operator
                       sort order: 
                       tag: -1
@@ -294,12 +320,14 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   Group By Operator
                     aggregations:
                           expr: count(1)
                     mode: hash
+                    outputColumnNames: _col0
                     Reduce Output Operator
                       sort order: 
                       tag: -1
@@ -313,12 +341,14 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   Group By Operator
                     aggregations:
                           expr: count(1)
                     mode: hash
+                    outputColumnNames: _col0
                     Reduce Output Operator
                       sort order: 
                       tag: -1
@@ -332,12 +362,14 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   Group By Operator
                     aggregations:
                           expr: count(1)
                     mode: hash
+                    outputColumnNames: _col0
                     Reduce Output Operator
                       sort order: 
                       tag: -1
@@ -351,12 +383,14 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   Group By Operator
                     aggregations:
                           expr: count(1)
                     mode: hash
+                    outputColumnNames: _col0
                     Reduce Output Operator
                       sort order: 
                       tag: -1
@@ -370,12 +404,14 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   Group By Operator
                     aggregations:
                           expr: count(1)
                     mode: hash
+                    outputColumnNames: _col0
                     Reduce Output Operator
                       sort order: 
                       tag: -1
@@ -389,12 +425,14 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   Group By Operator
                     aggregations:
                           expr: count(1)
                     mode: hash
+                    outputColumnNames: _col0
                     Reduce Output Operator
                       sort order: 
                       tag: -1
@@ -408,12 +446,14 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   Group By Operator
                     aggregations:
                           expr: count(1)
                     mode: hash
+                    outputColumnNames: _col0
                     Reduce Output Operator
                       sort order: 
                       tag: -1
@@ -427,12 +467,14 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   Group By Operator
                     aggregations:
                           expr: count(1)
                     mode: hash
+                    outputColumnNames: _col0
                     Reduce Output Operator
                       sort order: 
                       tag: -1
@@ -446,12 +488,14 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   Group By Operator
                     aggregations:
                           expr: count(1)
                     mode: hash
+                    outputColumnNames: _col0
                     Reduce Output Operator
                       sort order: 
                       tag: -1
@@ -465,12 +509,14 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   Group By Operator
                     aggregations:
                           expr: count(1)
                     mode: hash
+                    outputColumnNames: _col0
                     Reduce Output Operator
                       sort order: 
                       tag: -1
@@ -484,12 +530,14 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   Group By Operator
                     aggregations:
                           expr: count(1)
                     mode: hash
+                    outputColumnNames: _col0
                     Reduce Output Operator
                       sort order: 
                       tag: -1
@@ -503,12 +551,14 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   Group By Operator
                     aggregations:
                           expr: count(1)
                     mode: hash
+                    outputColumnNames: _col0
                     Reduce Output Operator
                       sort order: 
                       tag: -1
@@ -520,10 +570,12 @@ STAGE PLANS:
           aggregations:
                 expr: count(VALUE._col0)
           mode: mergepartial
+          outputColumnNames: _col0
           Select Operator
             expressions:
                   expr: _col0
                   type: bigint
+            outputColumnNames: _col0
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -567,5 +619,5 @@ query: SELECT count(1) FROM (
   SELECT key, value FROM src UNION ALL
   SELECT key, value FROM src) src
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1260154385/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/957620610/10000
 12500

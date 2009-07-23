@@ -19,6 +19,7 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Reduce Output Operator
                 key expressions:
                       expr: _col0
@@ -43,7 +44,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1567308263/10002 
+        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1809793683/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -72,7 +73,7 @@ STAGE PLANS:
 
 query: select * from src sort by key limit 10
 Input: default/src
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1617449632/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1717158908/10000
 0	val_0
 0	val_0
 0	val_0

@@ -21,6 +21,7 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: key, value
               Reduce Output Operator
                 key expressions:
                       expr: substr(key, 1, 1)
@@ -43,6 +44,7 @@ STAGE PLANS:
                 expr: KEY._col0
                 type: string
           mode: partial1
+          outputColumnNames: _col0, _col1, _col2
           File Output Operator
             compressed: false
             GlobalTableId: 0
@@ -53,7 +55,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1492046410/10002 
+        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_3/build/ql/tmp/98786317/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -77,6 +79,7 @@ STAGE PLANS:
                 expr: KEY._col0
                 type: string
           mode: final
+          outputColumnNames: _col0, _col1, _col2
           Select Operator
             expressions:
                   expr: _col0
@@ -85,6 +88,7 @@ STAGE PLANS:
                   type: bigint
                   expr: concat(_col0, UDFToString(_col2))
                   type: string
+            outputColumnNames: _col0, _col1, _col2
             Select Operator
               expressions:
                     expr: _col0
@@ -93,6 +97,7 @@ STAGE PLANS:
                     type: int
                     expr: _col2
                     type: string
+              outputColumnNames: _col0, _col1, _col2
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
@@ -119,7 +124,7 @@ Input: default/src
 Output: default/dest_g2
 query: SELECT dest_g2.* FROM dest_g2
 Input: default/dest_g2
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/556869673/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_3/build/ql/tmp/376809666/10000
 0	1	00.0
 1	71	116414.0
 2	69	225571.0

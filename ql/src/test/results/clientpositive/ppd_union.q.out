@@ -32,6 +32,7 @@ STAGE PLANS:
                         type: string
                         expr: value
                         type: string
+                  outputColumnNames: _col0, _col1
                   Union
                     Filter Operator
                       predicate:
@@ -43,6 +44,7 @@ STAGE PLANS:
                               type: string
                               expr: _col1
                               type: string
+                        outputColumnNames: _col0, _col1
                         File Output Operator
                           compressed: false
                           GlobalTableId: 0
@@ -64,6 +66,7 @@ STAGE PLANS:
                         type: string
                         expr: value
                         type: string
+                  outputColumnNames: _col0, _col1
                   Union
                     Filter Operator
                       predicate:
@@ -75,6 +78,7 @@ STAGE PLANS:
                               type: string
                               expr: _col1
                               type: string
+                        outputColumnNames: _col0, _col1
                         File Output Operator
                           compressed: false
                           GlobalTableId: 0
@@ -95,7 +99,7 @@ query: FROM (
 SELECT unioned_query.*
   WHERE key > '4' and value > 'val_4'
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1558389023/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/1644693517/10000
 86	val_86
 409	val_409
 98	val_98

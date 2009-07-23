@@ -25,6 +25,7 @@ STAGE PLANS:
                     type: int
                     expr: lintstring[0]
                     type: struct<myint:int,mystring:string,underscore_int:int>
+              outputColumnNames: _col0, _col1
               Transform Operator
                 command: /bin/cat
                 output info:
@@ -52,12 +53,14 @@ STAGE PLANS:
                   type: string
                   expr: _col1
                   type: string
+            outputColumnNames: _col0, _col1
             Select Operator
               expressions:
                     expr: UDFToInteger(_col0)
                     type: int
                     expr: _col1
                     type: string
+              outputColumnNames: _col0, _col1
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
@@ -89,7 +92,7 @@ Input: default/src_thrift
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/zshao/tools/553-trunk-apache-hive/build/ql/tmp/667771200/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/367319018/10000
 NULL	null
 -1461153966	{"myint":49,"mystring":"343","underscore_int":7}
 -1952710705	{"myint":25,"mystring":"125","underscore_int":5}

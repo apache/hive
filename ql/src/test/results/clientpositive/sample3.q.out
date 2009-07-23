@@ -26,6 +26,7 @@ STAGE PLANS:
                   expressions:
                         expr: key
                         type: int
+                  outputColumnNames: _col0
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
@@ -41,7 +42,7 @@ STAGE PLANS:
 query: SELECT s.key
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s SORT BY key
 Input: default/srcbucket
-Output: file:/Users/rmurthy/workspace/hive/build/ql/tmp/98452558/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/1207444582/10000
 0
 0
 0

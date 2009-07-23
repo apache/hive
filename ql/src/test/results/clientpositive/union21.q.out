@@ -30,11 +30,13 @@ STAGE PLANS:
               expressions:
                     expr: astring
                     type: string
+              outputColumnNames: _col0
               Union
                 Select Operator
                   expressions:
                         expr: _col0
                         type: string
+                  outputColumnNames: _col0
                   Group By Operator
                     aggregations:
                           expr: count(1)
@@ -42,6 +44,7 @@ STAGE PLANS:
                           expr: _col0
                           type: string
                     mode: hash
+                    outputColumnNames: _col0, _col1
                     Reduce Output Operator
                       key expressions:
                             expr: _col0
@@ -59,11 +62,13 @@ STAGE PLANS:
               expressions:
                     expr: key
                     type: string
+              outputColumnNames: _col0
               Union
                 Select Operator
                   expressions:
                         expr: _col0
                         type: string
+                  outputColumnNames: _col0
                   Group By Operator
                     aggregations:
                           expr: count(1)
@@ -71,6 +76,7 @@ STAGE PLANS:
                           expr: _col0
                           type: string
                     mode: hash
+                    outputColumnNames: _col0, _col1
                     Reduce Output Operator
                       key expressions:
                             expr: _col0
@@ -88,11 +94,13 @@ STAGE PLANS:
               expressions:
                     expr: '1'
                     type: string
+              outputColumnNames: _col0
               Union
                 Select Operator
                   expressions:
                         expr: _col0
                         type: string
+                  outputColumnNames: _col0
                   Group By Operator
                     aggregations:
                           expr: count(1)
@@ -100,6 +108,7 @@ STAGE PLANS:
                           expr: _col0
                           type: string
                     mode: hash
+                    outputColumnNames: _col0, _col1
                     Reduce Output Operator
                       key expressions:
                             expr: _col0
@@ -117,11 +126,13 @@ STAGE PLANS:
               expressions:
                     expr: lstring[0]
                     type: string
+              outputColumnNames: _col0
               Union
                 Select Operator
                   expressions:
                         expr: _col0
                         type: string
+                  outputColumnNames: _col0
                   Group By Operator
                     aggregations:
                           expr: count(1)
@@ -129,6 +140,7 @@ STAGE PLANS:
                           expr: _col0
                           type: string
                     mode: hash
+                    outputColumnNames: _col0, _col1
                     Reduce Output Operator
                       key expressions:
                             expr: _col0
@@ -146,11 +158,13 @@ STAGE PLANS:
               expressions:
                     expr: reverse(key)
                     type: string
+              outputColumnNames: _col0
               Union
                 Select Operator
                   expressions:
                         expr: _col0
                         type: string
+                  outputColumnNames: _col0
                   Group By Operator
                     aggregations:
                           expr: count(1)
@@ -158,6 +172,7 @@ STAGE PLANS:
                           expr: _col0
                           type: string
                     mode: hash
+                    outputColumnNames: _col0, _col1
                     Reduce Output Operator
                       key expressions:
                             expr: _col0
@@ -178,12 +193,14 @@ STAGE PLANS:
                 expr: KEY._col0
                 type: string
           mode: mergepartial
+          outputColumnNames: _col0, _col1
           Select Operator
             expressions:
                   expr: _col0
                   type: string
                   expr: _col1
                   type: bigint
+            outputColumnNames: _col0, _col1
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -211,7 +228,7 @@ FROM (
 GROUP BY key
 Input: default/src_thrift
 Input: default/src
-Output: file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/386816239/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/239888968/10000
 NULL	2
 0	7
 001	2

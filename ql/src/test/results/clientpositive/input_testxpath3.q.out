@@ -19,6 +19,7 @@ STAGE PLANS:
                     type: string
                     expr: lintstring.myint
                     type: array<int>
+              outputColumnNames: _col0, _col1
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
@@ -34,7 +35,7 @@ STAGE PLANS:
 query: FROM src_thrift
 SELECT src_thrift.mstringstring['key_9'], src_thrift.lintstring.myint
 Input: default/src_thrift
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/91336275/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1386485192/10000
 NULL	[0]
 NULL	[1]
 NULL	[4]

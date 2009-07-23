@@ -26,6 +26,7 @@ STAGE PLANS:
                         type: string
                         expr: value
                         type: string
+                  outputColumnNames: _col0, _col1
                   Reduce Output Operator
                     key expressions:
                           expr: _col0
@@ -56,7 +57,7 @@ STAGE PLANS:
 
 query: SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
 Input: default/src
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1336816777/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1924758530/10000
 10	val_10
 query: EXPLAIN
 SELECT * FROM SRC x  where x.key = 20 CLUSTER BY key
@@ -86,6 +87,7 @@ STAGE PLANS:
                         type: string
                         expr: value
                         type: string
+                  outputColumnNames: _col0, _col1
                   Reduce Output Operator
                     key expressions:
                           expr: _col0
@@ -116,7 +118,7 @@ STAGE PLANS:
 
 query: SELECT * FROM SRC x where x.key = 20 CLUSTER BY key
 Input: default/src
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1206369948/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1123767134/10000
 20	val_20
 query: EXPLAIN
 SELECT x.* FROM SRC x where x.key = 20 CLUSTER BY key
@@ -146,6 +148,7 @@ STAGE PLANS:
                         type: string
                         expr: value
                         type: string
+                  outputColumnNames: _col0, _col1
                   Reduce Output Operator
                     key expressions:
                           expr: _col0
@@ -176,7 +179,7 @@ STAGE PLANS:
 
 query: SELECT x.* FROM SRC x where x.key = 20 CLUSTER BY key
 Input: default/src
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/713208689/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/861786563/10000
 20	val_20
 query: EXPLAIN
 SELECT x.*  FROM SRC x where x.key = 20 CLUSTER BY x.key
@@ -206,6 +209,7 @@ STAGE PLANS:
                         type: string
                         expr: value
                         type: string
+                  outputColumnNames: _col0, _col1
                   Reduce Output Operator
                     key expressions:
                           expr: _col0
@@ -236,7 +240,7 @@ STAGE PLANS:
 
 query: SELECT x.*  FROM SRC x where x.key = 20 CLUSTER BY x.key
 Input: default/src
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1437391240/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1270193772/10000
 20	val_20
 query: EXPLAIN
 SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY key
@@ -266,6 +270,7 @@ STAGE PLANS:
                         type: string
                         expr: value
                         type: string
+                  outputColumnNames: _col0, _col1
                   Reduce Output Operator
                     key expressions:
                           expr: _col0
@@ -296,7 +301,7 @@ STAGE PLANS:
 
 query: SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY key
 Input: default/src
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1307359164/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1442901621/10000
 20	val_20
 query: EXPLAIN
 SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY x.key
@@ -326,6 +331,7 @@ STAGE PLANS:
                         type: string
                         expr: value
                         type: string
+                  outputColumnNames: _col0, _col1
                   Reduce Output Operator
                     key expressions:
                           expr: _col0
@@ -356,7 +362,7 @@ STAGE PLANS:
 
 query: SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY x.key
 Input: default/src
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/947798612/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/153851399/10000
 20	val_20
 query: EXPLAIN
 SELECT x.key, x.value as v1  FROM SRC x where x.key = 20 CLUSTER BY v1
@@ -386,6 +392,7 @@ STAGE PLANS:
                         type: string
                         expr: value
                         type: string
+                  outputColumnNames: _col0, _col1
                   Reduce Output Operator
                     key expressions:
                           expr: _col1
@@ -416,7 +423,7 @@ STAGE PLANS:
 
 query: SELECT x.key, x.value as v1  FROM SRC x where x.key = 20 CLUSTER BY v1
 Input: default/src
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1402063423/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/558964860/10000
 20	val_20
 query: EXPLAIN
 SELECT y.* from (SELECT x.* FROM SRC x CLUSTER BY x.key) y where y.key = 20
@@ -438,6 +445,7 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Reduce Output Operator
                 key expressions:
                       expr: _col0
@@ -464,6 +472,7 @@ STAGE PLANS:
                     type: string
                     expr: _col1
                     type: string
+              outputColumnNames: _col0, _col1
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
@@ -478,7 +487,7 @@ STAGE PLANS:
 
 query: SELECT y.* from (SELECT x.* FROM SRC x CLUSTER BY x.key) y where y.key = 20
 Input: default/src
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1233375226/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1403526844/10000
 20	val_20
 query: EXPLAIN 
 SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key)  where x.key = 20 CLUSTER BY v1
@@ -533,6 +542,7 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0} {VALUE._col1}
             1 {VALUE._col0}
+          outputColumnNames: _col0, _col1, _col2
           Filter Operator
             predicate:
                 expr: (UDFToDouble(_col0) = UDFToDouble(20))
@@ -545,6 +555,7 @@ STAGE PLANS:
                     type: string
                     expr: _col2
                     type: string
+              outputColumnNames: _col0, _col1, _col2
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
@@ -555,7 +566,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/16836039/10002 
+        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/708887411/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col1
@@ -588,7 +599,7 @@ STAGE PLANS:
 
 query: SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
 Input: default/src
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/660526747/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/102207247/10000
 20	val_20	20
 query: EXPLAIN 
 SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
@@ -645,6 +656,7 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0} {VALUE._col1}
             1 {VALUE._col0} {VALUE._col1}
+          outputColumnNames: _col0, _col1, _col2, _col3
           Filter Operator
             predicate:
                 expr: (UDFToDouble(_col0) = UDFToDouble(20))
@@ -659,6 +671,7 @@ STAGE PLANS:
                     type: string
                     expr: _col3
                     type: string
+              outputColumnNames: _col0, _col1, _col2, _col3
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
@@ -669,7 +682,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/175821501/10002 
+        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1638014428/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col1
@@ -704,7 +717,7 @@ STAGE PLANS:
 
 query: SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
 Input: default/src
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/184483146/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1268473862/10000
 20	val_20	20	val_20
 query: EXPLAIN
 SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY x.key
@@ -761,6 +774,7 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0} {VALUE._col1}
             1 {VALUE._col0} {VALUE._col1}
+          outputColumnNames: _col0, _col1, _col2, _col3
           Filter Operator
             predicate:
                 expr: (UDFToDouble(_col0) = UDFToDouble(20))
@@ -775,6 +789,7 @@ STAGE PLANS:
                     type: string
                     expr: _col3
                     type: string
+              outputColumnNames: _col0, _col1, _col2, _col3
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
@@ -785,7 +800,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/2009257788/10002 
+        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/2041580763/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -820,7 +835,7 @@ STAGE PLANS:
 
 query: SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY x.key
 Input: default/src
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/42096747/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/781263409/10000
 20	val_20	20	val_20
 query: EXPLAIN
 SELECT x.key, x.value as v1, y.key as yk  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY key
@@ -875,6 +890,7 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0} {VALUE._col1}
             1 {VALUE._col0}
+          outputColumnNames: _col0, _col1, _col2
           Filter Operator
             predicate:
                 expr: (UDFToDouble(_col0) = UDFToDouble(20))
@@ -887,6 +903,7 @@ STAGE PLANS:
                     type: string
                     expr: _col2
                     type: string
+              outputColumnNames: _col0, _col1, _col2
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
@@ -897,7 +914,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1536031199/10002 
+        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/919629862/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -930,7 +947,7 @@ STAGE PLANS:
 
 query: SELECT x.key, x.value as v1, y.key as yk  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY key
 Input: default/src
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/2048031998/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1571336063/10000
 20	val_20	20
 query: EXPLAIN
 SELECT unioninput.*
@@ -966,6 +983,7 @@ STAGE PLANS:
                         type: string
                         expr: value
                         type: string
+                  outputColumnNames: _col0, _col1
                   Union
                     Select Operator
                       expressions:
@@ -973,6 +991,7 @@ STAGE PLANS:
                             type: string
                             expr: _col1
                             type: string
+                      outputColumnNames: _col0, _col1
                       Reduce Output Operator
                         key expressions:
                               expr: _col0
@@ -1002,6 +1021,7 @@ STAGE PLANS:
                         type: string
                         expr: value
                         type: string
+                  outputColumnNames: _col0, _col1
                   Union
                     Select Operator
                       expressions:
@@ -1009,6 +1029,7 @@ STAGE PLANS:
                             type: string
                             expr: _col1
                             type: string
+                      outputColumnNames: _col0, _col1
                       Reduce Output Operator
                         key expressions:
                               expr: _col0
@@ -1036,7 +1057,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 query: SELECT unioninput.*
 FROM (
   FROM src select src.key, src.value WHERE src.key < 100
@@ -1045,7 +1065,7 @@ FROM (
 ) unioninput
 CLUSTER BY unioninput.key
 Input: default/src
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1573169134/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1313522351/10000
 0	val_0
 0	val_0
 0	val_0

@@ -85,6 +85,7 @@ public class groupByDesc implements java.io.Serializable {
     this.keys = keys;
   }
   
+  @explain(displayName="outputColumnNames")
   public java.util.ArrayList<java.lang.String> getOutputColumnNames() {
     return outputColumnNames;
   }

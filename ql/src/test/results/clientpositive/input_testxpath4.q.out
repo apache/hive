@@ -26,6 +26,7 @@ STAGE PLANS:
                       type: string
                       expr: lintstring.myint
                       type: array<int>
+                outputColumnNames: _col0, _col1
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
@@ -44,7 +45,7 @@ WHERE src_thrift.mstringstring['key_9'] IS NOT NULL
       OR lintstring.myint IS NOT NULL
       OR lintstring IS NOT NULL
 Input: default/src_thrift
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/691052389/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/533384116/10000
 NULL	[0]
 NULL	[1]
 NULL	[4]
@@ -87,6 +88,7 @@ STAGE PLANS:
                         type: string
                         expr: lintstring.myint
                         type: array<int>
+                  outputColumnNames: _col0, _col1
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
@@ -105,7 +107,7 @@ WHERE src_thrift.mstringstring['key_9'] IS NOT NULL
       OR lintstring.myint IS NOT NULL
       OR lintstring IS NOT NULL
 Input: default/src_thrift
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/390073057/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1269187205/10000
 NULL	[0]
 NULL	[1]
 NULL	[4]

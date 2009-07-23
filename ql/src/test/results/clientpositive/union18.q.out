@@ -37,6 +37,7 @@ STAGE PLANS:
                 aggregations:
                       expr: count(1)
                 mode: hash
+                outputColumnNames: _col0
                 Reduce Output Operator
                   sort order: 
                   tag: -1
@@ -48,12 +49,14 @@ STAGE PLANS:
           aggregations:
                 expr: count(VALUE._col0)
           mode: mergepartial
+          outputColumnNames: _col0
           Select Operator
             expressions:
                   expr: 'tst1'
                   type: string
                   expr: UDFToString(_col0)
                   type: string
+            outputColumnNames: _col0, _col1
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -64,7 +67,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1677640228/10004 
+        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1650219158/10004 
           Union
             Select Operator
               expressions:
@@ -72,6 +75,7 @@ STAGE PLANS:
                     type: string
                     expr: _col1
                     type: string
+              outputColumnNames: _col0, _col1
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
@@ -88,6 +92,7 @@ STAGE PLANS:
                     type: string
                     expr: _col1
                     type: string
+              outputColumnNames: _col0, _col1, _col2
               File Output Operator
                 compressed: false
                 GlobalTableId: 2
@@ -96,7 +101,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: dest2
-        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1677640228/10007 
+        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1650219158/10007 
           Union
             Select Operator
               expressions:
@@ -104,6 +109,7 @@ STAGE PLANS:
                     type: string
                     expr: _col1
                     type: string
+              outputColumnNames: _col0, _col1
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
@@ -120,6 +126,7 @@ STAGE PLANS:
                     type: string
                     expr: _col1
                     type: string
+              outputColumnNames: _col0, _col1, _col2
               File Output Operator
                 compressed: false
                 GlobalTableId: 2
@@ -135,10 +142,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1791034081/10000
+                destination: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1809064941/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1677640228/10005 
+              file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1650219158/10005 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -177,10 +184,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1791034081/10002
+                destination: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1809064941/10002
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1677640228/10006 
+              file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1650219158/10006 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -225,6 +232,7 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
@@ -243,7 +251,7 @@ Output: default/dest1
 Output: default/dest2
 query: SELECT DEST1.* FROM DEST1 SORT BY DEST1.key, DEST1.value
 Input: default/dest1
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/481629855/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/83349738/10000
 0	val_0
 0	val_0
 0	val_0
@@ -747,7 +755,7 @@ Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/48162985
 tst1	500
 query: SELECT DEST2.* FROM DEST2 SORT BY DEST2.key, DEST2.val1, DEST2.val2
 Input: default/dest2
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1239038760/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/225770887/10000
 0	val_0	val_0
 0	val_0	val_0
 0	val_0	val_0

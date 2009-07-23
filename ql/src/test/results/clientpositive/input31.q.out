@@ -22,6 +22,7 @@ STAGE PLANS:
                 aggregations:
                       expr: count(1)
                 mode: hash
+                outputColumnNames: _col0
                 Reduce Output Operator
                   sort order: 
                   tag: -1
@@ -33,14 +34,17 @@ STAGE PLANS:
           aggregations:
                 expr: count(VALUE._col0)
           mode: mergepartial
+          outputColumnNames: _col0
           Select Operator
             expressions:
                   expr: _col0
                   type: bigint
+            outputColumnNames: _col0
             Select Operator
               expressions:
                     expr: UDFToInteger(_col0)
                     type: int
+              outputColumnNames: _col0
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
@@ -67,7 +71,7 @@ Input: default/srcbucket
 Output: default/tst_dest31
 query: select * from tst_dest31
 Input: default/tst_dest31
-Output: file:/Users/rmurthy/workspace/hive/build/ql/tmp/1005816917/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1184857393/10000
 493
 query: drop table tst_dest31
 query: drop table dest31

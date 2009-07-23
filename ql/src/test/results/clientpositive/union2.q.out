@@ -21,12 +21,14 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   Group By Operator
                     aggregations:
                           expr: count(1)
                     mode: hash
+                    outputColumnNames: _col0
                     Reduce Output Operator
                       sort order: 
                       tag: -1
@@ -40,12 +42,14 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Union
                 Select Operator
                   Group By Operator
                     aggregations:
                           expr: count(1)
                     mode: hash
+                    outputColumnNames: _col0
                     Reduce Output Operator
                       sort order: 
                       tag: -1
@@ -57,10 +61,12 @@ STAGE PLANS:
           aggregations:
                 expr: count(VALUE._col0)
           mode: mergepartial
+          outputColumnNames: _col0
           Select Operator
             expressions:
                   expr: _col0
                   type: bigint
+            outputColumnNames: _col0
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -76,5 +82,5 @@ STAGE PLANS:
 query: select count(1) FROM (select s1.key as key, s1.value as value from src s1 UNION  ALL  
                       select s2.key as key, s2.value as value from src s2) unionsrc
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/332757438/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/2117179272/10000
 1000

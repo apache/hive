@@ -60,6 +60,7 @@ public class selectDesc implements Serializable {
     this.colList=colList;
   }
   
+  @explain(displayName="outputColumnNames")
   public java.util.ArrayList<java.lang.String> getOutputColumnNames() {
     return outputColumnNames;
   }

@@ -39,6 +39,7 @@ STAGE PLANS:
                         type: int
                         expr: d
                         type: string
+                  outputColumnNames: _col0, _col1, _col2
                   Limit
                     Reduce Output Operator
                       sort order: 
@@ -63,7 +64,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1576345941/10002 
+        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1648055539/10002 
           Union
             Select Operator
               expressions:
@@ -73,13 +74,14 @@ STAGE PLANS:
                     type: int
                     expr: _col2
                     type: string
+              outputColumnNames: _col0, _col1, _col2
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1576345941/10003 
+        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1648055539/10003 
           Union
             Select Operator
               expressions:
@@ -89,6 +91,7 @@ STAGE PLANS:
                     type: int
                     expr: _col2
                     type: string
+              outputColumnNames: _col0, _col1, _col2
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
@@ -116,6 +119,7 @@ STAGE PLANS:
                         type: int
                         expr: d
                         type: string
+                  outputColumnNames: _col0, _col1, _col2
                   Limit
                     Reduce Output Operator
                       sort order: 
@@ -149,5 +153,5 @@ query: select * from (
 ) subq
 Input: default/tst/d=2009-01-01
 Input: default/tst/d=2009-02-02
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1172948551/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/297483633/10000
 query: drop table tst

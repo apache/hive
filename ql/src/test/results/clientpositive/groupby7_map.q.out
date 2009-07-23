@@ -24,6 +24,7 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: key, value
               Group By Operator
                 aggregations:
                       expr: sum(substr(value, 5))
@@ -31,6 +32,7 @@ STAGE PLANS:
                       expr: key
                       type: string
                 mode: hash
+                outputColumnNames: _col0, _col1
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -49,6 +51,7 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: key, value
               Group By Operator
                 aggregations:
                       expr: sum(substr(value, 5))
@@ -56,6 +59,7 @@ STAGE PLANS:
                       expr: key
                       type: string
                 mode: hash
+                outputColumnNames: _col0, _col1
                 File Output Operator
                   compressed: true
                   GlobalTableId: 0
@@ -70,18 +74,21 @@ STAGE PLANS:
                 expr: KEY._col0
                 type: string
           mode: mergepartial
+          outputColumnNames: _col0, _col1
           Select Operator
             expressions:
                   expr: _col0
                   type: string
                   expr: _col1
                   type: double
+            outputColumnNames: _col0, _col1
             Select Operator
               expressions:
                     expr: UDFToInteger(_col0)
                     type: int
                     expr: _col1
                     type: double
+              outputColumnNames: _col0, _col1
               File Output Operator
                 compressed: true
                 GlobalTableId: 1
@@ -104,7 +111,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/183709519/10004 
+        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/279658140/10004 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -125,18 +132,21 @@ STAGE PLANS:
                 expr: KEY._col0
                 type: string
           mode: mergepartial
+          outputColumnNames: _col0, _col1
           Select Operator
             expressions:
                   expr: _col0
                   type: string
                   expr: _col1
                   type: double
+            outputColumnNames: _col0, _col1
             Select Operator
               expressions:
                     expr: UDFToInteger(_col0)
                     type: int
                     expr: _col1
                     type: double
+              outputColumnNames: _col0, _col1
               File Output Operator
                 compressed: true
                 GlobalTableId: 2
@@ -165,7 +175,7 @@ Output: default/dest1
 Output: default/dest2
 query: SELECT DEST1.* FROM DEST1
 Input: default/dest1
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1600502847/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/191972107/10000
 0	0.0
 10	10.0
 100	200.0
@@ -477,7 +487,7 @@ Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/16005028
 98	196.0
 query: SELECT DEST2.* FROM DEST2
 Input: default/dest2
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1252175276/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1027947003/10000
 0	0.0
 10	10.0
 100	200.0

@@ -21,10 +21,12 @@ STAGE PLANS:
               expressions:
                     expr: key
                     type: string
+              outputColumnNames: _col2
               Select Operator
                 expressions:
                       expr: _col2
                       type: string
+                outputColumnNames: _col0
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -54,7 +56,7 @@ FROM (SELECT INPUT4.*, INPUT4.KEY as KEY2
       FROM INPUT4) a
 ORDER BY KEY2 LIMIT 10
 Input: default/input4
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1252571176/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/945658600/10000
 0
 0
 0

@@ -49,10 +49,12 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0}
             1 
+          outputColumnNames: _col0
           Select Operator
             expressions:
                   expr: CASE (_col0) WHEN ('1') THEN (2) WHEN ('3') THEN (4) ELSE (5) END
                   type: int
+            outputColumnNames: _col0
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -63,7 +65,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/881693184/10002 
+        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/413650018/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -97,7 +99,7 @@ FROM src a JOIN src b
 ON a.key = b.key
 ORDER BY key LIMIT 10
 Input: default/src
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/1098336610/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1762314926/10000
 5
 5
 5

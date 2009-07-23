@@ -23,6 +23,7 @@ STAGE PLANS:
                     type: string
                     expr: mstringstring['key_2']
                     type: string
+              outputColumnNames: _col0, _col1, _col2
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
@@ -38,10 +39,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/njain/hive4/hive4/build/ql/tmp/1059065359/10000
+                destination: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/893288498/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/njain/hive4/hive4/build/ql/tmp/1356781088/10002 
+              file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/647174747/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -83,7 +84,7 @@ Input: default/src_thrift
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1951274528/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/761702774/10000
 0	0	NULL
 2	1	NULL
 4	8	value_2

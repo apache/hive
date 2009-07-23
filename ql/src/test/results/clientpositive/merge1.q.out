@@ -20,6 +20,7 @@ STAGE PLANS:
               expressions:
                     expr: key
                     type: string
+              outputColumnNames: key
               Group By Operator
                 aggregations:
                       expr: count(1)
@@ -27,6 +28,7 @@ STAGE PLANS:
                       expr: key
                       type: string
                 mode: hash
+                outputColumnNames: _col0, _col1
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -47,18 +49,21 @@ STAGE PLANS:
                 expr: KEY._col0
                 type: string
           mode: mergepartial
+          outputColumnNames: _col0, _col1
           Select Operator
             expressions:
                   expr: _col0
                   type: string
                   expr: _col1
                   type: bigint
+            outputColumnNames: _col0, _col1
             Select Operator
               expressions:
                     expr: UDFToInteger(_col0)
                     type: int
                     expr: UDFToInteger(_col1)
                     type: int
+              outputColumnNames: _col0, _col1
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
@@ -74,10 +79,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/njain/hive1/hive1/build/ql/tmp/261244854/10000
+                destination: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1006862555/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/njain/hive1/hive1/build/ql/tmp/856923111/10002 
+              file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1670149848/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -117,7 +122,7 @@ Input: default/src
 Output: default/dest1
 query: select * from dest1
 Input: default/dest1
-Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/710265692/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1463256320/10000
 0	3
 10	1
 100	2

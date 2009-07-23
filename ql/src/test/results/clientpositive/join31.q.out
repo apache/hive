@@ -28,6 +28,7 @@ STAGE PLANS:
               expressions:
                     expr: key
                     type: string
+              outputColumnNames: key
               Group By Operator
                 aggregations:
                       expr: count(1)
@@ -35,6 +36,7 @@ STAGE PLANS:
                       expr: key
                       type: string
                 mode: hash
+                outputColumnNames: _col0, _col1
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -55,10 +57,12 @@ STAGE PLANS:
                 expr: KEY._col0
                 type: string
           mode: mergepartial
+          outputColumnNames: _col0, _col1
           Select Operator
             expressions:
                   expr: _col0
                   type: string
+            outputColumnNames: _col0
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -69,7 +73,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/570921339/10002 
+        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/962829162/10002 
             Common Join Operator
               condition map:
                    Inner Join 0 to 1
@@ -79,6 +83,7 @@ STAGE PLANS:
               keys:
                 0 
                 1 
+              outputColumnNames: _col0
               Position of Big Table: 1
               File Output Operator
                 compressed: false
@@ -89,11 +94,11 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
-            file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/570921339/10004 
+            file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/962829162/10004 
               Fetch Operator
                 limit: -1
           Alias -> Map Local Operator Tree:
-            file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/570921339/10004 
+            file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/962829162/10004 
                 Common Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -103,6 +108,7 @@ STAGE PLANS:
                   keys:
                     0 
                     1 
+                  outputColumnNames: _col0
                   Position of Big Table: 1
                   File Output Operator
                     compressed: false
@@ -114,15 +120,17 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/570921339/10003 
+        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/962829162/10003 
           Select Operator
             expressions:
                   expr: _col0
                   type: string
+            outputColumnNames: _col0
             Select Operator
               expressions:
                     expr: _col0
                     type: string
+              outputColumnNames: _col0
               Group By Operator
                 aggregations:
                       expr: count(1)
@@ -130,6 +138,7 @@ STAGE PLANS:
                       expr: _col0
                       type: string
                 mode: hash
+                outputColumnNames: _col0, _col1
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -150,18 +159,21 @@ STAGE PLANS:
                 expr: KEY._col0
                 type: string
           mode: mergepartial
+          outputColumnNames: _col0, _col1
           Select Operator
             expressions:
                   expr: _col0
                   type: string
                   expr: _col1
                   type: bigint
+            outputColumnNames: _col0, _col1
             Select Operator
               expressions:
                     expr: _col0
                     type: string
                     expr: UDFToInteger(_col1)
                     type: int
+              outputColumnNames: _col0, _col1
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
@@ -189,6 +201,7 @@ STAGE PLANS:
               expressions:
                     expr: key
                     type: string
+              outputColumnNames: key
               Group By Operator
                 aggregations:
                       expr: count(1)
@@ -196,6 +209,7 @@ STAGE PLANS:
                       expr: key
                       type: string
                 mode: hash
+                outputColumnNames: _col0, _col1
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -216,10 +230,12 @@ STAGE PLANS:
                 expr: KEY._col0
                 type: string
           mode: mergepartial
+          outputColumnNames: _col0, _col1
           Select Operator
             expressions:
                   expr: _col0
                   type: string
+            outputColumnNames: _col0
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -238,7 +254,7 @@ Input: default/src1
 Output: default/dest_j1
 query: select * from dest_j1 x order by x.key
 Input: default/dest_j1
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/944474467/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1509412937/10000
 128	1
 146	1
 150	1

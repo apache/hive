@@ -30,6 +30,7 @@ STAGE PLANS:
               keys:
                 0 
                 1 
+              outputColumnNames: _col0
               Position of Big Table: 1
               File Output Operator
                 compressed: false
@@ -54,6 +55,7 @@ STAGE PLANS:
                   keys:
                     0 
                     1 
+                  outputColumnNames: _col0
                   Position of Big Table: 1
                   File Output Operator
                     compressed: false
@@ -65,15 +67,17 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/tmp/1238929189/10002 
+        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1376088811/10002 
           Select Operator
             expressions:
                   expr: _col0
                   type: string
+            outputColumnNames: _col0
             Select Operator
               expressions:
                     expr: _col0
                     type: string
+              outputColumnNames: _col0
               Common Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -83,6 +87,7 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
+                outputColumnNames: _col0, _col5
                 Position of Big Table: 0
                 Select Operator
                   expressions:
@@ -90,12 +95,14 @@ STAGE PLANS:
                         type: string
                         expr: _col5
                         type: string
+                  outputColumnNames: _col0, _col5
                   Select Operator
                     expressions:
                           expr: _col0
                           type: string
                           expr: _col5
                           type: string
+                    outputColumnNames: _col0, _col1
                     File Output Operator
                       compressed: false
                       GlobalTableId: 1
@@ -133,6 +140,7 @@ STAGE PLANS:
                         keys:
                           0 
                           1 
+                        outputColumnNames: _col0, _col5
                         Position of Big Table: 0
                         Select Operator
                           expressions:
@@ -140,12 +148,14 @@ STAGE PLANS:
                                 type: string
                                 expr: _col5
                                 type: string
+                          outputColumnNames: _col0, _col5
                           Select Operator
                             expressions:
                                   expr: _col0
                                   type: string
                                   expr: _col5
                                   type: string
+                            outputColumnNames: _col0, _col1
                             File Output Operator
                               compressed: false
                               GlobalTableId: 1
@@ -161,10 +171,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/tmp/2043029458/10000
+                destination: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/826602054/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/tmp/1238929189/10003 
+              file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1376088811/10003 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -197,7 +207,6 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: dest_j1
 
-
 query: INSERT OVERWRITE TABLE dest_j1 
 SELECT /*+ MAPJOIN(z) */ subq.key1, z.value
 FROM
@@ -210,7 +219,7 @@ Input: default/srcpart/ds=2008-04-08/hr=11
 Output: default/dest_j1
 query: select * from dest_j1 x order by x.key
 Input: default/dest_j1
-Output: file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/tmp/981515436/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/2099739143/10000
 128	val_128
 128	val_128
 128	val_128

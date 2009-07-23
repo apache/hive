@@ -23,6 +23,7 @@ STAGE PLANS:
                     type: int
                     expr: ascii('!')
                     type: int
+              outputColumnNames: _col0, _col1, _col2
               Limit
                 File Output Operator
                   compressed: false
@@ -42,5 +43,5 @@ query: SELECT
   ascii('!')
 FROM src LIMIT 1
 Input: default/src
-Output: file:/data/users/emil/hive1/hive1/build/ql/tmp/1218831407/10000
+Output: file:/data/users/njain/hive_commit1/hive_commit1/.ptest_0/build/ql/tmp/1477274804/10000
 70	0	33

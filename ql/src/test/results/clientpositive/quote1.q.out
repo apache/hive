@@ -29,12 +29,14 @@ STAGE PLANS:
                         type: string
                         expr: value
                         type: string
+                  outputColumnNames: _col0, _col1
                   Select Operator
                     expressions:
                           expr: UDFToInteger(_col0)
                           type: int
                           expr: _col1
                           type: string
+                    outputColumnNames: _col0, _col1
                     File Output Operator
                       compressed: false
                       GlobalTableId: 1
@@ -50,10 +52,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/657063000/10000
+                destination: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/801828487/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/pchakka/workspace/oshive/build/ql/tmp/547720568/10002 
+              file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1251238086/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -119,6 +121,7 @@ STAGE PLANS:
                         type: string
                         expr: table
                         type: string
+                  outputColumnNames: _col0, _col1, _col2
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
@@ -137,7 +140,7 @@ Input: default/src
 Output: default/dest1/table=2008-04-08
 query: SELECT `int`.`location`, `int`.`type`, `int`.`table` FROM dest1 `int` WHERE `int`.`table` = '2008-04-08'
 Input: default/dest1/table=2008-04-08
-Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1782208476/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1856384847/10000
 238	val_238	2008-04-08
 255	val_255	2008-04-08
 278	val_278	2008-04-08

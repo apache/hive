@@ -26,6 +26,7 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: _col0, _col1
               Reduce Output Operator
                 key expressions:
                       expr: _col0
@@ -47,6 +48,7 @@ STAGE PLANS:
                 expressions:
                       expr: key
                       type: string
+                outputColumnNames: _col0
                 Filter Operator
                   predicate:
                       expr: (UDFToDouble(_col0) < UDFToDouble(100))
@@ -72,6 +74,7 @@ STAGE PLANS:
                 expressions:
                       expr: key
                       type: string
+                outputColumnNames: _col0
                 Filter Operator
                   predicate:
                       expr: (UDFToDouble(_col0) < UDFToDouble(80))
@@ -94,12 +97,14 @@ STAGE PLANS:
             0 {VALUE._col0}
             1 {VALUE._col1}
             2 
+          outputColumnNames: _col0, _col3
           Select Operator
             expressions:
                   expr: _col0
                   type: string
                   expr: _col3
                   type: string
+            outputColumnNames: _col0, _col1
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -122,7 +127,7 @@ JOIN
 (SELECT src.key as c5, src.value as c6 from src) src3
 ON src1.c1 = src3.c5 AND src3.c5 < 80
 Input: default/src
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1217946262/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/23536302/10000
 0	val_0
 0	val_0
 0	val_0

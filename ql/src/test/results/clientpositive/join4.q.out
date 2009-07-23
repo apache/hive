@@ -39,6 +39,7 @@ STAGE PLANS:
                         type: string
                         expr: value
                         type: string
+                  outputColumnNames: _col0, _col1
                   Reduce Output Operator
                     key expressions:
                           expr: _col0
@@ -68,6 +69,7 @@ STAGE PLANS:
                         type: string
                         expr: value
                         type: string
+                  outputColumnNames: _col0, _col1
                   Reduce Output Operator
                     key expressions:
                           expr: _col0
@@ -89,6 +91,7 @@ STAGE PLANS:
           condition expressions:
             0 {VALUE._col0} {VALUE._col1}
             1 {VALUE._col0} {VALUE._col1}
+          outputColumnNames: _col0, _col1, _col2, _col3
           Select Operator
             expressions:
                   expr: _col0
@@ -99,6 +102,7 @@ STAGE PLANS:
                   type: string
                   expr: _col3
                   type: string
+            outputColumnNames: _col0, _col1, _col2, _col3
             Select Operator
               expressions:
                     expr: _col0
@@ -109,6 +113,7 @@ STAGE PLANS:
                     type: string
                     expr: _col3
                     type: string
+              outputColumnNames: _col0, _col1, _col2, _col3
               Select Operator
                 expressions:
                       expr: UDFToInteger(_col0)
@@ -119,6 +124,7 @@ STAGE PLANS:
                       type: int
                       expr: _col3
                       type: string
+                outputColumnNames: _col0, _col1, _col2, _col3
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
@@ -156,7 +162,7 @@ Input: default/src
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/1249751241/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/2073874945/10000
 11	val_11	NULL	NULL
 12	val_12	NULL	NULL
 12	val_12	NULL	NULL

@@ -18,6 +18,7 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+              outputColumnNames: key, value
               Group By Operator
                 aggregations:
                       expr: sum(substr(value, 5))
@@ -25,6 +26,7 @@ STAGE PLANS:
                       expr: key
                       type: string
                 mode: hash
+                outputColumnNames: _col0, _col1
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -45,12 +47,14 @@ STAGE PLANS:
                 expr: KEY._col0
                 type: string
           mode: mergepartial
+          outputColumnNames: _col0, _col1
           Select Operator
             expressions:
                   expr: _col0
                   type: string
                   expr: _col1
                   type: double
+            outputColumnNames: _col0, _col1
             Limit
               File Output Operator
                 compressed: false
@@ -66,7 +70,7 @@ STAGE PLANS:
 
 query: SELECT src.key, sum(substr(src.value,5)) FROM src GROUP BY src.key LIMIT 5
 Input: default/src
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/116834924/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/209868765/10000
 0	0.0
 10	10.0
 100	200.0

@@ -26,6 +26,7 @@ STAGE PLANS:
                         type: string
                         expr: value
                         type: string
+                  outputColumnNames: _col0, _col1
                   Limit
                     File Output Operator
                       compressed: false
@@ -41,7 +42,7 @@ STAGE PLANS:
 
 query: SELECT x.* FROM SRC x WHERE x.key < 300 LIMIT 5
 Input: default/src
-Output: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/455953501/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/689430698/10000
 238	val_238
 86	val_86
 27	val_27

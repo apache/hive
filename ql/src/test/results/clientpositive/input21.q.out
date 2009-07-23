@@ -24,6 +24,7 @@ STAGE PLANS:
                     type: string
                     expr: d
                     type: string
+              outputColumnNames: _col0, _col1, _col2, _col3
               Reduce Output Operator
                 key expressions:
                       expr: _col3
@@ -58,7 +59,7 @@ STAGE PLANS:
 
 query: SELECT * FROM src_null DISTRIBUTE BY c SORT BY d
 Input: default/src_null
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/828690607/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/125046373/10000
 1.0	1	same	0
 1.0	1	same	1
 1.0	1	same	2

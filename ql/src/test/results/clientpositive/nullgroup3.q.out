@@ -21,6 +21,7 @@ STAGE PLANS:
                 aggregations:
                       expr: count(1)
                 mode: hash
+                outputColumnNames: _col0
                 Reduce Output Operator
                   sort order: 
                   tag: -1
@@ -32,10 +33,12 @@ STAGE PLANS:
           aggregations:
                 expr: count(VALUE._col0)
           mode: mergepartial
+          outputColumnNames: _col0
           Select Operator
             expressions:
                   expr: _col0
                   type: bigint
+            outputColumnNames: _col0
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -51,7 +54,7 @@ STAGE PLANS:
 query: select count(1) from tstparttbl
 Input: default/tstparttbl/ds=2008-04-08
 Input: default/tstparttbl/ds=2008-04-09
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/869080729/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/672327853/10000
 500
 query: DROP TABLE tstparttbl2
 query: CREATE TABLE tstparttbl2(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
@@ -76,6 +79,7 @@ STAGE PLANS:
                 aggregations:
                       expr: count(1)
                 mode: hash
+                outputColumnNames: _col0
                 Reduce Output Operator
                   sort order: 
                   tag: -1
@@ -87,10 +91,12 @@ STAGE PLANS:
           aggregations:
                 expr: count(VALUE._col0)
           mode: mergepartial
+          outputColumnNames: _col0
           Select Operator
             expressions:
                   expr: _col0
                   type: bigint
+            outputColumnNames: _col0
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -106,7 +112,7 @@ STAGE PLANS:
 query: select count(1) from tstparttbl2
 Input: default/tstparttbl2/ds=2008-04-08
 Input: default/tstparttbl2/ds=2008-04-09
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/317850076/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1422188471/10000
 0
 query: DROP TABLE tstparttbl
 query: CREATE TABLE tstparttbl(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
@@ -131,6 +137,7 @@ STAGE PLANS:
                 aggregations:
                       expr: count(1)
                 mode: hash
+                outputColumnNames: _col0
                 Reduce Output Operator
                   sort order: 
                   tag: -1
@@ -142,10 +149,12 @@ STAGE PLANS:
           aggregations:
                 expr: count(VALUE._col0)
           mode: mergepartial
+          outputColumnNames: _col0
           Select Operator
             expressions:
                   expr: _col0
                   type: bigint
+            outputColumnNames: _col0
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -161,7 +170,7 @@ STAGE PLANS:
 query: select count(1) from tstparttbl
 Input: default/tstparttbl/ds=2008-04-08
 Input: default/tstparttbl/ds=2008-04-09
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/1944930089/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/159191500/10000
 500
 query: DROP TABLE tstparttbl2
 query: CREATE TABLE tstparttbl2(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
@@ -186,6 +195,7 @@ STAGE PLANS:
                 aggregations:
                       expr: count(1)
                 mode: hash
+                outputColumnNames: _col0
                 Reduce Output Operator
                   sort order: 
                   tag: -1
@@ -197,10 +207,12 @@ STAGE PLANS:
           aggregations:
                 expr: count(VALUE._col0)
           mode: mergepartial
+          outputColumnNames: _col0
           Select Operator
             expressions:
                   expr: _col0
                   type: bigint
+            outputColumnNames: _col0
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -216,7 +228,7 @@ STAGE PLANS:
 query: select count(1) from tstparttbl2
 Input: default/tstparttbl2/ds=2008-04-08
 Input: default/tstparttbl2/ds=2008-04-09
-Output: file:/Users/char/Documents/workspace/Hive-460/build/ql/tmp/768347306/10000
+Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/409275423/10000
 0
 query: DROP TABLE tstparttbl
 query: DROP TABLE tstparttbl2

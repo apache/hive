@@ -34,6 +34,7 @@ STAGE PLANS:
                         type: string
                         expr: value
                         type: string
+                  outputColumnNames: _col0, _col1
                   Union
                     Select Operator
                       expressions:
@@ -41,6 +42,7 @@ STAGE PLANS:
                             type: string
                             expr: _col1
                             type: string
+                      outputColumnNames: _col0, _col1
                       File Output Operator
                         compressed: false
                         GlobalTableId: 1
@@ -62,6 +64,7 @@ STAGE PLANS:
                         type: string
                         expr: value
                         type: string
+                  outputColumnNames: _col0, _col1
                   Union
                     Select Operator
                       expressions:
@@ -69,6 +72,7 @@ STAGE PLANS:
                             type: string
                             expr: _col1
                             type: string
+                      outputColumnNames: _col0, _col1
                       File Output Operator
                         compressed: false
                         GlobalTableId: 1
@@ -82,10 +86,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/pchakka/workspace/oshive/build/ql/tmp/888465041/10000
+                destination: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/246006693/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/pchakka/workspace/oshive/build/ql/tmp/976024110/10001 
+              file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/248467415/10001 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
