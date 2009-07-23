@@ -1,0 +1,10 @@
+query: SELECT cos(null)
+FROM src LIMIT 1
+Input: default/src
+Output: file:/home/kmangla/hive/build/ql/tmp/1815431857/10000
+NULL
+query: SELECT cos(0.98), cos(1.57), cos(-0.5)
+FROM src LIMIT 1
+Input: default/src
+Output: file:/home/kmangla/hive/build/ql/tmp/1350046602/10000
+0.5570225467662173	7.963267107332633E-4	0.8775825618903728

@@ -89,6 +89,8 @@ Trunk - Unreleased
 
     HIVE-639. create contrib directory (Zheng Shao via namit)
 
+    HIVE-674. add UDFs sin, cos, asin, acos (Karan Mangla via namit)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 

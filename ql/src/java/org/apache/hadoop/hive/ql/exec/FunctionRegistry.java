@@ -65,6 +65,10 @@ public class FunctionRegistry {
 
     registerUDF("ln", UDFLn.class, OperatorType.PREFIX, false);
     registerUDF("log2", UDFLog2.class, OperatorType.PREFIX, false);
+    registerUDF("sin",UDFSin.class, OperatorType.PREFIX, false);
+    registerUDF("asin",UDFAsin.class, OperatorType.PREFIX, false);
+    registerUDF("cos",UDFCos.class, OperatorType.PREFIX, false);
+    registerUDF("acos",UDFAcos.class, OperatorType.PREFIX, false);
     registerUDF("log10", UDFLog10.class, OperatorType.PREFIX, false);
     registerUDF("log", UDFLog.class, OperatorType.PREFIX, false);
     registerUDF("exp", UDFExp.class, OperatorType.PREFIX, false);
