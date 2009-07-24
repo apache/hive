@@ -363,6 +363,8 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     if (state == State.CLOSE) 
       return;
 
+    LOG.info(id + " forwarded " + cntr + " rows");
+
     try {
       logStats();
       if(childOperators == null)
@@ -403,6 +405,10 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   transient protected Operator<? extends Serializable>[] childOperatorsArray = null;
   transient protected int[] childOperatorsTag; 
 
+  // counters for debugging
+  transient private long cntr = 0;
+  transient private long nextCntr = 1;
+
    /**
    * Replace one child with another at the same position. The parent of the child is not changed
    * @param child     the old child
@@ -441,8 +447,24 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     parentOperators.set(parentIndex, newParent);
   }
 
-  protected void forward(Object row, ObjectInspector rowInspector) throws HiveException {
+  private long getNextCntr(long cntr) {
+    // A very simple counter to keep track of number of rows processed by an operator. It dumps
+    // every 1 million times, and quickly before that
+    if (cntr >= 1000000)
+      return cntr + 1000000;
     
+    return 10 * cntr;
+  }
+
+  protected void forward(Object row, ObjectInspector rowInspector) throws HiveException {
+    if (LOG.isInfoEnabled()) {
+      cntr++;
+      if (cntr == nextCntr) {
+        LOG.info(id + " forwarding " + cntr + " rows");
+        nextCntr = getNextCntr(cntr);
+      }
+    }
+
     // For debugging purposes:
     // System.out.println("" + this.getClass() + ": " + SerDeUtils.getJSONString(row, rowInspector));
     // System.out.println("" + this.getClass() + ">> " + ObjectInspectorUtils.getObjectInspectorName(rowInspector));

@@ -156,6 +156,8 @@ Trunk - Unreleased
 
     HIVE-652. Turn off auto-merge for insert local. (Namit Jain via zshao)
 
+    HIVE-677. Operators to show number of rows forwarded. (Namit Jain via zshao)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).
