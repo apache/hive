@@ -93,6 +93,8 @@ Trunk - Unreleased
 
     HIVE-668. add UDFs abs, ascii, repeat, lpad, rpad, space, substring (Emil Ibrishimov via namit)
 
+    HIVE-167. add regex serde(Zheng Shao via namit)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 
