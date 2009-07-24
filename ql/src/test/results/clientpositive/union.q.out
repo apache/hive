@@ -86,10 +86,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/246006693/10000
+                destination: file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_1/build/ql/tmp/516261269/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/248467415/10001 
+              file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_1/build/ql/tmp/1480105708/10001 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -97,9 +97,9 @@ STAGE PLANS:
                           type: double
                     tag: -1
                     value expressions:
-                          expr: unioninput.key
+                          expr: _col0
                           type: string
-                          expr: unioninput.value
+                          expr: _col1
                           type: string
             Reduce Operator Tree:
               Extract

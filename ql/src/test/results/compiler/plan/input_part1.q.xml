@@ -77,7 +77,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/emil/hive1/hive1/build/ql/test/data/warehouse/srcpart</string> 
+            <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/srcpart</string> 
            </void> 
           </object> 
          </void> 
@@ -113,7 +113,7 @@
                         <void property="conf"> 
                          <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                           <void property="dirName"> 
-                           <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/1463835112/10001</string> 
+                           <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/tmp/1116969381/10001</string> 
                           </void> 
                           <void property="tableInfo"> 
                            <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -130,7 +130,7 @@
                              <object class="java.util.Properties"> 
                               <void method="put"> 
                                <string>columns</string> 
-                               <string>srcpart.key,srcpart.value,srcpart.hr,srcpart.ds</string> 
+                               <string>_col0,_col1,_col2,_col3</string> 
                               </void> 
                               <void method="put"> 
                                <string>serialization.format</string> 
@@ -160,7 +160,7 @@
                             <void method="add"> 
                              <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                               <void property="internalName"> 
-                               <string>srcpart.key</string> 
+                               <string>_col0</string> 
                               </void> 
                               <void property="type"> 
                                <object id="PrimitiveTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
@@ -174,7 +174,7 @@
                             <void method="add"> 
                              <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                               <void property="internalName"> 
-                               <string>srcpart.value</string> 
+                               <string>_col1</string> 
                               </void> 
                               <void property="type"> 
                                <object idref="PrimitiveTypeInfo0"/> 
@@ -184,7 +184,7 @@
                             <void method="add"> 
                              <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                               <void property="internalName"> 
-                               <string>srcpart.hr</string> 
+                               <string>_col2</string> 
                               </void> 
                               <void property="type"> 
                                <object idref="PrimitiveTypeInfo0"/> 
@@ -194,7 +194,7 @@
                             <void method="add"> 
                              <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                               <void property="internalName"> 
-                               <string>srcpart.ds</string> 
+                               <string>_col3</string> 
                               </void> 
                               <void property="type"> 
                                <object idref="PrimitiveTypeInfo0"/> 
@@ -943,7 +943,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/emil/hive1/hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12</string> 
+       <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>srcpart</string> 
@@ -955,7 +955,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/emil/hive1/hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12</string> 
+       <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap0"/> 

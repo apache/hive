@@ -77,7 +77,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/emil/hive1/hive1/build/ql/test/data/warehouse/srcpart</string> 
+            <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/srcpart</string> 
            </void> 
           </object> 
          </void> 
@@ -113,7 +113,7 @@
                         <void property="conf"> 
                          <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                           <void property="dirName"> 
-                           <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/1396844085/10001</string> 
+                           <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/tmp/1155441569/10001</string> 
                           </void> 
                           <void property="tableInfo"> 
                            <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -130,7 +130,7 @@
                              <object class="java.util.Properties"> 
                               <void method="put"> 
                                <string>columns</string> 
-                               <string>s.key,s.value,s.ds,s.hr</string> 
+                               <string>_col0,_col1,_col2,_col3</string> 
                               </void> 
                               <void method="put"> 
                                <string>serialization.format</string> 
@@ -160,7 +160,7 @@
                             <void method="add"> 
                              <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                               <void property="internalName"> 
-                               <string>s.key</string> 
+                               <string>_col0</string> 
                               </void> 
                               <void property="type"> 
                                <object id="PrimitiveTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
@@ -174,7 +174,7 @@
                             <void method="add"> 
                              <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                               <void property="internalName"> 
-                               <string>s.value</string> 
+                               <string>_col1</string> 
                               </void> 
                               <void property="type"> 
                                <object idref="PrimitiveTypeInfo0"/> 
@@ -184,7 +184,7 @@
                             <void method="add"> 
                              <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                               <void property="internalName"> 
-                               <string>s.ds</string> 
+                               <string>_col2</string> 
                               </void> 
                               <void property="type"> 
                                <object idref="PrimitiveTypeInfo0"/> 
@@ -194,7 +194,7 @@
                             <void method="add"> 
                              <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                               <void property="internalName"> 
-                               <string>s.hr</string> 
+                               <string>_col3</string> 
                               </void> 
                               <void property="type"> 
                                <object idref="PrimitiveTypeInfo0"/> 
@@ -761,7 +761,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/emil/hive1/hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11</string> 
+       <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>s</string> 
@@ -773,7 +773,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/emil/hive1/hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11</string> 
+       <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap0"/> 

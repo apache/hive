@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 @explain(displayName="Partition")
-public class partitionDesc implements Serializable {
+public class partitionDesc implements Serializable, Cloneable {
   private static final long serialVersionUID = 1L;
   private tableDesc table;
   private java.util.LinkedHashMap<String, String> partSpec;
@@ -47,5 +47,9 @@ public class partitionDesc implements Serializable {
   }
   public void setPartSpec(final java.util.LinkedHashMap<String, String> partSpec) {
     this.partSpec=partSpec;
+  }
+  
+  public partitionDesc clone() throws CloneNotSupportedException {
+    return (partitionDesc)super.clone();
   }
 }

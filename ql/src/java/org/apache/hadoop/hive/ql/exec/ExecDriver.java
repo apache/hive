@@ -643,82 +643,117 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
     return w.getReducer() != null;
   }
 
-  private void addInputPaths(JobConf job, mapredWork work, String hiveScratchDir) throws Exception {
-    int numEmptyPaths = 0;
+  private boolean isEmptyPath(JobConf job, String path) throws Exception {
+    Path dirPath = new Path(path);
+    FileSystem inpFs = dirPath.getFileSystem(job);
+
+    if (inpFs.exists(dirPath)) {
+      FileStatus[] fStats = inpFs.listStatus(dirPath);
+      if (fStats.length > 0)
+        return false;
+    }
+    return true;
+  }
+
+  /**
+   * Handle a empty/null path for a given alias
+   */
+  private int addInputPath(String path, JobConf job, mapredWork work, String hiveScratchDir, int numEmptyPaths, boolean isEmptyPath,
+                           String alias) 
+    throws Exception {
+    // either the directory does not exist or it is empty
+    assert path == null || isEmptyPath;
+
+    // The input file does not exist, replace it by a empty file
+    Class<? extends HiveOutputFormat> outFileFormat = null;
+ 
+    if (isEmptyPath) 
+      outFileFormat = work.getPathToPartitionInfo().get(path).getTableDesc().getOutputFileFormatClass();
+    else
+      outFileFormat = (Class<? extends HiveOutputFormat>)(HiveSequenceFileOutputFormat.class);
     
-    // If the query references non-existent partitions
-    if (work.getPathToAliases().isEmpty() &&
-        !work.getAliasToWork().isEmpty()) {
-      String oneAlias = (String)work.getAliasToWork().keySet().toArray()[0];
-      
-      Class<? extends HiveOutputFormat> outFileFormat = (Class<? extends HiveOutputFormat>)
-          job.getClassByName("org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat");
-      
-      String newFile = hiveScratchDir + File.separator + (++numEmptyPaths);
-      Path newPath = new Path(newFile);
-      LOG.info("Changed input file to " + newPath.toString());
-      
-      // add a dummy work
-      Map<String, ArrayList<String>> pathToAliases = work.getPathToAliases();
-      ArrayList<String> newList = new ArrayList<String>();
-      newList.add(oneAlias);
-      pathToAliases.put(newPath.toString(), newList);
-      
-      Map<String,partitionDesc> pathToPartitionInfo = work.getPathToPartitionInfo();
-      partitionDesc pDesc = work.getAliasToPartnInfo().get(oneAlias);
-      pathToPartitionInfo.put(newPath.toString(), pDesc);
-      
-      RecordWriter recWriter = outFileFormat.newInstance().getHiveRecordWriter(job, newPath, Text.class, false, new Properties(), null);
-      recWriter.close(false);
-      FileInputFormat.addInputPaths(job, newPath.toString());
+    String newFile = hiveScratchDir + File.separator + (++numEmptyPaths);
+    Path newPath = new Path(newFile);
+    LOG.info("Changed input file to " + newPath.toString());
+    
+    // toggle the work
+    LinkedHashMap<String, ArrayList<String>> pathToAliases = work.getPathToAliases();
+    if (isEmptyPath) {
+      assert path != null;
+      pathToAliases.put(newPath.toUri().toString(), pathToAliases.get(path));
+      pathToAliases.remove(path);
     }
     else {
-      List<String> emptyPaths = new ArrayList<String>();
-
-      for (String onefile : work.getPathToAliases().keySet()) {
-        LOG.info("Adding input file " + onefile);
-        
-        // If the input file does not exist, replace it by a empty file
-        Path dirPath = new Path(onefile);
-        FileSystem inpFs = dirPath.getFileSystem(job);
-        boolean emptyInput = true;
-        
-        if (inpFs.exists(dirPath)) {
-          FileStatus[] fStats = inpFs.listStatus(dirPath);
-          if (fStats.length > 0)
-            emptyInput = false;
-        }
-        
-        if (emptyInput)
-          emptyPaths.add(onefile);
-        else
-          FileInputFormat.addInputPaths(job, onefile);
-      }
-
-      for (String emptyFile : emptyPaths) {
-        Class<? extends HiveOutputFormat> outFileFormat = work.getPathToPartitionInfo().get(emptyFile).getTableDesc().getOutputFileFormatClass();
-        
-        String newFile = hiveScratchDir + File.separator + (++numEmptyPaths);
-        Path newPath = new Path(newFile);
-        LOG.info("Changed input file to " + newPath.toString());
-        
-        // toggle the work
-        LinkedHashMap<String, ArrayList<String>> pathToAliases = work.getPathToAliases();
-        pathToAliases.put(newPath.toUri().toString(), pathToAliases.get(emptyFile));
-        pathToAliases.remove(emptyFile);
-        work.setPathToAliases(pathToAliases);
-        
-        LinkedHashMap<String,partitionDesc> pathToPartitionInfo = work.getPathToPartitionInfo();
-        pathToPartitionInfo.put(newPath.toUri().toString(), pathToPartitionInfo.get(emptyFile));
-        pathToPartitionInfo.remove(emptyFile);
-        work.setPathToPartitionInfo(pathToPartitionInfo);
-        
-        String onefile = newPath.toString();
-        RecordWriter recWriter = outFileFormat.newInstance().getHiveRecordWriter(job, newPath, Text.class, false, new Properties(), null);
-        recWriter.close(false);
-        FileInputFormat.addInputPaths(job, onefile);
-      }
+      assert path == null;
+      ArrayList<String> newList = new ArrayList<String>();
+      newList.add(alias);
+      pathToAliases.put(newPath.toUri().toString(), newList);
     }
 
+    work.setPathToAliases(pathToAliases);
+    
+    LinkedHashMap<String,partitionDesc> pathToPartitionInfo = work.getPathToPartitionInfo();
+    if (isEmptyPath) {
+      pathToPartitionInfo.put(newPath.toUri().toString(), pathToPartitionInfo.get(path));
+      pathToPartitionInfo.remove(path);
+    }
+    else {
+      partitionDesc pDesc = work.getAliasToPartnInfo().get(alias).clone();
+      Class<? extends InputFormat>      inputFormat = SequenceFileInputFormat.class;
+      pDesc.getTableDesc().setInputFileFormatClass(inputFormat);
+      pathToPartitionInfo.put(newPath.toUri().toString(), pDesc);
+    }
+    work.setPathToPartitionInfo(pathToPartitionInfo);
+    
+    String onefile = newPath.toString();
+    RecordWriter recWriter = outFileFormat.newInstance().getHiveRecordWriter(job, newPath, Text.class, false, new Properties(), null);
+    recWriter.close(false);
+    FileInputFormat.addInputPaths(job, onefile);
+    return numEmptyPaths;
+  }
+
+  private void addInputPaths(JobConf job, mapredWork work, String hiveScratchDir) throws Exception {
+    int numEmptyPaths = 0;
+
+    List<String> pathsProcessed = new ArrayList<String>();
+
+    // AliasToWork contains all the aliases
+    for (String oneAlias : work.getAliasToWork().keySet()) {
+      LOG.info("Processing alias " + oneAlias);
+      List<String> emptyPaths     = new ArrayList<String>();
+
+      // The alias may not have any path 
+      String path = null;
+      for (String onefile : work.getPathToAliases().keySet()) {
+        List<String> aliases = work.getPathToAliases().get(onefile);
+        if (aliases.contains(oneAlias)) {
+          path = onefile;
+      
+          // Multiple aliases can point to the same path - it should be processed only once
+          if (pathsProcessed.contains(path))
+            continue;
+          pathsProcessed.add(path);
+
+          LOG.info("Adding input file " + path);
+
+          if (!isEmptyPath(job, path))
+            FileInputFormat.addInputPaths(job, path);
+          else
+            emptyPaths.add(path);
+        }
+      }
+
+      // Create a empty file if the directory is empty
+      for (String emptyPath : emptyPaths)
+        numEmptyPaths = addInputPath(emptyPath, job, work, hiveScratchDir, numEmptyPaths, true, oneAlias);
+
+      // If the query references non-existent partitions
+      // We need to add a empty file, it is not acceptable to change the operator tree
+      // Consider the query:
+      //  select * from (select count(1) from T union all select count(1) from T2) x;
+      // If T is empty and T2 contains 100 rows, the user expects: 0, 100 (2 rows)
+      if (path == null)
+        numEmptyPaths = addInputPath(null, job, work, hiveScratchDir, numEmptyPaths, false, oneAlias);
+    }
   }
 }

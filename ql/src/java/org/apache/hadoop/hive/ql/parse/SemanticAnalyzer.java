@@ -2495,10 +2495,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
           
           first = false;
-          if (nm[0] == null) 
-            cols = cols.concat(nm[1]);
-          else
-            cols = cols.concat(nm[0] + "." + nm[1]);
+          cols = cols.concat(colInfo.getInternalName());
           colTypes = colTypes.concat(colInfo.getType().getTypeName());
         }
 
@@ -2523,6 +2520,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     input = genConversionSelectOperator(dest, qb, input, table_desc);
     inputRR = opParseCtx.get(input).getRR();
+
     Vector<ColumnInfo> vecCol = new Vector<ColumnInfo>();
 
     try {
@@ -2547,6 +2545,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     LOG.debug("Created FileSink Plan for clause: " + dest + "dest_path: "
         + dest_path + " row schema: "
         + inputRR.toString());
+    
     return output;
   }
 
@@ -4223,7 +4222,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Do any sample pruning
     genSamplePruners(qb);
     LOG.info("Completed sample pruning");
-
+    
     // At this point we have the complete operator tree
     // from which we want to find the reduce operator
     genMapRedTasks(qb);

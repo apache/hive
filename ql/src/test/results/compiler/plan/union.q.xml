@@ -27,13 +27,13 @@
                <string>string:string</string> 
               </void> 
               <void property="columns"> 
-               <string>unioninput.key,unioninput.value</string> 
+               <string>_col0,_col1</string> 
               </void> 
               <void property="isDfsDir"> 
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/367242206/10000</string> 
+               <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/tmp/363277583/10000</string> 
               </void> 
               <void property="targetDir"> 
                <string>../build/ql/test/data/warehouse/union.out</string> 
@@ -64,10 +64,10 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/1447354557/10001</string> 
+               <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/tmp/1576819664/10001</string> 
               </void> 
               <void property="targetDir"> 
-               <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/367242206/10000</string> 
+               <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/tmp/363277583/10000</string> 
               </void> 
              </object> 
             </void> 
@@ -85,7 +85,7 @@
             <void property="aliasToWork"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/1447354557/10001</string> 
+               <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/tmp/1576819664/10001</string> 
                <object id="TableScanOperator0" class="org.apache.hadoop.hive.ql.exec.TableScanOperator"> 
                 <void property="childOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -179,7 +179,7 @@
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
                           <void property="column"> 
-                           <string>unioninput.key</string> 
+                           <string>_col0</string> 
                           </void> 
                           <void property="typeInfo"> 
                            <object id="PrimitiveTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
@@ -193,7 +193,7 @@
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
                           <void property="column"> 
-                           <string>unioninput.value</string> 
+                           <string>_col1</string> 
                           </void> 
                           <void property="typeInfo"> 
                            <object idref="PrimitiveTypeInfo1"/> 
@@ -247,7 +247,7 @@
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                           <void property="internalName"> 
-                           <string>unioninput.key</string> 
+                           <string>_col0</string> 
                           </void> 
                           <void property="type"> 
                            <object idref="PrimitiveTypeInfo1"/> 
@@ -257,7 +257,7 @@
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
                           <void property="internalName"> 
-                           <string>unioninput.value</string> 
+                           <string>_col1</string> 
                           </void> 
                           <void property="type"> 
                            <object idref="PrimitiveTypeInfo1"/> 
@@ -288,10 +288,10 @@
             <void property="pathToAliases"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/1447354557/10001</string> 
+               <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/tmp/1576819664/10001</string> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/1447354557/10001</string> 
+                 <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/tmp/1576819664/10001</string> 
                 </void> 
                </object> 
               </void> 
@@ -300,7 +300,7 @@
             <void property="pathToPartitionInfo"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/1447354557/10001</string> 
+               <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/tmp/1576819664/10001</string> 
                <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
                 <void property="tableDesc"> 
                  <object id="tableDesc2" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -317,7 +317,7 @@
                    <object class="java.util.Properties"> 
                     <void method="put"> 
                      <string>columns</string> 
-                     <string>unioninput.key,unioninput.value</string> 
+                     <string>_col0,_col1</string> 
                     </void> 
                     <void method="put"> 
                      <string>serialization.format</string> 
@@ -344,7 +344,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/367242206/10000</string> 
+                     <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/tmp/363277583/10000</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -361,7 +361,7 @@
                        <object class="java.util.Properties"> 
                         <void method="put"> 
                          <string>columns</string> 
-                         <string>unioninput.key,unioninput.value</string> 
+                         <string>_col0,_col1</string> 
                         </void> 
                         <void method="put"> 
                          <string>serialization.format</string> 
@@ -461,7 +461,7 @@
       <void property="resolverCtx"> 
        <object class="org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles$ConditionalResolverMergeFilesCtx"> 
         <void property="dir"> 
-         <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/1447354557/10001</string> 
+         <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/tmp/1576819664/10001</string> 
         </void> 
         <void property="listTasks"> 
          <object idref="ArrayList0"/> 
@@ -549,7 +549,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/emil/hive1/hive1/build/ql/test/data/warehouse/src</string> 
+            <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/src</string> 
            </void> 
           </object> 
          </void> 
@@ -617,7 +617,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/emil/hive1/hive1/build/ql/test/data/warehouse/src</string> 
+            <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/src</string> 
            </void> 
           </object> 
          </void> 
@@ -664,7 +664,7 @@
                                    <int>1</int> 
                                   </void> 
                                   <void property="dirName"> 
-                                   <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/1447354557/10001</string> 
+                                   <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/tmp/1576819664/10001</string> 
                                   </void> 
                                   <void property="tableInfo"> 
                                    <object idref="tableDesc2"/> 
@@ -1560,7 +1560,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/emil/hive1/hive1/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>null-subquery1:unioninput-subquery1:src</string> 
@@ -1575,7 +1575,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/emil/hive1/hive1/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap0"/> 
