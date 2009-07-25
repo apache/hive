@@ -19,6 +19,9 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.*;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryUsage;
 import java.net.URLClassLoader;
 import java.util.*;
 
@@ -55,7 +58,10 @@ public class ExecReducer extends MapReduceBase implements Reducer {
 
   private static String [] fieldNames;
   public static final Log l4j = LogFactory.getLog("ExecReducer");
-
+  
+  // used to log memory usage periodically
+  private MemoryMXBean memoryMXBean;
+  
   // TODO: move to DynamicSerDe when it's ready
   private Deserializer inputKeyDeserializer;
   // Input value serde needs to be an array to support different SerDe 
@@ -73,6 +79,11 @@ public class ExecReducer extends MapReduceBase implements Reducer {
     ObjectInspector[] rowObjectInspector = new ObjectInspector[Byte.MAX_VALUE];
     ObjectInspector[] valueObjectInspector = new ObjectInspector[Byte.MAX_VALUE];
     ObjectInspector keyObjectInspector;
+
+    // Allocate the bean at the beginning - 
+    memoryMXBean = ManagementFactory.getMemoryMXBean();
+    l4j.info("maximum memory = " + memoryMXBean.getHeapMemoryUsage().getMax());
+    
     try {
       l4j.info("conf classpath = " 
           + Arrays.asList(((URLClassLoader)job.getClassLoader()).getURLs()));
@@ -185,10 +196,13 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         row.add(valueObject[tag.get()]);
         // The tag is not used any more, we should remove it.
         row.add(tag);
-        cntr++;
-        if (cntr == nextCntr) {
-          l4j.info("ExecReducer: processing " + cntr + " rows");
-          nextCntr = getNextCntr(cntr);
+        if (l4j.isInfoEnabled()) {
+          cntr++;
+          if (cntr == nextCntr) {
+            long used_memory = memoryMXBean.getHeapMemoryUsage().getUsed();
+            l4j.info("ExecReducer: processing " + cntr + " rows: used memory = " + used_memory);
+            nextCntr = getNextCntr(cntr);
+          }
         }
         reducer.process(row, tag.get());
       }
@@ -226,7 +240,10 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         l4j.trace("End Group");
         reducer.endGroup();
       }
-      l4j.info("ExecReducer: processed " + cntr + " rows");
+      if (l4j.isInfoEnabled()) {
+        l4j.info("ExecReducer: processed " + cntr + " rows: used memory = " + memoryMXBean.getHeapMemoryUsage().getUsed());
+      }
+      
       reducer.close(abort);
       reportStats rps = new reportStats (rp);
       reducer.preorderMap(rps);

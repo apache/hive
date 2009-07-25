@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
 import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -50,7 +52,16 @@ public class ExecMapper extends MapReduceBase implements Mapper {
   public static final Log l4j = LogFactory.getLog("ExecMapper");
   private static boolean done;
 
+  // used to log memory usage periodically
+  private MemoryMXBean memoryMXBean;
+  private long numRows = 0;
+  private long nextCntr = 1;
+  
   public void configure(JobConf job) {
+    // Allocate the bean at the beginning - 
+    memoryMXBean = ManagementFactory.getMemoryMXBean();
+    l4j.info("maximum memory = " + memoryMXBean.getHeapMemoryUsage().getMax());
+      
     try {
       l4j.info("conf classpath = " 
           + Arrays.asList(((URLClassLoader)job.getClassLoader()).getURLs()));
@@ -114,7 +125,9 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       if (fetchOperators != null) {
         try {
           mapredLocalWork localWork = mo.getConf().getMapLocalWork();
+          int fetchOpNum = 0;
           for (Map.Entry<String, FetchOperator> entry : fetchOperators.entrySet()) {
+            int fetchOpRows = 0;
             String alias = entry.getKey();
             FetchOperator fetchOp = entry.getValue();
             Operator<? extends Serializable> forwardOp = localWork.getAliasToWork().get(alias); 
@@ -124,8 +137,12 @@ public class ExecMapper extends MapReduceBase implements Mapper {
               if (row == null) {
                 break;
               }
-
+              fetchOpRows++;
               forwardOp.process(row.o, 0);
+            }
+            
+            if (l4j.isInfoEnabled()) {
+              l4j.info("fetch " + fetchOpNum++ + " processed " + fetchOpRows + " used mem: " + memoryMXBean.getHeapMemoryUsage().getUsed());
             }
           }
         } catch (Throwable e) {
@@ -143,9 +160,18 @@ public class ExecMapper extends MapReduceBase implements Mapper {
     try {
       if (mo.getDone())
         done = true;
-      else
+      else {
         // Since there is no concept of a group, we don't invoke startGroup/endGroup for a mapper
         mo.process((Writable)value);
+        if (l4j.isInfoEnabled()) {
+          numRows++;
+          if (numRows == nextCntr) {
+            long used_memory = memoryMXBean.getHeapMemoryUsage().getUsed();
+            l4j.info("ExecMapper: processing " + numRows + " rows: used memory = " + used_memory);
+            nextCntr = getNextCntr(numRows);
+          }
+        }
+      }
     } catch (Throwable e) {
       abort = true;
       e.printStackTrace();
@@ -156,6 +182,15 @@ public class ExecMapper extends MapReduceBase implements Mapper {
         throw new RuntimeException (e.getMessage(), e);
       }
     }
+  }
+
+  private long getNextCntr(long cntr) {
+    // A very simple counter to keep track of number of rows processed by the reducer. It dumps
+    // every 1 million times, and quickly before that
+    if (cntr >= 1000000)
+      return cntr + 1000000;
+    
+    return 10 * cntr;
   }
 
   public void close() {
@@ -175,7 +210,12 @@ public class ExecMapper extends MapReduceBase implements Mapper {
           forwardOp.close(abort);
         }
       }
-
+      
+      if (l4j.isInfoEnabled()) {
+        long used_memory = memoryMXBean.getHeapMemoryUsage().getUsed();
+        l4j.info("ExecMapper: processed " + numRows + " rows: used memory = " + used_memory);
+      }
+      
       reportStats rps = new reportStats (rp);
       mo.preorderMap(rps);
       return;

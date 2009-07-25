@@ -37,6 +37,7 @@ STAGE PLANS:
                         type: string
                         expr: value
                         type: string
+                  outputColumnNames: _col0, _col1
                   Union
                     Select Operator
                       expressions:
@@ -44,6 +45,7 @@ STAGE PLANS:
                             type: string
                             expr: _col1
                             type: string
+                      outputColumnNames: _col0, _col1
                       File Output Operator
                         compressed: false
                         GlobalTableId: 0
@@ -65,6 +67,7 @@ STAGE PLANS:
                         type: string
                         expr: value
                         type: string
+                  outputColumnNames: _col0, _col1
                   Union
                     Select Operator
                       expressions:
@@ -72,6 +75,7 @@ STAGE PLANS:
                             type: string
                             expr: _col1
                             type: string
+                      outputColumnNames: _col0, _col1
                       File Output Operator
                         compressed: false
                         GlobalTableId: 0
@@ -91,7 +95,7 @@ query: select u.* from
   select key, value from tstparttbl2 y where y.ds='2009-04-09'
 )u
 Input: default/tstparttbl2/ds=2009-04-09
-Output: file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/build/ql/tmp/910140009/10000
+Output: file:/data/users/zshao/tools/namit-trunk-apache-hive/build/ql/tmp/248088196/10000
 238	val_238
 86	val_86
 311	val_311

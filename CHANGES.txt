@@ -158,6 +158,8 @@ Trunk - Unreleased
 
     HIVE-677. Operators to show number of rows forwarded. (Namit Jain via zshao)
 
+    HIVE-689. Dump more memory stat periodically. (Namit Jain via zshao)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).
