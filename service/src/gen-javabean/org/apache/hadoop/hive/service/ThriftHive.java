@@ -32,6 +32,8 @@ public class ThriftHive {
 
     public org.apache.hadoop.hive.metastore.api.Schema getSchema() throws HiveServerException, TException;
 
+    public HiveClusterStatus getClusterStatus() throws HiveServerException, TException;
+
   }
 
   public static class Client extends org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Client implements Iface {
@@ -219,6 +221,41 @@ public class ThriftHive {
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "getSchema failed: unknown result");
     }
 
+    public HiveClusterStatus getClusterStatus() throws HiveServerException, TException
+    {
+      send_getClusterStatus();
+      return recv_getClusterStatus();
+    }
+
+    public void send_getClusterStatus() throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("getClusterStatus", TMessageType.CALL, seqid_));
+      getClusterStatus_args args = new getClusterStatus_args();
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public HiveClusterStatus recv_getClusterStatus() throws HiveServerException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      getClusterStatus_result result = new getClusterStatus_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.ex != null) {
+        throw result.ex;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "getClusterStatus failed: unknown result");
+    }
+
   }
   public static class Processor extends org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Processor implements TProcessor {
     private static final Logger LOGGER = Logger.getLogger(Processor.class.getName());
@@ -231,6 +268,7 @@ public class ThriftHive {
       processMap_.put("fetchN", new fetchN());
       processMap_.put("fetchAll", new fetchAll());
       processMap_.put("getSchema", new getSchema());
+      processMap_.put("getClusterStatus", new getClusterStatus());
     }
 
     private Iface iface_;
@@ -386,6 +424,34 @@ public class ThriftHive {
           return;
         }
         oprot.writeMessageBegin(new TMessage("getSchema", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class getClusterStatus implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        getClusterStatus_args args = new getClusterStatus_args();
+        args.read(iprot);
+        iprot.readMessageEnd();
+        getClusterStatus_result result = new getClusterStatus_result();
+        try {
+          result.success = iface_.getClusterStatus();
+        } catch (HiveServerException ex) {
+          result.ex = ex;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing getClusterStatus", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing getClusterStatus");
+          oprot.writeMessageBegin(new TMessage("getClusterStatus", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("getClusterStatus", TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -2385,6 +2451,379 @@ public class ThriftHive {
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder("getSchema_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("ex:");
+      if (this.ex == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ex);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class getClusterStatus_args implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("getClusterStatus_args");
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(getClusterStatus_args.class, metaDataMap);
+    }
+
+    public getClusterStatus_args() {
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public getClusterStatus_args(getClusterStatus_args other) {
+    }
+
+    @Override
+    public getClusterStatus_args clone() {
+      return new getClusterStatus_args(this);
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof getClusterStatus_args)
+        return this.equals((getClusterStatus_args)that);
+      return false;
+    }
+
+    public boolean equals(getClusterStatus_args that) {
+      if (that == null)
+        return false;
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("getClusterStatus_args(");
+      boolean first = true;
+
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class getClusterStatus_result implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("getClusterStatus_result");
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.STRUCT, (short)0);
+    private static final TField EX_FIELD_DESC = new TField("ex", TType.STRUCT, (short)1);
+
+    private HiveClusterStatus success;
+    public static final int SUCCESS = 0;
+    private HiveServerException ex;
+    public static final int EX = 1;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, HiveClusterStatus.class)));
+      put(EX, new FieldMetaData("ex", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(getClusterStatus_result.class, metaDataMap);
+    }
+
+    public getClusterStatus_result() {
+    }
+
+    public getClusterStatus_result(
+      HiveClusterStatus success,
+      HiveServerException ex)
+    {
+      this();
+      this.success = success;
+      this.ex = ex;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public getClusterStatus_result(getClusterStatus_result other) {
+      if (other.isSetSuccess()) {
+        this.success = new HiveClusterStatus(other.success);
+      }
+      if (other.isSetEx()) {
+        this.ex = new HiveServerException(other.ex);
+      }
+    }
+
+    @Override
+    public getClusterStatus_result clone() {
+      return new getClusterStatus_result(this);
+    }
+
+    public HiveClusterStatus getSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(HiveClusterStatus success) {
+      this.success = success;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    // Returns true if field success is set (has been asigned a value) and false otherwise
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public HiveServerException getEx() {
+      return this.ex;
+    }
+
+    public void setEx(HiveServerException ex) {
+      this.ex = ex;
+    }
+
+    public void unsetEx() {
+      this.ex = null;
+    }
+
+    // Returns true if field ex is set (has been asigned a value) and false otherwise
+    public boolean isSetEx() {
+      return this.ex != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((HiveClusterStatus)value);
+        }
+        break;
+
+      case EX:
+        if (value == null) {
+          unsetEx();
+        } else {
+          setEx((HiveServerException)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return getSuccess();
+
+      case EX:
+        return getEx();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return isSetSuccess();
+      case EX:
+        return isSetEx();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof getClusterStatus_result)
+        return this.equals((getClusterStatus_result)that);
+      return false;
+    }
+
+    public boolean equals(getClusterStatus_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_ex = true && this.isSetEx();
+      boolean that_present_ex = true && that.isSetEx();
+      if (this_present_ex || that_present_ex) {
+        if (!(this_present_ex && that_present_ex))
+          return false;
+        if (!this.ex.equals(that.ex))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case SUCCESS:
+            if (field.type == TType.STRUCT) {
+              this.success = new HiveClusterStatus();
+              this.success.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case EX:
+            if (field.type == TType.STRUCT) {
+              this.ex = new HiveServerException();
+              this.ex.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        this.success.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetEx()) {
+        oprot.writeFieldBegin(EX_FIELD_DESC);
+        this.ex.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("getClusterStatus_result(");
       boolean first = true;
 
       sb.append("success:");

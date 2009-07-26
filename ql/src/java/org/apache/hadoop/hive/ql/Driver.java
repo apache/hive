@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.ql.exec.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -48,6 +49,9 @@ import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.mapred.ClusterStatus;
+import org.apache.hadoop.mapred.JobClient;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.security.UserGroupInformation;
 
 import org.apache.commons.logging.Log;
@@ -86,6 +90,24 @@ public class Driver implements CommandProcessor {
     return jobs;
   }
 
+  /**
+   * Return the status information about the Map-Reduce cluster
+   */
+  public ClusterStatus getClusterStatus() throws Exception {
+    ClusterStatus cs;
+    try {
+      JobConf job = new JobConf(conf, ExecDriver.class);
+      JobClient jc = new JobClient(job);
+      cs = jc.getClusterStatus();
+    }
+    catch (Exception e) {
+      e.printStackTrace();
+      throw e;
+    }
+    LOG.info("Returning cluster status: " + cs.toString());
+    return cs;
+  }
+  
   /**
    * Return the Thrift DDL string of the result
    */

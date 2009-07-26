@@ -95,6 +95,9 @@ Trunk - Unreleased
 
     HIVE-167. add regex serde(Zheng Shao via namit)
 
+    HIVE-665. Get hadoop/mapreduce cluster status from hive server
+    (Eric Hwang via rmurthy)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 

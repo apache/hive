@@ -122,6 +122,21 @@ public class TestHiveServer extends TestCase {
     client.execute("drop table " + tableName);
   }
 
+  /**
+   * Test cluster status retrieval
+   */
+  public void testGetClusterStatus() throws Exception {
+    HiveClusterStatus clusterStatus = client.getClusterStatus();
+    assertNotNull(clusterStatus);
+    assertTrue(clusterStatus.getTaskTrackers() >= 0);
+    assertTrue(clusterStatus.getMapTasks() >= 0);
+    assertTrue(clusterStatus.getReduceTasks() >= 0);
+    assertTrue(clusterStatus.getMaxMapTasks() >= 0);
+    assertTrue(clusterStatus.getMaxReduceTasks() >= 0);
+    assertTrue(clusterStatus.getState() == JobTrackerState.INITIALIZING ||
+               clusterStatus.getState() == JobTrackerState.RUNNING);
+  }
+  
   /** 
    *
    */

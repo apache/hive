@@ -45,6 +45,8 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.*;
+import org.apache.hadoop.mapred.ClusterStatus;
+import org.apache.hadoop.mapred.JobTracker;
 
 /**
  * Thrift Hive Server Implementation
@@ -118,6 +120,45 @@ public class HiveServer extends ThriftHive {
     }
 
     /**
+     * Return the status information about the Map-Reduce cluster
+     */
+    public HiveClusterStatus getClusterStatus() throws HiveServerException, TException {
+      HiveClusterStatus hcs;
+      try {
+        ClusterStatus cs = driver.getClusterStatus();
+        JobTracker.State jbs = cs.getJobTrackerState();
+        
+        // Convert the ClusterStatus to its Thrift equivalent: HiveClusterStatus
+        int state;
+        switch (jbs) {
+          case INITIALIZING:
+            state = JobTrackerState.INITIALIZING;
+            break;
+          case RUNNING:
+            state = JobTrackerState.RUNNING;
+            break;
+          default:
+            String errorMsg = "Unrecognized JobTracker state: " + jbs.toString();
+            throw new Exception(errorMsg);
+        }
+        
+        hcs = new HiveClusterStatus(
+            cs.getTaskTrackers(),
+            cs.getMapTasks(),
+            cs.getReduceTasks(),
+            cs.getMaxMapTasks(),
+            cs.getMaxReduceTasks(),
+            state);
+      }
+      catch (Exception e) {
+        LOG.error(e.toString());
+        e.printStackTrace();
+        throw new HiveServerException("Unable to get cluster status: " + e.toString());
+      }
+      return hcs;
+    }
+    
+    /**
      * Return the schema of the query result
      */
     public Schema getSchema() throws HiveServerException, TException {
@@ -135,7 +176,7 @@ public class HiveServer extends ThriftHive {
         throw new HiveServerException("Unable to get schema: " + e.toString());
       }
     }
-
+    
     /** 
      * Fetches the next row in a query result set.
      * 

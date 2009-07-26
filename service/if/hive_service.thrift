@@ -29,6 +29,22 @@ include "metastore/if/hive_metastore.thrift"
 
 namespace java org.apache.hadoop.hive.service
 
+// Enumeration of JobTracker.State                                                                      
+enum JobTrackerState {                                                                   
+  INITIALIZING   = 1,           
+  RUNNING        = 2,                                                      
+}  
+
+// Map-Reduce cluster status information
+struct HiveClusterStatus {
+  1: i32              taskTrackers,
+  2: i32              mapTasks,
+  3: i32              reduceTasks,
+  4: i32              maxMapTasks,
+  5: i32              maxReduceTasks,
+  6: JobTrackerState  state,
+}
+
 exception HiveServerException {
   1: string message
 }
@@ -51,5 +67,8 @@ service ThriftHive extends hive_metastore.ThriftHiveMetastore {
 
   # Get the Thrift DDL string of the query result
   hive_metastore.Schema getSchema() throws(1:HiveServerException ex)
+  
+  # Get the status information about the Map-Reduce cluster
+  HiveClusterStatus getClusterStatus() throws(1:HiveServerException ex)
 
 }
