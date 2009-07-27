@@ -229,22 +229,25 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
                                    (HiveConf.getIntVar(hconf, HiveConf.ConfVars.SCRIPTERRORLIMIT)),
                                    "ErrorProcessor");
       
-      /* Timer that reports every 5 minutes to the jobtracker. This ensures that even if
-         the user script is not returning rows for greater than that duration, a progress
-         report is sent to the tracker so that the tracker does not think that the job 
-         is dead.
-      */
-      Integer exp_interval = null;
-      int exp_int;
-      exp_interval = Integer.decode(hconf.get("mapred.tasktracker.expiry.interval"));
-      if (exp_interval != null)
-        exp_int = exp_interval.intValue() / 2;
-      else
-        exp_int = 300000;
-
-      rpTimer = new Timer(true);
-      rpTimer.scheduleAtFixedRate(new ReporterTask(reporter), 0, exp_interval);
-
+      if (HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVESCRIPTAUTOPROGRESS)) {
+        /* Timer that reports every 5 minutes to the jobtracker. This ensures that even if
+           the user script is not returning rows for greater than that duration, a progress
+           report is sent to the tracker so that the tracker does not think that the job 
+           is dead.
+        */
+        Integer expInterval = Integer.decode(hconf.get("mapred.tasktracker.expiry.interval"));
+        int notificationInterval;
+        if (expInterval != null) {
+          notificationInterval = expInterval.intValue() / 2;
+        } else {
+          // 5 minutes
+          notificationInterval = 5 * 60 * 1000;
+        }
+  
+        rpTimer = new Timer(true);
+        rpTimer.scheduleAtFixedRate(new ReporterTask(reporter), 0, notificationInterval);
+      }
+      
       // initialize all children before starting the script
       initializeChildren(hconf);
       outThread.start();
@@ -339,21 +342,48 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
     }
   }
 
+  /**
+   * The processor for stderr stream.
+   * 
+   * TODO: In the future when we move to hadoop 0.18 and above, we should borrow the logic
+   * from HadoopStreaming: PipeMapRed.java MRErrorThread to support counters and status
+   * updates. 
+   */
   class ErrorStreamProcessor implements StreamProcessor {
     private long bytesCopied = 0;
     private long maxBytes;
 
+    private long lastReportTime;
+    
     public ErrorStreamProcessor (int maxBytes) {
       this.maxBytes = (long)maxBytes;
+      lastReportTime = 0;
     }
+    
     public void processLine(Text line) throws HiveException {
-      if((maxBytes < 0) || (bytesCopied < maxBytes)) {
-        System.err.println(line.toString());
+      
+      String stringLine = line.toString();
+      
+      // Report progress for each stderr line, but no more frequently than once per minute.
+      long now = System.currentTimeMillis();
+      // reporter is a member variable of the Operator class.
+      if (now - lastReportTime > 60 * 1000 && reporter != null) {
+        lastReportTime = now;
+        reporter.progress();
       }
+      
+      if((maxBytes < 0) || (bytesCopied < maxBytes)) {
+        System.err.println(stringLine);
+      }
+      if (bytesCopied < maxBytes && bytesCopied + line.getLength() >= maxBytes) {
+        System.err.println("Operator " + id + " " + getName()
+            + ": exceeding stderr limit of " + maxBytes + " bytes, will truncate stderr messages.");
+      }      
       bytesCopied += line.getLength();
     }
     public void close() {
     }
+    
   }
 
 

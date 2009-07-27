@@ -112,6 +112,7 @@ public class HiveConf extends Configuration {
     // for hive script operator
     HIVETABLENAME("hive.table.name", ""),
     HIVEPARTITIONNAME("hive.partition.name", ""),
+    HIVESCRIPTAUTOPROGRESS("hive.script.auto.progress", false),
     HIVEMAPREDMODE("hive.mapred.mode", "nonstrict"),
     HIVEALIAS("hive.alias", ""),
     HIVEMAPSIDEAGGREGATE("hive.map.aggr", "true"),

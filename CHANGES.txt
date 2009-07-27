@@ -424,6 +424,9 @@ Trunk - Unreleased
     HIVE-673. Bug in handling of null partitions.
     (Namit Jain via zshao)
 
+    HIVE-690. Fix script operator timeout bug
+    (Zheng Shao via namit)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES
