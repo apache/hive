@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.ql.plan.descTableDesc;
 import org.apache.hadoop.hive.ql.plan.dropTableDesc;
 import org.apache.hadoop.hive.ql.plan.showPartitionsDesc;
 import org.apache.hadoop.hive.ql.plan.showTablesDesc;
+import org.apache.hadoop.hive.ql.plan.showFunctionsDesc;
 import org.apache.hadoop.hive.ql.plan.alterTableDesc.alterTableTypes;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -116,6 +117,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     {
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeShowTables(ast);
+    } else if (ast.getToken().getType() == HiveParser.TOK_SHOWFUNCTIONS) {
+      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
+      analyzeShowFunctions(ast);
     } else if (ast.getToken().getType() == HiveParser.TOK_MSCK) {
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeMetastoreCheck(ast);    
@@ -569,6 +573,26 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     rootTasks.add(TaskFactory.get(new DDLWork(showTblsDesc), conf));
     setFetchTask(createFetchTask(showTblsDesc.getSchema()));
+  }
+
+  /**
+   * Add the task according to the parsed command tree.
+   * This is used for the CLI command "SHOW FUNCTIONS;".
+   * @param ast The parsed command tree.
+   * @throws SemanticException Parsin failed
+   */
+  private void analyzeShowFunctions(ASTNode ast)
+  throws SemanticException {
+    showFunctionsDesc showFuncsDesc;
+    if (ast.getChildCount() == 1) {
+      String funcNames = unescapeSQLString(ast.getChild(0).getText());
+      showFuncsDesc = new showFunctionsDesc(ctx.getResFile(), funcNames);
+    }
+    else {
+      showFuncsDesc = new showFunctionsDesc(ctx.getResFile());
+    }
+    rootTasks.add(TaskFactory.get(new DDLWork(showFuncsDesc), conf));
+    setFetchTask(createFetchTask(showFuncsDesc.getSchema()));
   }
 
   private void analyzeAlterTableRename(ASTNode ast) 

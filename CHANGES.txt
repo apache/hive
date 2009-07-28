@@ -98,6 +98,9 @@ Trunk - Unreleased
     HIVE-665. Get hadoop/mapreduce cluster status from hive server
     (Eric Hwang via rmurthy)
 
+    HIVE-580. add 'show functions {pattern}'
+    (Scott Chen via namit)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 

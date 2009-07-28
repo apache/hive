@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.Map.Entry;
 
@@ -44,6 +45,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.metadata.CheckResult;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -61,6 +63,7 @@ import org.apache.hadoop.hive.ql.plan.descTableDesc;
 import org.apache.hadoop.hive.ql.plan.dropTableDesc;
 import org.apache.hadoop.hive.ql.plan.showPartitionsDesc;
 import org.apache.hadoop.hive.ql.plan.showTablesDesc;
+import org.apache.hadoop.hive.ql.plan.showFunctionsDesc;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
@@ -133,6 +136,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       showTablesDesc showTbls = work.getShowTblsDesc();
       if (showTbls != null) {
         return showTables(db, showTbls);
+      }
+
+      showFunctionsDesc showFuncs = work.getShowFuncsDesc();
+      if (showFuncs != null) {
+        return showFunctions(showFuncs);
       }
 
       showPartitionsDesc showParts = work.getShowPartsDesc();
@@ -352,10 +360,53 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
       ((FSDataOutputStream)outStream).close();
     } catch (FileNotFoundException e) {
-      LOG.info("show table: " + StringUtils.stringifyException(e));
+      LOG.warn("show table: " + StringUtils.stringifyException(e));
       return 1;
     } catch (IOException e) {
-      LOG.info("show table: " + StringUtils.stringifyException(e));
+      LOG.warn("show table: " + StringUtils.stringifyException(e));
+      return 1;
+    } catch (Exception e) {
+      throw new HiveException(e.toString());
+    }
+    return 0;
+  }
+
+  /**
+   * Write a list of the user defined functions to a file.
+   * 
+   * @param showFuncs are the functions we're interested in.
+   * @return Returns 0 when execution succeeds and above 0 if it fails.
+   * @throws HiveException Throws this exception if an unexpected error occurs.
+   */
+  private int showFunctions(showFunctionsDesc showFuncs)
+      throws HiveException {
+    // get the tables for the desired pattenn - populate the output stream
+    Set<String> funcs = null;
+    if (showFuncs.getPattern() != null) {
+      LOG.info("pattern: " + showFuncs.getPattern());
+      funcs = FunctionRegistry.getFunctionNames(showFuncs.getPattern());
+      LOG.info("results : " + funcs.size());
+    } else
+      funcs = FunctionRegistry.getFunctionNames();
+
+    // write the results in the file
+    try {
+      FileSystem fs = showFuncs.getResFile().getFileSystem(conf);
+      DataOutput outStream = (DataOutput)fs.create(showFuncs.getResFile());
+      SortedSet<String> sortedFuncs = new TreeSet<String>(funcs);
+      Iterator<String> iterFuncs = sortedFuncs.iterator();
+
+      while (iterFuncs.hasNext()) {
+        // create a row per table name
+        outStream.writeBytes(iterFuncs.next());
+        outStream.write(terminator);
+      }
+      ((FSDataOutputStream)outStream).close();
+    } catch (FileNotFoundException e) {
+      LOG.warn("show function: " + StringUtils.stringifyException(e));
+      return 1;
+    } catch (IOException e) {
+      LOG.warn("show function: " + StringUtils.stringifyException(e));
       return 1;
     } catch (Exception e) {
       throw new HiveException(e.toString());

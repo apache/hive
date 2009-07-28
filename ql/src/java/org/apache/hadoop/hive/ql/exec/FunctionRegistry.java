@@ -25,8 +25,13 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.apache.hadoop.hive.ql.exec.FunctionInfo.OperatorType;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -48,9 +53,9 @@ public class FunctionRegistry {
   /**
    * The mapping from expression function names to expression classes.
    */
-  static HashMap<String, FunctionInfo> mFunctions;
+  static LinkedHashMap<String, FunctionInfo> mFunctions;
   static {
-    mFunctions = new HashMap<String, FunctionInfo>();
+    mFunctions = new LinkedHashMap<String, FunctionInfo>();
     registerUDF("concat", UDFConcat.class, OperatorType.PREFIX, false);
     registerUDF("substr", UDFSubstr.class, OperatorType.PREFIX, false);
     registerUDF("substring", UDFSubstr.class, OperatorType.PREFIX, false);
@@ -234,11 +239,43 @@ public class FunctionRegistry {
           + " which does not extends " + GenericUDF.class);
     }
   }
-  
+
   public static FunctionInfo getFunctionInfo(String functionName) {
     return mFunctions.get(functionName.toLowerCase());
   }
-  
+
+  /**
+   * Returns a set of registered function names.
+   * This is used for the CLI command "SHOW FUNCTIONS;"
+   * @return      set of strings contains function names
+   */
+  public static Set<String> getFunctionNames() {
+    return mFunctions.keySet();
+  }
+
+  /**
+   * Returns a set of registered function names.
+   * This is used for the CLI command "SHOW FUNCTIONS 'regular expression';"
+   * Returns an empty set when the regular expression is not valid.
+   * @param  funcPatternStr  regular expression of the intersted function names
+   * @return                 set of strings contains function names
+   */
+  public static Set<String> getFunctionNames(String funcPatternStr) {
+    TreeSet<String> funcNames = new TreeSet<String>();
+    Pattern funcPattern = null;
+    try {
+      funcPattern = Pattern.compile(funcPatternStr);
+    } catch (PatternSyntaxException e) {
+      return funcNames;
+    }
+    for (String funcName : mFunctions.keySet()) {
+      if (funcPattern.matcher(funcName).matches()) {
+        funcNames.add(funcName);
+      }
+    }
+    return funcNames;
+  }
+
   public static Class<? extends UDF> getUDFClass(String functionName) {
     LOG.debug("Looking up: " + functionName);
     FunctionInfo finfo = mFunctions.get(functionName.toLowerCase());
