@@ -430,6 +430,9 @@ Trunk - Unreleased
     HIVE-690. Fix script operator timeout bug
     (Zheng Shao via namit)
 
+    HIVE-697. GroupByOperator's initialization calls GenericUDAF.newAggregation before GenericUDAF.init
+    (Zheng Shao via namit)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

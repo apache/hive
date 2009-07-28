@@ -196,6 +196,18 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
       aggregationEvaluators[i] = agg.createGenericUDAFEvaluator();
     }
 
+    // init objectInspectors
+    int totalFields = keyFields.length + aggregationEvaluators.length;
+    objectInspectors = new ArrayList<ObjectInspector>(totalFields);
+    for(int i=0; i<keyFields.length; i++) {
+      objectInspectors.add(null);
+    }
+    for(int i=0; i<aggregationEvaluators.length; i++) {
+      ObjectInspector roi = aggregationEvaluators[i].init(
+          conf.getAggregators().get(i).getMode(), aggregationParameterObjectInspectors[i]);
+      objectInspectors.add(roi);
+    }
+    
     aggregationsParametersLastInvoke = new Object[conf.getAggregators().size()][];
     if (conf.getMode() != groupByDesc.Mode.HASH) {
       aggregations = newAggregations();
@@ -214,18 +226,6 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
       groupKeyIsNotReduceKey = conf.getGroupKeyNotReductionKey();
       if (groupKeyIsNotReduceKey)
         keysCurrentGroup = new HashSet<ArrayList<Object>>();
-    }
-
-    // init objectInspectors
-    int totalFields = keyFields.length + aggregationEvaluators.length;
-    objectInspectors = new ArrayList<ObjectInspector>(totalFields);
-    for(int i=0; i<keyFields.length; i++) {
-      objectInspectors.add(null);
-    }
-    for(int i=0; i<aggregationEvaluators.length; i++) {
-      ObjectInspector roi = aggregationEvaluators[i].init(
-          conf.getAggregators().get(i).getMode(), aggregationParameterObjectInspectors[i]);
-      objectInspectors.add(roi);
     }
 
     fieldNames = conf.getOutputColumnNames();
