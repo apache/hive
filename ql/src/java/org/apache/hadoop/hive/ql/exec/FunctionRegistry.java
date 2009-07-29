@@ -181,6 +181,15 @@ public class FunctionRegistry {
     registerGenericUDAF("sum", new GenericUDAFSum());
     registerGenericUDAF("count", new GenericUDAFCount());
     registerGenericUDAF("avg", new GenericUDAFAverage());
+    
+    registerGenericUDAF("std", new GenericUDAFStd());
+    registerGenericUDAF("stddev", new GenericUDAFStd());
+    registerGenericUDAF("stddev_pop", new GenericUDAFStd());
+    registerGenericUDAF("stddev_samp", new GenericUDAFStdSample());
+    registerGenericUDAF("variance", new GenericUDAFVariance());
+    registerGenericUDAF("var_pop", new GenericUDAFVariance());
+    registerGenericUDAF("var_samp", new GenericUDAFVarianceSample());
+    
     registerUDAF("max", UDAFMax.class);
     registerUDAF("min", UDAFMin.class);
     

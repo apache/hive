@@ -90,6 +90,10 @@ smallint
 space
 split
 sqrt
+std
+stddev
+stddev_pop
+stddev_samp
 string
 substr
 substring
@@ -100,6 +104,9 @@ trim
 ucase
 unix_timestamp
 upper
+var_pop
+var_samp
+variance
 when
 year
 |
@@ -131,6 +138,7 @@ size
 space
 to_date
 ucase
+variance
 query: SHOW FUNCTIONS 'log.*'
 log
 log10

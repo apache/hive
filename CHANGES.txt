@@ -106,6 +106,9 @@ Trunk - Unreleased
     HIVE-698. Add create temporary function for generic UDAF. 
     (Zheng Shao via namit)
 
+    HIVE-607. Add udafs for variance and standard deviation
+    (Emil Ibrishimov via namit)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 
