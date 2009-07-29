@@ -93,8 +93,6 @@ string
 substr
 substring
 sum
-test_max
-test_translate
 tinyint
 to_date
 trim
@@ -130,7 +128,6 @@ reverse
 rlike
 size
 space
-test_translate
 to_date
 ucase
 query: SHOW FUNCTIONS 'log.*'

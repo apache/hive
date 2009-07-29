@@ -17,5 +17,6 @@ Input: default/src
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/home/zhoumin/hive-trunk/build/ql/tmp/523260903/10000
+Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/208230949/10000
 7
+query: DROP TEMPORARY FUNCTION test_max

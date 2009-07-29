@@ -438,6 +438,10 @@ public class FunctionRegistry {
             new GenericUDAFBridge((UDAF)ReflectionUtils.newInstance(udafClass, null))));
   }
 
+  public static void unregisterUDF(String functionName) {
+    mFunctions.remove(functionName.toLowerCase());
+  }
+
   public static GenericUDAFResolver getGenericUDAFResolver(String functionName) {
     LOG.debug("Looking up GenericUDAF: " + functionName);
     FunctionInfo finfo = mFunctions.get(functionName.toLowerCase());

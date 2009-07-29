@@ -47,6 +47,7 @@ public class SemanticAnalyzerFactory {
       case HiveParser.TOK_SHOWPARTITIONS:
         return new DDLSemanticAnalyzer(conf);
       case HiveParser.TOK_CREATEFUNCTION: 
+      case HiveParser.TOK_DROPFUNCTION:
         return new FunctionSemanticAnalyzer(conf);
       default: return new SemanticAnalyzer(conf);
       }

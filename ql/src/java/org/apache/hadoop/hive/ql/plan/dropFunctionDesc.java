@@ -20,31 +20,23 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
-public class FunctionWork implements Serializable {
+@explain(displayName="Drop Function")
+public class dropFunctionDesc implements Serializable {
   private static final long serialVersionUID = 1L;
-  private createFunctionDesc  createFunctionDesc;
-  private dropFunctionDesc  dropFunctionDesc;
   
-  public FunctionWork(createFunctionDesc createFunctionDesc) {
-    this.createFunctionDesc = createFunctionDesc;
+  private String functionName;
+  
+  public dropFunctionDesc(String functionName) {
+    this.functionName = functionName;
   }
 
-  public FunctionWork(dropFunctionDesc dropFunctionDesc) {
-    this.dropFunctionDesc = dropFunctionDesc;
+  @explain(displayName="name")
+  public String getFunctionName() {
+    return functionName;
   }
 
-  public createFunctionDesc getCreateFunctionDesc() {
-    return createFunctionDesc;
-  }
-  public void setCreateFunctionDesc(createFunctionDesc createFunctionDesc) {
-    this.createFunctionDesc = createFunctionDesc;
-  }
-
-  public dropFunctionDesc getDropFunctionDesc() {
-    return dropFunctionDesc;
-  }
-  public void setDropFunctionDesc(dropFunctionDesc dropFunctionDesc) {
-    this.dropFunctionDesc = dropFunctionDesc;
+  public void setFunctionName(String functionName) {
+    this.functionName = functionName;
   }
   
 }

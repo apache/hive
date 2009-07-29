@@ -8,3 +8,5 @@ CREATE TABLE dest1(len INT);
 FROM src INSERT OVERWRITE TABLE dest1 SELECT testlength2(src.value);
 
 SELECT dest1.* FROM dest1;
+
+DROP TEMPORARY FUNCTION testlength2;

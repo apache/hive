@@ -118,6 +118,7 @@ TOK_TABSORTCOLNAMEASC;
 TOK_TABSORTCOLNAMEDESC;
 TOK_CHARSETLITERAL;
 TOK_CREATEFUNCTION;
+TOK_DROPFUNCTION;
 TOK_EXPLAIN;
 TOK_TABLESERIALIZER;
 TOK_TABLEPROPERTIES;
@@ -188,6 +189,7 @@ ddlStatement
     | showStatement
     | metastoreCheck
     | createFunctionStatement
+    | dropFunctionStatement
     ;
 
 ifNotExists
@@ -319,6 +321,13 @@ createFunctionStatement
 @after { msgs.pop(); }
     : KW_CREATE KW_TEMPORARY KW_FUNCTION Identifier KW_AS StringLiteral
     -> ^(TOK_CREATEFUNCTION Identifier StringLiteral)
+    ;
+
+dropFunctionStatement
+@init { msgs.push("drop temporary function statement"); }
+@after { msgs.pop(); }
+    : KW_DROP KW_TEMPORARY KW_FUNCTION Identifier
+    -> ^(TOK_DROPFUNCTION Identifier)
     ;
 
 showStmtIdentifier

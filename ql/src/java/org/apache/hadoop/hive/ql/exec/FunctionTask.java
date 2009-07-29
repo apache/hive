@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.ql.plan.FunctionWork;
 import org.apache.hadoop.hive.ql.plan.createFunctionDesc;
+import org.apache.hadoop.hive.ql.plan.dropFunctionDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo.OperatorType;
@@ -45,29 +46,43 @@ public class FunctionTask extends Task<FunctionWork> {
   public int execute() {
     createFunctionDesc createFunctionDesc = work.getCreateFunctionDesc();
     if (createFunctionDesc != null) {
-      try {
-        Class<?> udfClass = getUdfClass(createFunctionDesc);
-        if(UDF.class.isAssignableFrom(udfClass)) {
-          FunctionRegistry.registerUDF(createFunctionDesc.getFunctionName(), 
-                                       (Class<? extends UDF>) udfClass,
-                                       OperatorType.PREFIX, false);
-          return 0;
-        } else if(GenericUDF.class.isAssignableFrom(udfClass)) {
-          FunctionRegistry.registerGenericUDF(createFunctionDesc.getFunctionName(), 
-                                              (Class<? extends GenericUDF>) udfClass);
-          return 0;
-        } else if(UDAF.class.isAssignableFrom(udfClass)) {
-          FunctionRegistry.registerUDAF(createFunctionDesc.getFunctionName(),
-                                        (Class<? extends UDAF>) udfClass);
-          return 0;
-        } 
-        return 1;
-
-      } catch (ClassNotFoundException e) {
-        LOG.info("create function: " + StringUtils.stringifyException(e));
-        return 1;
-      }
+      return createFunction(createFunctionDesc);
     }
+
+    dropFunctionDesc dropFunctionDesc = work.getDropFunctionDesc();
+    if (dropFunctionDesc != null) {
+      return dropFunction(dropFunctionDesc);
+    }
+    return 0;
+  }
+
+  private int createFunction(createFunctionDesc createFunctionDesc) {
+    try {
+      Class<?> udfClass = getUdfClass(createFunctionDesc);
+      if(UDF.class.isAssignableFrom(udfClass)) {
+        FunctionRegistry.registerUDF(createFunctionDesc.getFunctionName(), 
+                                     (Class<? extends UDF>) udfClass,
+                                     OperatorType.PREFIX, false);
+        return 0;
+      } else if(GenericUDF.class.isAssignableFrom(udfClass)) {
+        FunctionRegistry.registerGenericUDF(createFunctionDesc.getFunctionName(), 
+                                            (Class<? extends GenericUDF>) udfClass);
+        return 0;
+      } else if(UDAF.class.isAssignableFrom(udfClass)) {
+        FunctionRegistry.registerUDAF(createFunctionDesc.getFunctionName(),
+                                      (Class<? extends UDAF>) udfClass);
+        return 0;
+      } 
+      return 1;
+
+    } catch (ClassNotFoundException e) {
+      LOG.info("create function: " + StringUtils.stringifyException(e));
+      return 1;
+    }
+  }
+
+  private int dropFunction(dropFunctionDesc dropFunctionDesc) {
+    FunctionRegistry.unregisterUDF(dropFunctionDesc.getFunctionName());
     return 0;
   }
 

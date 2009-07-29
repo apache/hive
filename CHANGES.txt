@@ -435,6 +435,9 @@ Trunk - Unreleased
     HIVE-697. GroupByOperator's initialization calls GenericUDAF.newAggregation before GenericUDAF.init
     (Zheng Shao via namit)
 
+    HIVE-700. Fix test error by adding "DROP FUNCTION".
+    (Min Zhou and Namit Jain via zshao)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

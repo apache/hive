@@ -17,3 +17,5 @@ SELECT
     test_translate('abc', 'a', 'ab');
 
 SELECT dest1.* FROM dest1 LIMIT 1;
+
+DROP TEMPORARY FUNCTION test_translate;

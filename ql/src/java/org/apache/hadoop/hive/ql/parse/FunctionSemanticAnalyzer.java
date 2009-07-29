@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.plan.FunctionWork;
 import org.apache.hadoop.hive.ql.plan.createFunctionDesc;
+import org.apache.hadoop.hive.ql.plan.dropFunctionDesc;
 
 public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
   private static final Log LOG =
@@ -35,10 +36,26 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
   
   public void analyzeInternal(ASTNode ast) throws SemanticException {
+    if (ast.getToken().getType() == HiveParser.TOK_CREATEFUNCTION)
+      analyzeCreateFunction(ast);
+    if (ast.getToken().getType() == HiveParser.TOK_DROPFUNCTION)
+      analyzeDropFunction(ast);
+
+    LOG.info("analyze done");
+  }
+  
+  private void analyzeCreateFunction(ASTNode ast) 
+      throws SemanticException {
     String functionName = ast.getChild(0).getText();
     String className = unescapeSQLString(ast.getChild(1).getText());
     createFunctionDesc desc = new createFunctionDesc(functionName, className);
     rootTasks.add(TaskFactory.get(new FunctionWork(desc), conf));
-    LOG.info("analyze done");
+  }
+  
+  private void analyzeDropFunction(ASTNode ast) 
+      throws SemanticException {
+    String functionName = ast.getChild(0).getText();
+    dropFunctionDesc desc = new dropFunctionDesc(functionName);
+    rootTasks.add(TaskFactory.get(new FunctionWork(desc), conf));
   }
 }
