@@ -101,6 +101,8 @@ Trunk - Unreleased
     HIVE-580. add 'show functions {pattern}'
     (Scott Chen via namit)
 
+    HIVE-656. Add a PMOD (POSITIVE MOD) function. (Scott Chen via zshao)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 
