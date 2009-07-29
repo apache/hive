@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FunctionWork;
 import org.apache.hadoop.hive.ql.plan.createFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.dropFunctionDesc;
@@ -62,20 +63,20 @@ public class FunctionTask extends Task<FunctionWork> {
     try {
       Class<?> udfClass = getUdfClass(createFunctionDesc);
       if(UDF.class.isAssignableFrom(udfClass)) {
-        FunctionRegistry.registerUDF(createFunctionDesc.getFunctionName(), 
+        FunctionRegistry.registerTemporaryUDF(createFunctionDesc.getFunctionName(), 
                                      (Class<? extends UDF>) udfClass,
                                      OperatorType.PREFIX, false);
         return 0;
       } else if(GenericUDF.class.isAssignableFrom(udfClass)) {
-        FunctionRegistry.registerGenericUDF(createFunctionDesc.getFunctionName(), 
+        FunctionRegistry.registerTemporaryGenericUDF(createFunctionDesc.getFunctionName(), 
                                             (Class<? extends GenericUDF>) udfClass);
         return 0;
       } else if(UDAF.class.isAssignableFrom(udfClass)) {
-        FunctionRegistry.registerUDAF(createFunctionDesc.getFunctionName(),
+        FunctionRegistry.registerTemporaryUDAF(createFunctionDesc.getFunctionName(),
                                       (Class<? extends UDAF>) udfClass);
         return 0;
       } else if(GenericUDAFResolver.class.isAssignableFrom(udfClass)) {
-        FunctionRegistry.registerGenericUDAF(createFunctionDesc.getFunctionName(),
+        FunctionRegistry.registerTemporaryGenericUDAF(createFunctionDesc.getFunctionName(),
             (GenericUDAFResolver)ReflectionUtils.newInstance(udfClass, null));
         return 0;
       }
@@ -88,8 +89,13 @@ public class FunctionTask extends Task<FunctionWork> {
   }
 
   private int dropFunction(dropFunctionDesc dropFunctionDesc) {
-    FunctionRegistry.unregisterUDF(dropFunctionDesc.getFunctionName());
-    return 0;
+    try {
+      FunctionRegistry.unregisterTemporaryUDF(dropFunctionDesc.getFunctionName());
+      return 0;
+    } catch (HiveException e) {
+      LOG.info("drop function: " + StringUtils.stringifyException(e));
+      return 1;
+    }
   }
 
   @SuppressWarnings("unchecked")

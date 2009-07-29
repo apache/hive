@@ -446,6 +446,9 @@ Trunk - Unreleased
     HIVE-700. Fix test error by adding "DROP FUNCTION".
     (Min Zhou and Namit Jain via zshao)
 
+    HIVE-702. bug in drop temporary function
+    (Min Zhou via namit)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

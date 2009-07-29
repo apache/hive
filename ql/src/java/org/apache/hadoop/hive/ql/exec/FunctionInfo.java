@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 
 public class FunctionInfo {
+  private boolean isNative;
 
   private String displayName;
 
@@ -39,6 +40,12 @@ public class FunctionInfo {
 
   public FunctionInfo(String displayName, Class<? extends UDF> udfClass,
       Class<? extends GenericUDF> genericUdfClass) {
+    this(true, displayName, udfClass, genericUdfClass);
+  }
+
+  public FunctionInfo(boolean isNative, String displayName, Class<? extends UDF> udfClass,
+      Class<? extends GenericUDF> genericUdfClass) {
+    this.isNative = isNative;
     this.displayName = displayName;
     opType = OperatorType.NO_OP;
     isOperator = false;
@@ -48,6 +55,11 @@ public class FunctionInfo {
   }
 
   public FunctionInfo(String displayName, GenericUDAFResolver genericUDAFResolver) {
+    this(true, displayName, genericUDAFResolver);
+  }
+
+  public FunctionInfo(boolean isNative, String displayName, GenericUDAFResolver genericUDAFResolver) {
+    this.isNative = isNative;
     this.displayName = displayName;
     this.opType = OperatorType.NO_OP;
     this.udfClass = null;
@@ -89,5 +101,9 @@ public class FunctionInfo {
   
   public String getDisplayName() {
     return displayName;
+  }
+  
+  public boolean isNative() {
+    return isNative;
   }
 }

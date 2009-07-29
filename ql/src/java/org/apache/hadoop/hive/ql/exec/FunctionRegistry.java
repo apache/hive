@@ -215,10 +215,20 @@ public class FunctionRegistry {
     return null;
   }
 
-  public static void registerUDF(String functionName, Class<? extends UDF> UDFClass,
+  public static void registerTemporaryUDF(String functionName, Class<? extends UDF> UDFClass,
+      FunctionInfo.OperatorType opt, boolean isOperator) {
+    registerUDF(false,functionName, UDFClass, opt, isOperator);
+  }
+
+  static void registerUDF(String functionName, Class<? extends UDF> UDFClass,
                                  FunctionInfo.OperatorType opt, boolean isOperator) {
+    registerUDF(true,functionName, UDFClass, opt, isOperator);
+  }
+
+  public static void registerUDF(boolean isNative, String functionName, Class<? extends UDF> UDFClass,
+      FunctionInfo.OperatorType opt, boolean isOperator) {
     if (UDF.class.isAssignableFrom(UDFClass)) {
-      FunctionInfo fI = new FunctionInfo(functionName.toLowerCase(), UDFClass, null);
+      FunctionInfo fI = new FunctionInfo(isNative, functionName.toLowerCase(), UDFClass, null);
       fI.setIsOperator(isOperator);
       fI.setOpType(opt);
       mFunctions.put(functionName.toLowerCase(), fI);
@@ -240,9 +250,17 @@ public class FunctionRegistry {
     }
   }
 
-  public static void registerGenericUDF(String functionName, Class<? extends GenericUDF> genericUDFClass) {
+  public static void registerTemporaryGenericUDF(String functionName, Class<? extends GenericUDF> genericUDFClass) {
+    registerGenericUDF(false, functionName, genericUDFClass);
+  }
+
+  static void registerGenericUDF(String functionName, Class<? extends GenericUDF> genericUDFClass) {
+    registerGenericUDF(true, functionName, genericUDFClass);
+  }
+
+  public static void registerGenericUDF(boolean isNative, String functionName, Class<? extends GenericUDF> genericUDFClass) {
     if (GenericUDF.class.isAssignableFrom(genericUDFClass)) {
-      FunctionInfo fI = new FunctionInfo(functionName, null, genericUDFClass);
+      FunctionInfo fI = new FunctionInfo(isNative, functionName, null, genericUDFClass);
       mFunctions.put(functionName.toLowerCase(), fI);
     } else {
       throw new RuntimeException("Registering GenericUDF Class " + genericUDFClass
@@ -437,19 +455,42 @@ public class FunctionRegistry {
     return getUDFMethod(name, Arrays.asList(argumentClasses));
   }
 
-  public static void registerGenericUDAF(String functionName, GenericUDAFResolver genericUDAFResolver) {
-    mFunctions.put(functionName.toLowerCase(), 
-        new FunctionInfo(functionName.toLowerCase(), genericUDAFResolver));
+  public static void registerTemporaryGenericUDAF(String functionName, GenericUDAFResolver genericUDAFResolver) {
+    registerGenericUDAF(false, functionName, genericUDAFResolver);
   }
 
-  public static void registerUDAF(String functionName, Class<? extends UDAF> udafClass) {
+  static void registerGenericUDAF(String functionName, GenericUDAFResolver genericUDAFResolver) {
+    registerGenericUDAF(true, functionName, genericUDAFResolver);
+  }
+
+  public static void registerGenericUDAF(boolean isNative, String functionName, GenericUDAFResolver genericUDAFResolver) {
     mFunctions.put(functionName.toLowerCase(), 
-        new FunctionInfo(functionName.toLowerCase(), 
+        new FunctionInfo(isNative, functionName.toLowerCase(), genericUDAFResolver));
+  }
+
+  public static void registerTemporaryUDAF(String functionName, Class<? extends UDAF> udafClass) {
+    registerUDAF(false, functionName, udafClass);
+  }
+
+  static void registerUDAF(String functionName, Class<? extends UDAF> udafClass) {
+    registerUDAF(true, functionName, udafClass);
+  }
+
+  public static void registerUDAF(boolean isNative, String functionName, Class<? extends UDAF> udafClass) {
+    mFunctions.put(functionName.toLowerCase(), 
+        new FunctionInfo(isNative, functionName.toLowerCase(), 
             new GenericUDAFBridge((UDAF)ReflectionUtils.newInstance(udafClass, null))));
   }
 
-  public static void unregisterUDF(String functionName) {
-    mFunctions.remove(functionName.toLowerCase());
+  public static void unregisterTemporaryUDF(String functionName) throws HiveException {
+    FunctionInfo fi = mFunctions.get(functionName.toLowerCase());
+    if(fi != null) {
+      if(!fi.isNative())
+        mFunctions.remove(functionName.toLowerCase());
+      else
+        throw new HiveException("Function " + functionName 
+            + " is hive native, it can't be dropped");
+    }
   }
 
   public static GenericUDAFResolver getGenericUDAFResolver(String functionName) {
