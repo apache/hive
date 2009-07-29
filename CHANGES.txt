@@ -166,6 +166,8 @@ Trunk - Unreleased
 
     HIVE-689. Dump more memory stat periodically. (Namit Jain via zshao)
 
+    HIVE-280. Reserve keywords such as database etc. (Namit Jain via zshao)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).
