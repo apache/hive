@@ -103,7 +103,7 @@ Trunk - Unreleased
 
     HIVE-656. Add a PMOD (POSITIVE MOD) function. (Scott Chen via zshao)
 
-    HIVE-698. Add create temporary function for generic UDAF. 
+    HIVE-698. Add create temporary function for generic UDAF.
     (Zheng Shao via namit)
 
     HIVE-607. Add udafs for variance and standard deviation
@@ -377,9 +377,9 @@ Trunk - Unreleased
 
     HIVE-612. Problem in removing temp files in FileSinkOperator.jobClose
     (Zheng Shao via namit)
- 
+
     HIVE-608. No type conversion in GenericUDF
-    (Zheng Shao via namit)  
+    (Zheng Shao via namit)
 
     HIVE-616. Make hive work with symbolic linked sub directories
     (Zheng Shao via rmurthy)
@@ -431,7 +431,7 @@ Trunk - Unreleased
     HIVE-620. bug in displaying function name when more than 1 function points to the same class
     (Emil Ibrishimov via namit)
 
-    HIVE-670. dump output column names in explain 
+    HIVE-670. dump output column names in explain
     (Zheng Shao via namit)
 
     HIVE-673. Bug in handling of null partitions.
@@ -448,6 +448,9 @@ Trunk - Unreleased
 
     HIVE-702. bug in drop temporary function
     (Min Zhou via namit)
+
+    HIVE-710. Fix serialization bug in BinarySortableSerDe for negative double
+    and float numbers (Zheng Shao via pchakka)
 
 Release 0.3.1 - Unreleased
 

@@ -229,7 +229,7 @@ public class BinarySortableSerDe implements SerDe {
             }
             if ((v & (1<<31)) == 0) {
               // negative number, flip all bits
-              v = v ^ Integer.MAX_VALUE;
+              v = ~v;
             } else {
               // positive number, flip the first bit
               v = v ^ (1<<31);
@@ -245,7 +245,7 @@ public class BinarySortableSerDe implements SerDe {
             }
             if ((v & (1L<<63)) == 0) {
               // negative number, flip all bits
-              v = v ^ Long.MAX_VALUE;
+              v = ~v;
             } else {
               // positive number, flip the first bit
               v = v ^ (1L<<63);
@@ -470,7 +470,7 @@ public class BinarySortableSerDe implements SerDe {
             int v = Float.floatToIntBits(foi.get(o));
             if ((v & (1<<31)) != 0) {
               // negative number, flip all bits
-              v = v ^ Integer.MAX_VALUE;
+              v = ~v;
             } else {
               // positive number, flip the first bit
               v = v ^ (1<<31);
@@ -486,7 +486,7 @@ public class BinarySortableSerDe implements SerDe {
             long v = Double.doubleToLongBits(doi.get(o));
             if ((v & (1L<<63)) != 0) {
               // negative number, flip all bits
-              v = v ^ Long.MAX_VALUE;
+              v = ~v;
             } else {
               // positive number, flip the first bit
               v = v ^ (1L<<63);

@@ -151,8 +151,8 @@ public class TestBinarySortableSerDe extends TestCase {
         t.myShort = randField > 1 ? null : Short.valueOf((short)r.nextInt());
         t.myInt = randField > 2 ? null : Integer.valueOf(r.nextInt());
         t.myLong = randField > 3 ? null : Long.valueOf(r.nextLong());
-        t.myFloat = randField > 4 ? null : Float.valueOf(r.nextFloat());
-        t.myDouble = randField > 5 ? null : Double.valueOf(r.nextDouble());
+        t.myFloat = randField > 4 ? null : Float.valueOf(r.nextFloat() * 10 - 5);
+        t.myDouble = randField > 5 ? null : Double.valueOf(r.nextDouble() * 10 - 5);
         t.myString = randField > 6 ? null : getRandString(r);
         t.myStruct = randField > 7 ? null : new MyTestInnerStruct(r.nextInt(5)-2, r.nextInt(5)-2);
         t.myList = randField > 8 ? null: getRandIntegerArray(r);
