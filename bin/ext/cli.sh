@@ -9,8 +9,19 @@ cli () {
     echo "Missing Hive CLI Jar"
     exit 3;
   fi
+  
+  for f in ${HADOOP_HOME}/hadoop*core.jar ${HADOOP_HOME}/lib/hadoop*core.jar; do
+      if [[ ! -f $f ]]; then
+          continue;
+      fi
+      if [[ $f == *17* ]] || [[ $f == *18* ]] || [[ $f == *19* ]]; then
+          exec $HADOOP jar $AUX_JARS_CMD_LINE ${HIVE_LIB}/hive_cli.jar $CLASS $HIVE_OPTS "$@"
+      else
+          # hadoop 20 or newer - skip the aux_jars option. picked up from hiveconf
+          exec $HADOOP jar ${HIVE_LIB}/hive_cli.jar $CLASS $HIVE_OPTS "$@" 
+      fi
+  done
 
-  exec $HADOOP jar $AUX_JARS_CMD_LINE ${HIVE_LIB}/hive_cli.jar $CLASS $HIVE_OPTS "$@"
 }
 
 cli_help () {

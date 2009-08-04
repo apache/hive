@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities.*;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.shims.ShimLoader;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -83,9 +84,16 @@ public class MapRedTask extends Task<mapredWork> implements Serializable {
 
       String isSilent = "true".equalsIgnoreCase(System.getProperty("test.silent"))
                         ? "-silent" : "";
-      String cmdLine = hadoopExec + " jar " + libJarsOption + " " + hiveJar 
-          + " org.apache.hadoop.hive.ql.exec.ExecDriver -plan "
-          + planFile.toString() + " " + isSilent + " " + hiveConfArgs; 
+
+      String jarCmd;
+      if(ShimLoader.getHadoopShims().usesJobShell()) {
+        jarCmd = libJarsOption + hiveJar + " " + ExecDriver.class.getName();
+      } else {
+        jarCmd = hiveJar + " " + ExecDriver.class.getName() + libJarsOption;
+      }
+
+      String cmdLine = hadoopExec + " jar " + jarCmd + 
+        " -plan " + planFile.toString() + " " + isSilent + " " + hiveConfArgs; 
       
       String files = ExecDriver.getResourceFiles(conf, SessionState.ResourceType.FILE);
       if(!files.isEmpty()) {
@@ -102,7 +110,7 @@ public class MapRedTask extends Task<mapredWork> implements Serializable {
         executor = Runtime.getRuntime().exec(cmdLine);
       // user specified the memory - only applicable for local mode
       else {
-        Map<String, String> variables = System.getenv();  
+        Map<String, String> variables = System.getenv();
         String[] env = new String[variables.size() + 1];
         int pos = 0;
         

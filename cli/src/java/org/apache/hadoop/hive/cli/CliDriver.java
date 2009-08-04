@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.shims.ShimLoader;
 
 public class CliDriver {
 
@@ -191,7 +192,7 @@ public class CliDriver {
     return (processLine(qsb.toString()));
   }
 
-  public static void main(String[] args) throws IOException {
+  public static void main(String[] args) throws Exception {
 
     OptionsProcessor oproc = new OptionsProcessor();
     if(! oproc.process_stage1(args)) {
@@ -222,6 +223,18 @@ public class CliDriver {
       conf.set((String) item.getKey(), (String) item.getValue());
     }
     
+    if(!ShimLoader.getHadoopShims().usesJobShell()) {
+      // hadoop-20 and above - we need to augment classpath using hiveconf components
+      // see also: code in ExecDriver.java
+      ClassLoader loader = conf.getClassLoader();
+      String auxJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEAUXJARS);
+      if (StringUtils.isNotBlank(auxJars)) {
+        loader = Utilities.addToClassPath(loader, StringUtils.split(auxJars, ","));
+      }
+      conf.setClassLoader(loader);
+      Thread.currentThread().setContextClassLoader(loader);
+    }
+
     SessionState.start(ss);
 
     CliDriver cli = new CliDriver ();

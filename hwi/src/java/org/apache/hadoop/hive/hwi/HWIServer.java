@@ -6,9 +6,11 @@ import java.io.IOException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.mortbay.http.SocketListener;
 import org.mortbay.jetty.Server;
-import org.mortbay.jetty.servlet.WebApplicationContext;
+
+import org.apache.hadoop.hive.shims.JettyShims;
+import org.apache.hadoop.hive.shims.ShimLoader;
+
 /**
  * This is the entry point for HWI. A web server is invoked in the same manner as the hive CLI. 
  * Rather then opening a command line session a web server is started and a web application to work with 
@@ -17,8 +19,7 @@ import org.mortbay.jetty.servlet.WebApplicationContext;
 public class HWIServer {
 	  protected static final Log l4j = LogFactory.getLog( HWIServer.class.getName() );
 	
-	  private org.mortbay.jetty.Server webServer;
-	  private SocketListener listener;
+	  private JettyShims.Server webServer;
 	  private String [] args;
 	
 	  /**
@@ -36,8 +37,6 @@ public class HWIServer {
 	   */
 	  public void start() throws IOException {
 	
-	    webServer = new org.mortbay.jetty.Server();
-	    listener = new SocketListener();
 	    HiveConf conf = new HiveConf(this.getClass());
 	    
 	    String listen = null;
@@ -54,21 +53,16 @@ public class HWIServer {
 	    	l4j.warn("hive.hwi.listen.port was not specified defaulting to 9999");
 	    	port=9999;
 	    }
-	    
-	    listener.setPort(port);
-	    listener.setHost(listen);
-	    
-	    webServer.addListener(listener);
-	    
-	    WebApplicationContext wac = new WebApplicationContext();
-	    wac.setContextPath("/hwi");
+
+
 	
 	    String hwiWAR = conf.getVar(HiveConf.ConfVars.HIVEHWIWARFILE);
 	    if (! new File (hwiWAR).exists() ){
 	    	l4j.fatal("HWI WAR file not found at "+ hwiWAR );
 	    }
 	    
-	    wac.setWAR(hwiWAR);
+        webServer = ShimLoader.getJettyShims().startServer(listen, port);
+        webServer.addWar(hwiWAR, "/hwi");
 	    
 	    /*The command line args may be used by multiple components. Rather by setting
 	     * these as a system property we avoid having to specifically pass them
@@ -79,7 +73,6 @@ public class HWIServer {
 	    }
 	    System.setProperty("hwi-args", sb.toString());
 	    
-	    webServer.addContext(wac);
 		try {
 			while (true) {
 				try {
@@ -117,9 +110,9 @@ public class HWIServer {
 
 	/**
 	 * Shut  down the running HWI Server
-	 * @throws InterruptedException Running Thread.stop() can and probably will throw this
+	 * @throws Exception Running Thread.stop() can and probably will throw this
 	 */
-	public void stop() throws InterruptedException {
+	public void stop() throws Exception {
 		l4j.info("HWI is shutting down");
 		webServer.stop();
 	}

@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
@@ -33,6 +32,7 @@ import org.apache.hadoop.hive.ql.plan.fileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.Serializer;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
@@ -117,12 +117,7 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
       outWriter = getRecordWriter(jc, hiveOutputFormat, outputClass, isCompressed, tableInfo.getProperties(), outPath);
 
       // in recent hadoop versions, use deleteOnExit to clean tmp files.
-      try {
-        Method deleteOnExit = FileSystem.class.getDeclaredMethod("deleteOnExit", new Class [] {Path.class});
-        deleteOnExit.setAccessible(true);
-        deleteOnExit.invoke(fs, outPath);
-        autoDelete = true;
-      } catch (Exception e) {}
+      autoDelete = ShimLoader.getHadoopShims().fileSystemDeleteOnExit(fs, outPath);
 
       initializeChildren(hconf);
     } catch (HiveException e) {

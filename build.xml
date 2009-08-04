@@ -62,7 +62,7 @@
     <attribute name="target"/>
     <sequential>
       <subant target="@{target}">
-        <filelist dir="." files="common/build.xml,serde/build.xml,metastore/build.xml,ql/build.xml,cli/build.xml,contrib/build.xml,service/build.xml,jdbc/build.xml,hwi/build.xml,ant/build.xml"/>
+        <filelist dir="." files="ant/build.xml,shims/build.xml,common/build.xml,serde/build.xml,metastore/build.xml,ql/build.xml,cli/build.xml,contrib/build.xml,service/build.xml,jdbc/build.xml,hwi/build.xml,ant/build.xml"/>
       </subant>
     </sequential>
   </macrodef>
@@ -71,7 +71,7 @@
     <attribute name="target"/>
     <sequential>
       <subant target="@{target}">
-        <filelist dir="." files="common/build.xml,serde/build.xml,metastore/build.xml,ql/build.xml,cli/build.xml,contrib/build.xml,service/build.xml,jdbc/build.xml,hwi/build.xml"/>
+        <filelist dir="." files="shims/build.xml,common/build.xml,serde/build.xml,metastore/build.xml,ql/build.xml,cli/build.xml,contrib/build.xml,service/build.xml,jdbc/build.xml,hwi/build.xml"/>
       </subant>
     </sequential>
   </macrodef>
@@ -217,6 +217,11 @@
     </condition>
     <echo message="Using hadoop version ${hadoop.version}"/>
 
+    <taskdef name="getversionpref" classname="org.apache.hadoop.hive.ant.GetVersionPref"
+             classpath="${build.dir.hive}/anttasks/hive_anttasks.jar"/>
+
+    <getversionpref property="hadoop.version.prefix" input="${hadoop.version}"/>
+
     <pathconvert property="eclipse.project">
       <path path="${basedir}"/>
       <regexpmapper from="^.*/([^/]+)$$" to="\1" handledirsep="yes"/>
@@ -229,6 +234,7 @@
       <filterset>
         <filter token="PROJECT" value="${eclipse.project}"/>
         <filter token="HADOOPVER" value="${hadoop.version}"/>
+        <filter token="HADOOPVERPREF" value="${hadoop.version.prefix}"/>
       </filterset>
     </copy>
     <move todir="." includeemptydirs="false">

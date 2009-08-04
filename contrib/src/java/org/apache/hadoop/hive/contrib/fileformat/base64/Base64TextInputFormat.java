@@ -20,9 +20,9 @@ package org.apache.hadoop.hive.contrib.fileformat.base64;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -169,13 +169,7 @@ public class Base64TextInputFormat
 
   // Cannot put @Override here because hadoop 0.18+ removed this method.
   public void validateInput(JobConf job) throws IOException {
-    try {
-      Method validateInput = format.getClass().getDeclaredMethod("validateInput", job.getClass());
-      validateInput.setAccessible(true);
-      validateInput.invoke(format, job);
-    } catch (Exception e) {
-      // Ignore this exception since validateInput is removed from hadoop in 0.18+.
-    }
+    ShimLoader.getHadoopShims().inputFormatValidateInput(format, job);
   }
 
 }

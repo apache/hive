@@ -79,9 +79,9 @@
     <ivy:retrieve pattern="${build.dir.hadoop}/[artifact]-[revision].[ext]"/>
   </target>
 
-  <available property="hadoopcore.install.done" file="${build.dir.hadoop}/hadoop-${hadoop.version}.installed"/>
+  <available property="hadoopcore.${hadoop.version}.install.done" file="${build.dir.hadoop}/hadoop-${hadoop.version}.installed"/>
 
-  <target name="install-hadoopcore-internal" depends="resolve" unless="hadoopcore.install.done">
+  <target name="install-hadoopcore-internal" depends="resolve" unless="hadoopcore.${hadoop.version}.install.done">
     <untar src="${build.dir.hadoop}/hadoop-${hadoop.version}.tar.gz" dest="${build.dir.hadoop}" compression="gzip"/>
     <chmod file="${hadoop.root}/bin/hadoop" perm="+x"/>
     <touch file="${build.dir.hadoop}/hadoop-${hadoop.version}.installed"/>
@@ -116,11 +116,12 @@
     <pathelement location="${build.dir.hive}/metastore/classes"/>
     <pathelement location="${build.dir.hive}/ql/classes"/>
     <pathelement location="${build.dir.hive}/cli/classes"/>
+    <pathelement location="${build.dir.hive}/shims/classes"/>
     <fileset dir="${basedir}" includes="lib/*.jar"/>
     <path refid="common-classpath"/>
   </path>
 
-  <target name="init">
+  <target name="create-dirs">
     <mkdir dir="${build.dir.hive}"/>
     <mkdir dir="${build.dir}"/>
     <mkdir dir="${build.classes}"/>
@@ -130,6 +131,8 @@
     <mkdir dir="${test.build.src}"/>
     <mkdir dir="${test.build.classes}"/>
   </target>
+
+  <target name="init" depends="create-dirs, deploy-ant-tasks"/>
 
   <target name="test-init">
     <mkdir dir="${test.data.dir}"/>
@@ -144,7 +147,9 @@
     </copy>
   </target>
 
-  <target name="compile" depends="init, install-hadoopcore">
+  <target name="setup"/>
+
+  <target name="compile" depends="init, install-hadoopcore, setup">
     <echo message="Compiling: ${ant.project.name}"/>
     <javac
      encoding="${build.encoding}"
@@ -245,7 +250,7 @@
 
   <!-- target to deploy anttasks -->
 
-  <target name="compile-ant-tasks" depends="init">
+  <target name="compile-ant-tasks">
     <subant target="compile">
       <fileset dir=".." includes="ant/build.xml"/>
     </subant>
@@ -255,6 +260,10 @@
     <subant target="jar">
       <fileset dir=".." includes="ant/build.xml"/>
     </subant>
+
+    <taskdef name="getversionpref" classname="org.apache.hadoop.hive.ant.GetVersionPref"
+             classpath="${build.dir.hive}/anttasks/hive_anttasks.jar"/>
+
   </target>
 
   <target name="gen-test"/>

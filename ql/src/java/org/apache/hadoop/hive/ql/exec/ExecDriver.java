@@ -41,6 +41,7 @@ import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.ql.plan.mapredWork;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.partitionDesc;
@@ -91,12 +92,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
   private void initializeFiles(String prop, String files) {
     if (files != null && files.length() > 0) {
       job.set(prop, files);
-
-      // workaround for hadoop-17 - jobclient only looks at commandlineconfig
-      Configuration commandConf = JobClient.getCommandLineConfig();
-      if (commandConf != null) {
-        commandConf.set(prop, files);
-      }
+      ShimLoader.getHadoopShims().setTmpFiles(prop, files);
     }
   }
 
@@ -552,6 +548,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
       String auxJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEAUXJARS);
       String addedJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEADDEDJARS);
       try {
+        // see also - code in CliDriver.java
         ClassLoader loader = conf.getClassLoader();
         if (StringUtils.isNotBlank(auxJars)) {
           loader = Utilities.addToClassPath(loader, StringUtils.split(auxJars, ","));

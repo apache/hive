@@ -22,7 +22,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,6 +41,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.mapredWork;
 import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.ql.plan.partitionDesc;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -291,13 +291,7 @@ public class HiveInputFormat<K extends WritableComparable,
 
       FileInputFormat.setInputPaths(newjob, dir);
       newjob.setInputFormat(inputFormat.getClass());
-      try {
-        Method validateInput = inputFormat.getClass().getDeclaredMethod("validateInput", newjob.getClass());
-        validateInput.setAccessible(true);
-        validateInput.invoke(inputFormat, newjob);
-      } catch (Exception e) {
-        // Ignore this exception since validateInput is removed from hadoop in 0.18+.
-      }
+      ShimLoader.getHadoopShims().inputFormatValidateInput(inputFormat, newjob);
     }
   }
 

@@ -152,6 +152,7 @@
       <fileset dir="${build.dir.hive}/thrift/classes" includes="**/*.class"/>
       <fileset dir="${build.dir.hive}/commons-lang/classes" includes="**/StringUtils.class,**/WordUtils.class"/>
       <fileset dir="${build.dir.hive}/json/classes" includes="**/*.class"/>
+      <fileset dir="${build.dir.hive}/shims/classes" includes="**/*.class"/>
     </jar>
   </target>
 

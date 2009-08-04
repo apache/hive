@@ -109,6 +109,9 @@ Trunk - Unreleased
     HIVE-607. Add udafs for variance and standard deviation
     (Emil Ibrishimov via namit)
 
+    HIVE-487. Make hive compatibale with hadoop 20
+    (Todd Lipcon via namit)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 
