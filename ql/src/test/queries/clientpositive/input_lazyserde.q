@@ -16,3 +16,15 @@ INSERT OVERWRITE TABLE dest1 SELECT src_thrift.lint, src_thrift.lstring, src_thr
 SELECT dest1.* FROM dest1 DISTRIBUTE BY 1;
 
 SELECT dest1.a[0], dest1.b[0], dest1.c['key2'], dest1.d, dest1.e FROM dest1 DISTRIBUTE BY 1;
+
+DROP TABLE dest1;
+
+CREATE TABLE dest1(a array<int>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '1' ESCAPED BY '\\';
+INSERT OVERWRITE TABLE dest1 SELECT src_thrift.lint FROM src_thrift DISTRIBUTE BY 1;
+SELECT * from dest1;
+DROP TABLE dest1;
+
+CREATE TABLE dest1(a map<string,string>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '1' ESCAPED BY '\\';
+INSERT OVERWRITE TABLE dest1 SELECT src_thrift.mstringstring FROM src_thrift DISTRIBUTE BY 1;
+SELECT * from dest1;
+DROP TABLE dest1;

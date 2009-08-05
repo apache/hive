@@ -135,20 +135,21 @@ public class LazyArray extends LazyNonPrimitive<LazyListObjectInspector> {
         startPosition[arrayLength] = elementByteBegin;
         arrayLength++;
         elementByteBegin = elementByteEnd + 1;
-      }
-      if (isEscaped && bytes[elementByteEnd] == escapeChar
-          && elementByteEnd+1 < arrayByteEnd) {
-        // ignore the char after escape_char
-        elementByteEnd += 2;
-      } else {
         elementByteEnd ++;
-      }
-      
+      } else {
+        if (isEscaped && bytes[elementByteEnd] == escapeChar
+            && elementByteEnd+1 < arrayByteEnd) {
+          // ignore the char after escape_char
+          elementByteEnd += 2;
+        } else {
+          elementByteEnd ++;
+        }
+      }      
     }
     // Store arrayByteEnd+1 in startPosition[arrayLength]
     // so that we can use the same formula to compute the length of
     // each element in the array: startPosition[i+1] - startPosition[i] - 1
-    startPosition[arrayLength] = elementByteEnd;
+    startPosition[arrayLength] = arrayByteEnd + 1;
     
     if (arrayLength > 0) {
       Arrays.fill(elementInited, 0, arrayLength, false);

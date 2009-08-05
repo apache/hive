@@ -131,13 +131,15 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
           break;
         }
         fieldByteBegin = fieldByteEnd + 1;
-      }
-      if (isEscaped && bytes[fieldByteEnd] == escapeChar
-          && fieldByteEnd+1 < structByteEnd) {
-        // ignore the char after escape_char
-        fieldByteEnd += 2;
+        fieldByteEnd ++;
       } else {
-        fieldByteEnd++;
+        if (isEscaped && bytes[fieldByteEnd] == escapeChar
+            && fieldByteEnd+1 < structByteEnd) {
+          // ignore the char after escape_char
+          fieldByteEnd += 2;
+        } else {
+          fieldByteEnd++;
+        }
       }
     }
     

@@ -163,18 +163,20 @@ public class LazyMap extends LazyNonPrimitive<LazyMapObjectInspector> {
         keyValueSeparatorPosition = -1;
         mapSize++;
         elementByteBegin = elementByteEnd + 1;
-      }
-      // Is this the first keyValueSeparator in this entry?
-      if (keyValueSeparatorPosition == -1 && elementByteEnd != arrayByteEnd
-          && bytes[elementByteEnd] == keyValueSeparator) {
-        keyValueSeparatorPosition = elementByteEnd;
-      }
-      if (isEscaped && bytes[elementByteEnd] == escapeChar
-          && elementByteEnd+1 < arrayByteEnd) {
-        // ignore the char after escape_char
-        elementByteEnd += 2;
-      } else {
         elementByteEnd ++;
+      } else {
+        // Is this the first keyValueSeparator in this entry?
+        if (keyValueSeparatorPosition == -1
+            && bytes[elementByteEnd] == keyValueSeparator) {
+          keyValueSeparatorPosition = elementByteEnd;
+        }
+        if (isEscaped && bytes[elementByteEnd] == escapeChar
+            && elementByteEnd+1 < arrayByteEnd) {
+          // ignore the char after escape_char
+          elementByteEnd += 2;
+        } else {
+          elementByteEnd ++;
+        }
       }
     }
     

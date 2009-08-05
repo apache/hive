@@ -455,6 +455,9 @@ Trunk - Unreleased
     HIVE-710. Fix serialization bug in BinarySortableSerDe for negative double
     and float numbers (Zheng Shao via pchakka)
 
+    HIVE-719. Lazy Array/Map index out of bound bug.
+    (Zheng Shao via namit)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

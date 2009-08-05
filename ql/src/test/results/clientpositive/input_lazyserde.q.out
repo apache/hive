@@ -78,7 +78,7 @@ Input: default/src_thrift
 Output: default/dest1
 query: SELECT dest1.* FROM dest1 DISTRIBUTE BY 1
 Input: default/dest1
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1198263956/10000
+Output: file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/604433188/10000
 [0,0,0]	["0","0","0"]	{"key_0":"value_0"}	1712634731	record_0
 [1,2,3]	["10","100","1000"]	{"key_1":"value_1"}	465985200	record_1
 [2,4,6]	["20","200","2000"]	{"key_2":"value_2"}	-751827638	record_2
@@ -92,7 +92,7 @@ Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp
 null	null	null	0	NULL
 query: SELECT dest1.a[0], dest1.b[0], dest1.c['key2'], dest1.d, dest1.e FROM dest1 DISTRIBUTE BY 1
 Input: default/dest1
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1682820914/10000
+Output: file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/848270212/10000
 0	0	NULL	1712634731	record_0
 1	10	NULL	465985200	record_1
 2	20	NULL	-751827638	record_2
@@ -104,3 +104,42 @@ Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp
 8	80	NULL	1638581578	record_8
 9	90	NULL	336964413	record_9
 NULL	NULL	NULL	0	NULL
+query: DROP TABLE dest1
+query: CREATE TABLE dest1(a array<int>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '1' ESCAPED BY '\\'
+query: INSERT OVERWRITE TABLE dest1 SELECT src_thrift.lint FROM src_thrift DISTRIBUTE BY 1
+Input: default/src_thrift
+Output: default/dest1
+query: SELECT * from dest1
+Input: default/dest1
+Output: file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/1928951519/10000
+[0,0,0]
+[1,2,3]
+[2,4,6]
+[3,6,9]
+[4,8,12]
+[5,10,15]
+[6,12,18]
+[7,14,21]
+[8,16,24]
+[9,18,27]
+null
+query: DROP TABLE dest1
+query: CREATE TABLE dest1(a map<string,string>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '1' ESCAPED BY '\\'
+query: INSERT OVERWRITE TABLE dest1 SELECT src_thrift.mstringstring FROM src_thrift DISTRIBUTE BY 1
+Input: default/src_thrift
+Output: default/dest1
+query: SELECT * from dest1
+Input: default/dest1
+Output: file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/1672243759/10000
+{"key_0":"value_0"}
+{"key_1":"value_1"}
+{"key_2":"value_2"}
+{"key_3":"value_3"}
+{"key_4":"value_4"}
+{"key_5":"value_5"}
+{"key_6":"value_6"}
+{"key_7":"value_7"}
+{"key_8":"value_8"}
+{"key_9":"value_9"}
+null
+query: DROP TABLE dest1
