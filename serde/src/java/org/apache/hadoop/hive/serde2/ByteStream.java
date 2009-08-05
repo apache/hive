@@ -18,14 +18,16 @@
 
 package org.apache.hadoop.hive.serde2;
 
-import java.io.*;
+
+import org.apache.hadoop.hive.common.io.NonSyncByteArrayInputStream;
+import org.apache.hadoop.hive.common.io.NonSyncByteArrayOutputStream;
 
 /**
  * Extensions to bytearrayinput/output streams
  *
  */
 public class ByteStream {
-  public static class Input extends ByteArrayInputStream {
+  public static class Input extends NonSyncByteArrayInputStream {
     public byte[] getData() { return buf; }
     public int getCount() { return count;}
     public void reset(byte [] argBuf, int argCount) {
@@ -43,7 +45,7 @@ public class ByteStream {
     }
   }
     
-  public static class Output extends ByteArrayOutputStream {
+  public static class Output extends NonSyncByteArrayOutputStream {
     public byte[] getData() { return buf; }
     public int getCount() { return count;}
 

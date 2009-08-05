@@ -194,7 +194,7 @@ public class RCFile {
     private int[] eachColumnValueLen = null;
     private int[] eachColumnUncompressedValueLen = null;
     // stores each cell's length of a column in one DataOutputBuffer element
-    private HiveDataOutputBuffer[] allCellValLenBuffer = null;
+    private NonSyncDataOutputBuffer[] allCellValLenBuffer = null;
     // how many rows in this split
     private int numberRows = 0;
     // how many columns
@@ -208,7 +208,7 @@ public class RCFile {
       columnNumber = columnNum;
       eachColumnValueLen = new int[columnNumber];
       eachColumnUncompressedValueLen = new int[columnNumber];
-      allCellValLenBuffer = new HiveDataOutputBuffer[columnNumber];
+      allCellValLenBuffer = new NonSyncDataOutputBuffer[columnNumber];
       this.numberRows = numberRows;
     }
 
@@ -220,7 +220,7 @@ public class RCFile {
      * @param colValLenBuffer
      *          each cell's length of this column's in this split
      */
-    void setColumnLenInfo(int columnValueLen, HiveDataOutputBuffer colValLenBuffer,
+    void setColumnLenInfo(int columnValueLen, NonSyncDataOutputBuffer colValLenBuffer,
         int columnUncompressedValueLen, int columnIndex) {
       eachColumnValueLen[columnIndex] = columnValueLen;
       eachColumnUncompressedValueLen[columnIndex] = columnUncompressedValueLen;
@@ -231,7 +231,7 @@ public class RCFile {
     public void readFields(DataInput in) throws IOException {
       eachColumnValueLen = new int[columnNumber];
       eachColumnUncompressedValueLen = new int[columnNumber];
-      allCellValLenBuffer = new HiveDataOutputBuffer[columnNumber];
+      allCellValLenBuffer = new NonSyncDataOutputBuffer[columnNumber];
 
       numberRows = WritableUtils.readVInt(in);
       for (int i = 0; i < columnNumber; i++) {
@@ -239,7 +239,7 @@ public class RCFile {
         eachColumnUncompressedValueLen[i] = WritableUtils.readVInt(in);
         int bufLen = WritableUtils.readVInt(in);
         if (allCellValLenBuffer[i] == null)
-          allCellValLenBuffer[i] = new HiveDataOutputBuffer();
+          allCellValLenBuffer[i] = new NonSyncDataOutputBuffer();
         else
           allCellValLenBuffer[i].reset();
         allCellValLenBuffer[i].write(in, bufLen);
@@ -253,7 +253,7 @@ public class RCFile {
       for (int i = 0; i < eachColumnValueLen.length; i++) {
         WritableUtils.writeVLong(out, eachColumnValueLen[i]);
         WritableUtils.writeVLong(out, eachColumnUncompressedValueLen[i]);
-        HiveDataOutputBuffer colRowsLenBuf = allCellValLenBuffer[i];
+        NonSyncDataOutputBuffer colRowsLenBuf = allCellValLenBuffer[i];
         int bufLen = colRowsLenBuf.getLength();
         WritableUtils.writeVLong(out, bufLen);
         out.write(colRowsLenBuf.getData(), 0, bufLen);
@@ -292,7 +292,7 @@ public class RCFile {
    */
   static class ValueBuffer implements Writable {
     // used to load columns' value into memory
-    private HiveDataOutputBuffer[] loadedColumnsValueBuffer = null;
+    private NonSyncDataOutputBuffer[] loadedColumnsValueBuffer = null;
 
     boolean inited = false;
 
@@ -306,7 +306,7 @@ public class RCFile {
     CompressionCodec codec;
 
     Decompressor valDecompressor = null;
-    HiveDataInputBuffer decompressBuffer = new HiveDataInputBuffer();
+    NonSyncDataInputBuffer decompressBuffer = new NonSyncDataInputBuffer();
     CompressionInputStream deflatFilter = null;
 
     public ValueBuffer(KeyBuffer keyBuffer) throws IOException {
@@ -338,7 +338,7 @@ public class RCFile {
           if (currentSkip)
             skipped++;
       }
-      loadedColumnsValueBuffer = new HiveDataOutputBuffer[columnNumber - skipped];
+      loadedColumnsValueBuffer = new NonSyncDataOutputBuffer[columnNumber - skipped];
       this.codec = codec;
       if (codec != null) {
         valDecompressor = CodecPool.getDecompressor(codec);
@@ -349,16 +349,16 @@ public class RCFile {
       for (int k = 0, readIndex = 0; k < columnNumber; k++) {
         if (skippedColIDs[k])
           continue;
-        loadedColumnsValueBuffer[readIndex] = new HiveDataOutputBuffer();
+        loadedColumnsValueBuffer[readIndex] = new NonSyncDataOutputBuffer();
         readIndex++;
       }
     }
 
-    public void setColumnValueBuffer(HiveDataOutputBuffer valBuffer, int addIndex) {
+    public void setColumnValueBuffer(NonSyncDataOutputBuffer valBuffer, int addIndex) {
       loadedColumnsValueBuffer[addIndex] = valBuffer;
     }
 
-    HiveDataOutputBuffer compressedData = new HiveDataOutputBuffer();
+    NonSyncDataOutputBuffer compressedData = new NonSyncDataOutputBuffer();
 
     @Override
     public void readFields(DataInput in) throws IOException {
@@ -377,7 +377,7 @@ public class RCFile {
           skipTotal = 0;
         }
 
-        HiveDataOutputBuffer valBuf = loadedColumnsValueBuffer[addIndex];
+        NonSyncDataOutputBuffer valBuf = loadedColumnsValueBuffer[addIndex];
         valBuf.reset();
         if (codec != null) {
           decompressBuffer.reset();
@@ -401,7 +401,7 @@ public class RCFile {
     @Override
     public void write(DataOutput out) throws IOException {
       for (int i = 0; i < loadedColumnsValueBuffer.length; i++) {
-        HiveDataOutputBuffer currentBuf = loadedColumnsValueBuffer[i];
+        NonSyncDataOutputBuffer currentBuf = loadedColumnsValueBuffer[i];
         out.write(currentBuf.getData(), 0, currentBuf.getLength());
       }
     }
@@ -461,12 +461,12 @@ public class RCFile {
     // how many records already buffered
     private int bufferedRecords = 0;
 
-    HiveDataOutputBuffer[] compressionBuffer;
+    NonSyncDataOutputBuffer[] compressionBuffer;
     CompressionOutputStream[] deflateFilter = null;
     DataOutputStream[] deflateOut = null;
     private ColumnBuffer[] columnBuffers;
 
-    HiveDataOutputBuffer keyCompressionBuffer;
+    NonSyncDataOutputBuffer keyCompressionBuffer;
     CompressionOutputStream keyDeflateFilter;
     DataOutputStream keyDeflateOut;
     Compressor keyCompressor;
@@ -483,13 +483,13 @@ public class RCFile {
      */
     class ColumnBuffer {
       // used for buffer a column's values
-      HiveDataOutputBuffer columnValBuffer;
+      NonSyncDataOutputBuffer columnValBuffer;
       // used to store each value's length
-      HiveDataOutputBuffer valLenBuffer;
+      NonSyncDataOutputBuffer valLenBuffer;
 
       ColumnBuffer() throws IOException {
-        columnValBuffer = new HiveDataOutputBuffer();
-        valLenBuffer = new HiveDataOutputBuffer();
+        columnValBuffer = new NonSyncDataOutputBuffer();
+        valLenBuffer = new NonSyncDataOutputBuffer();
       }
 
       public void append(BytesRefWritable data) throws IOException {
@@ -636,18 +636,18 @@ public class RCFile {
         ReflectionUtils.setConf(codec, this.conf);
         compressor = CodecPool.getCompressor(codec);
 
-        compressionBuffer = new HiveDataOutputBuffer[columnNumber];
+        compressionBuffer = new NonSyncDataOutputBuffer[columnNumber];
         deflateFilter = new CompressionOutputStream[columnNumber];
         deflateOut = new DataOutputStream[columnNumber];
         for (int i = 0; i < columnNumber; i++) {
-          compressionBuffer[i] = new HiveDataOutputBuffer();
+          compressionBuffer[i] = new NonSyncDataOutputBuffer();
           deflateFilter[i] = codec.createOutputStream(compressionBuffer[i],
               compressor);
           deflateOut[i] = new DataOutputStream(new BufferedOutputStream(
               deflateFilter[i]));
         }
         keyCompressor = CodecPool.getCompressor(codec);
-        keyCompressionBuffer = new HiveDataOutputBuffer();
+        keyCompressionBuffer = new NonSyncDataOutputBuffer();
         keyDeflateFilter = codec.createOutputStream(keyCompressionBuffer,
             keyCompressor);
         keyDeflateOut = new DataOutputStream(new BufferedOutputStream(
@@ -730,7 +730,7 @@ public class RCFile {
       for (int columnIndex = 0; columnIndex < columnNumber; columnIndex++) {
         ColumnBuffer currentBuf = columnBuffers[columnIndex];
 
-        HiveDataOutputBuffer columnValue = currentBuf.columnValBuffer;
+        NonSyncDataOutputBuffer columnValue = currentBuf.columnValBuffer;
 
         if (isCompressed()) {
           compressionBuffer[columnIndex].reset();
@@ -858,11 +858,11 @@ public class RCFile {
     private int passedRowsNum = 0;
 
     private int[] columnRowReadIndex = null;
-    private HiveDataInputBuffer[] colValLenBufferReadIn;
+    private NonSyncDataInputBuffer[] colValLenBufferReadIn;
     private boolean decompress = false;
 
     private Decompressor keyDecompressor;
-    HiveDataOutputBuffer keyDecompressedData = new HiveDataOutputBuffer();
+    NonSyncDataOutputBuffer keyDecompressedData = new NonSyncDataOutputBuffer();
 
     /** Create a new RCFile reader. */
     public Reader(FileSystem fs, Path file, Configuration conf)
@@ -913,12 +913,12 @@ public class RCFile {
         }
       }
 
-      colValLenBufferReadIn = new HiveDataInputBuffer[columnNumber];
+      colValLenBufferReadIn = new NonSyncDataInputBuffer[columnNumber];
       columnRowReadIndex = new int[columnNumber];
       for (int i = 0; i < columnNumber; i++) {
         columnRowReadIndex[i] = 0;
         if (!skippedColIDs[i])
-          colValLenBufferReadIn[i] = new HiveDataInputBuffer();
+          colValLenBufferReadIn[i] = new NonSyncDataInputBuffer();
       }
 
       currentKey = createKeyBuffer();
@@ -1090,9 +1090,9 @@ public class RCFile {
     }
 
     private int compressedKeyLen = 0;
-    HiveDataInputBuffer keyDataIn = new HiveDataInputBuffer();
-    HiveDataInputBuffer keyDecompressBuffer = new HiveDataInputBuffer();
-    HiveDataOutputBuffer keyTempBuffer = new HiveDataOutputBuffer();
+    NonSyncDataInputBuffer keyDataIn = new NonSyncDataInputBuffer();
+    NonSyncDataInputBuffer keyDecompressBuffer = new NonSyncDataInputBuffer();
+    NonSyncDataOutputBuffer keyTempBuffer = new NonSyncDataOutputBuffer();
 
     KeyBuffer currentKey = null;
     boolean keyInit = false;
@@ -1151,7 +1151,7 @@ public class RCFile {
 
     // use this buffer to hold column's cells value length for usages in
     // getColumn(), instead of using colValLenBufferReadIn directly.
-    private HiveDataInputBuffer fetchColumnTempBuf = new HiveDataInputBuffer();
+    private NonSyncDataInputBuffer fetchColumnTempBuf = new NonSyncDataInputBuffer();
 
     /**
      * Fetch all data in the buffer for a given column. This is useful for

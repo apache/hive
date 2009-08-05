@@ -26,8 +26,8 @@ public class TestHiveInputOutputBuffer extends TestCase {
   public void testReadAndWrite() throws IOException {
     String testString = "test_hive_input_output_number_0";
     byte[] string_bytes = testString.getBytes();
-    HiveDataInputBuffer inBuffer = new HiveDataInputBuffer();
-    HiveDataOutputBuffer outBuffer = new HiveDataOutputBuffer();
+    NonSyncDataInputBuffer inBuffer = new NonSyncDataInputBuffer();
+    NonSyncDataOutputBuffer outBuffer = new NonSyncDataOutputBuffer();
     outBuffer.write(string_bytes);
     inBuffer.reset(outBuffer.getData(), 0, outBuffer.getLength());
     byte[] readBytes = new byte[string_bytes.length];

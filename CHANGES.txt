@@ -183,6 +183,9 @@ Trunk - Unreleased
 
     HIVE-280. Reserve keywords such as database etc. (Namit Jain via zshao)
 
+    HIVE-720. Improve ByteStream by removing all synchronized method calls.
+    (Yongqiang He via zshao)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).

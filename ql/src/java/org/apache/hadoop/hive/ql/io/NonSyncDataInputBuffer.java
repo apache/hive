@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.io;
 
-import java.io.ByteArrayInputStream;
 import java.io.DataInput;
 import java.io.EOFException;
 import java.io.FilterInputStream;
@@ -26,82 +25,24 @@ import java.io.IOException;
 import java.io.PushbackInputStream;
 import java.io.UTFDataFormatException;
 
+import org.apache.hadoop.hive.common.io.NonSyncByteArrayInputStream;
+
 /**
  * A thread-not-safe version of Hadoop's DataInputBuffer, which removes all
  * synchronized modifiers.
  */
-public class HiveDataInputBuffer extends FilterInputStream implements DataInput {
+public class NonSyncDataInputBuffer extends FilterInputStream implements DataInput {
 
-  private static class Buffer extends ByteArrayInputStream {
-    public Buffer() {
-      super(new byte[] {});
-    }
-
-    public void reset(byte[] input, int start, int length) {
-      this.buf = input;
-      this.count = start + length;
-      this.mark = start;
-      this.pos = start;
-    }
-
-    public int getPosition() {
-      return pos;
-    }
-
-    public int getLength() {
-      return count;
-    }
-
-    public int read() {
-      return (pos < count) ? (buf[pos++] & 0xff) : -1;
-    }
-
-    public int read(byte b[], int off, int len) {
-      if (b == null) {
-        throw new NullPointerException();
-      } else if (off < 0 || len < 0 || len > b.length - off) {
-        throw new IndexOutOfBoundsException();
-      }
-      if (pos >= count) {
-        return -1;
-      }
-      if (pos + len > count) {
-        len = count - pos;
-      }
-      if (len <= 0) {
-        return 0;
-      }
-      System.arraycopy(buf, pos, b, off, len);
-      pos += len;
-      return len;
-    }
-
-    public long skip(long n) {
-      if (pos + n > count) {
-        n = count - pos;
-      }
-      if (n < 0) {
-        return 0;
-      }
-      pos += n;
-      return n;
-    }
-
-    public int available() {
-      return count - pos;
-    }
-  }
-
-  private Buffer buffer;
+  private NonSyncByteArrayInputStream buffer;
 
   byte[] buff;
 
   /** Constructs a new empty buffer. */
-  public HiveDataInputBuffer() {
-    this(new Buffer());
+  public NonSyncDataInputBuffer() {
+    this(new NonSyncByteArrayInputStream());
   }
 
-  private HiveDataInputBuffer(Buffer buffer) {
+  private NonSyncDataInputBuffer(NonSyncByteArrayInputStream buffer) {
     super(buffer);
     this.buffer = buffer;
   }

@@ -17,81 +17,26 @@
  */
 package org.apache.hadoop.hive.ql.io;
 
-import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
+
+import org.apache.hadoop.hive.common.io.NonSyncByteArrayOutputStream;
 
 /**
  * A thread-not-safe version of Hadoop's DataOutputBuffer, which removes all
  * synchronized modifiers.
  */
-public class HiveDataOutputBuffer extends DataOutputStream {
+public class NonSyncDataOutputBuffer extends DataOutputStream {
 
-  private static class Buffer extends ByteArrayOutputStream {
-    public byte[] getData() {
-      return buf;
-    }
-
-    public int getLength() {
-      return count;
-    }
-
-    public void reset() {
-      count = 0;
-    }
-
-    public void write(DataInput in, int length) throws IOException {
-      enLargeBuffer(length);
-      in.readFully(buf, count, length);
-      count += length;
-    }
-
-    public void write(int b) {
-      enLargeBuffer(1);
-      buf[count] = (byte) b;
-      count += 1;
-    }
-
-    private int enLargeBuffer(int increment) {
-      int temp = count + increment;
-      int newLen = temp;
-      if (temp > buf.length) {
-        if ((buf.length << 1) > temp)
-          newLen = buf.length << 1;
-        byte newbuf[] = new byte[newLen];
-        System.arraycopy(buf, 0, newbuf, 0, count);
-        buf = newbuf;
-      }
-      return newLen;
-    }
-
-    public void write(byte b[], int off, int len) {
-      if ((off < 0) || (off > b.length) || (len < 0)
-          || ((off + len) > b.length) || ((off + len) < 0)) {
-        throw new IndexOutOfBoundsException();
-      } else if (len == 0) {
-        return;
-      }
-      enLargeBuffer(len);
-      System.arraycopy(b, off, buf, count, len);
-      count += len;
-    }
-
-    public void writeTo(OutputStream out) throws IOException {
-      out.write(buf, 0, count);
-    }
-  }
-
-  private Buffer buffer;
+  private NonSyncByteArrayOutputStream buffer;
 
   /** Constructs a new empty buffer. */
-  public HiveDataOutputBuffer() {
-    this(new Buffer());
+  public NonSyncDataOutputBuffer() {
+    this(new NonSyncByteArrayOutputStream());
   }
 
-  private HiveDataOutputBuffer(Buffer buffer) {
+  private NonSyncDataOutputBuffer(NonSyncByteArrayOutputStream buffer) {
     super(buffer);
     this.buffer = buffer;
   }
@@ -110,7 +55,7 @@ public class HiveDataOutputBuffer extends DataOutputStream {
   }
 
   /** Resets the buffer to empty. */
-  public HiveDataOutputBuffer reset() {
+  public NonSyncDataOutputBuffer reset() {
     this.written = 0;
     buffer.reset();
     return this;
