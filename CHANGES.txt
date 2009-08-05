@@ -468,6 +468,9 @@ Trunk - Unreleased
     HIVE-725. Add missing classpath: shims/src/common/java. Bug appeared
     after HIVE-487 was committed. (Zheng Shao via rmurthy)
 
+    HIVE-711. test for negative double value.
+    (Karan Mangla via namit)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

@@ -1,0 +1,14 @@
+query: FROM src
+SELECT cast('-30.33' as DOUBLE)
+GROUP BY cast('-30.33' as DOUBLE)
+LIMIT 1
+Input: default/src
+Output: file:/home/kmangla/hive/build/ql/tmp/1948482853/10000
+-30.33
+query: FROM src
+SELECT '-30.33'
+GROUP BY '-30.33'
+LIMIT 1
+Input: default/src
+Output: file:/home/kmangla/hive/build/ql/tmp/1059534144/10000
+-30.33
