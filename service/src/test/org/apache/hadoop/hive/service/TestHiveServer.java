@@ -80,11 +80,19 @@ public class TestHiveServer extends TestCase {
       client.execute("select count(1) as cnt from " + tableName);
       String row = client.fetchOne();
       assertEquals(row, "500");
-      Schema schema = client.getSchema();
-      List<FieldSchema> listFields = schema.getFieldSchemas();
+      
+      Schema hiveSchema = client.getSchema();
+      List<FieldSchema> listFields = hiveSchema.getFieldSchemas();
       assertEquals(listFields.size(), 1);
       assertEquals(listFields.get(0).getName(), "cnt");
-      assertEquals(listFields.get(0).getType(), "i64");
+      assertEquals(listFields.get(0).getType(), "bigint");
+      
+      Schema thriftSchema = client.getThriftSchema();
+      List<FieldSchema> listThriftFields = thriftSchema.getFieldSchemas();
+      assertEquals(listThriftFields.size(), 1);
+      assertEquals(listThriftFields.get(0).getName(), "cnt");
+      assertEquals(listThriftFields.get(0).getType(), "i64");
+      
       client.execute("drop table " + tableName);
     }
     catch (Throwable t) {
@@ -194,7 +202,7 @@ public class TestHiveServer extends TestCase {
     dsp.setProperty(Constants.SERIALIZATION_FORMAT, org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol.class.getName());
     dsp.setProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME, "result");
     String serDDL = new String("struct result { ");
-    List<FieldSchema> schema = client.getSchema().getFieldSchemas();
+    List<FieldSchema> schema = client.getThriftSchema().getFieldSchemas();
     for (int pos = 0; pos < schema.size(); pos++) {
       if (pos != 0) 
           serDDL = serDDL.concat(",");
@@ -222,7 +230,7 @@ public class TestHiveServer extends TestCase {
     row = client.fetchOne();
 
     serDDL = new String("struct result { ");
-    schema = client.getSchema().getFieldSchemas();
+    schema = client.getThriftSchema().getFieldSchemas();
     for (int pos = 0; pos < schema.size(); pos++) {
       if (pos != 0) 
           serDDL = serDDL.concat(",");

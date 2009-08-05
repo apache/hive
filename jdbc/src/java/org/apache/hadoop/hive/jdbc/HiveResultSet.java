@@ -58,7 +58,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    */
   public void initDynamicSerde() {
     try {
-      Schema fullSchema = client.getSchema();
+      Schema fullSchema = client.getThriftSchema();
       List<FieldSchema> schema = fullSchema.getFieldSchemas();
       columnNames = new ArrayList<String>();
       columnTypes = new ArrayList<String>();

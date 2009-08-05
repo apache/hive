@@ -159,7 +159,7 @@ public class HiveServer extends ThriftHive {
     }
     
     /**
-     * Return the schema of the query result
+     * Return the Hive schema of the query result
      */
     public Schema getSchema() throws HiveServerException, TException {
       try {
@@ -176,6 +176,26 @@ public class HiveServer extends ThriftHive {
         throw new HiveServerException("Unable to get schema: " + e.toString());
       }
     }
+    
+    /**
+     * Return the Thrift schema of the query result
+     */
+    public Schema getThriftSchema() throws HiveServerException, TException {
+      try {
+        Schema schema = driver.getThriftSchema();
+        if (schema == null) {
+          schema = new Schema();
+        }
+        LOG.info("Returning schema: " + schema);
+        return schema;
+      }
+      catch (Exception e) {
+        LOG.error(e.toString());
+        e.printStackTrace();
+        throw new HiveServerException("Unable to get schema: " + e.toString());
+      }
+    }
+    
     
     /** 
      * Fetches the next row in a query result set.

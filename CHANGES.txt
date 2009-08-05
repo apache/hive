@@ -7,6 +7,10 @@ Trunk - Unreleased
     HIVE-143. Remove the old file based metastore, in favour of the
     RDBMS based metastore. (prasadc via johan)
 
+    HIVE-724. Change HiveServer.getSchema() to return Hive types rather
+    than Thrift types. Changed existing getSchema() to getThriftSchema()
+    (Eric Hwang via rmurthy)
+
   NEW FEATURES
 
     HIVE-354. UDF for length of a string. (Neil Conway via namit).

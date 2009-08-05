@@ -109,7 +109,7 @@ public class Driver implements CommandProcessor {
   }
   
   /**
-   * Return the Thrift DDL string of the result
+   * Get a Schema with fields represented with native Hive types
    */
   public Schema getSchema() throws Exception {
     Schema schema;
@@ -140,9 +140,6 @@ public class Driver implements CommandProcessor {
         String tableName = "result";
         List<FieldSchema> lst = MetaStoreUtils.getFieldsFromDeserializer(
             tableName, td.getDeserializer());
-        // Go over the schema and convert type to thrift type
-        for (FieldSchema f : lst) 
-          f.setType(MetaStoreUtils.typeToThriftType(f.getType()));
         schema = new Schema(lst, null);
       }
       else {
@@ -153,7 +150,32 @@ public class Driver implements CommandProcessor {
       e.printStackTrace();
       throw e;
     }
-    LOG.info("Returning schema: " + schema);
+    LOG.info("Returning Hive schema: " + schema);
+    return schema;
+  }
+  
+  /**
+   * Get a Schema with fields represented with Thrift DDL types
+   */
+  public Schema getThriftSchema() throws Exception {
+    Schema schema;    
+    try {
+      schema = this.getSchema();
+      if (schema != null) {
+	    List<FieldSchema> lst = schema.getFieldSchemas();
+	    // Go over the schema and convert type to thrift type
+	    if (lst != null) {
+	      for (FieldSchema f : lst) {
+	        f.setType(MetaStoreUtils.typeToThriftType(f.getType()));  
+          }     
+	    }
+      }
+    }
+    catch (Exception e) {
+      e.printStackTrace();
+      throw e;
+    }
+    LOG.info("Returning Thrift schema: " + schema);
     return schema;
   }
 
