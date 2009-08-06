@@ -118,6 +118,8 @@ Trunk - Unreleased
 
     HIVE-640. Add LazyBinarySerDe to Hive. (Yuntao Jia via zshao)
 
+    HIVE-729. Make AS in select list optional. (Zheng Shao via namit)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 

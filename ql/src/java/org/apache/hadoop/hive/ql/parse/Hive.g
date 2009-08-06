@@ -691,7 +691,7 @@ selectItem
 @init { msgs.push("selection target"); }
 @after { msgs.pop(); }
     :
-    ( selectExpression  (KW_AS Identifier)?) -> ^(TOK_SELEXPR selectExpression Identifier?)
+    ( selectExpression  (KW_AS? Identifier)?) -> ^(TOK_SELEXPR selectExpression Identifier?)
     ;
     
 trfmClause
