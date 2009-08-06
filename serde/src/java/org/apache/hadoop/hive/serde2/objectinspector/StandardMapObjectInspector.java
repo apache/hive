@@ -32,7 +32,7 @@ import java.util.Map;
  * Always use the ObjectInspectorFactory to create new ObjectInspector objects, instead
  * of directly creating an instance of this class. 
  */
-class StandardMapObjectInspector implements MapObjectInspector {
+public class StandardMapObjectInspector implements MapObjectInspector {
 
   ObjectInspector mapKeyObjectInspector;
   ObjectInspector mapValueObjectInspector;

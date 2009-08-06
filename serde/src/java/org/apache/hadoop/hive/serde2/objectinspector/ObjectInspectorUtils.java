@@ -462,7 +462,7 @@ public class ObjectInspectorUtils {
       case LIST: {
         ListObjectInspector loi1 = (ListObjectInspector)oi1;
         ListObjectInspector loi2 = (ListObjectInspector)oi2;
-        int minimum = Math.min(loi1.getListLength(o1), loi1.getListLength(o2));
+        int minimum = Math.min(loi1.getListLength(o1), loi2.getListLength(o2));
         for (int i=0; i<minimum; i++) {
           int r = compare(
               loi1.getListElement(o1, i),
@@ -471,7 +471,7 @@ public class ObjectInspectorUtils {
               loi2.getListElementObjectInspector());
           if (r != 0) return r;
         }
-        return loi1.getListLength(o1) - loi1.getListLength(o2);
+        return loi1.getListLength(o1) - loi2.getListLength(o2);
       }
       case MAP:  {
         throw new RuntimeException("Compare on map type not supported!");

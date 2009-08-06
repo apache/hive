@@ -15,35 +15,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.serde2.binarysortable;
+package org.apache.hadoop.hive.serde2.lazybinary;
 
-import java.util.List;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableShortObjectInspector;
 
-public class MyTestClass {
-  Byte myByte;
-  Short myShort;
-  Integer myInt;
-  Long myLong;
-  Float myFloat;
-  Double myDouble;
-  String myString;
-  MyTestInnerStruct myStruct;
-  List<Integer> myList;
-  
-  public MyTestClass() {  
+/**
+ * LazyBinaryObject for short which takes two bytes.
+ */
+public class LazyBinaryShort extends LazyBinaryPrimitive<WritableShortObjectInspector, ShortWritable> {
+
+  LazyBinaryShort(WritableShortObjectInspector oi) {
+    super(oi);
+    data = new ShortWritable();
   }
-  
-  public MyTestClass(Byte b, Short s, Integer i, Long l, 
-      Float f, Double d, String st, MyTestInnerStruct is, 
-      List<Integer> li) {
-    this.myByte = b;
-    this.myShort = s;
-    this.myInt = i;
-    this.myLong = l;
-    this.myFloat = f;
-    this.myDouble = d;
-    this.myString = st;
-    this.myStruct = is;
-    this.myList = li;
+
+  LazyBinaryShort(LazyBinaryShort copy) {
+    super(copy);
+    data = new ShortWritable(copy.data.get());
   }
+
+  @Override
+  public void init(ByteArrayRef bytes, int start, int length) {
+    assert(2 == length);
+    data.set(LazyBinaryUtils.byteArrayToShort(bytes.getData(), start));      
+  }  
 }

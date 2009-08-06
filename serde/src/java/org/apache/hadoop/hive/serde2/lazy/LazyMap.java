@@ -228,7 +228,6 @@ public class LazyMap extends LazyNonPrimitive<LazyMapObjectInspector> {
   /**
    * Get the value object with the index without checking parsed.
    * @param index  The index into the array starting from 0
-   * @param nullSequence  The byte sequence representing the NULL value
    */
   private LazyObject uncheckedGetValue(int index) {
     Text nullSequence = oi.getNullSequence();
@@ -254,7 +253,6 @@ public class LazyMap extends LazyNonPrimitive<LazyMapObjectInspector> {
   /**
    * Get the key object with the index without checking parsed.
    * @param index  The index into the array starting from 0
-   * @param nullSequence  The byte sequence representing the NULL value
    */
   private LazyPrimitive<?,?> uncheckedGetKey(int index) {
     Text nullSequence = oi.getNullSequence(); 

@@ -47,7 +47,7 @@ public class TestBinarySortableSerDe extends TestCase {
     return r;
   }
 
-  public String hexString(BytesWritable bytes) {
+  public static String hexString(BytesWritable bytes) {
     StringBuilder sb = new StringBuilder();
     for (int i=0; i<bytes.getSize(); i++) {
       byte b = bytes.get()[i];
@@ -55,7 +55,7 @@ public class TestBinarySortableSerDe extends TestCase {
       sb.append(String.format("x%02x", v));
     }
     return sb.toString();
-  }  
+  }
 
   private SerDe getSerDe(String fieldNames, String fieldTypes, String order) throws Throwable {
     Properties schema = new Properties();
@@ -117,7 +117,7 @@ public class TestBinarySortableSerDe extends TestCase {
       }
   }  
 
-  static String getRandString(Random r) {
+  public static String getRandString(Random r) {
     int length = r.nextInt(10);
     StringBuilder sb = new StringBuilder();
     for(int i=0; i<length; i++) {
@@ -126,7 +126,7 @@ public class TestBinarySortableSerDe extends TestCase {
     return sb.toString();
   }
   
-  static List<Integer> getRandIntegerArray(Random r) {
+  public static List<Integer> getRandIntegerArray(Random r) {
     int length = r.nextInt(10);
     ArrayList<Integer> result = new ArrayList<Integer>(length);
     for(int i=0; i<length; i++) {

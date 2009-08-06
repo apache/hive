@@ -116,6 +116,8 @@ Trunk - Unreleased
     HIVE-487. Make hive compatibale with hadoop 20
     (Todd Lipcon via namit)
 
+    HIVE-640. Add LazyBinarySerDe to Hive. (Yuntao Jia via zshao)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 

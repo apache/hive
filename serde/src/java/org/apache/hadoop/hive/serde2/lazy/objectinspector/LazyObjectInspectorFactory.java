@@ -39,8 +39,8 @@ import org.apache.hadoop.io.Text;
  * SerDe classes should call the static functions in this library to create an ObjectInspector
  * to return to the caller of SerDe2.getObjectInspector().
  * 
- * The reason of having caches here is that ObjectInspector is because ObjectInspectors do
- * not have an internal state - so ObjectInspectors with the same construction parameters should
+ * The reason of having caches here is that ObjectInspectors do not have an internal 
+ * state - so ObjectInspectors with the same construction parameters should
  * result in exactly the same ObjectInspector.
  */
 public class LazyObjectInspectorFactory {

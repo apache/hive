@@ -15,11 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.serde2.binarysortable;
+package org.apache.hadoop.hive.serde2.lazybinary;
 
 import java.util.List;
+import java.util.Map;
 
-public class MyTestClass {
+import org.apache.hadoop.hive.serde2.binarysortable.MyTestInnerStruct;
+
+public class MyTestClassBigger {
   Byte myByte;
   Short myShort;
   Integer myInt;
@@ -29,13 +32,14 @@ public class MyTestClass {
   String myString;
   MyTestInnerStruct myStruct;
   List<Integer> myList;
+  Map<String, List<MyTestInnerStruct>> myMap;
   
-  public MyTestClass() {  
+  public MyTestClassBigger() {  
   }
   
-  public MyTestClass(Byte b, Short s, Integer i, Long l, 
+  public MyTestClassBigger(Byte b, Short s, Integer i, Long l, 
       Float f, Double d, String st, MyTestInnerStruct is, 
-      List<Integer> li) {
+      List<Integer> li, Map<String, List<MyTestInnerStruct>> mp) {
     this.myByte = b;
     this.myShort = s;
     this.myInt = i;
@@ -45,5 +49,6 @@ public class MyTestClass {
     this.myString = st;
     this.myStruct = is;
     this.myList = li;
+    this.myMap  = mp;
   }
 }

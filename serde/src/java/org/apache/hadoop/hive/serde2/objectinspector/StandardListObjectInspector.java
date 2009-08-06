@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
  * Always use the ObjectInspectorFactory to create new ObjectInspector objects, instead
  * of directly creating an instance of this class. 
  */
-class StandardListObjectInspector implements ListObjectInspector {
+public class StandardListObjectInspector implements ListObjectInspector {
 
   ObjectInspector listElementObjectInspector;
   

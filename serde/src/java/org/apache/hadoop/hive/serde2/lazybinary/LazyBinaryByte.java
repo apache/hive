@@ -15,35 +15,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.serde2.binarysortable;
+package org.apache.hadoop.hive.serde2.lazybinary;
 
-import java.util.List;
+import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableByteObjectInspector;
+import org.apache.hadoop.hive.serde2.io.ByteWritable;
 
-public class MyTestClass {
-  Byte myByte;
-  Short myShort;
-  Integer myInt;
-  Long myLong;
-  Float myFloat;
-  Double myDouble;
-  String myString;
-  MyTestInnerStruct myStruct;
-  List<Integer> myList;
-  
-  public MyTestClass() {  
+/**
+ * LazyBinaryObject for byte which takes one byte
+ */
+public class LazyBinaryByte extends LazyBinaryPrimitive<WritableByteObjectInspector, ByteWritable> {
+
+  LazyBinaryByte(WritableByteObjectInspector oi) {
+    super(oi);
+    data = new ByteWritable();
+  }
+
+  LazyBinaryByte(LazyBinaryByte copy) {
+    super(copy);
+    data = new ByteWritable(copy.data.get());
   }
   
-  public MyTestClass(Byte b, Short s, Integer i, Long l, 
-      Float f, Double d, String st, MyTestInnerStruct is, 
-      List<Integer> li) {
-    this.myByte = b;
-    this.myShort = s;
-    this.myInt = i;
-    this.myLong = l;
-    this.myFloat = f;
-    this.myDouble = d;
-    this.myString = st;
-    this.myStruct = is;
-    this.myList = li;
+  @Override
+  public void init(ByteArrayRef bytes, int start, int length) {
+    assert(1 == length);
+    data.set(bytes.getData()[start]);
   }
 }
