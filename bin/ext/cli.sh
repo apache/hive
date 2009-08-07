@@ -9,6 +9,10 @@ cli () {
     echo "Missing Hive CLI Jar"
     exit 3;
   fi
+
+  if $cygwin; then
+    HIVE_LIB=`cygpath -w "$HIVE_LIB"`
+  fi
   
   for f in ${HADOOP_HOME}/hadoop*core.jar ${HADOOP_HOME}/lib/hadoop*core.jar; do
       if [[ ! -f $f ]]; then

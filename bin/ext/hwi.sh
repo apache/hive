@@ -3,6 +3,10 @@ export SERVICE_LIST="${SERVICE_LIST}${THISSERVICE} "
 
 hwi() {
 
+  if $cygwin; then
+    HIVE_LIB=`cygpath -w "$HIVE_LIB"`
+  fi
+
   CLASS=org.apache.hadoop.hive.hwi.HWIServer
   export HWI_JAR_FILE=${HIVE_LIB}/hive_hwi.jar
   export HWI_WAR_FILE=${HIVE_LIB}/hive_hwi.war

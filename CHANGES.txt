@@ -477,6 +477,9 @@ Trunk - Unreleased
     HIVE-711. test for negative double value.
     (Karan Mangla via namit)
 
+    HIVE-344. Fixes for running Hive under cygwin.
+    (Amr Awadallah via athusoo)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

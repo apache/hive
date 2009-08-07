@@ -24,6 +24,11 @@ lineage () {
     echo "Missing Hive exec Jar"
     exit 3;
   fi
+
+  if $cygwin; then
+    HIVE_LIB=`cygpath -w "$HIVE_LIB"`
+  fi
+
   exec $HADOOP jar ${HIVE_LIB}/hive_exec.jar $CLASS  "$@"
 }
 
