@@ -192,6 +192,9 @@ Trunk - Unreleased
     HIVE-720. Improve ByteStream by removing all synchronized method calls.
     (Yongqiang He via zshao)
 
+    HIVE-454. Support escaping of ; in cli
+    (Edward Capriolo via namit)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).

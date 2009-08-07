@@ -165,13 +165,21 @@ public class CliDriver {
 
   public int processLine(String line) {
     int lastRet = 0, ret = 0;
-
+    
+    String command="";
     for(String oneCmd: line.split(";")) {
-
-      if(StringUtils.isBlank(oneCmd))
-        continue;
       
-      ret = processCmd(oneCmd);
+      if (StringUtils.endsWith(oneCmd, "\\")){
+        command+=StringUtils.chop(oneCmd)+";";
+        continue;
+      } else {
+        command+=oneCmd;
+      }
+      if(StringUtils.isBlank(command))
+        continue;
+     
+      ret = processCmd(command);
+      command="";
       lastRet = ret;
       boolean ignoreErrors = HiveConf.getBoolVar(conf, HiveConf.ConfVars.CLIIGNOREERRORS);
       if(ret != 0 && !ignoreErrors) {
@@ -274,7 +282,7 @@ public class CliDriver {
       if (!prefix.equals("")) {
         prefix += '\n';
       }
-      if(line.trim().endsWith(";")) {
+      if(line.trim().endsWith(";") && !line.trim().endsWith("\\;")) {
         line = prefix + line;
         ret = cli.processLine(line);
         prefix = "";
