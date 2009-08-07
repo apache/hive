@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -29,7 +30,10 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
-
+@description(
+    name = "<>",
+    value = "a _FUNC_ b - Returns TRUE if a is not equal to b"
+)
 public class UDFOPNotEqual extends UDFBaseCompare {
 
   private static Log LOG = LogFactory.getLog(UDFOPNotEqual.class.getName());

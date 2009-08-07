@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -34,6 +35,10 @@ import org.apache.hadoop.io.LongWritable;
  * @ See {@link org.apache.hadoop.hive.ql.udf.UDFOPMod}
  * @ See {@link org.apache.hadoop.hive.ql.exec.FunctionRegistry}
  */
+@description(
+    name = "pmod",
+    value = "a _FUNC_ b - Compute the positive modulo"
+)
 public class UDFPosMod extends UDFBaseNumericOp {
 
   private static Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.udf.UDFPosMod");

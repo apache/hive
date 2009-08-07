@@ -1,0 +1,55 @@
+query: DESCRIBE FUNCTION abs
+abs(x) - returns the absolute value of x
+query: DESCRIBE FUNCTION acos
+acos(x) - returns the arc cosine of x if -1<=x<=1 or NULL otherwise
+query: DESCRIBE FUNCTION asin
+asin(x) - returns the arc sine of x if -1<=x<=1 or NULL otherwise
+query: DESCRIBE FUNCTION date_add
+date_add(start_date, num_days) - Returns the date that is num_days after start_date.
+query: DESCRIBE FUNCTION parse_url
+parse_url(url, partToExtract[, key]) - extracts a part from a URL
+query: DESCRIBE FUNCTION split
+split(str, regex) - Splits str around occurances that match regex
+query: DESCRIBE FUNCTION EXTENDED abs
+abs(x) - returns the absolute value of x
+Example:
+  > SELECT abs(0) FROM src LIMIT 1;
+  0
+  > SELECT abs(-5) FROM src LIMIT 1;
+  5
+query: DESCRIBE FUNCTION EXTENDED acos
+acos(x) - returns the arc cosine of x if -1<=x<=1 or NULL otherwise
+Example:
+  > SELECT acos(1) FROM src LIMIT 1;
+  0
+  > SELECT acos(2) FROM src LIMIT 1;
+  NULL
+query: DESCRIBE FUNCTION EXTENDED asin
+asin(x) - returns the arc sine of x if -1<=x<=1 or NULL otherwise
+Example:
+  > SELECT asin(0) FROM src LIMIT 1;
+  0
+  > SELECT asin(2) FROM src LIMIT 1;
+  NULL
+query: DESCRIBE FUNCTION EXTENDED date_add
+date_add(start_date, num_days) - Returns the date that is num_days after start_date.
+start_date is a string in the format 'yyyy-MM-dd HH:mm:ss' or 'yyyy-MM-dd'. num_days is a number. The time part of start_date is ignored.
+Example:
+   > SELECT date_add('2009-30-07', 1) FROM src LIMIT 1;
+  '2009-31-07'
+query: DESCRIBE FUNCTION EXTENDED parse_url
+parse_url(url, partToExtract[, key]) - extracts a part from a URL
+Parts: HOST, PATH, QUERY, REF, PROTOCOL, AUTHORITY, FILE, USERINFO
+key specifies which query to extract
+Example:
+  > SELECT parse_url('http://facebook.com/path/p1.php?query=1', 'HOST') FROM src LIMIT 1;
+  'facebook.com'
+  > SELECT parse_url('http://facebook.com/path/p1.php?query=1', 'QUERY') FROM src LIMIT 1;
+  'query=1'
+  > SELECT parse_url('http://facebook.com/path/p1.php?query=1', 'QUERY', 'query') FROM src LIMIT 1;
+  '1'
+query: DESCRIBE FUNCTION EXTENDED split
+split(str, regex) - Splits str around occurances that match regex
+Example:
+  > SELECT split('oneAtwoBthreeC', '[ABC]') FROM src LIMIT 1;
+  ["one", "two", "three"]

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
@@ -36,6 +37,13 @@ import org.apache.hadoop.io.Text;
  * 
  * @see org.apache.hadoop.hive.ql.udf.generic.GenericUDF
  */
+@description(
+    name = "elt",
+    value = "_FUNC_(n, str1, str2, ...) - returns the n-th string",
+    extended = "Example:\n" +
+        "  > SELECT _FUNC_(1, 'face', 'book') FROM src LIMIT 1;\n" +
+        "  'face'"
+    )
 public class GenericUDFElt extends GenericUDF {
 
   ObjectInspectorConverters.Converter[] converters;

@@ -23,6 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -38,6 +39,10 @@ import org.apache.hadoop.io.IntWritable;
 /**
  * GenericUDF Class for computing hash values.
  */
+@description(
+    name = "hash",
+    value = "_FUNC_(a1, a2, ...) - Returns a hash value of the arguments"
+)
 public class GenericUDFHash extends GenericUDF {
 
   private static Log LOG = LogFactory.getLog(GenericUDFHash.class.getName());

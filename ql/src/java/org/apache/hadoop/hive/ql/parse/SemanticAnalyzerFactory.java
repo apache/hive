@@ -32,7 +32,8 @@ public class SemanticAnalyzerFactory {
       case HiveParser.TOK_LOAD: return new LoadSemanticAnalyzer(conf);
       case HiveParser.TOK_CREATETABLE: 
       case HiveParser.TOK_DROPTABLE: 
-      case HiveParser.TOK_DESCTABLE: 
+      case HiveParser.TOK_DESCTABLE:
+      case HiveParser.TOK_DESCFUNCTION:
       case HiveParser.TOK_MSCK:
       case HiveParser.TOK_ALTERTABLE_ADDCOLS:
       case HiveParser.TOK_ALTERTABLE_REPLACECOLS:

@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -29,6 +30,10 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
  * overriding the terminate() method of the evaluator.
  *
  */
+@description(
+    name = "var_samp",
+    value = "_FUNC_(x) - Returns the sample variance of a set of numbers"
+)
 public class GenericUDAFVarianceSample extends GenericUDAFVariance {
   
   @Override

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -31,6 +32,14 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObj
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 
+@description(
+    name = "split",
+    value = "_FUNC_(str, regex) - Splits str around occurances that match " +
+		    "regex",
+    extended = "Example:\n" +
+    "  > SELECT _FUNC_('oneAtwoBthreeC', '[ABC]') FROM src LIMIT 1;\n" +
+    "  [\"one\", \"two\", \"three\"]"
+    )
 public class GenericUDFSplit extends GenericUDF {
   private ObjectInspectorConverters.Converter[] converters;
   

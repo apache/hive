@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -32,42 +33,40 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
-import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
-import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
+import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
+import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.alterTableDesc;
 import org.apache.hadoop.hive.ql.plan.createTableDesc;
 import org.apache.hadoop.hive.ql.plan.createTableLikeDesc;
+import org.apache.hadoop.hive.ql.plan.descFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.descTableDesc;
 import org.apache.hadoop.hive.ql.plan.dropTableDesc;
+import org.apache.hadoop.hive.ql.plan.fetchWork;
+import org.apache.hadoop.hive.ql.plan.showFunctionsDesc;
 import org.apache.hadoop.hive.ql.plan.showPartitionsDesc;
 import org.apache.hadoop.hive.ql.plan.showTablesDesc;
-import org.apache.hadoop.hive.ql.plan.showFunctionsDesc;
+import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.ql.plan.alterTableDesc.alterTableTypes;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
-import org.apache.hadoop.hive.ql.plan.fetchWork;
-import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
-import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
-import org.apache.hadoop.mapred.TextInputFormat;
-import org.apache.hadoop.hive.ql.exec.Task;
-import java.io.Serializable;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
+import org.apache.hadoop.mapred.TextInputFormat;
 
 public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private static final Log LOG = LogFactory.getLog("hive.ql.parse.DDLSemanticAnalyzer");
@@ -120,6 +119,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     } else if (ast.getToken().getType() == HiveParser.TOK_SHOWFUNCTIONS) {
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeShowFunctions(ast);
+    } else if (ast.getToken().getType() == HiveParser.TOK_DESCFUNCTION) {
+      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
+      analyzeDescFunction(ast);
     } else if (ast.getToken().getType() == HiveParser.TOK_MSCK) {
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeMetastoreCheck(ast);    
@@ -593,6 +595,33 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     rootTasks.add(TaskFactory.get(new DDLWork(showFuncsDesc), conf));
     setFetchTask(createFetchTask(showFuncsDesc.getSchema()));
+  }
+  
+  /**
+   * Add the task according to the parsed command tree.
+   * This is used for the CLI command "DESCRIBE FUNCTION;".
+   * @param ast The parsed command tree.
+   * @throws SemanticException Parsing failed
+   */
+  private void analyzeDescFunction(ASTNode ast)
+  throws SemanticException {
+    String funcName;
+    boolean isExtended;
+    
+    if(ast.getChildCount() == 1) {
+      funcName = ast.getChild(0).getText();
+      isExtended = false;
+    } else if(ast.getChildCount() == 2) {
+      funcName = ast.getChild(0).getText();
+      isExtended = true;
+    } else {
+      throw new SemanticException("Unexpected Tokens at DESCRIBE FUNCTION");
+    }
+
+    descFunctionDesc descFuncDesc = new descFunctionDesc(ctx.getResFile(),
+                                                          funcName, isExtended);
+    rootTasks.add(TaskFactory.get(new DDLWork(descFuncDesc), conf));
+    setFetchTask(createFetchTask(descFuncDesc.getSchema()));
   }
 
   private void analyzeAlterTableRename(ASTNode ast) 

@@ -120,6 +120,8 @@ Trunk - Unreleased
 
     HIVE-729. Make AS in select list optional. (Zheng Shao via namit)
 
+    HIVE-691. show documentation for functions. (Emil Ibrishimov via namit)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 

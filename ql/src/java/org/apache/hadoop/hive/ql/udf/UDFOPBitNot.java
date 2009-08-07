@@ -21,12 +21,19 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 
-
+@description(
+    name = "~",
+    value = "_FUNC_ n - Bitwise not",
+    extended = "Example:\n" +
+        "  > SELECT _FUNC_ 0 FROM src LIMIT 1;\n" +
+        "  -1"
+)
 public class UDFOPBitNot extends UDFBaseBitOP {
 
   private static Log LOG = LogFactory.getLog(UDFOPBitNot.class.getName());

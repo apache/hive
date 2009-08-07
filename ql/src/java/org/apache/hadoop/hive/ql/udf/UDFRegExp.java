@@ -19,12 +19,21 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.Text;
 
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
+@description(
+    name = "rlike,regexp",
+    value = "str _FUNC_ regexp - Returns true if str matches regexp and " +
+    		"false otherwise",
+    extended = "Example:\n" +
+        "  > SELECT 'fb' _FUNC_ '.*' FROM src LIMIT 1;\n" +
+        "  true"
+    )
 public class UDFRegExp extends UDF {
 
   private Text lastRegex = new Text();

@@ -22,6 +22,7 @@ import java.sql.Date;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -31,7 +32,10 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
-
+@description(
+    name = "<",
+    value = "a _FUNC_ b - Returns TRUE if a is less than b"
+)
 public class UDFOPLessThan extends UDFBaseCompare {
 
   private static Log LOG = LogFactory.getLog(UDFOPLessThan.class.getName());

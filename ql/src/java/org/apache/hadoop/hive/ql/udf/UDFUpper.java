@@ -19,8 +19,16 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.io.Text;
 
+@description(
+    name = "upper,ucase",
+    value = "_FUNC_(str) - Returns str with all characters changed to uppercase",
+    extended = "Example:\n" +
+        "  > SELECT _FUNC_('Facebook') FROM src LIMIT 1;\n" +
+        "  'FACEBOOK'"
+    )
 public class UDFUpper extends UDF {
 
   Text t = new Text();

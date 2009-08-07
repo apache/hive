@@ -20,11 +20,16 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
+import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.BooleanWritable;
 
+@description(
+    name = "isnotnull",
+    value = "_FUNC_ a - Returns true if a is not NULL and false otherwise"
+)
 public class GenericUDFOPNotNull extends GenericUDF {
 
   BooleanWritable result = new BooleanWritable();

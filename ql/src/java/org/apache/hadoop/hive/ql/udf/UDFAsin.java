@@ -21,9 +21,18 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
-
+@description(
+    name = "asin",
+    value = "_FUNC_(x) - returns the arc sine of x if -1<=x<=1 or NULL otherwise",
+    extended = "Example:\n" +
+      "  > SELECT _FUNC_(0) FROM src LIMIT 1;\n" +
+      "  0\n" +
+      "  > SELECT _FUNC_(2) FROM src LIMIT 1;\n" +
+      "  NULL"
+    )
 public class UDFAsin extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFAsin.class.getName());

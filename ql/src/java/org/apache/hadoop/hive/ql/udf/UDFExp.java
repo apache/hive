@@ -21,9 +21,16 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
-
+@description(
+    name = "exp",
+    value = "_FUNC_(x) - Returns e to the power of x",
+    extended = "Example:\n " +
+        "  > SELECT _FUNC_(0) FROM src LIMIT 1;\n" +
+        "  1"
+    )
 public class UDFExp extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFExp.class.getName());

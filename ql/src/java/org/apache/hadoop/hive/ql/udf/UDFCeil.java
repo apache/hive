@@ -21,9 +21,19 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.LongWritable;
 
+@description(
+    name = "ceil,ceiling",
+    value = "_FUNC_(x) - Find the smallest integer not smaller than x",
+    extended = "Example:\n" +
+    		"  > SELECT _FUNC_(-0.1) FROM src LIMIT 1;\n" +
+    		"  0\n" +
+    		"  > SELECT _FUNC_(5) FROM src LIMIT 1;\n" +
+    		"  5"
+    )
 public class UDFCeil extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFCeil.class.getName());

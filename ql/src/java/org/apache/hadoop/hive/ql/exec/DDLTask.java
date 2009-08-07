@@ -29,8 +29,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.Map.Entry;
 
@@ -45,7 +45,6 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.metadata.CheckResult;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -59,19 +58,20 @@ import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.alterTableDesc;
 import org.apache.hadoop.hive.ql.plan.createTableDesc;
 import org.apache.hadoop.hive.ql.plan.createTableLikeDesc;
+import org.apache.hadoop.hive.ql.plan.descFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.descTableDesc;
 import org.apache.hadoop.hive.ql.plan.dropTableDesc;
+import org.apache.hadoop.hive.ql.plan.showFunctionsDesc;
 import org.apache.hadoop.hive.ql.plan.showPartitionsDesc;
 import org.apache.hadoop.hive.ql.plan.showTablesDesc;
-import org.apache.hadoop.hive.ql.plan.showFunctionsDesc;
 import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
+import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
-import org.apache.hadoop.hive.serde2.Deserializer;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
-import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.util.StringUtils;
 
 /**
@@ -131,6 +131,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       descTableDesc descTbl = work.getDescTblDesc();
       if (descTbl != null) {
         return describeTable(db, descTbl);
+      }
+      
+      descFunctionDesc descFunc = work.getDescFunctionDesc();
+      if (descFunc != null) {
+        return describeFunction(descFunc);
       }
 
       showTablesDesc showTbls = work.getShowTblsDesc();
@@ -414,6 +419,55 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
+  /**
+   * Shows a description of a function.
+   * 
+   * @param descFunc is the function we are describing
+   * @throws HiveException
+   */
+  private int describeFunction(descFunctionDesc descFunc)
+      throws HiveException {
+    String name = descFunc.getName();
+    
+    // write the results in the file
+    try {
+      FileSystem fs = descFunc.getResFile().getFileSystem(conf);
+      DataOutput outStream = (DataOutput)fs.create(descFunc.getResFile());
+
+      // get the function documentation
+      description desc = null;
+      FunctionInfo fi = FunctionRegistry.getFunctionInfo(name);
+      if(fi.getUDFClass() != null) {
+        desc = fi.getUDFClass().getAnnotation(description.class);
+      } else if(fi.getGenericUDFClass() != null) {
+        desc = fi.getGenericUDFClass().getAnnotation(description.class);
+      }
+      
+      if (desc != null) {
+        outStream.writeBytes(desc.value().replace("_FUNC_", name));
+        if(descFunc.isExtended() && desc.extended().length()>0) {
+          outStream.writeBytes("\n"+desc.extended().replace("_FUNC_", name));
+        }
+      } else {
+        outStream.writeBytes("Function " + name + " does not exist or cannot" +
+        		" find documentation for it.");
+      }
+      
+      outStream.write(terminator);
+     
+      ((FSDataOutputStream)outStream).close();
+    } catch (FileNotFoundException e) {
+      LOG.warn("describe function: " + StringUtils.stringifyException(e));
+      return 1;
+    } catch (IOException e) {
+      LOG.warn("describe function: " + StringUtils.stringifyException(e));
+      return 1;
+    } catch (Exception e) {
+      throw new HiveException(e.toString());
+    }
+    return 0;
+  }  
+  
   /**
    * Write the description of a table to a file.
    * 

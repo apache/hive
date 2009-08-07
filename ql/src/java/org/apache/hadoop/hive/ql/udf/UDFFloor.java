@@ -21,10 +21,19 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.LongWritable;
 
-
+@description(
+    name = "floor",
+    value = "_FUNC_(x) - Find the largest integer not greater than x",
+    extended = "Example:\n" +
+        "  > SELECT _FUNC_(-0.1) FROM src LIMIT 1;\n" +
+        "  -1\n" +
+        "  > SELECT _FUNC_(5) FROM src LIMIT 1;\n" +
+        "  5"
+    )
 public class UDFFloor extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFFloor.class.getName());

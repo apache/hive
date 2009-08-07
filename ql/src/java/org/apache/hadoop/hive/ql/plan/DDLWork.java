@@ -28,6 +28,7 @@ public class DDLWork implements Serializable {
   private alterTableDesc       alterTblDesc;
   private showTablesDesc       showTblsDesc;
   private showFunctionsDesc    showFuncsDesc;
+  private descFunctionDesc     descFunctionDesc;
   private showPartitionsDesc   showPartsDesc;
   private descTableDesc        descTblDesc;
   private AddPartitionDesc addPartitionDesc;
@@ -82,6 +83,13 @@ public class DDLWork implements Serializable {
    */
   public DDLWork(showFunctionsDesc showFuncsDesc) {
     this.showFuncsDesc = showFuncsDesc;
+  }
+  
+  /**
+   * @param descFuncDesc
+   */
+  public DDLWork(descFunctionDesc descFuncDesc) {
+    this.descFunctionDesc = descFuncDesc;
   }
 
   /**
@@ -185,12 +193,27 @@ public class DDLWork implements Serializable {
   public showFunctionsDesc getShowFuncsDesc() {
     return showFuncsDesc;
   }
+  
+  /**
+   * @return the descFuncDesc
+   */
+  @explain(displayName="Show Function Operator")
+  public descFunctionDesc getDescFunctionDesc() {
+    return descFunctionDesc;
+  }
 
   /**
    * @param showFuncsDesc the showFuncsDesc to set
    */
   public void setShowFuncsDesc(showFunctionsDesc showFuncsDesc) {
     this.showFuncsDesc = showFuncsDesc;
+  }
+  
+  /**
+   * @param showFuncsDesc the showFuncsDesc to set
+   */
+  public void setDescFuncDesc(descFunctionDesc descFuncDesc) {
+    this.descFunctionDesc = descFuncDesc;
   }
 
   /**

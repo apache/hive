@@ -21,9 +21,16 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
-
+@description(
+    name = "log10",
+    value = "_FUNC_(x) - Returns the logarithm of x with base 10",
+    extended = "Example:\n" +
+        "  > SELECT _FUNC_(10) FROM src LIMIT 1;\n" +
+        "  1"
+    )
 public class UDFLog10 extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFLog10.class.getName());

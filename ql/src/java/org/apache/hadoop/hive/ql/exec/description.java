@@ -16,34 +16,14 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.udf;
+package org.apache.hadoop.hive.ql.exec;
 
-import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.ql.exec.description;
-import org.apache.hadoop.io.Text;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
-@description(
-    name = "concat",
-    value = "_FUNC_(str1, str2) - returns the concatenation of str1 and str2",
-    extended = "Returns NULL if any argument is NULL.\n" +
-    		"Example:\n" +
-    		"  > SELECT _FUNC_('abc', 'def') FROM src LIMIT 1;\n" +
-    		"  'abcdef'"
-    )
-public class UDFConcat extends UDF {
-
-  public UDFConcat() {
-  }
-
-  Text text = new Text();
-  public Text evaluate(Text a, Text b) {
-    if (a == null || b == null) {
-      return null;
-    }
-    text.clear();
-    text.set(a);
-    text.append(b.getBytes(), 0, b.getLength());
-    return text;
-  }
-  
+@Retention(RetentionPolicy.RUNTIME)
+public @interface description {
+  String value() default "_FUNC_ is undocumented";
+  String extended() default "";
+  String name() default "";
 }

@@ -25,12 +25,20 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.description;
 
 /**
  * UDF to extract a specific group identified by a java regex.
  * Note that if a regexp has a backslash ('\'), then need to specify '\\'
  * For example, regexp_extract('100-200', '(\\d+)-(\\d+)', 1) will return '100'
  */
+@description(
+    name = "regexp_extract",
+    value = "_FUNC_(str, regexp[, idx]) - extracts a group that matches regexp",
+    extended = "Example:\n" +
+        "  > SELECT _FUNC_('100-200', '(\\d+)-(\\d+)', 1) FROM src LIMIT 1;\n" +
+        "  '100'"
+    )
 public class UDFRegExpExtract extends UDF {
   private static Log LOG = LogFactory.getLog(UDFRegExpExtract.class.getName());
 

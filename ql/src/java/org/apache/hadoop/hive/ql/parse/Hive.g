@@ -82,6 +82,7 @@ TOK_MAP;
 TOK_CREATETABLE;
 TOK_LIKETABLE;
 TOK_DESCTABLE;
+TOK_DESCFUNCTION;
 TOK_ALTERTABLE_RENAME;
 TOK_ALTERTABLE_ADDCOLS;
 TOK_ALTERTABLE_REPLACECOLS;
@@ -298,7 +299,8 @@ partTypeExpr
 descStatement
 @init { msgs.push("describe statement"); }
 @after { msgs.pop(); }
-    : KW_DESCRIBE (isExtended=KW_EXTENDED)? (parttype=partTypeExpr)  -> ^(TOK_DESCTABLE $parttype $isExtended?)
+    : KW_DESCRIBE (isExtended=KW_EXTENDED)? (parttype=partTypeExpr) -> ^(TOK_DESCTABLE $parttype $isExtended?)
+    | KW_DESCRIBE KW_FUNCTION KW_EXTENDED? Identifier -> ^(TOK_DESCFUNCTION Identifier KW_EXTENDED?) 
     ;
 
 showStatement

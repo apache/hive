@@ -22,11 +22,18 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 
-
+@description(
+    name = "round",
+    value = "_FUNC_(x[, d]) - round x to d decimal places",
+    extended = "Example:\n" +
+        "  > SELECT _FUNC_(12.3456, 1) FROM src LIMIT 1;\n" +
+        "  12.3'"
+    )
 public class UDFRound extends UDF {
 
   DoubleWritable doubleWritable = new DoubleWritable();

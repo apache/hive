@@ -21,9 +21,17 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.io.BooleanWritable;
 
-
+@description(
+    name = "and,&&",
+    value = "a _FUNC_ b - Logical and",
+    extended = "Example:\n" +
+        "  > SELECT * FROM srcpart WHERE src.hr=12 _FUNC_ " +
+        "src.hr='2008-04-08' LIMIT 1;\n" +
+        "  27      val_27  2008-04-08      12"
+)
 public class UDFOPAnd extends UDF {
 
   private static Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.udf.UDFOPAnd");

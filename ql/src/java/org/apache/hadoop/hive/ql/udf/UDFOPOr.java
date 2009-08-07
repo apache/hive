@@ -21,9 +21,13 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.io.BooleanWritable;
 
-
+@description(
+    name = "or,||",
+    value = "a _FUNC_ b - Logical or"
+)
 public class UDFOPOr extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFOPOr.class.getName());

@@ -31,9 +31,29 @@ import org.json.JSONException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.io.Text;
 
-
+@description(
+    name = "get_json_object",
+    value = "_FUNC_(json_txt, path) - Extract a json object from path ",
+    extended = "Extract json object from a json string based on json path " +
+    		"specified, and return json string of the extracted json object. It " +
+    		"will return null if the input json string is invalid.\n" +
+        "A limited version of JSONPath supported:\n" +
+        "  $   : Root object\n" +
+        "  .   : Child operator\n" +
+        "  []  : Subscript operator for array\n" +
+        "  *   : Wildcard for []\n" +
+        "Syntax not supported that's worth noticing:\n" +
+        "  ''  : Zero length string as key\n" +
+        "  ..  : Recursive descent\n" +
+        "  &amp;#064;   : Current object/element\n" +
+        "  ()  : Script expression\n" +
+        "  ?() : Filter (script) expression.\n" +
+        "  [,] : Union operator\n" +
+        "  [start:end:step] : array slice operator\n"
+    )
 public class UDFJson extends UDF {
   private static Log LOG = LogFactory.getLog(UDFJson.class.getName());
   private Pattern pattern_key = Pattern.compile("^([a-zA-Z0-9_\\-]+).*");

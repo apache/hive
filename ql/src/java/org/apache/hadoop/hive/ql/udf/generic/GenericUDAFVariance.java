@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import java.util.ArrayList;
 
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -43,6 +44,10 @@ import org.apache.hadoop.io.LongWritable;
  *   GenericUDAFStdSample
  *
  */
+@description(
+    name = "variance,var_pop",
+    value = "_FUNC_(x) - Returns the variance of a set of numbers"
+)
 public class GenericUDAFVariance implements GenericUDAFResolver {
   
   @Override

@@ -19,10 +19,22 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-
+@description(
+    name = "hex",
+    value = "_FUNC_(n or str) - Convert the argument to hexadecimal ",
+    extended = "If the argument is a string, returns two hex digits for each " +
+    		"character in the string.\n" +
+    		"If the argument is a number, returns the hexadecimal representation.\n" +
+    		"Example:\n" +
+        "  > SELECT _FUNC_(17) FROM src LIMIT 1;\n" +
+        "  'H1'\n" +
+        "  > SELECT _FUNC_('Facebook') FROM src LIMIT 1;\n" +
+        "  '46616365626F6F6B'"
+    )
 public class UDFHex extends UDF { 
   private Text result = new Text();
   byte[] value = new byte[16];

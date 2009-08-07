@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
@@ -39,6 +40,14 @@ import org.apache.hadoop.io.Text;
  * LOCATE(substr, str, start)
  * </pre><p>
  */
+@description(
+    name = "locate",
+    value = "_FUNC_(substr, str[, pos]) - Returns the position of the first " +
+    		"occurance of substr in str after position pos",
+    extended = "Example:\n" +
+        "  > SELECT _FUNC_('bar', 'foobarbar', 5) FROM src LIMIT 1;\n" +
+        "  7"
+    )
 public class GenericUDFLocate extends GenericUDF{
 
   ObjectInspectorConverters.Converter[] converters;

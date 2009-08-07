@@ -19,10 +19,20 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 
+@description(
+    name = "abs",
+    value = "_FUNC_(x) - returns the absolute value of x",
+    extended = "Example:\n" +
+    		"  > SELECT _FUNC_(0) FROM src LIMIT 1;\n" +
+    		"  0\n" +
+    		"  > SELECT _FUNC_(-5) FROM src LIMIT 1;\n" +
+    		"  5"
+    )
 public class UDFAbs extends UDF { 
   
   private DoubleWritable resultDouble = new DoubleWritable();

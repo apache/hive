@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -38,6 +39,13 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
  * NOTES:
  * 1. a, b and c should have the same TypeInfo, or an exception will be thrown.
  */
+@description(
+    name = "coalesce",
+    value = "_FUNC_(a1, a2, ...) - Returns the first non-null argument",
+    extended = "Example:\n" +
+        "  > SELECT _FUNC_(NULL, 1, NULL) FROM src LIMIT 1;\n" +
+        "  1"
+    )
 public class GenericUDFCoalesce extends GenericUDF {
 
   private static Log LOG = LogFactory.getLog(GenericUDFCoalesce.class.getName());

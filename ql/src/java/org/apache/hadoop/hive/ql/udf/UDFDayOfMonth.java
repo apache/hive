@@ -26,10 +26,19 @@ import java.util.Date;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
-
+@description(
+    name = "day,dayofmonth",
+    value = "_FUNC_(date) - Returns the date of the month of date",
+    extended = "date is a string in the format of 'yyyy-MM-dd HH:mm:ss' or " +
+    		"'yyyy-MM-dd'.\n" +
+        "Example:\n " +
+        "  > SELECT _FUNC_('2009-30-07', 1) FROM src LIMIT 1;\n" +
+        "  30"
+    )
 public class UDFDayOfMonth extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFDayOfMonth.class.getName());

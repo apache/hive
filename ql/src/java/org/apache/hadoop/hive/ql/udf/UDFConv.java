@@ -20,10 +20,23 @@ package org.apache.hadoop.hive.ql.udf;
 import java.util.Arrays;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
+@description(
+    name = "conv",
+    value="_FUNC_(num, from_base, to_base) - convert num from from_base to" +
+    		" to_base",
+    extended="If to_base is negative, treat num as a signed integer," +
+    		"otherwise, treat it as an unsigned integer.\n" +
+    		"Example:\n" +
+        "  > SELECT _FUNC_('100', 2, 10) FROM src LIMIT 1;\n" +
+        "  '4'\n" +
+        "  > SELECT _FUNC_(-10, 16, -10) FROM src LIMIT 1;\n" +
+        "  '16'"
+    )
 public class UDFConv extends UDF {
   private Text result = new Text();
   private byte[] value = new byte[64];

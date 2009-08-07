@@ -26,11 +26,18 @@ import java.util.Date;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
 
 @UDFType(deterministic=false)
+@description(
+    name = "unix_timestamp",
+    value = "_FUNC_([date[, pattern]]) - Returns the UNIX timestamp",
+    extended = "Converts the current or specified time to number of seconds " +
+    		"since 1970-01-01."
+    )
 public class UDFUnixTimeStamp extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFUnixTimeStamp.class.getName());

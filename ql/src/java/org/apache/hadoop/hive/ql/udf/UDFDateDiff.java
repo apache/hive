@@ -25,10 +25,21 @@ import java.util.TimeZone;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 
-
+@description(
+    name = "datediff",
+    value = "_FUNC_(date1, date2) - Returns the number of days between date1 " +
+    		"and date2",
+    extended = "date1 and date2 are strings in the format " +
+    		"'yyyy-MM-dd HH:mm:ss' or 'yyyy-MM-dd'. The time parts are ignored." +
+    		"If date1 is earlier than date2, the result is negative.\n" +
+        "Example:\n " +
+        "  > SELECT _FUNC_('2009-30-07', '2009-31-07') FROM src LIMIT 1;\n" +
+        "  1"
+    )
 public class UDFDateDiff extends UDF {
 
   private static Log LOG = LogFactory.getLog(UDFDateDiff.class.getName());
