@@ -483,6 +483,8 @@ Trunk - Unreleased
     HIVE-344. Fixes for running Hive under cygwin.
     (Amr Awadallah via athusoo)
 
+    HIVE-740. Fix HiveMetaStore get_fields. (Eric Hwang via zshao)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

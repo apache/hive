@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 
@@ -640,12 +641,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         } catch (NoSuchObjectException e) {
           throw new UnknownTableException(e.getMessage());
         }
-        try {
-          Deserializer s = MetaStoreUtils.getDeserializer(this.hiveConf, tbl);
-          return MetaStoreUtils.getFieldsFromDeserializer(tableName, s);
-        } catch(SerDeException e) {
-          StringUtils.stringifyException(e);
-          throw new MetaException(e.getMessage());
+        boolean isNative = SerDeUtils.isNativeSerDe(tbl.getSd().getSerdeInfo().getSerializationLib());
+        if (isNative)
+          return tbl.getSd().getCols();
+        else {
+          try {
+            Deserializer s = MetaStoreUtils.getDeserializer(this.hiveConf, tbl);
+            return MetaStoreUtils.getFieldsFromDeserializer(tableName, s);
+          } catch(SerDeException e) {
+            StringUtils.stringifyException(e);
+            throw new MetaException(e.getMessage());
+          }
         }
       }
 
