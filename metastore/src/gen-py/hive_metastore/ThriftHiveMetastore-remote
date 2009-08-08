@@ -30,6 +30,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  bool drop_type(string type)'
   print '   get_type_all(string name)'
   print '   get_fields(string db_name, string table_name)'
+  print '   get_schema(string db_name, string table_name)'
   print '  void create_table(Table tbl)'
   print '  void drop_table(string dbname, string name, bool deleteData)'
   print '   get_tables(string db_name, string pattern)'
@@ -143,6 +144,12 @@ elif cmd == 'get_fields':
     print 'get_fields requires 2 args'
     sys.exit(1)
   pp.pprint(client.get_fields(args[0],args[1],))
+
+elif cmd == 'get_schema':
+  if len(args) != 2:
+    print 'get_schema requires 2 args'
+    sys.exit(1)
+  pp.pprint(client.get_schema(args[0],args[1],))
 
 elif cmd == 'create_table':
   if len(args) != 1:

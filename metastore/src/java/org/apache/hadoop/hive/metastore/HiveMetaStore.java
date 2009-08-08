@@ -654,6 +654,42 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
         }
       }
+      
+      /**
+       * Return the schema of the table. This function includes partition columns
+       * in addition to the regular columns.
+       * @param db Name of the database
+       * @param tableName Name of the table
+       * @return List of columns, each column is a FieldSchema structure
+       * @throws MetaException
+       * @throws UnknownTableException
+       * @throws UnknownDBException
+       */
+      public List<FieldSchema> get_schema(String db, String tableName) 
+        throws MetaException, UnknownTableException, UnknownDBException {
+        this.incrementCounter("get_schema");
+        logStartFunction("get_schema: db=" + db + "tbl=" + tableName);
+        String [] names = tableName.split("\\.");
+        String base_table_name = names[0];
+        
+        Table tbl;
+        try {
+          tbl = this.get_table(db, base_table_name);
+        } catch (NoSuchObjectException e) {
+          throw new UnknownTableException(e.getMessage());
+        }
+        List<FieldSchema> fieldSchemas = this.get_fields(db, base_table_name);
+
+        if (tbl == null || fieldSchemas == null) {
+          throw new UnknownTableException(tableName + " doesn't exist");
+        }
+        
+        if (tbl.getPartitionKeys() != null) {
+          // Combine the column field schemas and the partition keys to create the whole schema
+          fieldSchemas.addAll(tbl.getPartitionKeys());
+        }
+        return fieldSchemas;
+      }
 
       public String getCpuProfile(int profileDurationInSec) throws TException {
         return "";

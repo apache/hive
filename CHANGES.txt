@@ -195,6 +195,9 @@ Trunk - Unreleased
     HIVE-454. Support escaping of ; in cli
     (Edward Capriolo via namit)
 
+    HIVE-736. Provide a function in Metastore to return the schema of a table.
+    (Eric Hwang via rmurthy)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).

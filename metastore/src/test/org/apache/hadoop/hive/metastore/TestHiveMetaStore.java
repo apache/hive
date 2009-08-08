@@ -400,6 +400,8 @@ public class TestHiveMetaStore extends TestCase {
     sd.getSerdeInfo().setName(tbl.getTableName());
     sd.getSerdeInfo().setParameters(new HashMap<String, String>());
     sd.getSerdeInfo().getParameters().put(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, "1");
+    sd.getSerdeInfo().setSerializationLib(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
+    tbl.setPartitionKeys(new ArrayList<FieldSchema>());
     
     client.createTable(tbl);
     
@@ -420,6 +422,23 @@ public class TestHiveMetaStore extends TestCase {
     tbl2.getParameters().put("EXTERNAL", "TRUE");
     tbl2.getSd().setLocation(tbl.getSd().getLocation() +"-2");
     
+    List<FieldSchema> fieldSchemas = client.getFields(dbName, tblName);
+    assertNotNull(fieldSchemas);
+    assertEquals(fieldSchemas.size(), tbl.getSd().getCols().size());
+    for (FieldSchema fs : tbl.getSd().getCols()) {
+      assertTrue(fieldSchemas.contains(fs));
+    }
+    
+    List<FieldSchema> fieldSchemasFull = client.getSchema(dbName, tblName);
+    assertNotNull(fieldSchemasFull);
+    assertEquals(fieldSchemasFull.size(), tbl.getSd().getCols().size()+tbl.getPartitionKeys().size());
+    for (FieldSchema fs : tbl.getSd().getCols()) {
+      assertTrue(fieldSchemasFull.contains(fs));
+    }
+    for (FieldSchema fs : tbl.getPartitionKeys()) {
+      assertTrue(fieldSchemasFull.contains(fs));
+    }
+    
     client.createTable(tbl2);
   
     Table tbl3 = client.getTable(dbName, tblName2);
@@ -431,6 +450,23 @@ public class TestHiveMetaStore extends TestCase {
     assertEquals(tbl3.getSd().getNumBuckets(), 1);
     assertEquals(tbl3.getSd().getLocation(), tbl2.getSd().getLocation());
     assertEquals(tbl3.getParameters(), tbl2.getParameters());
+    
+    fieldSchemas = client.getFields(dbName, tblName2);
+    assertNotNull(fieldSchemas);
+    assertEquals(fieldSchemas.size(), tbl2.getSd().getCols().size());
+    for (FieldSchema fs : tbl2.getSd().getCols()) {
+      assertTrue(fieldSchemas.contains(fs));
+    }
+    
+    fieldSchemasFull = client.getSchema(dbName, tblName2);
+    assertNotNull(fieldSchemasFull);
+    assertEquals(fieldSchemasFull.size(), tbl2.getSd().getCols().size()+tbl2.getPartitionKeys().size());
+    for (FieldSchema fs : tbl2.getSd().getCols()) {
+      assertTrue(fieldSchemasFull.contains(fs));
+    }
+    for (FieldSchema fs : tbl2.getPartitionKeys()) {
+      assertTrue(fieldSchemasFull.contains(fs));
+    }
     
   
     assertEquals("Use this for comments etc", tbl2.getSd().getParameters().get("test_param_1"));
@@ -574,6 +610,7 @@ public class TestHiveMetaStore extends TestCase {
       sd.getSerdeInfo().setName(tbl.getTableName());
       sd.getSerdeInfo().setParameters(new HashMap<String, String>());
       sd.getSerdeInfo().getParameters().put(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, "9");
+      sd.getSerdeInfo().setSerializationLib(org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.class.getName());
   
       tbl.setPartitionKeys(new ArrayList<FieldSchema>(2));
       tbl.getPartitionKeys().add(new FieldSchema("ds", org.apache.hadoop.hive.serde.Constants.DATE_TYPE_NAME, ""));
@@ -597,6 +634,23 @@ public class TestHiveMetaStore extends TestCase {
       assertEquals(Constants.INT_TYPE_NAME, tbl2.getPartitionKeys().get(1).getType());
       assertEquals("ds", tbl2.getPartitionKeys().get(0).getName());
       assertEquals("hr", tbl2.getPartitionKeys().get(1).getName());
+      
+      List<FieldSchema> fieldSchemas = client.getFields(dbName, tblName);
+      assertNotNull(fieldSchemas);
+      assertEquals(fieldSchemas.size(), tbl.getSd().getCols().size());
+      for (FieldSchema fs : tbl.getSd().getCols()) {
+        assertTrue(fieldSchemas.contains(fs));
+      }
+      
+      List<FieldSchema> fieldSchemasFull = client.getSchema(dbName, tblName);
+      assertNotNull(fieldSchemasFull);
+      assertEquals(fieldSchemasFull.size(), tbl.getSd().getCols().size()+tbl.getPartitionKeys().size());
+      for (FieldSchema fs : tbl.getSd().getCols()) {
+        assertTrue(fieldSchemasFull.contains(fs));
+      }
+      for (FieldSchema fs : tbl.getPartitionKeys()) {
+        assertTrue(fieldSchemasFull.contains(fs));
+      }
     } catch (Exception e) {
       System.err.println(StringUtils.stringifyException(e));
       System.err.println("testComplexTable() failed.");

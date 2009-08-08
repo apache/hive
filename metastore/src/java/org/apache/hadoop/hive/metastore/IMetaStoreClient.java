@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -190,4 +191,27 @@ public interface IMetaStoreClient {
   public void alter_partition(String dbName, String tblName,
       Partition newPart) throws InvalidOperationException, MetaException,
       TException;
+  
+  /**
+   * @param db
+   * @param tableName
+   * @throws UnknownTableException
+   * @throws UnknownDBException
+   * @throws MetaException
+   * @throws TException
+   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#get_fields(java.lang.String, java.lang.String)
+   */
+  public List<FieldSchema> getFields(String db, String tableName) 
+      throws MetaException, TException, UnknownTableException, UnknownDBException;
+  /**
+   * @param db
+   * @param tableName
+   * @throws UnknownTableException
+   * @throws UnknownDBException
+   * @throws MetaException
+   * @throws TException
+   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#get_schema(java.lang.String, java.lang.String)
+   */
+  public List<FieldSchema> getSchema(String db, String tableName) 
+      throws MetaException, TException, UnknownTableException, UnknownDBException;
 }

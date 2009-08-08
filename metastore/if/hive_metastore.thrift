@@ -151,7 +151,11 @@ service ThriftHiveMetastore extends fb303.FacebookService
   map<string, Type> get_type_all(1:string name)
                                 throws(1:MetaException o2)
 
+  // Gets a list of FieldSchemas describing the columns of a particular table
   list<FieldSchema> get_fields(1: string db_name, 2: string table_name) throws (1: MetaException o1, 2: UnknownTableException o2, 3: UnknownDBException o3),
+
+  // Gets a list of FieldSchemas describing both the columns and the partition keys of a particular table
+  list<FieldSchema> get_schema(1: string db_name, 2: string table_name) throws (1: MetaException o1, 2: UnknownTableException o2, 3: UnknownDBException o3)
 
   // create a Hive table. Following fields must be set
   // tableName

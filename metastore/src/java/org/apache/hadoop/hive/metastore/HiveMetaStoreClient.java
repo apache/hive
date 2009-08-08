@@ -28,6 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -37,6 +38,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
+import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -439,7 +441,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public Type getType(String name) throws MetaException, TException {
     return client.get_type(name);
   }
-
+  
   public List<String> getTables(String dbname, String tablePattern) throws MetaException {
     try {
       return client.get_tables(dbname, tablePattern);
@@ -477,6 +479,34 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
       Partition newPart) throws InvalidOperationException, MetaException,
       TException {
     client.alter_partition(dbName, tblName, newPart);
+  }
+  
+  /**
+   * @param db
+   * @param tableName
+   * @throws UnknownTableException
+   * @throws UnknownDBException
+   * @throws MetaException
+   * @throws TException
+   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#get_fields(java.lang.String, java.lang.String)
+   */
+  public List<FieldSchema> getFields(String db, String tableName) 
+      throws MetaException, TException, UnknownTableException, UnknownDBException {
+    return client.get_fields(db, tableName);
+  }
+
+  /**
+   * @param db
+   * @param tableName
+   * @throws UnknownTableException
+   * @throws UnknownDBException
+   * @throws MetaException
+   * @throws TException
+   * @see org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface#get_schema(java.lang.String, java.lang.String)
+   */
+  public List<FieldSchema> getSchema(String db, String tableName) 
+      throws MetaException, TException, UnknownTableException, UnknownDBException {
+    return client.get_schema(db, tableName);
   }
 
 }

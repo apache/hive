@@ -43,6 +43,8 @@ public class ThriftHiveMetastore {
 
     public List<FieldSchema> get_fields(String db_name, String table_name) throws MetaException, UnknownTableException, UnknownDBException, TException;
 
+    public List<FieldSchema> get_schema(String db_name, String table_name) throws MetaException, UnknownTableException, UnknownDBException, TException;
+
     public void create_table(Table tbl) throws AlreadyExistsException, InvalidObjectException, MetaException, NoSuchObjectException, TException;
 
     public void drop_table(String dbname, String name, boolean deleteData) throws NoSuchObjectException, MetaException, TException;
@@ -421,6 +423,49 @@ public class ThriftHiveMetastore {
         throw result.o3;
       }
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_fields failed: unknown result");
+    }
+
+    public List<FieldSchema> get_schema(String db_name, String table_name) throws MetaException, UnknownTableException, UnknownDBException, TException
+    {
+      send_get_schema(db_name, table_name);
+      return recv_get_schema();
+    }
+
+    public void send_get_schema(String db_name, String table_name) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("get_schema", TMessageType.CALL, seqid_));
+      get_schema_args args = new get_schema_args();
+      args.db_name = db_name;
+      args.table_name = table_name;
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public List<FieldSchema> recv_get_schema() throws MetaException, UnknownTableException, UnknownDBException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      get_schema_result result = new get_schema_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      if (result.o2 != null) {
+        throw result.o2;
+      }
+      if (result.o3 != null) {
+        throw result.o3;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_schema failed: unknown result");
     }
 
     public void create_table(Table tbl) throws AlreadyExistsException, InvalidObjectException, MetaException, NoSuchObjectException, TException
@@ -917,6 +962,7 @@ public class ThriftHiveMetastore {
       processMap_.put("drop_type", new drop_type());
       processMap_.put("get_type_all", new get_type_all());
       processMap_.put("get_fields", new get_fields());
+      processMap_.put("get_schema", new get_schema());
       processMap_.put("create_table", new create_table());
       processMap_.put("drop_table", new drop_table());
       processMap_.put("get_tables", new get_tables());
@@ -1212,6 +1258,38 @@ public class ThriftHiveMetastore {
           return;
         }
         oprot.writeMessageBegin(new TMessage("get_fields", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class get_schema implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        get_schema_args args = new get_schema_args();
+        args.read(iprot);
+        iprot.readMessageEnd();
+        get_schema_result result = new get_schema_result();
+        try {
+          result.success = iface_.get_schema(args.db_name, args.table_name);
+        } catch (MetaException o1) {
+          result.o1 = o1;
+        } catch (UnknownTableException o2) {
+          result.o2 = o2;
+        } catch (UnknownDBException o3) {
+          result.o3 = o3;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing get_schema", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing get_schema");
+          oprot.writeMessageBegin(new TMessage("get_schema", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("get_schema", TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -6225,6 +6303,700 @@ public class ThriftHiveMetastore {
 
   }
 
+  public static class get_schema_args implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_schema_args");
+    private static final TField DB_NAME_FIELD_DESC = new TField("db_name", TType.STRING, (short)1);
+    private static final TField TABLE_NAME_FIELD_DESC = new TField("table_name", TType.STRING, (short)2);
+
+    private String db_name;
+    public static final int DB_NAME = 1;
+    private String table_name;
+    public static final int TABLE_NAME = 2;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(DB_NAME, new FieldMetaData("db_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      put(TABLE_NAME, new FieldMetaData("table_name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(get_schema_args.class, metaDataMap);
+    }
+
+    public get_schema_args() {
+    }
+
+    public get_schema_args(
+      String db_name,
+      String table_name)
+    {
+      this();
+      this.db_name = db_name;
+      this.table_name = table_name;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_schema_args(get_schema_args other) {
+      if (other.isSetDb_name()) {
+        this.db_name = other.db_name;
+      }
+      if (other.isSetTable_name()) {
+        this.table_name = other.table_name;
+      }
+    }
+
+    @Override
+    public get_schema_args clone() {
+      return new get_schema_args(this);
+    }
+
+    public String getDb_name() {
+      return this.db_name;
+    }
+
+    public void setDb_name(String db_name) {
+      this.db_name = db_name;
+    }
+
+    public void unsetDb_name() {
+      this.db_name = null;
+    }
+
+    // Returns true if field db_name is set (has been asigned a value) and false otherwise
+    public boolean isSetDb_name() {
+      return this.db_name != null;
+    }
+
+    public String getTable_name() {
+      return this.table_name;
+    }
+
+    public void setTable_name(String table_name) {
+      this.table_name = table_name;
+    }
+
+    public void unsetTable_name() {
+      this.table_name = null;
+    }
+
+    // Returns true if field table_name is set (has been asigned a value) and false otherwise
+    public boolean isSetTable_name() {
+      return this.table_name != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case DB_NAME:
+        if (value == null) {
+          unsetDb_name();
+        } else {
+          setDb_name((String)value);
+        }
+        break;
+
+      case TABLE_NAME:
+        if (value == null) {
+          unsetTable_name();
+        } else {
+          setTable_name((String)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case DB_NAME:
+        return getDb_name();
+
+      case TABLE_NAME:
+        return getTable_name();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case DB_NAME:
+        return isSetDb_name();
+      case TABLE_NAME:
+        return isSetTable_name();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_schema_args)
+        return this.equals((get_schema_args)that);
+      return false;
+    }
+
+    public boolean equals(get_schema_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_db_name = true && this.isSetDb_name();
+      boolean that_present_db_name = true && that.isSetDb_name();
+      if (this_present_db_name || that_present_db_name) {
+        if (!(this_present_db_name && that_present_db_name))
+          return false;
+        if (!this.db_name.equals(that.db_name))
+          return false;
+      }
+
+      boolean this_present_table_name = true && this.isSetTable_name();
+      boolean that_present_table_name = true && that.isSetTable_name();
+      if (this_present_table_name || that_present_table_name) {
+        if (!(this_present_table_name && that_present_table_name))
+          return false;
+        if (!this.table_name.equals(that.table_name))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case DB_NAME:
+            if (field.type == TType.STRING) {
+              this.db_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case TABLE_NAME:
+            if (field.type == TType.STRING) {
+              this.table_name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.db_name != null) {
+        oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
+        oprot.writeString(this.db_name);
+        oprot.writeFieldEnd();
+      }
+      if (this.table_name != null) {
+        oprot.writeFieldBegin(TABLE_NAME_FIELD_DESC);
+        oprot.writeString(this.table_name);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_schema_args(");
+      boolean first = true;
+
+      sb.append("db_name:");
+      if (this.db_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.db_name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("table_name:");
+      if (this.table_name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.table_name);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class get_schema_result implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_schema_result");
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.LIST, (short)0);
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+    private static final TField O2_FIELD_DESC = new TField("o2", TType.STRUCT, (short)2);
+    private static final TField O3_FIELD_DESC = new TField("o3", TType.STRUCT, (short)3);
+
+    private List<FieldSchema> success;
+    public static final int SUCCESS = 0;
+    private MetaException o1;
+    public static final int O1 = 1;
+    private UnknownTableException o2;
+    public static final int O2 = 2;
+    private UnknownDBException o3;
+    public static final int O3 = 3;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new ListMetaData(TType.LIST, 
+              new StructMetaData(TType.STRUCT, FieldSchema.class))));
+      put(O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      put(O2, new FieldMetaData("o2", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      put(O3, new FieldMetaData("o3", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(get_schema_result.class, metaDataMap);
+    }
+
+    public get_schema_result() {
+    }
+
+    public get_schema_result(
+      List<FieldSchema> success,
+      MetaException o1,
+      UnknownTableException o2,
+      UnknownDBException o3)
+    {
+      this();
+      this.success = success;
+      this.o1 = o1;
+      this.o2 = o2;
+      this.o3 = o3;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_schema_result(get_schema_result other) {
+      if (other.isSetSuccess()) {
+        List<FieldSchema> __this__success = new ArrayList<FieldSchema>();
+        for (FieldSchema other_element : other.success) {
+          __this__success.add(new FieldSchema(other_element));
+        }
+        this.success = __this__success;
+      }
+      if (other.isSetO1()) {
+        this.o1 = new MetaException(other.o1);
+      }
+      if (other.isSetO2()) {
+        this.o2 = new UnknownTableException(other.o2);
+      }
+      if (other.isSetO3()) {
+        this.o3 = new UnknownDBException(other.o3);
+      }
+    }
+
+    @Override
+    public get_schema_result clone() {
+      return new get_schema_result(this);
+    }
+
+    public int getSuccessSize() {
+      return (this.success == null) ? 0 : this.success.size();
+    }
+
+    public java.util.Iterator<FieldSchema> getSuccessIterator() {
+      return (this.success == null) ? null : this.success.iterator();
+    }
+
+    public void addToSuccess(FieldSchema elem) {
+      if (this.success == null) {
+        this.success = new ArrayList<FieldSchema>();
+      }
+      this.success.add(elem);
+    }
+
+    public List<FieldSchema> getSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(List<FieldSchema> success) {
+      this.success = success;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    // Returns true if field success is set (has been asigned a value) and false otherwise
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public MetaException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(MetaException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    // Returns true if field o1 is set (has been asigned a value) and false otherwise
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public UnknownTableException getO2() {
+      return this.o2;
+    }
+
+    public void setO2(UnknownTableException o2) {
+      this.o2 = o2;
+    }
+
+    public void unsetO2() {
+      this.o2 = null;
+    }
+
+    // Returns true if field o2 is set (has been asigned a value) and false otherwise
+    public boolean isSetO2() {
+      return this.o2 != null;
+    }
+
+    public UnknownDBException getO3() {
+      return this.o3;
+    }
+
+    public void setO3(UnknownDBException o3) {
+      this.o3 = o3;
+    }
+
+    public void unsetO3() {
+      this.o3 = null;
+    }
+
+    // Returns true if field o3 is set (has been asigned a value) and false otherwise
+    public boolean isSetO3() {
+      return this.o3 != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((List<FieldSchema>)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((MetaException)value);
+        }
+        break;
+
+      case O2:
+        if (value == null) {
+          unsetO2();
+        } else {
+          setO2((UnknownTableException)value);
+        }
+        break;
+
+      case O3:
+        if (value == null) {
+          unsetO3();
+        } else {
+          setO3((UnknownDBException)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return getSuccess();
+
+      case O1:
+        return getO1();
+
+      case O2:
+        return getO2();
+
+      case O3:
+        return getO3();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      case O2:
+        return isSetO2();
+      case O3:
+        return isSetO3();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_schema_result)
+        return this.equals((get_schema_result)that);
+      return false;
+    }
+
+    public boolean equals(get_schema_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      boolean this_present_o2 = true && this.isSetO2();
+      boolean that_present_o2 = true && that.isSetO2();
+      if (this_present_o2 || that_present_o2) {
+        if (!(this_present_o2 && that_present_o2))
+          return false;
+        if (!this.o2.equals(that.o2))
+          return false;
+      }
+
+      boolean this_present_o3 = true && this.isSetO3();
+      boolean that_present_o3 = true && that.isSetO3();
+      if (this_present_o3 || that_present_o3) {
+        if (!(this_present_o3 && that_present_o3))
+          return false;
+        if (!this.o3.equals(that.o3))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case SUCCESS:
+            if (field.type == TType.LIST) {
+              {
+                TList _list70 = iprot.readListBegin();
+                this.success = new ArrayList<FieldSchema>(_list70.size);
+                for (int _i71 = 0; _i71 < _list70.size; ++_i71)
+                {
+                  FieldSchema _elem72;
+                  _elem72 = new FieldSchema();
+                  _elem72.read(iprot);
+                  this.success.add(_elem72);
+                }
+                iprot.readListEnd();
+              }
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O1:
+            if (field.type == TType.STRUCT) {
+              this.o1 = new MetaException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O2:
+            if (field.type == TType.STRUCT) {
+              this.o2 = new UnknownTableException();
+              this.o2.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O3:
+            if (field.type == TType.STRUCT) {
+              this.o3 = new UnknownDBException();
+              this.o3.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
+          for (FieldSchema _iter73 : this.success)          {
+            _iter73.write(oprot);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO2()) {
+        oprot.writeFieldBegin(O2_FIELD_DESC);
+        this.o2.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO3()) {
+        oprot.writeFieldBegin(O3_FIELD_DESC);
+        this.o3.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_schema_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o2:");
+      if (this.o2 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o2);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o3:");
+      if (this.o3 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o3);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
   public static class create_table_args implements TBase, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("create_table_args");
     private static final TField TBL_FIELD_DESC = new TField("tbl", TType.STRUCT, (short)1);
@@ -7870,13 +8642,13 @@ public class ThriftHiveMetastore {
           case SUCCESS:
             if (field.type == TType.LIST) {
               {
-                TList _list70 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list70.size);
-                for (int _i71 = 0; _i71 < _list70.size; ++_i71)
+                TList _list74 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list74.size);
+                for (int _i75 = 0; _i75 < _list74.size; ++_i75)
                 {
-                  String _elem72;
-                  _elem72 = iprot.readString();
-                  this.success.add(_elem72);
+                  String _elem76;
+                  _elem76 = iprot.readString();
+                  this.success.add(_elem76);
                 }
                 iprot.readListEnd();
               }
@@ -7910,8 +8682,8 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter73 : this.success)          {
-            oprot.writeString(_iter73);
+          for (String _iter77 : this.success)          {
+            oprot.writeString(_iter77);
           }
           oprot.writeListEnd();
         }
@@ -9997,13 +10769,13 @@ public class ThriftHiveMetastore {
           case PART_VALS:
             if (field.type == TType.LIST) {
               {
-                TList _list74 = iprot.readListBegin();
-                this.part_vals = new ArrayList<String>(_list74.size);
-                for (int _i75 = 0; _i75 < _list74.size; ++_i75)
+                TList _list78 = iprot.readListBegin();
+                this.part_vals = new ArrayList<String>(_list78.size);
+                for (int _i79 = 0; _i79 < _list78.size; ++_i79)
                 {
-                  String _elem76;
-                  _elem76 = iprot.readString();
-                  this.part_vals.add(_elem76);
+                  String _elem80;
+                  _elem80 = iprot.readString();
+                  this.part_vals.add(_elem80);
                 }
                 iprot.readListEnd();
               }
@@ -10040,8 +10812,8 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.part_vals.size()));
-          for (String _iter77 : this.part_vals)          {
-            oprot.writeString(_iter77);
+          for (String _iter81 : this.part_vals)          {
+            oprot.writeString(_iter81);
           }
           oprot.writeListEnd();
         }
@@ -10811,13 +11583,13 @@ public class ThriftHiveMetastore {
           case PART_VALS:
             if (field.type == TType.LIST) {
               {
-                TList _list78 = iprot.readListBegin();
-                this.part_vals = new ArrayList<String>(_list78.size);
-                for (int _i79 = 0; _i79 < _list78.size; ++_i79)
+                TList _list82 = iprot.readListBegin();
+                this.part_vals = new ArrayList<String>(_list82.size);
+                for (int _i83 = 0; _i83 < _list82.size; ++_i83)
                 {
-                  String _elem80;
-                  _elem80 = iprot.readString();
-                  this.part_vals.add(_elem80);
+                  String _elem84;
+                  _elem84 = iprot.readString();
+                  this.part_vals.add(_elem84);
                 }
                 iprot.readListEnd();
               }
@@ -10862,8 +11634,8 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.part_vals.size()));
-          for (String _iter81 : this.part_vals)          {
-            oprot.writeString(_iter81);
+          for (String _iter85 : this.part_vals)          {
+            oprot.writeString(_iter85);
           }
           oprot.writeListEnd();
         }
@@ -11518,13 +12290,13 @@ public class ThriftHiveMetastore {
           case PART_VALS:
             if (field.type == TType.LIST) {
               {
-                TList _list82 = iprot.readListBegin();
-                this.part_vals = new ArrayList<String>(_list82.size);
-                for (int _i83 = 0; _i83 < _list82.size; ++_i83)
+                TList _list86 = iprot.readListBegin();
+                this.part_vals = new ArrayList<String>(_list86.size);
+                for (int _i87 = 0; _i87 < _list86.size; ++_i87)
                 {
-                  String _elem84;
-                  _elem84 = iprot.readString();
-                  this.part_vals.add(_elem84);
+                  String _elem88;
+                  _elem88 = iprot.readString();
+                  this.part_vals.add(_elem88);
                 }
                 iprot.readListEnd();
               }
@@ -11561,8 +12333,8 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.part_vals.size()));
-          for (String _iter85 : this.part_vals)          {
-            oprot.writeString(_iter85);
+          for (String _iter89 : this.part_vals)          {
+            oprot.writeString(_iter89);
           }
           oprot.writeListEnd();
         }
@@ -12457,14 +13229,14 @@ public class ThriftHiveMetastore {
           case SUCCESS:
             if (field.type == TType.LIST) {
               {
-                TList _list86 = iprot.readListBegin();
-                this.success = new ArrayList<Partition>(_list86.size);
-                for (int _i87 = 0; _i87 < _list86.size; ++_i87)
+                TList _list90 = iprot.readListBegin();
+                this.success = new ArrayList<Partition>(_list90.size);
+                for (int _i91 = 0; _i91 < _list90.size; ++_i91)
                 {
-                  Partition _elem88;
-                  _elem88 = new Partition();
-                  _elem88.read(iprot);
-                  this.success.add(_elem88);
+                  Partition _elem92;
+                  _elem92 = new Partition();
+                  _elem92.read(iprot);
+                  this.success.add(_elem92);
                 }
                 iprot.readListEnd();
               }
@@ -12506,8 +13278,8 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
-          for (Partition _iter89 : this.success)          {
-            _iter89.write(oprot);
+          for (Partition _iter93 : this.success)          {
+            _iter93.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -13101,13 +13873,13 @@ public class ThriftHiveMetastore {
           case SUCCESS:
             if (field.type == TType.LIST) {
               {
-                TList _list90 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list90.size);
-                for (int _i91 = 0; _i91 < _list90.size; ++_i91)
+                TList _list94 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list94.size);
+                for (int _i95 = 0; _i95 < _list94.size; ++_i95)
                 {
-                  String _elem92;
-                  _elem92 = iprot.readString();
-                  this.success.add(_elem92);
+                  String _elem96;
+                  _elem96 = iprot.readString();
+                  this.success.add(_elem96);
                 }
                 iprot.readListEnd();
               }
@@ -13141,8 +13913,8 @@ public class ThriftHiveMetastore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter93 : this.success)          {
-            oprot.writeString(_iter93);
+          for (String _iter97 : this.success)          {
+            oprot.writeString(_iter97);
           }
           oprot.writeListEnd();
         }

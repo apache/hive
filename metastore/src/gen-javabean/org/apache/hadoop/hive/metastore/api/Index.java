@@ -25,6 +25,7 @@ public class Index implements TBase, java.io.Serializable, Cloneable {
   private static final TField TABLE_NAME_FIELD_DESC = new TField("tableName", TType.STRING, (short)3);
   private static final TField DB_NAME_FIELD_DESC = new TField("dbName", TType.STRING, (short)4);
   private static final TField COL_NAMES_FIELD_DESC = new TField("colNames", TType.LIST, (short)5);
+  private static final TField PART_NAME_FIELD_DESC = new TField("partName", TType.STRING, (short)6);
 
   private String indexName;
   public static final int INDEXNAME = 1;
@@ -36,6 +37,8 @@ public class Index implements TBase, java.io.Serializable, Cloneable {
   public static final int DBNAME = 4;
   private List<String> colNames;
   public static final int COLNAMES = 5;
+  private String partName;
+  public static final int PARTNAME = 6;
 
   private final Isset __isset = new Isset();
   private static final class Isset implements java.io.Serializable {
@@ -54,6 +57,8 @@ public class Index implements TBase, java.io.Serializable, Cloneable {
     put(COLNAMES, new FieldMetaData("colNames", TFieldRequirementType.DEFAULT, 
         new ListMetaData(TType.LIST, 
             new FieldValueMetaData(TType.STRING))));
+    put(PARTNAME, new FieldMetaData("partName", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.STRING)));
   }});
 
   static {
@@ -68,7 +73,8 @@ public class Index implements TBase, java.io.Serializable, Cloneable {
     int indexType,
     String tableName,
     String dbName,
-    List<String> colNames)
+    List<String> colNames,
+    String partName)
   {
     this();
     this.indexName = indexName;
@@ -77,6 +83,7 @@ public class Index implements TBase, java.io.Serializable, Cloneable {
     this.tableName = tableName;
     this.dbName = dbName;
     this.colNames = colNames;
+    this.partName = partName;
   }
 
   /**
@@ -100,6 +107,9 @@ public class Index implements TBase, java.io.Serializable, Cloneable {
         __this__colNames.add(other_element);
       }
       this.colNames = __this__colNames;
+    }
+    if (other.isSetPartName()) {
+      this.partName = other.partName;
     }
   }
 
@@ -209,6 +219,23 @@ public class Index implements TBase, java.io.Serializable, Cloneable {
     return this.colNames != null;
   }
 
+  public String getPartName() {
+    return this.partName;
+  }
+
+  public void setPartName(String partName) {
+    this.partName = partName;
+  }
+
+  public void unsetPartName() {
+    this.partName = null;
+  }
+
+  // Returns true if field partName is set (has been asigned a value) and false otherwise
+  public boolean isSetPartName() {
+    return this.partName != null;
+  }
+
   public void setFieldValue(int fieldID, Object value) {
     switch (fieldID) {
     case INDEXNAME:
@@ -251,6 +278,14 @@ public class Index implements TBase, java.io.Serializable, Cloneable {
       }
       break;
 
+    case PARTNAME:
+      if (value == null) {
+        unsetPartName();
+      } else {
+        setPartName((String)value);
+      }
+      break;
+
     default:
       throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
     }
@@ -273,6 +308,9 @@ public class Index implements TBase, java.io.Serializable, Cloneable {
     case COLNAMES:
       return getColNames();
 
+    case PARTNAME:
+      return getPartName();
+
     default:
       throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
     }
@@ -291,6 +329,8 @@ public class Index implements TBase, java.io.Serializable, Cloneable {
       return isSetDbName();
     case COLNAMES:
       return isSetColNames();
+    case PARTNAME:
+      return isSetPartName();
     default:
       throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
     }
@@ -351,6 +391,15 @@ public class Index implements TBase, java.io.Serializable, Cloneable {
       if (!(this_present_colNames && that_present_colNames))
         return false;
       if (!this.colNames.equals(that.colNames))
+        return false;
+    }
+
+    boolean this_present_partName = true && this.isSetPartName();
+    boolean that_present_partName = true && that.isSetPartName();
+    if (this_present_partName || that_present_partName) {
+      if (!(this_present_partName && that_present_partName))
+        return false;
+      if (!this.partName.equals(that.partName))
         return false;
     }
 
@@ -419,6 +468,13 @@ public class Index implements TBase, java.io.Serializable, Cloneable {
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case PARTNAME:
+          if (field.type == TType.STRING) {
+            this.partName = iprot.readString();
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           TProtocolUtil.skip(iprot, field.type);
           break;
@@ -463,6 +519,11 @@ public class Index implements TBase, java.io.Serializable, Cloneable {
       }
       oprot.writeFieldEnd();
     }
+    if (this.partName != null) {
+      oprot.writeFieldBegin(PART_NAME_FIELD_DESC);
+      oprot.writeString(this.partName);
+      oprot.writeFieldEnd();
+    }
     oprot.writeFieldStop();
     oprot.writeStructEnd();
   }
@@ -505,6 +566,14 @@ public class Index implements TBase, java.io.Serializable, Cloneable {
       sb.append("null");
     } else {
       sb.append(this.colNames);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("partName:");
+    if (this.partName == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.partName);
     }
     first = false;
     sb.append(")");
