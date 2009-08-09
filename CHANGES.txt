@@ -198,6 +198,9 @@ Trunk - Unreleased
     HIVE-736. Provide a function in Metastore to return the schema of a table.
     (Eric Hwang via rmurthy)
 
+    HIVE-617. Add 'jar' service to hive client shell.
+    (Edward Capriolo via rmurthy)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).
