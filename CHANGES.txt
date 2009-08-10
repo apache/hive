@@ -491,6 +491,8 @@ Trunk - Unreleased
 
     HIVE-740. Fix HiveMetaStore get_fields. (Eric Hwang via zshao)
 
+    HIVE-597. apache header for jdbc files. (Raghu Murthy via namit)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES
