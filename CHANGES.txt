@@ -496,6 +496,8 @@ Release 0.4.0 -  Unreleased
 
     HIVE-597. apache header for jdbc files. (Raghu Murthy via namit)
 
+    HIVE-734. fix nulls insertion problem. (Ning Zhang via via namit)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

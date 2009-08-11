@@ -1,0 +1,52 @@
+query: drop table temp_null
+query: drop table tt
+query: drop table tt_b
+query: create table temp_null(a int) stored as textfile
+query: load data local inpath '../data/files/test.dat' overwrite into table temp_null
+query: select null, null from temp_null
+Input: default/temp_null
+Output: file:/data/users/nzhang/work/734/734-trunk-apache-hive/build/ql/tmp/2083094836/10000
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+query: create table tt(a int, b string)
+query: insert overwrite table tt select null, null from temp_null
+Input: default/temp_null
+Output: default/tt
+query: select * from tt
+Input: default/tt
+Output: file:/data/users/nzhang/work/734/734-trunk-apache-hive/build/ql/tmp/2090243542/10000
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+query: create table tt_b(a int, b string) row format serde "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe"
+query: insert overwrite table tt_b select null, null from temp_null
+Input: default/temp_null
+Output: default/tt_b
+query: select * from tt_b
+Input: default/tt_b
+Output: file:/data/users/nzhang/work/734/734-trunk-apache-hive/build/ql/tmp/1191541403/10000
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+query: insert overwrite directory "../build/ql/test/data/warehouse/null_columns.out" select null, null from temp_null
+Input: default/temp_null
+Output: ../build/ql/test/data/warehouse/null_columns.out
+\N\N
+\N\N
+\N\N
+\N\N
+\N\N
+\N\N
+query: drop table tt
+query: drop table tt_b
+query: drop table temp_null

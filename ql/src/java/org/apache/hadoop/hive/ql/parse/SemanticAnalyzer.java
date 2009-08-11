@@ -128,6 +128,8 @@ import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 
+import org.apache.hadoop.hive.serde.Constants;
+
 /**
  * Implementation of the semantic analyzer
  */
@@ -2525,7 +2527,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           
           first = false;
           cols = cols.concat(colInfo.getInternalName());
-          colTypes = colTypes.concat(colInfo.getType().getTypeName());
+          
+          // Replace VOID type with string when the output is a temp table or local files.
+          // A VOID type can be generated under the query:
+          // 
+          //     select NULL from tt; 
+          // or
+          //     insert overwrite local directory "abc" select NULL from tt;
+          // 
+          // where there is no column type to which the NULL value should be converted.
+          // 
+          String tName = colInfo.getType().getTypeName();
+          if ( tName.equals(Constants.VOID_TYPE_NAME) )
+            colTypes = colTypes.concat(Constants.STRING_TYPE_NAME);
+          else
+            colTypes = colTypes.concat(tName);
         }
 
         if (!ctx.isMRTmpFileURI(destStr)) {
