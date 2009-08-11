@@ -12,6 +12,8 @@ Trunk -  Unreleased
 
   BUG FIXES
 
+    HIVE-734. problem while inserting nulls. (Ning Zhang via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
