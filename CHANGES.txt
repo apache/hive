@@ -1,5 +1,17 @@
 Hive Change Log
 
+Trunk -  Unreleased
+
+  INCOMPATIBLE CHANGES
+
+  NEW FEATURES
+
+  IMPROVEMENTS
+
+  OPTIMIZATIONS
+
+  BUG FIXES
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
