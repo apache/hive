@@ -178,10 +178,11 @@ public class MapJoinProcessor implements Transform {
           String outputCol = oldValueInfo.getInternalName();
           if (outputRS.get(key, field) == null) {
             outputColumnNames.add(outputCol);
-            exprNodeDesc colDesc = new exprNodeColumnDesc(valueInfo.getType(), valueInfo.getInternalName());
+            exprNodeDesc colDesc = new exprNodeColumnDesc(valueInfo.getType(), valueInfo.getInternalName(),
+                                                          valueInfo.getTabAlias(), valueInfo.getIsPartitionCol());
             values.add(colDesc);
             outputRS.put(key, field, new ColumnInfo(outputCol, 
-                valueInfo.getType()));
+                valueInfo.getType(), valueInfo.getTabAlias(), valueInfo.getIsPartitionCol()));
             colExprMap.put(outputCol, colDesc);
           }
         }
@@ -283,11 +284,11 @@ public class MapJoinProcessor implements Transform {
       String[] nm = inputRR.reverseLookup(internalName);
       ColumnInfo valueInfo = inputRR.get(nm[0], nm[1]);
       exprNodeDesc colDesc = new exprNodeColumnDesc(valueInfo.getType(),
-          valueInfo.getInternalName());
+          valueInfo.getInternalName(), nm[0], valueInfo.getIsPartitionCol());
       exprs.add(colDesc);
       outputs.add(internalName);
       outputRS .put(nm[0], nm[1], new ColumnInfo(internalName, 
-          valueInfo.getType()));
+          valueInfo.getType(), nm[0], valueInfo.getIsPartitionCol()));
       colExprMap.put(internalName, colDesc);
     }
   	

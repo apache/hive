@@ -20,6 +20,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src2:src 
+          TableScan
+            alias: src
             Filter Operator
               predicate:
                   expr: ((key > '2') and (key <> '4'))
@@ -46,6 +48,8 @@ STAGE PLANS:
                           expr: _col0
                           type: string
         src1:src 
+          TableScan
+            alias: src
             Filter Operator
               predicate:
                   expr: (((key > '1') and (key < '400')) and ((key > '20') and ((value < 'val_50') or (key > '2'))))
@@ -114,7 +118,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/119836077/10002 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1620295142/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0

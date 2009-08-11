@@ -15,6 +15,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src_thrift 
+          TableScan
+            alias: src_thrift
             Filter Operator
               predicate:
                   expr: (lint is not null and not mstringstring is null)
@@ -47,10 +49,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/1379940084/10000
+                destination: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/630839318/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/476600317/10002 
+              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/284782500/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -92,7 +94,7 @@ Input: default/src_thrift
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/1955798918/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/413755901/10000
 3	1	1
 3	1	1
 3	1	1

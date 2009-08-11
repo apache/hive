@@ -17,6 +17,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: hash(UDFToByte(1))
@@ -62,5 +64,5 @@ query: SELECT hash(CAST(1 AS TINYINT)), hash(CAST(2 AS SMALLINT)),
        hash(1, 2, 3)
 FROM src LIMIT 1
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/670266340/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/378731640/10000
 1	2	3	-1097262584	1067450368	1076887552	51508	96354	1	0	1026

@@ -16,6 +16,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         tstparttbl 
+          TableScan
+            alias: tstparttbl
             Select Operator
               Group By Operator
                 aggregations:
@@ -54,7 +56,7 @@ STAGE PLANS:
 query: select count(1) from tstparttbl
 Input: default/tstparttbl/ds=2008-04-08
 Input: default/tstparttbl/ds=2008-04-09
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/672327853/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/618377726/10000
 500
 query: DROP TABLE tstparttbl2
 query: CREATE TABLE tstparttbl2(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
@@ -74,6 +76,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         tstparttbl2 
+          TableScan
+            alias: tstparttbl2
             Select Operator
               Group By Operator
                 aggregations:
@@ -112,7 +116,7 @@ STAGE PLANS:
 query: select count(1) from tstparttbl2
 Input: default/tstparttbl2/ds=2008-04-08
 Input: default/tstparttbl2/ds=2008-04-09
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1422188471/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/135282100/10000
 0
 query: DROP TABLE tstparttbl
 query: CREATE TABLE tstparttbl(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
@@ -132,6 +136,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         tstparttbl 
+          TableScan
+            alias: tstparttbl
             Select Operator
               Group By Operator
                 aggregations:
@@ -170,7 +176,7 @@ STAGE PLANS:
 query: select count(1) from tstparttbl
 Input: default/tstparttbl/ds=2008-04-08
 Input: default/tstparttbl/ds=2008-04-09
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/159191500/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1316849116/10000
 500
 query: DROP TABLE tstparttbl2
 query: CREATE TABLE tstparttbl2(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
@@ -190,6 +196,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         tstparttbl2 
+          TableScan
+            alias: tstparttbl2
             Select Operator
               Group By Operator
                 aggregations:
@@ -228,7 +236,7 @@ STAGE PLANS:
 query: select count(1) from tstparttbl2
 Input: default/tstparttbl2/ds=2008-04-08
 Input: default/tstparttbl2/ds=2008-04-09
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/409275423/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/420382735/10000
 0
 query: DROP TABLE tstparttbl
 query: DROP TABLE tstparttbl2

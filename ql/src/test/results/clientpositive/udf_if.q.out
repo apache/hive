@@ -18,6 +18,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: if(true, 1, 2)
@@ -54,7 +56,7 @@ query: SELECT IF(TRUE, 1, 2) AS COL1,
        IF(IF(TRUE, NULL, FALSE), 1, 2) AS COL6
 FROM src LIMIT 1
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/1917296468/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1117188098/10000
 1	1	1	1	NULL	2
 query: -- Type conversions
 EXPLAIN
@@ -75,6 +77,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: if(true, UDFToShort(128), UDFToByte(1))
@@ -105,5 +109,5 @@ query: SELECT IF(TRUE, CAST(128 AS SMALLINT), CAST(1 AS TINYINT)) AS COL1,
        IF(FALSE, 'ABC', 12.3) AS COL4
 FROM src LIMIT 1
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/903772370/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/97050959/10000
 128	1.1	ABC	12.3

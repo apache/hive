@@ -27,22 +27,56 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 public class exprNodeColumnDesc extends exprNodeDesc implements Serializable {
   private static final long serialVersionUID = 1L;
+
+  /**
+   * The column name.
+   */
   private String column;
+
+  /**
+   * The alias of the table.
+   */
+  private String tabAlias;
+  
+  /**
+   * Is the column a partitioned column.
+   */
+  private boolean isPartitionCol;
   
   public exprNodeColumnDesc() {}
-  public exprNodeColumnDesc(TypeInfo typeInfo, String column) {
+  public exprNodeColumnDesc(TypeInfo typeInfo, String column,
+                            String tabAlias, boolean isPartitionCol) {
     super(typeInfo);
     this.column = column;
+    this.tabAlias = tabAlias;
+    this.isPartitionCol = isPartitionCol;
   }
-  public exprNodeColumnDesc(Class<?> c, String column) {
+  public exprNodeColumnDesc(Class<?> c, String column, String tabAlias,
+                            boolean isPartitionCol) {
     super(TypeInfoFactory.getPrimitiveTypeInfoFromJavaPrimitive(c));
     this.column = column;
+    this.tabAlias = tabAlias;
+    this.isPartitionCol = isPartitionCol;
   }
   public String getColumn() {
     return this.column;
   }
   public void setColumn(String column) {
     this.column = column;
+  }
+
+  public String getTabAlias() {
+    return this.tabAlias;
+  }
+  public void setTabAlias(String tabAlias) {
+    this.tabAlias = tabAlias;
+  }
+
+  public boolean getIsParititonCol() {
+    return this.isPartitionCol;
+  }
+  public void setIsPartitionCol(boolean isPartitionCol) {
+    this.isPartitionCol = isPartitionCol;
   }
 
   public String toString() {
@@ -62,7 +96,8 @@ public class exprNodeColumnDesc extends exprNodeDesc implements Serializable {
   }
   @Override
   public exprNodeDesc clone() {
-    return new exprNodeColumnDesc(this.typeInfo, this.column);
+    return new exprNodeColumnDesc(this.typeInfo, this.column, 
+                                  this.tabAlias, this.isPartitionCol);
   }
   @Override
   public boolean isSame(Object o) {

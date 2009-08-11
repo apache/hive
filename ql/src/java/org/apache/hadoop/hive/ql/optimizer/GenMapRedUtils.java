@@ -392,29 +392,38 @@ public class GenMapRedUtils {
     Path       tblDir  = null;
     tableDesc  tblDesc = null;
 
-    // Generate the map work for this alias_id
-    PartitionPruner pruner = parseCtx.getAliasToPruner().get(alias_id);
-    Set<Partition> parts = null;
+    PrunedPartitionList partsList = null;
+    
     try {
-      // pass both confirmed and unknown partitions through the map-reduce framework
-      PartitionPruner.PrunedPartitionList partsList = pruner.prune();
-      
-      parts = partsList.getConfirmedPartns();
-      parts.addAll(partsList.getUnknownPartns());
-      partitionDesc aliasPartnDesc = null;
-      if (parts.isEmpty()) {
-        if (!partsList.getDeniedPartns().isEmpty())
-          aliasPartnDesc = Utilities.getPartitionDesc(partsList.getDeniedPartns().iterator().next());
+      if (!opProcCtx.getConf().getBoolVar(HiveConf.ConfVars.HIVEOPTPPD) ||
+          !opProcCtx.getConf().getBoolVar(HiveConf.ConfVars.HIVEOPTPPR)) {
+        partsList = parseCtx.getAliasToPruner().get(alias_id).prune();
       }
       else {
-        aliasPartnDesc = Utilities.getPartitionDesc(parts.iterator().next());
+        partsList = org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner.prune(
+                                                    parseCtx.getTopToTable().get(topOp), 
+                                                    parseCtx.getOpToPartPruner().get(topOp));
       }
-      plan.getAliasToPartnInfo().put(alias_id, aliasPartnDesc);
     } catch (HiveException e) {
-      // Has to use full name to make sure it does not conflict with org.apache.commons.lang.StringUtils
       LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
       throw new SemanticException(e.getMessage(), e);
     }
+    
+    // Generate the map work for this alias_id
+    Set<Partition> parts = null;
+    // pass both confirmed and unknown partitions through the map-reduce framework
+
+    parts = partsList.getConfirmedPartns();
+    parts.addAll(partsList.getUnknownPartns());
+    partitionDesc aliasPartnDesc = null;
+    if (parts.isEmpty()) {
+      if (!partsList.getDeniedPartns().isEmpty())
+        aliasPartnDesc = Utilities.getPartitionDesc(partsList.getDeniedPartns().iterator().next());
+    }
+    else {
+      aliasPartnDesc = Utilities.getPartitionDesc(parts.iterator().next());
+    }
+    plan.getAliasToPartnInfo().put(alias_id, aliasPartnDesc);
     SamplePruner samplePruner = parseCtx.getAliasToSamplePruner().get(alias_id);
     
     for (Partition part : parts) {

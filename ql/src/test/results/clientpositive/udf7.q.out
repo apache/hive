@@ -21,6 +21,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         dest1 
+          TableScan
+            alias: dest1
             Select Operator
               expressions:
                     expr: round(ln(3.0), 12)
@@ -93,5 +95,5 @@ query: SELECT ROUND(LN(3.0),12), LN(0.0), LN(-1), ROUND(LOG(3.0),12), LOG(0.0),
        POW(2,3), POWER(2,3), POWER(2,-3), POWER(0.5, -3), POWER(4, 0.5),
        POWER(-1, 0.5), POWER(-1, 2) FROM dest1
 Input: default/dest1
-Output: file:/data/users/emil/hive1/hive1/build/ql/tmp/1531238271/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1327360407/10000
 1.098612288668	NULL	NULL	1.098612288668	NULL	NULL	1.584962500721	NULL	NULL	0.47712125472	NULL	NULL	1.584962500721	NULL	NULL	NULL	-1.0	7.389056098931	8.0	8.0	0.125	8.0	2.0	NaN	1.0

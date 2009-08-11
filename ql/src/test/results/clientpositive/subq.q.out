@@ -16,6 +16,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         unioninput:src 
+          TableScan
+            alias: src
             Filter Operator
               predicate:
                   expr: (UDFToDouble(key) < UDFToDouble(100))
@@ -51,10 +53,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_2/build/ql/tmp/177397376/10000
+                destination: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1653419490/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_2/build/ql/tmp/1486120786/10001 
+              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/212460499/10001 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:

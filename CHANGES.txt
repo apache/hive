@@ -201,6 +201,9 @@ Trunk - Unreleased
     HIVE-617. Add 'jar' service to hive client shell.
     (Edward Capriolo via rmurthy)
 
+    HIVE-578. Refactor partition pruning
+    (Ashish Thusoo via namit)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).

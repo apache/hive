@@ -30,6 +30,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: COALESCE(1)
@@ -102,7 +104,7 @@ query: SELECT COALESCE(1),
        COALESCE(IF(TRUE, NULL, 0), NULL)
 FROM src LIMIT 1
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/933961022/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/928019024/10000
 1	1	2	1	3	4	1	1	2	1	3	4	1.0	1.0	2.0	2.0	2.0	NULL
 query: EXPLAIN
 SELECT COALESCE(src_thrift.lint[1], 999),
@@ -121,6 +123,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src_thrift 
+          TableScan
+            alias: src_thrift
             Select Operator
               expressions:
                     expr: COALESCE(lint[1],999)
@@ -147,7 +151,7 @@ query: SELECT COALESCE(src_thrift.lint[1], 999),
        COALESCE(src_thrift.mstringstring['key_2'], '999')
 FROM src_thrift
 Input: default/src_thrift
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/818393272/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/826777318/10000
 0	0	999
 2	1	999
 4	8	value_2

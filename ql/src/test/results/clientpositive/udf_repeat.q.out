@@ -16,6 +16,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: repeat('Facebook', 3)
@@ -47,5 +49,5 @@ query: SELECT
   repeat("asdf", -1)
 FROM src LIMIT 1
 Input: default/src
-Output: file:/data/users/njain/hive_commit1/hive_commit1/.ptest_1/build/ql/tmp/1216905646/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1342490934/10000
 FacebookFacebookFacebook			

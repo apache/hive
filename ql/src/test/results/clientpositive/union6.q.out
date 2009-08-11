@@ -25,6 +25,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery1:unionsrc-subquery1:s1 
+          TableScan
+            alias: s1
             Select Operator
               Group By Operator
                 aggregations:
@@ -60,7 +62,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1186530/10002 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1191770303/10002 
           Union
             Select Operator
               expressions:
@@ -77,7 +79,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: tmptable
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1186530/10004 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1191770303/10004 
           Union
             Select Operator
               expressions:
@@ -101,10 +103,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/764399533/10000
+                destination: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1310004866/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1186530/10003 
+              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1191770303/10003 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -141,6 +143,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery2:unionsrc-subquery2:s2 
+          TableScan
+            alias: s2
             Select Operator
               expressions:
                     expr: key
@@ -165,7 +169,7 @@ Input: default/src1
 Output: default/tmptable
 query: select * from tmptable x sort by x.key, x.value
 Input: default/tmptable
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/730383736/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/551301266/10000
 	
 	
 	

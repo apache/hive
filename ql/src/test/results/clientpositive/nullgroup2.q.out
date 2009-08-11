@@ -13,6 +13,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         x 
+          TableScan
+            alias: x
             Filter Operator
               predicate:
                   expr: (UDFToDouble(key) > UDFToDouble(9999))
@@ -65,7 +67,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/852082885/10002 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/81167502/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -108,7 +110,7 @@ STAGE PLANS:
 
 query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1261853216/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/45709324/10000
 query: explain
 select x.key, count(1) from src x where x.key > 9999 group by x.key
 ABSTRACT SYNTAX TREE:
@@ -123,6 +125,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         x 
+          TableScan
+            alias: x
             Filter Operator
               predicate:
                   expr: (UDFToDouble(key) > UDFToDouble(9999))
@@ -186,7 +190,7 @@ STAGE PLANS:
 
 query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1355499673/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/996927786/10000
 query: explain
 select x.key, count(1) from src x where x.key > 9999 group by x.key
 ABSTRACT SYNTAX TREE:
@@ -202,6 +206,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         x 
+          TableScan
+            alias: x
             Filter Operator
               predicate:
                   expr: (UDFToDouble(key) > UDFToDouble(9999))
@@ -246,7 +252,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/905962313/10002 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/912483231/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -289,7 +295,7 @@ STAGE PLANS:
 
 query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1233113127/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/75894632/10000
 query: explain
 select x.key, count(1) from src x where x.key > 9999 group by x.key
 ABSTRACT SYNTAX TREE:
@@ -304,6 +310,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         x 
+          TableScan
+            alias: x
             Filter Operator
               predicate:
                   expr: (UDFToDouble(key) > UDFToDouble(9999))
@@ -359,4 +367,4 @@ STAGE PLANS:
 
 query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/808851154/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1160900647/10000

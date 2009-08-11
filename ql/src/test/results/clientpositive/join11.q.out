@@ -17,6 +17,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src2:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -37,6 +39,8 @@ STAGE PLANS:
                       expr: _col1
                       type: string
         src1:src 
+          TableScan
+            alias: src
             Filter Operator
               predicate:
                   expr: (UDFToDouble(key) < UDFToDouble(100))
@@ -96,7 +100,7 @@ JOIN
 (SELECT src.key as c3, src.value as c4 from src) src2
 ON src1.c1 = src2.c3 AND src1.c1 < 100
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/542706340/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1302752228/10000
 0	val_0
 0	val_0
 0	val_0

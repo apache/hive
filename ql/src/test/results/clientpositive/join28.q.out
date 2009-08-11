@@ -21,6 +21,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         subq:y 
+          TableScan
+            alias: y
             Common Join Operator
               condition map:
                    Inner Join 0 to 1
@@ -46,6 +48,8 @@ STAGE PLANS:
                 limit: -1
           Alias -> Map Local Operator Tree:
             subq:x 
+              TableScan
+                alias: x
                 Common Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -67,7 +71,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1376088811/10002 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/868000036/10002 
           Select Operator
             expressions:
                   expr: _col0
@@ -119,6 +123,8 @@ STAGE PLANS:
                 limit: -1
           Alias -> Map Local Operator Tree:
             z 
+              TableScan
+                alias: z
                 Filter Operator
                   predicate:
                       expr: ((ds = '2008-04-08') and (UDFToDouble(hr) = UDFToDouble(11)))
@@ -171,10 +177,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/826602054/10000
+                destination: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/207829460/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1376088811/10003 
+              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/868000036/10003 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -207,6 +213,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: dest_j1
 
+
 query: INSERT OVERWRITE TABLE dest_j1 
 SELECT /*+ MAPJOIN(z) */ subq.key1, z.value
 FROM
@@ -219,7 +226,7 @@ Input: default/srcpart/ds=2008-04-08/hr=11
 Output: default/dest_j1
 query: select * from dest_j1 x order by x.key
 Input: default/dest_j1
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/2099739143/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/380670394/10000
 128	val_128
 128	val_128
 128	val_128

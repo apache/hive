@@ -15,6 +15,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: lpad('hi', 1, '?')
@@ -43,7 +45,7 @@ query: SELECT
   lpad('hi', 6, '123')
 FROM src LIMIT 1
 Input: default/src
-Output: file:/data/users/njain/hive_commit1/hive_commit1/.ptest_2/build/ql/tmp/1193063785/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/440914656/10000
 h	...hi	1231hi
 query: EXPLAIN SELECT
   rpad('hi', 1, '?'),
@@ -62,6 +64,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: rpad('hi', 1, '?')
@@ -90,5 +94,5 @@ query: SELECT
   rpad('hi', 6, '123')
 FROM src LIMIT 1
 Input: default/src
-Output: file:/data/users/njain/hive_commit1/hive_commit1/.ptest_2/build/ql/tmp/1051346108/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1578755009/10000
 h	hi...	hi1231

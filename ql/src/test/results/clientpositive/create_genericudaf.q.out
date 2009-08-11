@@ -28,6 +28,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: value
@@ -78,6 +80,6 @@ query: SELECT
     test_avg(substr(value,5))
 FROM src
 Input: default/src
-Output: file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/1744650408/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1700649603/10000
 1.0	260.182
 query: DROP TEMPORARY FUNCTIOn test_avg

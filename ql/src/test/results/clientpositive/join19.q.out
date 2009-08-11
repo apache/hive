@@ -69,6 +69,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         t22:t2 
+          TableScan
+            alias: t2
             Filter Operator
               predicate:
                   expr: (predicate = 'http://sofa.semanticweb.org/sofa/v1.0/system#__LABEL_REL')
@@ -97,6 +99,8 @@ STAGE PLANS:
                           expr: _col1
                           type: string
         t33:t3 
+          TableScan
+            alias: t3
             Filter Operator
               predicate:
                   expr: (predicate = 'http://www.ontosearch.com/2007/12/ontosofa-ns#_from')
@@ -125,6 +129,8 @@ STAGE PLANS:
                           expr: _col0
                           type: string
         t11:t1 
+          TableScan
+            alias: t1
             Filter Operator
               predicate:
                   expr: ((predicate = 'http://sofa.semanticweb.org/sofa/v1.0/system#__INSTANCEOF_REL') and (object = 'http://ontos/OntosMiner/Common.English/ontology#Citation'))
@@ -188,6 +194,8 @@ STAGE PLANS:
                     expr: _col2
                     type: string
         t55:t5 
+          TableScan
+            alias: t5
             Filter Operator
               predicate:
                   expr: (predicate = 'http://www.ontosearch.com/2007/12/ontosofa-ns#_to')
@@ -216,6 +224,8 @@ STAGE PLANS:
                           expr: _col1
                           type: string
         t44:t4 
+          TableScan
+            alias: t4
             Filter Operator
               predicate:
                   expr: ((predicate = 'http://sofa.semanticweb.org/sofa/v1.0/system#__INSTANCEOF_REL') and (object = 'http://ontos/OntosMiner/Common.English/ontology#Author'))
@@ -259,6 +269,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         t66:t6 
+          TableScan
+            alias: t6
             Filter Operator
               predicate:
                   expr: (predicate = 'http://sofa.semanticweb.org/sofa/v1.0/system#__LABEL_REL')

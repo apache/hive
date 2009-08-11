@@ -37,25 +37,34 @@ public class ColumnInfo implements Serializable {
   private String internalName;
 
   /**
-   * isVirtual indicates whether the column is a virtual column or not. Virtual columns
-   * are the ones that are not stored in the tables. For now these are just the partitioning
-   * columns.
+   * Store the alias of the table where available.
    */
-  private boolean isVirtual;
+  private String tabAlias;
+  
+  /**
+   * Indicates whether the column is a partition column.
+   */
+  private boolean isPartitionCol;
   
   transient private TypeInfo type;
 
   public ColumnInfo() {
   }
 
-  public ColumnInfo(String internalName, TypeInfo type) {
+  public ColumnInfo(String internalName, TypeInfo type, 
+                    String tabAlias, boolean isPartitionCol) {
     this.internalName = internalName;
     this.type = type;
+    this.tabAlias = tabAlias;
+    this.isPartitionCol = isPartitionCol;
   }
   
-  public ColumnInfo(String internalName, Class type) {
+  public ColumnInfo(String internalName, Class type,
+                    String tabAlias, boolean isPartitionCol) {
     this.internalName = internalName;
     this.type = TypeInfoFactory.getPrimitiveTypeInfoFromPrimitiveWritable(type);
+    this.tabAlias = tabAlias;
+    this.isPartitionCol = isPartitionCol;
   }
   
   public TypeInfo getType() {
@@ -74,6 +83,13 @@ public class ColumnInfo implements Serializable {
     this.internalName = internalName;
   }
 
+  public String getTabAlias() {
+    return this.tabAlias;
+  }
+  
+  public boolean getIsPartitionCol() {
+    return this.isPartitionCol;
+  }
   /**
    * Returns the string representation of the ColumnInfo.
    */

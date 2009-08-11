@@ -14,6 +14,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         subq:x 
+          TableScan
+            alias: x
             Select Operator
               expressions:
                     expr: key
@@ -62,7 +64,7 @@ query: SELECT subq.key, subq.value FROM
 (SELECT x.* FROM SRC x ORDER BY key limit 10) subq
 where subq.key < 10
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/509337607/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/899139587/10000
 0	val_0
 0	val_0
 0	val_0

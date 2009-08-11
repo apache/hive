@@ -16,6 +16,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src_thrift 
+          TableScan
+            alias: src_thrift
             Filter Operator
               predicate:
                   expr: ((mstringstring['key_9'] is not null and lintstring.myint is not null) and lintstring is not null)
@@ -45,7 +47,7 @@ WHERE src_thrift.mstringstring['key_9'] IS NOT NULL
       OR lintstring.myint IS NOT NULL
       OR lintstring IS NOT NULL
 Input: default/src_thrift
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/533384116/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/607559356/10000
 NULL	[0]
 NULL	[1]
 NULL	[4]
@@ -74,6 +76,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src_thrift 
+          TableScan
+            alias: src_thrift
             Filter Operator
               predicate:
                   expr: ((mstringstring['key_9'] is not null and lintstring.myint is not null) and lintstring is not null)
@@ -107,7 +111,7 @@ WHERE src_thrift.mstringstring['key_9'] IS NOT NULL
       OR lintstring.myint IS NOT NULL
       OR lintstring IS NOT NULL
 Input: default/src_thrift
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1269187205/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/364349054/10000
 NULL	[0]
 NULL	[1]
 NULL	[4]

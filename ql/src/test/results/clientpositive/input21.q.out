@@ -14,6 +14,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src_null 
+          TableScan
+            alias: src_null
             Select Operator
               expressions:
                     expr: a
@@ -59,7 +61,7 @@ STAGE PLANS:
 
 query: SELECT * FROM src_null DISTRIBUTE BY c SORT BY d
 Input: default/src_null
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/125046373/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/497061078/10000
 1.0	1	same	0
 1.0	1	same	1
 1.0	1	same	2

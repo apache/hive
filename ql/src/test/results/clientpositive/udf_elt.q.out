@@ -23,6 +23,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: elt(2, 'abc', 'defg')
@@ -74,5 +76,5 @@ query: SELECT elt(2, 'abc', 'defg'),
        elt(3, 'abc', 'defg')
 FROM src LIMIT 1
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/1869995338/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/298713096/10000
 defg	cc	abc	2	12345	123456789012	1.25	16.0	NULL	NULL	NULL

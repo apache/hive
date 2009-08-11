@@ -1,0 +1,361 @@
+query: EXPLAIN EXTENDED
+FROM (
+  FROM srcpart src
+  SELECT TRANSFORM(src.ds, src.key, src.value)
+         USING '/bin/cat' AS (ds, tkey, tvalue) 
+  CLUSTER BY tkey 
+) tmap
+SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100 AND tmap.ds = '2008-04-08'
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) ds) (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) value)) '/bin/cat' (TOK_ALIASLIST ds tkey tvalue)))) (TOK_CLUSTERBY (TOK_TABLE_OR_COL tkey)))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) tkey)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) tvalue))) (TOK_WHERE (AND (< (. (TOK_TABLE_OR_COL tmap) tkey) 100) (= (. (TOK_TABLE_OR_COL tmap) ds) '2008-04-08')))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        tmap:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: ds
+                    type: string
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1, _col2
+              Transform Operator
+                command: /bin/cat
+                output info:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      columns ds,tkey,tvalue
+                      serialization.format 9
+                Reduce Output Operator
+                  key expressions:
+                        expr: tkey
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: tkey
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: ds
+                        type: string
+                        expr: tkey
+                        type: string
+                        expr: tvalue
+                        type: string
+      Needs Tagging: false
+      Path -> Alias:
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
+      Path -> Partition:
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+          Partition
+            partition values:
+              ds 2008-04-08
+              hr 11
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                name srcpart
+                columns.types string:string
+                serialization.ddl struct srcpart { string key, string value}
+                serialization.format 1
+                columns key,value
+                partition_columns ds/hr
+                bucket_count -1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                location file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: srcpart
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+          Partition
+            partition values:
+              ds 2008-04-08
+              hr 12
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                name srcpart
+                columns.types string:string
+                serialization.ddl struct srcpart { string key, string value}
+                serialization.format 1
+                columns key,value
+                partition_columns ds/hr
+                bucket_count -1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                location file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: srcpart
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 
+          Partition
+            partition values:
+              ds 2008-04-09
+              hr 11
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                name srcpart
+                columns.types string:string
+                serialization.ddl struct srcpart { string key, string value}
+                serialization.format 1
+                columns key,value
+                partition_columns ds/hr
+                bucket_count -1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                location file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: srcpart
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
+          Partition
+            partition values:
+              ds 2008-04-09
+              hr 12
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                name srcpart
+                columns.types string:string
+                serialization.ddl struct srcpart { string key, string value}
+                serialization.format 1
+                columns key,value
+                partition_columns ds/hr
+                bucket_count -1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                location file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: srcpart
+      Reduce Operator Tree:
+        Extract
+          Filter Operator
+            isSamplingPred: false
+            predicate:
+                expr: ((UDFToDouble(_col1) < UDFToDouble(100)) and (_col0 = '2008-04-08'))
+                type: boolean
+            Select Operator
+              expressions:
+                    expr: _col1
+                    type: string
+                    expr: _col2
+                    type: string
+              outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                directory: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1641597536/10001
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      columns _col0,_col1
+                      serialization.format 1
+                      columns.types string:string
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+query: FROM (
+  FROM srcpart src
+  SELECT TRANSFORM(src.ds, src.key, src.value)
+         USING '/bin/cat' AS (ds, tkey, tvalue) 
+  CLUSTER BY tkey 
+) tmap
+SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100 AND tmap.ds = '2008-04-08'
+Input: default/srcpart/ds=2008-04-08/hr=11
+Input: default/srcpart/ds=2008-04-08/hr=12
+Input: default/srcpart/ds=2008-04-09/hr=11
+Input: default/srcpart/ds=2008-04-09/hr=12
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/388156213/10000
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+0	val_0
+10	val_10
+10	val_10
+11	val_11
+11	val_11
+12	val_12
+12	val_12
+12	val_12
+12	val_12
+15	val_15
+15	val_15
+15	val_15
+15	val_15
+17	val_17
+17	val_17
+18	val_18
+18	val_18
+18	val_18
+18	val_18
+19	val_19
+19	val_19
+2	val_2
+2	val_2
+20	val_20
+20	val_20
+24	val_24
+24	val_24
+24	val_24
+24	val_24
+26	val_26
+26	val_26
+26	val_26
+26	val_26
+27	val_27
+27	val_27
+28	val_28
+28	val_28
+30	val_30
+30	val_30
+33	val_33
+33	val_33
+34	val_34
+34	val_34
+35	val_35
+35	val_35
+35	val_35
+35	val_35
+35	val_35
+35	val_35
+37	val_37
+37	val_37
+37	val_37
+37	val_37
+4	val_4
+4	val_4
+41	val_41
+41	val_41
+42	val_42
+42	val_42
+42	val_42
+42	val_42
+43	val_43
+43	val_43
+44	val_44
+44	val_44
+47	val_47
+47	val_47
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+5	val_5
+51	val_51
+51	val_51
+51	val_51
+51	val_51
+53	val_53
+53	val_53
+54	val_54
+54	val_54
+57	val_57
+57	val_57
+58	val_58
+58	val_58
+58	val_58
+58	val_58
+64	val_64
+64	val_64
+65	val_65
+65	val_65
+66	val_66
+66	val_66
+67	val_67
+67	val_67
+67	val_67
+67	val_67
+69	val_69
+69	val_69
+70	val_70
+70	val_70
+70	val_70
+70	val_70
+70	val_70
+70	val_70
+72	val_72
+72	val_72
+72	val_72
+72	val_72
+74	val_74
+74	val_74
+76	val_76
+76	val_76
+76	val_76
+76	val_76
+77	val_77
+77	val_77
+78	val_78
+78	val_78
+8	val_8
+8	val_8
+80	val_80
+80	val_80
+82	val_82
+82	val_82
+83	val_83
+83	val_83
+83	val_83
+83	val_83
+84	val_84
+84	val_84
+84	val_84
+84	val_84
+85	val_85
+85	val_85
+86	val_86
+86	val_86
+87	val_87
+87	val_87
+9	val_9
+9	val_9
+90	val_90
+90	val_90
+90	val_90
+90	val_90
+90	val_90
+90	val_90
+92	val_92
+92	val_92
+95	val_95
+95	val_95
+95	val_95
+95	val_95
+96	val_96
+96	val_96
+97	val_97
+97	val_97
+97	val_97
+97	val_97
+98	val_98
+98	val_98
+98	val_98
+98	val_98

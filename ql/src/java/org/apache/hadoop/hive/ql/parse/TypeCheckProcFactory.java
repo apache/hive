@@ -93,7 +93,8 @@ public class TypeCheckProcFactory {
     //  If the current subExpression is pre-calculated, as in Group-By etc.
     ColumnInfo colInfo = input.get("", expr.toStringTree());
     if (colInfo != null) {
-      desc = new exprNodeColumnDesc(colInfo.getType(), colInfo.getInternalName()); 
+      desc = new exprNodeColumnDesc(colInfo.getType(), colInfo.getInternalName(),
+                                    colInfo.getTabAlias(), colInfo.getIsPartitionCol()); 
       return desc;
     }    
     return desc;
@@ -326,7 +327,8 @@ public class TypeCheckProcFactory {
           }
         } else {
           // It's a column.
-          return new exprNodeColumnDesc(colInfo.getType(), colInfo.getInternalName());
+          return new exprNodeColumnDesc(colInfo.getType(), colInfo.getInternalName(),
+                                        colInfo.getTabAlias(), colInfo.getIsPartitionCol());
         }
       }
 
@@ -627,7 +629,8 @@ public class TypeCheckProcFactory {
           ctx.setError(ErrorMsg.INVALID_COLUMN.getMsg(expr.getChild(1)));
           return null;
         }
-        return new exprNodeColumnDesc(colInfo.getType(), colInfo.getInternalName());
+        return new exprNodeColumnDesc(colInfo.getType(), colInfo.getInternalName(),
+                                      colInfo.getTabAlias(), colInfo.getIsPartitionCol());
       }
 
       // Return nulls for conversion operators

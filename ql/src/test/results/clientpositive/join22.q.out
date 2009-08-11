@@ -13,6 +13,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src5:src3:src2 
+          TableScan
+            alias: src2
             Reduce Output Operator
               key expressions:
                     expr: key
@@ -23,6 +25,8 @@ STAGE PLANS:
                     type: string
               tag: 1
         src5:src3:src1 
+          TableScan
+            alias: src1
             Reduce Output Operator
               key expressions:
                     expr: key
@@ -76,6 +80,8 @@ STAGE PLANS:
                     expr: _col3
                     type: string
         src5:src4 
+          TableScan
+            alias: src4
             Reduce Output Operator
               key expressions:
                     expr: key

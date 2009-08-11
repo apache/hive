@@ -24,10 +24,12 @@ import java.io.Serializable;
 public class filterDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   private org.apache.hadoop.hive.ql.plan.exprNodeDesc predicate;
+  private boolean isSamplingPred;
   public filterDesc() { }
   public filterDesc(
-    final org.apache.hadoop.hive.ql.plan.exprNodeDesc predicate) {
+    final org.apache.hadoop.hive.ql.plan.exprNodeDesc predicate, boolean isSamplingPred) {
     this.predicate = predicate;
+    this.isSamplingPred = isSamplingPred;
   }
   @explain(displayName="predicate")
   public org.apache.hadoop.hive.ql.plan.exprNodeDesc getPredicate() {
@@ -35,5 +37,12 @@ public class filterDesc implements Serializable {
   }
   public void setPredicate(final org.apache.hadoop.hive.ql.plan.exprNodeDesc predicate) {
     this.predicate = predicate;
+  }
+  @explain(displayName="isSamplingPred", normalExplain=false)
+  public boolean getIsSamplingPred() {
+    return this.isSamplingPred;
+  }
+  public void setIsSamplingPred(final boolean isSamplingPred) {
+    this.isSamplingPred = isSamplingPred;
   }
 }

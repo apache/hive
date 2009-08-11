@@ -20,16 +20,10 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.util.*;
 
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
-import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
-import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc;
@@ -56,7 +50,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class PartitionPruner {
+public class ASTPartitionPruner {
     
   // The log
   @SuppressWarnings("nls")
@@ -76,11 +70,11 @@ public class PartitionPruner {
   // a map-reduce job
   private boolean onlyContainsPartCols;
 
-  public PartitionPruner() {  
+  public ASTPartitionPruner() {  
   }
   
   /** Creates a new instance of PartitionPruner */
-  public PartitionPruner(String tableAlias, QBMetaData metaData) {
+  public ASTPartitionPruner(String tableAlias, QBMetaData metaData) {
     this.tableAlias = tableAlias;
     this.metaData = metaData;
     this.tab = metaData.getTableForAlias(tableAlias);
@@ -301,7 +295,8 @@ public class PartitionPruner {
       if (t.isPartitionKey(colName)) {
         // Set value to null if it's not partition column
         if (tabAlias.equalsIgnoreCase(tableAlias)) {
-          desc = new ExprNodeTempDesc(new exprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, colName)); 
+          desc = new ExprNodeTempDesc(new exprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, 
+                                                             colName, tabAlias, true)); 
         } else {                
           desc = new ExprNodeTempDesc(new exprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, null));
         }
@@ -427,147 +422,13 @@ public class PartitionPruner {
     }
   }
 
-  /**
-   * list of the partitions satisfying the pruning criteria - contains both confirmed and unknown partitions
-   */
-  public static class PrunedPartitionList {
-    // confirmed partitions - satisfy the partition criteria
-    private Set<Partition>  confirmedPartns;
-
-    // unknown partitions - may/may not satisfy the partition criteria
-    private Set<Partition>  unknownPartns;
-
-    // denied partitions - do not satisfy the partition criteria
-    private Set<Partition> deniedPartns;
-
-    /**
-     * @param confirmedPartns  confirmed paritions
-     * @param unknownPartns    unknown partitions
-     */
-    public PrunedPartitionList(Set<Partition> confirmedPartns, Set<Partition> unknownPartns, Set<Partition> deniedPartns) {
-      this.confirmedPartns  = confirmedPartns;
-      this.unknownPartns    = unknownPartns;
-      this.deniedPartns     = deniedPartns;
-    }
-
-    /**
-     * get confirmed partitions
-     * @return confirmedPartns  confirmed paritions
-     */
-    public Set<Partition>  getConfirmedPartns() {
-      return confirmedPartns;
-    }
-
-    /**
-     * get unknown partitions
-     * @return unknownPartns  unknown paritions
-     */
-    public Set<Partition>  getUnknownPartns() {
-      return unknownPartns;
-    }
-
-    /**
-     * get denied partitions
-     * @return deniedPartns  denied paritions
-     */
-    public Set<Partition>  getDeniedPartns() {
-      return deniedPartns;
-    }
-
-    /**
-     * set confirmed partitions
-     * @param confirmedPartns  confirmed paritions
-     */
-    public void setConfirmedPartns(Set<Partition> confirmedPartns) {
-      this.confirmedPartns = confirmedPartns;
-    }
-
-    /**
-     * set unknown partitions
-     * @param unknownPartns    unknown partitions
-     */
-    public void setUnknownPartns(Set<Partition> unknownPartns) {
-      this.unknownPartns   = unknownPartns;
-    }
-  }
-
   /** 
    * From the table metadata prune the partitions to return the partitions.
    * Evaluate the parition pruner for each partition and return confirmed and unknown partitions separately
    */
   @SuppressWarnings("nls")
   public PrunedPartitionList prune() throws HiveException {
-    LOG.trace("Started pruning partiton");
-    LOG.trace("tabname = " + this.tab.getName());
-    LOG.trace("prune Expression = " + this.prunerExpr);
-
-    LinkedHashSet<Partition> true_parts = new LinkedHashSet<Partition>();
-    LinkedHashSet<Partition> unkn_parts = new LinkedHashSet<Partition>();
-    LinkedHashSet<Partition> denied_parts = new LinkedHashSet<Partition>();
-
-    try {
-      StructObjectInspector rowObjectInspector = (StructObjectInspector)this.tab.getDeserializer().getObjectInspector();
-      Object[] rowWithPart = new Object[2];
-
-      if(tab.isPartitioned()) {
-        for(String partName: Hive.get().getPartitionNames(MetaStoreUtils.DEFAULT_DATABASE_NAME, tab.getName(), (short) -1)) {
-          // Set all the variables here
-          LinkedHashMap<String, String> partSpec = Warehouse.makeSpecFromName(partName);
-          LOG.debug("part name: " + partName);
-          // Create the row object
-          ArrayList<String> partNames = new ArrayList<String>();
-          ArrayList<String> partValues = new ArrayList<String>();
-          ArrayList<ObjectInspector> partObjectInspectors = new ArrayList<ObjectInspector>();
-          for(Map.Entry<String,String>entry : partSpec.entrySet()) {
-            partNames.add(entry.getKey());
-            partValues.add(entry.getValue());
-            partObjectInspectors.add(PrimitiveObjectInspectorFactory.javaStringObjectInspector); 
-          }
-          StructObjectInspector partObjectInspector = ObjectInspectorFactory.getStandardStructObjectInspector(partNames, partObjectInspectors);
-
-          rowWithPart[1] = partValues;
-          ArrayList<StructObjectInspector> ois = new ArrayList<StructObjectInspector>(2);
-          ois.add(rowObjectInspector);
-          ois.add(partObjectInspector);
-          StructObjectInspector rowWithPartObjectInspector = ObjectInspectorFactory.getUnionStructObjectInspector(ois);
-
-          // evaluate the expression tree
-          if (this.prunerExpr != null) {
-            ExprNodeEvaluator evaluator = ExprNodeEvaluatorFactory.get(this.prunerExpr);
-            ObjectInspector evaluateResultOI = evaluator.initialize(rowWithPartObjectInspector);
-            Object evaluateResultO = evaluator.evaluate(rowWithPart);
-            Boolean r = (Boolean) ((PrimitiveObjectInspector)evaluateResultOI).getPrimitiveJavaObject(evaluateResultO);
-            LOG.trace("prune result for partition " + partSpec + ": " + r);
-            if (Boolean.FALSE.equals(r)) {
-              if (denied_parts.isEmpty()) {
-                Partition part = Hive.get().getPartition(tab, partSpec, Boolean.FALSE);
-                denied_parts.add(part);
-              }
-              LOG.trace("pruned partition: " + partSpec);
-            } else {
-              Partition part = Hive.get().getPartition(tab, partSpec, Boolean.FALSE);
-              if (Boolean.TRUE.equals(r)) {
-                LOG.debug("retained partition: " + partSpec);
-                true_parts.add(part);
-              } else {             
-                LOG.debug("unknown partition: " + partSpec);
-                unkn_parts.add(part);
-              }
-            }
-          } else {
-            // is there is no parition pruning, all of them are needed
-            true_parts.add(Hive.get().getPartition(tab, partSpec, Boolean.FALSE));
-          }
-        }
-      } else {
-        true_parts.addAll(Hive.get().getPartitions(tab));
-      }
-    } catch (Exception e) {
-      throw new HiveException(e);
-    }
-
-    // Now return the set of partitions
-    return new PrunedPartitionList(true_parts, unkn_parts, denied_parts);
+    return org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner.prune(this.tab, this.prunerExpr);
   }
 
   public Table getTable() {

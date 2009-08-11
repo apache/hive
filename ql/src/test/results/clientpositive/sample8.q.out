@@ -19,11 +19,15 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         t 
+          TableScan
+            alias: t
             Filter Operator
+              isSamplingPred: false
               predicate:
                   expr: (((hash(key) & 2147483647) % 10) = 0)
                   type: boolean
               Filter Operator
+                isSamplingPred: true
                 predicate:
                     expr: (((hash(key) & 2147483647) % 10) = 0)
                     type: boolean
@@ -36,11 +40,15 @@ STAGE PLANS:
                         expr: value
                         type: string
         s 
+          TableScan
+            alias: s
             Filter Operator
+              isSamplingPred: false
               predicate:
                   expr: (((((((hash(key) & 2147483647) % 1) = 0) and (ds = '2008-04-08')) and (hr = '11')) and (ds = '2008-04-08')) and (hr = '11'))
                   type: boolean
               Filter Operator
+                isSamplingPred: true
                 predicate:
                     expr: (((hash(key) & 2147483647) % 1) = 0)
                     type: boolean
@@ -58,12 +66,12 @@ STAGE PLANS:
                         type: string
       Needs Tagging: true
       Path -> Alias:
-        file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
-        file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
-        file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_1/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 
-        file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_1/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
       Path -> Partition:
-        file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
             partition values:
               ds 2008-04-08
@@ -82,10 +90,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_1/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
             partition values:
               ds 2008-04-08
@@ -104,10 +112,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_1/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_1/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 
           Partition
             partition values:
               ds 2008-04-09
@@ -126,10 +134,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_1/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_1/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
           Partition
             partition values:
               ds 2008-04-09
@@ -148,7 +156,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_1/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
       Reduce Operator Tree:
@@ -160,6 +168,7 @@ STAGE PLANS:
             1 {VALUE._col0} {VALUE._col1}
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
           Filter Operator
+            isSamplingPred: false
             predicate:
                 expr: ((((((_col4 = _col0) and (_col5 = _col1)) and (_col2 = '2008-04-08')) and (_col3 = '11')) and (_col2 = '2008-04-08')) and (_col3 = '11'))
                 type: boolean
@@ -177,7 +186,7 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
-                directory: file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_1/build/ql/tmp/1558603137/10002
+                directory: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1665558556/10002
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -189,7 +198,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_1/build/ql/tmp/1558603137/10002 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1665558556/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -214,9 +223,9 @@ STAGE PLANS:
                     type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_1/build/ql/tmp/1558603137/10002 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1665558556/10002 
       Path -> Partition:
-        file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_1/build/ql/tmp/1558603137/10002 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1665558556/10002 
           Partition
           
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -230,7 +239,7 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_1/build/ql/tmp/1558603137/10001
+            directory: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1665558556/10001
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -254,7 +263,7 @@ Input: default/srcpart/ds=2008-04-08/hr=11
 Input: default/srcpart/ds=2008-04-08/hr=12
 Input: default/srcpart/ds=2008-04-09/hr=11
 Input: default/srcpart/ds=2008-04-09/hr=12
-Output: file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_1/build/ql/tmp/1151844475/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/19992458/10000
 0	val_0
 0	val_0
 0	val_0

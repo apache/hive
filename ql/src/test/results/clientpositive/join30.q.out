@@ -16,6 +16,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         y 
+          TableScan
+            alias: y
             Common Join Operator
               condition map:
                    Inner Join 0 to 1
@@ -41,6 +43,8 @@ STAGE PLANS:
                 limit: -1
           Alias -> Map Local Operator Tree:
             x 
+              TableScan
+                alias: x
                 Common Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -62,7 +66,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/190127938/10002 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2032153196/10002 
           Select Operator
             expressions:
                   expr: _col0
@@ -143,7 +147,7 @@ Input: default/src1
 Output: default/dest_j1
 query: select * from dest_j1 x order by x.key
 Input: default/dest_j1
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/1623598588/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/62701175/10000
 66	1
 98	2
 128	3

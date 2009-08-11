@@ -17,6 +17,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: abs(0)
@@ -51,7 +53,7 @@ query: SELECT
   abs(9223372036854775807)
 FROM src LIMIT 1
 Input: default/src
-Output: file:/data/users/njain/hive_commit1/hive_commit1/.ptest_1/build/ql/tmp/568873688/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1827607130/10000
 0	1	123	9223372036854775807	9223372036854775807
 query: EXPLAIN SELECT
   abs(0.0),
@@ -70,6 +72,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: abs(0.0)
@@ -98,5 +102,5 @@ query: SELECT
   abs(3.14159265)
 FROM src LIMIT 1
 Input: default/src
-Output: file:/data/users/njain/hive_commit1/hive_commit1/.ptest_1/build/ql/tmp/1179175977/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/150146674/10000
 0.0	3.14159265	3.14159265

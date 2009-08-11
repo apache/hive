@@ -12,6 +12,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         x 
+          TableScan
+            alias: x
             Filter Operator
               predicate:
                   expr: (UDFToDouble(ds) = UDFToDouble(((2008 - 4) - 8)))
@@ -49,4 +51,4 @@ Input: default/srcpart/ds=2008-04-08/hr=11
 Input: default/srcpart/ds=2008-04-08/hr=12
 Input: default/srcpart/ds=2008-04-09/hr=11
 Input: default/srcpart/ds=2008-04-09/hr=12
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/447936279/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/758866598/10000

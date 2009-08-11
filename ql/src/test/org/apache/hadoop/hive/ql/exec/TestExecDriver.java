@@ -155,7 +155,7 @@ public class TestExecDriver extends TestCase {
 
   private filterDesc getTestFilterDesc(String column) {
     ArrayList<exprNodeDesc> children1 = new ArrayList<exprNodeDesc>();
-    children1.add(new exprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, column));
+    children1.add(new exprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, column, "", false));
     exprNodeDesc lhs = new exprNodeFuncDesc(
         Constants.DOUBLE_TYPE_NAME,
         TypeInfoFactory.doubleTypeInfo,
@@ -183,7 +183,7 @@ public class TestExecDriver extends TestCase {
         FunctionRegistry.getUDFMethod("<", TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.doubleTypeInfo),
         children3);
     
-    return new filterDesc(desc);
+    return new filterDesc(desc, false);
   }
 
   @SuppressWarnings("unchecked")
@@ -325,7 +325,7 @@ public class TestExecDriver extends TestCase {
          new exprNodeFieldDesc(TypeInfoFactory.stringTypeInfo,
              new exprNodeColumnDesc(TypeInfoFactory.getListTypeInfo(
                  TypeInfoFactory.stringTypeInfo),
-                 Utilities.ReduceField.VALUE.toString()),
+                 Utilities.ReduceField.VALUE.toString(), "", false),
              "0",
              false)), outputColumns), op4);
 
@@ -374,7 +374,7 @@ public class TestExecDriver extends TestCase {
   }
 
   public static exprNodeColumnDesc getStringColumn(String columnName) {
-    return new exprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, columnName);
+    return new exprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, columnName, "", false);
   }
   
   @SuppressWarnings("unchecked")

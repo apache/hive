@@ -11,6 +11,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         subq:a 
+          TableScan
+            alias: a
             Filter Operator
               predicate:
                   expr: ((UDFToDouble(key) > UDFToDouble(10)) and (UDFToDouble(key) > UDFToDouble(20)))
@@ -47,6 +49,8 @@ STAGE PLANS:
                             expr: _col0
                             type: string
         tab 
+          TableScan
+            alias: tab
             Filter Operator
               predicate:
                   expr: (UDFToDouble(value) < UDFToDouble(200))

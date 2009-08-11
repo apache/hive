@@ -31,6 +31,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery1-subquery1:unionsrc-subquery1-subquery1:s1 
+          TableScan
+            alias: s1
             Select Operator
               Group By Operator
                 aggregations:
@@ -66,7 +68,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/183213768/10002 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/317852044/10002 
           Union
             Select Operator
               expressions:
@@ -90,7 +92,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/183213768/10004 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/317852044/10004 
           Union
             Select Operator
               expressions:
@@ -114,7 +116,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/183213768/10005 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/317852044/10005 
           Union
             Select Operator
               expressions:
@@ -145,10 +147,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/987914812/10000
+                destination: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/847490196/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/183213768/10003 
+              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/317852044/10003 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -185,6 +187,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery1-subquery2:unionsrc-subquery1-subquery2:s2 
+          TableScan
+            alias: s2
             Select Operator
               Group By Operator
                 aggregations:
@@ -221,6 +225,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery2:unionsrc-subquery2:s3 
+          TableScan
+            alias: s3
             Select Operator
               Group By Operator
                 aggregations:
@@ -266,7 +272,7 @@ Input: default/srcbucket
 Output: default/tmptable
 query: select * from tmptable x sort by x.key
 Input: default/tmptable
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/93419450/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/983094247/10000
 tst1	500
 tst2	25
 tst3	1000

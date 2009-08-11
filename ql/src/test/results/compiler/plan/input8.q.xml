@@ -64,7 +64,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/src1</string> 
+            <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/src1</string> 
            </void> 
           </object> 
          </void> 
@@ -92,7 +92,7 @@
                 <void property="conf"> 
                  <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                   <void property="dirName"> 
-                   <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/tmp/1657019249/10001</string> 
+                   <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/114537537/10001</string> 
                   </void> 
                   <void property="tableInfo"> 
                    <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -267,6 +267,9 @@
                        <object class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
                         <void property="column"> 
                          <string>key</string> 
+                        </void> 
+                        <void property="tabAlias"> 
+                         <string>src1</string> 
                         </void> 
                         <void property="typeInfo"> 
                          <object id="PrimitiveTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
@@ -464,6 +467,13 @@
           </void> 
          </object> 
         </void> 
+        <void property="conf"> 
+         <object class="org.apache.hadoop.hive.ql.plan.tableScanDesc"> 
+          <void property="alias"> 
+           <string>src1</string> 
+          </void> 
+         </object> 
+        </void> 
         <void property="neededColumnIDs"> 
          <object class="java.util.ArrayList"> 
           <void method="add"> 
@@ -506,7 +516,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/src1</string> 
+       <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/src1</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src1</string> 
@@ -518,7 +528,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/src1</string> 
+       <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/src1</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap0"/> 

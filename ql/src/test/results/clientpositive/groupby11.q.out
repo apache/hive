@@ -23,6 +23,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
+          TableScan
+            alias: src
             Reduce Output Operator
               key expressions:
                     expr: key
@@ -73,7 +75,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/2088834380/10004 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/353987509/10004 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -140,7 +142,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/2088834380/10005 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/353987509/10005 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -215,7 +217,7 @@ Output: default/dest1/ds=111
 Output: default/dest2/ds=111
 query: SELECT * from dest1
 Input: default/dest1/ds=111
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/1942173858/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1308166623/10000
 val_0	3	1	111
 val_10	1	1	111
 val_100	2	1	111
@@ -527,7 +529,7 @@ val_97	2	1	111
 val_98	2	1	111
 query: SELECT * from dest2
 Input: default/dest2/ds=111
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/2116311815/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/208593605/10000
 0	3	1	111
 10	1	1	111
 100	2	1	111

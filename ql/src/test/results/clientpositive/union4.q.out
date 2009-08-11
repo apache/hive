@@ -25,6 +25,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery1:unionsrc-subquery1:s1 
+          TableScan
+            alias: s1
             Select Operator
               Group By Operator
                 aggregations:
@@ -60,7 +62,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1477953430/10002 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/793944135/10002 
           Union
             Select Operator
               expressions:
@@ -84,7 +86,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1477953430/10004 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/793944135/10004 
           Union
             Select Operator
               expressions:
@@ -115,10 +117,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/581712304/10000
+                destination: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1820922097/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1477953430/10003 
+              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/793944135/10003 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -155,6 +157,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery2:unionsrc-subquery2:s2 
+          TableScan
+            alias: s2
             Select Operator
               Group By Operator
                 aggregations:
@@ -196,7 +200,7 @@ Input: default/src
 Output: default/tmptable
 query: select * from tmptable x sort by x.key
 Input: default/tmptable
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1149934925/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1401758833/10000
 tst1	500
 tst2	500
 query: drop table tmptable

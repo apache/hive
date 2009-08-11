@@ -17,6 +17,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src1:src 
+          TableScan
+            alias: src
             Filter Operator
               predicate:
                   expr: ((value > 'val_10') and (value > 'val_200'))
@@ -97,7 +99,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/1032558559/10002 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1187596438/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -144,7 +146,7 @@ FROM
 WHERE src1.c1 > 'val_200' AND (src1.c2 > 30 OR src1.c1 < 'val_400')
 GROUP BY src1.c2
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/502393484/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/825792285/10000
 val_4	1
 val_399	2
 val_396	3

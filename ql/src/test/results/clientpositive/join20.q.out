@@ -14,6 +14,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src2 
+          TableScan
+            alias: src2
             Reduce Output Operator
               key expressions:
                     expr: key
@@ -29,6 +31,8 @@ STAGE PLANS:
                     expr: value
                     type: string
         src3 
+          TableScan
+            alias: src3
             Filter Operator
               predicate:
                   expr: (UDFToDouble(key) < UDFToDouble(20))
@@ -52,6 +56,8 @@ STAGE PLANS:
                         expr: value
                         type: string
         src1 
+          TableScan
+            alias: src1
             Filter Operator
               predicate:
                   expr: (UDFToDouble(key) < UDFToDouble(10))
@@ -109,7 +115,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1580643489/10002 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1527809790/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -156,7 +162,7 @@ STAGE PLANS:
 query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/2102648100/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/857127004/10000
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	11	val_11
 NULL	NULL	NULL	NULL	12	val_12
@@ -241,6 +247,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src2 
+          TableScan
+            alias: src2
             Filter Operator
               predicate:
                   expr: (UDFToDouble(key) < UDFToDouble(15))
@@ -264,6 +272,8 @@ STAGE PLANS:
                         expr: value
                         type: string
         src3 
+          TableScan
+            alias: src3
             Filter Operator
               predicate:
                   expr: (UDFToDouble(key) < UDFToDouble(20))
@@ -287,6 +297,8 @@ STAGE PLANS:
                         expr: value
                         type: string
         src1 
+          TableScan
+            alias: src1
             Filter Operator
               predicate:
                   expr: (UDFToDouble(key) < UDFToDouble(10))
@@ -344,7 +356,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/930461365/10002 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1169417951/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -391,7 +403,7 @@ STAGE PLANS:
 query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key < 15) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/89670769/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1104890514/10000
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	11	val_11
 NULL	NULL	NULL	NULL	12	val_12

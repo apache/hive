@@ -27,10 +27,13 @@ import java.util.Map;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.loadFileDesc;
 import org.apache.hadoop.hive.ql.plan.loadTableDesc;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 
 /**
@@ -46,12 +49,14 @@ import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 public class ParseContext {
   private QB qb;
   private ASTNode ast;
-  private HashMap<String, PartitionPruner> aliasToPruner;
+  private HashMap<String, ASTPartitionPruner> aliasToPruner;
+  private HashMap<TableScanOperator, exprNodeDesc> opToPartPruner;
   private HashMap<String, SamplePruner> aliasToSamplePruner;
   private HashMap<String, Operator<? extends Serializable>> topOps;
   private HashMap<String, Operator<? extends Serializable>> topSelOps;
   private LinkedHashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx;
   private Map<JoinOperator, QBJoinTree> joinContext;
+  private HashMap<TableScanOperator, Table> topToTable;
   private List<loadTableDesc> loadTableWork;
   private List<loadFileDesc> loadFileWork;
   private Context ctx;
@@ -60,6 +65,12 @@ public class ParseContext {
   private int destTableId;
   private UnionProcContext uCtx;
   private List<MapJoinOperator> listMapJoinOpsNoReducer;  // list of map join operators with no reducer
+
+  // is set to true if the expression only contains partitioning columns and not any other column reference.
+  // This is used to optimize select * from table where ... scenario, when the where condition only references
+  // partitioning columns - the partitions are identified and streamed directly to the client without requiring 
+  // a map-reduce job
+  private boolean hasNonPartCols;
   
   public ParseContext() {  
   }
@@ -71,6 +82,8 @@ public class ParseContext {
    *          current parse tree
    * @param aliasToPruner
    *          partition pruner list
+   * @param opToPartPruner
+   *          map from table scan operator to partition pruner
    * @param aliasToSamplePruner
    *          sample pruner list
    * @param loadFileWork
@@ -85,15 +98,19 @@ public class ParseContext {
    * @param topSelOps
    *          list of operators for the selects introduced for column pruning
    * @param listMapJoinOpsNoReducer
-   *          list of map join operators with no reducer         
+   *          list of map join operators with no reducer
+   * @param hasNonPartCols
+   *          the query has non partition columns
    */
   public ParseContext(HiveConf conf, QB qb, ASTNode ast,
-      HashMap<String, PartitionPruner> aliasToPruner,
+      HashMap<String, ASTPartitionPruner> aliasToPruner,
+      HashMap<TableScanOperator, exprNodeDesc> opToPartPruner,
       HashMap<String, SamplePruner> aliasToSamplePruner,
       HashMap<String, Operator<? extends Serializable>> topOps,
       HashMap<String, Operator<? extends Serializable>> topSelOps,
       LinkedHashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx,
       Map<JoinOperator, QBJoinTree> joinContext,
+      HashMap<TableScanOperator, Table> topToTable,
       List<loadTableDesc> loadTableWork, List<loadFileDesc> loadFileWork,
       Context ctx, HashMap<String, String> idToTableNameMap, int destTableId, UnionProcContext uCtx,
       List<MapJoinOperator> listMapJoinOpsNoReducer) {
@@ -101,8 +118,10 @@ public class ParseContext {
     this.qb = qb;
     this.ast = ast;
     this.aliasToPruner = aliasToPruner;
+    this.opToPartPruner = opToPartPruner;
     this.aliasToSamplePruner = aliasToSamplePruner;
     this.joinContext = joinContext;
+    this.topToTable = topToTable;
     this.loadFileWork = loadFileWork;
     this.loadTableWork = loadTableWork;
     this.opParseCtx = opParseCtx;
@@ -113,6 +132,7 @@ public class ParseContext {
     this.destTableId = destTableId;
     this.uCtx = uCtx;
     this.listMapJoinOpsNoReducer = listMapJoinOpsNoReducer;
+    this.hasNonPartCols = false;
   }
 
   /**
@@ -178,7 +198,7 @@ public class ParseContext {
   /**
    * @return the aliasToPruner
    */
-  public HashMap<String, PartitionPruner> getAliasToPruner() {
+  public HashMap<String, ASTPartitionPruner> getAliasToPruner() {
     return aliasToPruner;
   }
 
@@ -186,10 +206,39 @@ public class ParseContext {
    * @param aliasToPruner
    *          the aliasToPruner to set
    */
-  public void setAliasToPruner(HashMap<String, PartitionPruner> aliasToPruner) {
+  public void setAliasToPruner(HashMap<String, ASTPartitionPruner> aliasToPruner) {
     this.aliasToPruner = aliasToPruner;
   }
 
+  /**
+   * @return the opToPartPruner
+   */
+  public HashMap<TableScanOperator, exprNodeDesc> getOpToPartPruner() {
+    return opToPartPruner;
+  }
+
+  /**
+   * @param opToPartPruner
+   *          the opToPartPruner to set
+   */
+  public void setOpToPartPruner(HashMap<TableScanOperator, exprNodeDesc> opToPartPruner) {
+    this.opToPartPruner = opToPartPruner;
+  }
+
+  /**
+   * @return the topToTable
+   */
+  public HashMap<TableScanOperator, Table> getTopToTable() {
+    return topToTable;
+  }
+
+  /**
+   * @param topToTable
+   *          the topToTable to set
+   */
+  public void setTopToTable(HashMap<TableScanOperator, Table> topToTable) {
+    this.topToTable = topToTable;
+  }
   /**
    * @return the aliasToSamplePruner
    */
@@ -334,5 +383,20 @@ public class ParseContext {
   public void setListMapJoinOpsNoReducer(
       List<MapJoinOperator> listMapJoinOpsNoReducer) {
     this.listMapJoinOpsNoReducer = listMapJoinOpsNoReducer;
+  }
+  
+  /**
+   * Sets the hasNonPartCols flag
+   * @param val
+   */
+  public void setHasNonPartCols(boolean val) {
+    this.hasNonPartCols = val;
+  }
+  
+  /**
+   * Gets the value of the hasNonPartCols flag
+   */
+  public boolean getHasNonPartCols() {
+    return this.hasNonPartCols;
   }
 }

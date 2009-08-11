@@ -15,6 +15,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src1:src 
+          TableScan
+            alias: src
             Filter Operator
               predicate:
                   expr: ((value > 'val_10') and (value > 'val_200'))
@@ -92,7 +94,7 @@ FROM
 (SELECT src.value as c1, count(src.key) as c2 from src where src.value > 'val_10' group by src.value) src1
 WHERE src1.c1 > 'val_200' and (src1.c2 > 30 or src1.c1 < 'val_400')
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/485117888/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1347130772/10000
 val_201
 val_202
 val_203

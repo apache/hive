@@ -15,6 +15,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src2 
+          TableScan
+            alias: src2
             Reduce Output Operator
               key expressions:
                     expr: key
@@ -28,6 +30,8 @@ STAGE PLANS:
                     expr: key
                     type: string
         src1 
+          TableScan
+            alias: src1
             Reduce Output Operator
               key expressions:
                     expr: key
@@ -72,6 +76,8 @@ STAGE PLANS:
                     expr: _col0
                     type: string
         src3 
+          TableScan
+            alias: src3
             Reduce Output Operator
               key expressions:
                     expr: UDFToDouble(key)
@@ -132,7 +138,7 @@ Input: default/src
 Output: default/dest_j2
 query: SELECT dest_j2.* FROM dest_j2
 Input: default/dest_j2
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_3/build/ql/tmp/1406983217/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/558120835/10000
 0	val_0
 0	val_0
 0	val_0

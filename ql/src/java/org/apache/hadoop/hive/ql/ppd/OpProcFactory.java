@@ -135,7 +135,7 @@ public class OpProcFactory {
       List<Operator<? extends Serializable>> originalChilren = tsOp.getChildOperators();
       tsOp.setChildOperators(null);
       Operator<filterDesc> output = 
-        OperatorFactory.getAndMakeChild(new filterDesc(condn),
+        OperatorFactory.getAndMakeChild(new filterDesc(condn, false),
                               new RowSchema(inputRR.getColumnInfos()), 
                               tsOp);
       output.setChildOperators(originalChilren);

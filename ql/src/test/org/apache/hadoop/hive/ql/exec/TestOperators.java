@@ -90,7 +90,7 @@ public class TestOperators extends TestCase {
       exprNodeDesc func2 = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("==", col0, zero);
       exprNodeDesc func3 = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("&&", func1, func2); 
       assert(func3 != null);
-      filterDesc filterCtx = new filterDesc(func3);
+      filterDesc filterCtx = new filterDesc(func3, false);
 
       // Configuration
       Operator<filterDesc> op = OperatorFactory.get(filterDesc.class);

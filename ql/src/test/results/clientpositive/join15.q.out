@@ -13,6 +13,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src2 
+          TableScan
+            alias: src2
             Reduce Output Operator
               key expressions:
                     expr: key
@@ -28,6 +30,8 @@ STAGE PLANS:
                     expr: value
                     type: string
         src1 
+          TableScan
+            alias: src1
             Reduce Output Operator
               key expressions:
                     expr: key
@@ -71,7 +75,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/1355940313/10002 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/129760199/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -109,7 +113,7 @@ STAGE PLANS:
 
 query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key) SORT BY src1.key, src1.value, src2.key, src2.value
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/839547725/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/340744223/10000
 0	val_0	0	val_0
 0	val_0	0	val_0
 0	val_0	0	val_0

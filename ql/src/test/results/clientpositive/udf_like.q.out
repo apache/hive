@@ -15,6 +15,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
+          TableScan
+            alias: src
             Filter Operator
               predicate:
                   expr: (UDFToDouble(key) = UDFToDouble(86))
@@ -67,5 +69,5 @@ query: SELECT '_%_' LIKE '%\_\%\_%', '__' LIKE '%\_\%\_%', '%%_%_' LIKE '%\_\%\_
   '%_' LIKE '\%\_', 'ab' LIKE '\%\_', 'ab' LIKE '_a%', 'ab' LIKE 'a'
 FROM src WHERE src.key = 86
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1035005626/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/380805800/10000
 true	false	true	true	false	false	false	false	true	false	false	false

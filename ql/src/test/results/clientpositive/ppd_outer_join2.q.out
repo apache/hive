@@ -18,6 +18,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         b 
+          TableScan
+            alias: b
             Filter Operator
               predicate:
                   expr: ((key > '15') and (key < '25'))
@@ -37,6 +39,8 @@ STAGE PLANS:
                       expr: value
                       type: string
         a 
+          TableScan
+            alias: a
             Reduce Output Operator
               key expressions:
                     expr: key
@@ -94,7 +98,7 @@ query: FROM
  SELECT a.key, a.value, b.key, b.value
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25'
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_3/build/ql/tmp/1070507636/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1625042104/10000
 150	val_150	150	val_150
 152	val_152	152	val_152
 152	val_152	152	val_152

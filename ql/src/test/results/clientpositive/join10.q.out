@@ -16,6 +16,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         x:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -31,6 +33,8 @@ STAGE PLANS:
                       type: string
                 tag: 0
         y:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -86,7 +90,7 @@ JOIN
 ON (x.key = Y.key)
 SELECT Y.*
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1524530660/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1608637001/10000
 0	val_0
 0	val_0
 0	val_0

@@ -26,6 +26,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         srcpart 
+          TableScan
+            alias: srcpart
             Select Operator
               expressions:
                     expr: ds
@@ -59,6 +61,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         srcpart 
+          TableScan
+            alias: srcpart
             Select Operator
               expressions:
                     expr: ds
@@ -93,6 +97,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         b 
+          TableScan
+            alias: b
             Reduce Output Operator
               key expressions:
                     expr: key
@@ -112,6 +118,8 @@ STAGE PLANS:
                     expr: hr
                     type: string
         a 
+          TableScan
+            alias: a
             Reduce Output Operator
               key expressions:
                     expr: key
@@ -178,6 +186,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         b 
+          TableScan
+            alias: b
             Reduce Output Operator
               key expressions:
                     expr: key
@@ -201,6 +211,8 @@ STAGE PLANS:
                     expr: hr
                     type: string
         a 
+          TableScan
+            alias: a
             Filter Operator
               predicate:
                   expr: (UDFToDouble(key) = UDFToDouble(103))
@@ -251,7 +263,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1981087431/10002 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2084085197/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -286,7 +298,7 @@ Input: default/srcpart/ds=2008-04-08/hr=11
 Input: default/srcpart/ds=2008-04-08/hr=12
 Input: default/srcpart/ds=2008-04-09/hr=11
 Input: default/srcpart/ds=2008-04-09/hr=12
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/142920230/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/701163717/10000
 2008-04-08	11
 2008-04-08	11
 2008-04-08	11
@@ -317,6 +329,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         srcpart 
+          TableScan
+            alias: srcpart
             Select Operator
               expressions:
                     expr: key
@@ -348,6 +362,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         srcpart 
+          TableScan
+            alias: srcpart
             Select Operator
               expressions:
                     expr: ds
@@ -379,6 +395,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         srcpart 
+          TableScan
+            alias: srcpart
             Select Operator
               expressions:
                     expr: key
@@ -414,6 +432,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         srcpart 
+          TableScan
+            alias: srcpart
             Select Operator
               expressions:
                     expr: key
@@ -454,7 +474,7 @@ Input: default/srcpart/ds=2008-04-08/hr=11
 Input: default/srcpart/ds=2008-04-08/hr=12
 Input: default/srcpart/ds=2008-04-09/hr=11
 Input: default/srcpart/ds=2008-04-09/hr=12
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/116029619/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/27970835/10000
 0	val_0
 0	val_0
 0	val_0

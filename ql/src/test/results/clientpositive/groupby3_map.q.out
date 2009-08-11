@@ -23,6 +23,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: value
@@ -160,6 +162,6 @@ Input: default/src
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/emil/hive1/hive1/build/ql/tmp/1984222937/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1726617358/10000
 130091.0	260.182	256.10355987055016	98.0	0.0	142.9268095075238	143.06995106518906	20428.072876	20469.01089779559
 query: DROP TABLE dest1

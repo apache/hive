@@ -12,6 +12,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: (if(false, 1, UDFToShort(2)) + 3)
@@ -32,5 +34,5 @@ STAGE PLANS:
 
 query: SELECT IF(false, 1, cast(2 as smallint)) + 3 FROM src LIMIT 1
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1822579210/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2072313548/10000
 5

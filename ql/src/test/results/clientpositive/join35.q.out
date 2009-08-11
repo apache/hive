@@ -27,11 +27,15 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery1:subq1-subquery1:x 
+          TableScan
+            alias: x
             Filter Operator
+              isSamplingPred: false
               predicate:
                   expr: (UDFToDouble(key) < UDFToDouble(20))
                   type: boolean
               Filter Operator
+                isSamplingPred: false
                 predicate:
                     expr: (UDFToDouble(key) < UDFToDouble(20))
                     type: boolean
@@ -62,9 +66,9 @@ STAGE PLANS:
                             type: bigint
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/src 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/src 
       Path -> Partition:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/src 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/src 
           Partition
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -79,7 +83,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/src
+                location file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/src
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
       Reduce Operator Tree:
@@ -101,7 +105,7 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1365573442/10002
+              directory: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1727048194/10002
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -113,7 +117,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1365573442/10002 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1727048194/10002 
           Union
             Common Join Operator
               condition map:
@@ -156,7 +160,7 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       GlobalTableId: 1
-                      directory: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1365573442/10003
+                      directory: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1727048194/10003
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -170,10 +174,10 @@ STAGE PLANS:
                             serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             file.inputformat org.apache.hadoop.mapred.TextInputFormat
                             file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            location file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/dest_j1
+                            location file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/dest_j1
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: dest_j1
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1365573442/10004 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1727048194/10004 
           Union
             Common Join Operator
               condition map:
@@ -216,7 +220,7 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       GlobalTableId: 1
-                      directory: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1365573442/10003
+                      directory: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1727048194/10003
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -230,7 +234,7 @@ STAGE PLANS:
                             serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             file.inputformat org.apache.hadoop.mapred.TextInputFormat
                             file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                            location file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/dest_j1
+                            location file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/dest_j1
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           name: dest_j1
       Local Work:
@@ -241,6 +245,8 @@ STAGE PLANS:
                 limit: -1
           Alias -> Map Local Operator Tree:
             x 
+              TableScan
+                alias: x
                 Common Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -282,7 +288,7 @@ STAGE PLANS:
                         File Output Operator
                           compressed: false
                           GlobalTableId: 1
-                          directory: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1365573442/10003
+                          directory: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1727048194/10003
                           table:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -296,15 +302,15 @@ STAGE PLANS:
                                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                location file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/dest_j1
+                                location file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/dest_j1
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                               name: dest_j1
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1365573442/10002 
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1365573442/10004 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1727048194/10002 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1727048194/10004 
       Path -> Partition:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1365573442/10002 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1727048194/10002 
           Partition
           
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -313,7 +319,7 @@ STAGE PLANS:
                 columns _col0,_col1
                 columns.types string,bigint
                 escape.delim \
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1365573442/10004 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1727048194/10004 
           Partition
           
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -329,11 +335,11 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                source: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1365573442/10003
-                destination: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1741920959/10000
+                source: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1727048194/10003
+                destination: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1251033308/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1365573442/10003 
+              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1727048194/10003 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -349,9 +355,9 @@ STAGE PLANS:
                           type: int
             Needs Tagging: false
             Path -> Alias:
-              file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1365573442/10003 
+              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1727048194/10003 
             Path -> Partition:
-              file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1365573442/10003 
+              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1727048194/10003 
                 Partition
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -366,7 +372,7 @@ STAGE PLANS:
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       file.inputformat org.apache.hadoop.mapred.TextInputFormat
                       file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      location file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/dest_j1
+                      location file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/dest_j1
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: dest_j1
             Reduce Operator Tree:
@@ -374,7 +380,7 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
-                  directory: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1741920959/10000
+                  directory: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1251033308/10000
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -387,7 +393,7 @@ STAGE PLANS:
                         bucket_count -1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                        location file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/dest_j1
+                        location file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/dest_j1
                         file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: dest_j1
@@ -396,7 +402,7 @@ STAGE PLANS:
     Move Operator
       tables:
           replace: true
-          source: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1741920959/10000
+          source: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1251033308/10000
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -410,20 +416,24 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/dest_j1
+                location file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/dest_j1
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: dest_j1
-          tmp directory: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1741920959/10001
+          tmp directory: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1251033308/10001
 
   Stage: Stage-6
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery2:subq1-subquery2:x1 
+          TableScan
+            alias: x1
             Filter Operator
+              isSamplingPred: false
               predicate:
                   expr: (UDFToDouble(key) > UDFToDouble(100))
                   type: boolean
               Filter Operator
+                isSamplingPred: false
                 predicate:
                     expr: (UDFToDouble(key) > UDFToDouble(100))
                     type: boolean
@@ -454,9 +464,9 @@ STAGE PLANS:
                             type: bigint
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/src 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/src 
       Path -> Partition:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/src 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/src 
           Partition
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -471,7 +481,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/src
+                location file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/src
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
       Reduce Operator Tree:
@@ -493,7 +503,7 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1365573442/10004
+              directory: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1727048194/10004
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -516,7 +526,7 @@ Input: default/src1
 Output: default/dest_j1
 query: select * from dest_j1 x order by x.key
 Input: default/dest_j1
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/675600267/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1156663841/10000
 128		3
 146	val_146	2
 150	val_150	1

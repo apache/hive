@@ -19,6 +19,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         tmap:src_thrift 
+          TableScan
+            alias: src_thrift
             Select Operator
               expressions:
                     expr: lint
@@ -85,7 +87,7 @@ Input: default/src_thrift
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/915690046/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/120418612/10000
 [0,0,0]	[{"myint":0,"mystring":"0","underscore_int":0}]
 [1,2,3]	[{"myint":1,"mystring":"1","underscore_int":1}]
 [2,4,6]	[{"myint":4,"mystring":"8","underscore_int":2}]

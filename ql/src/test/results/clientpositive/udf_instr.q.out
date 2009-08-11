@@ -25,6 +25,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: instr('abcd''abc')
@@ -82,5 +84,5 @@ query: SELECT instr('abcd', 'abc'),
        instr('abcd', null)
 FROM src LIMIT 1
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/548502643/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1911960579/10000
 1	0	2	2	0	0	2	3	4	2	3	NULL	NULL

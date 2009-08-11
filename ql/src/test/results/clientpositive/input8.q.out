@@ -15,6 +15,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src1 
+          TableScan
+            alias: src1
             Select Operator
               expressions:
                     expr: (UDFToDouble(4) + null)
@@ -48,10 +50,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/2001020819/10000
+                destination: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1626829975/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/546572245/10002 
+              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2078440366/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -93,7 +95,7 @@ Input: default/src1
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/290179113/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/60632490/10000
 NULL	NULL	NULL
 NULL	NULL	NULL
 NULL	NULL	NULL

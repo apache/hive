@@ -24,6 +24,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         subq2:y 
+          TableScan
+            alias: y
             Select Operator
               expressions:
                     expr: key
@@ -73,7 +75,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/962829162/10002 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/733202123/10002 
             Common Join Operator
               condition map:
                    Inner Join 0 to 1
@@ -94,11 +96,11 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
-            file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/962829162/10004 
+            file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/733202123/10004 
               Fetch Operator
                 limit: -1
           Alias -> Map Local Operator Tree:
-            file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/962829162/10004 
+            file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/733202123/10004 
                 Common Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -120,7 +122,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/962829162/10003 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/733202123/10003 
           Select Operator
             expressions:
                   expr: _col0
@@ -197,6 +199,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         subq1:x 
+          TableScan
+            alias: x
             Select Operator
               expressions:
                     expr: key
@@ -254,7 +258,7 @@ Input: default/src1
 Output: default/dest_j1
 query: select * from dest_j1 x order by x.key
 Input: default/dest_j1
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1509412937/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2103472034/10000
 128	1
 146	1
 150	1

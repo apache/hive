@@ -12,6 +12,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -70,7 +72,7 @@ STAGE PLANS:
 
 query: SELECT src.key, sum(substr(src.value,5)) FROM src GROUP BY src.key LIMIT 5
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/209868765/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1181116822/10000
 0	0.0
 10	10.0
 100	200.0

@@ -36,6 +36,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery2:a-subquery2:s2:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -70,7 +72,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1900161365/10002 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/831850354/10002 
           Union
             Select Operator
               expressions:
@@ -83,7 +85,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1900161365/10003 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/831850354/10003 
           Union
             Select Operator
               expressions:
@@ -96,7 +98,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1900161365/10005 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/831850354/10005 
           Union
             Select Operator
               expressions:
@@ -109,7 +111,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1900161365/10007 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/831850354/10007 
           Union
             Select Operator
               expressions:
@@ -127,6 +129,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery1-subquery2:a-subquery1-subquery2:s2:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -162,6 +166,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery1-subquery1-subquery1:a-subquery1-subquery1-subquery1:s1:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -196,7 +202,7 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1900161365/10004 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/831850354/10004 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -222,6 +228,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery1-subquery1-subquery2:a-subquery1-subquery1-subquery2:s1:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -256,7 +264,7 @@ STAGE PLANS:
   Stage: Stage-7
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1900161365/10006 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/831850354/10006 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -306,7 +314,7 @@ Input: default/src
 Output: default/union_out
 query: select * from union_out cluster by id
 Input: default/union_out
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/838109701/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/209669057/10000
 1
 2
 3

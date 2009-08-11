@@ -64,7 +64,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/src</string> 
+            <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/src</string> 
            </void> 
           </object> 
          </void> 
@@ -100,7 +100,7 @@
                         <void property="conf"> 
                          <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                           <void property="dirName"> 
-                           <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/tmp/811031924/10001</string> 
+                           <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1706769894/10001</string> 
                           </void> 
                           <void property="tableInfo"> 
                            <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -837,6 +837,9 @@
                             <void property="column"> 
                              <string>key</string> 
                             </void> 
+                            <void property="tabAlias"> 
+                             <string>src</string> 
+                            </void> 
                             <void property="typeInfo"> 
                              <object id="PrimitiveTypeInfo3" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
                               <void property="typeName"> 
@@ -971,6 +974,9 @@
                         <void property="column"> 
                          <string>key</string> 
                         </void> 
+                        <void property="tabAlias"> 
+                         <string>src</string> 
+                        </void> 
                         <void property="typeInfo"> 
                          <object idref="PrimitiveTypeInfo3"/> 
                         </void> 
@@ -1046,6 +1052,13 @@
           </void> 
          </object> 
         </void> 
+        <void property="conf"> 
+         <object class="org.apache.hadoop.hive.ql.plan.tableScanDesc"> 
+          <void property="alias"> 
+           <string>src</string> 
+          </void> 
+         </object> 
+        </void> 
         <void property="neededColumnIDs"> 
          <object class="java.util.ArrayList"> 
           <void method="add"> 
@@ -1067,7 +1080,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src</string> 
@@ -1079,7 +1092,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap0"/> 

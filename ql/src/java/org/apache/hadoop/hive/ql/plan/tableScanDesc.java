@@ -28,8 +28,22 @@ import java.io.Serializable;
 @explain(displayName="TableScan")
 public class tableScanDesc implements Serializable {
   private static final long serialVersionUID = 1L;
+  
+  private String alias;
+  
   @SuppressWarnings("nls")
-  public tableScanDesc() {
-    throw new RuntimeException("This class does not need to be instantiated"); 
+  public tableScanDesc() { }
+  
+  public tableScanDesc(final String alias) {
+    this.alias = alias;
+  }
+  
+  @explain(displayName="alias")
+  public String getAlias() {
+    return alias;
+  }
+  
+  public void setAlias(String alias) {
+    this.alias = alias;
   }
 }

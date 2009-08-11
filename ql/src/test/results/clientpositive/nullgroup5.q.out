@@ -23,6 +23,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery1:u-subquery1:x 
+          TableScan
+            alias: x
             Filter Operator
               predicate:
                   expr: (ds = '2009-04-05')
@@ -53,6 +55,8 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
         null-subquery2:u-subquery2:y 
+          TableScan
+            alias: y
             Filter Operator
               predicate:
                   expr: (ds = '2009-04-09')
@@ -95,7 +99,7 @@ query: select u.* from
   select key, value from tstparttbl2 y where y.ds='2009-04-09'
 )u
 Input: default/tstparttbl2/ds=2009-04-09
-Output: file:/data/users/zshao/tools/namit-trunk-apache-hive/build/ql/tmp/248088196/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2066174418/10000
 238	val_238
 86	val_86
 311	val_311

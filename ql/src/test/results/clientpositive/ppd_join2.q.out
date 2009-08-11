@@ -22,6 +22,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src2:src 
+          TableScan
+            alias: src
             Filter Operator
               predicate:
                   expr: ((key <> '305') and (key <> '14'))
@@ -52,6 +54,8 @@ STAGE PLANS:
                           expr: _col1
                           type: string
         src1:src 
+          TableScan
+            alias: src
             Filter Operator
               predicate:
                   expr: (((key <> '302') and (key < '400')) and ((key <> '311') and ((value <> 'val_50') or (key > '1'))))
@@ -123,6 +127,8 @@ STAGE PLANS:
                     expr: _col1
                     type: string
         src3:src 
+          TableScan
+            alias: src
             Filter Operator
               predicate:
                   expr: ((key <> '306') and (sqrt(UDFToDouble(key)) <> UDFToDouble(13)))
@@ -192,7 +198,7 @@ JOIN
 ON src1.c2 = src3.c6
 WHERE src1.c1 <> '311' and (src1.c2 <> 'val_50' or src1.c1 > '1') and (src2.c3 <> '10' or src1.c1 <> '10') and (src2.c3 <> '14') and (sqrt(src3.c5) <> 13)
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_3/build/ql/tmp/637459314/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1783863777/10000
 0	val_0
 0	val_0
 0	val_0

@@ -19,6 +19,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery1:unionsrc-subquery1:s1 
+          TableScan
+            alias: s1
             Select Operator
               Group By Operator
                 aggregations:
@@ -54,7 +56,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/1466934742/10002 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/418741638/10002 
           Union
             Select Operator
               expressions:
@@ -81,7 +83,7 @@ STAGE PLANS:
                   value expressions:
                         expr: _col1
                         type: bigint
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/1466934742/10003 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/418741638/10003 
           Union
             Select Operator
               expressions:
@@ -135,6 +137,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery2:unionsrc-subquery2:s2 
+          TableScan
+            alias: s2
             Select Operator
               Group By Operator
                 aggregations:
@@ -176,6 +180,6 @@ query: select unionsrc.key, count(1) FROM (select 'tst1' as key, count(1) as val
                                   UNION  ALL  
                                     select 'tst2' as key, count(1) as value from src s2) unionsrc group by unionsrc.key
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/1264889595/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1640354803/10000
 tst1	1
 tst2	1

@@ -25,61 +25,58 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.ppd.PredicatePushDown;
+import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcessor;
 
 /**
  * Implementation of the optimizer
  */
 public class Optimizer {
-	private ParseContext pctx;
-	private List<Transform> transformations;
-	
-	/**
-	 * empty constructor
-	 */
-	public Optimizer() {
-	}
+  private ParseContext pctx;
+  private List<Transform> transformations;
 
 	/**
 	 * create the list of transformations
 	 * @param hiveConf 
 	 */
-	public void initialize(HiveConf hiveConf) {
-		transformations = new ArrayList<Transform>();
-		if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCP)) {
-		  transformations.add(new ColumnPruner());
-		}
+  public void initialize(HiveConf hiveConf) {
+    transformations = new ArrayList<Transform>();
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCP)) {
+      transformations.add(new ColumnPruner());
+    }
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPD)) {
       transformations.add(new PredicatePushDown());
+      if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPR)) {
+        transformations.add(new PartitionPruner());
+      }
     }
     transformations.add(new UnionProcessor());
-		transformations.add(new MapJoinProcessor());
-	}
-	
-	/**
-	 * invoke all the transformations one-by-one, and alter the query plan
-	 * @return ParseContext
-	 * @throws SemanticException
-	 */
-	public ParseContext optimize() throws SemanticException {
-		for (Transform t : transformations)
-			pctx = t.transform(pctx);
-    return pctx;
-	}
-	
-	/**
-	 * @return the pctx
-	 */
-	public ParseContext getPctx() {
-		return pctx;
-	}
+    transformations.add(new MapJoinProcessor());
+  }
 
-	/**
-	 * @param pctx the pctx to set
-	 */
-	public void setPctx(ParseContext pctx) {
-		this.pctx = pctx;
-	}
-	
-	
+  /**
+   * invoke all the transformations one-by-one, and alter the query plan
+   * @return ParseContext
+   * @throws SemanticException
+   */
+  public ParseContext optimize() throws SemanticException {
+    for (Transform t : transformations)
+      pctx = t.transform(pctx);
+    return pctx;
+  }
+
+  /**
+   * @return the pctx
+   */
+  public ParseContext getPctx() {
+    return pctx;
+  }
+
+  /**
+   * @param pctx the pctx to set
+   */
+  public void setPctx(ParseContext pctx) {
+    this.pctx = pctx;
+  }
+
 }

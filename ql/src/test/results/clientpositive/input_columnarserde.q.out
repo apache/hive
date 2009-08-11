@@ -20,6 +20,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src_thrift 
+          TableScan
+            alias: src_thrift
             Select Operator
               expressions:
                     expr: lint
@@ -78,7 +80,7 @@ Input: default/src_thrift
 Output: default/input_columnarserde
 query: SELECT input_columnarserde.* FROM input_columnarserde DISTRIBUTE BY 1
 Input: default/input_columnarserde
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/2034641093/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1695989715/10000
 [0,0,0]	["0","0","0"]	{"key_0":"value_0"}	1712634731	record_0
 [1,2,3]	["10","100","1000"]	{"key_1":"value_1"}	465985200	record_1
 [2,4,6]	["20","200","2000"]	{"key_2":"value_2"}	-751827638	record_2
@@ -92,7 +94,7 @@ Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp
 null	null	{}	0	NULL
 query: SELECT input_columnarserde.a[0], input_columnarserde.b[0], input_columnarserde.c['key2'], input_columnarserde.d, input_columnarserde.e FROM input_columnarserde DISTRIBUTE BY 1
 Input: default/input_columnarserde
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/334887658/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1755799278/10000
 0	0	NULL	1712634731	record_0
 1	10	NULL	465985200	record_1
 2	20	NULL	-751827638	record_2

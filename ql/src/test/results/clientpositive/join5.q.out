@@ -25,6 +25,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         c:a:src1 
+          TableScan
+            alias: src1
             Filter Operator
               predicate:
                   expr: ((UDFToDouble(key) > UDFToDouble(10)) and (UDFToDouble(key) < UDFToDouble(20)))
@@ -55,6 +57,8 @@ STAGE PLANS:
                           expr: _col1
                           type: string
         c:b:src2 
+          TableScan
+            alias: src2
             Filter Operator
               predicate:
                   expr: ((UDFToDouble(key) > UDFToDouble(15)) and (UDFToDouble(key) < UDFToDouble(25)))
@@ -162,7 +166,7 @@ Input: default/src
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/156874986/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/771875621/10000
 17	val_17	17	val_17
 18	val_18	18	val_18
 18	val_18	18	val_18

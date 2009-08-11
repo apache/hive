@@ -26,6 +26,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery1-subquery2:union_output-subquery1-subquery2:src_thrift 
+          TableScan
+            alias: src_thrift
             Select Operator
               expressions:
                     expr: astring
@@ -58,6 +60,8 @@ STAGE PLANS:
                             expr: _col1
                             type: bigint
         null-subquery1-subquery1-subquery2:union_output-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -90,6 +94,8 @@ STAGE PLANS:
                             expr: _col1
                             type: bigint
         null-subquery1-subquery1-subquery1-subquery1:union_output-subquery1-subquery1-subquery1-subquery1:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: '1'
@@ -122,6 +128,8 @@ STAGE PLANS:
                             expr: _col1
                             type: bigint
         null-subquery2:union_output-subquery2:src_thrift 
+          TableScan
+            alias: src_thrift
             Select Operator
               expressions:
                     expr: lstring[0]
@@ -154,6 +162,8 @@ STAGE PLANS:
                             expr: _col1
                             type: bigint
         null-subquery1-subquery1-subquery1-subquery2:union_output-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: reverse(key)
@@ -228,7 +238,7 @@ FROM (
 GROUP BY key
 Input: default/src_thrift
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/239888968/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1135321195/10000
 NULL	2
 0	7
 001	2

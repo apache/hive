@@ -30,7 +30,7 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/1582733254/10000</string> 
+               <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1908916346/10000</string> 
               </void> 
               <void property="table"> 
                <object id="tableDesc0" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -83,7 +83,7 @@
                   </void> 
                   <void method="put"> 
                    <string>location</string> 
-                   <string>file:/data/users/emil/hive1/hive1/build/ql/test/data/warehouse/dest1</string> 
+                   <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/dest1</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -93,7 +93,7 @@
                </object> 
               </void> 
               <void property="tmpDir"> 
-               <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/1582733254/10001</string> 
+               <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1908916346/10001</string> 
               </void> 
              </object> 
             </void> 
@@ -121,10 +121,10 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/1888189813/10002</string> 
+               <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/936833563/10002</string> 
               </void> 
               <void property="targetDir"> 
-               <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/1582733254/10000</string> 
+               <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1908916346/10000</string> 
               </void> 
              </object> 
             </void> 
@@ -142,7 +142,7 @@
             <void property="aliasToWork"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/1888189813/10002</string> 
+               <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/936833563/10002</string> 
                <object id="TableScanOperator0" class="org.apache.hadoop.hive.ql.exec.TableScanOperator"> 
                 <void property="childOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -238,6 +238,9 @@
                           <void property="column"> 
                            <string>key</string> 
                           </void> 
+                          <void property="tabAlias"> 
+                           <string></string> 
+                          </void> 
                           <void property="typeInfo"> 
                            <object id="PrimitiveTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
                             <void property="typeName"> 
@@ -251,6 +254,9 @@
                          <object class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
                           <void property="column"> 
                            <string>value</string> 
+                          </void> 
+                          <void property="tabAlias"> 
+                           <string></string> 
                           </void> 
                           <void property="typeInfo"> 
                            <object idref="PrimitiveTypeInfo0"/> 
@@ -345,10 +351,10 @@
             <void property="pathToAliases"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/1888189813/10002</string> 
+               <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/936833563/10002</string> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/1888189813/10002</string> 
+                 <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/936833563/10002</string> 
                 </void> 
                </object> 
               </void> 
@@ -357,7 +363,7 @@
             <void property="pathToPartitionInfo"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/1888189813/10002</string> 
+               <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/936833563/10002</string> 
                <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
                 <void property="tableDesc"> 
                  <object idref="tableDesc0"/> 
@@ -375,7 +381,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/1582733254/10000</string> 
+                     <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1908916346/10000</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -424,7 +430,7 @@
                         </void> 
                         <void method="put"> 
                          <string>location</string> 
-                         <string>file:/data/users/emil/hive1/hive1/build/ql/test/data/warehouse/dest1</string> 
+                         <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/dest1</string> 
                         </void> 
                         <void method="put"> 
                          <string>file.outputformat</string> 
@@ -459,6 +465,9 @@
                  <object class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
                   <void property="column"> 
                    <string>VALUE</string> 
+                  </void> 
+                  <void property="tabAlias"> 
+                   <string></string> 
                   </void> 
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo0"/> 
@@ -527,7 +536,7 @@
       <void property="resolverCtx"> 
        <object class="org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles$ConditionalResolverMergeFilesCtx"> 
         <void property="dir"> 
-         <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/1888189813/10002</string> 
+         <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/936833563/10002</string> 
         </void> 
         <void property="listTasks"> 
          <object idref="ArrayList0"/> 
@@ -619,7 +628,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/emil/hive1/hive1/build/ql/test/data/warehouse/srcbucket</string> 
+            <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcbucket</string> 
            </void> 
           </object> 
          </void> 
@@ -658,7 +667,7 @@
                            <int>1</int> 
                           </void> 
                           <void property="dirName"> 
-                           <string>file:/data/users/emil/hive1/hive1/build/ql/tmp/1888189813/10002</string> 
+                           <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/936833563/10002</string> 
                           </void> 
                           <void property="tableInfo"> 
                            <object idref="tableDesc0"/> 
@@ -687,6 +696,9 @@
                         <void property="column"> 
                          <string>value</string> 
                         </void> 
+                        <void property="tabAlias"> 
+                         <string>s</string> 
+                        </void> 
                         <void property="typeInfo"> 
                          <object idref="PrimitiveTypeInfo0"/> 
                         </void> 
@@ -697,6 +709,9 @@
                        <object id="exprNodeColumnDesc1" class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
                         <void property="column"> 
                          <string>key</string> 
+                        </void> 
+                        <void property="tabAlias"> 
+                         <string>s</string> 
                         </void> 
                         <void property="typeInfo"> 
                          <object idref="PrimitiveTypeInfo1"/> 
@@ -773,6 +788,9 @@
                 </void> 
                 <void property="conf"> 
                  <object class="org.apache.hadoop.hive.ql.plan.filterDesc"> 
+                  <void property="isSamplingPred"> 
+                   <boolean>true</boolean> 
+                  </void> 
                   <void property="predicate"> 
                    <object class="org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc"> 
                     <void property="UDFClass"> 
@@ -841,6 +859,9 @@
                                    <object class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
                                     <void property="column"> 
                                      <string>key</string> 
+                                    </void> 
+                                    <void property="tabAlias"> 
+                                     <string>s</string> 
                                     </void> 
                                     <void property="typeInfo"> 
                                      <object idref="PrimitiveTypeInfo1"/> 
@@ -975,6 +996,9 @@
                                 <void property="column"> 
                                  <string>key</string> 
                                 </void> 
+                                <void property="tabAlias"> 
+                                 <string>s</string> 
+                                </void> 
                                 <void property="typeInfo"> 
                                  <object idref="PrimitiveTypeInfo1"/> 
                                 </void> 
@@ -1091,6 +1115,13 @@
           </void> 
          </object> 
         </void> 
+        <void property="conf"> 
+         <object class="org.apache.hadoop.hive.ql.plan.tableScanDesc"> 
+          <void property="alias"> 
+           <string>s</string> 
+          </void> 
+         </object> 
+        </void> 
         <void property="neededColumnIDs"> 
          <object class="java.util.ArrayList"> 
           <void method="add"> 
@@ -1115,7 +1146,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/emil/hive1/hive1/build/ql/test/data/warehouse/srcbucket</string> 
+       <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcbucket</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>s</string> 
@@ -1127,7 +1158,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/emil/hive1/hive1/build/ql/test/data/warehouse/srcbucket</string> 
+       <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcbucket</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap0"/> 

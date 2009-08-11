@@ -128,7 +128,8 @@ public class GenMRFileSink1 implements NodeProcessor {
 
     ArrayList<exprNodeDesc> valueCols = new ArrayList<exprNodeDesc>();
     for (ColumnInfo ci : fsRS.getSignature()) {
-      valueCols.add(new exprNodeColumnDesc(ci.getType(), ci.getInternalName()));
+      valueCols.add(new exprNodeColumnDesc(ci.getType(), ci.getInternalName(), ci.getTabAlias(),
+          ci.getIsPartitionCol()));
     }
 
     // create a dummy tableScan operator
@@ -155,13 +156,15 @@ public class GenMRFileSink1 implements NodeProcessor {
     for(ColumnInfo colInfo: interim_rwsch.getColumnInfos()) {
       String [] info = interim_rwsch.reverseLookup(colInfo.getInternalName());
       out_rwsch.put(info[0], info[1],
-                    new ColumnInfo(pos.toString(), colInfo.getType()));
+                    new ColumnInfo(pos.toString(), colInfo.getType(), info[0], 
+                          colInfo.getIsPartitionCol()));
       pos = Integer.valueOf(pos.intValue() + 1);
     }
 
     Operator extract = 
       OperatorFactory.getAndMakeChild(
-        new extractDesc(new exprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, Utilities.ReduceField.VALUE.toString())),
+        new extractDesc(new exprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, 
+                                Utilities.ReduceField.VALUE.toString(), "", false)),
         new RowSchema(out_rwsch.getColumnInfos()));
     
     tableDesc ts = (tableDesc)fsConf.getTableInfo().clone();

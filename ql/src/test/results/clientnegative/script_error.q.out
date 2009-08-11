@@ -13,6 +13,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -40,5 +42,5 @@ STAGE PLANS:
 query: SELECT TRANSFORM(src.key, src.value) USING '../data/scripts/error_script' AS (tkey, tvalue)
 FROM src
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_3/build/ql/tmp/1098616602/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2091756058/10000
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask

@@ -17,6 +17,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         a:input4 
+          TableScan
+            alias: input4
             Select Operator
               expressions:
                     expr: key
@@ -56,7 +58,7 @@ FROM (SELECT INPUT4.*, INPUT4.KEY as KEY2
       FROM INPUT4) a
 ORDER BY KEY2 LIMIT 10
 Input: default/input4
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/945658600/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1382133902/10000
 0
 0
 0

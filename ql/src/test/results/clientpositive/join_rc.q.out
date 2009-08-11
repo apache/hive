@@ -23,6 +23,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         join_rc2 
+          TableScan
+            alias: join_rc2
             Reduce Output Operator
               key expressions:
                     expr: key
@@ -36,6 +38,8 @@ STAGE PLANS:
                     expr: value
                     type: string
         join_rc1 
+          TableScan
+            alias: join_rc1
             Reduce Output Operator
               key expressions:
                     expr: key
@@ -79,7 +83,7 @@ query: select join_rc1.key, join_rc2.value
 FROM join_rc1 JOIN join_rc2 ON join_rc1.key = join_rc2.key
 Input: default/join_rc2
 Input: default/join_rc1
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1293645641/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/206616711/10000
 0	val_0
 0	val_0
 0	val_0

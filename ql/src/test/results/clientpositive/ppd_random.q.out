@@ -18,6 +18,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src2:src 
+          TableScan
+            alias: src
             Filter Operator
               predicate:
                   expr: (key > '2')
@@ -46,6 +48,8 @@ STAGE PLANS:
                           expr: _col1
                           type: string
         src1:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key

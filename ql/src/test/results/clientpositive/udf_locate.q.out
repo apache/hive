@@ -29,6 +29,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: locate('abc''abcd')
@@ -98,5 +100,5 @@ query: SELECT locate('abc', 'abcd'),
        locate('abc', 'abcd', 'invalid number')
 FROM src LIMIT 1
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/205952342/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/436151757/10000
 1	0	2	2	4	4	0	0	2	3	4	2	3	NULL	NULL	0	0

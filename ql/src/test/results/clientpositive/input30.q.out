@@ -17,6 +17,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
+          TableScan
+            alias: src
             Filter Operator
               predicate:
                   expr: (((hash(rand(UDFToLong(460476415))) & 2147483647) % 32) = 0)
@@ -75,7 +77,7 @@ Input: default/src
 Output: default/tst_dest30
 query: select * from tst_dest30
 Input: default/tst_dest30
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1981954297/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1316741609/10000
 18
 query: drop table tst_dest30
 query: drop table dest30

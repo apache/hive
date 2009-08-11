@@ -24,6 +24,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: 'abc'
@@ -92,5 +94,5 @@ query: SELECT
 FROM src
 LIMIT 1
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1644354823/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1457515970/10000
 abc	abc	abc'	abc"	abc\	abc\	abc\'	abc\"	abc\\	abc\\	abc\\'	abc\\"	abc\\\	abc\\\	abc""""\	abc''''\	awk '{print NR"\t"$0}'	tab	tab	tab	tab

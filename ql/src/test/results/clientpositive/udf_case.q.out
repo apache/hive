@@ -37,6 +37,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: CASE (1) WHEN (1) THEN (2) WHEN (3) THEN (4) ELSE (5) END
@@ -92,5 +94,5 @@ query: SELECT CASE 1
        END
 FROM src LIMIT 1
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1363344464/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1655100692/10000
 2	5	15	NULL	20	24

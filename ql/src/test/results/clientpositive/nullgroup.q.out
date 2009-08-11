@@ -12,6 +12,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         x 
+          TableScan
+            alias: x
             Filter Operator
               predicate:
                   expr: (UDFToDouble(key) > UDFToDouble(9999))
@@ -57,7 +59,7 @@ STAGE PLANS:
 
 query: select count(1) from src x where x.key > 9999
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/289311164/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/161603981/10000
 0
 query: explain
 select count(1) from src x where x.key > 9999
@@ -73,6 +75,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         x 
+          TableScan
+            alias: x
             Filter Operator
               predicate:
                   expr: (UDFToDouble(key) > UDFToDouble(9999))
@@ -118,7 +122,7 @@ STAGE PLANS:
 
 query: select count(1) from src x where x.key > 9999
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1460273503/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/720088705/10000
 0
 query: explain
 select count(1) from src x where x.key > 9999
@@ -135,6 +139,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         x 
+          TableScan
+            alias: x
             Filter Operator
               predicate:
                   expr: (UDFToDouble(key) > UDFToDouble(9999))
@@ -169,7 +175,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/419295241/10002 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1577457021/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -201,7 +207,7 @@ STAGE PLANS:
 
 query: select count(1) from src x where x.key > 9999
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1216265581/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1185327154/10000
 0
 query: explain
 select count(1) from src x where x.key > 9999
@@ -217,6 +223,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         x 
+          TableScan
+            alias: x
             Filter Operator
               predicate:
                   expr: (UDFToDouble(key) > UDFToDouble(9999))
@@ -257,5 +265,5 @@ STAGE PLANS:
 
 query: select count(1) from src x where x.key > 9999
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1618872238/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/858984614/10000
 0

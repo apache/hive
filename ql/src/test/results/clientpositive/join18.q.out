@@ -25,6 +25,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         b:src2 
+          TableScan
+            alias: src2
             Select Operator
               expressions:
                     expr: key
@@ -142,6 +144,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         a:src1 
+          TableScan
+            alias: src1
             Select Operator
               expressions:
                     expr: key
@@ -210,7 +214,7 @@ query: SELECT a.key, a.value, b.key, b.value
  ON (a.key = b.key)
 Input: default/src1
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/1470641651/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1137643842/10000
 NULL	NULL		7
 0	3	NULL	NULL
 10	1	NULL	NULL

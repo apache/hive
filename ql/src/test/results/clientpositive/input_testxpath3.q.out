@@ -13,6 +13,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src_thrift 
+          TableScan
+            alias: src_thrift
             Select Operator
               expressions:
                     expr: mstringstring['key_9']
@@ -35,7 +37,7 @@ STAGE PLANS:
 query: FROM src_thrift
 SELECT src_thrift.mstringstring['key_9'], src_thrift.lintstring.myint
 Input: default/src_thrift
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1386485192/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1059185497/10000
 NULL	[0]
 NULL	[1]
 NULL	[4]

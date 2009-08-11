@@ -18,6 +18,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery1:unioned_query-subquery1:src 
+          TableScan
+            alias: src
             Filter Operator
               predicate:
                   expr: ((key < '100') and ((key > '4') and (value > 'val_4')))
@@ -52,6 +54,8 @@ STAGE PLANS:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
         null-subquery2:unioned_query-subquery2:src 
+          TableScan
+            alias: src
             Filter Operator
               predicate:
                   expr: ((key > '150') and ((key > '4') and (value > 'val_4')))
@@ -99,7 +103,7 @@ query: FROM (
 SELECT unioned_query.*
   WHERE key > '4' and value > 'val_4'
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/1644693517/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1828690205/10000
 86	val_86
 409	val_409
 98	val_98

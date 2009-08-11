@@ -28,6 +28,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         hive_foo 
+          TableScan
+            alias: hive_foo
             Reduce Output Operator
               key expressions:
                     expr: foo_id
@@ -41,6 +43,8 @@ STAGE PLANS:
                     expr: foo_name
                     type: string
         hive_bar 
+          TableScan
+            alias: hive_bar
             Reduce Output Operator
               key expressions:
                     expr: foo_id
@@ -89,6 +93,8 @@ STAGE PLANS:
                     expr: _col10
                     type: string
         hive_count 
+          TableScan
+            alias: hive_count
             Reduce Output Operator
               key expressions:
                     expr: bar_id
@@ -135,7 +141,7 @@ hive_bar.foo_id join hive_count on hive_count.bar_id = hive_bar.bar_id
 Input: default/hive_foo
 Input: default/hive_count
 Input: default/hive_bar
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/837595619/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/168017101/10000
 foo1	bar10	2
 query: drop table hive_foo
 query: drop table hive_bar

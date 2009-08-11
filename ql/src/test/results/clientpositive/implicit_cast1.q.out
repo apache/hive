@@ -15,6 +15,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         implicit_test1 
+          TableScan
+            alias: implicit_test1
             Filter Operator
               predicate:
                   expr: (UDFToDouble(a) <> UDFToDouble(0))
@@ -46,5 +48,5 @@ query: SELECT implicit_test1.*
 FROM implicit_test1
 WHERE implicit_test1.a <> 0
 Input: default/implicit_test1
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/2080135303/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/915534198/10000
 query: DROP TABLE implicit_test1

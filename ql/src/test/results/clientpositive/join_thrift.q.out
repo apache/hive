@@ -22,6 +22,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         s2 
+          TableScan
+            alias: s2
             Reduce Output Operator
               key expressions:
                     expr: aint
@@ -35,6 +37,8 @@ STAGE PLANS:
                     expr: lintstring
                     type: array<struct<myint:int,mystring:string,underscore_int:int>>
         s1 
+          TableScan
+            alias: s1
             Reduce Output Operator
               key expressions:
                     expr: aint
@@ -79,7 +83,7 @@ FROM src_thrift s1
 JOIN src_thrift s2
 ON s1.aint = s2.aint
 Input: default/src_thrift
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/2021763754/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/589957555/10000
 -1952710710	[{"myint":25,"mystring":"125","underscore_int":5}]
 -1461153973	[{"myint":49,"mystring":"343","underscore_int":7}]
 -751827638	[{"myint":4,"mystring":"8","underscore_int":2}]

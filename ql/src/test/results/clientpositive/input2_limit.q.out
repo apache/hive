@@ -12,6 +12,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         x 
+          TableScan
+            alias: x
             Filter Operator
               predicate:
                   expr: (UDFToDouble(key) < UDFToDouble(300))
@@ -42,7 +44,7 @@ STAGE PLANS:
 
 query: SELECT x.* FROM SRC x WHERE x.key < 300 LIMIT 5
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/689430698/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/515715119/10000
 238	val_238
 86	val_86
 27	val_27

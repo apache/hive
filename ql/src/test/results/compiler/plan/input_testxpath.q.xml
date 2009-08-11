@@ -68,7 +68,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/src_thrift</string> 
+            <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/src_thrift</string> 
            </void> 
           </object> 
          </void> 
@@ -96,7 +96,7 @@
                 <void property="conf"> 
                  <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                   <void property="dirName"> 
-                   <string>file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/.ptest_3/build/ql/tmp/312015303/10001</string> 
+                   <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2102365199/10001</string> 
                   </void> 
                   <void property="tableInfo"> 
                    <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -198,6 +198,9 @@
                     <void property="column"> 
                      <string>mstringstring</string> 
                     </void> 
+                    <void property="tabAlias"> 
+                     <string>src_thrift</string> 
+                    </void> 
                     <void property="typeInfo"> 
                      <object id="MapTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo"> 
                       <void property="mapKeyTypeInfo"> 
@@ -241,6 +244,9 @@
                      <object class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
                       <void property="column"> 
                        <string>lintstring</string> 
+                      </void> 
+                      <void property="tabAlias"> 
+                       <string>src_thrift</string> 
                       </void> 
                       <void property="typeInfo"> 
                        <object id="ListTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo"> 
@@ -291,6 +297,9 @@
                    <object class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
                     <void property="column"> 
                      <string>lint</string> 
+                    </void> 
+                    <void property="tabAlias"> 
+                     <string>src_thrift</string> 
                     </void> 
                     <void property="typeInfo"> 
                      <object id="ListTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo"> 
@@ -402,6 +411,13 @@
           </void> 
          </object> 
         </void> 
+        <void property="conf"> 
+         <object class="org.apache.hadoop.hive.ql.plan.tableScanDesc"> 
+          <void property="alias"> 
+           <string>src_thrift</string> 
+          </void> 
+         </object> 
+        </void> 
         <void property="neededColumnIDs"> 
          <object class="java.util.ArrayList"> 
           <void method="add"> 
@@ -494,7 +510,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/src_thrift</string> 
+       <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/src_thrift</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src_thrift</string> 
@@ -506,7 +522,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/deploy/hive1/tools/ahive1-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/src_thrift</string> 
+       <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/src_thrift</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap0"/> 

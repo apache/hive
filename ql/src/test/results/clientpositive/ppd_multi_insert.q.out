@@ -25,6 +25,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         b 
+          TableScan
+            alias: b
             Reduce Output Operator
               key expressions:
                     expr: key
@@ -35,6 +37,8 @@ STAGE PLANS:
                     type: string
               tag: 1
         a 
+          TableScan
+            alias: a
             Reduce Output Operator
               key expressions:
                     expr: key
@@ -199,7 +203,7 @@ Output: default/mi3/ds=2008-04-08/hr=12
 Output: ../build/ql/test/data/warehouse/mi4.out
 query: SELECT mi1.* FROM mi1
 Input: default/mi1
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/613202794/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1662084677/10000
 0	val_0
 0	val_0
 0	val_0
@@ -350,7 +354,7 @@ Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp
 98	val_98
 query: SELECT mi2.* FROM mi2
 Input: default/mi2
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/574876580/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1663619015/10000
 100	val_100
 100	val_100
 100	val_100
@@ -564,7 +568,7 @@ Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp
 199	val_199
 query: SELECT mi3.* FROM mi3
 Input: default/mi3/ds=2008-04-08/hr=12
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1848936782/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/660410600/10000
 200	2008-04-08	12
 200	2008-04-08	12
 200	2008-04-08	12

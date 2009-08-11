@@ -23,6 +23,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         b 
+          TableScan
+            alias: b
             Filter Operator
               predicate:
                   expr: (ds = '2008-04-08')
@@ -46,6 +48,8 @@ STAGE PLANS:
                       expr: hr
                       type: string
         a 
+          TableScan
+            alias: a
             Filter Operator
               predicate:
                   expr: ((ds = '2008-04-08') and CASE (key) WHEN ('27') THEN (true) WHEN ('38') THEN (false) ELSE (null) END)
@@ -109,7 +113,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/600222764/10002 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/331138227/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -174,7 +178,7 @@ WHERE a.ds = '2008-04-08' AND
 ORDER BY a.key, a.value, a.ds, a.hr, b.key, b.value, b.ds, b.hr
 Input: default/srcpart/ds=2008-04-08/hr=11
 Input: default/srcpart/ds=2008-04-08/hr=12
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/178170122/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1976930760/10000
 27	val_27	2008-04-08	11	27	val_27	2008-04-08	11
 27	val_27	2008-04-08	11	27	val_27	2008-04-08	12
 27	val_27	2008-04-08	12	27	val_27	2008-04-08	11

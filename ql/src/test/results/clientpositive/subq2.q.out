@@ -14,6 +14,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         a:b 
+          TableScan
+            alias: b
             Filter Operator
               predicate:
                   expr: (UDFToDouble(key) >= UDFToDouble(90))
@@ -86,7 +88,7 @@ query: SELECT a.k, a.c
 FROM (SELECT b.key as k, count(1) as c FROM src b GROUP BY b.key) a
 WHERE a.k >= 90
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1833412775/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1671058599/10000
 100	2
 103	2
 104	2

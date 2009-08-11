@@ -12,6 +12,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         x 
+          TableScan
+            alias: x
             Filter Operator
               predicate:
                   expr: (UDFToDouble(key) = UDFToDouble(10))
@@ -57,7 +59,7 @@ STAGE PLANS:
 
 query: SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/146577013/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/661923183/10000
 10	val_10
 query: EXPLAIN 
 SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key)  where x.key = 20 CLUSTER BY v1
@@ -74,6 +76,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         y 
+          TableScan
+            alias: y
             Reduce Output Operator
               key expressions:
                     expr: key
@@ -87,6 +91,8 @@ STAGE PLANS:
                     expr: key
                     type: string
         x 
+          TableScan
+            alias: x
             Filter Operator
               predicate:
                   expr: (UDFToDouble(key) = UDFToDouble(20))
@@ -136,7 +142,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1806574549/10002 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/610411732/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col1
@@ -169,5 +175,5 @@ STAGE PLANS:
 
 query: SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/484426586/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/235995833/10000
 20	val_20	20

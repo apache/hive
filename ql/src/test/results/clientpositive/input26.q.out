@@ -19,6 +19,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery1:subq-subquery1:a 
+          TableScan
+            alias: a
             Filter Operator
               predicate:
                   expr: ((ds = '2008-04-08') and (hr = '11'))
@@ -66,7 +68,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/136969549/10002 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1082108429/10002 
           Union
             Select Operator
               expressions:
@@ -85,7 +87,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/136969549/10003 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1082108429/10003 
           Union
             Select Operator
               expressions:
@@ -109,6 +111,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery2:subq-subquery2:b 
+          TableScan
+            alias: b
             Filter Operator
               predicate:
                   expr: ((ds = '2008-04-08') and (hr = '14'))
@@ -162,7 +166,7 @@ query: select * from (
   select * from srcpart b where b.ds = '2008-04-08' and b.hr = '14' limit 5
 )subq
 Input: default/srcpart/ds=2008-04-08/hr=11
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/116487966/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/168463886/10000
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11

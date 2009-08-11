@@ -27,6 +27,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src_thrift 
+          TableScan
+            alias: src_thrift
             Select Operator
               expressions:
                     expr: CASE (lint[0]) WHEN (0) THEN ((lint[0] + 1)) WHEN (1) THEN ((lint[0] + 2)) WHEN (2) THEN (100) ELSE (5) END
@@ -66,7 +68,7 @@ query: SELECT CASE src_thrift.lint[0]
        END)[0]
 FROM src_thrift LIMIT 3
 Input: default/src_thrift
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/861207644/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/87841953/10000
 1	zero	0
 3	10 is ten	NULL
 100	default	NULL

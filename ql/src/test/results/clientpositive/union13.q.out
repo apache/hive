@@ -15,6 +15,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery1:unionsrc-subquery1:s1 
+          TableScan
+            alias: s1
             Select Operator
               expressions:
                     expr: key
@@ -37,6 +39,8 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
         null-subquery2:unionsrc-subquery2:s2 
+          TableScan
+            alias: s2
             Select Operator
               expressions:
                     expr: key
@@ -67,7 +71,7 @@ STAGE PLANS:
 query: select unionsrc.key, unionsrc.value FROM (select s1.key as key, s1.value as value from src s1 UNION  ALL  
                                           select s2.key as key, s2.value as value from src s2) unionsrc
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/362764706/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/49034053/10000
 238	val_238
 238	val_238
 86	val_86

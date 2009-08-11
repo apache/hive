@@ -17,6 +17,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         srcbucket 
+          TableScan
+            alias: srcbucket
             Select Operator
               Group By Operator
                 aggregations:
@@ -71,7 +73,7 @@ Input: default/srcbucket
 Output: default/tst_dest31
 query: select * from tst_dest31
 Input: default/tst_dest31
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1184857393/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2034201146/10000
 493
 query: drop table tst_dest31
 query: drop table dest31

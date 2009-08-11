@@ -41,6 +41,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -62,6 +64,8 @@ STAGE PLANS:
                             expr: _col0
                             type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -83,6 +87,8 @@ STAGE PLANS:
                             expr: _col0
                             type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -104,6 +110,8 @@ STAGE PLANS:
                             expr: _col0
                             type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -125,6 +133,8 @@ STAGE PLANS:
                             expr: _col0
                             type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -146,6 +156,8 @@ STAGE PLANS:
                             expr: _col0
                             type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -167,6 +179,8 @@ STAGE PLANS:
                             expr: _col0
                             type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -188,6 +202,8 @@ STAGE PLANS:
                             expr: _col0
                             type: bigint
         null-subquery2:src-subquery2:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -209,6 +225,8 @@ STAGE PLANS:
                             expr: _col0
                             type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -230,6 +248,8 @@ STAGE PLANS:
                             expr: _col0
                             type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -251,6 +271,8 @@ STAGE PLANS:
                             expr: _col0
                             type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -272,6 +294,8 @@ STAGE PLANS:
                             expr: _col0
                             type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -293,6 +317,8 @@ STAGE PLANS:
                             expr: _col0
                             type: bigint
         null-subquery1-subquery2:src-subquery1-subquery2:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -314,6 +340,8 @@ STAGE PLANS:
                             expr: _col0
                             type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -335,6 +363,8 @@ STAGE PLANS:
                             expr: _col0
                             type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -356,6 +386,8 @@ STAGE PLANS:
                             expr: _col0
                             type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -377,6 +409,8 @@ STAGE PLANS:
                             expr: _col0
                             type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -398,6 +432,8 @@ STAGE PLANS:
                             expr: _col0
                             type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -419,6 +455,8 @@ STAGE PLANS:
                             expr: _col0
                             type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -440,6 +478,8 @@ STAGE PLANS:
                             expr: _col0
                             type: bigint
         null-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -461,6 +501,8 @@ STAGE PLANS:
                             expr: _col0
                             type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -482,6 +524,8 @@ STAGE PLANS:
                             expr: _col0
                             type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -503,6 +547,8 @@ STAGE PLANS:
                             expr: _col0
                             type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -524,6 +570,8 @@ STAGE PLANS:
                             expr: _col0
                             type: bigint
         null-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -545,6 +593,8 @@ STAGE PLANS:
                             expr: _col0
                             type: bigint
         null-subquery1-subquery1-subquery2:src-subquery1-subquery1-subquery2:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -619,5 +669,5 @@ query: SELECT count(1) FROM (
   SELECT key, value FROM src UNION ALL
   SELECT key, value FROM src) src
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/957620610/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1669450040/10000
 12500

@@ -17,6 +17,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: space(10)
@@ -51,7 +53,7 @@ query: SELECT
   length(space(-100))
 FROM src LIMIT 1
 Input: default/src
-Output: file:/data/users/njain/hive_commit1/hive_commit1/.ptest_0/build/ql/tmp/1380484174/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1933263714/10000
 10	0	1	0	0
 query: SELECT
   space(10),
@@ -61,5 +63,5 @@ query: SELECT
   space(-100)
 FROM src LIMIT 1
 Input: default/src
-Output: file:/data/users/njain/hive_commit1/hive_commit1/.ptest_0/build/ql/tmp/2091099009/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1506040110/10000
           		 		

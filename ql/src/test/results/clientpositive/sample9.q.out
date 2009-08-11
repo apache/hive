@@ -13,11 +13,15 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         s:a 
+          TableScan
+            alias: a
             Filter Operator
+              isSamplingPred: false
               predicate:
                   expr: (((hash(key) & 2147483647) % 2) = 0)
                   type: boolean
               Filter Operator
+                isSamplingPred: true
                 predicate:
                     expr: (((hash(key) & 2147483647) % 2) = 0)
                     type: boolean
@@ -38,7 +42,7 @@ STAGE PLANS:
                     File Output Operator
                       compressed: false
                       GlobalTableId: 0
-                      directory: file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_2/build/ql/tmp/1998091453/10001
+                      directory: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/600393334/10001
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -48,9 +52,9 @@ STAGE PLANS:
                             columns.types int:string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_2/build/ql/test/data/warehouse/srcbucket 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcbucket 
       Path -> Partition:
-        file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_2/build/ql/test/data/warehouse/srcbucket 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcbucket 
           Partition
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -66,7 +70,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_2/build/ql/test/data/warehouse/srcbucket
+                location file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcbucket
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcbucket
 
@@ -78,7 +82,7 @@ STAGE PLANS:
 query: SELECT s.*
 FROM (SELECT a.* FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) a) s
 Input: default/srcbucket
-Output: file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_2/build/ql/tmp/974126813/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1923094099/10000
 474	val_475
 62	val_63
 468	val_469

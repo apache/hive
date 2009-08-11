@@ -12,6 +12,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
+          TableScan
+            alias: src
             Filter Operator
               predicate:
                   expr: (key > '2')
@@ -39,7 +41,7 @@ STAGE PLANS:
 
 query: SELECT src.key as c3 from src where src.key > '2'
 Input: default/src
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_1/build/ql/tmp/1708124764/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1622609719/10000
 238
 86
 311

@@ -23,6 +23,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: value
@@ -109,7 +111,6 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: dest1
 
-
 query: FROM src
 INSERT OVERWRITE TABLE dest1 SELECT
   sum(substr(src.value,5)),
@@ -125,6 +126,6 @@ Input: default/src
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/emil/hive1/hive1/build/ql/tmp/537230860/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2134252669/10000
 130091.0	260.182	256.10355987055016	98.0	0.0	142.92680950752379	143.06995106518903	20428.072875999995	20469.010897795586
 query: DROP TABLE dest1

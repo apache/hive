@@ -105,7 +105,8 @@ public class DefaultGraphWalker implements GraphWalker {
    * @throws SemanticException
    */
   public void walk(Node nd) throws SemanticException {
-    opStack.push(nd);
+    if (opStack.empty() || nd != opStack.peek())
+      opStack.push(nd);
 
     if((nd.getChildren() == null) 
         || getDispatchedList().containsAll(nd.getChildren())) {
@@ -121,6 +122,5 @@ public class DefaultGraphWalker implements GraphWalker {
     getToWalk().add(0, nd);
     getToWalk().removeAll(nd.getChildren());
     getToWalk().addAll(0, nd.getChildren());
-    opStack.pop();
   }
 }

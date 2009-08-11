@@ -12,11 +12,15 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         x 
+          TableScan
+            alias: x
             Filter Operator
+              isSamplingPred: false
               predicate:
                   expr: (key is not null and (ds = '2008-04-08'))
                   type: boolean
               Filter Operator
+                isSamplingPred: false
                 predicate:
                     expr: (key is not null and (ds = '2008-04-08'))
                     type: boolean
@@ -34,7 +38,7 @@ STAGE PLANS:
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
-                    directory: file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_1/build/ql/tmp/741456423/10001
+                    directory: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1563301845/10001
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -44,10 +48,10 @@ STAGE PLANS:
                           columns.types string:string:string:string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
-        file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
       Path -> Partition:
-        file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
             partition values:
               ds 2008-04-08
@@ -66,10 +70,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_1/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
             partition values:
               ds 2008-04-08
@@ -88,7 +92,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_1/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
 
@@ -96,11 +100,10 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 query: SELECT x.* FROM SRCPART x WHERE key IS NOT NULL AND ds = '2008-04-08'
 Input: default/srcpart/ds=2008-04-08/hr=11
 Input: default/srcpart/ds=2008-04-08/hr=12
-Output: file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_1/build/ql/tmp/675875634/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/261570775/10000
 238	val_238	2008-04-08	11
 86	val_86	2008-04-08	11
 311	val_311	2008-04-08	11

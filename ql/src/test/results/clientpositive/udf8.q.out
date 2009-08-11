@@ -19,6 +19,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         dest1 
+          TableScan
+            alias: dest1
             Select Operator
               expressions:
                     expr: c1
@@ -72,5 +74,5 @@ STAGE PLANS:
 
 query: SELECT avg(c1), sum(c1), count(c1) FROM dest1
 Input: default/dest1
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1105626968/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/562771433/10000
 1.0	1.0	1

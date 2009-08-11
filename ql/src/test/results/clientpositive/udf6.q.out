@@ -16,6 +16,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         dest1 
+          TableScan
+            alias: dest1
             Select Operator
               expressions:
                     expr: if(true, 1, 2)
@@ -35,7 +37,7 @@ STAGE PLANS:
 
 query: SELECT IF(TRUE, 1, 2) FROM dest1
 Input: default/dest1
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/1157930235/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/551851303/10000
 1
 query: EXPLAIN
 SELECT IF(TRUE, 1, 2), IF(FALSE, 1, 2), IF(NULL, 1, 2), IF(TRUE, "a", "b"),
@@ -56,6 +58,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         dest1 
+          TableScan
+            alias: dest1
             Select Operator
               expressions:
                     expr: if(true, 1, 2)
@@ -100,5 +104,5 @@ query: SELECT IF(TRUE, 1, 2), IF(FALSE, 1, 2), IF(NULL, 1, 2), IF(TRUE, "a", "b"
        CAST(128 AS INT), CAST(1.0 AS DOUBLE),
        CAST('128' AS STRING) FROM dest1
 Input: default/dest1
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/496695002/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/112479238/10000
 1	2	2	a	0.1	2	126	128	128	1.0	128

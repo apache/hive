@@ -16,6 +16,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src1:src 
+          TableScan
+            alias: src
             Select Operator
               expressions:
                     expr: key
@@ -62,5 +64,5 @@ query: SELECT a, b FROM (
 ) src1
 ORDER BY a LIMIT 1
 Input: default/src
-Output: file:/data/users/zshao/tools/yjia-trunk-apache-hive/build/ql/tmp/773004929/10000
+Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/1089446335/10000
 0	val_0

@@ -18,6 +18,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src_thrift 
+          TableScan
+            alias: src_thrift
             Filter Operator
               predicate:
                   expr: (lint is not null and not mstringstring is null)
@@ -58,5 +60,5 @@ SELECT size(src_thrift.lint),
 WHERE  src_thrift.lint IS NOT NULL 
        AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
 Input: default/src_thrift
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_0/build/ql/tmp/8998980/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/151376732/10000
 3	1	1	-1

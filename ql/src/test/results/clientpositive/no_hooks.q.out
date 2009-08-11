@@ -11,6 +11,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         src2 
+          TableScan
+            alias: src2
             Filter Operator
               predicate:
                   expr: (UDFToDouble(key) < UDFToDouble(10))
@@ -24,6 +26,8 @@ STAGE PLANS:
                       expr: value
                       type: string
         src1 
+          TableScan
+            alias: src1
             Filter Operator
               predicate:
                   expr: (UDFToDouble(key) < UDFToDouble(10))
@@ -69,7 +73,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/553392584/10002 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1694927557/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0

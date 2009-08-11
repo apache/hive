@@ -19,6 +19,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         t:t1 
+          TableScan
+            alias: t1
             Select Operator
               expressions:
                     expr: key
@@ -62,7 +64,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1988545079/10002 
+        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1953025922/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -99,7 +101,7 @@ Input: default/t1
 Output: default/t2
 query: SELECT * FROM T2 SORT BY key, value
 Input: default/t2
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1233838218/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/741107383/10000
 0	val_0
 0	val_0
 0	val_0

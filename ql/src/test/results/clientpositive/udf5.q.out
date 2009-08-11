@@ -16,6 +16,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         dest1 
+          TableScan
+            alias: dest1
             Select Operator
               expressions:
                     expr: from_unixtime(1226446340)
@@ -49,5 +51,5 @@ STAGE PLANS:
 
 query: SELECT from_unixtime(1226446340), to_date(from_unixtime(1226446340)), day('2008-11-01'), month('2008-11-01'), year('2008-11-01'), day('2008-11-01 15:32:20'), month('2008-11-01 15:32:20'), year('2008-11-01 15:32:20') FROM dest1
 Input: default/dest1
-Output: file:/data/users/zshao/tools/670-trunk-apache-hive/.ptest_2/build/ql/tmp/1374597747/10000
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1723928135/10000
 2008-11-11 15:32:20	2008-11-11	1	11	2008	1	11	2008

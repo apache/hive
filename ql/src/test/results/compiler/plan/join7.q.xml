@@ -64,7 +64,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/src</string> 
+            <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/src</string> 
            </void> 
           </object> 
          </void> 
@@ -132,7 +132,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/src</string> 
+            <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/src</string> 
            </void> 
           </object> 
          </void> 
@@ -200,7 +200,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/src</string> 
+            <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/src</string> 
            </void> 
           </object> 
          </void> 
@@ -419,6 +419,9 @@
                         <void property="column"> 
                          <string>value</string> 
                         </void> 
+                        <void property="tabAlias"> 
+                         <string>src1</string> 
+                        </void> 
                         <void property="typeInfo"> 
                          <object idref="PrimitiveTypeInfo0"/> 
                         </void> 
@@ -429,6 +432,9 @@
                        <object id="exprNodeColumnDesc3" class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
                         <void property="column"> 
                          <string>key</string> 
+                        </void> 
+                        <void property="tabAlias"> 
+                         <string>src1</string> 
                         </void> 
                         <void property="typeInfo"> 
                          <object idref="PrimitiveTypeInfo0"/> 
@@ -564,6 +570,9 @@
                                 <void property="column"> 
                                  <string>key</string> 
                                 </void> 
+                                <void property="tabAlias"> 
+                                 <string>src1</string> 
+                                </void> 
                                 <void property="typeInfo"> 
                                  <object idref="PrimitiveTypeInfo0"/> 
                                 </void> 
@@ -679,6 +688,9 @@
                                <object class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
                                 <void property="column"> 
                                  <string>key</string> 
+                                </void> 
+                                <void property="tabAlias"> 
+                                 <string>src1</string> 
                                 </void> 
                                 <void property="typeInfo"> 
                                  <object idref="PrimitiveTypeInfo0"/> 
@@ -830,6 +842,9 @@
                             <void property="column"> 
                              <string>key</string> 
                             </void> 
+                            <void property="tabAlias"> 
+                             <string>src1</string> 
+                            </void> 
                             <void property="typeInfo"> 
                              <object idref="PrimitiveTypeInfo0"/> 
                             </void> 
@@ -909,6 +924,9 @@
                            <object class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
                             <void property="column"> 
                              <string>key</string> 
+                            </void> 
+                            <void property="tabAlias"> 
+                             <string>src1</string> 
                             </void> 
                             <void property="typeInfo"> 
                              <object idref="PrimitiveTypeInfo0"/> 
@@ -992,6 +1010,13 @@
              </object> 
             </void> 
            </object> 
+          </void> 
+         </object> 
+        </void> 
+        <void property="conf"> 
+         <object class="org.apache.hadoop.hive.ql.plan.tableScanDesc"> 
+          <void property="alias"> 
+           <string>src1</string> 
           </void> 
          </object> 
         </void> 
@@ -1218,6 +1243,9 @@
                         <void property="column"> 
                          <string>value</string> 
                         </void> 
+                        <void property="tabAlias"> 
+                         <string>src2</string> 
+                        </void> 
                         <void property="typeInfo"> 
                          <object idref="PrimitiveTypeInfo0"/> 
                         </void> 
@@ -1228,6 +1256,9 @@
                        <object id="exprNodeColumnDesc7" class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
                         <void property="column"> 
                          <string>key</string> 
+                        </void> 
+                        <void property="tabAlias"> 
+                         <string>src2</string> 
                         </void> 
                         <void property="typeInfo"> 
                          <object idref="PrimitiveTypeInfo0"/> 
@@ -1363,6 +1394,9 @@
                                 <void property="column"> 
                                  <string>key</string> 
                                 </void> 
+                                <void property="tabAlias"> 
+                                 <string>src2</string> 
+                                </void> 
                                 <void property="typeInfo"> 
                                  <object idref="PrimitiveTypeInfo0"/> 
                                 </void> 
@@ -1466,6 +1500,9 @@
                                <object class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
                                 <void property="column"> 
                                  <string>key</string> 
+                                </void> 
+                                <void property="tabAlias"> 
+                                 <string>src2</string> 
                                 </void> 
                                 <void property="typeInfo"> 
                                  <object idref="PrimitiveTypeInfo0"/> 
@@ -1617,6 +1654,9 @@
                             <void property="column"> 
                              <string>key</string> 
                             </void> 
+                            <void property="tabAlias"> 
+                             <string>src2</string> 
+                            </void> 
                             <void property="typeInfo"> 
                              <object idref="PrimitiveTypeInfo0"/> 
                             </void> 
@@ -1696,6 +1736,9 @@
                            <object class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
                             <void property="column"> 
                              <string>key</string> 
+                            </void> 
+                            <void property="tabAlias"> 
+                             <string>src2</string> 
                             </void> 
                             <void property="typeInfo"> 
                              <object idref="PrimitiveTypeInfo0"/> 
@@ -1779,6 +1822,13 @@
              </object> 
             </void> 
            </object> 
+          </void> 
+         </object> 
+        </void> 
+        <void property="conf"> 
+         <object class="org.apache.hadoop.hive.ql.plan.tableScanDesc"> 
+          <void property="alias"> 
+           <string>src2</string> 
           </void> 
          </object> 
         </void> 
@@ -2005,6 +2055,9 @@
                         <void property="column"> 
                          <string>value</string> 
                         </void> 
+                        <void property="tabAlias"> 
+                         <string>src3</string> 
+                        </void> 
                         <void property="typeInfo"> 
                          <object idref="PrimitiveTypeInfo0"/> 
                         </void> 
@@ -2015,6 +2068,9 @@
                        <object id="exprNodeColumnDesc11" class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
                         <void property="column"> 
                          <string>key</string> 
+                        </void> 
+                        <void property="tabAlias"> 
+                         <string>src3</string> 
                         </void> 
                         <void property="typeInfo"> 
                          <object idref="PrimitiveTypeInfo0"/> 
@@ -2150,6 +2206,9 @@
                                 <void property="column"> 
                                  <string>key</string> 
                                 </void> 
+                                <void property="tabAlias"> 
+                                 <string>src3</string> 
+                                </void> 
                                 <void property="typeInfo"> 
                                  <object idref="PrimitiveTypeInfo0"/> 
                                 </void> 
@@ -2253,6 +2312,9 @@
                                <object class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
                                 <void property="column"> 
                                  <string>key</string> 
+                                </void> 
+                                <void property="tabAlias"> 
+                                 <string>src3</string> 
                                 </void> 
                                 <void property="typeInfo"> 
                                  <object idref="PrimitiveTypeInfo0"/> 
@@ -2404,6 +2466,9 @@
                             <void property="column"> 
                              <string>key</string> 
                             </void> 
+                            <void property="tabAlias"> 
+                             <string>src3</string> 
+                            </void> 
                             <void property="typeInfo"> 
                              <object idref="PrimitiveTypeInfo0"/> 
                             </void> 
@@ -2483,6 +2548,9 @@
                            <object class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
                             <void property="column"> 
                              <string>key</string> 
+                            </void> 
+                            <void property="tabAlias"> 
+                             <string>src3</string> 
                             </void> 
                             <void property="typeInfo"> 
                              <object idref="PrimitiveTypeInfo0"/> 
@@ -2569,6 +2637,13 @@
           </void> 
          </object> 
         </void> 
+        <void property="conf"> 
+         <object class="org.apache.hadoop.hive.ql.plan.tableScanDesc"> 
+          <void property="alias"> 
+           <string>src3</string> 
+          </void> 
+         </object> 
+        </void> 
         <void property="neededColumnIDs"> 
          <object class="java.util.ArrayList"> 
           <void method="add"> 
@@ -2602,7 +2677,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>c:a:src1</string> 
@@ -2620,7 +2695,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap0"/> 
@@ -2665,7 +2740,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>file:/data/users/zshao/tools/namit-trunk-apache-hive/.ptest_3/build/ql/tmp/625369050/10001</string> 
+                     <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/179247082/10001</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -2982,6 +3057,9 @@
               <void property="column"> 
                <string>_col5</string> 
               </void> 
+              <void property="tabAlias"> 
+               <string>c</string> 
+              </void> 
               <void property="typeInfo"> 
                <object idref="PrimitiveTypeInfo0"/> 
               </void> 
@@ -2992,6 +3070,9 @@
              <object id="exprNodeColumnDesc19" class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
               <void property="column"> 
                <string>_col4</string> 
+              </void> 
+              <void property="tabAlias"> 
+               <string>c</string> 
               </void> 
               <void property="typeInfo"> 
                <object idref="PrimitiveTypeInfo0"/> 
@@ -3004,6 +3085,9 @@
               <void property="column"> 
                <string>_col3</string> 
               </void> 
+              <void property="tabAlias"> 
+               <string>b</string> 
+              </void> 
               <void property="typeInfo"> 
                <object idref="PrimitiveTypeInfo0"/> 
               </void> 
@@ -3014,6 +3098,9 @@
              <object id="exprNodeColumnDesc21" class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
               <void property="column"> 
                <string>_col2</string> 
+              </void> 
+              <void property="tabAlias"> 
+               <string>b</string> 
               </void> 
               <void property="typeInfo"> 
                <object idref="PrimitiveTypeInfo0"/> 
@@ -3026,6 +3113,9 @@
               <void property="column"> 
                <string>_col1</string> 
               </void> 
+              <void property="tabAlias"> 
+               <string>a</string> 
+              </void> 
               <void property="typeInfo"> 
                <object idref="PrimitiveTypeInfo0"/> 
               </void> 
@@ -3036,6 +3126,9 @@
              <object id="exprNodeColumnDesc23" class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
               <void property="column"> 
                <string>_col0</string> 
+              </void> 
+              <void property="tabAlias"> 
+               <string>a</string> 
               </void> 
               <void property="typeInfo"> 
                <object idref="PrimitiveTypeInfo0"/> 
@@ -3179,6 +3272,9 @@
           <void property="column"> 
            <string>VALUE._col1</string> 
           </void> 
+          <void property="tabAlias"> 
+           <string>c</string> 
+          </void> 
           <void property="typeInfo"> 
            <object idref="PrimitiveTypeInfo0"/> 
           </void> 
@@ -3189,6 +3285,9 @@
          <object id="exprNodeColumnDesc25" class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
           <void property="column"> 
            <string>VALUE._col0</string> 
+          </void> 
+          <void property="tabAlias"> 
+           <string>c</string> 
           </void> 
           <void property="typeInfo"> 
            <object idref="PrimitiveTypeInfo0"/> 
@@ -3201,6 +3300,9 @@
           <void property="column"> 
            <string>VALUE._col1</string> 
           </void> 
+          <void property="tabAlias"> 
+           <string>b</string> 
+          </void> 
           <void property="typeInfo"> 
            <object idref="PrimitiveTypeInfo0"/> 
           </void> 
@@ -3211,6 +3313,9 @@
          <object id="exprNodeColumnDesc27" class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
           <void property="column"> 
            <string>VALUE._col0</string> 
+          </void> 
+          <void property="tabAlias"> 
+           <string>b</string> 
           </void> 
           <void property="typeInfo"> 
            <object idref="PrimitiveTypeInfo0"/> 
@@ -3223,6 +3328,9 @@
           <void property="column"> 
            <string>VALUE._col1</string> 
           </void> 
+          <void property="tabAlias"> 
+           <string>a</string> 
+          </void> 
           <void property="typeInfo"> 
            <object idref="PrimitiveTypeInfo0"/> 
           </void> 
@@ -3233,6 +3341,9 @@
          <object id="exprNodeColumnDesc29" class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
           <void property="column"> 
            <string>VALUE._col0</string> 
+          </void> 
+          <void property="tabAlias"> 
+           <string>a</string> 
           </void> 
           <void property="typeInfo"> 
            <object idref="PrimitiveTypeInfo0"/> 
