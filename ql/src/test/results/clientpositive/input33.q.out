@@ -1,0 +1,421 @@
+query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
+query: EXPLAIN
+FROM (
+  FROM src
+  MAP src.key, src.key 
+  USING 'cat'
+  DISTRIBUTE BY key
+  SORT BY key, value
+) tmap
+INSERT OVERWRITE TABLE dest1
+REDUCE tmap.key, tmap.value
+USING '../data/scripts/input20_script'
+AS (key STRING, value STRING)
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) key)) 'cat'))) (TOK_DISTRIBUTEBY (TOK_TABLE_OR_COL key)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value))))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL tmap) key) (. (TOK_TABLE_OR_COL tmap) value)) '../data/scripts/input20_script' (TOK_TABCOLLIST (TOK_TABCOL key TOK_STRING) (TOK_TABCOL value TOK_STRING)))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        tmap:src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: key
+                    type: string
+              outputColumnNames: _col0, _col1
+              Transform Operator
+                command: cat
+                output info:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                Reduce Output Operator
+                  key expressions:
+                        expr: key
+                        type: string
+                        expr: value
+                        type: string
+                  sort order: ++
+                  Map-reduce partition columns:
+                        expr: key
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: key
+                        type: string
+                        expr: value
+                        type: string
+      Reduce Operator Tree:
+        Extract
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: string
+            outputColumnNames: _col0, _col1
+            Transform Operator
+              command: ../data/scripts/input20_script
+              output info:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              Select Operator
+                expressions:
+                      expr: UDFToInteger(key)
+                      type: int
+                      expr: value
+                      type: string
+                outputColumnNames: _col0, _col1
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 1
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: dest1
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: dest1
+
+
+query: FROM (
+  FROM src
+  MAP src.key, src.key
+  USING 'cat' 
+  DISTRIBUTE BY key
+  SORT BY key, value
+) tmap
+INSERT OVERWRITE TABLE dest1
+REDUCE tmap.key, tmap.value
+USING '../data/scripts/input20_script'
+AS (key STRING, value STRING)
+Input: default/src
+Output: default/dest1
+query: SELECT * FROM dest1 SORT BY key, value
+Input: default/dest1
+Output: file:/data/users/njain/hive3/hive3/build/ql/tmp/410502456/10000
+1	105_105
+1	10_10
+1	111_111
+1	114_114
+1	116_116
+1	11_11
+1	126_126
+1	131_131
+1	133_133
+1	136_136
+1	143_143
+1	145_145
+1	150_150
+1	153_153
+1	155_155
+1	156_156
+1	157_157
+1	158_158
+1	160_160
+1	162_162
+1	163_163
+1	166_166
+1	168_168
+1	170_170
+1	177_177
+1	178_178
+1	17_17
+1	180_180
+1	181_181
+1	183_183
+1	186_186
+1	189_189
+1	190_190
+1	192_192
+1	194_194
+1	196_196
+1	19_19
+1	201_201
+1	202_202
+1	20_20
+1	214_214
+1	218_218
+1	222_222
+1	226_226
+1	228_228
+1	235_235
+1	241_241
+1	244_244
+1	247_247
+1	248_248
+1	249_249
+1	252_252
+1	257_257
+1	258_258
+1	260_260
+1	262_262
+1	263_263
+1	266_266
+1	274_274
+1	275_275
+1	27_27
+1	283_283
+1	284_284
+1	285_285
+1	286_286
+1	287_287
+1	289_289
+1	28_28
+1	291_291
+1	292_292
+1	296_296
+1	2_2
+1	302_302
+1	305_305
+1	306_306
+1	308_308
+1	30_30
+1	310_310
+1	315_315
+1	323_323
+1	332_332
+1	335_335
+1	336_336
+1	338_338
+1	339_339
+1	33_33
+1	341_341
+1	345_345
+1	34_34
+1	351_351
+1	356_356
+1	360_360
+1	362_362
+1	364_364
+1	365_365
+1	366_366
+1	368_368
+1	373_373
+1	374_374
+1	375_375
+1	377_377
+1	378_378
+1	379_379
+1	386_386
+1	389_389
+1	392_392
+1	393_393
+1	394_394
+1	400_400
+1	402_402
+1	407_407
+1	411_411
+1	418_418
+1	419_419
+1	41_41
+1	421_421
+1	427_427
+1	432_432
+1	435_435
+1	436_436
+1	437_437
+1	43_43
+1	443_443
+1	444_444
+1	446_446
+1	448_448
+1	449_449
+1	44_44
+1	452_452
+1	453_453
+1	455_455
+1	457_457
+1	460_460
+1	467_467
+1	470_470
+1	472_472
+1	475_475
+1	477_477
+1	479_479
+1	47_47
+1	481_481
+1	482_482
+1	483_483
+1	484_484
+1	485_485
+1	487_487
+1	490_490
+1	491_491
+1	493_493
+1	494_494
+1	495_495
+1	496_496
+1	497_497
+1	4_4
+1	53_53
+1	54_54
+1	57_57
+1	64_64
+1	65_65
+1	66_66
+1	69_69
+1	74_74
+1	77_77
+1	78_78
+1	80_80
+1	82_82
+1	85_85
+1	86_86
+1	87_87
+1	8_8
+1	92_92
+1	96_96
+1	9_9
+2	100_100
+2	103_103
+2	104_104
+2	113_113
+2	118_118
+2	120_120
+2	125_125
+2	129_129
+2	12_12
+2	134_134
+2	137_137
+2	146_146
+2	149_149
+2	152_152
+2	15_15
+2	164_164
+2	165_165
+2	172_172
+2	174_174
+2	175_175
+2	176_176
+2	179_179
+2	18_18
+2	191_191
+2	195_195
+2	197_197
+2	200_200
+2	203_203
+2	205_205
+2	207_207
+2	209_209
+2	213_213
+2	216_216
+2	217_217
+2	219_219
+2	221_221
+2	223_223
+2	224_224
+2	229_229
+2	233_233
+2	237_237
+2	238_238
+2	239_239
+2	242_242
+2	24_24
+2	255_255
+2	256_256
+2	265_265
+2	26_26
+2	272_272
+2	278_278
+2	280_280
+2	281_281
+2	282_282
+2	288_288
+2	307_307
+2	309_309
+2	317_317
+2	321_321
+2	322_322
+2	325_325
+2	331_331
+2	333_333
+2	342_342
+2	344_344
+2	353_353
+2	367_367
+2	37_37
+2	382_382
+2	395_395
+2	397_397
+2	399_399
+2	404_404
+2	413_413
+2	414_414
+2	424_424
+2	429_429
+2	42_42
+2	439_439
+2	458_458
+2	459_459
+2	462_462
+2	463_463
+2	478_478
+2	492_492
+2	51_51
+2	58_58
+2	67_67
+2	72_72
+2	76_76
+2	83_83
+2	84_84
+2	95_95
+2	97_97
+2	98_98
+3	0_0
+3	119_119
+3	128_128
+3	167_167
+3	187_187
+3	193_193
+3	199_199
+3	208_208
+3	273_273
+3	298_298
+3	311_311
+3	316_316
+3	318_318
+3	327_327
+3	35_35
+3	369_369
+3	384_384
+3	396_396
+3	403_403
+3	409_409
+3	417_417
+3	430_430
+3	431_431
+3	438_438
+3	454_454
+3	466_466
+3	480_480
+3	498_498
+3	5_5
+3	70_70
+3	90_90
+4	138_138
+4	169_169
+4	277_277
+4	406_406
+4	468_468
+4	489_489
+5	230_230
+5	348_348
+5	401_401
+5	469_469

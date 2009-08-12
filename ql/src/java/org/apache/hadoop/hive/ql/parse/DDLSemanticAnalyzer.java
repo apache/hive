@@ -216,6 +216,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           }
           break;
         case HiveParser.TOK_TABLEROWFORMAT:
+
+          child = (ASTNode)child.getChild(0);
           int numChildRowFormat = child.getChildCount();
           for (int numC = 0; numC < numChildRowFormat; numC++)
           {
@@ -241,6 +243,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           }
           break;
         case HiveParser.TOK_TABLESERIALIZER:
+          
+          child = (ASTNode)child.getChild(0);
           serde = unescapeSQLString(child.getChild(0).getText());
           if (child.getChildCount() == 2) {
             mapProp = new HashMap<String, String>();

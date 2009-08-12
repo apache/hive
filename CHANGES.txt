@@ -122,6 +122,9 @@ Release 0.4.0 -  Unreleased
 
     HIVE-691. show documentation for functions. (Emil Ibrishimov via namit)
 
+    HIVE-743. Let user specify serde for custom sctipts.   
+    (Namit Jain via rmurthy)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 

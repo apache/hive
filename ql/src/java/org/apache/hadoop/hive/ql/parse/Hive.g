@@ -50,6 +50,9 @@ TOK_OP_LIKE;
 TOK_TRUE;
 TOK_FALSE;
 TOK_TRANSFORM;
+TOK_SERDE;
+TOK_SERDENAME;
+TOK_SERDEPROPS;
 TOK_EXPLIST;
 TOK_ALIASLIST;
 TOK_GROUPBY;
@@ -132,6 +135,8 @@ TOK_HINTLIST;
 TOK_HINT;
 TOK_MAPJOIN;
 TOK_HINTARGLIST;
+TOK_USERSCRIPTCOLNAMES;
+TOK_USERSCRIPTCOLSCHEMA;
 }
 
 
@@ -277,8 +282,8 @@ alterStatementSuffixProperties
 alterStatementSuffixSerdeProperties
 @init { msgs.push("alter serdes statement"); }
 @after { msgs.pop(); }
-    : name=Identifier KW_SET KW_SERDE serde=StringLiteral (KW_WITH KW_SERDEPROPERTIES tableProperties)?
-    -> ^(TOK_ALTERTABLE_SERIALIZER $name $serde tableProperties?)
+    : name=Identifier KW_SET KW_SERDE serdeName=StringLiteral (KW_WITH KW_SERDEPROPERTIES tableProperties)?
+    -> ^(TOK_ALTERTABLE_SERIALIZER $name $serdeName tableProperties?)
     | name=Identifier KW_SET KW_SERDEPROPERTIES tableProperties
     -> ^(TOK_ALTERTABLE_SERDEPROPERTIES $name tableProperties)
     ;
@@ -361,14 +366,36 @@ tableBuckets
     -> ^(TOK_TABLEBUCKETS $bucketCols $sortCols? $num)
     ;
 
+serde
+@init { msgs.push("serde specification"); }
+@after { msgs.pop(); }
+    : serdeFormat -> ^(TOK_SERDE serdeFormat)
+    | serdePropertiesFormat -> ^(TOK_SERDE serdePropertiesFormat)
+    ;
+
+serdeFormat
+@init { msgs.push("serde format specification"); }
+@after { msgs.pop(); }
+    : KW_ROW KW_FORMAT KW_SERDE name=StringLiteral (KW_WITH KW_SERDEPROPERTIES serdeprops=tableProperties)?
+    -> ^(TOK_SERDENAME $name $serdeprops?)
+    ;
+
+serdePropertiesFormat
+@init { msgs.push("serde properties specification"); }
+@after { msgs.pop(); }
+    :
+      KW_ROW KW_FORMAT KW_DELIMITED tableRowFormatFieldIdentifier? tableRowFormatCollItemsIdentifier? tableRowFormatMapKeysIdentifier? tableRowFormatLinesIdentifier? 
+    -> ^(TOK_SERDEPROPS tableRowFormatFieldIdentifier? tableRowFormatCollItemsIdentifier? tableRowFormatMapKeysIdentifier? tableRowFormatLinesIdentifier?)
+    ;
+
 tableRowFormat
 @init { msgs.push("table row format specification"); }
 @after { msgs.pop(); }
     :
-      KW_ROW KW_FORMAT KW_DELIMITED tableRowFormatFieldIdentifier? tableRowFormatCollItemsIdentifier? tableRowFormatMapKeysIdentifier? tableRowFormatLinesIdentifier? 
-    -> ^(TOK_TABLEROWFORMAT tableRowFormatFieldIdentifier? tableRowFormatCollItemsIdentifier? tableRowFormatMapKeysIdentifier? tableRowFormatLinesIdentifier?)
-    | KW_ROW KW_FORMAT KW_SERDE name=StringLiteral (KW_WITH KW_SERDEPROPERTIES serdeprops=tableProperties)?
-    -> ^(TOK_TABLESERIALIZER $name $serdeprops?)
+      serdePropertiesFormat
+    -> ^(TOK_TABLEROWFORMAT serdePropertiesFormat)
+    | serdeFormat
+    -> ^(TOK_TABLESERIALIZER serdeFormat)
     ;
 
 tableProperties
@@ -695,7 +722,7 @@ selectItem
     :
     ( selectExpression  (KW_AS? Identifier)?) -> ^(TOK_SELEXPR selectExpression Identifier?)
     ;
-    
+
 trfmClause
 @init { msgs.push("transform clause"); }
 @after { msgs.pop(); }
@@ -703,9 +730,9 @@ trfmClause
     ( KW_SELECT KW_TRANSFORM LPAREN selectExpressionList RPAREN
       | KW_MAP    selectExpressionList
       | KW_REDUCE selectExpressionList )
-    KW_USING StringLiteral
-    (KW_AS (LPAREN aliasList RPAREN | aliasList) )?
-    -> ^(TOK_TRANSFORM selectExpressionList StringLiteral aliasList?)
+    inSerde=serde? KW_USING StringLiteral 
+    ( KW_AS ((LPAREN (aliasList | columnNameTypeList) RPAREN) | (aliasList | columnNameTypeList)) outSerde=serde?)?
+    -> ^(TOK_TRANSFORM selectExpressionList $inSerde? StringLiteral aliasList? columnNameTypeList? $outSerde?)
     ;
     
 selectExpression
