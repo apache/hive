@@ -125,6 +125,9 @@ Release 0.4.0 -  Unreleased
     HIVE-743. Let user specify serde for custom sctipts.   
     (Namit Jain via rmurthy)
 
+    HIVE-749. add hive.optimize.pruner
+    (Zheng Shao via namit)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 

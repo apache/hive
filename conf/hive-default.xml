@@ -249,6 +249,13 @@
 </property>
 
 <property>
+  <name>hive.optimize.pruner</name>
+  <value>true</value>
+  <description>Whether to enable the new partition pruner which depends on predicate pushdown. If this is disabled,
+  the old partition pruner which is based on AST will be enabled.</description>
+</property>
+
+<property>
   <name>hive.join.emit.interval</name>
   <value>1000</value>
   <description>How many rows in the right-most join operand Hive should buffer before emitting the join result. </description>
