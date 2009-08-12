@@ -5,6 +5,9 @@ Trunk -  Unreleased
   INCOMPATIBLE CHANGES
 
   NEW FEATURES
+  
+    HIVE-743. Let user specify serde for custom sctipts.
+    (Namit Jain via rmurthy)
 
   IMPROVEMENTS
 

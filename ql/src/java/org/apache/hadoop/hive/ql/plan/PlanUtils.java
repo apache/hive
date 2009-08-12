@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.hadoop.hive.serde2.Deserializer;
 
 import org.apache.thrift.protocol.TBinaryProtocol;
 
@@ -68,6 +69,14 @@ public class PlanUtils {
   }
 
   /** 
+   * Generate the table descriptor of given serde with the separatorCode
+   * and column names (comma separated string).
+   */
+  public static tableDesc getTableDesc(Class<? extends Deserializer> serdeClass, String separatorCode, String columns) {
+    return getTableDesc(serdeClass, separatorCode, columns, false);
+  }
+
+  /** 
    * Generate the table descriptor of MetadataTypedColumnsetSerDe with the separatorCode
    * and column names (comma separated string), and whether the last column should take
    * the rest of the line.
@@ -78,11 +87,29 @@ public class PlanUtils {
   }
 
   /** 
+   * Generate the table descriptor of the serde specified with the separatorCode
+   * and column names (comma separated string), and whether the last column should take
+   * the rest of the line.
+   */
+  public static tableDesc getTableDesc(Class<? extends Deserializer> serdeClass, 
+                                       String separatorCode, String columns,
+                                       boolean lastColumnTakesRestOfTheLine) {
+    return getTableDesc(serdeClass, separatorCode, columns, null, lastColumnTakesRestOfTheLine);
+  }
+
+  /** 
    * Generate the table descriptor of MetadataTypedColumnsetSerDe with the separatorCode
    * and column names (comma separated string), and whether the last column should take
    * the rest of the line.
    */
   public static tableDesc getDefaultTableDesc(String separatorCode, String columns, String columnTypes,
+      boolean lastColumnTakesRestOfTheLine) {
+    return getTableDesc(LazySimpleSerDe.class, separatorCode, columns, columnTypes,
+                        lastColumnTakesRestOfTheLine);
+  }
+
+  public static tableDesc getTableDesc(Class<? extends Deserializer> serdeClass,
+                                       String separatorCode, String columns, String columnTypes,
       boolean lastColumnTakesRestOfTheLine) {
     Properties properties = Utilities.makeProperties(
       Constants.SERIALIZATION_FORMAT, separatorCode,
@@ -96,10 +123,10 @@ public class PlanUtils {
           "true");
     }
     return new tableDesc(
-        LazySimpleSerDe.class,
-        TextInputFormat.class,
-        IgnoreKeyTextOutputFormat.class,
-        properties);    
+      serdeClass,
+      TextInputFormat.class,
+      IgnoreKeyTextOutputFormat.class,
+      properties);    
   }
   
   /** 
