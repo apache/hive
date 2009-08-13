@@ -12,6 +12,9 @@ Trunk -  Unreleased
     HIVE-749. add hive.optimize.pruner
     (Zheng Shao via namit)
 
+    HIVE-693. Add a AWS S3 log format deserializer
+    (Zheng Shao and Andraz Tori via namit)
+
   IMPROVEMENTS
 
   OPTIMIZATIONS

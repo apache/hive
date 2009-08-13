@@ -62,22 +62,26 @@
     
     <mkdir dir="${test.build.src}/org/apache/hadoop/hive/ql/parse"/>
     <mkdir dir="${test.build.src}/org/apache/hadoop/hive/cli"/>
+    <mkdir dir="${test.log.dir}/contribpositive"/>
+    <mkdir dir="${test.log.dir}/contribnegative"/>
+    <mkdir dir="${test.log.dir}/contribclientpositive"/>
+    <mkdir dir="${test.log.dir}/contribclientnegative"/>
 
     <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/ql/parse" 
               templatePath="${ql.test.template.dir}" template="TestParse.vm" 
               queryDirectory="${contrib.test.query.dir}/positive"
               queryFile="${qfile}"
               resultsDirectory="${contrib.test.results.dir}/compiler" className="TestContribParse"
-              logFile="${test.log.dir}/testparsegen.log"
-              logDirectory="${test.log.dir}/positive"/>
+              logFile="${test.log.dir}/testcontribparsegen.log"
+              logDirectory="${test.log.dir}/contribpositive"/>
     
     <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/ql/parse" 
               templatePath="${ql.test.template.dir}" template="TestParseNegative.vm" 
               queryDirectory="${contrib.test.query.dir}/negative" 
               queryFile="${qfile}"
               resultsDirectory="${contrib.test.results.dir}/compiler/errors" className="TestContribParseNegative"
-              logFile="${test.log.dir}/testparseneggen.log"
-              logDirectory="${test.log.dir}/negative"/>
+              logFile="${test.log.dir}/testcontribparseneggen.log"
+              logDirectory="${test.log.dir}/contribnegative"/>
 
     <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli" 
               templatePath="${ql.test.template.dir}" template="TestCliDriver.vm" 
@@ -85,16 +89,16 @@
               queryFile="${qfile}"
               clusterMode="${clustermode}"
               resultsDirectory="${contrib.test.results.dir}/clientpositive" className="TestContribCliDriver"
-              logFile="${test.log.dir}/testclidrivergen.log"
-              logDirectory="${test.log.dir}/clientpositive"/>
+              logFile="${test.log.dir}/testcontribclidrivergen.log"
+              logDirectory="${test.log.dir}/contribclientpositive"/>
 
     <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli" 
               templatePath="${ql.test.template.dir}" template="TestNegativeCliDriver.vm" 
               queryDirectory="${contrib.test.query.dir}/clientnegative" 
               queryFile="${qfile}"
               resultsDirectory="${contrib.test.results.dir}/clientnegative" className="TestContribNegativeCliDriver"
-              logFile="${test.log.dir}/testnegclidrivergen.log"
-              logDirectory="${test.log.dir}/clientnegative"/>
+              logFile="${test.log.dir}/testcontribnegclidrivergen.log"
+              logDirectory="${test.log.dir}/contribclientnegative"/>
 
   </target>
 
