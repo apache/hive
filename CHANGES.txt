@@ -142,6 +142,8 @@ Release 0.4.0 -  Unreleased
 
     HIVE-691. show documentation for functions. (Emil Ibrishimov via namit)
 
+    HIVE-748. Test for extracting urls. (Namit Jain via zshao)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 
