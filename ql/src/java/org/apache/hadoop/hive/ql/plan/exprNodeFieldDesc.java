@@ -24,8 +24,6 @@ import java.util.List;
 
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.parse.RowResolver;
 
 
 public class exprNodeFieldDesc extends exprNodeDesc implements Serializable {
@@ -46,8 +44,8 @@ public class exprNodeFieldDesc extends exprNodeDesc implements Serializable {
   }
   
   @Override
-  public List<? extends Node> getChildren() {
-    List<Node> children = new ArrayList<Node>(2);
+  public List<exprNodeDesc> getChildren() {
+    List<exprNodeDesc> children = new ArrayList<exprNodeDesc>(2);
     children.add(desc);
     return children;
   }

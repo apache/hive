@@ -25,11 +25,11 @@ import java.util.List;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
-import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 
 /**
  * Describes a GenericFunc node.
@@ -37,24 +37,32 @@ import org.apache.hadoop.util.ReflectionUtils;
 public class exprNodeGenericFuncDesc extends exprNodeDesc implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  private Class<? extends GenericUDF> genericUDFClass;
+  
+  /**
+   * In case genericUDF is Serializable, we will serialize the object.
+   * 
+   * In case genericUDF does not implement Serializable, Java will remember the
+   * class of genericUDF and creates a new instance when deserialized.  This is
+   * exactly what we want.
+   */
+  private GenericUDF genericUDF;
   private List<exprNodeDesc> childExprs; 
   
   public exprNodeGenericFuncDesc() {}
-  public exprNodeGenericFuncDesc(TypeInfo typeInfo, Class<? extends GenericUDF> genericUDFClass, 
+  public exprNodeGenericFuncDesc(TypeInfo typeInfo, GenericUDF genericUDF, 
                           List<exprNodeDesc> children) {
     super(typeInfo);
-    assert(genericUDFClass != null);
-    this.genericUDFClass = genericUDFClass;
+    assert(genericUDF != null);
+    this.genericUDF = genericUDF;
     this.childExprs = children;
   }
   
-  public Class<? extends GenericUDF> getGenericUDFClass() {
-    return genericUDFClass;
+  public GenericUDF getGenericUDF() {
+    return genericUDF;
   }
   
-  public void setGenericUDFClass(Class<? extends GenericUDF> GenericUDFClass) {
-    this.genericUDFClass = GenericUDFClass;
+  public void setGenericUDF(GenericUDF genericUDF) {
+    this.genericUDF = genericUDF;
   }
   
   public List<exprNodeDesc> getChildExprs() {
@@ -64,12 +72,12 @@ public class exprNodeGenericFuncDesc extends exprNodeDesc implements Serializabl
     this.childExprs = children;
   }
   @Override
-  public List<? extends Node> getChildren() {
-    return (List<? extends Node>)this.childExprs;
+  public List<exprNodeDesc> getChildren() {
+    return childExprs;
   }
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append(genericUDFClass.toString());
+    sb.append(genericUDF.getClass().toString());
     sb.append("(");
     for(int i=0; i<childExprs.size(); i++) {
       if (i>0) sb.append(", ");
@@ -89,7 +97,6 @@ public class exprNodeGenericFuncDesc extends exprNodeDesc implements Serializabl
       childrenExprStrings[i] = childExprs.get(i).getExprString();
     }
     
-    GenericUDF genericUDF = (GenericUDF) ReflectionUtils.newInstance(genericUDFClass, null);
     return genericUDF.getDisplayString(childrenExprStrings);
   }
 
@@ -114,7 +121,7 @@ public class exprNodeGenericFuncDesc extends exprNodeDesc implements Serializabl
       cloneCh.add(ch.clone());
     }
     exprNodeGenericFuncDesc clone = new exprNodeGenericFuncDesc(this.typeInfo,
-        this.genericUDFClass, cloneCh);
+        FunctionRegistry.cloneGenericUDF(genericUDF), cloneCh);
     return clone;
   }
   
@@ -123,18 +130,17 @@ public class exprNodeGenericFuncDesc extends exprNodeDesc implements Serializabl
    * parameters.
    * @throws UDFArgumentException
    */
-  public static exprNodeGenericFuncDesc newInstance(Class<? extends GenericUDF> genericUDFClass, 
+  public static exprNodeGenericFuncDesc newInstance(GenericUDF genericUDF, 
       List<exprNodeDesc> children) throws UDFArgumentException {
     ObjectInspector[] childrenOIs = new ObjectInspector[children.size()];
     for(int i=0; i<childrenOIs.length; i++) {
       childrenOIs[i] = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(
           children.get(i).getTypeInfo());
     }
-    GenericUDF genericUDF = (GenericUDF) ReflectionUtils.newInstance(genericUDFClass, null);
     
     ObjectInspector oi = genericUDF.initialize(childrenOIs);
     return new exprNodeGenericFuncDesc(TypeInfoUtils.getTypeInfoFromObjectInspector(oi),
-        genericUDFClass, children);
+        genericUDF, children);
   }
   
   @Override
@@ -143,8 +149,17 @@ public class exprNodeGenericFuncDesc extends exprNodeDesc implements Serializabl
       return false;
     exprNodeGenericFuncDesc dest = (exprNodeGenericFuncDesc)o;
     if (!typeInfo.equals(dest.getTypeInfo()) ||
-        !genericUDFClass.equals(dest.getGenericUDFClass()))
+        !genericUDF.getClass().equals(dest.getGenericUDF().getClass()))
       return false;
+    
+    if (genericUDF instanceof GenericUDFBridge) {
+      GenericUDFBridge bridge = (GenericUDFBridge) genericUDF;
+      GenericUDFBridge bridge2 = (GenericUDFBridge) dest.getGenericUDF();
+      if (!bridge.getUdfClass().equals(bridge2.getUdfClass())
+          || !bridge.getUdfName().equals(bridge2.getUdfName())
+          || bridge.isOperator() != bridge2.isOperator())
+        return false;
+    }
     
     if (childExprs.size() != dest.getChildExprs().size())
       return false;

@@ -42,13 +42,12 @@ public class PrimitiveObjectInspectorConverter {
     }
 
     @Override
-    public Object convert(Object o) {
-      if (o == null) {
+    public Object convert(Object input) {
+      if (input == null) {
         return null;
       }
       try {
-        outputOI.set(r, PrimitiveObjectInspectorUtils.getBoolean(o, inputOI));
-        return r;
+        return outputOI.set(r, PrimitiveObjectInspectorUtils.getBoolean(input, inputOI));
       } catch (NumberFormatException e) {
         return null;
       }
@@ -70,13 +69,12 @@ public class PrimitiveObjectInspectorConverter {
     }
 
     @Override
-    public Object convert(Object o) {
-      if (o == null) {
+    public Object convert(Object input) {
+      if (input == null) {
         return null;
       }
       try {
-        outputOI.set(r, PrimitiveObjectInspectorUtils.getByte(o, inputOI));
-        return r;
+        return outputOI.set(r, PrimitiveObjectInspectorUtils.getByte(input, inputOI));
       } catch (NumberFormatException e) {
         return null;
       }
@@ -98,13 +96,12 @@ public class PrimitiveObjectInspectorConverter {
     }
 
     @Override
-    public Object convert(Object o) {
-      if (o == null) {
+    public Object convert(Object input) {
+      if (input == null) {
         return null;
       }
       try {
-        outputOI.set(r, PrimitiveObjectInspectorUtils.getShort(o, inputOI));
-        return r;
+        return outputOI.set(r, PrimitiveObjectInspectorUtils.getShort(input, inputOI));
       } catch (NumberFormatException e) {
         return null;
       }
@@ -126,13 +123,12 @@ public class PrimitiveObjectInspectorConverter {
     }
 
     @Override
-    public Object convert(Object o) {
-      if (o == null) {
+    public Object convert(Object input) {
+      if (input == null) {
         return null;
       }
       try {
-        outputOI.set(r, PrimitiveObjectInspectorUtils.getInt(o, inputOI));
-        return r;
+        return outputOI.set(r, PrimitiveObjectInspectorUtils.getInt(input, inputOI));
       } catch (NumberFormatException e) {
         return null;
       }
@@ -154,13 +150,12 @@ public class PrimitiveObjectInspectorConverter {
     }
 
     @Override
-    public Object convert(Object o) {
-      if (o == null) {
+    public Object convert(Object input) {
+      if (input == null) {
         return null;
       }
       try {
-        outputOI.set(r, PrimitiveObjectInspectorUtils.getLong(o, inputOI));
-        return r;
+        return outputOI.set(r, PrimitiveObjectInspectorUtils.getLong(input, inputOI));
       } catch (NumberFormatException e) {
         return null;
       }
@@ -182,13 +177,12 @@ public class PrimitiveObjectInspectorConverter {
     }
 
     @Override
-    public Object convert(Object o) {
-      if (o == null) {
+    public Object convert(Object input) {
+      if (input == null) {
         return null;
       }
       try {
-        outputOI.set(r, PrimitiveObjectInspectorUtils.getFloat(o, inputOI));
-        return r;
+        return outputOI.set(r, PrimitiveObjectInspectorUtils.getFloat(input, inputOI));
       } catch (NumberFormatException e) {
         return null;
       }
@@ -210,13 +204,12 @@ public class PrimitiveObjectInspectorConverter {
     }
 
     @Override
-    public Object convert(Object o) {
-      if (o == null) {
+    public Object convert(Object input) {
+      if (input == null) {
         return null;
       }
       try {
-        outputOI.set(r, PrimitiveObjectInspectorUtils.getDouble(o, inputOI));
-        return r;
+        return outputOI.set(r, PrimitiveObjectInspectorUtils.getDouble(input, inputOI));
       } catch (NumberFormatException e) {
         return null;
       }
@@ -235,11 +228,12 @@ public class PrimitiveObjectInspectorConverter {
     static byte[] falseBytes = {'F', 'A', 'L', 'S', 'E'};
     
     public TextConverter(PrimitiveObjectInspector inputOI) {
+      // The output ObjectInspector is writableStringObjectInspector.
       this.inputOI = inputOI;
     }
     
-    public Text convert(Object o)  {
-      if (o == null) {
+    public Text convert(Object input)  {
+      if (input == null) {
         return null;
       }
       
@@ -248,43 +242,43 @@ public class PrimitiveObjectInspectorConverter {
           return null;
         }
         case BOOLEAN: {
-          t.set(((BooleanObjectInspector)inputOI).get(o) ? trueBytes : falseBytes);
+          t.set(((BooleanObjectInspector)inputOI).get(input) ? trueBytes : falseBytes);
           return t;
         }
         case BYTE: {
           out.reset();
-          LazyInteger.writeUTF8NoException(out, ((ByteObjectInspector)inputOI).get(o));
+          LazyInteger.writeUTF8NoException(out, ((ByteObjectInspector)inputOI).get(input));
           t.set(out.getData(), 0, out.getCount());
           return t;
         }
         case SHORT: {
           out.reset();
-          LazyInteger.writeUTF8NoException(out, ((ShortObjectInspector)inputOI).get(o));
+          LazyInteger.writeUTF8NoException(out, ((ShortObjectInspector)inputOI).get(input));
           t.set(out.getData(), 0, out.getCount());
           return t;
         }
         case INT: {
           out.reset();
-          LazyInteger.writeUTF8NoException(out, ((IntObjectInspector)inputOI).get(o));
+          LazyInteger.writeUTF8NoException(out, ((IntObjectInspector)inputOI).get(input));
           t.set(out.getData(), 0, out.getCount());
           return t;
         }
         case LONG:{
           out.reset();
-          LazyLong.writeUTF8NoException(out, ((LongObjectInspector)inputOI).get(o));
+          LazyLong.writeUTF8NoException(out, ((LongObjectInspector)inputOI).get(input));
           t.set(out.getData(), 0, out.getCount());
           return t;
         }
         case FLOAT: {
-          t.set(String.valueOf(((FloatObjectInspector)inputOI).get(o)));
+          t.set(String.valueOf(((FloatObjectInspector)inputOI).get(input)));
           return t;
         }
         case DOUBLE: {
-          t.set(String.valueOf(((DoubleObjectInspector)inputOI).get(o)));
+          t.set(String.valueOf(((DoubleObjectInspector)inputOI).get(input)));
           return t;
         }
         case STRING: {
-          t.set(((StringObjectInspector)inputOI).getPrimitiveJavaObject(o));
+          t.set(((StringObjectInspector)inputOI).getPrimitiveJavaObject(input));
           return t;
         }
         default: {
@@ -293,5 +287,23 @@ public class PrimitiveObjectInspectorConverter {
         }
       }
     }
-  }  
+  }
+  
+  /**
+   * A helper class to convert any primitive to String. 
+   */
+  public static class StringConverter implements Converter {
+    PrimitiveObjectInspector inputOI;
+    
+    public StringConverter(PrimitiveObjectInspector inputOI) {
+      // The output ObjectInspector is writableStringObjectInspector.
+      this.inputOI = inputOI;
+    }
+
+    @Override
+    public Object convert(Object input) {
+      return PrimitiveObjectInspectorUtils.getString(input, inputOI);
+    }
+  }    
+  
 }

@@ -18,7 +18,7 @@ STAGE PLANS:
             alias: b
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(key) >= UDFToDouble(90))
+                  expr: (key >= 90)
                   type: boolean
               Select Operator
                 expressions:
@@ -63,7 +63,7 @@ STAGE PLANS:
             outputColumnNames: _col0, _col1
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(_col0) >= UDFToDouble(90))
+                  expr: (_col0 >= 90)
                   type: boolean
               Select Operator
                 expressions:
@@ -88,7 +88,7 @@ query: SELECT a.k, a.c
 FROM (SELECT b.key as k, count(1) as c FROM src b GROUP BY b.key) a
 WHERE a.k >= 90
 Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1671058599/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/177943872/10000
 100	2
 103	2
 104	2

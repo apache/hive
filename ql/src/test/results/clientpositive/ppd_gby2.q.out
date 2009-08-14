@@ -72,7 +72,7 @@ STAGE PLANS:
             outputColumnNames: _col0, _col1
             Filter Operator
               predicate:
-                  expr: ((_col0 > 'val_200') and ((UDFToDouble(_col1) > UDFToDouble(30)) or (_col0 < 'val_400')))
+                  expr: ((_col0 > 'val_200') and ((_col1 > 30) or (_col0 < 'val_400')))
                   type: boolean
               Select Operator
                 expressions:
@@ -99,7 +99,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1187596438/10002 
+        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1758292485/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -146,7 +146,7 @@ FROM
 WHERE src1.c1 > 'val_200' AND (src1.c2 > 30 OR src1.c1 < 'val_400')
 GROUP BY src1.c2
 Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/825792285/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/165114702/10000
 val_4	1
 val_399	2
 val_396	3

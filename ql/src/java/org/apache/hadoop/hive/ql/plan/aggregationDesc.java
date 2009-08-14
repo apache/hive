@@ -29,7 +29,14 @@ import org.apache.hadoop.util.ReflectionUtils;
 public class aggregationDesc implements java.io.Serializable {
   private static final long serialVersionUID = 1L;
   private String genericUDAFName;
-  private Class<? extends GenericUDAFEvaluator> genericUDAFEvaluatorClass;
+  
+  /**
+   * In case genericUDAFEvaluator is Serializable, we will serialize the object.
+   * 
+   * In case genericUDAFEvaluator does not implement Serializable, Java will remember the
+   * class of genericUDAFEvaluator and creates a new instance when deserialized.  This is
+   * exactly what we want.
+   */
   private GenericUDAFEvaluator genericUDAFEvaluator;
   private java.util.ArrayList<exprNodeDesc> parameters;
   private boolean distinct;
@@ -42,20 +49,10 @@ public class aggregationDesc implements java.io.Serializable {
     final boolean distinct,
     final GenericUDAFEvaluator.Mode mode) {
     this.genericUDAFName = genericUDAFName;
-    if (genericUDAFEvaluator instanceof Serializable) {
-      this.genericUDAFEvaluator = genericUDAFEvaluator;
-      this.genericUDAFEvaluatorClass = null;
-    } else {
-      this.genericUDAFEvaluator = null;
-      this.genericUDAFEvaluatorClass = genericUDAFEvaluator.getClass();
-    }
+    this.genericUDAFEvaluator = genericUDAFEvaluator;
     this.parameters = parameters;
     this.distinct = distinct;
     this.mode = mode;
-  }
-  public GenericUDAFEvaluator createGenericUDAFEvaluator() {
-    return (genericUDAFEvaluator != null) ? genericUDAFEvaluator
-        : (GenericUDAFEvaluator)ReflectionUtils.newInstance(genericUDAFEvaluatorClass, null);
   }
   public void setGenericUDAFName(final String genericUDAFName) {
     this.genericUDAFName = genericUDAFName;
@@ -68,12 +65,6 @@ public class aggregationDesc implements java.io.Serializable {
   }
   public GenericUDAFEvaluator getGenericUDAFEvaluator() {
     return genericUDAFEvaluator;
-  }
-  public void setGenericUDAFEvaluatorClass(final Class<? extends GenericUDAFEvaluator> genericUDAFEvaluatorClass) {
-    this.genericUDAFEvaluatorClass = genericUDAFEvaluatorClass;
-  }
-  public Class<? extends GenericUDAFEvaluator>  getGenericUDAFEvaluatorClass() {
-    return genericUDAFEvaluatorClass;
   }
   public java.util.ArrayList<exprNodeDesc> getParameters() {
     return this.parameters;

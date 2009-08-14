@@ -30,8 +30,8 @@ STAGE PLANS:
                 0 {key}
                 1 
               keys:
-                0 
-                1 
+                0 [Column[key]]
+                1 [Column[key]]
               outputColumnNames: _col0
               Position of Big Table: 1
               File Output Operator
@@ -57,8 +57,8 @@ STAGE PLANS:
                     0 {key}
                     1 
                   keys:
-                    0 
-                    1 
+                    0 [Column[key]]
+                    1 [Column[key]]
                   outputColumnNames: _col0
                   Position of Big Table: 1
                   File Output Operator
@@ -71,7 +71,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/868000036/10002 
+        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/34613591/10002 
           Select Operator
             expressions:
                   expr: _col0
@@ -89,8 +89,8 @@ STAGE PLANS:
                   0 {_col0}
                   1 {value}
                 keys:
-                  0 
-                  1 
+                  0 [Column[_col0]]
+                  1 [Column[key]]
                 outputColumnNames: _col0, _col5
                 Position of Big Table: 0
                 Select Operator
@@ -127,7 +127,7 @@ STAGE PLANS:
                 alias: z
                 Filter Operator
                   predicate:
-                      expr: ((ds = '2008-04-08') and (UDFToDouble(hr) = UDFToDouble(11)))
+                      expr: ((ds = '2008-04-08') and (hr = 11))
                       type: boolean
                   Filter Operator
                     predicate:
@@ -135,7 +135,7 @@ STAGE PLANS:
                         type: boolean
                     Filter Operator
                       predicate:
-                          expr: (UDFToDouble(hr) = UDFToDouble(11))
+                          expr: (hr = 11)
                           type: boolean
                       Common Join Operator
                         condition map:
@@ -144,8 +144,8 @@ STAGE PLANS:
                           0 {_col0}
                           1 {value}
                         keys:
-                          0 
-                          1 
+                          0 [Column[_col0]]
+                          1 [Column[key]]
                         outputColumnNames: _col0, _col5
                         Position of Big Table: 0
                         Select Operator
@@ -177,10 +177,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/207829460/10000
+                destination: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1122966921/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/868000036/10003 
+              file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/34613591/10003 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -226,7 +226,7 @@ Input: default/srcpart/ds=2008-04-08/hr=11
 Output: default/dest_j1
 query: select * from dest_j1 x order by x.key
 Input: default/dest_j1
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/380670394/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1048822359/10000
 128	val_128
 128	val_128
 128	val_128

@@ -24,7 +24,7 @@ import org.apache.hadoop.io.LongWritable;
  * A JavaLongObjectInspector inspects a Java Long Object.
  */
 public class JavaLongObjectInspector extends AbstractPrimitiveJavaObjectInspector 
-implements LongObjectInspector{
+implements SettableLongObjectInspector{
 
   JavaLongObjectInspector() {
     super(PrimitiveObjectInspectorUtils.longTypeEntry);
@@ -38,5 +38,15 @@ implements LongObjectInspector{
   @Override
   public long get(Object o) {
     return ((Long)o).longValue();
+  }
+
+  @Override
+  public Object create(long value) {
+    return Long.valueOf(value);
+  }
+
+  @Override
+  public Object set(Object o, long value) {
+    return Long.valueOf(value);
   }
 }

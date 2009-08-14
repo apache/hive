@@ -18,8 +18,6 @@
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.io.LongWritable;
-
 
 /**
  * A WritableShortObjectInspector inspects a ShortWritable Object.
@@ -52,8 +50,9 @@ implements SettableShortObjectInspector{
   }
 
   @Override
-  public void set(Object o, short value) {
+  public Object set(Object o, short value) {
     ((ShortWritable)o).set(value);
+    return o;
   }
   
 }

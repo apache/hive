@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.util.*;
 
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
@@ -29,7 +30,6 @@ import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeFieldDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeNullDesc;
 import org.apache.hadoop.hive.ql.udf.UDFOPAnd;
@@ -259,21 +259,14 @@ public class ASTPartitionPruner {
                 .getMsg(expr, e.getMessage()));
           }
           
-          if (desc instanceof exprNodeFuncDesc && (
-              ((exprNodeFuncDesc)desc).getUDFMethod().getDeclaringClass().equals(UDFOPAnd.class) 
-              || ((exprNodeFuncDesc)desc).getUDFMethod().getDeclaringClass().equals(UDFOPOr.class)
-              || ((exprNodeFuncDesc)desc).getUDFMethod().getDeclaringClass().equals(UDFOPNot.class))) {
+          if (FunctionRegistry.isOpAndOrNot(desc)) {
             // do nothing because "And" and "Or" and "Not" supports null value evaluation
             // NOTE: In the future all UDFs that treats null value as UNKNOWN (both in parameters and return 
             // values) should derive from a common base class UDFNullAsUnknown, so instead of listing the classes
             // here we would test whether a class is derived from that base class. 
           } else if (mightBeUnknown(desc) ||
-                     (desc instanceof exprNodeFuncDesc && 
-                      ((exprNodeFuncDesc)desc).getUDFClass().getAnnotation(UDFType.class) != null && 
-                      ((exprNodeFuncDesc)desc).getUDFClass().getAnnotation(UDFType.class).deterministic() == false) ||
-                     (desc instanceof exprNodeGenericFuncDesc && 
-                      ((exprNodeGenericFuncDesc)desc).getGenericUDFClass().getAnnotation(UDFType.class) != null && 
-                      ((exprNodeGenericFuncDesc)desc).getGenericUDFClass().getAnnotation(UDFType.class).deterministic() == false))
+                     ((desc instanceof exprNodeGenericFuncDesc) && 
+                         !FunctionRegistry.isDeterministic(((exprNodeGenericFuncDesc)desc).getGenericUDF())))
           {
             // If its a non-deterministic UDF or if any child is null, set this node to null
             LOG.trace("Pruner function might be unknown: " + expr.toStringTree());
@@ -322,14 +315,6 @@ public class ASTPartitionPruner {
     } else if (desc instanceof exprNodeFieldDesc) {
       exprNodeFieldDesc d = (exprNodeFieldDesc)desc;
       return mightBeUnknown(d.getDesc());
-    } else if (desc instanceof exprNodeFuncDesc) {
-      exprNodeFuncDesc d = (exprNodeFuncDesc)desc;
-      for(int i=0; i<d.getChildren().size(); i++) {
-        if (mightBeUnknown(d.getChildExprs().get(i))) {
-          return true;
-        }
-      }
-      return false;
     } else if (desc instanceof exprNodeGenericFuncDesc) {
       exprNodeGenericFuncDesc d = (exprNodeGenericFuncDesc)desc;
       for(int i=0; i<d.getChildren().size(); i++) {

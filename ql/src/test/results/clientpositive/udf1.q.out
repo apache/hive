@@ -28,11 +28,11 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(key) = UDFToDouble(86))
+                  expr: (key = 86)
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (UDFToDouble(key) = UDFToDouble(86))
+                    expr: (key = 86)
                     type: boolean
                 Select Operator
                   expressions:
@@ -92,10 +92,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2016734734/10000
+                destination: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1175220771/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/519901764/10002 
+              file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1013286557/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -176,5 +176,5 @@ Input: default/src
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/979014828/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/865644854/10000
 true	false	true	true	true	false	false	false	true	true	false	true	false	acc	abc	abb	hive	hadoop	AaAbAcA	false

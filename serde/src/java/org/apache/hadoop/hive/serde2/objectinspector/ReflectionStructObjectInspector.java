@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.util.ReflectionUtils;
+
 /**
  * ReflectionStructObjectInspector works on struct data that is stored as a native Java object.
  * It will drill down into the Java class to get the fields and construct ObjectInspectors for 
@@ -32,7 +34,7 @@ import java.util.Map;
  * of directly creating an instance of this class. 
  *
  */
-public class ReflectionStructObjectInspector extends StructObjectInspector {
+public class ReflectionStructObjectInspector extends SettableStructObjectInspector {
 
   public static class MyField implements StructField {
     protected Field field;
@@ -56,10 +58,6 @@ public class ReflectionStructObjectInspector extends StructObjectInspector {
   Class<?> objectClass;
   List<MyField> fields;
   
-  public ReflectionStructObjectInspector(Class<?> objectClass, List<ObjectInspector> structFieldObjectInspectors) {
-    init(objectClass, structFieldObjectInspectors);
-  }
-
   public Category getCategory() {
     return Category.STRUCT;
   }
@@ -142,6 +140,24 @@ public class ReflectionStructObjectInspector extends StructObjectInspector {
     } catch (Exception e) {
       throw new RuntimeException(e); 
     }
+  }
+
+  @Override
+  public Object create() {
+    return ReflectionUtils.newInstance(objectClass, null);
+  }
+
+  @Override
+  public Object setStructFieldData(Object struct, StructField field,
+      Object fieldValue) {
+    MyField myField = (MyField)field;
+    try {
+      myField.field.set(struct, fieldValue);
+    } catch (Exception e) {
+      throw new RuntimeException("cannot set field " + myField.field + " of " 
+          + struct.getClass() + " " + struct, e); 
+    }
+    return struct;
   }
 
 }

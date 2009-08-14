@@ -1,6 +1,10 @@
 package org.apache.hadoop.hive.serde2.typeinfo;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,24 +26,131 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 
 public class TypeInfoUtils {
   
+  /**
+   * Return the extended TypeInfo from a Java type.
+   * By extended TypeInfo, we allow unknownType for java.lang.Object.
+   * @param t  The Java type.
+   * @param m  The method, only used for generating error messages.
+   */
+  private static TypeInfo getExtendedTypeInfoFromJavaType(Type t, Method m) {
+
+    if (t == Object.class) {
+      return TypeInfoFactory.unknownTypeInfo; 
+    }
+    
+    if (t instanceof ParameterizedType) {
+      ParameterizedType pt = (ParameterizedType)t;
+      // List?
+      if (List.class == (Class<?>)pt.getRawType()
+          || ArrayList.class == (Class<?>)pt.getRawType()) {
+        return TypeInfoFactory.getListTypeInfo(
+            getExtendedTypeInfoFromJavaType(pt.getActualTypeArguments()[0], m)); 
+      }
+      // Map?
+      if (Map.class == (Class<?>)pt.getRawType()
+          || HashMap.class == (Class<?>)pt.getRawType()) {
+        return TypeInfoFactory.getMapTypeInfo( 
+            getExtendedTypeInfoFromJavaType(pt.getActualTypeArguments()[0], m),
+            getExtendedTypeInfoFromJavaType(pt.getActualTypeArguments()[1], m));
+      }
+      // Otherwise convert t to RawType so we will fall into the following if block.
+      t = pt.getRawType();
+    }
+    
+    // Must be a class.
+    if (!(t instanceof Class)) {
+      throw new RuntimeException("Hive does not understand type " + t + " from " + m); 
+    }
+    Class<?> c = (Class<?>)t;
+    
+    // Java Primitive Type?
+    if (PrimitiveObjectInspectorUtils.isPrimitiveJavaType(c)) {
+      return TypeInfoUtils.getTypeInfoFromObjectInspector(
+          PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
+          PrimitiveObjectInspectorUtils.getTypeEntryFromPrimitiveJavaType(c).primitiveCategory));
+    }
+
+    // Java Primitive Class?
+    if (PrimitiveObjectInspectorUtils.isPrimitiveJavaClass(c)) {
+      return TypeInfoUtils.getTypeInfoFromObjectInspector(
+          PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
+          PrimitiveObjectInspectorUtils.getTypeEntryFromPrimitiveJavaClass(c).primitiveCategory));
+    }
+    
+    // Primitive Writable class?
+    if (PrimitiveObjectInspectorUtils.isPrimitiveWritableClass(c)) {
+      return TypeInfoUtils.getTypeInfoFromObjectInspector(
+          PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
+          PrimitiveObjectInspectorUtils.getTypeEntryFromPrimitiveWritableClass(c).primitiveCategory));
+    }
+    
+    // Must be a struct
+    Field[] fields = ObjectInspectorUtils.getDeclaredNonStaticFields(c);
+    ArrayList<String> fieldNames = new ArrayList<String>(fields.length);
+    ArrayList<TypeInfo> fieldTypeInfos = new ArrayList<TypeInfo>(fields.length);
+    for(int i=0; i<fields.length; i++) {
+      fieldNames.add(fields[i].getName());
+      fieldTypeInfos.add(getExtendedTypeInfoFromJavaType(fields[i].getGenericType(), m));
+    }
+    return TypeInfoFactory.getStructTypeInfo(fieldNames, fieldTypeInfos);
+  }
   
-  public static List<TypeInfo> getParameterTypeInfos(Method m) {
-    Class<?>[] parameterTypes = m.getParameterTypes();
-    List<TypeInfo> typeInfos = new ArrayList<TypeInfo>(parameterTypes.length);
-    for (int i=0; i<parameterTypes.length; i++) {
-      if (PrimitiveObjectInspectorUtils.isPrimitiveWritableClass(parameterTypes[i])) {
-        typeInfos.add(TypeInfoFactory.getPrimitiveTypeInfoFromPrimitiveWritable(parameterTypes[i]));
-      } else if (PrimitiveObjectInspectorUtils.isPrimitiveJavaClass(parameterTypes[i])
-          || PrimitiveObjectInspectorUtils.isPrimitiveJavaType(parameterTypes[i])) {
-          typeInfos.add(TypeInfoFactory.getPrimitiveTypeInfoFromJavaPrimitive(parameterTypes[i]));
-      } else if (Map.class.isAssignableFrom(parameterTypes[i])) {
-        typeInfos.add(TypeInfoFactory.unknownMapTypeInfo);
-      } else if (List.class.isAssignableFrom(parameterTypes[i])) {
-        typeInfos.add(TypeInfoFactory.unknownListTypeInfo);
-      } else if (parameterTypes[i].equals(Object.class)){
-        typeInfos.add(TypeInfoFactory.unknownTypeInfo);
-      } else {
-        throw new RuntimeException("Hive does not understand type " + parameterTypes[i] + " from " + m);
+  /**
+   * Returns the array element type, if the Type is an array (Object[]),
+   * or GenericArrayType (Map<String,String>[]). Otherwise return null.
+   */
+  public static Type getArrayElementType(Type t) {
+    if (t instanceof Class
+        && ((Class<?>)t).isArray()) {
+      Class<?> arrayClass = (Class<?>)t;
+      return arrayClass.getComponentType();
+    } else if (t instanceof GenericArrayType) {
+      GenericArrayType arrayType = (GenericArrayType)t;
+      return arrayType.getGenericComponentType();
+    }
+    return null;
+  }
+  
+  /**
+   * Get the parameter TypeInfo for a method.
+   * @param size In case the last parameter of Method is an array, we will try to return a 
+   *             List<TypeInfo> with the specified size by repeating the element of the array
+   *             at the end.
+   *             In case the size is smaller than the minimum possible number of arguments 
+   *             for the method, null will be returned. 
+   */
+  public static List<TypeInfo> getParameterTypeInfos(Method m, int size) {
+    Type[] methodParameterTypes = m.getGenericParameterTypes();
+    
+    // Whether the method takes variable-length arguments
+    // Whether the method takes an array like Object[], 
+    // or String[] etc in the last argument.
+    Type lastParaElementType = TypeInfoUtils.getArrayElementType(
+        methodParameterTypes.length == 0 ? null :
+        methodParameterTypes[methodParameterTypes.length-1]);
+    boolean isVariableLengthArgument = (lastParaElementType != null);
+    
+    List<TypeInfo> typeInfos = null;
+    if (!isVariableLengthArgument) {
+      // Normal case, no variable-length arguments
+      if (size != methodParameterTypes.length) {
+        return null;
+      }
+      typeInfos = new ArrayList<TypeInfo>(methodParameterTypes.length);
+      for (int i = 0; i < methodParameterTypes.length; i++) {
+        typeInfos.add(getExtendedTypeInfoFromJavaType(methodParameterTypes[i], m));
+      }
+    } else {
+      // Variable-length arguments
+      if (size < methodParameterTypes.length - 1) {
+        return null;
+      }
+      typeInfos = new ArrayList<TypeInfo>(size);
+      for (int i = 0; i < methodParameterTypes.length - 1; i++) {
+        typeInfos.add(getExtendedTypeInfoFromJavaType(methodParameterTypes[i], m));
+      }
+      for (int i = methodParameterTypes.length - 1; i < size; i++) {
+        typeInfos.add(getExtendedTypeInfoFromJavaType(lastParaElementType, m));
       }
     }
     return typeInfos;

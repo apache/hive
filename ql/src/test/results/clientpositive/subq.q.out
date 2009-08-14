@@ -20,11 +20,11 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(key) < UDFToDouble(100))
+                  expr: (key < 100)
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (UDFToDouble(key) < UDFToDouble(100))
+                    expr: (key < 100)
                     type: boolean
                 Select Operator
                   expressions:
@@ -53,10 +53,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1653419490/10000
+                destination: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/954095120/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/212460499/10001 
+              file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/901891505/10001 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:

@@ -17,11 +17,11 @@ STAGE PLANS:
             alias: x
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(key) = UDFToDouble(9999))
+                  expr: (key = 9999)
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (UDFToDouble(key) = UDFToDouble(9999))
+                    expr: (key = 9999)
                     type: boolean
                 Select Operator
                   expressions:
@@ -68,7 +68,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1232529310/10002 
+        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/2126451963/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -105,7 +105,7 @@ STAGE PLANS:
 
 query: select count(1), count(distinct x.value) from src x where x.key = 9999
 Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1706398248/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/871904429/10000
 0	0
 query: explain
 select count(1), count(distinct x.value) from src x where x.key = 9999
@@ -125,11 +125,11 @@ STAGE PLANS:
             alias: x
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(key) = UDFToDouble(9999))
+                  expr: (key = 9999)
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (UDFToDouble(key) = UDFToDouble(9999))
+                    expr: (key = 9999)
                     type: boolean
                 Select Operator
                   expressions:
@@ -184,7 +184,7 @@ STAGE PLANS:
 
 query: select count(1), count(distinct x.value) from src x where x.key = 9999
 Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2036729644/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/266232005/10000
 0	0
 query: explain
 select count(1), count(distinct x.value) from src x where x.key = 9999
@@ -205,11 +205,11 @@ STAGE PLANS:
             alias: x
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(key) = UDFToDouble(9999))
+                  expr: (key = 9999)
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (UDFToDouble(key) = UDFToDouble(9999))
+                    expr: (key = 9999)
                     type: boolean
                 Select Operator
                   expressions:
@@ -245,7 +245,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/441797798/10002 
+        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/682272974/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -282,7 +282,7 @@ STAGE PLANS:
 
 query: select count(1), count(distinct x.value) from src x where x.key = 9999
 Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1197695098/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/1786332270/10000
 0	0
 query: explain
 select count(1), count(distinct x.value) from src x where x.key = 9999
@@ -302,11 +302,11 @@ STAGE PLANS:
             alias: x
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(key) = UDFToDouble(9999))
+                  expr: (key = 9999)
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (UDFToDouble(key) = UDFToDouble(9999))
+                    expr: (key = 9999)
                     type: boolean
                 Select Operator
                   expressions:
@@ -350,5 +350,5 @@ STAGE PLANS:
 
 query: select count(1), count(distinct x.value) from src x where x.key = 9999
 Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1769543362/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/346530810/10000
 0	0

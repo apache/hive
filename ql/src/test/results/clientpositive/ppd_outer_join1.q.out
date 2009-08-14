@@ -39,7 +39,7 @@ STAGE PLANS:
             alias: a
             Filter Operator
               predicate:
-                  expr: ((UDFToDouble(key) > UDFToDouble(10)) and (UDFToDouble(key) < UDFToDouble(20)))
+                  expr: ((key > 10) and (key < 20))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -65,7 +65,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1, _col2, _col3
           Filter Operator
             predicate:
-                expr: ((((UDFToDouble(_col0) > UDFToDouble(10)) and (UDFToDouble(_col0) < UDFToDouble(20))) and (UDFToDouble(_col2) > UDFToDouble(15))) and (UDFToDouble(_col2) < UDFToDouble(25)))
+                expr: ((((_col0 > 10) and (_col0 < 20)) and (_col2 > 15)) and (_col2 < 25))
                 type: boolean
             Select Operator
               expressions:
@@ -98,7 +98,7 @@ query: FROM
  SELECT a.key, a.value, b.key, b.value
  WHERE a.key > 10 AND a.key < 20 AND b.key > 15 AND b.key < 25
 Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1157143291/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_3/build/ql/tmp/1743643230/10000
 17	val_17	17	val_17
 18	val_18	18	val_18
 18	val_18	18	val_18

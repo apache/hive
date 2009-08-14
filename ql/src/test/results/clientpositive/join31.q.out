@@ -75,7 +75,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/733202123/10002 
+        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1030817516/10002 
             Common Join Operator
               condition map:
                    Inner Join 0 to 1
@@ -83,8 +83,8 @@ STAGE PLANS:
                 0 {_col0}
                 1 
               keys:
-                0 
-                1 
+                0 [Column[_col0]]
+                1 [Column[_col0]]
               outputColumnNames: _col0
               Position of Big Table: 1
               File Output Operator
@@ -96,11 +96,11 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
-            file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/733202123/10004 
+            file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1030817516/10004 
               Fetch Operator
                 limit: -1
           Alias -> Map Local Operator Tree:
-            file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/733202123/10004 
+            file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1030817516/10004 
                 Common Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -108,8 +108,8 @@ STAGE PLANS:
                     0 {_col0}
                     1 
                   keys:
-                    0 
-                    1 
+                    0 [Column[_col0]]
+                    1 [Column[_col0]]
                   outputColumnNames: _col0
                   Position of Big Table: 1
                   File Output Operator
@@ -122,7 +122,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/733202123/10003 
+        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1030817516/10003 
           Select Operator
             expressions:
                   expr: _col0
@@ -258,7 +258,7 @@ Input: default/src1
 Output: default/dest_j1
 query: select * from dest_j1 x order by x.key
 Input: default/dest_j1
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2103472034/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/940919267/10000
 128	1
 146	1
 150	1

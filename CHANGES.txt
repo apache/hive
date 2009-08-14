@@ -15,6 +15,9 @@ Trunk -  Unreleased
     HIVE-693. Add a AWS S3 log format deserializer
     (Zheng Shao and Andraz Tori via namit)
 
+    HIVE-699. Functions with variable length arguments
+    (Zheng Shao via namit)
+
   IMPROVEMENTS
 
   OPTIMIZATIONS

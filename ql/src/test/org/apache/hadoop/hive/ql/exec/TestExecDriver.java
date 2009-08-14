@@ -40,7 +40,7 @@ import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeFieldDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc;
+import org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.extractDesc;
 import org.apache.hadoop.hive.ql.plan.fileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.filterDesc;
@@ -156,31 +156,25 @@ public class TestExecDriver extends TestCase {
   private filterDesc getTestFilterDesc(String column) {
     ArrayList<exprNodeDesc> children1 = new ArrayList<exprNodeDesc>();
     children1.add(new exprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, column, "", false));
-    exprNodeDesc lhs = new exprNodeFuncDesc(
-        Constants.DOUBLE_TYPE_NAME,
+    exprNodeDesc lhs = new exprNodeGenericFuncDesc(
         TypeInfoFactory.doubleTypeInfo,
-        FunctionRegistry.getUDFClass(Constants.DOUBLE_TYPE_NAME),
-        FunctionRegistry.getUDFMethod(Constants.DOUBLE_TYPE_NAME, TypeInfoFactory.stringTypeInfo),
+        FunctionRegistry.getFunctionInfo(Constants.DOUBLE_TYPE_NAME).getGenericUDF(),
         children1);
     
     ArrayList<exprNodeDesc> children2 = new ArrayList<exprNodeDesc>();
     children2.add(new exprNodeConstantDesc(TypeInfoFactory.longTypeInfo, Long.valueOf(100)));
-    exprNodeDesc rhs = new exprNodeFuncDesc(
-        Constants.DOUBLE_TYPE_NAME,
+    exprNodeDesc rhs = new exprNodeGenericFuncDesc(
         TypeInfoFactory.doubleTypeInfo,
-        FunctionRegistry.getUDFClass(Constants.DOUBLE_TYPE_NAME),
-        FunctionRegistry.getUDFMethod(Constants.DOUBLE_TYPE_NAME, TypeInfoFactory.longTypeInfo),
+        FunctionRegistry.getFunctionInfo(Constants.DOUBLE_TYPE_NAME).getGenericUDF(),
         children2);
     
     ArrayList<exprNodeDesc> children3 = new ArrayList<exprNodeDesc>();
     children3.add(lhs);
     children3.add(rhs);
     
-    exprNodeDesc desc = new exprNodeFuncDesc(
-        "<",
+    exprNodeDesc desc = new exprNodeGenericFuncDesc(
         TypeInfoFactory.booleanTypeInfo,
-        FunctionRegistry.getUDFClass("<"),
-        FunctionRegistry.getUDFMethod("<", TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.doubleTypeInfo),
+        FunctionRegistry.getFunctionInfo("<").getGenericUDF(),
         children3);
     
     return new filterDesc(desc, false);

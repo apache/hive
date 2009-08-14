@@ -29,11 +29,11 @@ STAGE PLANS:
             alias: src1
             Filter Operator
               predicate:
-                  expr: ((UDFToDouble(key) > UDFToDouble(10)) and (UDFToDouble(key) < UDFToDouble(20)))
+                  expr: ((key > 10) and (key < 20))
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: ((UDFToDouble(key) > UDFToDouble(10)) and (UDFToDouble(key) < UDFToDouble(20)))
+                    expr: ((key > 10) and (key < 20))
                     type: boolean
                 Select Operator
                   expressions:
@@ -61,11 +61,11 @@ STAGE PLANS:
             alias: src2
             Filter Operator
               predicate:
-                  expr: ((UDFToDouble(key) > UDFToDouble(15)) and (UDFToDouble(key) < UDFToDouble(25)))
+                  expr: ((key > 15) and (key < 25))
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: ((UDFToDouble(key) > UDFToDouble(15)) and (UDFToDouble(key) < UDFToDouble(25)))
+                    expr: ((key > 15) and (key < 25))
                     type: boolean
                 Select Operator
                   expressions:
@@ -166,7 +166,7 @@ Input: default/src
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/771875621/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1525120145/10000
 17	val_17	17	val_17
 18	val_18	18	val_18
 18	val_18	18	val_18

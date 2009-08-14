@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.HashMap;
@@ -43,15 +42,21 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.exec.ConditionalTask;
+import org.apache.hadoop.hive.ql.exec.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
@@ -82,24 +87,24 @@ import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink3;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink4;
-import org.apache.hadoop.hive.ql.plan.*;
-import org.apache.hadoop.hive.ql.exec.*;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.aggregationDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc;
+import org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeNullDesc;
 import org.apache.hadoop.hive.ql.plan.extractDesc;
 import org.apache.hadoop.hive.ql.plan.fetchWork;
 import org.apache.hadoop.hive.ql.plan.fileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.filterDesc;
+import org.apache.hadoop.hive.ql.plan.forwardDesc;
 import org.apache.hadoop.hive.ql.plan.groupByDesc;
 import org.apache.hadoop.hive.ql.plan.joinDesc;
 import org.apache.hadoop.hive.ql.plan.limitDesc;
 import org.apache.hadoop.hive.ql.plan.loadFileDesc;
 import org.apache.hadoop.hive.ql.plan.loadTableDesc;
+import org.apache.hadoop.hive.ql.plan.mapredWork;
 import org.apache.hadoop.hive.ql.plan.moveWork;
 import org.apache.hadoop.hive.ql.plan.partitionDesc;
 import org.apache.hadoop.hive.ql.plan.reduceSinkDesc;
@@ -129,8 +134,6 @@ import org.apache.hadoop.hive.serde.Constants;
 
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-
-import org.apache.hadoop.hive.serde.Constants;
 
 /**
  * Implementation of the semantic analyzer
@@ -2222,7 +2225,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   static ArrayList<GenericUDAFEvaluator> getUDAFEvaluators(ArrayList<aggregationDesc> aggs) {
     ArrayList<GenericUDAFEvaluator> result = new ArrayList<GenericUDAFEvaluator>();
     for (int i=0; i<aggs.size(); i++) {
-      result.add(aggs.get(i).createGenericUDAFEvaluator());
+      result.add(aggs.get(i).getGenericUDAFEvaluator());
     }
     return result;
   }
@@ -3920,7 +3923,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     exprNodeDesc equalsExpr = null;
     {
       exprNodeDesc hashfnExpr = new exprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo,
-          GenericUDFHash.class, args);
+          new GenericUDFHash(), args);
       assert(hashfnExpr != null);
       LOG.info("hashfnExpr = " + hashfnExpr);
       exprNodeDesc andExpr = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("&", hashfnExpr, intMaxExpr);
@@ -4513,49 +4516,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return tabAlias;
   }
   
-  
-  public static ArrayList<exprNodeDesc> convertParameters(Method m, List<exprNodeDesc> parametersPassed) {
-    
-    ArrayList<exprNodeDesc> newParameters = new ArrayList<exprNodeDesc>();
-    List<TypeInfo> parametersAccepted = TypeInfoUtils.getParameterTypeInfos(m);
-
-    // 0 is the function name
-    for (int i = 0; i < parametersPassed.size(); i++) {
-      exprNodeDesc descPassed = parametersPassed.get(i);
-      TypeInfo typeInfoPassed = descPassed.getTypeInfo();
-      TypeInfo typeInfoAccepted = parametersAccepted.get(i);
-      if (descPassed instanceof exprNodeNullDesc) {
-        exprNodeConstantDesc newCh = new exprNodeConstantDesc(typeInfoAccepted, null);
-        newParameters.add(newCh);
-      } else if (typeInfoAccepted.equals(typeInfoPassed)
-          || typeInfoAccepted.equals(TypeInfoFactory.unknownTypeInfo)
-          || (typeInfoAccepted.equals(TypeInfoFactory.unknownMapTypeInfo) 
-              && typeInfoPassed.getCategory().equals(Category.MAP))
-          || (typeInfoAccepted.equals(TypeInfoFactory.unknownListTypeInfo)
-              && typeInfoPassed.getCategory().equals(Category.LIST))
-          ) {
-        // no type conversion needed
-        newParameters.add(descPassed);
-      } else {
-        // must be implicit type conversion
-        TypeInfo to = typeInfoAccepted;
-        if (!FunctionRegistry.implicitConvertable(typeInfoPassed, to)) {
-          throw new RuntimeException("Internal exception: cannot convert from " + typeInfoPassed + " to " + to);
-        }
-        Method conv = FunctionRegistry.getUDFMethod(to.getTypeName(), typeInfoPassed);
-        assert(conv != null);
-        Class<? extends UDF> c = FunctionRegistry.getUDFClass(to.getTypeName());
-        assert(c != null);
-        
-        // get the conversion method
-        ArrayList<exprNodeDesc> conversionArg = new ArrayList<exprNodeDesc>(1);
-        conversionArg.add(descPassed);
-        newParameters.add(new exprNodeFuncDesc(to.getTypeName(), typeInfoAccepted, c, conv, conversionArg));
-      }
-    }
-
-    return newParameters;
-  }
   
   public void validate() throws SemanticException {
     // Check if the plan contains atleast one path.

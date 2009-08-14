@@ -63,8 +63,6 @@ public class TypeInfoFactory {
   public static final TypeInfo shortTypeInfo = getPrimitiveTypeInfo(Constants.SMALLINT_TYPE_NAME);
 
   public static final TypeInfo unknownTypeInfo = getPrimitiveTypeInfo("unknown");
-  public static final TypeInfo unknownMapTypeInfo = getPrimitiveTypeInfo(Constants.MAP_TYPE_NAME);
-  public static final TypeInfo unknownListTypeInfo = getPrimitiveTypeInfo(Constants.LIST_TYPE_NAME);
   
   public static TypeInfo getPrimitiveTypeInfoFromPrimitiveWritable(Class<?> clazz) {
     String typeName = PrimitiveObjectInspectorUtils.getTypeNameFromPrimitiveWritable(clazz);

@@ -65,11 +65,11 @@ STAGE PLANS:
         $INTNAME 
             Reduce Output Operator
               key expressions:
-                    expr: (UDFToDouble(_col0) + UDFToDouble(_col2))
+                    expr: (_col0 + _col2)
                     type: double
               sort order: +
               Map-reduce partition columns:
-                    expr: (UDFToDouble(_col0) + UDFToDouble(_col2))
+                    expr: (_col0 + _col2)
                     type: double
               tag: 0
               value expressions:
@@ -138,7 +138,7 @@ Input: default/src
 Output: default/dest_j2
 query: SELECT dest_j2.* FROM dest_j2
 Input: default/dest_j2
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/558120835/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_3/build/ql/tmp/2049207176/10000
 0	val_0
 0	val_0
 0	val_0

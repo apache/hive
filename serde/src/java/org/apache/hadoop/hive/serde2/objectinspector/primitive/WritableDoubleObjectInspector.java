@@ -52,8 +52,9 @@ implements SettableDoubleObjectInspector{
   }
 
   @Override
-  public void set(Object o, double value) {
+  public Object set(Object o, double value) {
     ((DoubleWritable)o).set(value);
+    return o;
   }
   
 }

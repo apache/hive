@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -32,7 +33,7 @@ import java.util.Map;
  * Always use the ObjectInspectorFactory to create new ObjectInspector objects, instead
  * of directly creating an instance of this class. 
  */
-public class StandardMapObjectInspector implements MapObjectInspector {
+public class StandardMapObjectInspector implements SettableMapObjectInspector {
 
   ObjectInspector mapKeyObjectInspector;
   ObjectInspector mapValueObjectInspector;
@@ -79,6 +80,35 @@ public class StandardMapObjectInspector implements MapObjectInspector {
     return org.apache.hadoop.hive.serde.Constants.MAP_TYPE_NAME 
         + "<" + mapKeyObjectInspector.getTypeName() + "," 
         + mapValueObjectInspector.getTypeName() + ">";
+  }
+
+  ///////////////////////////////
+  // SettableMapObjectInspector
+  @Override
+  public Object create() {
+    Map<Object, Object> m = new HashMap<Object, Object>();
+    return m;
+  }
+
+  @Override
+  public Object clear(Object map) {
+    Map<Object, Object> m = (HashMap<Object, Object>)map;
+    m.clear();
+    return m;
+  }
+
+  @Override
+  public Object put(Object map, Object key, Object value) {
+    Map<Object, Object> m = (HashMap<Object, Object>)map;
+    m.put(key, value);
+    return m;
+  }
+
+  @Override
+  public Object remove(Object map, Object key) {
+    Map<Object, Object> m = (HashMap<Object, Object>)map;
+    m.remove(key);
+    return m;
   }
 
 }

@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -27,8 +28,10 @@ import org.apache.hadoop.hive.ql.exec.UDAFEvaluator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUtils.PrimitiveConversionHelper;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUtils.ConversionHelper;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -89,7 +92,7 @@ public class GenericUDAFBridge implements GenericUDAFResolver {
     transient Method terminatePartialMethod;
     transient Method terminateMethod;
 
-    transient PrimitiveConversionHelper conversionHelper; 
+    transient ConversionHelper conversionHelper; 
     
     @Override
     public ObjectInspector init(Mode m, ObjectInspector[] parameters)
@@ -120,7 +123,7 @@ public class GenericUDAFBridge implements GenericUDAFResolver {
       } else {
         aggregateMethod = mergeMethod;
       }
-      conversionHelper = new PrimitiveConversionHelper(aggregateMethod, parameters);
+      conversionHelper = new ConversionHelper(aggregateMethod, parameters);
       
       // Output: get the evaluate method
       Method evaluateMethod = null;
@@ -130,10 +133,10 @@ public class GenericUDAFBridge implements GenericUDAFResolver {
         evaluateMethod = terminateMethod;
       }
       // Get the output ObjectInspector from the return type.
-      Class<?> returnType = evaluateMethod.getReturnType();
+      Type returnType = evaluateMethod.getGenericReturnType();
       try {
-        return PrimitiveObjectInspectorFactory
-            .getPrimitiveObjectInspectorFromClass(returnType);
+        return ObjectInspectorFactory.getReflectionObjectInspector(returnType, 
+            ObjectInspectorOptions.JAVA);
       } catch (RuntimeException e) {
         throw new HiveException("Cannot recognize return type " + returnType +
             " from " + evaluateMethod, e);

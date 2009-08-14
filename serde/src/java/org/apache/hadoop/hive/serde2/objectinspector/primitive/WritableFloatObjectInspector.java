@@ -51,7 +51,8 @@ implements SettableFloatObjectInspector{
   }
 
   @Override
-  public void set(Object o, float value) {
+  public Object set(Object o, float value) {
     ((FloatWritable)o).set(value);
+    return o;
   }
 }

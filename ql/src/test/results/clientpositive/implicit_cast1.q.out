@@ -19,11 +19,11 @@ STAGE PLANS:
             alias: implicit_test1
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(a) <> UDFToDouble(0))
+                  expr: (a <> 0)
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (UDFToDouble(a) <> UDFToDouble(0))
+                    expr: (a <> 0)
                     type: boolean
                 Select Operator
                   expressions:
@@ -48,5 +48,5 @@ query: SELECT implicit_test1.*
 FROM implicit_test1
 WHERE implicit_test1.a <> 0
 Input: default/implicit_test1
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/915534198/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1171789993/10000
 query: DROP TABLE implicit_test1

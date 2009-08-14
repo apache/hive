@@ -49,7 +49,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(key) < UDFToDouble(100))
+                  expr: (key < 100)
                   type: boolean
               Select Operator
                 expressions:
@@ -58,7 +58,7 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Filter Operator
                   predicate:
-                      expr: (UDFToDouble(_col0) < UDFToDouble(100))
+                      expr: (_col0 < 100)
                       type: boolean
                   Reduce Output Operator
                     key expressions:
@@ -93,11 +93,11 @@ STAGE PLANS:
         $INTNAME 
             Reduce Output Operator
               key expressions:
-                    expr: (UDFToDouble(_col0) + UDFToDouble(_col2))
+                    expr: (_col0 + _col2)
                     type: double
               sort order: +
               Map-reduce partition columns:
-                    expr: (UDFToDouble(_col0) + UDFToDouble(_col2))
+                    expr: (_col0 + _col2)
                     type: double
               tag: 0
               value expressions:
@@ -110,7 +110,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(key) < UDFToDouble(200))
+                  expr: (key < 200)
                   type: boolean
               Select Operator
                 expressions:
@@ -119,7 +119,7 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Filter Operator
                   predicate:
-                      expr: (UDFToDouble(_col0) < UDFToDouble(200))
+                      expr: (_col0 < 200)
                       type: boolean
                   Reduce Output Operator
                     key expressions:
@@ -167,7 +167,7 @@ JOIN
 (SELECT src.key as c5, src.value as c6 from src) src3
 ON src1.c1 + src2.c3 = src3.c5 AND src3.c5 < 200
 Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1605427587/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1856280874/10000
 0	val_0
 0	val_0
 0	val_0

@@ -151,6 +151,20 @@ public class TestStandardObjectInspectors extends TestCase {
       assertEquals(3, loi1.getListElement(list, 3));
       assertNull(loi1.getListElement(list, -1));
       assertNull(loi1.getListElement(list, 4));
+      
+      // Settable
+      Object list4 = loi1.create(4);
+      loi1.set(list4, 0, 0);
+      loi1.set(list4, 1, 1);
+      loi1.set(list4, 2, 2);
+      loi1.set(list4, 3, 3);
+      assertEquals(list, list4);
+      
+      loi1.resize(list4, 5);
+      loi1.set(list4, 4, 4);
+      loi1.resize(list4, 4);
+      assertEquals(list, list4);
+      
     } catch (Throwable e) {
       e.printStackTrace();
       throw e;
@@ -199,6 +213,16 @@ public class TestStandardObjectInspectors extends TestCase {
       assertEquals(3, moi1.getMapValueElement(map, "three"));
       assertNull(moi1.getMapValueElement(map, null));
       assertNull(moi1.getMapValueElement(map, "null"));
+      
+      // Settable
+      Object map3 = moi1.create();
+      moi1.put(map3, "one", 1);
+      moi1.put(map3, "two", 2);
+      moi1.put(map3, "three", 3);
+      assertEquals(map, map3);
+      moi1.clear(map3);
+      assertEquals(0, moi1.getMapSize(map3));
+      
     } catch (Throwable e) {
       e.printStackTrace();
       throw e;
@@ -260,6 +284,15 @@ public class TestStandardObjectInspectors extends TestCase {
       assertEquals(1, soi1.getStructFieldData(struct, fields.get(0)));
       assertEquals("two", soi1.getStructFieldData(struct, fields.get(1)));
       assertEquals(true, soi1.getStructFieldData(struct, fields.get(2)));
+      
+      // Settable
+      Object struct3 = soi1.create();
+      System.out.println(struct3);
+      soi1.setStructFieldData(struct3, fields.get(0), 1);
+      soi1.setStructFieldData(struct3, fields.get(1), "two");
+      soi1.setStructFieldData(struct3, fields.get(2), true);
+      assertEquals(struct, struct3);
+      
     } catch (Throwable e) {
       e.printStackTrace();
       throw e;

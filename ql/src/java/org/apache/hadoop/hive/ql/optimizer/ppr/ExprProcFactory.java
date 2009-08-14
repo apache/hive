@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -39,7 +40,6 @@ import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeFieldDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeNullDesc;
 import org.apache.hadoop.hive.ql.udf.UDFOPAnd;
@@ -80,52 +80,6 @@ public class ExprProcFactory {
   }
   
   /**
-   * Process function descriptors. 
-   */
-  public static class FuncExprProcessor implements NodeProcessor {
-
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
-        Object... nodeOutputs) throws SemanticException {
-
-      exprNodeDesc newfd = null;
-      exprNodeFuncDesc fd = (exprNodeFuncDesc) nd;
-
-      boolean unknown = false;
-      // Check if any of the children is unknown for non logical operators
-      if (!fd.getUDFMethod().getDeclaringClass().equals(UDFOPAnd.class)
-          && !fd.getUDFMethod().getDeclaringClass().equals(UDFOPOr.class)
-          && !fd.getUDFMethod().getDeclaringClass().equals(UDFOPNot.class))
-        for(Object child: nodeOutputs) {
-          exprNodeDesc child_nd = (exprNodeDesc)child;
-          if (child_nd instanceof exprNodeConstantDesc &&
-              ((exprNodeConstantDesc)child_nd).getValue() == null) {
-            unknown = true;
-          }
-        }
-    
-      if (fd.getUDFClass().getAnnotation(UDFType.class) != null &&
-          (fd.getUDFClass().getAnnotation(UDFType.class).deterministic() == false ||
-           unknown))
-        newfd = new exprNodeConstantDesc(fd.getTypeInfo(), null);
-      else {
-        // Create the list of children
-        ArrayList<exprNodeDesc> children = new ArrayList<exprNodeDesc>();
-        for(Object child: nodeOutputs) {
-          children.add((exprNodeDesc) child);
-        }
-        // Create a copy of the function descriptor
-        newfd = new exprNodeFuncDesc(fd.getMethodName(),
-                                     fd.getTypeInfo(), fd.getUDFClass(),
-                                     fd.getUDFMethod(), children);        
-      }
-      
-      return newfd;
-    }
-
-  }
-
-  /**
    * If all children are candidates and refer only to one table alias then this expr is a candidate
    * else it is not a candidate but its children could be final candidates
    */
@@ -139,12 +93,23 @@ public class ExprProcFactory {
       exprNodeGenericFuncDesc fd = (exprNodeGenericFuncDesc) nd;
 
       boolean unknown = false;
-      // Check if any of the children is unknown
-      for(Object child: nodeOutputs) {
-        exprNodeDesc child_nd = (exprNodeDesc)child;
-        if (child_nd instanceof exprNodeConstantDesc &&
-            ((exprNodeConstantDesc)child_nd).getValue() == null) {
-          unknown = true;
+      
+      if (FunctionRegistry.isOpAndOrNot(fd)) {
+        // do nothing because "And" and "Or" and "Not" supports null value evaluation
+        // NOTE: In the future all UDFs that treats null value as UNKNOWN (both in parameters and return 
+        // values) should derive from a common base class UDFNullAsUnknown, so instead of listing the classes
+        // here we would test whether a class is derived from that base class. 
+      } else if (!FunctionRegistry.isDeterministic(fd.getGenericUDF())) {
+        // If it's a non-deterministic UDF, set unknown to true
+        unknown = true;
+      } else {
+        // If any child is null, set unknown to true
+        for(Object child: nodeOutputs) {
+          exprNodeDesc child_nd = (exprNodeDesc)child;
+          if (child_nd instanceof exprNodeConstantDesc &&
+              ((exprNodeConstantDesc)child_nd).getValue() == null) {
+            unknown = true;
+          }
         }
       }
       
@@ -157,7 +122,7 @@ public class ExprProcFactory {
           children.add((exprNodeDesc) child);
         }
         // Create a copy of the function descriptor
-        newfd = new exprNodeGenericFuncDesc(fd.getTypeInfo(), fd.getGenericUDFClass(), children);
+        newfd = new exprNodeGenericFuncDesc(fd.getTypeInfo(), fd.getGenericUDF(), children);
       }
       
       return newfd;
@@ -220,10 +185,6 @@ public class ExprProcFactory {
     return new DefaultExprProcessor();
   }
 
-  public static NodeProcessor getFuncProcessor() {
-    return new FuncExprProcessor();
-  }
-
   public static NodeProcessor getGenericFuncProcessor() {
     return new GenericFuncExprProcessor();
   }
@@ -253,7 +214,6 @@ public class ExprProcFactory {
     Map<Rule, NodeProcessor> exprRules = new LinkedHashMap<Rule, NodeProcessor>();
     exprRules.put(new RuleRegExp("R1", exprNodeColumnDesc.class.getName() + "%"), getColumnProcessor());
     exprRules.put(new RuleRegExp("R2", exprNodeFieldDesc.class.getName() + "%"), getFieldProcessor());
-    exprRules.put(new RuleRegExp("R3", exprNodeFuncDesc.class.getName() + "%"), getFuncProcessor());
     exprRules.put(new RuleRegExp("R5", exprNodeGenericFuncDesc.class.getName() + "%"), getGenericFuncProcessor());
   
     // The dispatcher fires the processor corresponding to the closest matching rule and passes the context along

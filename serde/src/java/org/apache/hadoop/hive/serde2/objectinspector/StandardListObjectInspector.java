@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
@@ -27,7 +28,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
  * Always use the ObjectInspectorFactory to create new ObjectInspector objects, instead
  * of directly creating an instance of this class. 
  */
-public class StandardListObjectInspector implements ListObjectInspector {
+public class StandardListObjectInspector implements SettableListObjectInspector {
 
   ObjectInspector listElementObjectInspector;
   
@@ -99,6 +100,36 @@ public class StandardListObjectInspector implements ListObjectInspector {
   public String getTypeName() {
     return org.apache.hadoop.hive.serde.Constants.LIST_TYPE_NAME 
         + "<" + listElementObjectInspector.getTypeName() + ">";
+  }
+
+  ///////////////////////////////
+  // SettableListObjectInspector
+  @Override
+  public Object create(int size) {
+    List<Object> a = new ArrayList<Object>(size);
+    for (int i=0; i<size; i++) {
+      a.add(null);
+    }
+    return a;
+  }
+
+  @Override
+  public Object resize(Object list, int newSize) {
+    List<Object> a = (List<Object>)list;
+    while (a.size() < newSize) {
+      a.add(null);
+    }
+    while (a.size() > newSize) {
+      a.remove(a.size()-1);
+    }
+    return a;
+  }
+
+  @Override
+  public Object set(Object list, int index, Object element) {
+    List<Object> a = (List<Object>)list;
+    a.set(index, element);
+    return a;
   }
 
 }

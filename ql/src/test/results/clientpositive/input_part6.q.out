@@ -16,11 +16,11 @@ STAGE PLANS:
             alias: x
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(ds) = UDFToDouble(((2008 - 4) - 8)))
+                  expr: (ds = ((2008 - 4) - 8))
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (UDFToDouble(ds) = UDFToDouble(((2008 - 4) - 8)))
+                    expr: (ds = ((2008 - 4) - 8))
                     type: boolean
                 Select Operator
                   expressions:
@@ -51,4 +51,4 @@ Input: default/srcpart/ds=2008-04-08/hr=11
 Input: default/srcpart/ds=2008-04-08/hr=12
 Input: default/srcpart/ds=2008-04-09/hr=11
 Input: default/srcpart/ds=2008-04-09/hr=12
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/758866598/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/821284483/10000

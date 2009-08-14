@@ -72,8 +72,7 @@ public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator {
     for (int i=0; i<children.length; i++) {
       childrenOIs[i] = children[i].initialize(rowInspector);
     }
-    genericUDF = (GenericUDF) ReflectionUtils.newInstance(
-        expr.getGenericUDFClass(), null);
+    genericUDF = expr.getGenericUDF();
     return genericUDF.initialize(childrenOIs);
   }
   

@@ -119,10 +119,13 @@ public class TestExpressionEvaluator extends TestCase {
   }
   
   private static exprNodeDesc getListIndexNode(exprNodeDesc node, exprNodeDesc index) {
+    ArrayList<exprNodeDesc> children = new ArrayList<exprNodeDesc>(2);
+    children.add(node);
+    children.add(index);
     return new exprNodeGenericFuncDesc(
           ((ListTypeInfo)node.getTypeInfo()).getListElementTypeInfo(),
-          FunctionRegistry.getGenericUDFClassForIndex(),
-          Arrays.asList(new exprNodeDesc[]{node, index}));
+          FunctionRegistry.getGenericUDFForIndex(),
+          children);
   }
   
   public void testExprNodeFuncEvaluator() throws Throwable {

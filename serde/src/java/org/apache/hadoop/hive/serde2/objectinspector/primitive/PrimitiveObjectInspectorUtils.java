@@ -124,10 +124,8 @@ public class PrimitiveObjectInspectorUtils {
   public static final PrimitiveTypeEntry byteTypeEntry = new PrimitiveTypeEntry(PrimitiveCategory.BYTE, Constants.TINYINT_TYPE_NAME, Byte.TYPE, Byte.class, ByteWritable.class);
   public static final PrimitiveTypeEntry shortTypeEntry = new PrimitiveTypeEntry(PrimitiveCategory.SHORT, Constants.SMALLINT_TYPE_NAME, Short.TYPE, Short.class, ShortWritable.class);
 
-  // Following 3 are complex types for special handling
+  // The following is a complex type for special handling
   public static final PrimitiveTypeEntry unknownTypeEntry = new PrimitiveTypeEntry(PrimitiveCategory.UNKNOWN, "unknown", null, Object.class, null);
-  public static final PrimitiveTypeEntry unknownMapTypeEntry = new PrimitiveTypeEntry(PrimitiveCategory.UNKNOWN, Constants.MAP_TYPE_NAME, null, Map.class, null);
-  public static final PrimitiveTypeEntry unknownListTypeEntry = new PrimitiveTypeEntry(PrimitiveCategory.UNKNOWN, Constants.LIST_TYPE_NAME, null, List.class, null);
   
   static {
     registerType(stringTypeEntry);
@@ -140,8 +138,6 @@ public class PrimitiveObjectInspectorUtils {
     registerType(byteTypeEntry);
     registerType(shortTypeEntry);
     registerType(unknownTypeEntry);
-    registerType(unknownMapTypeEntry);
-    registerType(unknownListTypeEntry);
   }
 
   /**
@@ -604,4 +600,62 @@ public class PrimitiveObjectInspectorUtils {
   }
 
 
+  /**
+   * Get the String value out of a primitive object. 
+   * Note that NullPointerException will be thrown if o is null.
+   * Note that NumberFormatException will be thrown if o is not a valid number.
+   */
+  public static String getString(Object o, PrimitiveObjectInspector oi) throws NumberFormatException {
+    
+    if (o == null) {
+      return null;
+    }
+    
+    String result = null;
+    switch (oi.getPrimitiveCategory()) {
+      case VOID: {
+        result = null;
+        break;
+      }
+      case BOOLEAN: {
+        result = String.valueOf((((BooleanObjectInspector)oi).get(o)));
+        break;
+      }
+      case BYTE: {
+        result = String.valueOf((((ByteObjectInspector)oi).get(o)));
+        break;
+      }
+      case SHORT: {
+        result = String.valueOf((((ShortObjectInspector)oi).get(o)));
+        break;
+      }
+      case INT: {
+        result = String.valueOf((((IntObjectInspector)oi).get(o)));
+        break;
+      }
+      case LONG: {
+        result = String.valueOf((((LongObjectInspector)oi).get(o)));
+        break;
+      }
+      case FLOAT: {
+        result = String.valueOf((((FloatObjectInspector)oi).get(o)));
+        break;
+      }
+      case DOUBLE: {
+        result = String.valueOf((((DoubleObjectInspector)oi).get(o)));
+        break;
+      }
+      case STRING: {
+        StringObjectInspector soi = (StringObjectInspector)oi;
+        result = soi.getPrimitiveJavaObject(o);
+        break;
+      }
+      default: {
+        throw new RuntimeException("Hive 2 Internal error: unknown type: "
+            + oi.getTypeName());
+      }
+    }
+    return result;
+  }    
+  
 }

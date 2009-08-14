@@ -19,11 +19,11 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: ((UDFToDouble(key) >= UDFToDouble(200)) and (UDFToDouble(key) < UDFToDouble(300)))
+                  expr: ((key >= 200) and (key < 300))
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: ((UDFToDouble(key) >= UDFToDouble(200)) and (UDFToDouble(key) < UDFToDouble(300)))
+                    expr: ((key >= 200) and (key < 300))
                     type: boolean
                 Select Operator
                   expressions:
@@ -54,10 +54,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/963537398/10000
+                destination: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/623709009/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/319542195/10002 
+              file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/2105860679/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -144,7 +144,7 @@ Input: default/src
 Output: default/dest1/table=2008-04-08
 query: SELECT `int`.`location`, `int`.`type`, `int`.`table` FROM dest1 `int` WHERE `int`.`table` = '2008-04-08'
 Input: default/dest1/table=2008-04-08
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1560089475/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/180511317/10000
 238	val_238	2008-04-08
 255	val_255	2008-04-08
 278	val_278	2008-04-08

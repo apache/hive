@@ -68,7 +68,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2007188536/10002 
+        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1249232145/10002 
           Union
             Reduce Output Operator
               key expressions:
@@ -84,7 +84,7 @@ STAGE PLANS:
                     type: string
                     expr: _col1
                     type: string
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2007188536/10003 
+        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1249232145/10003 
           Union
             Reduce Output Operator
               key expressions:
@@ -149,11 +149,11 @@ STAGE PLANS:
             alias: s4
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(key) < UDFToDouble(10))
+                  expr: (key < 10)
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (UDFToDouble(key) < UDFToDouble(10))
+                    expr: (key < 10)
                     type: boolean
                 Select Operator
                   expressions:
@@ -177,11 +177,11 @@ STAGE PLANS:
             alias: s2
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(key) < UDFToDouble(10))
+                  expr: (key < 10)
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (UDFToDouble(key) < UDFToDouble(10))
+                    expr: (key < 10)
                     type: boolean
                 Select Operator
                   expressions:
@@ -200,7 +200,7 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2007188536/10004 
+        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1249232145/10004 
           Union
             File Output Operator
               compressed: false
@@ -208,7 +208,7 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2007188536/10006 
+        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1249232145/10006 
           Union
             File Output Operator
               compressed: false
@@ -270,7 +270,7 @@ JOIN
       select s4.key as key, s4.value as value from src s4 where s4.key < 10) unionsrc2
 ON (unionsrc1.key = unionsrc2.key)
 Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1517739489/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/406100119/10000
 0	val_0	0	val_0
 0	val_0	0	val_0
 0	val_0	0	val_0

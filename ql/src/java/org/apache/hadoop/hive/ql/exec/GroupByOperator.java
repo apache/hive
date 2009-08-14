@@ -193,7 +193,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     aggregationEvaluators = new GenericUDAFEvaluator[conf.getAggregators().size()];
     for (int i = 0; i < aggregationEvaluators.length; i++) {
       aggregationDesc agg = conf.getAggregators().get(i);
-      aggregationEvaluators[i] = agg.createGenericUDAFEvaluator();
+      aggregationEvaluators[i] = agg.getGenericUDAFEvaluator();
     }
 
     // init objectInspectors

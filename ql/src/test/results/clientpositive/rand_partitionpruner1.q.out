@@ -17,7 +17,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: (rand(UDFToLong(1)) < 0.1)
+                  expr: (rand(1) < 0.1)
                   type: boolean
               Select Operator
                 expressions:
@@ -29,7 +29,7 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
-                  directory: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/972674441/10001
+                  directory: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/815811879/10001
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -39,9 +39,9 @@ STAGE PLANS:
                         columns.types string:string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/src 
+        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/test/data/warehouse/src [src]
       Path -> Partition:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/src 
+        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/test/data/warehouse/src 
           Partition
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -56,7 +56,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/src
+                location file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/test/data/warehouse/src
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
 
@@ -67,7 +67,7 @@ STAGE PLANS:
 
 query: select * from src where rand(1) < 0.1
 Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1925118619/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/625764443/10000
 409	val_409
 429	val_429
 209	val_209

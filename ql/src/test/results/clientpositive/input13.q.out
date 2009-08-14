@@ -30,7 +30,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(key) < UDFToDouble(100))
+                  expr: (key < 100)
                   type: boolean
               Select Operator
                 expressions:
@@ -56,7 +56,7 @@ STAGE PLANS:
                         name: dest1
             Filter Operator
               predicate:
-                  expr: ((UDFToDouble(key) >= UDFToDouble(100)) and (UDFToDouble(key) < UDFToDouble(200)))
+                  expr: ((key >= 100) and (key < 200))
                   type: boolean
               Select Operator
                 expressions:
@@ -82,7 +82,7 @@ STAGE PLANS:
                         name: dest2
             Filter Operator
               predicate:
-                  expr: ((UDFToDouble(key) >= UDFToDouble(200)) and (UDFToDouble(key) < UDFToDouble(300)))
+                  expr: ((key >= 200) and (key < 300))
                   type: boolean
               Select Operator
                 expressions:
@@ -104,7 +104,7 @@ STAGE PLANS:
                         name: dest3
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(key) >= UDFToDouble(300))
+                  expr: (key >= 300)
                   type: boolean
               Select Operator
                 expressions:
@@ -124,10 +124,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/670802827/10000
+                destination: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/2000665418/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1557476151/10007 
+              file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1057074180/10007 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -166,10 +166,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/670802827/10002
+                destination: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/2000665418/10002
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1557476151/10008 
+              file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1057074180/10008 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -208,10 +208,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/670802827/10004
+                destination: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/2000665418/10004
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1557476151/10009 
+              file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1057074180/10009 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -251,10 +251,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/670802827/10006
+                destination: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/2000665418/10006
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1557476151/10010 
+              file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1057074180/10010 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -292,7 +292,7 @@ Output: default/dest3/ds=2008-04-08/hr=12
 Output: ../build/ql/test/data/warehouse/dest4.out
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/881401051/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/920411544/10000
 86	val_86
 27	val_27
 98	val_98
@@ -379,7 +379,7 @@ Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/881401051/1
 97	val_97
 query: SELECT dest2.* FROM dest2
 Input: default/dest2
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2139886551/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/108447596/10000
 165	val_165
 193	val_193
 150	val_150
@@ -487,7 +487,7 @@ Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2139886551/
 169	val_169
 query: SELECT dest3.* FROM dest3
 Input: default/dest3/ds=2008-04-08/hr=12
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1615208828/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/245976793/10000
 238	2008-04-08	12
 255	2008-04-08	12
 278	2008-04-08	12

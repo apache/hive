@@ -252,7 +252,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
       if(!abort) {
         // signal new failure to map-reduce
         l4j.error("Hit error while closing operators - failing tree");
-        throw new RuntimeException ("Error while closing operators: " + e.getMessage());
+        throw new RuntimeException ("Error while closing operators: " + e.getMessage(), e);
       }
     }
   }

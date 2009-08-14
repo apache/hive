@@ -51,7 +51,8 @@ implements SettableBooleanObjectInspector{
   }
 
   @Override
-  public void set(Object o, boolean value) {
+  public Object set(Object o, boolean value) {
     ((BooleanWritable)o).set(value);
+    return o;
   }
 }

@@ -32,7 +32,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.hadoop.hive.ql.exec.FunctionInfo.OperatorType;
 
 public class FunctionTask extends Task<FunctionWork> {
   private static final long serialVersionUID = 1L;
@@ -64,8 +63,7 @@ public class FunctionTask extends Task<FunctionWork> {
       Class<?> udfClass = getUdfClass(createFunctionDesc);
       if(UDF.class.isAssignableFrom(udfClass)) {
         FunctionRegistry.registerTemporaryUDF(createFunctionDesc.getFunctionName(), 
-                                     (Class<? extends UDF>) udfClass,
-                                     OperatorType.PREFIX, false);
+                                     (Class<? extends UDF>) udfClass, false);
         return 0;
       } else if(GenericUDF.class.isAssignableFrom(udfClass)) {
         FunctionRegistry.registerTemporaryGenericUDF(createFunctionDesc.getFunctionName(), 

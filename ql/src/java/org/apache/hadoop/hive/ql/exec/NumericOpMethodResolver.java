@@ -80,7 +80,12 @@ public class NumericOpMethodResolver implements UDFMethodResolver {
     for(Method m: Arrays.asList(udfClass.getMethods())) {
       if (m.getName().equals("evaluate")) {
 
-        List<TypeInfo> argumentTypeInfos = TypeInfoUtils.getParameterTypeInfos(m);
+        List<TypeInfo> argumentTypeInfos = TypeInfoUtils.getParameterTypeInfos(m,
+            pTypeInfos.size());
+        if (argumentTypeInfos == null) {
+          // null means the method does not accept number of arguments passed.
+          continue;
+        }
 
         boolean match = (argumentTypeInfos.size() == pTypeInfos.size());
 

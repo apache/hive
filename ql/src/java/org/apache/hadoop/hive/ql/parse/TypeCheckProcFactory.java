@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,10 +26,10 @@ import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.AmbiguousMethodException;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
@@ -41,7 +40,6 @@ import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeFieldDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeNullDesc;
 import org.apache.hadoop.hive.serde.Constants;
@@ -55,8 +53,6 @@ import org.apache.hadoop.hive.ql.udf.UDFOPPositive;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.util.ReflectionUtils;
 
 /**
  * The Factory for creating typecheck processors. The typecheck processors are used to
@@ -419,8 +415,9 @@ public class TypeCheckProcFactory {
      * @throws UDFArgumentException 
      */
     public static exprNodeDesc getFuncExprNodeDesc(String name, exprNodeDesc... children) {
+      ArrayList<exprNodeDesc> c = new ArrayList<exprNodeDesc>(Arrays.asList(children));
       try {
-        return getFuncExprNodeDesc(name, Arrays.asList(children));
+        return getFuncExprNodeDesc(name, c);
       } catch (UDFArgumentException e) {
         throw new RuntimeException("Hive 2 internal error", e);
       }
@@ -429,48 +426,22 @@ public class TypeCheckProcFactory {
     /**
      * This function create an ExprNodeDesc for a UDF function given the children (arguments).
      * It will insert implicit type conversion functions if necessary. 
-     * @throws SemanticException 
+     * @throws UDFArgumentException 
      */
     public static exprNodeDesc getFuncExprNodeDesc(String udfName, List<exprNodeDesc> children)
         throws UDFArgumentException {
 
       FunctionInfo fi = FunctionRegistry.getFunctionInfo(udfName);
-      if (fi == null) return null;
-      
-      // Is it a generic UDF?
-      Class<? extends GenericUDF> genericUDFClass = fi.getGenericUDFClass();
-      if (genericUDFClass != null) {
-        return exprNodeGenericFuncDesc.newInstance(genericUDFClass, children);
+      if (fi == null) {
+        throw new UDFArgumentException("udf:" + udfName + " not found.");
       }
       
-      // TODO: extract as a function
-      // Find the corresponding method
-      ArrayList<TypeInfo> argumentTypeInfos = new ArrayList<TypeInfo>(children.size());
-      for(int i=0; i<children.size(); i++) {
-        exprNodeDesc child = children.get(i);
-        argumentTypeInfos.add(child.getTypeInfo());
+      GenericUDF genericUDF = fi.getGenericUDF();
+      if (genericUDF == null) {
+        throw new UDFArgumentException("udf:" + udfName + " is an aggregation function.");
       }
-      
-      Method udfMethod = FunctionRegistry.getUDFMethod(udfName, argumentTypeInfos);
-      if (udfMethod == null) return null;
 
-      // Convert the parameters if the type of parameters do not exactly match.
-      ArrayList<exprNodeDesc> ch = SemanticAnalyzer.convertParameters(udfMethod, children);
-
-      // The return type of a function can be of either Java Primitive Type/Class or Writable Class.
-      TypeInfo resultTypeInfo = null;
-      if (PrimitiveObjectInspectorUtils.isPrimitiveWritableClass(udfMethod.getReturnType())) {
-        resultTypeInfo = TypeInfoFactory.getPrimitiveTypeInfoFromPrimitiveWritable(udfMethod.getReturnType()); 
-      } else {
-        resultTypeInfo = TypeInfoFactory.getPrimitiveTypeInfoFromJavaPrimitive(udfMethod.getReturnType());
-      }
-      
-      exprNodeFuncDesc desc = new exprNodeFuncDesc(
-        udfName,
-        resultTypeInfo,
-        FunctionRegistry.getUDFClass(udfName),
-        udfMethod, ch);
-      return desc;
+      return exprNodeGenericFuncDesc.newInstance(genericUDF, children);
     }
 
     static exprNodeDesc getXpathOrFuncExprNodeDesc(ASTNode expr, boolean isFunction,
@@ -529,7 +500,7 @@ public class TypeCheckProcFactory {
           // Calculate TypeInfo
           TypeInfo t = ((ListTypeInfo)myt).getListElementTypeInfo();
           desc = new exprNodeGenericFuncDesc(t, 
-              FunctionRegistry.getGenericUDFClassForIndex(),
+              FunctionRegistry.getGenericUDFForIndex(),
               children);
         }
         else if (myt.getCategory() == Category.MAP) {
@@ -544,7 +515,7 @@ public class TypeCheckProcFactory {
           // Calculate TypeInfo
           TypeInfo t = ((MapTypeInfo)myt).getMapValueTypeInfo();
           desc = new exprNodeGenericFuncDesc(t, 
-              FunctionRegistry.getGenericUDFClassForIndex(),
+              FunctionRegistry.getGenericUDFForIndex(),
               children);
         }
         else {
@@ -562,8 +533,9 @@ public class TypeCheckProcFactory {
             throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg((ASTNode)expr));
         }
         
-        desc = getFuncExprNodeDesc(funcText, children);
-        if (desc == null) {
+        try {
+          desc = getFuncExprNodeDesc(funcText, children);
+        } catch (AmbiguousMethodException e) {
           ArrayList<Class<?>> argumentClasses = new ArrayList<Class<?>>(children.size());
           for(int i=0; i<children.size(); i++) {
             argumentClasses.add(((PrimitiveTypeInfo)children.get(i).getTypeInfo()).getPrimitiveWritableClass());
@@ -571,22 +543,19 @@ public class TypeCheckProcFactory {
     
           if (isFunction) {
             String reason = "Looking for UDF \"" + expr.getChild(0).getText() + "\" with parameters " + argumentClasses;
-            throw new SemanticException(ErrorMsg.INVALID_FUNCTION_SIGNATURE.getMsg((ASTNode)expr.getChild(0), reason));
+            throw new SemanticException(ErrorMsg.INVALID_FUNCTION_SIGNATURE.getMsg((ASTNode)expr.getChild(0), reason), e);
           } else {
             String reason = "Looking for Operator \"" + expr.getText() + "\" with parameters " + argumentClasses;
-            throw new SemanticException(ErrorMsg.INVALID_OPERATOR_SIGNATURE.getMsg(expr, reason));
+            throw new SemanticException(ErrorMsg.INVALID_OPERATOR_SIGNATURE.getMsg(expr, reason), e);
           }
         }
       }
       // UDFOPPositive is a no-op.
       // However, we still create it, and then remove it here, to make sure we only allow
       // "+" for numeric types.
-      if (desc instanceof exprNodeFuncDesc) {
-        exprNodeFuncDesc funcDesc = (exprNodeFuncDesc)desc;
-        if (funcDesc.getUDFClass().equals(UDFOPPositive.class)) {
-          assert(funcDesc.getChildren().size() == 1);
-          desc = funcDesc.getChildExprs().get(0);
-        }
+      if (FunctionRegistry.isOpPositive(desc)) {
+        assert(desc.getChildren().size() == 1);
+        desc = desc.getChildren().get(0);
       }
       assert(desc != null);
       return desc;

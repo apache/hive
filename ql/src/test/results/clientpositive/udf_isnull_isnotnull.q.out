@@ -54,7 +54,7 @@ query: SELECT NULL IS NULL,
 FROM src
 WHERE true IS NOT NULL LIMIT 1
 Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2088182739/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/2138330121/10000
 true	true	true
 query: EXPLAIN
 FROM src_thrift
@@ -79,11 +79,11 @@ STAGE PLANS:
             alias: src_thrift
             Filter Operator
               predicate:
-                  expr: (lint is not null and not mstringstring is null)
+                  expr: (lint is not null and (not mstringstring is null))
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (lint is not null and not mstringstring is null)
+                    expr: (lint is not null and (not mstringstring is null))
                     type: boolean
                 Select Operator
                   expressions:
@@ -114,5 +114,5 @@ SELECT src_thrift.lint IS NOT NULL,
 WHERE  src_thrift.lint IS NOT NULL 
        AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
 Input: default/src_thrift
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1783450420/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/262628946/10000
 true	true	true

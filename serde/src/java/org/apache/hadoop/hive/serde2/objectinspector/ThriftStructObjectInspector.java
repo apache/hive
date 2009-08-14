@@ -30,17 +30,4 @@ class ThriftStructObjectInspector extends
     return "__isset".equals(name);
   }
   
-  public boolean equals(Object b) {
-    if (this == b) return true;
-    if (!b.getClass().equals(this.getClass())) {
-      return false;
-    }
-    ThriftStructObjectInspector bInspector = (ThriftStructObjectInspector)b;
-    return objectClass.equals(bInspector.objectClass);
-  }
-
-  public int hashCode() {
-    return 7 * objectClass.hashCode(); 
-  }
-    
 }

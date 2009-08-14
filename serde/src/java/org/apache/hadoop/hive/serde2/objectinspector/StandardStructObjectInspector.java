@@ -35,7 +35,7 @@ import org.apache.commons.logging.LogFactory;
  * Always use the ObjectInspectorFactory to create new ObjectInspector objects, instead
  * of directly creating an instance of this class. 
  */
-public class StandardStructObjectInspector extends StructObjectInspector {
+public class StandardStructObjectInspector extends SettableStructObjectInspector {
 
   public static final Log LOG = LogFactory.getLog(StandardStructObjectInspector.class.getName());
   
@@ -159,5 +159,23 @@ public class StandardStructObjectInspector extends StructObjectInspector {
     return list;
   }
 
+  ///////////////////////////////
+  // SettableStructObjectInspector
+  @Override
+  public Object create() {
+    ArrayList<Object> a = new ArrayList<Object>(fields.size());
+    for (int i=0; i<fields.size(); i++) {
+      a.add(null);
+    }
+    return a;
+  }
+
+  @Override
+  public Object setStructFieldData(Object struct, StructField field, Object fieldValue) {
+    ArrayList<Object> a = (ArrayList<Object>)struct;
+    MyField myField = (MyField)field;
+    a.set(myField.fieldID, fieldValue);
+    return a;
+  }
   
 }

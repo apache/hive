@@ -52,7 +52,8 @@ implements SettableIntObjectInspector{
   }
 
   @Override
-  public void set(Object o, int value) {
+  public Object set(Object o, int value) {
     ((IntWritable)o).set(value);
+    return o;
   }
 }

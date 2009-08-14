@@ -35,11 +35,11 @@ STAGE PLANS:
             alias: src3
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(key) < UDFToDouble(20))
+                  expr: (key < 20)
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (UDFToDouble(key) < UDFToDouble(20))
+                    expr: (key < 20)
                     type: boolean
                 Reduce Output Operator
                   key expressions:
@@ -60,11 +60,11 @@ STAGE PLANS:
             alias: src1
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(key) < UDFToDouble(10))
+                  expr: (key < 10)
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (UDFToDouble(key) < UDFToDouble(10))
+                    expr: (key < 10)
                     type: boolean
                 Reduce Output Operator
                   key expressions:
@@ -115,7 +115,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1527809790/10002 
+        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1472766970/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -162,7 +162,7 @@ STAGE PLANS:
 query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/857127004/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1159765605/10000
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	11	val_11
 NULL	NULL	NULL	NULL	12	val_12
@@ -251,11 +251,11 @@ STAGE PLANS:
             alias: src2
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(key) < UDFToDouble(15))
+                  expr: (key < 15)
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (UDFToDouble(key) < UDFToDouble(15))
+                    expr: (key < 15)
                     type: boolean
                 Reduce Output Operator
                   key expressions:
@@ -276,11 +276,11 @@ STAGE PLANS:
             alias: src3
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(key) < UDFToDouble(20))
+                  expr: (key < 20)
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (UDFToDouble(key) < UDFToDouble(20))
+                    expr: (key < 20)
                     type: boolean
                 Reduce Output Operator
                   key expressions:
@@ -301,11 +301,11 @@ STAGE PLANS:
             alias: src1
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(key) < UDFToDouble(10))
+                  expr: (key < 10)
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (UDFToDouble(key) < UDFToDouble(10))
+                    expr: (key < 10)
                     type: boolean
                 Reduce Output Operator
                   key expressions:
@@ -356,7 +356,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1169417951/10002 
+        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/811840338/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -403,7 +403,7 @@ STAGE PLANS:
 query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key < 15) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1104890514/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1615347380/10000
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	11	val_11
 NULL	NULL	NULL	NULL	12	val_12

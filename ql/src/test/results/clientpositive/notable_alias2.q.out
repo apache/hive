@@ -18,11 +18,11 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(key) < UDFToDouble(100))
+                  expr: (key < 100)
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (UDFToDouble(key) < UDFToDouble(100))
+                    expr: (key < 100)
                     type: boolean
                 Select Operator
                   expressions:
@@ -102,7 +102,7 @@ Input: default/src
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1898241418/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1541116592/10000
 1234	0	3.0
 1234	10	1.0
 1234	11	1.0

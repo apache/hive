@@ -15,11 +15,11 @@ STAGE PLANS:
             alias: a
             Filter Operator
               predicate:
-                  expr: ((UDFToDouble(key) > UDFToDouble(10)) and (UDFToDouble(key) > UDFToDouble(20)))
+                  expr: ((key > 10) and (key > 20))
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (UDFToDouble(key) > UDFToDouble(10))
+                    expr: (key > 10)
                     type: boolean
                 Select Operator
                   expressions:
@@ -30,7 +30,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1
                   Filter Operator
                     predicate:
-                        expr: (UDFToDouble(_col0) > UDFToDouble(20))
+                        expr: (_col0 > 20)
                         type: boolean
                     Reduce Output Operator
                       key expressions:
@@ -53,7 +53,7 @@ STAGE PLANS:
             alias: tab
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(value) < UDFToDouble(200))
+                  expr: (value < 200)
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -81,7 +81,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col3
           Filter Operator
             predicate:
-                expr: (UDFToDouble(_col3) < UDFToDouble(200))
+                expr: (_col3 < 200)
                 type: boolean
             Select Operator
               expressions:

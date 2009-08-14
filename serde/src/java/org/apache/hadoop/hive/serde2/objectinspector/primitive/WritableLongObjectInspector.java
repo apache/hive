@@ -52,8 +52,9 @@ implements SettableLongObjectInspector{
   }
 
   @Override
-  public void set(Object o, long value) {
+  public Object set(Object o, long value) {
     ((LongWritable)o).set(value);
+    return o;
   }
   
 }

@@ -25,8 +25,8 @@ STAGE PLANS:
                 0 {key}
                 1 
               keys:
-                0 
-                1 
+                0 [Column[key]]
+                1 [Column[key]]
               outputColumnNames: _col0
               Position of Big Table: 1
               File Output Operator
@@ -52,8 +52,8 @@ STAGE PLANS:
                     0 {key}
                     1 
                   keys:
-                    0 
-                    1 
+                    0 [Column[key]]
+                    1 [Column[key]]
                   outputColumnNames: _col0
                   Position of Big Table: 1
                   File Output Operator
@@ -66,7 +66,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2032153196/10002 
+        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/1485698152/10002 
           Select Operator
             expressions:
                   expr: _col0
@@ -147,7 +147,7 @@ Input: default/src1
 Output: default/dest_j1
 query: select * from dest_j1 x order by x.key
 Input: default/dest_j1
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/62701175/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/1791269044/10000
 66	1
 98	2
 128	3

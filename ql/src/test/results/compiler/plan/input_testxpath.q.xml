@@ -68,7 +68,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/src_thrift</string> 
+            <string>file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/src_thrift</string> 
            </void> 
           </object> 
          </void> 
@@ -96,7 +96,7 @@
                 <void property="conf"> 
                  <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                   <void property="dirName"> 
-                   <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2102365199/10001</string> 
+                   <string>file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_3/build/ql/tmp/1016002731/10001</string> 
                   </void> 
                   <void property="tableInfo"> 
                    <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -225,8 +225,8 @@
                   </void> 
                  </object> 
                 </void> 
-                <void property="genericUDFClass"> 
-                 <class>org.apache.hadoop.hive.ql.udf.generic.GenericUDFIndex</class> 
+                <void property="genericUDF"> 
+                 <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFIndex"/> 
                 </void> 
                 <void property="typeInfo"> 
                  <object idref="PrimitiveTypeInfo1"/> 
@@ -269,8 +269,8 @@
                     </void> 
                    </object> 
                   </void> 
-                  <void property="genericUDFClass"> 
-                   <class>org.apache.hadoop.hive.ql.udf.generic.GenericUDFIndex</class> 
+                  <void property="genericUDF"> 
+                   <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFIndex"/> 
                   </void> 
                   <void property="typeInfo"> 
                    <object idref="StructTypeInfo0"/> 
@@ -322,8 +322,8 @@
                   </void> 
                  </object> 
                 </void> 
-                <void property="genericUDFClass"> 
-                 <class>org.apache.hadoop.hive.ql.udf.generic.GenericUDFIndex</class> 
+                <void property="genericUDF"> 
+                 <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFIndex"/> 
                 </void> 
                 <void property="typeInfo"> 
                  <object idref="PrimitiveTypeInfo0"/> 
@@ -510,7 +510,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/src_thrift</string> 
+       <string>file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/src_thrift</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src_thrift</string> 
@@ -522,7 +522,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/src_thrift</string> 
+       <string>file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/src_thrift</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap0"/> 

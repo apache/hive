@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.serde2.io.ByteWritable;
  * A JavaByteObjectInspector inspects a Java Byte Object.
  */
 public class JavaByteObjectInspector extends AbstractPrimitiveJavaObjectInspector 
-implements ByteObjectInspector{
+implements SettableByteObjectInspector{
 
   JavaByteObjectInspector() {
     super(PrimitiveObjectInspectorUtils.byteTypeEntry);
@@ -38,5 +38,15 @@ implements ByteObjectInspector{
   @Override
   public byte get(Object o) {
     return ((Byte)o).byteValue();
+  }
+
+  @Override
+  public Object create(byte value) {
+    return Byte.valueOf(value);
+  }
+
+  @Override
+  public Object set(Object o, byte value) {
+    return Byte.valueOf(value);
   }
 }

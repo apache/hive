@@ -17,11 +17,11 @@ STAGE PLANS:
             alias: x
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(key) > UDFToDouble(9999))
+                  expr: (key > 9999)
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (UDFToDouble(key) > UDFToDouble(9999))
+                    expr: (key > 9999)
                     type: boolean
                 Select Operator
                   expressions:
@@ -67,7 +67,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/81167502/10002 
+        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/618354627/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -110,7 +110,7 @@ STAGE PLANS:
 
 query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/45709324/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/918835817/10000
 query: explain
 select x.key, count(1) from src x where x.key > 9999 group by x.key
 ABSTRACT SYNTAX TREE:
@@ -129,11 +129,11 @@ STAGE PLANS:
             alias: x
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(key) > UDFToDouble(9999))
+                  expr: (key > 9999)
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (UDFToDouble(key) > UDFToDouble(9999))
+                    expr: (key > 9999)
                     type: boolean
                 Select Operator
                   expressions:
@@ -190,7 +190,7 @@ STAGE PLANS:
 
 query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/996927786/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1345933200/10000
 query: explain
 select x.key, count(1) from src x where x.key > 9999 group by x.key
 ABSTRACT SYNTAX TREE:
@@ -210,11 +210,11 @@ STAGE PLANS:
             alias: x
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(key) > UDFToDouble(9999))
+                  expr: (key > 9999)
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (UDFToDouble(key) > UDFToDouble(9999))
+                    expr: (key > 9999)
                     type: boolean
                 Select Operator
                   expressions:
@@ -252,7 +252,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/912483231/10002 
+        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/719339517/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -295,7 +295,7 @@ STAGE PLANS:
 
 query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/75894632/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1575416627/10000
 query: explain
 select x.key, count(1) from src x where x.key > 9999 group by x.key
 ABSTRACT SYNTAX TREE:
@@ -314,11 +314,11 @@ STAGE PLANS:
             alias: x
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(key) > UDFToDouble(9999))
+                  expr: (key > 9999)
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (UDFToDouble(key) > UDFToDouble(9999))
+                    expr: (key > 9999)
                     type: boolean
                 Select Operator
                   expressions:
@@ -367,4 +367,4 @@ STAGE PLANS:
 
 query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1160900647/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1789480791/10000

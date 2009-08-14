@@ -63,7 +63,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Filter Operator
             predicate:
-                expr: (UDFToDouble(_col0) < UDFToDouble(100))
+                expr: (_col0 < 100)
                 type: boolean
             Select Operator
               expressions:
@@ -89,7 +89,7 @@ STAGE PLANS:
                       name: mi1
           Filter Operator
             predicate:
-                expr: ((UDFToDouble(_col0) >= UDFToDouble(100)) and (UDFToDouble(_col0) < UDFToDouble(200)))
+                expr: ((_col0 >= 100) and (_col0 < 200))
                 type: boolean
             Select Operator
               expressions:
@@ -115,7 +115,7 @@ STAGE PLANS:
                       name: mi2
           Filter Operator
             predicate:
-                expr: ((UDFToDouble(_col0) >= UDFToDouble(200)) and (UDFToDouble(_col0) < UDFToDouble(300)))
+                expr: ((_col0 >= 200) and (_col0 < 300))
                 type: boolean
             Select Operator
               expressions:
@@ -137,7 +137,7 @@ STAGE PLANS:
                       name: mi3
           Filter Operator
             predicate:
-                expr: (UDFToDouble(_col0) >= UDFToDouble(300))
+                expr: (_col0 >= 300)
                 type: boolean
             Select Operator
               expressions:
@@ -203,7 +203,7 @@ Output: default/mi3/ds=2008-04-08/hr=12
 Output: ../build/ql/test/data/warehouse/mi4.out
 query: SELECT mi1.* FROM mi1
 Input: default/mi1
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1662084677/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/1064629756/10000
 0	val_0
 0	val_0
 0	val_0
@@ -354,7 +354,7 @@ Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1662084677/
 98	val_98
 query: SELECT mi2.* FROM mi2
 Input: default/mi2
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1663619015/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/1947386768/10000
 100	val_100
 100	val_100
 100	val_100
@@ -568,7 +568,7 @@ Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1663619015/
 199	val_199
 query: SELECT mi3.* FROM mi3
 Input: default/mi3/ds=2008-04-08/hr=12
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/660410600/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/1250417806/10000
 200	2008-04-08	12
 200	2008-04-08	12
 200	2008-04-08	12

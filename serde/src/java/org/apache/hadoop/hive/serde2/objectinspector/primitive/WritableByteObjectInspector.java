@@ -52,7 +52,8 @@ implements SettableByteObjectInspector{
   }
 
   @Override
-  public void set(Object o, byte value) {
+  public Object set(Object o, byte value) {
     ((ByteWritable)o).set(value);
+    return o;
   }
 }

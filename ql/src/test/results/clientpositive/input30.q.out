@@ -21,7 +21,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (((hash(rand(UDFToLong(460476415))) & 2147483647) % 32) = 0)
+                  expr: (((hash(rand(460476415)) & 2147483647) % 32) = 0)
                   type: boolean
               Select Operator
                 Group By Operator
@@ -77,7 +77,7 @@ Input: default/src
 Output: default/tst_dest30
 query: select * from tst_dest30
 Input: default/tst_dest30
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1316741609/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/606603037/10000
 18
 query: drop table tst_dest30
 query: drop table dest30

@@ -16,7 +16,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(key) < UDFToDouble(100))
+                  expr: (key < 100)
                   type: boolean
               Select Operator
                 expressions:
@@ -27,7 +27,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Filter Operator
                   predicate:
-                      expr: (UDFToDouble(_col1) < UDFToDouble(100))
+                      expr: (_col1 < 100)
                       type: boolean
                   Select Operator
                     expressions:
@@ -48,7 +48,7 @@ STAGE PLANS:
 
 query: SELECT c1 FROM (select value as c1, key as c2 from src) x where c2 < 100
 Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1984163495/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1738791810/10000
 val_86
 val_27
 val_98

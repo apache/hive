@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
  * A JavaDoubleObjectInspector inspects a Java Double Object.
  */
 public class JavaDoubleObjectInspector extends AbstractPrimitiveJavaObjectInspector 
-implements DoubleObjectInspector{
+implements SettableDoubleObjectInspector{
 
   JavaDoubleObjectInspector() {
     super(PrimitiveObjectInspectorUtils.doubleTypeEntry);
@@ -38,5 +38,15 @@ implements DoubleObjectInspector{
   @Override
   public double get(Object o) {
     return ((Double)o).doubleValue();
+  }
+
+  @Override
+  public Object create(double value) {
+    return Double.valueOf(value);
+  }
+
+  @Override
+  public Object set(Object o, double value) {
+    return Double.valueOf(value);
   }
 }

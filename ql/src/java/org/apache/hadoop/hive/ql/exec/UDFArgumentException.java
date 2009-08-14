@@ -32,4 +32,9 @@ public class UDFArgumentException extends SemanticException {
   public UDFArgumentException(String message) {
     super(message);
   }
+  
+  public UDFArgumentException(Throwable cause) {
+    super(cause);
+  }
+  
 }

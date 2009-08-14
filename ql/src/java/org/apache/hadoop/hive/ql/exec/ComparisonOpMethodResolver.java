@@ -79,8 +79,12 @@ public class ComparisonOpMethodResolver implements UDFMethodResolver {
     for(Method m: Arrays.asList(udfClass.getMethods())) {
       if (m.getName().equals("evaluate")) {
 
-        List<TypeInfo> acceptedTypeInfos = TypeInfoUtils.getParameterTypeInfos(m);
-
+        List<TypeInfo> acceptedTypeInfos = TypeInfoUtils.getParameterTypeInfos(m, pTypeInfos.size());
+        if (acceptedTypeInfos == null) {
+          // null means the method does not accept number of arguments passed.
+          continue;
+        }
+        
         boolean match = (acceptedTypeInfos.size() == pTypeInfos.size());
 
         for(int i=0; i<pTypeInfos.size() && match; i++) {

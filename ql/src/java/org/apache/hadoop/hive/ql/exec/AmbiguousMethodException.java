@@ -20,15 +20,13 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.util.List;
 
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
  * Exception thrown by the UDF and UDAF method resolvers in case a unique method is not found.
  *
  */
-public class AmbiguousMethodException extends SemanticException {
+public class AmbiguousMethodException extends UDFArgumentException {
 
   /**
    * 
@@ -52,6 +50,7 @@ public class AmbiguousMethodException extends SemanticException {
    * @param argTypeInfos The list of argument types that lead to an ambiguity.
    */
   public AmbiguousMethodException(Class<?> funcClass, List<TypeInfo> argTypeInfos) {
+    super("Ambiguous method for " + funcClass + " with " + argTypeInfos);
     this.funcClass = funcClass;
     this.argTypeInfos = argTypeInfos;
   }

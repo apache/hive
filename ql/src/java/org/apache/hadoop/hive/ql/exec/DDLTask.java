@@ -64,6 +64,8 @@ import org.apache.hadoop.hive.ql.plan.dropTableDesc;
 import org.apache.hadoop.hive.ql.plan.showFunctionsDesc;
 import org.apache.hadoop.hive.ql.plan.showPartitionsDesc;
 import org.apache.hadoop.hive.ql.plan.showTablesDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
@@ -437,12 +439,21 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       // get the function documentation
       description desc = null;
       FunctionInfo fi = FunctionRegistry.getFunctionInfo(name);
-      if(fi.getUDFClass() != null) {
-        desc = fi.getUDFClass().getAnnotation(description.class);
-      } else if(fi.getGenericUDFClass() != null) {
-        desc = fi.getGenericUDFClass().getAnnotation(description.class);
+      
+      Class<?> funcClass = null;
+      GenericUDF udf = fi.getGenericUDF();
+      if (udf != null) {
+        // If it's a GenericUDFBridge, then let's use the  
+        if (udf instanceof GenericUDFBridge) {
+          funcClass = ((GenericUDFBridge)udf).getUdfClass();
+        } else {
+          funcClass = udf.getClass();
+        }
       }
       
+      if (funcClass != null) {
+        desc = funcClass.getAnnotation(description.class);
+      }
       if (desc != null) {
         outStream.writeBytes(desc.value().replace("_FUNC_", name));
         if(descFunc.isExtended() && desc.extended().length()>0) {

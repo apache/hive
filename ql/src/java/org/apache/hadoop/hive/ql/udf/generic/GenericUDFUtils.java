@@ -18,7 +18,10 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import java.lang.reflect.Array;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -29,14 +32,13 @@ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.IdentityConverter;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.Text;
@@ -172,57 +174,153 @@ public class GenericUDFUtils {
   }
   
   /**
-   * Convert primitive parameters between Java and Writable when needed. 
+   * Convert parameters for the method if needed. 
    */
-  public static class PrimitiveConversionHelper {
+  public static class ConversionHelper {
 
     private Method m;
-    private ObjectInspector[] parameters;
+    private ObjectInspector[] givenParameterOIs;
+    Type[] methodParameterTypes;
+    private boolean isVariableLengthArgument; 
+    Type lastParaElementType;
     
-    Converter[] converters; 
+    boolean conversionNeeded;
+    Converter[] converters;
     Object[] convertedParameters;
+    Object[] convertedParametersInArray;
+    
+
+    private static Class<?> getClassFromType(Type t) {
+      if (t instanceof Class<?>) {
+        return (Class<?>)t;
+      } else if (t instanceof ParameterizedType) {
+        ParameterizedType pt = (ParameterizedType)t;
+        return (Class<?>)pt.getRawType();
+      }
+      return null;
+    }
     
     /**
      * Create a PrimitiveConversionHelper for Method m.  The ObjectInspector's
      * input parameters are specified in parameters.
      */
-    public PrimitiveConversionHelper(Method m, ObjectInspector[] parameters) {
+    public ConversionHelper(Method m, ObjectInspector[] parameterOIs) {
       this.m = m;
-      this.parameters = parameters;
+      this.givenParameterOIs = parameterOIs;
       
-      Type[] acceptedParameters = m.getGenericParameterTypes();
-      assert(parameters.length == acceptedParameters.length);
+      methodParameterTypes = m.getGenericParameterTypes();
+
+      // Whether the method takes an array like Object[], 
+      // or String[] etc in the last argument.
+      lastParaElementType = TypeInfoUtils.getArrayElementType(
+          methodParameterTypes.length == 0 ? null :
+          methodParameterTypes[methodParameterTypes.length-1]);
+      isVariableLengthArgument = (lastParaElementType != null);
       
-      for (int i = 0; i < parameters.length; i++) {
-        ObjectInspector acceptedParameterOI = PrimitiveObjectInspectorFactory
-            .getPrimitiveObjectInspectorFromClass((Class<?>)acceptedParameters[i]);
-        Converter pc = ObjectInspectorConverters
-            .getConverter(parameters[i], acceptedParameterOI);
-        // Conversion is needed?
-        if (pc != null) {
-          if (converters == null) {
-            // init converters only if needed.
-            converters = new Converter[parameters.length];
-            convertedParameters = new Object[parameters.length];
+      // Create the output OI array
+      ObjectInspector[] methodParameterOIs = new ObjectInspector[parameterOIs.length];
+      
+      if (isVariableLengthArgument) {
+        
+        // Copy the first methodParameterTypes.length - 1 entries
+        for (int i = 0; i < methodParameterTypes.length - 1; i++) {
+          // This method takes Object, so it accepts whatever types that are passed in.
+          if (methodParameterTypes[i] == Object.class) {
+            methodParameterOIs[i] = ObjectInspectorUtils
+                .getStandardObjectInspector(parameterOIs[i], ObjectInspectorCopyOption.JAVA);
+          } else {
+            methodParameterOIs[i] = ObjectInspectorFactory
+                .getReflectionObjectInspector(methodParameterTypes[i], ObjectInspectorOptions.JAVA);
           }
-          converters[i] = pc;
         }
+
+        // Deal with the last entry
+        if (lastParaElementType == Object.class) {
+          // This method takes Object[], so it accepts whatever types that are passed in.
+          for (int i = methodParameterTypes.length - 1; i < parameterOIs.length; i++) {
+            methodParameterOIs[i] = ObjectInspectorUtils
+                .getStandardObjectInspector(parameterOIs[i], ObjectInspectorCopyOption.JAVA);
+          }
+        } else {
+          // This method takes something like String[], so it only accepts something like String
+          ObjectInspector oi = ObjectInspectorFactory.getReflectionObjectInspector(
+              lastParaElementType, ObjectInspectorOptions.JAVA);
+          for (int i = methodParameterTypes.length - 1; i < parameterOIs.length; i++) {
+            methodParameterOIs[i] = oi;
+          }
+        }
+        
+      } else {
+        
+        // Normal case, the last parameter is a normal parameter.
+        assert methodParameterTypes.length == parameterOIs.length;
+        for (int i = 0; i < methodParameterTypes.length; i++) {
+          // This method takes Object, so it accepts whatever types that are passed in.
+          if (methodParameterTypes[i] == Object.class) {
+            methodParameterOIs[i] = ObjectInspectorUtils
+                .getStandardObjectInspector(parameterOIs[i], ObjectInspectorCopyOption.JAVA);
+          } else {
+            methodParameterOIs[i] = ObjectInspectorFactory
+                .getReflectionObjectInspector(methodParameterTypes[i], ObjectInspectorOptions.JAVA);
+          }
+        }
+      }
+      
+      // Create the converters
+      conversionNeeded = false;
+      converters = new Converter[parameterOIs.length];
+      for (int i = 0; i < parameterOIs.length; i++) {
+        Converter pc = ObjectInspectorConverters
+            .getConverter(parameterOIs[i], methodParameterOIs[i]);
+        converters[i] = pc;
+        // Conversion is needed?
+        conversionNeeded = conversionNeeded || (!(pc instanceof IdentityConverter));
+      }
+      
+      if (isVariableLengthArgument) {
+        convertedParameters = new Object[methodParameterTypes.length];
+        convertedParametersInArray = (Object[])Array.newInstance(
+            getClassFromType(lastParaElementType), parameterOIs.length - methodParameterTypes.length + 1);
+        convertedParameters[convertedParameters.length - 1] = convertedParametersInArray;
+      } else {
+        convertedParameters = new Object[parameterOIs.length];
       }
     }
     
     public Object[] convertIfNecessary(Object... parameters) {
-      if (converters == null) {
-        return parameters;
-      } else {
-        assert(parameters.length == convertedParameters.length);
-        for(int i = 0; i < parameters.length; i++) {
-          convertedParameters[i] =
-            converters[i] == null 
-            ? parameters[i]
-            : converters[i].convert(parameters[i]); 
+      
+      assert(parameters.length == givenParameterOIs.length);
+      
+      if (!conversionNeeded) {
+        if (!isVariableLengthArgument) {
+          // no conversion needed, and not variable-length argument:
+          // just return what is passed in.
+          return parameters;
+        } else if (methodParameterTypes.length == 1) {
+          // no conversion needed, and variable-length argument with exact one argument
+          // just put the parameters in the array and return.
+          convertedParameters[0] = parameters;
+          return convertedParameters;
         }
-        return convertedParameters;
       }
+      
+      if (isVariableLengthArgument) {
+        // convert the first methodParameterTypes.length - 1 entries
+        for (int i = 0; i < methodParameterTypes.length - 1; i++) {
+          convertedParameters[i] = converters[i].convert(parameters[i]);
+        }
+        // convert the rest and put into the last entry
+        for (int i = methodParameterTypes.length - 1; i < parameters.length; i++) {
+          convertedParametersInArray[i + 1 - methodParameterTypes.length] = 
+              converters[i].convert(parameters[i]);
+        }
+      } else {
+        // normal case, convert all parameters
+        for (int i = 0; i < methodParameterTypes.length; i++) {
+          convertedParameters[i] = converters[i].convert(parameters[i]);
+        }
+      }
+      return convertedParameters;
     }
   };
 

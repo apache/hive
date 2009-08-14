@@ -52,6 +52,8 @@ public abstract class LazyNonPrimitive<OI extends ObjectInspector> extends LazyO
     this.bytes = bytes;
     this.start = start;
     this.length = length;
+    assert start >= 0;
+    assert start + length <= bytes.getData().length;
   }
 
   @Override

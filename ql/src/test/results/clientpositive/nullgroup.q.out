@@ -16,11 +16,11 @@ STAGE PLANS:
             alias: x
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(key) > UDFToDouble(9999))
+                  expr: (key > 9999)
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (UDFToDouble(key) > UDFToDouble(9999))
+                    expr: (key > 9999)
                     type: boolean
                 Select Operator
                   Group By Operator
@@ -59,7 +59,7 @@ STAGE PLANS:
 
 query: select count(1) from src x where x.key > 9999
 Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/161603981/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1836686316/10000
 0
 query: explain
 select count(1) from src x where x.key > 9999
@@ -79,11 +79,11 @@ STAGE PLANS:
             alias: x
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(key) > UDFToDouble(9999))
+                  expr: (key > 9999)
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (UDFToDouble(key) > UDFToDouble(9999))
+                    expr: (key > 9999)
                     type: boolean
                 Select Operator
                   Group By Operator
@@ -122,7 +122,7 @@ STAGE PLANS:
 
 query: select count(1) from src x where x.key > 9999
 Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/720088705/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1953617237/10000
 0
 query: explain
 select count(1) from src x where x.key > 9999
@@ -143,11 +143,11 @@ STAGE PLANS:
             alias: x
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(key) > UDFToDouble(9999))
+                  expr: (key > 9999)
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (UDFToDouble(key) > UDFToDouble(9999))
+                    expr: (key > 9999)
                     type: boolean
                 Select Operator
                   Reduce Output Operator
@@ -175,7 +175,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1577457021/10002 
+        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/181284866/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -207,7 +207,7 @@ STAGE PLANS:
 
 query: select count(1) from src x where x.key > 9999
 Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1185327154/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/2085444097/10000
 0
 query: explain
 select count(1) from src x where x.key > 9999
@@ -227,11 +227,11 @@ STAGE PLANS:
             alias: x
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(key) > UDFToDouble(9999))
+                  expr: (key > 9999)
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (UDFToDouble(key) > UDFToDouble(9999))
+                    expr: (key > 9999)
                     type: boolean
                 Select Operator
                   Reduce Output Operator
@@ -265,5 +265,5 @@ STAGE PLANS:
 
 query: select count(1) from src x where x.key > 9999
 Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/858984614/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/244114908/10000
 0

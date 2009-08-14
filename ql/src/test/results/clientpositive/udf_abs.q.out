@@ -23,11 +23,11 @@ STAGE PLANS:
               expressions:
                     expr: abs(0)
                     type: int
-                    expr: abs(- 1)
+                    expr: abs((- 1))
                     type: int
                     expr: abs(123)
                     type: int
-                    expr: abs(- 9223372036854775807)
+                    expr: abs((- 9223372036854775807))
                     type: bigint
                     expr: abs(9223372036854775807)
                     type: bigint
@@ -53,7 +53,7 @@ query: SELECT
   abs(9223372036854775807)
 FROM src LIMIT 1
 Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1827607130/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/977308324/10000
 0	1	123	9223372036854775807	9223372036854775807
 query: EXPLAIN SELECT
   abs(0.0),
@@ -78,7 +78,7 @@ STAGE PLANS:
               expressions:
                     expr: abs(0.0)
                     type: double
-                    expr: abs(- 3.14159265)
+                    expr: abs((- 3.14159265))
                     type: double
                     expr: abs(3.14159265)
                     type: double
@@ -102,5 +102,5 @@ query: SELECT
   abs(3.14159265)
 FROM src LIMIT 1
 Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/150146674/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/119274499/10000
 0.0	3.14159265	3.14159265

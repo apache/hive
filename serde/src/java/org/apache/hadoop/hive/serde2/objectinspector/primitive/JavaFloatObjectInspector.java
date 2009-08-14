@@ -24,7 +24,7 @@ import org.apache.hadoop.io.FloatWritable;
  * A JavaFloatObjectInspector inspects a Java Float Object.
  */
 public class JavaFloatObjectInspector extends AbstractPrimitiveJavaObjectInspector 
-implements FloatObjectInspector{
+implements SettableFloatObjectInspector{
 
   JavaFloatObjectInspector() {
     super(PrimitiveObjectInspectorUtils.floatTypeEntry);
@@ -38,5 +38,15 @@ implements FloatObjectInspector{
   @Override
   public float get(Object o) {
     return ((Float)o).floatValue();
+  }
+
+  @Override
+  public Object create(float value) {
+    return Float.valueOf(value);
+  }
+
+  @Override
+  public Object set(Object o, float value) {
+    return Float.valueOf(value);
   }
 }

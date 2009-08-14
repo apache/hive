@@ -18,19 +18,19 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (UDFToDouble(key) = UDFToDouble(86))
+                  expr: (key = 86)
                   type: boolean
               Filter Operator
                 predicate:
-                    expr: (UDFToDouble(key) = UDFToDouble(86))
+                    expr: (key = 86)
                     type: boolean
                 Select Operator
                   expressions:
                         expr: (3 + 2)
                         type: int
-                        expr: (3.0 + UDFToDouble(2))
+                        expr: (3.0 + 2)
                         type: double
-                        expr: (UDFToDouble(3) + 2.0)
+                        expr: (3 + 2.0)
                         type: double
                         expr: (3.0 + 2.0)
                         type: double
@@ -56,10 +56,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/519069919/10000
+                destination: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/1859655774/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/164262834/10002 
+              file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/599057975/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -108,5 +108,5 @@ Input: default/src
 Output: default/dest1
 query: select dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1857264488/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/1345350120/10000
 5	5.0	5.0	5.0	5	true	1

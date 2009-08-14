@@ -24,7 +24,6 @@ import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeNullDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeFieldDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc;
 
 public class ExprNodeEvaluatorFactory {
   
@@ -39,11 +38,7 @@ public class ExprNodeEvaluatorFactory {
     if (desc instanceof exprNodeColumnDesc) {
       return new ExprNodeColumnEvaluator((exprNodeColumnDesc)desc);
     }
-    // Function node, e.g. an operator or a UDF node
-    if (desc instanceof exprNodeFuncDesc) {
-      return new ExprNodeFuncEvaluator((exprNodeFuncDesc)desc);
-    }
-    // Generic Function node, e.g. CASE
+    // Generic Function node, e.g. CASE, an operator or a UDF node
     if (desc instanceof exprNodeGenericFuncDesc) {
       return new ExprNodeGenericFuncEvaluator((exprNodeGenericFuncDesc)desc);
     }

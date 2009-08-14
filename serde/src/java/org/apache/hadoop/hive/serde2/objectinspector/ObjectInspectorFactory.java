@@ -103,7 +103,8 @@ public class ObjectInspectorFactory {
     
     // Must be a class.
     if (!(t instanceof Class)) {
-      throw new RuntimeException(ObjectInspectorFactory.class.getName() + ": internal error."); 
+      throw new RuntimeException(ObjectInspectorFactory.class.getName() + " internal error:"
+          + t); 
     }
     Class<?> c = (Class<?>)t;
     

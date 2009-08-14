@@ -96,11 +96,13 @@ public class ExplainTask extends Task<explainWork> implements Serializable {
       if (isPrintable(ent.getValue())) {
         out.print(ent.getValue());
         out.println();
-      }
-      else if (ent.getValue() instanceof Serializable) {
+      } else if (ent.getValue() instanceof List) {
+        out.print(ent.getValue().toString());
+        out.println();
+      } else if (ent.getValue() instanceof Serializable) {
         out.println();
         outputPlan((Serializable)ent.getValue(), out, extended, indent+2);
-      }
+      } 
     }
   }
 

@@ -64,19 +64,21 @@ implements SettableStringObjectInspector{
   }
 
   @Override
-  public void set(Object o, Text value) {
+  public Object set(Object o, Text value) {
     Text r = (Text)o;
     if (value != null) {
       r.set(value);
     }
+    return o;
   }
 
   @Override
-  public void set(Object o, String value) {
+  public Object set(Object o, String value) {
     Text r = (Text)o;
     if (value != null) {
       r.set(value);
     }
+    return o;
   }
 
 }

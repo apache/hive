@@ -70,7 +70,7 @@ STAGE PLANS:
             outputColumnNames: _col0, _col1
             Filter Operator
               predicate:
-                  expr: ((_col0 > 'val_200') and ((UDFToDouble(_col1) > UDFToDouble(30)) or (_col0 < 'val_400')))
+                  expr: ((_col0 > 'val_200') and ((_col1 > 30) or (_col0 < 'val_400')))
                   type: boolean
               Select Operator
                 expressions:
@@ -94,7 +94,7 @@ FROM
 (SELECT src.value as c1, count(src.key) as c2 from src where src.value > 'val_10' group by src.value) src1
 WHERE src1.c1 > 'val_200' and (src1.c2 > 30 or src1.c1 < 'val_400')
 Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1347130772/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1522307797/10000
 val_201
 val_202
 val_203

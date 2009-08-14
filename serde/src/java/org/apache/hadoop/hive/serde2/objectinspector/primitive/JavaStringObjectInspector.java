@@ -24,7 +24,7 @@ import org.apache.hadoop.io.Text;
  * A JavaStringObjectInspector inspects a Java String Object.
  */
 public class JavaStringObjectInspector extends AbstractPrimitiveJavaObjectInspector 
-implements StringObjectInspector{
+implements SettableStringObjectInspector{
 
   JavaStringObjectInspector() {
     super(PrimitiveObjectInspectorUtils.stringTypeEntry);
@@ -38,5 +38,25 @@ implements StringObjectInspector{
   @Override
   public String getPrimitiveJavaObject(Object o) {
     return (String)o;
+  }
+
+  @Override
+  public Object create(Text value) {
+    return value == null ? null : value.toString();
+  }
+
+  @Override
+  public Object set(Object o, Text value) {
+    return value == null ? null : value.toString();
+  }
+
+  @Override
+  public Object create(String value) {
+    return value;
+  }
+
+  @Override
+  public Object set(Object o, String value) {
+    return value;
   }
 }

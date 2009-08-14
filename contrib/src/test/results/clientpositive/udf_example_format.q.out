@@ -1,0 +1,54 @@
+query: CREATE TEMPORARY FUNCTION example_format AS 'org.apache.hadoop.hive.contrib.udf.example.UDFExampleFormat'
+query: EXPLAIN
+SELECT example_format("abc"),
+       example_format("%1$s", 1.1),
+       example_format("%1$s %2$e", 1.1, 1.2),
+       example_format("%1$x %2$o %3$d", 10, 10, 10)
+FROM src LIMIT 1
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION example_format "abc")) (TOK_SELEXPR (TOK_FUNCTION example_format "%1$s" 1.1)) (TOK_SELEXPR (TOK_FUNCTION example_format "%1$s %2$e" 1.1 1.2)) (TOK_SELEXPR (TOK_FUNCTION example_format "%1$x %2$o %3$d" 10 10 10))) (TOK_LIMIT 1)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: example_format('abc')
+                    type: string
+                    expr: example_format('%1$s', 1.1)
+                    type: string
+                    expr: example_format('%1$s %2$e', 1.1, 1.2)
+                    type: string
+                    expr: example_format('%1$x %2$o %3$d', 10, 10, 10)
+                    type: string
+              outputColumnNames: _col0, _col1, _col2, _col3
+              Limit
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+
+
+query: SELECT example_format("abc"),
+       example_format("%1$s", 1.1),
+       example_format("%1$s %2$e", 1.1, 1.2),
+       example_format("%1$x %2$o %3$d", 10, 10, 10)
+FROM src LIMIT 1
+Input: default/src
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/build/ql/tmp/857451543/10000
+abc	1.1	1.1 1.200000e+00	a 12 10
+query: DROP TEMPORARY FUNCTION example_format

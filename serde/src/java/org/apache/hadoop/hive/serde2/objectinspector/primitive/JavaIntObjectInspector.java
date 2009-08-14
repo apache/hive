@@ -24,7 +24,7 @@ import org.apache.hadoop.io.IntWritable;
  * A JavaIntObjectInspector inspects a Java Integer Object.
  */
 public class JavaIntObjectInspector extends AbstractPrimitiveJavaObjectInspector 
-implements IntObjectInspector{
+implements SettableIntObjectInspector{
 
   JavaIntObjectInspector() {
     super(PrimitiveObjectInspectorUtils.intTypeEntry);
@@ -38,5 +38,15 @@ implements IntObjectInspector{
   @Override
   public int get(Object o) {
     return ((Integer)o).intValue();
+  }
+
+  @Override
+  public Object create(int value) {
+    return Integer.valueOf(value);
+  }
+
+  @Override
+  public Object set(Object o, int value) {
+    return Integer.valueOf(value);
   }
 }

@@ -38,8 +38,8 @@ STAGE PLANS:
                 0 {key} {cnt}
                 1 {cnt}
               keys:
-                0 
-                1 
+                0 [Column[key]]
+                1 [Column[key]]
               outputColumnNames: _col0, _col1, _col3
               Position of Big Table: 1
               Select Operator
@@ -85,8 +85,8 @@ STAGE PLANS:
                     0 {key} {cnt}
                     1 {cnt}
                   keys:
-                    0 
-                    1 
+                    0 [Column[key]]
+                    1 [Column[key]]
                   outputColumnNames: _col0, _col1, _col3
                   Position of Big Table: 1
                   Select Operator
@@ -122,10 +122,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/576445655/10000
+                destination: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/1012006682/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1356744320/10002 
+              file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/697544308/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -169,7 +169,7 @@ Input: default/tmp1
 Output: default/dest_j1
 query: select * from dest_j1 x order by x.key
 Input: default/dest_j1
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/631598409/10000
+Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/1124582882/10000
 0	3	3
 2	1	1
 4	1	1

@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
@@ -39,7 +40,6 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeFieldDesc;
-import org.apache.hadoop.hive.ql.plan.exprNodeFuncDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.UDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.UDFType;
@@ -88,57 +88,6 @@ public class ExprWalkerProcFactory {
 
   }
 
-  /**
-   * If all children are candidates and refer only to one table alias then this expr is a candidate
-   * else it is not a candidate but its children could be final candidates
-   */
-  public static class FuncExprProcessor implements NodeProcessor {
-
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
-        Object... nodeOutputs) throws SemanticException {
-      ExprWalkerInfo ctx = (ExprWalkerInfo) procCtx;
-      String alias = null;
-      exprNodeFuncDesc expr = (exprNodeFuncDesc) nd;
-
-      UDFType note = expr.getUDFClass().getAnnotation(UDFType.class);
-      if(note != null && !note.deterministic()) {
-        // this UDF can't be pushed down
-        ctx.setIsCandidate(expr, false);
-        ctx.setDeterministic(false);
-        return false;
-      }
-      
-      boolean isCandidate = true;
-      for (int i=0; i < nd.getChildren().size(); i++) {
-        exprNodeDesc ch = (exprNodeDesc) nd.getChildren().get(i);
-        exprNodeDesc newCh = ctx.getConvertedNode(ch);
-        if (newCh != null) {
-          expr.getChildExprs().set(i, newCh);
-          ch = newCh;
-        }
-        String chAlias = ctx.getAlias(ch);
-        
-        isCandidate = isCandidate && ctx.isCandidate(ch);
-        // need to iterate through all children even if one is found to be not a candidate
-        // in case if the other children could be individually pushed up
-        if (isCandidate && chAlias != null) {
-          if (alias == null) {
-            alias = chAlias;
-          } else if (!chAlias.equalsIgnoreCase(alias)) {
-            isCandidate = false;
-          }
-        }
-        
-        if(!isCandidate)
-          break;
-      }
-      ctx.addAlias(expr, alias);
-      ctx.setIsCandidate(expr, isCandidate);
-      return isCandidate;
-    }
-
-  }
 
   public static class FieldExprProcessor implements NodeProcessor {
 
@@ -190,8 +139,8 @@ public class ExprWalkerProcFactory {
       String alias = null;
       exprNodeGenericFuncDesc expr = (exprNodeGenericFuncDesc) nd;
 
-      UDFType note = expr.getGenericUDFClass().getAnnotation(UDFType.class);
-      if(note != null && !note.deterministic()) {
+      
+      if (!FunctionRegistry.isDeterministic(expr.getGenericUDF())) {
         // this GenericUDF can't be pushed down
         ctx.setIsCandidate(expr, false);
         ctx.setDeterministic(false);
@@ -247,10 +196,6 @@ public class ExprWalkerProcFactory {
     return new DefaultExprProcessor();
   }
 
-  public static NodeProcessor getFuncProcessor() {
-    return new FuncExprProcessor();
-  }
-
   public static NodeProcessor getGenericFuncProcessor() {
     return new GenericFuncExprProcessor();
   }
@@ -290,8 +235,7 @@ public class ExprWalkerProcFactory {
     Map<Rule, NodeProcessor> exprRules = new LinkedHashMap<Rule, NodeProcessor>();
     exprRules.put(new RuleRegExp("R1", exprNodeColumnDesc.class.getName() + "%"), getColumnProcessor());
     exprRules.put(new RuleRegExp("R2", exprNodeFieldDesc.class.getName() + "%"), getFieldProcessor());
-    exprRules.put(new RuleRegExp("R3", exprNodeFuncDesc.class.getName() + "%"), getFuncProcessor());
-    exprRules.put(new RuleRegExp("R4", exprNodeGenericFuncDesc.class.getName() + "%"), getGenericFuncProcessor());
+    exprRules.put(new RuleRegExp("R3", exprNodeGenericFuncDesc.class.getName() + "%"), getGenericFuncProcessor());
   
     // The dispatcher fires the processor corresponding to the closest matching rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(getDefaultExprProcessor(), exprRules, exprContext);
@@ -322,13 +266,11 @@ public class ExprWalkerProcFactory {
       return;
     }
     
-    // If the operator is AND, we can try to push down its children
-    if (expr instanceof exprNodeFuncDesc
-        && ((exprNodeFuncDesc)expr).getUDFClass().equals(UDFOPAnd.class)) {
-      // now determine if any of the children are final candidates
+    if (FunctionRegistry.isOpAnd(expr)) {
+      // If the operator is AND, we need to determine if any of the children are final candidates.
       for (Node ch : expr.getChildren()) {
         extractFinalCandidates((exprNodeDesc) ch, ctx);
-      }        
+      }
     }
     
   }
