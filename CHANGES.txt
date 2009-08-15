@@ -220,7 +220,7 @@ Release 0.4.0 -  Unreleased
     HIVE-720. Improve ByteStream by removing all synchronized method calls.
     (Yongqiang He via zshao)
 
-    HIVE-454. Support escaping of ; in cli
+    HIVE-454. Support escaping of ; in cli.
     (Edward Capriolo via namit)
 
     HIVE-736. Provide a function in Metastore to return the schema of a table.
@@ -229,8 +229,11 @@ Release 0.4.0 -  Unreleased
     HIVE-617. Add 'jar' service to hive client shell.
     (Edward Capriolo via rmurthy)
 
-    HIVE-578. Refactor partition pruning
+    HIVE-578. Refactor partition pruning.
     (Ashish Thusoo via namit)
+
+    HIVE-737. Support having hadoop jars in HADOOP_HOME/build for running
+    hive cli. (Johan Oskarsson via athusoo)
 
   OPTIMIZATIONS
 

@@ -14,15 +14,17 @@ cli () {
     HIVE_LIB=`cygpath -w "$HIVE_LIB"`
   fi
   
-  for f in ${HADOOP_HOME}/hadoop*core.jar ${HADOOP_HOME}/lib/hadoop*core.jar; do
+  for f in ${HADOOP_HOME}/hadoop*core.jar ${HADOOP_HOME}/lib/hadoop*core.jar ${HADOOP_HOME}/build/hadoop*core.jar; do
       if [[ ! -f $f ]]; then
           continue;
       fi
       if [[ $f == *17* ]] || [[ $f == *18* ]] || [[ $f == *19* ]]; then
           exec $HADOOP jar $AUX_JARS_CMD_LINE ${HIVE_LIB}/hive_cli.jar $CLASS $HIVE_OPTS "$@"
+          break
       else
           # hadoop 20 or newer - skip the aux_jars option. picked up from hiveconf
           exec $HADOOP jar ${HIVE_LIB}/hive_cli.jar $CLASS $HIVE_OPTS "$@" 
+          break
       fi
   done
 
