@@ -20,6 +20,9 @@ Trunk -  Unreleased
 
   IMPROVEMENTS
 
+    HIVE-760. Add version info to META-INF/MANIFEST.MF.
+    (Bill Graham via zshao)
+
   OPTIMIZATIONS
 
   BUG FIXES
