@@ -627,11 +627,13 @@ public class GenMapRedUtils {
       PlanUtils.getIntermediateFileTableDesc(PlanUtils.getFieldSchemasFromRowSchema(parent.getSchema(), "temporarycol")); 
     
     // Create a file sink operator for this file name
-    Operator<? extends Serializable> fs_op =
-      putOpInsertMap(OperatorFactory.get
-                     (new fileSinkDesc(taskTmpDir, tt_desc,
-                                       parseCtx.getConf().getBoolVar(HiveConf.ConfVars.COMPRESSINTERMEDIATE)),
-                      parent.getSchema()), null, parseCtx);
+    boolean compressIntermediate = parseCtx.getConf().getBoolVar(HiveConf.ConfVars.COMPRESSINTERMEDIATE);
+    fileSinkDesc desc = new fileSinkDesc(taskTmpDir, tt_desc, compressIntermediate);
+    if (compressIntermediate) {
+      desc.setCompressCodec(parseCtx.getConf().getVar(HiveConf.ConfVars.COMPRESSINTERMEDIATECODEC));
+      desc.setCompressType(parseCtx.getConf().getVar(HiveConf.ConfVars.COMPRESSINTERMEDIATETYPE));
+    }
+    Operator<? extends Serializable> fs_op = putOpInsertMap(OperatorFactory.get(desc, parent.getSchema()), null, parseCtx);
     
     // replace the reduce child with this operator
     List<Operator<? extends Serializable>> childOpList = parent.getChildOperators();

@@ -36,7 +36,12 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.SequenceFile.CompressionType;
+import org.apache.hadoop.io.compress.CompressionCodec;
+import org.apache.hadoop.io.compress.LzoCodec;
+import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 
 /**
  * File Sink operator implementation
@@ -113,8 +118,21 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
       Path parent = Utilities.toTempPath(specPath);
       finalPath = HiveFileFormatUtils.getOutputFormatFinalPath(parent, jc, hiveOutputFormat, isCompressed, finalPath);
       tableDesc tableInfo = conf.getTableInfo();
-
-      outWriter = getRecordWriter(jc, hiveOutputFormat, outputClass, isCompressed, tableInfo.getProperties(), outPath);
+      JobConf jc_output = jc;
+      if (isCompressed) {
+        jc_output = new JobConf(jc);
+        String codecStr = conf.getCompressCodec();
+        if (codecStr != null && !codecStr.trim().equals("")) {
+          Class<? extends CompressionCodec> codec = (Class<? extends CompressionCodec>) Class.forName(codecStr);
+          FileOutputFormat.setOutputCompressorClass(jc_output, codec);
+        }
+        String type = conf.getCompressType();
+        if(type !=null && !type.trim().equals("")) {
+          CompressionType style = CompressionType.valueOf(type);
+          SequenceFileOutputFormat.setOutputCompressionType(jc, style);
+        }
+      }
+      outWriter = getRecordWriter(jc_output, hiveOutputFormat, outputClass, isCompressed, tableInfo.getProperties(), outPath);
 
       // in recent hadoop versions, use deleteOnExit to clean tmp files.
       autoDelete = ShimLoader.getHadoopShims().fileSystemDeleteOnExit(fs, outPath);

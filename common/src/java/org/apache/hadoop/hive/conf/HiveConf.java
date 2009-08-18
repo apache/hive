@@ -63,6 +63,8 @@ public class HiveConf extends Configuration {
     SCRIPTERRORLIMIT("hive.exec.script.maxerrsize", 100000),
     COMPRESSRESULT("hive.exec.compress.output", false),
     COMPRESSINTERMEDIATE("hive.exec.compress.intermediate", false),
+    COMPRESSINTERMEDIATECODEC("hive.intermediate.compression.codec", ""),
+    COMPRESSINTERMEDIATETYPE("hive.intermediate.compression.type", ""),
     BYTESPERREDUCER("hive.exec.reducers.bytes.per.reducer", (long)(1000*1000*1000)),
     MAXREDUCERS("hive.exec.reducers.max", 999),
     PREEXECHOOKS("hive.exec.pre.hooks", ""),

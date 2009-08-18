@@ -27,6 +27,8 @@ public class fileSinkDesc implements Serializable {
   private tableDesc tableInfo;
   private boolean compressed;
   private int destTableId;
+  private String compressCodec;
+  private String compressType;
 
 
   public fileSinkDesc() { }
@@ -84,5 +86,17 @@ public class fileSinkDesc implements Serializable {
   
   public void setDestTableId(int destTableId) {
     this.destTableId = destTableId;
+  }
+  public String getCompressCodec() {
+    return compressCodec;
+  }
+  public void setCompressCodec(String intermediateCompressorCodec) {
+    this.compressCodec = intermediateCompressorCodec;
+  }
+  public String getCompressType() {
+    return compressType;
+  }
+  public void setCompressType(String intermediateCompressType) {
+    this.compressType = intermediateCompressType;
   }
 }

@@ -23,6 +23,9 @@ Trunk -  Unreleased
     HIVE-760. Add version info to META-INF/MANIFEST.MF.
     (Bill Graham via zshao)
 
+    HIVE-759. Add "hive.intermediate.compression.codec/type" option.
+    (Yongqiang He via zshao)
+
   OPTIMIZATIONS
 
   BUG FIXES
