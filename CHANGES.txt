@@ -32,6 +32,8 @@ Trunk -  Unreleased
 
     HIVE-734. problem while inserting nulls. (Ning Zhang via namit)
 
+    HIVE-764. Fixed json.jar. (Raghu Murthy via zshao)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
