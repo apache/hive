@@ -29,8 +29,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.Text;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * ColumnarStruct is different from LazyStruct in that ColumnarStruct's field
@@ -45,12 +43,7 @@ public class ColumnarStruct {
    * The fields of the struct.
    */
   LazyObject[] fields;
-  
-  private static final Log LOG = LogFactory.getLog(ColumnarStruct.class);
-  
-  boolean initialized = false;  // init() function is called?
-  int[]   prjColIDs   = null;   // list of projected column IDs
-  
+
   /**
    * Construct a ColumnarStruct object with the TypeInfo. It creates the first
    * level object at the first place
@@ -122,59 +115,27 @@ public class ColumnarStruct {
 
     return fields[fieldID].getObject();
   }
-  
-  /*  ============================  [PERF] ===================================
-   *  This function is called for every row. Setting up the selected/projected 
-   *  columns at the first call, and don't do that for the following calls. 
-   *  Ideally this should be done in the constructor where we don't need to 
-   *  branch in the function for each row. 
-   *  =========================================================================
-   */
-  public void init(BytesRefArrayWritable cols) {
-    if (initialized) { // short cut for non-first calls
-      for (int i = 0; i < prjColIDs.length; ++i ) {
-        int fieldIndex = prjColIDs[i];
-        BytesRefWritable passedInField = cols.unCheckedGet(fieldIndex);
-        cachedByteArrayRef[fieldIndex].setData(passedInField.getData());
-        fields[fieldIndex].init(cachedByteArrayRef[fieldIndex], 
-                                passedInField.getStart(), 
-                                passedInField.getLength());
-      }
-    } else { // first time call init()
-      int fieldIndex = 0;
-      int min = cols.size() < fields.length ? cols.size() : fields.length;
-      
-      ArrayList<Integer> tmp_sel_cols = new ArrayList<Integer>();
 
-      for (; fieldIndex < min; fieldIndex++) {
-        
-        // call the faster unCheckedGet() 
-        // alsert: min <= cols.size()
-        BytesRefWritable passedInField = cols.unCheckedGet(fieldIndex);
-        
-        if (passedInField.length > 0) {
-          // if (fields[fieldIndex] == null)
-          // fields[fieldIndex] = LazyFactory.createLazyObject(fieldTypeInfos
-          // .get(fieldIndex));
-          tmp_sel_cols.add(fieldIndex);
-          cachedByteArrayRef[fieldIndex].setData(passedInField.getData());
-          fields[fieldIndex].init(cachedByteArrayRef[fieldIndex], 
-                                  passedInField.getStart(), 
-                                  passedInField.getLength());
-          fieldIsNull[fieldIndex] = false;
-        } else
-          fieldIsNull[fieldIndex] = true;
-      }
-      for (; fieldIndex < fields.length; fieldIndex++)
+  public void init(BytesRefArrayWritable cols) {
+    int fieldIndex = 0;
+    int min = cols.size() < fields.length ? cols.size() : fields.length;
+
+    for (; fieldIndex < min; fieldIndex++) {
+      BytesRefWritable passedInField = cols.get(fieldIndex);
+      cachedByteArrayRef[fieldIndex].setData(passedInField.getData());
+      if (passedInField.length > 0) {
+        // if (fields[fieldIndex] == null)
+        // fields[fieldIndex] = LazyFactory.createLazyObject(fieldTypeInfos
+        // .get(fieldIndex));
+        fields[fieldIndex].init(cachedByteArrayRef[fieldIndex], passedInField
+            .getStart(), passedInField.getLength());
+        fieldIsNull[fieldIndex] = false;
+      } else {
         fieldIsNull[fieldIndex] = true;
-      
-      // maintain a list of non-NULL column IDs
-      prjColIDs = new int[tmp_sel_cols.size()];
-      for (int i = 0; i < prjColIDs.length; ++i ) {
-        prjColIDs[i] = tmp_sel_cols.get(i).intValue();
       }
-      initialized = true;
     }
+    for (; fieldIndex < fields.length; fieldIndex++)
+      fieldIsNull[fieldIndex] = true;
   }
 
   ArrayList<Object> cachedList;

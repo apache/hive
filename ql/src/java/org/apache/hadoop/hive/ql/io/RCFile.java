@@ -863,8 +863,6 @@ public class RCFile {
 
     private Decompressor keyDecompressor;
     NonSyncDataOutputBuffer keyDecompressedData = new NonSyncDataOutputBuffer();
-    
-    int[] prjColIDs = null; // selected column IDs
 
     /** Create a new RCFile reader. */
     public Reader(FileSystem fs, Path file, Configuration conf)
@@ -893,29 +891,17 @@ public class RCFile {
 
       java.util.ArrayList<Integer> notSkipIDs = HiveFileFormatUtils.getReadColumnIDs(conf);
       skippedColIDs = new boolean[columnNumber];
-
       if (notSkipIDs.size() > 0) {
-        
-        boolean to_skip;       // default value for skipping a column
-        
-        if (notSkipIDs.size() == 1 && notSkipIDs.get(0).intValue() == -1 ) {
-          // this is the case to get all columns
-          to_skip = false;
-        } else {
-          to_skip = true;
-        }
-
         for (int i = 0; i < skippedColIDs.length; i++) {
-          skippedColIDs[i] = to_skip;
+          skippedColIDs[i] = true;
         }
         for (int read : notSkipIDs) {
-          if (read < columnNumber) 
+          if (read < columnNumber)
             skippedColIDs[read] = false;
         }
       } else {
-        // no column name is specified e.g, in select count(1) from tt; skip all columns
         for (int i = 0; i < skippedColIDs.length; i++) {
-          skippedColIDs[i] = true;
+          skippedColIDs[i] = false;
         }
       }
 
@@ -924,14 +910,6 @@ public class RCFile {
         for (int i = 0; i < skippedColIDs.length; i++) {
           if (skippedColIDs[i])
             loadColumnNum -= 1;
-        }
-      }
-
-      // get list of selected column IDs
-      prjColIDs = new int[loadColumnNum];
-      for ( int i = 0, j = 0; i < columnNumber; ++i ) {
-        if (!skippedColIDs[i]) {
-          prjColIDs[j++] = i;
         }
       }
 
@@ -1150,8 +1128,9 @@ public class RCFile {
       readRowsIndexInBuffer = 0;
       recordsNumInValBuffer = currentKey.numberRows;
 
-      for (int j = 0; j < prjColIDs.length; j++) {
-        int i = prjColIDs[j];
+      for (int i = 0; i < columnNumber; i++) {
+        if (skippedColIDs[i])
+          continue;
         colValLenBufferReadIn[i].reset(currentKey.allCellValLenBuffer[i]
             .getData(), currentKey.allCellValLenBuffer[i].getLength());
         columnRowReadIndex[i] = 0;
@@ -1279,23 +1258,29 @@ public class RCFile {
 
       if (!currentValue.inited) {
         currentValueBuffer();
-        ret.resetValid(columnNumber); // do this only when not intialized 
       }
 
       // we do not use BytesWritable here to avoid the byte-copy from
       // DataOutputStream to BytesWritable
 
-      for (int j = 0; j < prjColIDs.length; ++j) {
-        int i = prjColIDs[j];
+      ret.resetValid(columnNumber);
 
+      for (int i = 0, readIndex = 0; i < columnNumber; i++) {
         BytesRefWritable ref = ret.unCheckedGet(i);
+
+        if (skippedColIDs[i]) {
+          if (ref != BytesRefWritable.ZeroBytesRefWritable)
+            ret.set(i, BytesRefWritable.ZeroBytesRefWritable);
+          continue;
+        }
 
         int columnCurrentRowStart = (int) columnRowReadIndex[i];
         int length = (int) WritableUtils.readVLong(colValLenBufferReadIn[i]);
         columnRowReadIndex[i] = columnCurrentRowStart + length;
 
-        ref.set(currentValue.loadedColumnsValueBuffer[j].getData(),
+        ref.set(currentValue.loadedColumnsValueBuffer[readIndex].getData(),
             columnCurrentRowStart, length);
+        readIndex++;
       }
       rowFetched = true;
     }

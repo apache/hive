@@ -26,9 +26,6 @@ Trunk -  Unreleased
     HIVE-759. Add "hive.intermediate.compression.codec/type" option.
     (Yongqiang He via zshao)
 
-    HIVE-756. Performance improvement for RCFile and ColumnarSerDe.
-    (Ning Zhang via zshao)
-
   OPTIMIZATIONS
 
   BUG FIXES
