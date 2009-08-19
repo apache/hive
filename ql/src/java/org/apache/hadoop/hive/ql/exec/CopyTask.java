@@ -35,6 +35,10 @@ public class CopyTask extends Task<copyWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
+  public CopyTask() {
+    super();
+  }
+  
   public int execute() {
     FileSystem dstFs = null;
     Path toPath = null;

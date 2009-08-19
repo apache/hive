@@ -28,6 +28,7 @@
 
   <property name="ql.test.query.clientpositive.dir" location="${ql.test.query.dir}/clientpositive"/>
   <property name="ql.test.results.clientpositive.dir" location="${ql.test.results.dir}/clientpositive"/>
+  <property name="thrift.args" value="--gen java:beans --gen php --gen py -I ${basedir}/include -I ${basedir}/.. -o ${basedir}/src"/>
 
   <import file="../build-common.xml"/>
 
@@ -50,6 +51,12 @@
     <path refid="classpath"/>
   </path>
 
+  <target name="thriftif">
+    <echo>Executing thrift (which needs to be in your path) on if/queryplan.thrift</echo>
+    <exec executable="thrift"  failonerror="true" dir=".">
+      <arg line="${thrift.args} if/queryplan.thrift " />
+    </exec>
+  </target>
 
   <target name="gen-test" depends="deploy-ant-tasks, test-conditions, test-init" >
     <taskdef name="qtestgen" classname="org.apache.hadoop.hive.ant.QTestGenTask"
@@ -112,7 +119,7 @@
     <echo message="Compiling: ${name}"/>
     <javac
      encoding="${build.encoding}"
-     srcdir="${src.dir}:${build.dir}/gen-java"
+     srcdir="${src.dir}:${basedir}/src/gen-javabean:${build.dir}/gen-java"
      includes="**/*.java"
      destdir="${build.classes}"
      debug="${javac.debug}"

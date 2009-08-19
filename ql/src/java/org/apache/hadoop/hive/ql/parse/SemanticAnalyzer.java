@@ -4311,14 +4311,60 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // reduce sink does not have any kids - since the plan by now has been broken up into multiple
     // tasks, iterate over all tasks.
     // For each task, go over all operators recursively
-    for(Task<? extends Serializable> rootTask: rootTasks)
+    for (Task<? extends Serializable> rootTask: rootTasks)
       breakTaskTree(rootTask);
 
     // For each task, set the key descriptor for the reducer
-    for(Task<? extends Serializable> rootTask: rootTasks)
+    for (Task<? extends Serializable> rootTask: rootTasks)
       setKeyDescTaskTree(rootTask);
+    
+    // For each operator, generate the counters
+    for (Task<? extends Serializable> rootTask: rootTasks)
+      generateCountersTask(rootTask);
   }
 
+  // loop over all the tasks recursviely
+  private void generateCountersTask(Task<? extends Serializable> task) { 
+    if ((task instanceof MapRedTask) || (task instanceof ExecDriver)) {
+      HashMap<String, Operator<? extends Serializable>> opMap = ((mapredWork)task.getWork()).getAliasToWork();
+      if (!opMap.isEmpty()) {
+        for (Operator<? extends Serializable> op: opMap.values()) {
+          generateCountersOperator(op);
+        }
+      }
+      
+      Operator <? extends Serializable> reducer = ((mapredWork)task.getWork()).getReducer();
+      if (reducer != null) {
+        LOG.info("Generating counters for operator " + reducer);
+        generateCountersOperator(reducer);
+      }
+    }
+    else if (task instanceof ConditionalTask) {
+      List<Task<? extends Serializable>> listTasks = ((ConditionalTask)task).getListTasks();
+      for (Task<? extends Serializable> tsk : listTasks)
+        generateCountersTask(tsk);
+    }
+
+    // Start the counters from scratch - a hack for hadoop 17.
+    Operator.resetLastEnumUsed();
+
+    if (task.getChildTasks() == null)
+      return;
+    
+    for (Task<? extends Serializable> childTask :  task.getChildTasks())
+      generateCountersTask(childTask);
+  }
+  
+  private void generateCountersOperator(Operator<? extends Serializable> op) {
+    op.assignCounterNameToEnum();
+
+    if (op.getChildOperators() == null)
+      return;
+    
+    for (Operator<? extends Serializable> child: op.getChildOperators())
+      generateCountersOperator(child);
+  }
+  
   // loop over all the tasks recursviely
   private void breakTaskTree(Task<? extends Serializable> task) { 
     
@@ -4328,6 +4374,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         for (Operator<? extends Serializable> op: opMap.values()) {
           breakOperatorTree(op);
         }
+    }
+    else if (task instanceof ConditionalTask) {
+      List<Task<? extends Serializable>> listTasks = ((ConditionalTask)task).getListTasks();
+      for (Task<? extends Serializable> tsk : listTasks)
+        breakTaskTree(tsk);
     }
 
     if (task.getChildTasks() == null)

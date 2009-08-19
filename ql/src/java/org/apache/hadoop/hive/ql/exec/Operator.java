@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -30,6 +31,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.explain;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -37,6 +39,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.OutputCollector;
+import org.apache.hadoop.mapred.Counters;
 import org.apache.hadoop.mapred.Reporter;
 
 /**
@@ -50,6 +53,25 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   
   protected List<Operator<? extends Serializable>> childOperators;
   protected List<Operator<? extends Serializable>> parentOperators;
+  protected String operatorId;
+  /**
+   * List of counter names associated with the operator
+   * It contains the following default counters
+   *   NUM_INPUT_ROWS
+   *   NUM_OUTPUT_ROWS
+   *   TIME_TAKEN
+   * Individual operators can add to this list via addToCounterNames methods
+   */
+  protected ArrayList<String> counterNames;
+  
+  /**
+   * Each operator has its own map of its counter names to disjoint
+   * ProgressCounter - it is populated at compile time and is read in
+   * at run-time while extracting the operator specific counts
+   */
+  protected HashMap<String, ProgressCounter> counterNameToEnum;
+  
+
   private static int seqId;
 
   // It can be optimized later so that an operator operator (init/close) is performed
@@ -323,14 +345,27 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     initialize(hconf, null);    
   }
 
+  
    /**
    * Process the row.
    * @param row  The object representing the row.
    * @param tag  The tag of the row usually means which parent this row comes from.
    *             Rows with the same tag should have exactly the same rowInspector all the time.
    */
-  public abstract void process(Object row, int tag) throws HiveException;
- 
+  public abstract void processOp(Object row, int tag) throws HiveException;
+  
+  /**
+   * Process the row.
+   * @param row  The object representing the row.
+   * @param tag  The tag of the row usually means which parent this row comes from.
+   *             Rows with the same tag should have exactly the same rowInspector all the time.
+   */
+  public void process(Object row, int tag) throws HiveException {
+    preProcessCounter();
+    processOp(row, tag);
+    postProcessCounter();
+  }
+  
   // If a operator wants to do some work at the beginning of a group
   public void startGroup() throws HiveException {
     LOG.debug("Starting group");
@@ -345,7 +380,7 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     LOG.debug("Start group Done");
   }  
   
-  // If a operator wants to do some work at the beginning of a group
+  // If a operator wants to do some work at the end of a group
   public void endGroup() throws HiveException {
     LOG.debug("Ending group");
     
@@ -363,6 +398,12 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     if (state == State.CLOSE) 
       return;
 
+    if (counterNameToEnum != null) {
+      incrCounter(numInputRowsCntr, inputRows);
+      incrCounter(numOutputRowsCntr, outputRows);
+      incrCounter(timeTakenCntr, totalTime);
+    }
+    
     LOG.info(id + " forwarded " + cntr + " rows");
 
     try {
@@ -457,6 +498,14 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   }
 
   protected void forward(Object row, ObjectInspector rowInspector) throws HiveException {
+    
+    if ((++outputRows % 1000) == 0) {
+      if (counterNameToEnum != null) {
+        incrCounter(numOutputRowsCntr, outputRows);
+        outputRows = 0;
+      }
+    }
+    
     if (LOG.isInfoEnabled()) {
       cntr++;
       if (cntr == nextCntr) {
@@ -608,4 +657,197 @@ public abstract class Operator <T extends Serializable> implements Serializable,
         Arrays.asList(fieldObjectInspectors));
   }
   
+  /**
+   * All counter stuff below this
+   */
+  
+  /**
+   * TODO This is a hack for hadoop 0.17 which only supports enum counters
+   */
+  public static enum ProgressCounter { 
+    C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C14, C15, C16, 
+    C17, C18, C19, C20, C21, C22, C23, C24, C25, C26, C27, C28, C29, C30, C31, C32, 
+    C33, C34, C35, C36, C37, C38, C39, C40, C41, C42, C43, C44, C45, C46, C47, C48, 
+    C49, C50, C51, C52, C53, C54, C55, C56, C57, C58, C59, C60, C61, C62, C63, C64, 
+    C65, C66, C67, C68, C69, C70, C71, C72, C73, C74, C75, C76, C77, C78, C79, C80, 
+    C81, C82, C83, C84, C85, C86, C87, C88, C89, C90, C91, C92, C93, C94, C95, C96, 
+    C97, C98, C99, C100, C101, C102, C103, C104, C105, C106, C107, C108, C109, C110, C111, C112, 
+    C113, C114, C115, C116, C117, C118, C119, C120, C121, C122, C123, C124, C125, C126, C127, C128
+  };
+
+  private static int totalNumCntrs = 128;
+  
+  /**
+   * populated at runtime from hadoop counters at run time in the client
+   */
+  transient protected Map<String, Long> counters;
+  
+  /**
+   * keeps track of unique ProgressCounter enums used
+   * this value is used at compile time while assigning ProgressCounter
+   * enums to counter names
+   */
+  private static int lastEnumUsed;  
+
+  transient protected long inputRows = 0;
+  transient protected long outputRows = 0;
+  transient protected long beginTime = 0;
+  transient protected long totalTime = 0;
+  
+  /**
+   * this is called before operator process to buffer some counters
+   */
+  private void preProcessCounter()
+  {
+    inputRows++;
+    
+    if (((inputRows % 1000) == 0) && (counterNameToEnum != null)) {
+      incrCounter(numInputRowsCntr, inputRows);
+      incrCounter(timeTakenCntr, totalTime);
+      inputRows = 0 ;
+      totalTime = 0;
+    }
+    beginTime = System.currentTimeMillis();
+  }
+
+  /**
+   * this is called after operator process to buffer some counters
+   */
+  private void postProcessCounter()
+  {
+    totalTime += (System.currentTimeMillis() - beginTime);
+  }
+
+  
+  /**
+   * this is called in operators in map or reduce tasks
+   * @param name
+   * @param amount
+   */
+  protected void incrCounter(String name, long amount)
+  {
+    String counterName = "CNTR_NAME_" + getOperatorId() + "_" + name;
+    ProgressCounter pc = counterNameToEnum.get(counterName);
+
+    // Currently, we maintain 128 counters per plan - in case of a bigger tree, we may run out of them
+    if (pc == null)
+      LOG.warn("Using too many counters. Increase the total number of counters for " + counterName);
+    else if (reporter != null)
+      reporter.incrCounter(pc, amount);
+  }
+
+  public ArrayList<String> getCounterNames() {
+    return counterNames;
+  }
+
+  public void setCounterNames(ArrayList<String> counterNames) {
+    this.counterNames = counterNames;
+  }
+
+  public String getOperatorId() {
+    return operatorId;
+  }
+
+  public void initOperatorId() {
+    setOperatorId(getName() + "_" + this.id);
+  }
+
+  public void setOperatorId(String operatorId) {
+    this.operatorId = operatorId;
+  }
+  
+  public Map<String, Long> getCounters() {
+    return counters;
+  }
+  
+  /**
+   * called in ExecDriver.progress periodically
+   * @param ctrs counters from the running job
+   */
+  @SuppressWarnings("unchecked")
+  public void updateCounters(Counters ctrs) {
+    if (counters == null) {
+      counters = new HashMap<String, Long>();
+    }
+
+    // For some old unit tests, the counters will not be populated. Eventually, the old tests should be removed
+    if (counterNameToEnum == null)
+      return;
+
+    for (Map.Entry<String, ProgressCounter> counter: counterNameToEnum.entrySet()) {
+      counters.put(counter.getKey(), ctrs.getCounter(counter.getValue()));
+    }
+    // update counters of child operators
+    // this wont be an infinite loop since the operator graph is acyclic
+    // but, some operators may be updated more than once and that's ok
+    if (getChildren() != null) {
+      for (Node op: getChildren()) {
+        ((Operator<? extends Serializable>)op).updateCounters(ctrs);
+      }
+    }
+  }
+
+  // A given query can have multiple map-reduce jobs
+  public static void resetLastEnumUsed() {
+    lastEnumUsed = 0;
+  }
+
+  /**
+   * Called only in SemanticAnalyzer after all operators have added their
+   * own set of counter names
+   */
+  public void assignCounterNameToEnum() {
+    if (counterNameToEnum != null) {
+      return;
+    }
+    counterNameToEnum = new HashMap<String, ProgressCounter>();
+    for (String counterName: getCounterNames()) {
+      ++lastEnumUsed;
+      
+      // TODO Hack for hadoop-0.17
+      // Currently, only maximum number of 'totalNumCntrs' can be used. If you want
+      // to add more counters, increase the number of counters in ProgressCounter
+      if (lastEnumUsed > totalNumCntrs) {
+        LOG.warn("Using too many counters. Increase the total number of counters");
+        return;
+      }      
+      String enumName = "C" + lastEnumUsed;
+      ProgressCounter ctr = ProgressCounter.valueOf(enumName);
+      counterNameToEnum.put(counterName, ctr);
+    }
+  }
+
+  protected static String numInputRowsCntr  = "NUM_INPUT_ROWS";
+  protected static String numOutputRowsCntr = "NUM_OUTPUT_ROWS";
+  protected static String timeTakenCntr     = "TIME_TAKEN";
+  
+  public void initializeCounters() {
+    initOperatorId();
+    counterNames = new ArrayList<String>();
+    counterNames.add("CNTR_NAME_" + getOperatorId() + "_" + numInputRowsCntr);
+    counterNames.add("CNTR_NAME_" + getOperatorId() + "_" + numOutputRowsCntr);
+    counterNames.add("CNTR_NAME_" + getOperatorId() + "_" + timeTakenCntr);
+    List<String> newCntrs = getAdditionalCounters();
+    if (newCntrs != null) {
+      counterNames.addAll(newCntrs);
+    }
+  }
+
+  /*
+   * By default, the list is empty - if an operator wants to add more counters, it should override this method
+   * and provide the new list.
+   */
+  private List<String> getAdditionalCounters() {
+    return null;
+  }
+
+  public HashMap<String, ProgressCounter> getCounterNameToEnum() {
+    return counterNameToEnum;
+  }
+
+  public void setCounterNameToEnum(HashMap<String, ProgressCounter> counterNameToEnum) {
+    this.counterNameToEnum = counterNameToEnum;
+  }
+
+
 }

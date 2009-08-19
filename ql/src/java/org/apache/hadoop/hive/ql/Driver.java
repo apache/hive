@@ -119,7 +119,7 @@ public class Driver implements CommandProcessor {
 
         if (!sem.getFetchTaskInit()) {
           sem.setFetchTaskInit(true);
-          sem.getFetchTask().initialize(conf);
+          sem.getFetchTask().initialize(conf, plan);
         }
         FetchTask ft = (FetchTask) sem.getFetchTask();
 
@@ -276,7 +276,7 @@ public class Driver implements CommandProcessor {
   public QueryPlan getPlan() {
     return plan;
   }
-
+  
   public int run(String command) {
     int ret = compile(command);
     if (ret != 0)
@@ -305,7 +305,7 @@ public class Driver implements CommandProcessor {
     
     return pehooks;
   }
-  
+    
   public int execute() {
     boolean noName = StringUtils.isEmpty(conf
         .getVar(HiveConf.ConfVars.HADOOPJOBNAME));
@@ -317,12 +317,15 @@ public class Driver implements CommandProcessor {
     conf.setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
     conf.setVar(HiveConf.ConfVars.HIVEQUERYSTRING, queryStr);
 
-    try {      
+    try {
       LOG.info("Starting command: " + queryStr);
 
-      if (SessionState.get() != null)
+      plan.setStarted();
+      
+      if (SessionState.get() != null) {
         SessionState.get().getHiveHistory().startQuery(queryStr, conf.getVar(HiveConf.ConfVars.HIVEQUERYID) );
-
+        SessionState.get().getHiveHistory().logPlanProgress(plan);
+      }
       resStream = null;
 
       BaseSemanticAnalyzer sem = plan.getPlan();
@@ -361,11 +364,10 @@ public class Driver implements CommandProcessor {
 
       while (runnable.peek() != null) {
         Task<? extends Serializable> tsk = runnable.remove();
-
-        if (SessionState.get() != null)
+        if (SessionState.get() != null) {
           SessionState.get().getHiveHistory().startTask(queryId, tsk,
               tsk.getClass().getName());
-
+        }
         if (tsk.isMapRedTask()) {
           curJobNo++;
           if (noName) {
@@ -374,9 +376,8 @@ public class Driver implements CommandProcessor {
           }
         }
 
-        tsk.initialize(conf);
-
-        int exitVal = tsk.execute();
+        tsk.initialize(conf, plan);
+        int exitVal = tsk.executeTask();
         if (SessionState.get() != null) {
           SessionState.get().getHiveHistory().setTaskProperty(queryId,
               tsk.getId(), Keys.TASK_RET_CODE, String.valueOf(exitVal));
@@ -387,7 +388,6 @@ public class Driver implements CommandProcessor {
               + " from " + tsk.getClass().getName());
           return 9;
         }
-        tsk.setDone();
 
         if (tsk.getChildTasks() == null) {
           continue;
@@ -417,13 +417,20 @@ public class Driver implements CommandProcessor {
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return (12);
     } finally {
-      if (SessionState.get() != null)
+      if (SessionState.get() != null) {
         SessionState.get().getHiveHistory().endQuery(queryId);
+      }
       if (noName) {
         conf.setVar(HiveConf.ConfVars.HADOOPJOBNAME, "");
       }
     }
-
+    plan.setDone();
+    if (SessionState.get() != null) {
+      try {
+        SessionState.get().getHiveHistory().logPlanProgress(plan);
+      } catch (Exception e) {
+      }
+    }
     console.printInfo("OK");
     return (0);
   }
@@ -433,7 +440,7 @@ public class Driver implements CommandProcessor {
       BaseSemanticAnalyzer sem = plan.getPlan();
       if (!sem.getFetchTaskInit()) {
         sem.setFetchTaskInit(true);
-        sem.getFetchTask().initialize(conf);
+        sem.getFetchTask().initialize(conf, plan);
       }
       FetchTask ft = (FetchTask) sem.getFetchTask();
       ft.setMaxRows(maxRows);
@@ -492,5 +499,9 @@ public class Driver implements CommandProcessor {
     }
 
     return (0);
+  }
+
+  public org.apache.hadoop.hive.ql.plan.api.Query getQueryPlan() throws IOException {
+    return plan.getQueryPlan();
   }
 }

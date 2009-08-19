@@ -44,6 +44,10 @@ import org.apache.hadoop.util.StringUtils;
 public class ExplainTask extends Task<explainWork> implements Serializable {
   private static final long serialVersionUID = 1L;
 
+  public ExplainTask() {
+    super();
+  }
+  
   public int execute() {
     
     try {

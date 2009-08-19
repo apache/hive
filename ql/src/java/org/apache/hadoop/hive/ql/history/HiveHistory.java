@@ -35,6 +35,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -65,7 +66,7 @@ public class HiveHistory {
   private static final String DELIMITER = " ";
 
   public static enum RecordTypes {
-    QueryStart, QueryEnd, TaskStart, TaskEnd, TaskProgress, SessionStart, SessionEnd
+    QueryStart, QueryEnd, TaskStart, TaskEnd, TaskProgress, SessionStart, SessionEnd, Counters
   };
 
   public static enum Keys {
@@ -425,6 +426,18 @@ public class HiveHistory {
       return;
     log(RecordTypes.TaskProgress, ti.hm);
 
+  }
+
+  /**
+   * write out counters
+   */
+  static Map<String, String> ctrmap = null;
+  public void logPlanProgress(QueryPlan plan) throws IOException {
+    if (ctrmap == null) {
+      ctrmap = new HashMap<String, String>();
+    }
+    ctrmap.put("plan", plan.toString());
+    log(RecordTypes.Counters, ctrmap);
   }
   
   /**

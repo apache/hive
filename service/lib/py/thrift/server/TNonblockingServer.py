@@ -1,3 +1,21 @@
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements. See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership. The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License. You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
 """Implementation of non-blocking server.
 
 The main idea of the server is reciving and sending requests
@@ -148,7 +166,7 @@ class Connection:
         This function is the only function witch can be called asynchronous.
         
         The ready can switch Connection to three states:
-            WAIT_LEN if request was async.
+            WAIT_LEN if request was oneway.
             SEND_ANSWER if request was processed in normal way.
             CLOSED if request throws unexpected exception.
         
@@ -162,7 +180,7 @@ class Connection:
         self.len = ''
         self.message = struct.pack('!i', len(message)) + message
         if len(message) == 0:
-            # it was async request, do not write answer
+            # it was a oneway request, do not write answer
             self.status = WAIT_LEN
         else:
             self.status = SEND_ANSWER

@@ -304,6 +304,44 @@
                           </void> 
                          </object> 
                         </void> 
+                        <void property="counterNameToEnum"> 
+                         <object class="java.util.HashMap"> 
+                          <void method="put"> 
+                           <string>CNTR_NAME_RS_494_NUM_INPUT_ROWS</string> 
+                           <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+                            <string>C13</string> 
+                           </object> 
+                          </void> 
+                          <void method="put"> 
+                           <string>CNTR_NAME_RS_494_TIME_TAKEN</string> 
+                           <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+                            <string>C15</string> 
+                           </object> 
+                          </void> 
+                          <void method="put"> 
+                           <string>CNTR_NAME_RS_494_NUM_OUTPUT_ROWS</string> 
+                           <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+                            <string>C14</string> 
+                           </object> 
+                          </void> 
+                         </object> 
+                        </void> 
+                        <void property="counterNames"> 
+                         <object class="java.util.ArrayList"> 
+                          <void method="add"> 
+                           <string>CNTR_NAME_RS_494_NUM_INPUT_ROWS</string> 
+                          </void> 
+                          <void method="add"> 
+                           <string>CNTR_NAME_RS_494_NUM_OUTPUT_ROWS</string> 
+                          </void> 
+                          <void method="add"> 
+                           <string>CNTR_NAME_RS_494_TIME_TAKEN</string> 
+                          </void> 
+                         </object> 
+                        </void> 
+                        <void property="operatorId"> 
+                         <string>RS_494</string> 
+                        </void> 
                         <void property="parentOperators"> 
                          <object class="java.util.ArrayList"> 
                           <void method="add"> 
@@ -398,6 +436,44 @@
                        </object> 
                       </void> 
                      </object> 
+                    </void> 
+                    <void property="counterNameToEnum"> 
+                     <object class="java.util.HashMap"> 
+                      <void method="put"> 
+                       <string>CNTR_NAME_SEL_493_NUM_INPUT_ROWS</string> 
+                       <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+                        <string>C10</string> 
+                       </object> 
+                      </void> 
+                      <void method="put"> 
+                       <string>CNTR_NAME_SEL_493_NUM_OUTPUT_ROWS</string> 
+                       <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+                        <string>C11</string> 
+                       </object> 
+                      </void> 
+                      <void method="put"> 
+                       <string>CNTR_NAME_SEL_493_TIME_TAKEN</string> 
+                       <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+                        <string>C12</string> 
+                       </object> 
+                      </void> 
+                     </object> 
+                    </void> 
+                    <void property="counterNames"> 
+                     <object class="java.util.ArrayList"> 
+                      <void method="add"> 
+                       <string>CNTR_NAME_SEL_493_NUM_INPUT_ROWS</string> 
+                      </void> 
+                      <void method="add"> 
+                       <string>CNTR_NAME_SEL_493_NUM_OUTPUT_ROWS</string> 
+                      </void> 
+                      <void method="add"> 
+                       <string>CNTR_NAME_SEL_493_TIME_TAKEN</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                    <void property="operatorId"> 
+                     <string>SEL_493</string> 
                     </void> 
                     <void property="parentOperators"> 
                      <object class="java.util.ArrayList"> 
@@ -568,6 +644,44 @@
                   </void> 
                  </object> 
                 </void> 
+                <void property="counterNameToEnum"> 
+                 <object class="java.util.HashMap"> 
+                  <void method="put"> 
+                   <string>CNTR_NAME_FIL_492_NUM_INPUT_ROWS</string> 
+                   <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+                    <string>C7</string> 
+                   </object> 
+                  </void> 
+                  <void method="put"> 
+                   <string>CNTR_NAME_FIL_492_NUM_OUTPUT_ROWS</string> 
+                   <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+                    <string>C8</string> 
+                   </object> 
+                  </void> 
+                  <void method="put"> 
+                   <string>CNTR_NAME_FIL_492_TIME_TAKEN</string> 
+                   <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+                    <string>C9</string> 
+                   </object> 
+                  </void> 
+                 </object> 
+                </void> 
+                <void property="counterNames"> 
+                 <object class="java.util.ArrayList"> 
+                  <void method="add"> 
+                   <string>CNTR_NAME_FIL_492_NUM_INPUT_ROWS</string> 
+                  </void> 
+                  <void method="add"> 
+                   <string>CNTR_NAME_FIL_492_NUM_OUTPUT_ROWS</string> 
+                  </void> 
+                  <void method="add"> 
+                   <string>CNTR_NAME_FIL_492_TIME_TAKEN</string> 
+                  </void> 
+                 </object> 
+                </void> 
+                <void property="operatorId"> 
+                 <string>FIL_492</string> 
+                </void> 
                 <void property="parentOperators"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
@@ -729,6 +843,44 @@
               </void> 
              </object> 
             </void> 
+            <void property="counterNameToEnum"> 
+             <object class="java.util.HashMap"> 
+              <void method="put"> 
+               <string>CNTR_NAME_FIL_500_TIME_TAKEN</string> 
+               <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+                <string>C6</string> 
+               </object> 
+              </void> 
+              <void method="put"> 
+               <string>CNTR_NAME_FIL_500_NUM_OUTPUT_ROWS</string> 
+               <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+                <string>C5</string> 
+               </object> 
+              </void> 
+              <void method="put"> 
+               <string>CNTR_NAME_FIL_500_NUM_INPUT_ROWS</string> 
+               <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+                <string>C4</string> 
+               </object> 
+              </void> 
+             </object> 
+            </void> 
+            <void property="counterNames"> 
+             <object class="java.util.ArrayList"> 
+              <void method="add"> 
+               <string>CNTR_NAME_FIL_500_NUM_INPUT_ROWS</string> 
+              </void> 
+              <void method="add"> 
+               <string>CNTR_NAME_FIL_500_NUM_OUTPUT_ROWS</string> 
+              </void> 
+              <void method="add"> 
+               <string>CNTR_NAME_FIL_500_TIME_TAKEN</string> 
+              </void> 
+             </object> 
+            </void> 
+            <void property="operatorId"> 
+             <string>FIL_500</string> 
+            </void> 
             <void property="parentOperators"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
@@ -754,6 +906,41 @@
           </void> 
          </object> 
         </void> 
+        <void property="counterNameToEnum"> 
+         <object class="java.util.HashMap"> 
+          <void method="put"> 
+           <string>CNTR_NAME_TS_491_TIME_TAKEN</string> 
+           <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+            <string>C3</string> 
+           </object> 
+          </void> 
+          <void method="put"> 
+           <string>CNTR_NAME_TS_491_NUM_INPUT_ROWS</string> 
+           <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+            <string>C1</string> 
+           </object> 
+          </void> 
+          <void method="put"> 
+           <string>CNTR_NAME_TS_491_NUM_OUTPUT_ROWS</string> 
+           <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+            <string>C2</string> 
+           </object> 
+          </void> 
+         </object> 
+        </void> 
+        <void property="counterNames"> 
+         <object class="java.util.ArrayList"> 
+          <void method="add"> 
+           <string>CNTR_NAME_TS_491_NUM_INPUT_ROWS</string> 
+          </void> 
+          <void method="add"> 
+           <string>CNTR_NAME_TS_491_NUM_OUTPUT_ROWS</string> 
+          </void> 
+          <void method="add"> 
+           <string>CNTR_NAME_TS_491_TIME_TAKEN</string> 
+          </void> 
+         </object> 
+        </void> 
         <void property="neededColumnIDs"> 
          <object class="java.util.ArrayList"> 
           <void method="add"> 
@@ -763,6 +950,9 @@
            <int>1</int> 
           </void> 
          </object> 
+        </void> 
+        <void property="operatorId"> 
+         <string>TS_491</string> 
         </void> 
         <void property="schema"> 
          <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
@@ -930,6 +1120,44 @@
                           </void> 
                          </object> 
                         </void> 
+                        <void property="counterNameToEnum"> 
+                         <object class="java.util.HashMap"> 
+                          <void method="put"> 
+                           <string>CNTR_NAME_RS_495_TIME_TAKEN</string> 
+                           <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+                            <string>C30</string> 
+                           </object> 
+                          </void> 
+                          <void method="put"> 
+                           <string>CNTR_NAME_RS_495_NUM_OUTPUT_ROWS</string> 
+                           <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+                            <string>C29</string> 
+                           </object> 
+                          </void> 
+                          <void method="put"> 
+                           <string>CNTR_NAME_RS_495_NUM_INPUT_ROWS</string> 
+                           <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+                            <string>C28</string> 
+                           </object> 
+                          </void> 
+                         </object> 
+                        </void> 
+                        <void property="counterNames"> 
+                         <object class="java.util.ArrayList"> 
+                          <void method="add"> 
+                           <string>CNTR_NAME_RS_495_NUM_INPUT_ROWS</string> 
+                          </void> 
+                          <void method="add"> 
+                           <string>CNTR_NAME_RS_495_NUM_OUTPUT_ROWS</string> 
+                          </void> 
+                          <void method="add"> 
+                           <string>CNTR_NAME_RS_495_TIME_TAKEN</string> 
+                          </void> 
+                         </object> 
+                        </void> 
+                        <void property="operatorId"> 
+                         <string>RS_495</string> 
+                        </void> 
                         <void property="parentOperators"> 
                          <object class="java.util.ArrayList"> 
                           <void method="add"> 
@@ -1024,6 +1252,44 @@
                        </object> 
                       </void> 
                      </object> 
+                    </void> 
+                    <void property="counterNameToEnum"> 
+                     <object class="java.util.HashMap"> 
+                      <void method="put"> 
+                       <string>CNTR_NAME_SEL_490_TIME_TAKEN</string> 
+                       <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+                        <string>C27</string> 
+                       </object> 
+                      </void> 
+                      <void method="put"> 
+                       <string>CNTR_NAME_SEL_490_NUM_OUTPUT_ROWS</string> 
+                       <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+                        <string>C26</string> 
+                       </object> 
+                      </void> 
+                      <void method="put"> 
+                       <string>CNTR_NAME_SEL_490_NUM_INPUT_ROWS</string> 
+                       <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+                        <string>C25</string> 
+                       </object> 
+                      </void> 
+                     </object> 
+                    </void> 
+                    <void property="counterNames"> 
+                     <object class="java.util.ArrayList"> 
+                      <void method="add"> 
+                       <string>CNTR_NAME_SEL_490_NUM_INPUT_ROWS</string> 
+                      </void> 
+                      <void method="add"> 
+                       <string>CNTR_NAME_SEL_490_NUM_OUTPUT_ROWS</string> 
+                      </void> 
+                      <void method="add"> 
+                       <string>CNTR_NAME_SEL_490_TIME_TAKEN</string> 
+                      </void> 
+                     </object> 
+                    </void> 
+                    <void property="operatorId"> 
+                     <string>SEL_490</string> 
                     </void> 
                     <void property="parentOperators"> 
                      <object class="java.util.ArrayList"> 
@@ -1186,6 +1452,44 @@
                   </void> 
                  </object> 
                 </void> 
+                <void property="counterNameToEnum"> 
+                 <object class="java.util.HashMap"> 
+                  <void method="put"> 
+                   <string>CNTR_NAME_FIL_489_TIME_TAKEN</string> 
+                   <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+                    <string>C24</string> 
+                   </object> 
+                  </void> 
+                  <void method="put"> 
+                   <string>CNTR_NAME_FIL_489_NUM_OUTPUT_ROWS</string> 
+                   <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+                    <string>C23</string> 
+                   </object> 
+                  </void> 
+                  <void method="put"> 
+                   <string>CNTR_NAME_FIL_489_NUM_INPUT_ROWS</string> 
+                   <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+                    <string>C22</string> 
+                   </object> 
+                  </void> 
+                 </object> 
+                </void> 
+                <void property="counterNames"> 
+                 <object class="java.util.ArrayList"> 
+                  <void method="add"> 
+                   <string>CNTR_NAME_FIL_489_NUM_INPUT_ROWS</string> 
+                  </void> 
+                  <void method="add"> 
+                   <string>CNTR_NAME_FIL_489_NUM_OUTPUT_ROWS</string> 
+                  </void> 
+                  <void method="add"> 
+                   <string>CNTR_NAME_FIL_489_TIME_TAKEN</string> 
+                  </void> 
+                 </object> 
+                </void> 
+                <void property="operatorId"> 
+                 <string>FIL_489</string> 
+                </void> 
                 <void property="parentOperators"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
@@ -1347,6 +1651,44 @@
               </void> 
              </object> 
             </void> 
+            <void property="counterNameToEnum"> 
+             <object class="java.util.HashMap"> 
+              <void method="put"> 
+               <string>CNTR_NAME_FIL_501_NUM_INPUT_ROWS</string> 
+               <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+                <string>C19</string> 
+               </object> 
+              </void> 
+              <void method="put"> 
+               <string>CNTR_NAME_FIL_501_TIME_TAKEN</string> 
+               <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+                <string>C21</string> 
+               </object> 
+              </void> 
+              <void method="put"> 
+               <string>CNTR_NAME_FIL_501_NUM_OUTPUT_ROWS</string> 
+               <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+                <string>C20</string> 
+               </object> 
+              </void> 
+             </object> 
+            </void> 
+            <void property="counterNames"> 
+             <object class="java.util.ArrayList"> 
+              <void method="add"> 
+               <string>CNTR_NAME_FIL_501_NUM_INPUT_ROWS</string> 
+              </void> 
+              <void method="add"> 
+               <string>CNTR_NAME_FIL_501_NUM_OUTPUT_ROWS</string> 
+              </void> 
+              <void method="add"> 
+               <string>CNTR_NAME_FIL_501_TIME_TAKEN</string> 
+              </void> 
+             </object> 
+            </void> 
+            <void property="operatorId"> 
+             <string>FIL_501</string> 
+            </void> 
             <void property="parentOperators"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
@@ -1372,6 +1714,41 @@
           </void> 
          </object> 
         </void> 
+        <void property="counterNameToEnum"> 
+         <object class="java.util.HashMap"> 
+          <void method="put"> 
+           <string>CNTR_NAME_TS_488_TIME_TAKEN</string> 
+           <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+            <string>C18</string> 
+           </object> 
+          </void> 
+          <void method="put"> 
+           <string>CNTR_NAME_TS_488_NUM_OUTPUT_ROWS</string> 
+           <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+            <string>C17</string> 
+           </object> 
+          </void> 
+          <void method="put"> 
+           <string>CNTR_NAME_TS_488_NUM_INPUT_ROWS</string> 
+           <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+            <string>C16</string> 
+           </object> 
+          </void> 
+         </object> 
+        </void> 
+        <void property="counterNames"> 
+         <object class="java.util.ArrayList"> 
+          <void method="add"> 
+           <string>CNTR_NAME_TS_488_NUM_INPUT_ROWS</string> 
+          </void> 
+          <void method="add"> 
+           <string>CNTR_NAME_TS_488_NUM_OUTPUT_ROWS</string> 
+          </void> 
+          <void method="add"> 
+           <string>CNTR_NAME_TS_488_TIME_TAKEN</string> 
+          </void> 
+         </object> 
+        </void> 
         <void property="neededColumnIDs"> 
          <object class="java.util.ArrayList"> 
           <void method="add"> 
@@ -1381,6 +1758,9 @@
            <int>1</int> 
           </void> 
          </object> 
+        </void> 
+        <void property="operatorId"> 
+         <string>TS_488</string> 
         </void> 
         <void property="schema"> 
          <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
@@ -1497,6 +1877,44 @@
                      </object> 
                     </void> 
                    </object> 
+                  </void> 
+                  <void property="counterNameToEnum"> 
+                   <object class="java.util.HashMap"> 
+                    <void method="put"> 
+                     <string>CNTR_NAME_FS_499_NUM_OUTPUT_ROWS</string> 
+                     <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+                      <string>C41</string> 
+                     </object> 
+                    </void> 
+                    <void method="put"> 
+                     <string>CNTR_NAME_FS_499_NUM_INPUT_ROWS</string> 
+                     <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+                      <string>C40</string> 
+                     </object> 
+                    </void> 
+                    <void method="put"> 
+                     <string>CNTR_NAME_FS_499_TIME_TAKEN</string> 
+                     <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+                      <string>C42</string> 
+                     </object> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="counterNames"> 
+                   <object class="java.util.ArrayList"> 
+                    <void method="add"> 
+                     <string>CNTR_NAME_FS_499_NUM_INPUT_ROWS</string> 
+                    </void> 
+                    <void method="add"> 
+                     <string>CNTR_NAME_FS_499_NUM_OUTPUT_ROWS</string> 
+                    </void> 
+                    <void method="add"> 
+                     <string>CNTR_NAME_FS_499_TIME_TAKEN</string> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void property="operatorId"> 
+                   <string>FS_499</string> 
                   </void> 
                   <void property="parentOperators"> 
                    <object class="java.util.ArrayList"> 
@@ -1640,6 +2058,44 @@
                  </object> 
                 </void> 
                </object> 
+              </void> 
+              <void property="counterNameToEnum"> 
+               <object class="java.util.HashMap"> 
+                <void method="put"> 
+                 <string>CNTR_NAME_SEL_498_NUM_OUTPUT_ROWS</string> 
+                 <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+                  <string>C38</string> 
+                 </object> 
+                </void> 
+                <void method="put"> 
+                 <string>CNTR_NAME_SEL_498_NUM_INPUT_ROWS</string> 
+                 <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+                  <string>C37</string> 
+                 </object> 
+                </void> 
+                <void method="put"> 
+                 <string>CNTR_NAME_SEL_498_TIME_TAKEN</string> 
+                 <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+                  <string>C39</string> 
+                 </object> 
+                </void> 
+               </object> 
+              </void> 
+              <void property="counterNames"> 
+               <object class="java.util.ArrayList"> 
+                <void method="add"> 
+                 <string>CNTR_NAME_SEL_498_NUM_INPUT_ROWS</string> 
+                </void> 
+                <void method="add"> 
+                 <string>CNTR_NAME_SEL_498_NUM_OUTPUT_ROWS</string> 
+                </void> 
+                <void method="add"> 
+                 <string>CNTR_NAME_SEL_498_TIME_TAKEN</string> 
+                </void> 
+               </object> 
+              </void> 
+              <void property="operatorId"> 
+               <string>SEL_498</string> 
               </void> 
               <void property="parentOperators"> 
                <object class="java.util.ArrayList"> 
@@ -1795,6 +2251,44 @@
              </object> 
             </void> 
            </object> 
+          </void> 
+          <void property="counterNameToEnum"> 
+           <object class="java.util.HashMap"> 
+            <void method="put"> 
+             <string>CNTR_NAME_SEL_497_TIME_TAKEN</string> 
+             <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+              <string>C36</string> 
+             </object> 
+            </void> 
+            <void method="put"> 
+             <string>CNTR_NAME_SEL_497_NUM_OUTPUT_ROWS</string> 
+             <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+              <string>C35</string> 
+             </object> 
+            </void> 
+            <void method="put"> 
+             <string>CNTR_NAME_SEL_497_NUM_INPUT_ROWS</string> 
+             <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+              <string>C34</string> 
+             </object> 
+            </void> 
+           </object> 
+          </void> 
+          <void property="counterNames"> 
+           <object class="java.util.ArrayList"> 
+            <void method="add"> 
+             <string>CNTR_NAME_SEL_497_NUM_INPUT_ROWS</string> 
+            </void> 
+            <void method="add"> 
+             <string>CNTR_NAME_SEL_497_NUM_OUTPUT_ROWS</string> 
+            </void> 
+            <void method="add"> 
+             <string>CNTR_NAME_SEL_497_TIME_TAKEN</string> 
+            </void> 
+           </object> 
+          </void> 
+          <void property="operatorId"> 
+           <string>SEL_497</string> 
           </void> 
           <void property="parentOperators"> 
            <object class="java.util.ArrayList"> 
@@ -1994,6 +2488,44 @@
          </object> 
         </void> 
        </object> 
+      </void> 
+      <void property="counterNameToEnum"> 
+       <object class="java.util.HashMap"> 
+        <void method="put"> 
+         <string>CNTR_NAME_JOIN_496_TIME_TAKEN</string> 
+         <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+          <string>C33</string> 
+         </object> 
+        </void> 
+        <void method="put"> 
+         <string>CNTR_NAME_JOIN_496_NUM_INPUT_ROWS</string> 
+         <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+          <string>C31</string> 
+         </object> 
+        </void> 
+        <void method="put"> 
+         <string>CNTR_NAME_JOIN_496_NUM_OUTPUT_ROWS</string> 
+         <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
+          <string>C32</string> 
+         </object> 
+        </void> 
+       </object> 
+      </void> 
+      <void property="counterNames"> 
+       <object class="java.util.ArrayList"> 
+        <void method="add"> 
+         <string>CNTR_NAME_JOIN_496_NUM_INPUT_ROWS</string> 
+        </void> 
+        <void method="add"> 
+         <string>CNTR_NAME_JOIN_496_NUM_OUTPUT_ROWS</string> 
+        </void> 
+        <void method="add"> 
+         <string>CNTR_NAME_JOIN_496_TIME_TAKEN</string> 
+        </void> 
+       </object> 
+      </void> 
+      <void property="operatorId"> 
+       <string>JOIN_496</string> 
       </void> 
       <void property="parentOperators"> 
        <object class="java.util.ArrayList"> 

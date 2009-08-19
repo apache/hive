@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolver;
 import org.apache.hadoop.hive.ql.plan.ConditionalWork;
 
@@ -37,6 +38,10 @@ public class ConditionalTask extends Task<ConditionalWork> implements Serializab
   
   private ConditionalResolver resolver;
   private Object              resolverCtx;
+  
+  public ConditionalTask() {
+    super();
+  }
   
   public boolean isMapRedTask() {
     for (Task<? extends Serializable> task : listTasks)
@@ -54,14 +59,15 @@ public class ConditionalTask extends Task<ConditionalWork> implements Serializab
     return false;
   }
   
-  public void initialize (HiveConf conf) {
+  public void initialize (HiveConf conf, QueryPlan queryPlan) {
+    super.initialize(conf, queryPlan);
     resTask = listTasks.get(resolver.getTaskId(conf, resolverCtx));
-    resTask.initialize(conf);
+    resTask.initialize(conf, queryPlan);
   }
   
   @Override
   public int execute() {
-    return resTask.execute();
+    return resTask.executeTask();
   }
 
   /**

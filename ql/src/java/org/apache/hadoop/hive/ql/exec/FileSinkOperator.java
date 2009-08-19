@@ -155,7 +155,16 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
   }
 
   Writable recordValue; 
-  public void process(Object row, int tag) throws HiveException {
+  public void processOp(Object row, int tag) throws HiveException {
+    // Since File Sink is a terminal operator, forward is not called - so, maintain the number of output rows explicitly
+    if (counterNameToEnum != null) {
+      ++this.outputRows;
+      if (this.outputRows % 1000 == 0) {
+        incrCounter(numOutputRowsCntr, outputRows);
+        this.outputRows = 0;
+      }
+    }
+
     try {
       if (reporter != null)
         reporter.progress();
@@ -173,10 +182,18 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
     }
   }
 
+  @Override
   public void close(boolean abort) throws HiveException {
+
     if (state == State.CLOSE) 
       return;
-  
+
+    // Since close of super class is not invoked, update counters
+    if (counterNameToEnum != null) {
+      incrCounter(numInputRowsCntr, inputRows);
+      incrCounter(numOutputRowsCntr, outputRows);
+      incrCounter(timeTakenCntr, totalTime);
+    }
     state = State.CLOSE;
     if (!abort) {
       if (outWriter != null) {

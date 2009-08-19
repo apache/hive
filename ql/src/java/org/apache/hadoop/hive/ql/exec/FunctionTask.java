@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FunctionWork;
 import org.apache.hadoop.hive.ql.plan.createFunctionDesc;
@@ -39,8 +40,12 @@ public class FunctionTask extends Task<FunctionWork> {
 
   transient HiveConf conf;
   
-  public void initialize(HiveConf conf) {
-    super.initialize(conf);
+  public FunctionTask() {
+    super();
+  }
+  
+  public void initialize(HiveConf conf, QueryPlan queryPlan) {
+    super.initialize(conf, queryPlan);
     this.conf = conf;
   }
   

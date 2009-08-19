@@ -40,6 +40,8 @@ import org.apache.thrift.transport.TServerTransport;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportFactory;
 
+import org.apache.hadoop.hive.ql.plan.api.Query;
+import org.apache.hadoop.hive.ql.plan.api.QueryPlan;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.Driver;
@@ -279,6 +281,22 @@ public class HiveServer extends ThriftHive {
     public String getVersion() {
       return VERSION;
     }
+
+    @Override
+    public QueryPlan getQueryPlan() throws HiveServerException, TException {
+      QueryPlan qp = new QueryPlan();
+      // TODO for now only return one query at a time
+      // going forward, all queries associated with a single statement
+      // will be returned in a single QueryPlan
+      try {
+        qp.addToQueries(driver.getQueryPlan());
+      }
+      catch (Exception e) {
+        throw new HiveServerException(e.toString());
+      }
+      return qp;
+    }
+    
   }
 	
   public static class ThriftHiveProcessorFactory extends TProcessorFactory {

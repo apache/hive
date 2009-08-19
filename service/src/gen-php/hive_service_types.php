@@ -8,6 +8,7 @@ include_once $GLOBALS['THRIFT_ROOT'].'/Thrift.php';
 
 include_once $GLOBALS['THRIFT_ROOT'].'/packages/fb303/fb303_types.php';
 include_once $GLOBALS['THRIFT_ROOT'].'/packages/hive_metastore/hive_metastore_types.php';
+include_once $GLOBALS['THRIFT_ROOT'].'/packages/queryplan/queryplan_types.php';
 
 $GLOBALS['E_JobTrackerState'] = array(
   'INITIALIZING' => 1,

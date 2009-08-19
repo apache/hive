@@ -7,6 +7,7 @@
 from thrift.Thrift import *
 import fb303.ttypes
 import hive_metastore.ttypes
+import queryplan.ttypes
 
 
 from thrift.transport import TTransport

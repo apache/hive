@@ -43,6 +43,10 @@ public class MapRedTask extends Task<mapredWork> implements Serializable {
     
   private static final long serialVersionUID = 1L;
 
+  public MapRedTask() {
+    super();
+  }
+  
   public int execute() {
 
     try {

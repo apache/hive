@@ -171,10 +171,24 @@
     <copy file="${hive.root}/bin/hive-config.sh" todir="${target.bin.dir}"/>
     <copy file="${basedir}/conf/hive-default.xml" todir="${target.conf.dir}"/>
     <copy file="${basedir}/conf/hive-log4j.properties" todir="${target.conf.dir}"/>
+    <!-- Create php thrift package -->
     <copy todir="${target.lib.dir}/php">
+     <fileset dir="${hive.root}/service/lib/php" excludes="**.svn"/>
+    </copy>
+    <copy todir="${target.lib.dir}/php/packages/serde">
       <fileset dir="${hive.root}/serde/src/gen-php" excludes="**/.svn"/>
+    </copy>
+    <copy todir="${target.lib.dir}/php/packages/hive_metastore">
       <fileset dir="${hive.root}/metastore/src/gen-php" excludes="**/.svn"/>
     </copy>
+    <copy todir="${target.lib.dir}/php/packages/hive_service">
+      <fileset dir="${hive.root}/service/src/gen-php" excludes="**/.svn"/>
+    </copy>
+    <copy todir="${target.lib.dir}/php/packages/queryplan">
+      <fileset dir="${hive.root}/ql/src/gen-php" excludes="**/.svn"/>
+    </copy>
+
+
     <!-- Create the python thrift package -->
     <copy todir="${target.lib.dir}/py">
       <fileset dir="${hive.root}/service/lib/py" excludes="**/.svn"/>
@@ -188,6 +202,11 @@
     <copy todir="${target.lib.dir}/py/hive_service">
       <fileset dir="${hive.root}/service/src/gen-py/hive_service" excludes="**/.svn"/>
     </copy>
+    <copy todir="${target.lib.dir}/py/queryplan">
+      <fileset dir="${hive.root}/ql/src/gen-py/queryplan" excludes="**/.svn"/>
+    </copy>
+
+    <!-- copy jar files -->
     <copy todir="${target.lib.dir}" preservelastmodified="true" flatten="true">
       <fileset dir="${hive.root}" includes="*/*.jar, */*/*.jar" excludes="**/antlr-2*,**/antlr-3*,**/TestSerDe.jar"/>
       <fileset file="${build.dir.hive}/cli/hive_cli.jar"/>

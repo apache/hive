@@ -60,7 +60,9 @@ public class OperatorFactory {
     for(opTuple o: opvec) {
       if(o.descClass == opClass) {
         try {
-          return (Operator<T>)o.opClass.newInstance();
+          Operator<T> op = (Operator<T>)o.opClass.newInstance();
+          op.initializeCounters();
+          return op;
         } catch (Exception e) {
           e.printStackTrace();
           throw new RuntimeException(e);

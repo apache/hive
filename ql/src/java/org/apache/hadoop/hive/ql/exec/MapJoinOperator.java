@@ -197,7 +197,7 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
   }
 
   @Override
-  public void process(Object row, int tag) throws HiveException {
+  public void processOp(Object row, int tag) throws HiveException {
     try {
 
       // get alias

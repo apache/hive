@@ -5,8 +5,6 @@
 #
 
 from thrift.Thrift import *
-import thrift.reflection.limited.ttypes
-
 
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
@@ -17,6 +15,9 @@ except:
 
 
 class fb_status:
+  """
+  Common status reporting mechanism across all services
+  """
   DEAD = 0
   STARTING = 1
   ALIVE = 2

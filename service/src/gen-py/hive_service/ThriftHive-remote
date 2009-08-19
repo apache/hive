@@ -28,6 +28,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print '  Schema getSchema()'
   print '  Schema getThriftSchema()'
   print '  HiveClusterStatus getClusterStatus()'
+  print '  QueryPlan getQueryPlan()'
   print ''
   sys.exit(0)
 
@@ -117,5 +118,11 @@ elif cmd == 'getClusterStatus':
     print 'getClusterStatus requires 0 args'
     sys.exit(1)
   pp.pprint(client.getClusterStatus())
+
+elif cmd == 'getQueryPlan':
+  if len(args) != 0:
+    print 'getQueryPlan requires 0 args'
+    sys.exit(1)
+  pp.pprint(client.getQueryPlan())
 
 transport.close()

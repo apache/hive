@@ -306,7 +306,7 @@ public class MapOperator extends Operator <mapredWork> implements Serializable {
     }
   }
 
-  public void process(Object row, int tag)
+  public void processOp(Object row, int tag)
       throws HiveException {
     throw new HiveException("Hive 2 Internal error: should not be called!");
   }

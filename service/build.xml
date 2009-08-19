@@ -26,7 +26,7 @@
   <property name="test.junit.output.format" value="plain"/>
   <property name="test.output" value="false"/>
   <property name="test.junit.output.usefile" value="false"/>
-
+  <property name="thrift.args" value="--gen java:beans --gen php --gen py -I ${basedir}/include -I ${basedir}/.. -o ${src.dir}"/>
 
   <import file="../build-common.xml"/>
 
@@ -42,9 +42,9 @@
   </path>
 
   <target name="thriftif">
-    <echo>Executing thrift (which needs to be in your path) to build java metastore APIs.... </echo>
+    <echo>Executing thrift (which needs to be in your path) on if/hive_service.thrift</echo>
     <exec executable="thrift"  failonerror="true" dir=".">
-      <arg line="--gen java:beans --gen php --gen py -I ${basedir}/include -I ${basedir}/.. -o ${src.dir} if/hive_service.thrift " />
+      <arg line="${thrift.args} if/hive_service.thrift " />
     </exec>
   </target>
 

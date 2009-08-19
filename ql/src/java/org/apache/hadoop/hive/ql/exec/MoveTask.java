@@ -43,6 +43,10 @@ public class MoveTask extends Task<moveWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
+  public MoveTask() {
+    super();
+  }
+  
   public int execute() {
 
     try {

@@ -33,6 +33,7 @@ import java.util.Properties;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.plan.fetchWork;
 import org.apache.hadoop.hive.ql.plan.partitionDesc;
 import org.apache.hadoop.hive.ql.plan.tableDesc;
@@ -70,8 +71,12 @@ public class FetchTask extends Task<fetchWork> implements Serializable {
  	private LazySimpleSerDe mSerde;
  	private int totalRows;
   
-  public void initialize (HiveConf conf) {
-    super.initialize(conf);
+ 	public FetchTask() {
+ 	  super();
+ 	}
+ 	
+  public void initialize (HiveConf conf, QueryPlan queryPlan) {
+    super.initialize(conf, queryPlan);
     
    	try {
        // Create a file system handle  

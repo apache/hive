@@ -18,6 +18,9 @@ Trunk -  Unreleased
     HIVE-699. Functions with variable length arguments
     (Zheng Shao via namit)
 
+    HIVE-713. Integrate operator counters into query plan to view progress of
+    queries. (Namit Jain and Raghu Murthy via zshao)
+
   IMPROVEMENTS
 
     HIVE-760. Add version info to META-INF/MANIFEST.MF.

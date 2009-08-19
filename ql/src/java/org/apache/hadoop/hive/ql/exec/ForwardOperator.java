@@ -31,7 +31,7 @@ public class ForwardOperator extends  Operator<forwardDesc>  implements Serializ
   private static final long serialVersionUID = 1L;
 
   @Override
-  public void process(Object row, int tag)
+  public void processOp(Object row, int tag)
       throws HiveException {
     forward(row, inputObjInspectors[tag]);    
   }

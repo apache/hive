@@ -258,7 +258,7 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
   }
 
   Text text = new Text();
-  public void process(Object row, int tag) throws HiveException {
+  public void processOp(Object row, int tag) throws HiveException {
 
     if(scriptError != null) {
       throw new HiveException(scriptError);

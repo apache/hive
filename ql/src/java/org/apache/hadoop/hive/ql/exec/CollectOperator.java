@@ -45,7 +45,7 @@ public class CollectOperator extends Operator <collectDesc> implements Serializa
   }
 
   boolean firstRow = true;
-  public void process(Object row, int tag)
+  public void processOp(Object row, int tag)
       throws HiveException {
     ObjectInspector rowInspector = inputObjInspectors[tag];
     if (firstRow) {

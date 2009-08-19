@@ -24,8 +24,6 @@ import java.util.*;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.URLDecoder;
-import java.net.URL;
-import java.net.URLClassLoader;
 
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.lang.StringUtils;
@@ -43,24 +41,24 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.ql.plan.mapredWork;
-import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.partitionDesc;
-import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.io.*;
+import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.varia.NullAppender;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 
 public class ExecDriver extends Task<mapredWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
   transient protected JobConf job;
+  transient protected int mapProgress = 0;
+  transient protected int reduceProgress = 0;
 
   /**
    * Constructor when invoked from QL
@@ -99,8 +97,8 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
   /**
    * Initialization when invoked from QL
    */
-  public void initialize(HiveConf conf) {
-    super.initialize(conf);
+  public void initialize(HiveConf conf, QueryPlan queryPlan) {
+    super.initialize(conf, queryPlan);
     job = new JobConf(conf, ExecDriver.class);
     // NOTE: initialize is only called if it is in non-local mode.
     // In case it's in non-local mode, we need to move the SessionState files
@@ -191,11 +189,37 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
           + " job  -Dmapred.job.tracker=" + hp + " -kill " + rj.getJobID());
     }
   }
-
+  
   /**
-   * from StreamJob.java
+   * This class contains the state of the running task
+   * Going forward, we will return this handle from execute
+   * and Driver can split execute into start, monitorProgess and postProcess
    */
-  public RunningJob jobProgress(JobClient jc, RunningJob rj) throws IOException {
+  public static class ExecDriverTaskHandle extends TaskHandle {
+    JobClient jc;
+    RunningJob rj;
+    JobClient getJobClient() {
+      return jc;
+    }
+    RunningJob getRunningJob() {
+      return rj;
+    }
+    public ExecDriverTaskHandle(JobClient jc, RunningJob rj) {
+      this.jc = jc;
+      this.rj = rj;
+    }
+    public void setRunningJob(RunningJob job) {
+      this.rj = job;
+    }
+    public Counters getCounters() throws IOException {
+      return rj.getCounters();
+    }
+  }
+
+  public void progress(TaskHandle taskHandle) throws IOException {
+    ExecDriverTaskHandle th = (ExecDriverTaskHandle)taskHandle; 
+    JobClient jc = th.getJobClient();
+    RunningJob rj = th.getRunningJob();
     String lastReport = "";
     SimpleDateFormat dateFormat
         = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss,SSS");
@@ -206,13 +230,16 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
         Thread.sleep(1000);
       } catch (InterruptedException e) {
       }
-      rj = jc.getJob(rj.getJobID());
-      String report = " map = " + Math.round(rj.mapProgress() * 100) + "%,  reduce ="
-          + Math.round(rj.reduceProgress() * 100) + "%";
+      th.setRunningJob(jc.getJob(rj.getJobID()));
+      updateCounters(th);
+      
+      String report = " map = " + this.mapProgress + "%,  reduce = " + this.reduceProgress + "%";
 
       if (!report.equals(lastReport)
           || System.currentTimeMillis() >= reportTime + maxReportInterval) {
 
+        // write out serialized plan with counters to log file
+        // LOG.info(queryPlan);
         String output = dateFormat.format(Calendar.getInstance().getTime()) + report;
         SessionState ss = SessionState.get();
         if (ss != null) {
@@ -223,13 +250,21 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
               Keys.TASK_HADOOP_PROGRESS, output);
           ss.getHiveHistory().progressTask(
               SessionState.get().getQueryId(), this);
+          ss.getHiveHistory().logPlanProgress(queryPlan);
         }
         console.printInfo(output);
         lastReport = report;
         reportTime = System.currentTimeMillis();
       }
     }
-    return rj;
+    setDone();
+    th.setRunningJob(jc.getJob(rj.getJobID()));
+    updateCounters(th);
+    SessionState ss = SessionState.get();
+    if (ss != null) {
+      ss.getHiveHistory().logPlanProgress(queryPlan);
+    }
+    //LOG.info(queryPlan);
   }
 
   /**
@@ -309,10 +344,46 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
   }
 
   /**
+   * update counters relevant to this task
+   */
+  @Override
+  public void updateCounters(TaskHandle t) throws IOException {
+    ExecDriverTaskHandle th = (ExecDriverTaskHandle)t;
+    RunningJob rj = th.getRunningJob();
+    this.mapProgress = Math.round(rj.mapProgress() * 100);
+    this.reduceProgress = Math.round(rj.mapProgress() * 100);
+    taskCounters.put("CNTR_NAME_" + getId() + "_MAP_PROGRESS", Long.valueOf(this.mapProgress));
+    taskCounters.put("CNTR_NAME_" + getId() + "_REDUCE_PROGRESS", Long.valueOf(this.reduceProgress));
+    Counters ctrs = th.getCounters();
+    for (Operator<? extends Serializable> op: work.getAliasToWork().values()) {
+      op.updateCounters(ctrs);
+    }
+    if (work.getReducer() != null) {
+      work.getReducer().updateCounters(ctrs);
+    }
+  }
+
+  public boolean mapStarted() {
+    return mapProgress > 0;
+  }
+
+  public boolean reduceStarted() {
+    return reduceProgress > 0;
+  }
+
+  public boolean mapDone() {
+    return mapProgress == 100;
+  }
+
+  public boolean reduceDone() {
+    return reduceProgress == 100;
+  }
+
+  
+  /**
    * Execute a query plan using Hadoop
    */
   public int execute() {
-
     try {
       setNumberOfReducers();
     } catch(IOException e) {
@@ -377,6 +448,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
       if (pwd != null)
         job.set(HiveConf.ConfVars.METASTOREPWD.varname, "HIVE");
       JobClient jc = new JobClient(job);
+      
 
       // make this client wait if job trcker is not behaving well.
       Throttle.checkJobTracker(job, LOG);
@@ -391,10 +463,11 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
       runningJobKillURIs.put(rj.getJobID(), rj.getTrackingURL()
           + "&action=kill");
 
+      TaskHandle th = new ExecDriverTaskHandle(jc, rj);
       jobInfo(rj);
-      rj = jobProgress(jc, rj);
+      progress(th);
 
-      if(rj == null) {
+      if (rj == null) {
         // in the corner case where the running job has disappeared from JT memory
         // remember that we did actually submit the job.
         rj = orig_rj;
@@ -568,6 +641,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
 
     mapredWork plan = Utilities.deserializeMapRedWork(pathData, conf);
     ExecDriver ed = new ExecDriver(plan, conf, isSilent);
+
     int ret = ed.execute();
     if (ret != 0) {
       System.out.println("Job Failed");

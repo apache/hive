@@ -126,7 +126,7 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
   boolean firstRow;
   
   transient Random random;
-  public void process(Object row, int tag) throws HiveException {
+  public void processOp(Object row, int tag) throws HiveException {
     try {
       ObjectInspector rowInspector = inputObjInspectors[tag];
       if (firstRow) {
@@ -203,6 +203,12 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
     try {
       if (out != null) {
         out.collect(keyWritable, value);
+        // Since this is a terminal operator, update counters explicitly - forward is not called
+        ++this.outputRows;
+        if (this.outputRows % 1000 == 0) {
+          incrCounter(numOutputRowsCntr, outputRows);
+          this.outputRows = 0;
+        }
       }
     } catch (IOException e) {
       throw new HiveException (e);

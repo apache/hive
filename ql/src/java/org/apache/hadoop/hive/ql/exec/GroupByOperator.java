@@ -458,7 +458,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
       keysCurrentGroup.clear();
   }
   
-  public void process(Object row, int tag) throws HiveException {
+  public void processOp(Object row, int tag) throws HiveException {
     firstRow = false;
     ObjectInspector rowInspector = inputObjInspectors[tag];
     // Total number of input rows is needed for hash aggregation only

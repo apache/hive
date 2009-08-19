@@ -38,7 +38,7 @@ public class ExtractOperator extends Operator<extractDesc> implements Serializab
     initializeChildren(hconf);
   }
 
-  public void process(Object row, int tag) throws HiveException {
+  public void processOp(Object row, int tag) throws HiveException {
     forward(eval.evaluate(row), outputObjInspector);
   }
 

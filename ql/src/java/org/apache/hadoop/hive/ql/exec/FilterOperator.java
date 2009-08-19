@@ -61,7 +61,7 @@ public class FilterOperator extends Operator <filterDesc> implements Serializabl
     initializeChildren(hconf);
   }
 
-  public void process(Object row, int tag) throws HiveException {
+  public void processOp(Object row, int tag) throws HiveException {
     ObjectInspector rowInspector = inputObjInspectors[tag];
     if (conditionInspector == null) {
       conditionInspector = (PrimitiveObjectInspector)conditionEvaluator.initialize(rowInspector);

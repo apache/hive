@@ -1,22 +1,31 @@
 <?php
-
-/**
- * Copyright (c) 2006- Facebook
- * Distributed under the Thrift Software License
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
  *
- * See accompanying file LICENSE or visit the Thrift site at:
- * http://developers.facebook.com/thrift/
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  *
  * @package thrift.transport
- * @author Mark Slee <mcslee@facebook.com>
  */
+
 
 /**
  * Php stream transport. Reads to and writes from the php standard streams
  * php://input and php://output
  *
  * @package thrift.transport
- * @author Mark Slee <mcslee@facebook.com>
  */
 class TPhpStream extends TTransport {
 
@@ -38,7 +47,7 @@ class TPhpStream extends TTransport {
 
   public function open() {
     if ($this->read_) {
-      $this->inStream_ = @fopen('php://input', 'r');
+      $this->inStream_ = @fopen(self::inStreamName(), 'r');
       if (!is_resource($this->inStream_)) {
         throw new TException('TPhpStream: Could not open php://input');
       }
@@ -88,6 +97,13 @@ class TPhpStream extends TTransport {
 
   public function flush() {
     @fflush($this->outStream_);
+  }
+
+  private static function inStreamName() {
+    if (php_sapi_name() == 'cli') {
+      return 'php://stdin';
+    }
+    return 'php://input';
   }
 
 }

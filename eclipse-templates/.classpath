@@ -34,6 +34,7 @@
 	<classpathentry kind="src" path="metastore/src/java"/>
 	<classpathentry kind="src" path="metastore/src/model"/>
 	<classpathentry kind="src" path="metastore/src/test"/>
+	<classpathentry kind="src" path="ql/src/gen-javabean"/>
 	<classpathentry kind="src" path="ql/src/java"/>
 	<classpathentry kind="src" path="ql/src/test"/>
 	<classpathentry kind="src" path="serde/src/gen-java"/>

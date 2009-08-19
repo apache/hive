@@ -75,6 +75,7 @@ import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hadoop.hive.ql.QueryPlan;
 
 /**
  * DDLTask implementation
@@ -88,11 +89,15 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   static final private int separator  = Utilities.tabCode;
   static final private int terminator = Utilities.newLineCode;
   
-  public void initialize(HiveConf conf) {
-    super.initialize(conf);
+  public DDLTask() {
+    super();
+  }
+  
+  public void initialize(HiveConf conf, QueryPlan queryPlan) {
+    super.initialize(conf, queryPlan);
     this.conf = conf;
   }
-
+  
   public int execute() {
 
     // Create the db

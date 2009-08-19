@@ -169,6 +169,8 @@ public class Utilities {
     // workaround for java 1.5
     e.setPersistenceDelegate( ExpressionTypes.class, new EnumDelegate() );
     e.setPersistenceDelegate( groupByDesc.Mode.class, new EnumDelegate());
+    e.setPersistenceDelegate( Operator.ProgressCounter.class, new EnumDelegate());
+
     e.writeObject(t);
     e.close();
   }

@@ -58,7 +58,7 @@ public class SelectOperator extends Operator <selectDesc> implements Serializabl
     initializeChildren(hconf);
   }
 
-  public void process(Object row, int tag)
+  public void processOp(Object row, int tag)
       throws HiveException {
 
     // Just forward the row as is

@@ -110,7 +110,7 @@ public class UnionOperator extends  Operator<unionDesc>  implements Serializable
   }
   
   @Override
-  public void process(Object row, int tag) throws HiveException {
+  public void processOp(Object row, int tag) throws HiveException {
 
     StructObjectInspector soi = parentObjInspectors[tag];
       List<? extends StructField> fields = parentFields[tag];

@@ -1,21 +1,30 @@
 <?php
-
-/**
- * Copyright (c) 2006- Facebook
- * Distributed under the Thrift Software License
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
  *
- * See accompanying file LICENSE or visit the Thrift site at:
- * http://developers.facebook.com/thrift/
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  *
  * @package thrift.transport
- * @author Mark Slee <mcslee@facebook.com>
  */
+
 
 /**
  * Sockets implementation of the TTransport interface.
  *
  * @package thrift.transport
- * @author Mark Slee <mcslee@facebook.com>
  */
 class TSocket extends TTransport {
 
@@ -103,7 +112,7 @@ class TSocket extends TTransport {
   /**
    * Sets the send timeout.
    *
-   * @param int $timeout
+   * @param int $timeout  Timeout in milliseconds.
    */
   public function setSendTimeout($timeout) {
     $this->sendTimeout_ = $timeout;
@@ -112,7 +121,7 @@ class TSocket extends TTransport {
   /**
    * Sets the receive timeout.
    *
-   * @param int $timeout
+   * @param int $timeout  Timeout in milliseconds.
    */
   public function setRecvTimeout($timeout) {
     $this->recvTimeout_ = $timeout;
@@ -213,7 +222,7 @@ class TSocket extends TTransport {
     $pre = null;
     while (TRUE) {
       $buf = @fread($this->handle_, $len);
-      if ($buf === FALSE) {
+      if ($buf === FALSE || $buf === '') {
         $md = stream_get_meta_data($this->handle_);
         if ($md['timed_out']) {
           throw new TException('TSocket: timed out reading '.$len.' bytes from '.
@@ -224,7 +233,7 @@ class TSocket extends TTransport {
         }
       } else if (($sz = strlen($buf)) < $len) {
         $md = stream_get_meta_data($this->handle_);
-        if (true === $md['timed_out'] && false === $md['blocked']) {
+        if ($md['timed_out']) {
           throw new TException('TSocket: timed out reading '.$len.' bytes from '.
                                $this->host_.':'.$this->port_);
         } else {
