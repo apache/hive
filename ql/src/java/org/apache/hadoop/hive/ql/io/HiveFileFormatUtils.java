@@ -224,8 +224,14 @@ public class HiveFileFormatUtils {
     String skips = conf.get(READ_COLUMN_IDS_CONF_STR, "");
     String[] list = StringUtils.split(skips);
     ArrayList<Integer> result = new ArrayList<Integer>(list.length);
-    for (int i = 0; i < list.length; i++) {
-      result.add(Integer.parseInt(list[i]));
+    if (list.length == 1 && list[0] == "" ) {
+      // this is the case when conf value is specified by with a empty string ""
+      // the is to select all columns by default
+      result.add(new Integer(-1));
+    } else {
+      for (int i = 0; i < list.length; i++) {
+        result.add(Integer.parseInt(list[i]));
+      }
     }
     return result;
   }
