@@ -46,8 +46,8 @@ public class exprNodeFieldDesc extends exprNodeDesc implements Serializable {
   }
   
   @Override
-  public List<? extends Node> getChildren() {
-    List<Node> children = new ArrayList<Node>(2);
+  public List<exprNodeDesc> getChildren() {
+    List<exprNodeDesc> children = new ArrayList<exprNodeDesc>(2);
     children.add(desc);
     return children;
   }

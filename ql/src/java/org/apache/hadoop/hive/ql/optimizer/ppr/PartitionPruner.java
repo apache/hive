@@ -21,11 +21,12 @@ package org.apache.hadoop.hive.ql.optimizer.ppr;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
@@ -42,9 +43,11 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.Transform;
+import org.apache.hadoop.hive.ql.parse.ErrorMsg;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -87,7 +90,19 @@ public class PartitionPruner implements Transform {
     return pctx;
   }
 
-  public static PrunedPartitionList prune(Table tab, exprNodeDesc prunerExpr) throws HiveException {
+  /**
+   * Get the partition list for the table that satisfies the partition pruner
+   * condition.
+   * 
+   * @param tab    the table object for the alias
+   * @param prunerExpr  the pruner expression for the alias
+   * @param conf   for checking whether "strict" mode is on.
+   * @param alias  for generating error message only.
+   * @return
+   * @throws HiveException
+   */
+  public static PrunedPartitionList prune(Table tab, exprNodeDesc prunerExpr,
+      HiveConf conf, String alias) throws HiveException {
     LOG.trace("Started pruning partiton");
     LOG.trace("tabname = " + tab.getName());
     LOG.trace("prune Expression = " + prunerExpr);
@@ -121,6 +136,14 @@ public class PartitionPruner implements Transform {
           ois.add(partObjectInspector);
           StructObjectInspector rowWithPartObjectInspector = ObjectInspectorFactory.getUnionStructObjectInspector(ois);
 
+          // If the "strict" mode is on, we have to provide partition pruner for each table.  
+          if ("strict".equalsIgnoreCase(HiveConf.getVar(conf, HiveConf.ConfVars.HIVEMAPREDMODE))) {
+            if (!hasColumnExpr(prunerExpr)) {
+              throw new SemanticException(ErrorMsg.NO_PARTITION_PREDICATE.getMsg( 
+                  "for Alias \"" + alias + "\" Table \"" + tab.getName() + "\""));
+            }
+          }
+          
           // evaluate the expression tree
           if (prunerExpr != null) {
             ExprNodeEvaluator evaluator = ExprNodeEvaluatorFactory.get(prunerExpr);
@@ -152,11 +175,37 @@ public class PartitionPruner implements Transform {
       } else {
         true_parts.addAll(Hive.get().getPartitions(tab));
       }
+    } catch (HiveException e) {
+      throw e;
     } catch (Exception e) {
       throw new HiveException(e);
     }
 
     // Now return the set of partitions
     return new PrunedPartitionList(true_parts, unkn_parts, denied_parts);
-  }  
+  }
+  
+  /**
+   * Whether the expression contains a column node or not.
+   */
+  public static boolean hasColumnExpr(exprNodeDesc desc) {
+    // Return false for null 
+    if (desc == null) {
+      return false;
+    }
+    // Return true for exprNodeColumnDesc
+    if (desc instanceof exprNodeColumnDesc) {
+      return true;
+    }
+    // Return true in case one of the children is column expr.
+    List<exprNodeDesc> children = desc.getChildren();
+    for (int i = 0; i < children.size(); i++) {
+      if (hasColumnExpr(children.get(i))) {
+        return true;
+      }
+    }
+    // Return false otherwise
+    return false;
+  }
+  
 }

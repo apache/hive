@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.util.*;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
@@ -64,6 +65,8 @@ public class ASTPartitionPruner {
 
   private exprNodeDesc prunerExpr;
   
+  private HiveConf conf;
+  
   // is set to true if the expression only contains partitioning columns and not any other column reference.
   // This is used to optimize select * from table where ... scenario, when the where condition only references
   // partitioning columns - the partitions are identified and streamed directly to the client without requiring 
@@ -74,11 +77,12 @@ public class ASTPartitionPruner {
   }
   
   /** Creates a new instance of PartitionPruner */
-  public ASTPartitionPruner(String tableAlias, QBMetaData metaData) {
+  public ASTPartitionPruner(String tableAlias, QBMetaData metaData, HiveConf conf) {
     this.tableAlias = tableAlias;
     this.metaData = metaData;
     this.tab = metaData.getTableForAlias(tableAlias);
     this.prunerExpr = null;
+    this.conf = conf;
     onlyContainsPartCols = true;
   }
 
@@ -428,7 +432,8 @@ public class ASTPartitionPruner {
    */
   @SuppressWarnings("nls")
   public PrunedPartitionList prune() throws HiveException {
-    return org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner.prune(this.tab, this.prunerExpr);
+    return org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner.prune(this.tab,
+        this.prunerExpr, conf, this.tableAlias);
   }
 
   public Table getTable() {

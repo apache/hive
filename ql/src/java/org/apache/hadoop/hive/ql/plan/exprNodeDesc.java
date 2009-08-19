@@ -65,7 +65,7 @@ public abstract class exprNodeDesc implements Serializable, Node {
   }
   
   @Override
-  public List<? extends Node> getChildren() {
+  public List<exprNodeDesc> getChildren() {
     return null;
   }
   

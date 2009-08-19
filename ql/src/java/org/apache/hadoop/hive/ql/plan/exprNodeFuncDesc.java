@@ -75,8 +75,8 @@ public class exprNodeFuncDesc extends exprNodeDesc implements Serializable {
     this.childExprs = children;
   }
   @Override
-  public List<? extends Node> getChildren() {
-    return (List<? extends Node>)this.childExprs;
+  public List<exprNodeDesc> getChildren() {
+    return this.childExprs;
   }
   public String toString() {
     StringBuilder sb = new StringBuilder();

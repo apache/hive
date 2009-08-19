@@ -132,6 +132,10 @@ public enum ErrorMsg {
     return getMsg((ASTNode)tree, reason);
   }
 
+  public String getMsg(String reason) {
+    return mesg + " " + reason;
+  }
+
   public String getMsg() {
     return mesg;
   }
