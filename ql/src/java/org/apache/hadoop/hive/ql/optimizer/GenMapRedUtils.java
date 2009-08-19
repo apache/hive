@@ -402,8 +402,12 @@ public class GenMapRedUtils {
       else {
         partsList = org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner.prune(
                                                     parseCtx.getTopToTable().get(topOp), 
-                                                    parseCtx.getOpToPartPruner().get(topOp));
+                                                    parseCtx.getOpToPartPruner().get(topOp),
+                                                    opProcCtx.getConf(),
+                                                    alias_id);
       }
+    } catch (SemanticException e) {
+      throw e;
     } catch (HiveException e) {
       LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
       throw new SemanticException(e.getMessage(), e);

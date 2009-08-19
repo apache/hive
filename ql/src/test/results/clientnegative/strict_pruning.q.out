@@ -1,1 +1,1 @@
-FAILED: Error in semantic analysis: line 4:7 No Partition Predicate Found 1:  for Alias srcpart Table srcpart
+FAILED: Error in semantic analysis: No Partition Predicate Found for Alias "srcpart" Table "srcpart"

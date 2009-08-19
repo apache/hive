@@ -34,6 +34,8 @@ Trunk -  Unreleased
 
     HIVE-764. Fixed json.jar. (Raghu Murthy via zshao)
 
+    HIVE-769. Bug in partition pruner checking. (Zheng Shao via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

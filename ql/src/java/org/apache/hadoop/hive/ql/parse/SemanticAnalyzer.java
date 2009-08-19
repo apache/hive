@@ -113,6 +113,7 @@ import org.apache.hadoop.hive.ql.plan.selectDesc;
 import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.ql.plan.tableScanDesc;
 import org.apache.hadoop.hive.ql.plan.unionDesc;
+import org.apache.hadoop.hive.ql.ppd.PredicatePushDown;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFHash;
@@ -613,7 +614,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String alias_id = (qb.getId() == null ? alias : qb.getId() + ":" + alias);
 
       org.apache.hadoop.hive.ql.parse.ASTPartitionPruner pruner = 
-        new org.apache.hadoop.hive.ql.parse.ASTPartitionPruner(alias, qb.getMetaData());
+        new org.apache.hadoop.hive.ql.parse.ASTPartitionPruner(alias, qb.getMetaData(), conf);
       
       // Pass each where clause to the pruner
       for(String clause: qbp.getClauseNames()) {
@@ -659,21 +660,26 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    for (String alias : qb.getTabAliases()) {
-      String alias_id = (qb.getId() == null ? alias : qb.getId() + ":" + alias);
-      org.apache.hadoop.hive.ql.parse.ASTPartitionPruner pruner = this.aliasToPruner.get(alias_id);
-      if (joinPartnPruner.get(alias_id) == null) {
-        // Pass each where clause to the pruner
-         for(String clause: qbp.getClauseNames()) {
-          
-           ASTNode whexp = (ASTNode)qbp.getWhrForClause(clause);
-           if (pruner.getTable().isPartitioned() &&
-               conf.getVar(HiveConf.ConfVars.HIVEMAPREDMODE).equalsIgnoreCase("strict") &&
-               (whexp == null || !pruner.hasPartitionPredicate((ASTNode)whexp.getChild(0)))) {
-             throw new SemanticException(ErrorMsg.NO_PARTITION_PREDICATE.getMsg(whexp != null ? whexp : qbp.getSelForClause(clause), 
-                                                                                " for Alias " + alias + " Table " + pruner.getTable().getName()));
+    // Do old-style partition pruner check only if the new partition pruner
+    // is not enabled.
+    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEOPTPPD)
+        || !HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEOPTPPR)) {
+      for (String alias : qb.getTabAliases()) {
+        String alias_id = (qb.getId() == null ? alias : qb.getId() + ":" + alias);
+        org.apache.hadoop.hive.ql.parse.ASTPartitionPruner pruner = this.aliasToPruner.get(alias_id);
+        if (joinPartnPruner.get(alias_id) == null) {
+          // Pass each where clause to the pruner
+           for(String clause: qbp.getClauseNames()) {
+            
+             ASTNode whexp = (ASTNode)qbp.getWhrForClause(clause);
+             if (pruner.getTable().isPartitioned() &&
+                 conf.getVar(HiveConf.ConfVars.HIVEMAPREDMODE).equalsIgnoreCase("strict") &&
+                 (whexp == null || !pruner.hasPartitionPredicate((ASTNode)whexp.getChild(0)))) {
+               throw new SemanticException(ErrorMsg.NO_PARTITION_PREDICATE.getMsg(whexp != null ? whexp : qbp.getSelForClause(clause), 
+                                                                                  " for Alias " + alias + " Table " + pruner.getTable().getName()));
+             }
            }
-         }
+        }
       }
     }
   }
@@ -4406,7 +4412,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     init(pCtx);
     qb = pCtx.getQB();
     
-    // Do any partition pruning
+    // Do any partition pruning using ASTPartitionPruner
     genPartitionPruners(qb);
     LOG.info("Completed partition pruning");
     
