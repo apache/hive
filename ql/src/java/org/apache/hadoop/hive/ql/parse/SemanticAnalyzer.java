@@ -2730,7 +2730,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     StructObjectInspector oi = null;
     try {
       Deserializer deserializer = table_desc.getDeserializerClass().newInstance();
-      deserializer.initialize(null, table_desc.getProperties());
+      deserializer.initialize(conf, table_desc.getProperties());
       oi = (StructObjectInspector) deserializer.getObjectInspector();
     } catch (Exception e) {
       throw new SemanticException(e);

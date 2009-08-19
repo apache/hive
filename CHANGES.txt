@@ -535,6 +535,9 @@ Release 0.4.0 -  Unreleased
 
     HIVE-597. apache header for jdbc files. (Raghu Murthy via namit)
 
+    HIVE-772. Fix genConversionSelect for init serde with null.
+    (Namit Jain via zshao)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES
