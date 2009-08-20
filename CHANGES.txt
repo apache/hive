@@ -516,6 +516,8 @@ Release 0.4.0 -  Unreleased
 
     HIVE-769. Fix bug in partition pruning - bug in patch (Zheng Shao via namit)
 
+    HIVE-774. Fix the behavior of "/" and add "DIV". (Ning Zhang via zshao)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES
