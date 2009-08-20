@@ -199,9 +199,11 @@ public class PartitionPruner implements Transform {
     }
     // Return true in case one of the children is column expr.
     List<exprNodeDesc> children = desc.getChildren();
-    for (int i = 0; i < children.size(); i++) {
-      if (hasColumnExpr(children.get(i))) {
-        return true;
+    if (children != null) {
+      for (int i = 0; i < children.size(); i++) {
+        if (hasColumnExpr(children.get(i))) {
+          return true;
+        }
       }
     }
     // Return false otherwise
