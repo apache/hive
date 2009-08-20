@@ -153,6 +153,8 @@ public class HiveConf extends Configuration {
       
     HIVESENDHEARTBEAT("hive.heartbeat.interval", 1000),
 
+    HIVEJOBPROGRESS("hive.task.progress", false),
+
     // Optimizer
     HIVEOPTCP("hive.optimize.cp", true), // column pruner
     HIVEOPTPPD("hive.optimize.ppd", true), // predicate pushdown

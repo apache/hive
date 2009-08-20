@@ -31,6 +31,9 @@ Trunk -  Unreleased
 
     HIVE-732. Use LazyBinarySerDe (Zheng Shao via namit)
 
+    HIVE-768. Add conf var to disable counters introduced by HIVE-713.
+    (Namit Jain via zshao)
+
   OPTIMIZATIONS
 
   BUG FIXES

@@ -64,7 +64,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/dest1</string> 
+            <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/dest1</string> 
            </void> 
           </object> 
          </void> 
@@ -92,7 +92,7 @@
                 <void property="conf"> 
                  <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                   <void property="dirName"> 
-                   <string>file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_3/build/ql/tmp/1905448144/10001</string> 
+                   <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1900414590/10001</string> 
                   </void> 
                   <void property="tableInfo"> 
                    <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -121,28 +121,6 @@
                       </void> 
                      </object> 
                     </void> 
-                   </object> 
-                  </void> 
-                 </object> 
-                </void> 
-                <void property="counterNameToEnum"> 
-                 <object class="java.util.HashMap"> 
-                  <void method="put"> 
-                   <string>CNTR_NAME_FS_736_TIME_TAKEN</string> 
-                   <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                    <string>C9</string> 
-                   </object> 
-                  </void> 
-                  <void method="put"> 
-                   <string>CNTR_NAME_FS_736_NUM_INPUT_ROWS</string> 
-                   <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                    <string>C7</string> 
-                   </object> 
-                  </void> 
-                  <void method="put"> 
-                   <string>CNTR_NAME_FS_736_NUM_OUTPUT_ROWS</string> 
-                   <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                    <string>C8</string> 
                    </object> 
                   </void> 
                  </object> 
@@ -1253,28 +1231,6 @@
               </void> 
              </object> 
             </void> 
-            <void property="counterNameToEnum"> 
-             <object class="java.util.HashMap"> 
-              <void method="put"> 
-               <string>CNTR_NAME_SEL_735_NUM_OUTPUT_ROWS</string> 
-               <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                <string>C5</string> 
-               </object> 
-              </void> 
-              <void method="put"> 
-               <string>CNTR_NAME_SEL_735_TIME_TAKEN</string> 
-               <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                <string>C6</string> 
-               </object> 
-              </void> 
-              <void method="put"> 
-               <string>CNTR_NAME_SEL_735_NUM_INPUT_ROWS</string> 
-               <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                <string>C4</string> 
-               </object> 
-              </void> 
-             </object> 
-            </void> 
             <void property="counterNames"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
@@ -1507,28 +1463,6 @@
           </void> 
          </object> 
         </void> 
-        <void property="counterNameToEnum"> 
-         <object class="java.util.HashMap"> 
-          <void method="put"> 
-           <string>CNTR_NAME_TS_734_NUM_OUTPUT_ROWS</string> 
-           <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-            <string>C2</string> 
-           </object> 
-          </void> 
-          <void method="put"> 
-           <string>CNTR_NAME_TS_734_NUM_INPUT_ROWS</string> 
-           <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-            <string>C1</string> 
-           </object> 
-          </void> 
-          <void method="put"> 
-           <string>CNTR_NAME_TS_734_TIME_TAKEN</string> 
-           <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-            <string>C3</string> 
-           </object> 
-          </void> 
-         </object> 
-        </void> 
         <void property="counterNames"> 
          <object class="java.util.ArrayList"> 
           <void method="add"> 
@@ -1587,7 +1521,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/dest1</string> 
+       <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/dest1</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>dest1</string> 
@@ -1599,7 +1533,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/dest1</string> 
+       <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/dest1</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap0"/> 

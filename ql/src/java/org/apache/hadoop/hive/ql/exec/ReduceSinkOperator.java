@@ -204,10 +204,12 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
       if (out != null) {
         out.collect(keyWritable, value);
         // Since this is a terminal operator, update counters explicitly - forward is not called
-        ++this.outputRows;
-        if (this.outputRows % 1000 == 0) {
-          incrCounter(numOutputRowsCntr, outputRows);
-          this.outputRows = 0;
+        if (counterNameToEnum != null) {
+          ++this.outputRows;
+          if (this.outputRows % 1000 == 0) {
+            incrCounter(numOutputRowsCntr, outputRows);
+            this.outputRows = 0;
+          }
         }
       }
     } catch (IOException e) {

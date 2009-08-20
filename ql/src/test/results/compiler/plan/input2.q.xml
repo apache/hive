@@ -30,7 +30,7 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/1744781252/10000</string> 
+               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/419425947/10000</string> 
               </void> 
               <void property="table"> 
                <object id="tableDesc0" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -83,7 +83,7 @@
                   </void> 
                   <void method="put"> 
                    <string>location</string> 
-                   <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/dest1</string> 
+                   <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/dest1</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -93,7 +93,7 @@
                </object> 
               </void> 
               <void property="tmpDir"> 
-               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/1744781252/10001</string> 
+               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/419425947/10001</string> 
               </void> 
              </object> 
             </void> 
@@ -121,10 +121,10 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/927718259/10006</string> 
+               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1297887964/10006</string> 
               </void> 
               <void property="targetDir"> 
-               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/1744781252/10000</string> 
+               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/419425947/10000</string> 
               </void> 
              </object> 
             </void> 
@@ -142,7 +142,7 @@
             <void property="aliasToWork"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/927718259/10006</string> 
+               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1297887964/10006</string> 
                <object id="TableScanOperator0" class="org.apache.hadoop.hive.ql.exec.TableScanOperator"> 
                 <void property="childOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -294,28 +294,6 @@
                       </void> 
                      </object> 
                     </void> 
-                    <void property="counterNameToEnum"> 
-                     <object class="java.util.HashMap"> 
-                      <void method="put"> 
-                       <string>CNTR_NAME_RS_141_NUM_INPUT_ROWS</string> 
-                       <object id="Operator$ProgressCounter0" class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                        <string>C4</string> 
-                       </object> 
-                      </void> 
-                      <void method="put"> 
-                       <string>CNTR_NAME_RS_141_TIME_TAKEN</string> 
-                       <object id="Operator$ProgressCounter1" class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                        <string>C6</string> 
-                       </object> 
-                      </void> 
-                      <void method="put"> 
-                       <string>CNTR_NAME_RS_141_NUM_OUTPUT_ROWS</string> 
-                       <object id="Operator$ProgressCounter2" class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                        <string>C5</string> 
-                       </object> 
-                      </void> 
-                     </object> 
-                    </void> 
                     <void property="counterNames"> 
                      <object class="java.util.ArrayList"> 
                       <void method="add"> 
@@ -371,28 +349,6 @@
                   </void> 
                  </object> 
                 </void> 
-                <void property="counterNameToEnum"> 
-                 <object class="java.util.HashMap"> 
-                  <void method="put"> 
-                   <string>CNTR_NAME_TS_140_NUM_OUTPUT_ROWS</string> 
-                   <object id="Operator$ProgressCounter3" class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                    <string>C2</string> 
-                   </object> 
-                  </void> 
-                  <void method="put"> 
-                   <string>CNTR_NAME_TS_140_TIME_TAKEN</string> 
-                   <object id="Operator$ProgressCounter4" class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                    <string>C3</string> 
-                   </object> 
-                  </void> 
-                  <void method="put"> 
-                   <string>CNTR_NAME_TS_140_NUM_INPUT_ROWS</string> 
-                   <object id="Operator$ProgressCounter5" class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                    <string>C1</string> 
-                   </object> 
-                  </void> 
-                 </object> 
-                </void> 
                 <void property="counterNames"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
@@ -425,10 +381,10 @@
             <void property="pathToAliases"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/927718259/10006</string> 
+               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1297887964/10006</string> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/927718259/10006</string> 
+                 <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1297887964/10006</string> 
                 </void> 
                </object> 
               </void> 
@@ -437,7 +393,7 @@
             <void property="pathToPartitionInfo"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/927718259/10006</string> 
+               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1297887964/10006</string> 
                <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
                 <void property="tableDesc"> 
                  <object idref="tableDesc0"/> 
@@ -455,7 +411,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/1744781252/10000</string> 
+                     <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/419425947/10000</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -504,7 +460,7 @@
                         </void> 
                         <void method="put"> 
                          <string>location</string> 
-                         <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/dest1</string> 
+                         <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/dest1</string> 
                         </void> 
                         <void method="put"> 
                          <string>file.outputformat</string> 
@@ -515,28 +471,6 @@
                       <void property="serdeClassName"> 
                        <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
                       </void> 
-                     </object> 
-                    </void> 
-                   </object> 
-                  </void> 
-                  <void property="counterNameToEnum"> 
-                   <object class="java.util.HashMap"> 
-                    <void method="put"> 
-                     <string>CNTR_NAME_FS_143_NUM_INPUT_ROWS</string> 
-                     <object id="Operator$ProgressCounter6" class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                      <string>C10</string> 
-                     </object> 
-                    </void> 
-                    <void method="put"> 
-                     <string>CNTR_NAME_FS_143_TIME_TAKEN</string> 
-                     <object id="Operator$ProgressCounter7" class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                      <string>C12</string> 
-                     </object> 
-                    </void> 
-                    <void method="put"> 
-                     <string>CNTR_NAME_FS_143_NUM_OUTPUT_ROWS</string> 
-                     <object id="Operator$ProgressCounter8" class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                      <string>C11</string> 
                      </object> 
                     </void> 
                    </object> 
@@ -584,28 +518,6 @@
                   <void property="typeInfo"> 
                    <object idref="PrimitiveTypeInfo1"/> 
                   </void> 
-                 </object> 
-                </void> 
-               </object> 
-              </void> 
-              <void property="counterNameToEnum"> 
-               <object class="java.util.HashMap"> 
-                <void method="put"> 
-                 <string>CNTR_NAME_OP_142_TIME_TAKEN</string> 
-                 <object id="Operator$ProgressCounter9" class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                  <string>C9</string> 
-                 </object> 
-                </void> 
-                <void method="put"> 
-                 <string>CNTR_NAME_OP_142_NUM_OUTPUT_ROWS</string> 
-                 <object id="Operator$ProgressCounter10" class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                  <string>C8</string> 
-                 </object> 
-                </void> 
-                <void method="put"> 
-                 <string>CNTR_NAME_OP_142_NUM_INPUT_ROWS</string> 
-                 <object id="Operator$ProgressCounter11" class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                  <string>C7</string> 
                  </object> 
                 </void> 
                </object> 
@@ -682,7 +594,7 @@
       <void property="resolverCtx"> 
        <object class="org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles$ConditionalResolverMergeFilesCtx"> 
         <void property="dir"> 
-         <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/927718259/10006</string> 
+         <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1297887964/10006</string> 
         </void> 
         <void property="listTasks"> 
          <object idref="ArrayList0"/> 
@@ -732,7 +644,7 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/1744781252/10002</string> 
+               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/419425947/10002</string> 
               </void> 
               <void property="table"> 
                <object id="tableDesc3" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -785,7 +697,7 @@
                   </void> 
                   <void method="put"> 
                    <string>location</string> 
-                   <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/dest2</string> 
+                   <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/dest2</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -795,7 +707,7 @@
                </object> 
               </void> 
               <void property="tmpDir"> 
-               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/1744781252/10003</string> 
+               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/419425947/10003</string> 
               </void> 
              </object> 
             </void> 
@@ -823,10 +735,10 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/927718259/10007</string> 
+               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1297887964/10007</string> 
               </void> 
               <void property="targetDir"> 
-               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/1744781252/10002</string> 
+               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/419425947/10002</string> 
               </void> 
              </object> 
             </void> 
@@ -844,7 +756,7 @@
             <void property="aliasToWork"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/927718259/10007</string> 
+               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1297887964/10007</string> 
                <object id="TableScanOperator1" class="org.apache.hadoop.hive.ql.exec.TableScanOperator"> 
                 <void property="childOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -988,22 +900,6 @@
                       </void> 
                      </object> 
                     </void> 
-                    <void property="counterNameToEnum"> 
-                     <object class="java.util.HashMap"> 
-                      <void method="put"> 
-                       <string>CNTR_NAME_RS_145_NUM_OUTPUT_ROWS</string> 
-                       <object idref="Operator$ProgressCounter2"/> 
-                      </void> 
-                      <void method="put"> 
-                       <string>CNTR_NAME_RS_145_NUM_INPUT_ROWS</string> 
-                       <object idref="Operator$ProgressCounter0"/> 
-                      </void> 
-                      <void method="put"> 
-                       <string>CNTR_NAME_RS_145_TIME_TAKEN</string> 
-                       <object idref="Operator$ProgressCounter1"/> 
-                      </void> 
-                     </object> 
-                    </void> 
                     <void property="counterNames"> 
                      <object class="java.util.ArrayList"> 
                       <void method="add"> 
@@ -1059,22 +955,6 @@
                   </void> 
                  </object> 
                 </void> 
-                <void property="counterNameToEnum"> 
-                 <object class="java.util.HashMap"> 
-                  <void method="put"> 
-                   <string>CNTR_NAME_TS_144_TIME_TAKEN</string> 
-                   <object idref="Operator$ProgressCounter4"/> 
-                  </void> 
-                  <void method="put"> 
-                   <string>CNTR_NAME_TS_144_NUM_INPUT_ROWS</string> 
-                   <object idref="Operator$ProgressCounter5"/> 
-                  </void> 
-                  <void method="put"> 
-                   <string>CNTR_NAME_TS_144_NUM_OUTPUT_ROWS</string> 
-                   <object idref="Operator$ProgressCounter3"/> 
-                  </void> 
-                 </object> 
-                </void> 
                 <void property="counterNames"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
@@ -1107,10 +987,10 @@
             <void property="pathToAliases"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/927718259/10007</string> 
+               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1297887964/10007</string> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/927718259/10007</string> 
+                 <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1297887964/10007</string> 
                 </void> 
                </object> 
               </void> 
@@ -1119,7 +999,7 @@
             <void property="pathToPartitionInfo"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/927718259/10007</string> 
+               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1297887964/10007</string> 
                <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
                 <void property="tableDesc"> 
                  <object idref="tableDesc3"/> 
@@ -1137,7 +1017,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/1744781252/10002</string> 
+                     <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/419425947/10002</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -1186,7 +1066,7 @@
                         </void> 
                         <void method="put"> 
                          <string>location</string> 
-                         <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/dest2</string> 
+                         <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/dest2</string> 
                         </void> 
                         <void method="put"> 
                          <string>file.outputformat</string> 
@@ -1198,22 +1078,6 @@
                        <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
                       </void> 
                      </object> 
-                    </void> 
-                   </object> 
-                  </void> 
-                  <void property="counterNameToEnum"> 
-                   <object class="java.util.HashMap"> 
-                    <void method="put"> 
-                     <string>CNTR_NAME_FS_147_NUM_OUTPUT_ROWS</string> 
-                     <object idref="Operator$ProgressCounter8"/> 
-                    </void> 
-                    <void method="put"> 
-                     <string>CNTR_NAME_FS_147_TIME_TAKEN</string> 
-                     <object idref="Operator$ProgressCounter7"/> 
-                    </void> 
-                    <void method="put"> 
-                     <string>CNTR_NAME_FS_147_NUM_INPUT_ROWS</string> 
-                     <object idref="Operator$ProgressCounter6"/> 
                     </void> 
                    </object> 
                   </void> 
@@ -1261,22 +1125,6 @@
                    <object idref="PrimitiveTypeInfo1"/> 
                   </void> 
                  </object> 
-                </void> 
-               </object> 
-              </void> 
-              <void property="counterNameToEnum"> 
-               <object class="java.util.HashMap"> 
-                <void method="put"> 
-                 <string>CNTR_NAME_OP_146_TIME_TAKEN</string> 
-                 <object idref="Operator$ProgressCounter9"/> 
-                </void> 
-                <void method="put"> 
-                 <string>CNTR_NAME_OP_146_NUM_INPUT_ROWS</string> 
-                 <object idref="Operator$ProgressCounter11"/> 
-                </void> 
-                <void method="put"> 
-                 <string>CNTR_NAME_OP_146_NUM_OUTPUT_ROWS</string> 
-                 <object idref="Operator$ProgressCounter10"/> 
                 </void> 
                </object> 
               </void> 
@@ -1352,7 +1200,7 @@
       <void property="resolverCtx"> 
        <object class="org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles$ConditionalResolverMergeFilesCtx"> 
         <void property="dir"> 
-         <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/927718259/10007</string> 
+         <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1297887964/10007</string> 
         </void> 
         <void property="listTasks"> 
          <object idref="ArrayList1"/> 
@@ -1411,7 +1259,7 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/1744781252/10004</string> 
+               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/419425947/10004</string> 
               </void> 
               <void property="table"> 
                <object id="tableDesc6" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -1464,7 +1312,7 @@
                   </void> 
                   <void method="put"> 
                    <string>location</string> 
-                   <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/dest3</string> 
+                   <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/dest3</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -1474,7 +1322,7 @@
                </object> 
               </void> 
               <void property="tmpDir"> 
-               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/1744781252/10005</string> 
+               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/419425947/10005</string> 
               </void> 
              </object> 
             </void> 
@@ -1502,10 +1350,10 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/927718259/10008</string> 
+               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1297887964/10008</string> 
               </void> 
               <void property="targetDir"> 
-               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/1744781252/10004</string> 
+               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/419425947/10004</string> 
               </void> 
              </object> 
             </void> 
@@ -1523,7 +1371,7 @@
             <void property="aliasToWork"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/927718259/10008</string> 
+               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1297887964/10008</string> 
                <object id="TableScanOperator2" class="org.apache.hadoop.hive.ql.exec.TableScanOperator"> 
                 <void property="childOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -1667,22 +1515,6 @@
                       </void> 
                      </object> 
                     </void> 
-                    <void property="counterNameToEnum"> 
-                     <object class="java.util.HashMap"> 
-                      <void method="put"> 
-                       <string>CNTR_NAME_RS_149_TIME_TAKEN</string> 
-                       <object idref="Operator$ProgressCounter1"/> 
-                      </void> 
-                      <void method="put"> 
-                       <string>CNTR_NAME_RS_149_NUM_OUTPUT_ROWS</string> 
-                       <object idref="Operator$ProgressCounter2"/> 
-                      </void> 
-                      <void method="put"> 
-                       <string>CNTR_NAME_RS_149_NUM_INPUT_ROWS</string> 
-                       <object idref="Operator$ProgressCounter0"/> 
-                      </void> 
-                     </object> 
-                    </void> 
                     <void property="counterNames"> 
                      <object class="java.util.ArrayList"> 
                       <void method="add"> 
@@ -1738,22 +1570,6 @@
                   </void> 
                  </object> 
                 </void> 
-                <void property="counterNameToEnum"> 
-                 <object class="java.util.HashMap"> 
-                  <void method="put"> 
-                   <string>CNTR_NAME_TS_148_TIME_TAKEN</string> 
-                   <object idref="Operator$ProgressCounter4"/> 
-                  </void> 
-                  <void method="put"> 
-                   <string>CNTR_NAME_TS_148_NUM_INPUT_ROWS</string> 
-                   <object idref="Operator$ProgressCounter5"/> 
-                  </void> 
-                  <void method="put"> 
-                   <string>CNTR_NAME_TS_148_NUM_OUTPUT_ROWS</string> 
-                   <object idref="Operator$ProgressCounter3"/> 
-                  </void> 
-                 </object> 
-                </void> 
                 <void property="counterNames"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
@@ -1786,10 +1602,10 @@
             <void property="pathToAliases"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/927718259/10008</string> 
+               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1297887964/10008</string> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/927718259/10008</string> 
+                 <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1297887964/10008</string> 
                 </void> 
                </object> 
               </void> 
@@ -1798,7 +1614,7 @@
             <void property="pathToPartitionInfo"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/927718259/10008</string> 
+               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1297887964/10008</string> 
                <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
                 <void property="tableDesc"> 
                  <object idref="tableDesc6"/> 
@@ -1816,7 +1632,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/1744781252/10004</string> 
+                     <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/419425947/10004</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -1869,7 +1685,7 @@
                         </void> 
                         <void method="put"> 
                          <string>location</string> 
-                         <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/dest3</string> 
+                         <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/dest3</string> 
                         </void> 
                         <void method="put"> 
                          <string>file.outputformat</string> 
@@ -1881,22 +1697,6 @@
                        <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
                       </void> 
                      </object> 
-                    </void> 
-                   </object> 
-                  </void> 
-                  <void property="counterNameToEnum"> 
-                   <object class="java.util.HashMap"> 
-                    <void method="put"> 
-                     <string>CNTR_NAME_FS_151_TIME_TAKEN</string> 
-                     <object idref="Operator$ProgressCounter7"/> 
-                    </void> 
-                    <void method="put"> 
-                     <string>CNTR_NAME_FS_151_NUM_INPUT_ROWS</string> 
-                     <object idref="Operator$ProgressCounter6"/> 
-                    </void> 
-                    <void method="put"> 
-                     <string>CNTR_NAME_FS_151_NUM_OUTPUT_ROWS</string> 
-                     <object idref="Operator$ProgressCounter8"/> 
                     </void> 
                    </object> 
                   </void> 
@@ -1944,22 +1744,6 @@
                    <object idref="PrimitiveTypeInfo1"/> 
                   </void> 
                  </object> 
-                </void> 
-               </object> 
-              </void> 
-              <void property="counterNameToEnum"> 
-               <object class="java.util.HashMap"> 
-                <void method="put"> 
-                 <string>CNTR_NAME_OP_150_TIME_TAKEN</string> 
-                 <object idref="Operator$ProgressCounter9"/> 
-                </void> 
-                <void method="put"> 
-                 <string>CNTR_NAME_OP_150_NUM_INPUT_ROWS</string> 
-                 <object idref="Operator$ProgressCounter11"/> 
-                </void> 
-                <void method="put"> 
-                 <string>CNTR_NAME_OP_150_NUM_OUTPUT_ROWS</string> 
-                 <object idref="Operator$ProgressCounter10"/> 
                 </void> 
                </object> 
               </void> 
@@ -2039,7 +1823,7 @@
       <void property="resolverCtx"> 
        <object class="org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles$ConditionalResolverMergeFilesCtx"> 
         <void property="dir"> 
-         <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/927718259/10008</string> 
+         <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1297887964/10008</string> 
         </void> 
         <void property="listTasks"> 
          <object idref="ArrayList2"/> 
@@ -2127,7 +1911,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/src</string> 
+            <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src</string> 
            </void> 
           </object> 
          </void> 
@@ -2162,26 +1946,10 @@
                        <int>1</int> 
                       </void> 
                       <void property="dirName"> 
-                       <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/927718259/10006</string> 
+                       <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1297887964/10006</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object idref="tableDesc0"/> 
-                      </void> 
-                     </object> 
-                    </void> 
-                    <void property="counterNameToEnum"> 
-                     <object class="java.util.HashMap"> 
-                      <void method="put"> 
-                       <string>CNTR_NAME_FS_133_TIME_TAKEN</string> 
-                       <object idref="Operator$ProgressCounter7"/> 
-                      </void> 
-                      <void method="put"> 
-                       <string>CNTR_NAME_FS_133_NUM_INPUT_ROWS</string> 
-                       <object idref="Operator$ProgressCounter6"/> 
-                      </void> 
-                      <void method="put"> 
-                       <string>CNTR_NAME_FS_133_NUM_OUTPUT_ROWS</string> 
-                       <object idref="Operator$ProgressCounter8"/> 
                       </void> 
                      </object> 
                     </void> 
@@ -2271,22 +2039,6 @@
                   </void> 
                   <void property="selectStar"> 
                    <boolean>true</boolean> 
-                  </void> 
-                 </object> 
-                </void> 
-                <void property="counterNameToEnum"> 
-                 <object class="java.util.HashMap"> 
-                  <void method="put"> 
-                   <string>CNTR_NAME_SEL_132_TIME_TAKEN</string> 
-                   <object idref="Operator$ProgressCounter9"/> 
-                  </void> 
-                  <void method="put"> 
-                   <string>CNTR_NAME_SEL_132_NUM_INPUT_ROWS</string> 
-                   <object idref="Operator$ProgressCounter11"/> 
-                  </void> 
-                  <void method="put"> 
-                   <string>CNTR_NAME_SEL_132_NUM_OUTPUT_ROWS</string> 
-                   <object idref="Operator$ProgressCounter10"/> 
                   </void> 
                  </object> 
                 </void> 
@@ -2400,22 +2152,6 @@
               </void> 
              </object> 
             </void> 
-            <void property="counterNameToEnum"> 
-             <object class="java.util.HashMap"> 
-              <void method="put"> 
-               <string>CNTR_NAME_FIL_131_NUM_INPUT_ROWS</string> 
-               <object idref="Operator$ProgressCounter0"/> 
-              </void> 
-              <void method="put"> 
-               <string>CNTR_NAME_FIL_131_TIME_TAKEN</string> 
-               <object idref="Operator$ProgressCounter1"/> 
-              </void> 
-              <void method="put"> 
-               <string>CNTR_NAME_FIL_131_NUM_OUTPUT_ROWS</string> 
-               <object idref="Operator$ProgressCounter2"/> 
-              </void> 
-             </object> 
-            </void> 
             <void property="counterNames"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
@@ -2485,32 +2221,10 @@
                        <int>2</int> 
                       </void> 
                       <void property="dirName"> 
-                       <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/927718259/10007</string> 
+                       <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1297887964/10007</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object idref="tableDesc3"/> 
-                      </void> 
-                     </object> 
-                    </void> 
-                    <void property="counterNameToEnum"> 
-                     <object class="java.util.HashMap"> 
-                      <void method="put"> 
-                       <string>CNTR_NAME_FS_136_NUM_INPUT_ROWS</string> 
-                       <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                        <string>C19</string> 
-                       </object> 
-                      </void> 
-                      <void method="put"> 
-                       <string>CNTR_NAME_FS_136_NUM_OUTPUT_ROWS</string> 
-                       <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                        <string>C20</string> 
-                       </object> 
-                      </void> 
-                      <void method="put"> 
-                       <string>CNTR_NAME_FS_136_TIME_TAKEN</string> 
-                       <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                        <string>C21</string> 
-                       </object> 
                       </void> 
                      </object> 
                     </void> 
@@ -2596,28 +2310,6 @@
                     <void method="add"> 
                      <string>_col1</string> 
                     </void> 
-                   </object> 
-                  </void> 
-                 </object> 
-                </void> 
-                <void property="counterNameToEnum"> 
-                 <object class="java.util.HashMap"> 
-                  <void method="put"> 
-                   <string>CNTR_NAME_SEL_135_NUM_OUTPUT_ROWS</string> 
-                   <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                    <string>C17</string> 
-                   </object> 
-                  </void> 
-                  <void method="put"> 
-                   <string>CNTR_NAME_SEL_135_TIME_TAKEN</string> 
-                   <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                    <string>C18</string> 
-                   </object> 
-                  </void> 
-                  <void method="put"> 
-                   <string>CNTR_NAME_SEL_135_NUM_INPUT_ROWS</string> 
-                   <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                    <string>C16</string> 
                    </object> 
                   </void> 
                  </object> 
@@ -2799,28 +2491,6 @@
               </void> 
              </object> 
             </void> 
-            <void property="counterNameToEnum"> 
-             <object class="java.util.HashMap"> 
-              <void method="put"> 
-               <string>CNTR_NAME_FIL_134_TIME_TAKEN</string> 
-               <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                <string>C15</string> 
-               </object> 
-              </void> 
-              <void method="put"> 
-               <string>CNTR_NAME_FIL_134_NUM_OUTPUT_ROWS</string> 
-               <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                <string>C14</string> 
-               </object> 
-              </void> 
-              <void method="put"> 
-               <string>CNTR_NAME_FIL_134_NUM_INPUT_ROWS</string> 
-               <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                <string>C13</string> 
-               </object> 
-              </void> 
-             </object> 
-            </void> 
             <void property="counterNames"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
@@ -2869,32 +2539,10 @@
                        <int>3</int> 
                       </void> 
                       <void property="dirName"> 
-                       <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/927718259/10008</string> 
+                       <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1297887964/10008</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object idref="tableDesc6"/> 
-                      </void> 
-                     </object> 
-                    </void> 
-                    <void property="counterNameToEnum"> 
-                     <object class="java.util.HashMap"> 
-                      <void method="put"> 
-                       <string>CNTR_NAME_FS_139_NUM_INPUT_ROWS</string> 
-                       <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                        <string>C28</string> 
-                       </object> 
-                      </void> 
-                      <void method="put"> 
-                       <string>CNTR_NAME_FS_139_TIME_TAKEN</string> 
-                       <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                        <string>C30</string> 
-                       </object> 
-                      </void> 
-                      <void method="put"> 
-                       <string>CNTR_NAME_FS_139_NUM_OUTPUT_ROWS</string> 
-                       <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                        <string>C29</string> 
-                       </object> 
                       </void> 
                      </object> 
                     </void> 
@@ -2977,28 +2625,6 @@
                     <void method="add"> 
                      <string>_col1</string> 
                     </void> 
-                   </object> 
-                  </void> 
-                 </object> 
-                </void> 
-                <void property="counterNameToEnum"> 
-                 <object class="java.util.HashMap"> 
-                  <void method="put"> 
-                   <string>CNTR_NAME_SEL_138_NUM_OUTPUT_ROWS</string> 
-                   <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                    <string>C26</string> 
-                   </object> 
-                  </void> 
-                  <void method="put"> 
-                   <string>CNTR_NAME_SEL_138_NUM_INPUT_ROWS</string> 
-                   <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                    <string>C25</string> 
-                   </object> 
-                  </void> 
-                  <void method="put"> 
-                   <string>CNTR_NAME_SEL_138_TIME_TAKEN</string> 
-                   <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                    <string>C27</string> 
                    </object> 
                   </void> 
                  </object> 
@@ -3109,28 +2735,6 @@
               </void> 
              </object> 
             </void> 
-            <void property="counterNameToEnum"> 
-             <object class="java.util.HashMap"> 
-              <void method="put"> 
-               <string>CNTR_NAME_FIL_137_TIME_TAKEN</string> 
-               <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                <string>C24</string> 
-               </object> 
-              </void> 
-              <void method="put"> 
-               <string>CNTR_NAME_FIL_137_NUM_INPUT_ROWS</string> 
-               <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                <string>C22</string> 
-               </object> 
-              </void> 
-              <void method="put"> 
-               <string>CNTR_NAME_FIL_137_NUM_OUTPUT_ROWS</string> 
-               <object class="org.apache.hadoop.hive.ql.exec.Operator$ProgressCounter" method="valueOf"> 
-                <string>C23</string> 
-               </object> 
-              </void> 
-             </object> 
-            </void> 
             <void property="counterNames"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
@@ -3169,22 +2773,6 @@
          <object class="org.apache.hadoop.hive.ql.plan.tableScanDesc"> 
           <void property="alias"> 
            <string>src</string> 
-          </void> 
-         </object> 
-        </void> 
-        <void property="counterNameToEnum"> 
-         <object class="java.util.HashMap"> 
-          <void method="put"> 
-           <string>CNTR_NAME_TS_130_NUM_INPUT_ROWS</string> 
-           <object idref="Operator$ProgressCounter5"/> 
-          </void> 
-          <void method="put"> 
-           <string>CNTR_NAME_TS_130_NUM_OUTPUT_ROWS</string> 
-           <object idref="Operator$ProgressCounter3"/> 
-          </void> 
-          <void method="put"> 
-           <string>CNTR_NAME_TS_130_TIME_TAKEN</string> 
-           <object idref="Operator$ProgressCounter4"/> 
           </void> 
          </object> 
         </void> 
@@ -3228,7 +2816,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src</string> 
@@ -3240,7 +2828,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap0"/> 

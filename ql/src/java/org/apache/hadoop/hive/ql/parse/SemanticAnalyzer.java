@@ -4318,9 +4318,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (Task<? extends Serializable> rootTask: rootTasks)
       setKeyDescTaskTree(rootTask);
     
-    // For each operator, generate the counters
-    for (Task<? extends Serializable> rootTask: rootTasks)
-      generateCountersTask(rootTask);
+    // For each operator, generate the counters if needed
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEJOBPROGRESS))
+      for (Task<? extends Serializable> rootTask: rootTasks)
+        generateCountersTask(rootTask);
   }
 
   // loop over all the tasks recursviely

@@ -700,14 +700,16 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   private void preProcessCounter()
   {
     inputRows++;
-    
-    if (((inputRows % 1000) == 0) && (counterNameToEnum != null)) {
-      incrCounter(numInputRowsCntr, inputRows);
-      incrCounter(timeTakenCntr, totalTime);
-      inputRows = 0 ;
-      totalTime = 0;
+
+    if (counterNameToEnum != null) {
+      if ((inputRows % 1000) == 0) {
+        incrCounter(numInputRowsCntr, inputRows);
+        incrCounter(timeTakenCntr, totalTime);
+        inputRows = 0 ;
+        totalTime = 0;
+      }
+      beginTime = System.currentTimeMillis();
     }
-    beginTime = System.currentTimeMillis();
   }
 
   /**
@@ -715,7 +717,8 @@ public abstract class Operator <T extends Serializable> implements Serializable,
    */
   private void postProcessCounter()
   {
-    totalTime += (System.currentTimeMillis() - beginTime);
+    if (counterNameToEnum != null)
+      totalTime += (System.currentTimeMillis() - beginTime);
   }
 
   

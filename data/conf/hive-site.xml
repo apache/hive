@@ -124,4 +124,10 @@
   <description>Pre Execute Hook for Tests</description>
 </property>
 
+<property>
+  <name>hive.task.progress</name>
+  <value>false</value>
+  <description>Track progress of a task</description>
+</property>
+
 </configuration>
