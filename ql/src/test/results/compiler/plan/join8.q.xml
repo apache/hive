@@ -64,7 +64,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/src</string> 
+            <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/src</string> 
            </void> 
           </object> 
          </void> 
@@ -132,7 +132,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/src</string> 
+            <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/src</string> 
            </void> 
           </object> 
          </void> 
@@ -276,7 +276,7 @@
                           <void property="valueSerializeInfo"> 
                            <object id="tableDesc0" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
                             <void property="deserializerClass"> 
-                             <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
+                             <class>org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe</class> 
                             </void> 
                             <void property="inputFileFormatClass"> 
                              <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
@@ -1092,7 +1092,7 @@
                           <void property="valueSerializeInfo"> 
                            <object id="tableDesc2" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
                             <void property="deserializerClass"> 
-                             <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
+                             <class>org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe</class> 
                             </void> 
                             <void property="inputFileFormatClass"> 
                              <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
@@ -1785,7 +1785,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>c:a:src1</string> 
@@ -1800,7 +1800,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_3/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap0"/> 
@@ -1849,7 +1849,7 @@
                       <void property="conf"> 
                        <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                         <void property="dirName"> 
-                         <string>file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_3/build/ql/tmp/1243326745/10001</string> 
+                         <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/783088272/10001</string> 
                         </void> 
                         <void property="tableInfo"> 
                          <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 

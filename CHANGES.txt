@@ -29,6 +29,8 @@ Trunk -  Unreleased
     HIVE-759. Add "hive.intermediate.compression.codec/type" option.
     (Yongqiang He via zshao)
 
+    HIVE-732. Use LazyBinarySerDe (Zheng Shao via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES

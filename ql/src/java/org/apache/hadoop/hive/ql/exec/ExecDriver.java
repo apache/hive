@@ -406,7 +406,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
     job.setMapperClass(ExecMapper.class);
 
     job.setMapOutputKeyClass(HiveKey.class);
-    job.setMapOutputValueClass(Text.class);
+    job.setMapOutputValueClass(BytesWritable.class);
 
     job.setNumReduceTasks(work.getNumReduceTasks().intValue());
     job.setReducerClass(ExecReducer.class);

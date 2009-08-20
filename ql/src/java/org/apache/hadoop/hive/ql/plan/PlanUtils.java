@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.*;
 import java.io.*;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -29,20 +28,16 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
-import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
-import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.hive.serde2.Deserializer;
-
-import org.apache.thrift.protocol.TBinaryProtocol;
 
 public class PlanUtils {
 
@@ -166,7 +161,7 @@ public class PlanUtils {
    */
   public static tableDesc getMapJoinKeyTableDesc(List<FieldSchema> fieldSchemas) {
     return new tableDesc(
-        LazySimpleSerDe.class,
+        LazyBinarySerDe.class,
         SequenceFileInputFormat.class,
         SequenceFileOutputFormat.class,
         Utilities.makeProperties(
@@ -181,7 +176,7 @@ public class PlanUtils {
    */
   public static tableDesc getMapJoinValueTableDesc(List<FieldSchema> fieldSchemas) {
     return new tableDesc(
-        LazySimpleSerDe.class,
+        LazyBinarySerDe.class,
         SequenceFileInputFormat.class,
         SequenceFileOutputFormat.class,
         Utilities.makeProperties(
@@ -196,7 +191,7 @@ public class PlanUtils {
    */
   public static tableDesc getIntermediateFileTableDesc(List<FieldSchema> fieldSchemas) {
     return new tableDesc(
-        LazySimpleSerDe.class,
+        LazyBinarySerDe.class,
         SequenceFileInputFormat.class,
         SequenceFileOutputFormat.class,
         Utilities.makeProperties(
@@ -214,7 +209,7 @@ public class PlanUtils {
    */
   public static tableDesc getReduceValueTableDesc(List<FieldSchema> fieldSchemas) {
     return new tableDesc(
-        LazySimpleSerDe.class,
+        LazyBinarySerDe.class,
         SequenceFileInputFormat.class,
         SequenceFileOutputFormat.class,
         Utilities.makeProperties(

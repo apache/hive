@@ -30,7 +30,7 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1784719215/10000</string> 
+               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/1299004888/10000</string> 
               </void> 
               <void property="table"> 
                <object id="tableDesc0" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -83,7 +83,7 @@
                   </void> 
                   <void method="put"> 
                    <string>location</string> 
-                   <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/dest1</string> 
+                   <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/dest1</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -93,7 +93,7 @@
                </object> 
               </void> 
               <void property="tmpDir"> 
-               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1784719215/10001</string> 
+               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/1299004888/10001</string> 
               </void> 
              </object> 
             </void> 
@@ -121,10 +121,10 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1558527984/10007</string> 
+               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/120235765/10007</string> 
               </void> 
               <void property="targetDir"> 
-               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1784719215/10000</string> 
+               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/1299004888/10000</string> 
               </void> 
              </object> 
             </void> 
@@ -142,7 +142,7 @@
             <void property="aliasToWork"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1558527984/10007</string> 
+               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/120235765/10007</string> 
                <object id="TableScanOperator0" class="org.apache.hadoop.hive.ql.exec.TableScanOperator"> 
                 <void property="childOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -266,7 +266,7 @@
                       <void property="valueSerializeInfo"> 
                        <object id="tableDesc2" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
                         <void property="deserializerClass"> 
-                         <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
+                         <class>org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe</class> 
                         </void> 
                         <void property="inputFileFormatClass"> 
                          <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
@@ -425,10 +425,10 @@
             <void property="pathToAliases"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1558527984/10007</string> 
+               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/120235765/10007</string> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1558527984/10007</string> 
+                 <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/120235765/10007</string> 
                 </void> 
                </object> 
               </void> 
@@ -437,7 +437,7 @@
             <void property="pathToPartitionInfo"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1558527984/10007</string> 
+               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/120235765/10007</string> 
                <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
                 <void property="tableDesc"> 
                  <object idref="tableDesc0"/> 
@@ -455,7 +455,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1784719215/10000</string> 
+                     <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/1299004888/10000</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -504,7 +504,7 @@
                         </void> 
                         <void method="put"> 
                          <string>location</string> 
-                         <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/dest1</string> 
+                         <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/dest1</string> 
                         </void> 
                         <void method="put"> 
                          <string>file.outputformat</string> 
@@ -682,7 +682,7 @@
       <void property="resolverCtx"> 
        <object class="org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles$ConditionalResolverMergeFilesCtx"> 
         <void property="dir"> 
-         <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1558527984/10007</string> 
+         <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/120235765/10007</string> 
         </void> 
         <void property="listTasks"> 
          <object idref="ArrayList0"/> 
@@ -732,7 +732,7 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1784719215/10002</string> 
+               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/1299004888/10002</string> 
               </void> 
               <void property="table"> 
                <object id="tableDesc3" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -785,7 +785,7 @@
                   </void> 
                   <void method="put"> 
                    <string>location</string> 
-                   <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/dest2</string> 
+                   <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/dest2</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -795,7 +795,7 @@
                </object> 
               </void> 
               <void property="tmpDir"> 
-               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1784719215/10003</string> 
+               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/1299004888/10003</string> 
               </void> 
              </object> 
             </void> 
@@ -823,10 +823,10 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1558527984/10008</string> 
+               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/120235765/10008</string> 
               </void> 
               <void property="targetDir"> 
-               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1784719215/10002</string> 
+               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/1299004888/10002</string> 
               </void> 
              </object> 
             </void> 
@@ -844,7 +844,7 @@
             <void property="aliasToWork"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1558527984/10008</string> 
+               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/120235765/10008</string> 
                <object id="TableScanOperator1" class="org.apache.hadoop.hive.ql.exec.TableScanOperator"> 
                 <void property="childOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -960,7 +960,7 @@
                       <void property="valueSerializeInfo"> 
                        <object id="tableDesc5" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
                         <void property="deserializerClass"> 
-                         <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
+                         <class>org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe</class> 
                         </void> 
                         <void property="inputFileFormatClass"> 
                          <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
@@ -1107,10 +1107,10 @@
             <void property="pathToAliases"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1558527984/10008</string> 
+               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/120235765/10008</string> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1558527984/10008</string> 
+                 <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/120235765/10008</string> 
                 </void> 
                </object> 
               </void> 
@@ -1119,7 +1119,7 @@
             <void property="pathToPartitionInfo"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1558527984/10008</string> 
+               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/120235765/10008</string> 
                <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
                 <void property="tableDesc"> 
                  <object idref="tableDesc3"/> 
@@ -1137,7 +1137,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1784719215/10002</string> 
+                     <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/1299004888/10002</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -1186,7 +1186,7 @@
                         </void> 
                         <void method="put"> 
                          <string>location</string> 
-                         <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/dest2</string> 
+                         <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/dest2</string> 
                         </void> 
                         <void method="put"> 
                          <string>file.outputformat</string> 
@@ -1352,7 +1352,7 @@
       <void property="resolverCtx"> 
        <object class="org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles$ConditionalResolverMergeFilesCtx"> 
         <void property="dir"> 
-         <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1558527984/10008</string> 
+         <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/120235765/10008</string> 
         </void> 
         <void property="listTasks"> 
          <object idref="ArrayList1"/> 
@@ -1411,7 +1411,7 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1784719215/10004</string> 
+               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/1299004888/10004</string> 
               </void> 
               <void property="table"> 
                <object id="tableDesc6" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -1464,7 +1464,7 @@
                   </void> 
                   <void method="put"> 
                    <string>location</string> 
-                   <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/dest3</string> 
+                   <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/dest3</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -1474,7 +1474,7 @@
                </object> 
               </void> 
               <void property="tmpDir"> 
-               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1784719215/10005</string> 
+               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/1299004888/10005</string> 
               </void> 
              </object> 
             </void> 
@@ -1502,10 +1502,10 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1558527984/10009</string> 
+               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/120235765/10009</string> 
               </void> 
               <void property="targetDir"> 
-               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1784719215/10004</string> 
+               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/1299004888/10004</string> 
               </void> 
              </object> 
             </void> 
@@ -1523,7 +1523,7 @@
             <void property="aliasToWork"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1558527984/10009</string> 
+               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/120235765/10009</string> 
                <object id="TableScanOperator2" class="org.apache.hadoop.hive.ql.exec.TableScanOperator"> 
                 <void property="childOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -1639,7 +1639,7 @@
                       <void property="valueSerializeInfo"> 
                        <object id="tableDesc8" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
                         <void property="deserializerClass"> 
-                         <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
+                         <class>org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe</class> 
                         </void> 
                         <void property="inputFileFormatClass"> 
                          <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
@@ -1786,10 +1786,10 @@
             <void property="pathToAliases"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1558527984/10009</string> 
+               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/120235765/10009</string> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1558527984/10009</string> 
+                 <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/120235765/10009</string> 
                 </void> 
                </object> 
               </void> 
@@ -1798,7 +1798,7 @@
             <void property="pathToPartitionInfo"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1558527984/10009</string> 
+               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/120235765/10009</string> 
                <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
                 <void property="tableDesc"> 
                  <object idref="tableDesc6"/> 
@@ -1816,7 +1816,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1784719215/10004</string> 
+                     <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/1299004888/10004</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -1869,7 +1869,7 @@
                         </void> 
                         <void method="put"> 
                          <string>location</string> 
-                         <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/dest3</string> 
+                         <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/dest3</string> 
                         </void> 
                         <void method="put"> 
                          <string>file.outputformat</string> 
@@ -2039,7 +2039,7 @@
       <void property="resolverCtx"> 
        <object class="org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles$ConditionalResolverMergeFilesCtx"> 
         <void property="dir"> 
-         <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1558527984/10009</string> 
+         <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/120235765/10009</string> 
         </void> 
         <void property="listTasks"> 
          <object idref="ArrayList2"/> 
@@ -2092,7 +2092,7 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1784719215/10006</string> 
+               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/1299004888/10006</string> 
               </void> 
               <void property="targetDir"> 
                <string>../../../../build/contrib/hive/ql/test/data/warehouse/dest4.out</string> 
@@ -2123,10 +2123,10 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1558527984/10010</string> 
+               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/120235765/10010</string> 
               </void> 
               <void property="targetDir"> 
-               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1784719215/10006</string> 
+               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/1299004888/10006</string> 
               </void> 
              </object> 
             </void> 
@@ -2144,7 +2144,7 @@
             <void property="aliasToWork"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1558527984/10010</string> 
+               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/120235765/10010</string> 
                <object id="TableScanOperator3" class="org.apache.hadoop.hive.ql.exec.TableScanOperator"> 
                 <void property="childOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -2244,7 +2244,7 @@
                       <void property="valueSerializeInfo"> 
                        <object id="tableDesc10" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
                         <void property="deserializerClass"> 
-                         <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
+                         <class>org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe</class> 
                         </void> 
                         <void property="inputFileFormatClass"> 
                          <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
@@ -2381,10 +2381,10 @@
             <void property="pathToAliases"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1558527984/10010</string> 
+               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/120235765/10010</string> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1558527984/10010</string> 
+                 <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/120235765/10010</string> 
                 </void> 
                </object> 
               </void> 
@@ -2393,7 +2393,7 @@
             <void property="pathToPartitionInfo"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1558527984/10010</string> 
+               <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/120235765/10010</string> 
                <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
                 <void property="tableDesc"> 
                  <object id="tableDesc11" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -2437,7 +2437,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1784719215/10006</string> 
+                     <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/1299004888/10006</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -2611,7 +2611,7 @@
       <void property="resolverCtx"> 
        <object class="org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles$ConditionalResolverMergeFilesCtx"> 
         <void property="dir"> 
-         <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1558527984/10010</string> 
+         <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/120235765/10010</string> 
         </void> 
         <void property="listTasks"> 
          <object idref="ArrayList3"/> 
@@ -2699,7 +2699,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src</string> 
+            <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/src</string> 
            </void> 
           </object> 
          </void> 
@@ -2734,7 +2734,7 @@
                        <int>1</int> 
                       </void> 
                       <void property="dirName"> 
-                       <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1558527984/10007</string> 
+                       <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/120235765/10007</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object idref="tableDesc0"/> 
@@ -3057,7 +3057,7 @@
                        <int>2</int> 
                       </void> 
                       <void property="dirName"> 
-                       <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1558527984/10008</string> 
+                       <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/120235765/10008</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object idref="tableDesc3"/> 
@@ -3441,7 +3441,7 @@
                        <int>3</int> 
                       </void> 
                       <void property="dirName"> 
-                       <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1558527984/10009</string> 
+                       <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/120235765/10009</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object idref="tableDesc6"/> 
@@ -3822,7 +3822,7 @@
                        <int>4</int> 
                       </void> 
                       <void property="dirName"> 
-                       <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1558527984/10010</string> 
+                       <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/tmp/120235765/10010</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object idref="tableDesc11"/> 
@@ -4154,7 +4154,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src</string> 
@@ -4166,7 +4166,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/njain/hive_commit2/hive_commit2/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap0"/> 
