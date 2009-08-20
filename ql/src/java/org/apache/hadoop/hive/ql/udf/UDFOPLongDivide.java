@@ -28,27 +28,26 @@ import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.hive.ql.exec.NumericOpMethodResolver;
 
 @description(
     name = "/",
-    value = "a _FUNC_ b - Divide a by b",
+    value = "a _FUNC_ b - Divide a by b rounded to the long integer",
     extended = "Example:\n" +
         "  > SELECT 3 _FUNC_ 2 FROM src LIMIT 1;\n" +
-        "  1.5"
+        "  1"
 )
-public class UDFOPDivide extends UDF {
+public class UDFOPLongDivide extends UDF {
 
-  private static Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.udf.UDFOPDivide");
+  private static Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.udf.UDFOPLongDivide");
 
-  protected DoubleWritable doubleWritable = new DoubleWritable();
+  protected LongWritable longWritable = new LongWritable();
   
-  public DoubleWritable evaluate(DoubleWritable a, DoubleWritable b)  {
+  public LongWritable evaluate(LongWritable a, LongWritable b)  {
     // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":" + b);
     if ((a == null) || (b == null))
       return null;
 
-    doubleWritable.set(a.get()/b.get());
-    return doubleWritable;
+    longWritable.set((long)a.get()/b.get());
+    return longWritable;
   }
 }

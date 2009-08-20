@@ -135,6 +135,7 @@ public class FunctionRegistry {
     registerUDF("*", UDFOPMultiply.class, true);
     registerUDF("/", UDFOPDivide.class, true);
     registerUDF("%", UDFOPMod.class, true);
+    registerUDF("div", UDFOPLongDivide.class, true);
 
     registerUDF("&", UDFOPBitAnd.class, true);
     registerUDF("|", UDFOPBitOr.class, true);
