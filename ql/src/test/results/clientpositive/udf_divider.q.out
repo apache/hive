@@ -1,8 +1,8 @@
 query: SELECT 3 / 2 FROM SRC LIMIT 1
 Input: default/src
-Output: file:/data/users/nzhang/work/774/774-trunk-apache-hive/build/ql/tmp/2108880178/10000
+Output: file:/data/users/nzhang/work/774/774-trunk-apache-hive/build/ql/tmp/1383988370/10000
 1.5
-query: SELECT DIV(3, 2) FROM SRC LIMIT 1
+query: SELECT 3 DIV 2 FROM SRC LIMIT 1
 Input: default/src
-Output: file:/data/users/nzhang/work/774/774-trunk-apache-hive/build/ql/tmp/166968095/10000
+Output: file:/data/users/nzhang/work/774/774-trunk-apache-hive/build/ql/tmp/1562639283/10000
 1

@@ -553,6 +553,8 @@ Release 0.4.0 -  Unreleased
 
     HIVE-774. Fix the behavior of "/" and add "DIV". (Ning Zhang via zshao)
 
+    HIVE-776. Make "DIV" an infix operator. (Ning Zhang via zshao)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES
