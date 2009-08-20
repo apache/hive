@@ -1039,7 +1039,7 @@ precedenceBitwiseXorExpression
 	
 precedenceStarOperator
     :
-    STAR | DIVIDE | MOD
+    STAR | DIVIDE | MOD | DIV
     ;
 
 precedenceStarExpression
@@ -1335,6 +1335,7 @@ PLUS : '+';
 MINUS : '-';
 STAR : '*';
 MOD : '%';
+DIV : 'DIV';
 
 AMPERSAND : '&';
 TILDE : '~';
