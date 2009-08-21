@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.cli.CliDriver;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.Utilities.StreamPrinter;
@@ -246,6 +247,7 @@ public class QTestUtil {
     for(String s: new String [] {"dest4.out", "union.out"}) {
       deleteDirectory(new File(warehousePath, s));
     }
+    FunctionRegistry.unregisterTemporaryUDF("test_udaf");
   }
 
   private void runLoadCmd(String loadCmd) throws Exception {

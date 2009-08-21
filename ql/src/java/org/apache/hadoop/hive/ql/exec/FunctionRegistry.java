@@ -571,7 +571,7 @@ public class FunctionRegistry {
           conversionCost += cost;
         }
       }
-      LOG.info("Method " + (match ? "did": "didn't") + " match: passed = " + argumentsPassed
+      LOG.debug("Method " + (match ? "did": "didn't") + " match: passed = " + argumentsPassed
           + " accepted = " + argumentsAccepted + " method = " + m);
       if (match) {
         // Always choose the function with least implicit conversions.

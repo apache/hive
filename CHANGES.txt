@@ -51,6 +51,9 @@ Trunk -  Unreleased
     (Zheng Shao via namit)
 
     HIVE-782. Bug in reducer progress (Raghu Murthy via namit)
+  
+    HIVE-780. Better error messages for wrong argument lengths in UDAFs
+    (Zheng Shao via namit)
 
 Release 0.4.0 -  Unreleased
 

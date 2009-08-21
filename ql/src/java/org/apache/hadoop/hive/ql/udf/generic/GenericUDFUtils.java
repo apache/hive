@@ -24,11 +24,14 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
@@ -204,7 +207,7 @@ public class GenericUDFUtils {
      * Create a PrimitiveConversionHelper for Method m.  The ObjectInspector's
      * input parameters are specified in parameters.
      */
-    public ConversionHelper(Method m, ObjectInspector[] parameterOIs) {
+    public ConversionHelper(Method m, ObjectInspector[] parameterOIs) throws UDFArgumentException {
       this.m = m;
       this.givenParameterOIs = parameterOIs;
       
@@ -222,6 +225,13 @@ public class GenericUDFUtils {
       
       if (isVariableLengthArgument) {
         
+        // ConversionHelper can be called without method parameter length checkings
+        // for terminatePartial() and merge() calls.
+        if (parameterOIs.length < methodParameterTypes.length - 1) {
+          throw new UDFArgumentLengthException(m.toString() + " requires at least " 
+              + (methodParameterTypes.length - 1) + " arguments but only " 
+              + parameterOIs.length + " are passed in.");
+        }
         // Copy the first methodParameterTypes.length - 1 entries
         for (int i = 0; i < methodParameterTypes.length - 1; i++) {
           // This method takes Object, so it accepts whatever types that are passed in.
@@ -253,7 +263,13 @@ public class GenericUDFUtils {
       } else {
         
         // Normal case, the last parameter is a normal parameter.
-        assert methodParameterTypes.length == parameterOIs.length;
+        // ConversionHelper can be called without method parameter length checkings
+        // for terminatePartial() and merge() calls.
+        if (methodParameterTypes.length != parameterOIs.length) {
+          throw new UDFArgumentLengthException(m.toString() + " requires " 
+              + methodParameterTypes.length + " arguments but " 
+              + parameterOIs.length + " are passed in.");
+        }
         for (int i = 0; i < methodParameterTypes.length; i++) {
           // This method takes Object, so it accepts whatever types that are passed in.
           if (methodParameterTypes[i] == Object.class) {
