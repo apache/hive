@@ -50,6 +50,8 @@ Trunk -  Unreleased
     HIVE-769. Bug in partition pruner checking - bug in patch. 
     (Zheng Shao via namit)
 
+    HIVE-782. Bug in reducer progress (Raghu Murthy via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
