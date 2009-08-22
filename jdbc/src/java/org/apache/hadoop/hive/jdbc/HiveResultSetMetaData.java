@@ -18,13 +18,17 @@
 
 package org.apache.hadoop.hive.jdbc;
 
+import org.apache.hadoop.hive.serde.Constants;
+
 import java.sql.SQLException;
+import java.sql.ResultSetMetaData;
+import java.sql.Types;
 import java.util.List;
 
 public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
   List<String> columnNames;
   List<String> columnTypes;
-  
+
   public HiveResultSetMetaData(List<String> columnNames, List<String> columnTypes) {
     this.columnNames = columnNames;
     this.columnTypes = columnTypes;
@@ -61,8 +65,22 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
    */
 
   public int getColumnDisplaySize(int column) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+
+    // taking a stab at appropriate values
+    switch(getColumnType(column)) {
+      case Types.VARCHAR:
+      case Types.BIGINT:
+        return 32;
+      case Types.TINYINT:
+        return 2;
+      case Types.BOOLEAN:
+        return 8;
+      case Types.DOUBLE:
+      case Types.INTEGER:
+        return 16;
+      default:
+        return 32;
+    }
   }
 
   /* (non-Javadoc)
@@ -87,8 +105,31 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
    */
 
   public int getColumnType(int column) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    if (columnTypes == null)
+      throw new SQLException("Could not determine column type name for ResultSet");
+
+    if (column < 1 || column > columnTypes.size())
+      throw new SQLException("Invalid column value: " + column);
+
+    // we need to convert the thrift type to the SQL type
+    String type = columnTypes.get(column-1);
+
+    // we need to convert the thrift type to the SQL type
+    //TODO: this would be better handled in an enum
+    if ("string".equals(type))
+      return Types.VARCHAR;
+    else if ("bool".equals(type))
+      return Types.BOOLEAN;
+    else if ("double".equals(type))
+      return Types.DOUBLE;
+    else if ("byte".equals(type))
+      return Types.TINYINT;
+    else if ("i32".equals(type))
+      return Types.INTEGER;
+    else if ("i64".equals(type))
+      return Types.BIGINT;
+
+    throw new SQLException("Inrecognized column type: " + type);
   }
 
   /* (non-Javadoc)
@@ -96,7 +137,30 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
    */
 
   public String getColumnTypeName(int column) throws SQLException {
-    return columnTypes.get(column-1);
+    if (columnTypes == null)
+      throw new SQLException("Could not determine column type name for ResultSet");
+
+    if (column < 1 || column > columnTypes.size())
+      throw new SQLException("Invalid column value: " + column);
+
+    // we need to convert the thrift type to the SQL type name
+    //TODO: this would be better handled in an enum
+    String type = columnTypes.get(column-1);
+    if ("string".equals(type))
+      return Constants.STRING_TYPE_NAME;
+    else if ("double".equals(type))
+      return Constants.DOUBLE_TYPE_NAME;
+    
+    else if ("bool".equals(type))
+      return Constants.BOOLEAN_TYPE_NAME;
+    else if ("byte".equals(type))
+      return Constants.TINYINT_TYPE_NAME;
+    else if ("i32".equals(type))
+      return Constants.INT_TYPE_NAME;
+    else if ("i64".equals(type))
+      return Constants.BIGINT_TYPE_NAME;
+
+    throw new SQLException("Inrecognized column type: " + type);
   }
 
   /* (non-Javadoc)
@@ -104,8 +168,9 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
    */
 
   public int getPrecision(int column) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    if (Types.DOUBLE == getColumnType(column)) return -1; //Do we have a precision limit?
+
+    return 0;
   }
 
   /* (non-Javadoc)
@@ -113,8 +178,9 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
    */
 
   public int getScale(int column) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    if (Types.DOUBLE == getColumnType(column)) return -1; //Do we have a scale limit?
+
+    return 0;
   }
 
   /* (non-Javadoc)
@@ -140,8 +206,8 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
    */
 
   public boolean isAutoIncrement(int column) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    // Hive doesn't have an auto-increment concept
+    return false;
   }
 
   /* (non-Javadoc)
@@ -158,8 +224,8 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
    */
 
   public boolean isCurrency(int column) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    // Hive doesn't support a currency type
+    return false;
   }
 
   /* (non-Javadoc)
@@ -176,8 +242,8 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
    */
 
   public int isNullable(int column) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    // Hive doesn't have the concept of not-null
+    return ResultSetMetaData.columnNullable;
   }
 
   /* (non-Javadoc)

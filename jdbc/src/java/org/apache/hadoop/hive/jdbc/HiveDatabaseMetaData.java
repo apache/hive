@@ -22,6 +22,10 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.RowIdLifetime;
 import java.sql.SQLException;
+import java.net.URL;
+import java.util.jar.Manifest;
+import java.util.jar.Attributes;
+import java.io.IOException;
 
 public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
 
@@ -216,8 +220,7 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
    */
 
   public String getDatabaseProductName() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return "Hive";
   }
 
   /* (non-Javadoc)
@@ -225,8 +228,7 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
    */
 
   public String getDatabaseProductVersion() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return "0";
   }
 
   /* (non-Javadoc)
@@ -261,7 +263,7 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
    */
 
   public String getDriverName() throws SQLException {
-    return new String("hive");
+    return fetchManifestAttribute(Attributes.Name.IMPLEMENTATION_TITLE);
   }
 
   /* (non-Javadoc)
@@ -269,7 +271,7 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
    */
 
   public String getDriverVersion() throws SQLException {
-    return new String("0");
+   return fetchManifestAttribute(Attributes.Name.IMPLEMENTATION_VERSION);
   }
 
   /* (non-Javadoc)
@@ -581,8 +583,8 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
 
   public ResultSet getProcedures(String catalog, String schemaPattern,
       String procedureNamePattern) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    //TODO: return empty result set here
+    return null;
   }
 
   /* (non-Javadoc)
@@ -1065,8 +1067,7 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
    */
 
   public boolean supportsCatalogsInTableDefinitions() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return false;
   }
 
   /* (non-Javadoc)
@@ -1275,8 +1276,7 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
    */
 
   public boolean supportsMultipleResultSets() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return false;
   }
 
   /* (non-Javadoc)
@@ -1419,8 +1419,7 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
    */
 
   public boolean supportsSchemasInDataManipulation() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return false;
   }
 
   /* (non-Javadoc)
@@ -1455,8 +1454,7 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
    */
 
   public boolean supportsSchemasInTableDefinitions() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return false;
   }
 
   /* (non-Javadoc)
@@ -1491,8 +1489,7 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
    */
 
   public boolean supportsStoredProcedures() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return false;
   }
 
   /* (non-Javadoc)
@@ -1622,4 +1619,44 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
     throw new SQLException("Method not supported");
   }
 
+  /**
+   * Lazy-load manifest attributes as needed.
+   */
+  private static Attributes manifestAttributes = null;
+
+  /**
+   * Loads the manifest attributes from the jar.
+   * @throws java.net.MalformedURLException
+   * @throws IOException
+   */
+  private synchronized void loadManifestAttributes() throws IOException {
+    if(manifestAttributes != null) return;
+    Class clazz = this.getClass();
+    String classContainer = clazz.getProtectionDomain().getCodeSource().getLocation().toString();
+    URL manifestUrl = new URL("jar:" + classContainer + "!/META-INF/MANIFEST.MF");
+    Manifest manifest = new Manifest(manifestUrl.openStream());
+    manifestAttributes = manifest.getMainAttributes();
+  }
+
+  /**
+   * Helper to initialize attributes and return one.
+   *
+   * @param attributeName
+   * @return
+   * @throws SQLException
+   */
+  private String fetchManifestAttribute(Attributes.Name attributeName) throws SQLException {
+    try {
+      loadManifestAttributes();
+    } catch (IOException e) {
+      throw new SQLException("Couldn't load manifest attributes.", e);
+    }
+    return manifestAttributes.getValue(attributeName);
+  }
+ 
+  public static void main(String[] args) throws SQLException {
+    HiveDatabaseMetaData meta = new HiveDatabaseMetaData();
+    System.out.println("DriverName: " + meta.getDriverName());
+    System.out.println("DriverVersion: " + meta.getDriverVersion());
+  }
 }

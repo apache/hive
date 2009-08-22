@@ -58,20 +58,31 @@ public class HiveResultSet implements java.sql.ResultSet {
   List<String> columnNames;
   List<String> columnTypes;
 
+  SQLWarning warningChain = null;
+  boolean wasNull = false;
+  int maxRows = 0;
+  int rowsFetched = 0;
+
   /**
    *
    */
   @SuppressWarnings("unchecked")
-  public HiveResultSet(HiveInterface client) {
+  public HiveResultSet(HiveInterface client, int maxRows) throws SQLException {
     this.client = client;
     this.row = new ArrayList();
+    this.maxRows = maxRows;
     initDynamicSerde();
+  }
+
+  @SuppressWarnings("unchecked")
+  public HiveResultSet(HiveInterface client) throws SQLException {
+    this(client, 0);
   }
 
   /**
    * Instantiate the dynamic serde used to deserialize the result row
    */
-  public void initDynamicSerde() {
+  public void initDynamicSerde() throws SQLException {
     try {
       Schema fullSchema = client.getThriftSchema();
       List<FieldSchema> schema = fullSchema.getFieldSchemas();
@@ -79,12 +90,14 @@ public class HiveResultSet implements java.sql.ResultSet {
       columnTypes = new ArrayList<String>();
       
       String serDDL;
-      
+
       if ((schema != null) && (!schema.isEmpty())) {
         serDDL = new String("struct result { ");
         for (int pos = 0; pos < schema.size(); pos++) {
           if (pos != 0)
             serDDL = serDDL.concat(",");
+          columnTypes.add(schema.get(pos).getType());
+          columnNames.add(schema.get(pos).getName());
           serDDL = serDDL.concat(schema.get(pos).getType());
           serDDL = serDDL.concat(" ");
           serDDL = serDDL.concat(schema.get(pos).getName());
@@ -104,8 +117,7 @@ public class HiveResultSet implements java.sql.ResultSet {
       ds.initialize(new Configuration(), dsp);
     } catch (Exception ex) {
       ex.printStackTrace();
-      System.exit(1);
-      // TODO: Decide what to do here.
+      throw new SQLException("Could not create ResultSet: " + ex.getMessage());
     }
   }
 
@@ -150,8 +162,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    */
 
   public void clearWarnings() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    warningChain = null;
   }
 
   /* (non-Javadoc)
@@ -305,7 +316,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    */
 
   public boolean getBoolean(int columnIndex) throws SQLException {
-    Object obj = row.get(columnIndex-1);
+    Object obj = getObject(columnIndex);
     if (Number.class.isInstance(obj)) {
       return ((Number)obj).intValue() != 0;
     }
@@ -326,7 +337,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    */
 
   public byte getByte(int columnIndex) throws SQLException {
-    Object obj = row.get(columnIndex-1);
+    Object obj = getObject(columnIndex);
     if (Number.class.isInstance(obj)) {
       return ((Number)obj).byteValue();
     }
@@ -419,8 +430,11 @@ public class HiveResultSet implements java.sql.ResultSet {
    */
 
   public Date getDate(int columnIndex) throws SQLException {
+    Object obj = getObject(columnIndex);
+    if (obj == null) return null;
+
     try {
-      return Date.valueOf((String)row.get(columnIndex-1));
+      return Date.valueOf((String)obj);
     }
     catch (Exception e) {
     throw new SQLException("Cannot convert column " + columnIndex + " to date: " + e.toString());
@@ -460,7 +474,7 @@ public class HiveResultSet implements java.sql.ResultSet {
 
   public double getDouble(int columnIndex) throws SQLException {
     try {
-      Object obj = row.get(columnIndex-1);
+      Object obj = getObject(columnIndex);
       if (Number.class.isInstance(obj)) {
         return ((Number)obj).doubleValue();
       }
@@ -504,7 +518,7 @@ public class HiveResultSet implements java.sql.ResultSet {
 
   public float getFloat(int columnIndex) throws SQLException {
     try {
-      Object obj = row.get(columnIndex-1);
+      Object obj = getObject(columnIndex);
       if (Number.class.isInstance(obj)) {
         return ((Number)obj).floatValue();
       }
@@ -538,7 +552,7 @@ public class HiveResultSet implements java.sql.ResultSet {
 
   public int getInt(int columnIndex) throws SQLException {
     try {
-      Object obj = row.get(columnIndex-1);
+      Object obj = getObject(columnIndex);
       if (Number.class.isInstance(obj)) {
         return ((Number)obj).intValue();
       }
@@ -564,7 +578,7 @@ public class HiveResultSet implements java.sql.ResultSet {
 
   public long getLong(int columnIndex) throws SQLException {
     try {
-      Object obj = row.get(columnIndex-1);
+      Object obj = getObject(columnIndex);
       if (Number.class.isInstance(obj)) {
         return ((Number)obj).longValue();
       }
@@ -651,7 +665,18 @@ public class HiveResultSet implements java.sql.ResultSet {
    */
 
   public Object getObject(int columnIndex) throws SQLException {
+    if (row == null) {
+      throw new SQLException("No row found.");
+    }
+
+    if (columnIndex > row.size()) {
+      throw new SQLException("Invalid columnIndex: " + columnIndex);
+    }
+
     try {
+      this.wasNull = false;
+      if (row.get(columnIndex-1) == null) this.wasNull = true;
+
       return row.get(columnIndex-1);
     }
     catch (Exception e) {
@@ -757,7 +782,7 @@ public class HiveResultSet implements java.sql.ResultSet {
 
   public short getShort(int columnIndex) throws SQLException {
     try {
-      Object obj = row.get(columnIndex-1);
+      Object obj = getObject(columnIndex);
       if (Number.class.isInstance(obj)) {
         return ((Number)obj).shortValue();
       }
@@ -793,7 +818,10 @@ public class HiveResultSet implements java.sql.ResultSet {
 
   public String getString(int columnIndex) throws SQLException {
     // Column index starts from 1, not 0.
-    return row.get(columnIndex - 1).toString();
+    Object obj = getObject(columnIndex);
+    if (obj == null) return null;
+
+    return obj.toString();
   }
 
   /* (non-Javadoc)
@@ -929,8 +957,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    */
 
   public SQLWarning getWarnings() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return warningChain;
   }
 
   /* (non-Javadoc)
@@ -1022,9 +1049,12 @@ public class HiveResultSet implements java.sql.ResultSet {
    */
 
   public boolean next() throws SQLException {
+    if (this.maxRows > 0 && this.rowsFetched >= this.maxRows) return false;
+
     String row_str = "";
     try {
       row_str = (String)client.fetchOne();
+      this.rowsFetched++;
       if (!row_str.equals("")) {
         Object o = ds.deserialize(new BytesWritable(row_str.getBytes()));
         row = (ArrayList<?>)o;
@@ -1903,8 +1933,7 @@ public class HiveResultSet implements java.sql.ResultSet {
    */
 
   public boolean wasNull() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return this.wasNull;
   }
 
   /* (non-Javadoc)

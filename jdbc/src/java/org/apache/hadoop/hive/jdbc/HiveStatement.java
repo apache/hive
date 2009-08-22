@@ -29,6 +29,30 @@ public class HiveStatement implements java.sql.Statement {
   JdbcSessionState session;
   HiveInterface client;
   /**
+   * We need to keep a reference to the result set to support the following:
+   * <code>
+   * statement.execute(String sql);
+   * statement.getResultSet();
+   * </code>
+   */
+  ResultSet resultSet = null;
+
+  /**
+   * The maximum number of rows this statement should return (0 => all rows)
+   */
+  int maxRows = 0;
+
+  /**
+   * Add SQLWarnings to the warningChain if needed
+   */
+  SQLWarning warningChain = null;
+
+  /**
+   * Keep state so we can fail certain calls made after close();
+   */
+  boolean isClosed = false;
+
+  /**
    *
    */
   public HiveStatement(JdbcSessionState session, HiveInterface client) {
@@ -68,8 +92,7 @@ public class HiveStatement implements java.sql.Statement {
    */
 
   public void clearWarnings() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    this.warningChain = null;
   }
 
   /* (non-Javadoc)
@@ -77,8 +100,10 @@ public class HiveStatement implements java.sql.Statement {
    */
 
   public void close() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    //TODO: how to properly shut down the client?
+    client = null;
+    resultSet = null;
+    isClosed = true;
   }
 
   /* (non-Javadoc)
@@ -86,7 +111,11 @@ public class HiveStatement implements java.sql.Statement {
    */
 
   public boolean execute(String sql) throws SQLException {
-    return true;
+    ResultSet rs = executeQuery(sql);
+
+    //TODO: this should really check if there are results, but there's no easy
+    //way to do that without calling rs.next();
+    return rs != null;
   }
 
   /* (non-Javadoc)
@@ -132,12 +161,17 @@ public class HiveStatement implements java.sql.Statement {
    */
 
   public ResultSet executeQuery(String sql) throws SQLException {
+    if (this.isClosed)
+      throw new SQLException("Can't execute after statement has been closed");
+
     try {
+      this.resultSet = null;
       client.execute(sql);
     } catch (Exception ex) {
       throw new SQLException(ex.toString());
     }
-    return new HiveResultSet(client);
+    this.resultSet = new HiveResultSet(client, maxRows);
+    return this.resultSet;
   }
 
   /* (non-Javadoc)
@@ -233,8 +267,7 @@ public class HiveStatement implements java.sql.Statement {
    */
 
   public int getMaxRows() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return this.maxRows;
   }
 
   /* (non-Javadoc)
@@ -269,8 +302,7 @@ public class HiveStatement implements java.sql.Statement {
    */
 
   public ResultSet getResultSet() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return this.resultSet;
   }
 
   /* (non-Javadoc)
@@ -305,8 +337,7 @@ public class HiveStatement implements java.sql.Statement {
    */
 
   public int getUpdateCount() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return 0;
   }
 
   /* (non-Javadoc)
@@ -314,8 +345,7 @@ public class HiveStatement implements java.sql.Statement {
    */
 
   public SQLWarning getWarnings() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return this.warningChain;
   }
 
   /* (non-Javadoc)
@@ -323,8 +353,7 @@ public class HiveStatement implements java.sql.Statement {
    */
 
   public boolean isClosed() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return this.isClosed;
   }
 
   /* (non-Javadoc)
@@ -386,8 +415,8 @@ public class HiveStatement implements java.sql.Statement {
    */
 
   public void setMaxRows(int max) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    if (max < 0) throw new SQLException("max must be >= 0");
+    this.maxRows = max;
   }
 
   /* (non-Javadoc)
