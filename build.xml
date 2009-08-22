@@ -63,6 +63,17 @@
     </sequential>
   </macrodef>
 
+  <macrodef name="iterate-cpp">
+    <attribute name="target"/>
+    <sequential>
+      <subant target="@{target}">
+	<property name="thrift.home" value="${thrift.home}"/>
+        <!-- TODO filelist dir="." files="metastore/build.xml,serde/build.xml,service/build.xml,odbc/build.xml"/-->
+        <filelist dir="." files="odbc/build.xml"/>
+      </subant>
+    </sequential>
+  </macrodef>
+
   <macrodef name="iterate-all">
     <attribute name="target"/>
     <sequential>
@@ -111,7 +122,15 @@
     <iterate-all target="test-init"/>
   </target>
 
-  <target name="compile">
+  <target name="compile-cpp" depends="init">
+    <iterate-cpp target="compile-cpp"/>
+  </target>
+
+  <target name="compile-cpp-clean">
+    <iterate-cpp target="clean"/>
+  </target>
+
+  <target name="compile" depends="compile-cpp">
     <iterate target="compile"/>
   </target>
 
@@ -121,6 +140,7 @@
 
   <target name="test" depends="clean-test,jar">
     <iterate target="test"/>
+    <iterate-cpp target="test"/>
   </target>
 
   <!-- create an html report from junit output files -->
@@ -140,6 +160,7 @@
 
   <target name="clean">
     <iterate-all target="clean"/>
+    <iterate-cpp target="clean"/>
     <delete dir="${target.dir}"/>
     <delete dir="${build.dir.hive}"/>
   </target>
@@ -151,6 +172,18 @@
     <subant target="gen-testdata">
       <fileset dir="." includes="serde/build.xml"/>
     </subant>
+  </target>
+
+  <target name="package-cpp" depends="package,compile-cpp">
+    <mkdir dir="${target.dir}/include"/>
+    <copy todir="${target.dir}/include" preservelastmodified="true" flatten="true">
+      <fileset file="${build.dir.hive}/odbc/include/*"/>
+    </copy>
+    <copy todir="${target.lib.dir}" preservelastmodified="true" flatten="true">
+      <fileset file="${build.dir.hive}/odbc/lib/*" excludes="*.so"/>
+    </copy>
+    <symlink link="${target.lib.dir}/libhiveclient.so" resource="libhiveclient.so.1.0.0"/>
+
   </target>
 
   <target name="package" depends="jar">
@@ -350,6 +383,7 @@
   <!-- ================================================================== -->
   <!-- Make release tarball                                               -->
   <!-- ================================================================== -->
+
   <target name="tar" depends="package, docs, javadoc" description="Make release tarball">
     <macro_tar param.destfile="${build.dir.hive}/${dev.final.name}.tar.gz">
       <param.listofitems>

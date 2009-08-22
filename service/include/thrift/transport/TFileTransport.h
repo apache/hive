@@ -1,8 +1,21 @@
-// Copyright (c) 2006- Facebook
-// Distributed under the Thrift Software License
-//
-// See accompanying file LICENSE or visit the Thrift site at:
-// http://developers.facebook.com/thrift/
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 
 #ifndef _THRIFT_TRANSPORT_TFILETRANSPORT_H_
 #define _THRIFT_TRANSPORT_TFILETRANSPORT_H_ 1
@@ -14,12 +27,14 @@
 #include <string>
 #include <stdio.h>
 
+#include <pthread.h>
+
 #include <boost/shared_ptr.hpp>
 
-namespace facebook { namespace thrift { namespace transport { 
+namespace apache { namespace thrift { namespace transport {
 
-using facebook::thrift::TProcessor;
-using facebook::thrift::protocol::TProtocolFactory;
+using apache::thrift::TProcessor;
+using apache::thrift::protocol::TProtocolFactory;
 
 // Data pertaining to a single event
 typedef struct eventInfo {
@@ -50,7 +65,7 @@ typedef struct readState {
 
   // last successful dispatch point
   int32_t lastDispatchPtr_;
-  
+
   void resetState(uint32_t lastDispatchPtr) {
     readingSize_ = true;
     eventSizeBuffPos_ = 0;
@@ -79,7 +94,7 @@ typedef struct readState {
   }
 
 } readState;
- 
+
 /**
  * TFileTransportBuffer - buffer class used by TFileTransport for queueing up events
  * to be written to disk.  Should be used in the following way:
@@ -90,10 +105,9 @@ typedef struct readState {
  *  5) Go back to 2, or destroy buffer
  *
  * The buffer should never be written to after it is read from, unless it is reset first.
- * Note: The above rules are enforced mainly for debugging its sole client TFileTransport 
+ * Note: The above rules are enforced mainly for debugging its sole client TFileTransport
  *       which uses the buffer in this way.
- * 
- * @author James Wang <jwang@facebook.com>
+ *
  */
 class TFileTransportBuffer {
   public:
@@ -105,7 +119,7 @@ class TFileTransportBuffer {
     void reset();
     bool isFull();
     bool isEmpty();
-    
+
   private:
     TFileTransportBuffer(); // should not be used
 
@@ -145,10 +159,9 @@ class TFileWriterTransport : virtual public TTransport {
 };
 
 /**
- * File implementation of a transport. Reads and writes are done to a 
+ * File implementation of a transport. Reads and writes are done to a
  * file on disk.
  *
- * @author Aditya Agarwal <aditya@facebook.com>
  */
 class TFileTransport : public TFileReaderTransport,
                        public TFileWriterTransport {
@@ -161,7 +174,7 @@ class TFileTransport : public TFileReaderTransport,
   bool isOpen() {
     return true;
   }
-  
+
   void write(const uint8_t* buf, uint32_t len);
   void flush();
 
@@ -205,7 +218,7 @@ class TFileTransport : public TFileReaderTransport,
     return chunkSize_;
   }
 
-  void setEventBufferSize(uint32_t bufferSize) {    
+  void setEventBufferSize(uint32_t bufferSize) {
     if (bufferAndThreadInitialized_) {
       GlobalOutput("Cannot change the buffer size after writer thread started");
       return;
@@ -316,7 +329,7 @@ class TFileTransport : public TFileReaderTransport,
   // max number of corrupted events per chunk
   uint32_t maxCorruptedEvents_;
   static const uint32_t DEFAULT_MAX_CORRUPTED_EVENTS = 0;
-  
+
   // sleep duration when EOF is hit
   uint32_t eofSleepTime_;
   static const uint32_t DEFAULT_EOF_SLEEP_TIME_US = 500 * 1000;
@@ -324,15 +337,15 @@ class TFileTransport : public TFileReaderTransport,
   // sleep duration when a corrupted event is encountered
   uint32_t corruptedEventSleepTime_;
   static const uint32_t DEFAULT_CORRUPTED_SLEEP_TIME_US = 1 * 1000 * 1000;
-    
+
   // writer thread id
   pthread_t writerThreadId_;
 
-  // buffers to hold data before it is flushed. Each element of the buffer stores a msg that 
+  // buffers to hold data before it is flushed. Each element of the buffer stores a msg that
   // needs to be written to the file.  The buffers are swapped by the writer thread.
   TFileTransportBuffer *dequeueBuffer_;
   TFileTransportBuffer *enqueueBuffer_;
-  
+
   // conditions used to block when the buffer is full or empty
   pthread_cond_t notFull_, notEmpty_;
   volatile bool closing_;
@@ -372,9 +385,9 @@ class TEOFException : public TTransportException {
 // wrapper class to process events from a file containing thrift events
 class TFileProcessor {
  public:
-  /** 
+  /**
    * Constructor that defaults output transport to null transport
-   * 
+   *
    * @param processor processes log-file events
    * @param protocolFactory protocol factory
    * @param inputTransport file transport
@@ -388,14 +401,14 @@ class TFileProcessor {
                  boost::shared_ptr<TProtocolFactory> outputProtocolFactory,
                  boost::shared_ptr<TFileReaderTransport> inputTransport);
 
-  /** 
+  /**
    * Constructor
-   * 
+   *
    * @param processor processes log-file events
    * @param protocolFactory protocol factory
    * @param inputTransport input file transport
    * @param output output transport
-   */    
+   */
   TFileProcessor(boost::shared_ptr<TProcessor> processor,
                  boost::shared_ptr<TProtocolFactory> protocolFactory,
                  boost::shared_ptr<TFileReaderTransport> inputTransport,
@@ -414,7 +427,7 @@ class TFileProcessor {
    *
    */
   void processChunk();
-  
+
  private:
   boost::shared_ptr<TProcessor> processor_;
   boost::shared_ptr<TProtocolFactory> inputProtocolFactory_;
@@ -423,7 +436,7 @@ class TFileProcessor {
   boost::shared_ptr<TTransport> outputTransport_;
 };
 
- 
-}}} // facebook::thrift::transport
+
+}}} // apache::thrift::transport
 
 #endif // _THRIFT_TRANSPORT_TFILETRANSPORT_H_

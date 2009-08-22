@@ -1,8 +1,21 @@
-// Copyright (c) 2006- Facebook
-// Distributed under the Thrift Software License
-//
-// See accompanying file LICENSE or visit the Thrift site at:
-// http://developers.facebook.com/thrift/
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 
 #ifndef _THRIFT_TRANSPORT_TSERVERSOCKET_H_
 #define _THRIFT_TRANSPORT_TSERVERSOCKET_H_ 1
@@ -10,7 +23,7 @@
 #include "TServerTransport.h"
 #include <boost/shared_ptr.hpp>
 
-namespace facebook { namespace thrift { namespace transport { 
+namespace apache { namespace thrift { namespace transport {
 
 class TSocket;
 
@@ -18,7 +31,6 @@ class TSocket;
  * Server socket implementation of TServerTransport. Wrapper around a unix
  * socket listen and accept calls.
  *
- * @author Mark Slee <mcslee@facebook.com>
  */
 class TServerSocket : public TServerTransport {
  public:
@@ -32,6 +44,9 @@ class TServerSocket : public TServerTransport {
 
   void setRetryLimit(int retryLimit);
   void setRetryDelay(int retryDelay);
+
+  void setTcpSendBuffer(int tcpSendBuffer);
+  void setTcpRecvBuffer(int tcpRecvBuffer);
 
   void listen();
   void close();
@@ -49,11 +64,13 @@ class TServerSocket : public TServerTransport {
   int recvTimeout_;
   int retryLimit_;
   int retryDelay_;
+  int tcpSendBuffer_;
+  int tcpRecvBuffer_;
 
   int intSock1_;
   int intSock2_;
 };
 
-}}} // facebook::thrift::transport
+}}} // apache::thrift::transport
 
 #endif // #ifndef _THRIFT_TRANSPORT_TSERVERSOCKET_H_

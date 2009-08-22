@@ -1,18 +1,35 @@
-// Copyright (c) 2006- Facebook
-// Distributed under the Thrift Software License
-//
-// See accompanying file LICENSE or visit the Thrift site at:
-// http://developers.facebook.com/thrift/
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 
 #ifndef _THRIFT_TRANSPORT_TTRANSPORTUTILS_H_
 #define _THRIFT_TRANSPORT_TTRANSPORTUTILS_H_ 1
 
+#include <cstdlib>
+#include <cstring>
 #include <string>
 #include <algorithm>
 #include <transport/TTransport.h>
+// Include the buffered transports that used to be defined here.
+#include <transport/TBufferTransports.h>
 #include <transport/TFileTransport.h>
 
-namespace facebook { namespace thrift { namespace transport {
+namespace apache { namespace thrift { namespace transport {
 
 /**
  * The null transport is a dummy transport that doesn't actually do anything.
@@ -20,7 +37,6 @@ namespace facebook { namespace thrift { namespace transport {
  * and it will let you write anything you want to it, though it won't actually
  * go anywhere.
  *
- * @author Mark Slee <mcslee@facebook.com>
  */
 class TNullTransport : public TTransport {
  public:
@@ -34,417 +50,12 @@ class TNullTransport : public TTransport {
 
   void open() {}
 
-  void write(const uint8_t* buf, uint32_t len) {
+  void write(const uint8_t* /* buf */, uint32_t /* len */) {
     return;
   }
 
 };
 
-
-/**
- * Buffered transport. For reads it will read more data than is requested
- * and will serve future data out of a local buffer. For writes, data is
- * stored to an in memory buffer before being written out.
- *
- * @author Mark Slee <mcslee@facebook.com>
- */
-class TBufferedTransport : public TTransport {
- public:
-  TBufferedTransport(boost::shared_ptr<TTransport> transport) :
-    transport_(transport),
-    rBufSize_(512), rPos_(0), rLen_(0),
-    wBufSize_(512), wLen_(0) {
-    rBuf_ = new uint8_t[rBufSize_];
-    wBuf_ = new uint8_t[wBufSize_];
-  }
-
-  TBufferedTransport(boost::shared_ptr<TTransport> transport, uint32_t sz) :
-    transport_(transport),
-    rBufSize_(sz), rPos_(0), rLen_(0),
-    wBufSize_(sz), wLen_(0) {
-    rBuf_ = new uint8_t[rBufSize_];
-    wBuf_ = new uint8_t[wBufSize_];
-  }
-
-  TBufferedTransport(boost::shared_ptr<TTransport> transport, uint32_t rsz, uint32_t wsz) :
-    transport_(transport),
-    rBufSize_(rsz), rPos_(0), rLen_(0),
-    wBufSize_(wsz), wLen_(0) {
-    rBuf_ = new uint8_t[rBufSize_];
-    wBuf_ = new uint8_t[wBufSize_];
-  }
-
-  ~TBufferedTransport() {
-    delete [] rBuf_;
-    delete [] wBuf_;
-  }
-
-  bool isOpen() {
-    return transport_->isOpen();
-  }
-
-  bool peek() {
-    if (rPos_ >= rLen_) {
-      rLen_ = transport_->read(rBuf_, rBufSize_);
-      rPos_ = 0;
-    }
-    return (rLen_ > rPos_);
-  }
-
-  void open() {
-    transport_->open();
-  }
-
-  void close() {
-    flush();
-    transport_->close();
-  }
-
-  uint32_t read(uint8_t* buf, uint32_t len);
-
-  void write(const uint8_t* buf, uint32_t len);
-
-  void flush();
-
-  bool borrow(uint8_t* buf, uint32_t len);
-
-  void consume(uint32_t len);
-
-  boost::shared_ptr<TTransport> getUnderlyingTransport() {
-    return transport_;
-  }
-
- protected:
-  boost::shared_ptr<TTransport> transport_;
-  uint8_t* rBuf_;
-  uint32_t rBufSize_;
-  uint32_t rPos_;
-  uint32_t rLen_;
-
-  uint8_t* wBuf_;
-  uint32_t wBufSize_;
-  uint32_t wLen_;
-};
-
-/**
- * Wraps a transport into a buffered one.
- *
- * @author Mark Slee <mcslee@facebook.com>
- */
-class TBufferedTransportFactory : public TTransportFactory {
- public:
-  TBufferedTransportFactory() {}
-
-  virtual ~TBufferedTransportFactory() {}
-
-  /**
-   * Wraps the transport into a buffered one.
-   */
-  virtual boost::shared_ptr<TTransport> getTransport(boost::shared_ptr<TTransport> trans) {
-    return boost::shared_ptr<TTransport>(new TBufferedTransport(trans));
-  }
-
-};
-
-/**
- * Framed transport. All writes go into an in-memory buffer until flush is
- * called, at which point the transport writes the length of the entire
- * binary chunk followed by the data payload. This allows the receiver on the
- * other end to always do fixed-length reads.
- *
- * @author Mark Slee <mcslee@facebook.com>
- */
-class TFramedTransport : public TTransport {
- public:
-  TFramedTransport(boost::shared_ptr<TTransport> transport) :
-    transport_(transport),
-    rPos_(0),
-    rLen_(0),
-    read_(true),
-    wBufSize_(512),
-    wLen_(0),
-    write_(true) {
-    rBuf_ = NULL;
-    wBuf_ = new uint8_t[wBufSize_];
-  }
-
-  TFramedTransport(boost::shared_ptr<TTransport> transport, uint32_t sz) :
-    transport_(transport),
-    rPos_(0),
-    rLen_(0),
-    read_(true),
-    wBufSize_(sz),
-    wLen_(0),
-    write_(true) {
-    rBuf_ = NULL;
-    wBuf_ = new uint8_t[wBufSize_];
-  }
-
-  ~TFramedTransport() {
-    if (rBuf_ != NULL) {
-      delete [] rBuf_;
-    }
-    if (wBuf_ != NULL) {
-      delete [] wBuf_;
-    }
-  }
-
-  void setRead(bool read) {
-    read_ = read;
-  }
-
-  void setWrite(bool write) {
-    write_ = write;
-  }
-
-  void open() {
-    transport_->open();
-  }
-
-  bool isOpen() {
-    return transport_->isOpen();
-  }
-
-  bool peek() {
-    if (rPos_ < rLen_) {
-      return true;
-    }
-    return transport_->peek();
-  }
-
-  void close() {
-    if (wLen_ > 0) {
-      flush();
-    }
-    transport_->close();
-  }
-
-  uint32_t read(uint8_t* buf, uint32_t len);
-
-  void write(const uint8_t* buf, uint32_t len);
-
-  void flush();
-
-  bool borrow(uint8_t* buf, uint32_t len);
-
-  void consume(uint32_t len);
-
-  boost::shared_ptr<TTransport> getUnderlyingTransport() {
-    return transport_;
-  }
-
- protected:
-  boost::shared_ptr<TTransport> transport_;
-  uint8_t* rBuf_;
-  uint32_t rPos_;
-  uint32_t rLen_;
-  bool read_;
-
-  uint8_t* wBuf_;
-  uint32_t wBufSize_;
-  uint32_t wLen_;
-  bool write_;
-
-  /**
-   * Reads a frame of input from the underlying stream.
-   */
-  void readFrame();
-};
-
-/**
- * Wraps a transport into a framed one.
- *
- * @author Dave Simpson <dave@powerset.com>
- */
-class TFramedTransportFactory : public TTransportFactory {
- public:
-  TFramedTransportFactory() {}
-
-  virtual ~TFramedTransportFactory() {}
-
-  /**
-   * Wraps the transport into a framed one.
-   */
-  virtual boost::shared_ptr<TTransport> getTransport(boost::shared_ptr<TTransport> trans) {
-    return boost::shared_ptr<TTransport>(new TFramedTransport(trans));
-  }
-
-};
-
-
-/**
- * A memory buffer is a tranpsort that simply reads from and writes to an
- * in memory buffer. Anytime you call write on it, the data is simply placed
- * into a buffer, and anytime you call read, data is read from that buffer.
- *
- * The buffers are allocated using C constructs malloc,realloc, and the size
- * doubles as necessary.
- *
- * @author Mark Slee <mcslee@facebook.com>
- */
-class TMemoryBuffer : public TTransport {
- private:
-
-  // Common initialization done by all constructors.
-  void initCommon(uint8_t* buf, uint32_t size, bool owner, uint32_t wPos) {
-    if (buf == NULL && size != 0) {
-      assert(owner);
-      buf = (uint8_t*)malloc(size);
-      if (buf == NULL) {
-        throw TTransportException("Out of memory");
-      }
-    }
-
-    buffer_ = buf;
-    bufferSize_ = size;
-    owner_ = owner;
-    wPos_ = wPos;
-    rPos_ = 0;
-  }
-
- public:
-  static const uint32_t defaultSize = 1024;
-
-  TMemoryBuffer() {
-    initCommon(NULL, defaultSize, true, 0);
-  }
-
-  TMemoryBuffer(uint32_t sz) {
-    initCommon(NULL, sz, true, 0);
-  }
-
-  // transferOwnership should be true if you want TMemoryBuffer to call free(buf).
-  TMemoryBuffer(uint8_t* buf, int sz, bool transferOwnership = false) {
-    initCommon(buf, sz, transferOwnership, sz);
-  }
-
-  // copy should be true if you want TMemoryBuffer to make a copy of the string.
-  // If you set copy to false, the string must not be destroyed before you are
-  // done with the TMemoryBuffer.
-  TMemoryBuffer(const std::string& str, bool copy = false) {
-    if (copy) {
-      initCommon(NULL, str.length(), true, 0);
-      this->write(reinterpret_cast<const uint8_t*>(str.data()), str.length());
-    } else {
-      // This first argument should be equivalent to the following:
-      // const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(str.data()))
-      initCommon((uint8_t*)str.data(), str.length(), false, str.length());
-    }
-  }
-
-  ~TMemoryBuffer() {
-    if (owner_) {
-      free(buffer_);
-      buffer_ = NULL;
-    }
-  }
-
-  bool isOpen() {
-    return true;
-  }
-
-  bool peek() {
-    return (rPos_ < wPos_);
-  }
-
-  void open() {}
-
-  void close() {}
-
-  void getBuffer(uint8_t** bufPtr, uint32_t* sz) {
-    *bufPtr = buffer_;
-    *sz = wPos_;
-  }
-
-  std::string getBufferAsString() {
-    if (buffer_ == NULL) {
-      return "";
-    }
-    return std::string((char*)buffer_, (std::string::size_type)wPos_);
-  }
-
-  void appendBufferToString(std::string& str) {
-    if (buffer_ == NULL) {
-      return;
-    }
-    str.append((char*)buffer_, wPos_);
-  }
-
-  void resetBuffer() {
-    wPos_ = 0;
-    rPos_ = 0;
-  }
-
-  // transferOwnership should be true if you want TMemoryBuffer to call free(buf).
-  void resetBuffer(uint8_t* buf, uint32_t sz, bool transferOwnership = false) {
-    if (owner_) {
-      free(buffer_);
-    }
-    owner_ = transferOwnership;
-    buffer_ = buf;
-    bufferSize_ = sz;
-    wPos_ = sz;
-    rPos_ = 0;
-  }
-
-  // See the constructor that takes a string.
-  void resetFromString(const std::string& str, bool copy = false) {
-    if (copy) {
-      uint8_t* buf = (uint8_t*)malloc(str.length());
-      if (buf == NULL) {
-        throw TTransportException("Out of memory");
-      }
-      std::copy(str.begin(), str.end(), buf);
-      resetBuffer(buf, str.length(), true);
-    } else {
-      // See the above comment about const_cast.
-      resetBuffer((uint8_t*)str.data(), str.length(), false);
-    }
-  }
-
-  uint32_t read(uint8_t* buf, uint32_t len);
-
-  std::string readAsString(uint32_t len) {
-    std::string str;
-    (void)readAppendToString(str, len);
-    return str;
-  }
-
-  uint32_t readAppendToString(std::string& str, uint32_t len);
-
-  void readEnd() {
-    if (rPos_ == wPos_) {
-      resetBuffer();
-    }
-  }
-
-  void write(const uint8_t* buf, uint32_t len);
-
-  uint32_t available() {
-    return wPos_ - rPos_;
-  }
-
-  bool borrow(uint8_t* buf, uint32_t len);
-
-  void consume(uint32_t len);
-
- private:
-  // Data buffer
-  uint8_t* buffer_;
-
-  // Allocated buffer size
-  uint32_t bufferSize_;
-
-  // Where the write is at
-  uint32_t wPos_;
-
-  // Where the reader is at
-  uint32_t rPos_;
-
-  // Is this object the owner of the buffer?
-  bool owner_;
-
-};
 
 /**
  * TPipedTransport. This transport allows piping of a request from one
@@ -453,7 +64,6 @@ class TMemoryBuffer : public TTransport {
  * The underlying buffer expands to a keep a copy of the entire
  * request/response.
  *
- * @author Aditya Agarwal <aditya@facebook.com>
  */
 class TPipedTransport : virtual public TTransport {
  public:
@@ -468,8 +78,8 @@ class TPipedTransport : virtual public TTransport {
     pipeOnRead_ = true;
     pipeOnWrite_ = false;
 
-    rBuf_ = (uint8_t*) malloc(sizeof(uint8_t) * rBufSize_);
-    wBuf_ = (uint8_t*) malloc(sizeof(uint8_t) * wBufSize_);
+    rBuf_ = (uint8_t*) std::malloc(sizeof(uint8_t) * rBufSize_);
+    wBuf_ = (uint8_t*) std::malloc(sizeof(uint8_t) * wBufSize_);
   }
 
   TPipedTransport(boost::shared_ptr<TTransport> srcTrans,
@@ -480,13 +90,13 @@ class TPipedTransport : virtual public TTransport {
     rBufSize_(512), rPos_(0), rLen_(0),
     wBufSize_(sz), wLen_(0) {
 
-    rBuf_ = (uint8_t*) malloc(sizeof(uint8_t) * rBufSize_);
-    wBuf_ = (uint8_t*) malloc(sizeof(uint8_t) * wBufSize_);
+    rBuf_ = (uint8_t*) std::malloc(sizeof(uint8_t) * rBufSize_);
+    wBuf_ = (uint8_t*) std::malloc(sizeof(uint8_t) * wBufSize_);
   }
 
   ~TPipedTransport() {
-    free(rBuf_);
-    free(wBuf_);
+    std::free(rBuf_);
+    std::free(wBuf_);
   }
 
   bool isOpen() {
@@ -498,7 +108,7 @@ class TPipedTransport : virtual public TTransport {
       // Double the size of the underlying buffer if it is full
       if (rLen_ == rBufSize_) {
         rBufSize_ *=2;
-        rBuf_ = (uint8_t *)realloc(rBuf_, sizeof(uint8_t) * rBufSize_);
+        rBuf_ = (uint8_t *)std::realloc(rBuf_, sizeof(uint8_t) * rBufSize_);
       }
 
       // try to fill up the buffer
@@ -529,15 +139,18 @@ class TPipedTransport : virtual public TTransport {
   void readEnd() {
 
     if (pipeOnRead_) {
-      dstTrans_->write(rBuf_, rLen_);
+      dstTrans_->write(rBuf_, rPos_);
       dstTrans_->flush();
     }
 
     srcTrans_->readEnd();
 
-    // reset state
-    rLen_ = 0;
+    // If requests are being pipelined, copy down our read-ahead data,
+    // then reset our state.
+    int read_ahead = rLen_ - rPos_;
+    memcpy(rBuf_, rBuf_ + rPos_, read_ahead);
     rPos_ = 0;
+    rLen_ = read_ahead;
   }
 
   void write(const uint8_t* buf, uint32_t len);
@@ -576,7 +189,6 @@ class TPipedTransport : virtual public TTransport {
 /**
  * Wraps a transport into a pipedTransport instance.
  *
- * @author Aditya Agarwal <aditya@facebook.com>
  */
 class TPipedTransportFactory : public TTransportFactory {
  public:
@@ -610,7 +222,6 @@ class TPipedTransportFactory : public TTransportFactory {
  * it is a templatized class, so that clients who rely on a specific
  * TTransport can still access the original transport.
  *
- * @author James Wang <jwang@facebook.com>
  */
 class TPipedFileReaderTransport : public TPipedTransport,
                                   public TFileReaderTransport {
@@ -648,7 +259,6 @@ class TPipedFileReaderTransport : public TPipedTransport,
 /**
  * Creates a TPipedFileReaderTransport from a filepath and a destination transport
  *
- * @author James Wang <jwang@facebook.com>
  */
 class TPipedFileReaderTransportFactory : public TPipedTransportFactory {
  public:
@@ -672,6 +282,6 @@ class TPipedFileReaderTransportFactory : public TPipedTransportFactory {
   }
 };
 
-}}} // facebook::thrift::transport
+}}} // apache::thrift::transport
 
 #endif // #ifndef _THRIFT_TRANSPORT_TTRANSPORTUTILS_H_

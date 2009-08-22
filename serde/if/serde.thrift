@@ -2,6 +2,7 @@
 namespace java org.apache.hadoop.hive.serde
 namespace php org.apache.hadoop.hive.serde
 namespace py org_apache_hadoop_hive_serde
+namespace cpp Hive
 
   // name of serialization scheme.
 const string SERIALIZATION_LIB = "serialization.lib"

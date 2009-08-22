@@ -25,7 +25,7 @@
   <target name="thriftif">
     <echo>Executing thrift (which needs to be in your path) to build java metastore APIs.... </echo>
     <exec executable="thrift"  failonerror="true" dir=".">
-      <arg line="--gen java:beans --gen php --gen py -I ${basedir}/../service/include/ -o ${src.dir} if/hive_metastore.thrift " />
+      <arg line="--gen java:beans --gen cpp --gen php --gen py -I ${basedir}/../service/include/ -o ${src.dir} if/hive_metastore.thrift " />
     </exec>
   </target>
 

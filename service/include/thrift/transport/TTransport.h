@@ -1,8 +1,21 @@
-// Copyright (c) 2006- Facebook
-// Distributed under the Thrift Software License
-//
-// See accompanying file LICENSE or visit the Thrift site at:
-// http://developers.facebook.com/thrift/
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 
 #ifndef _THRIFT_TRANSPORT_TTRANSPORT_H_
 #define _THRIFT_TRANSPORT_TTRANSPORT_H_ 1
@@ -12,13 +25,12 @@
 #include <transport/TTransportException.h>
 #include <string>
 
-namespace facebook { namespace thrift { namespace transport { 
+namespace apache { namespace thrift { namespace transport {
 
 /**
  * Generic interface for a method of transporting data. A TTransport may be
  * capable of either reading or writing, but not necessarily both.
  *
- * @author Mark Slee <mcslee@facebook.com>
  */
 class TTransport {
  public:
@@ -71,7 +83,7 @@ class TTransport {
    * @return How many bytes were actually read
    * @throws TTransportException If an error occurs
    */
-  virtual uint32_t read(uint8_t* buf, uint32_t len) {
+  virtual uint32_t read(uint8_t* /* buf */, uint32_t /* len */) {
     throw TTransportException(TTransportException::NOT_OPEN, "Base TTransport cannot read.");
   }
 
@@ -86,7 +98,7 @@ class TTransport {
   virtual uint32_t readAll(uint8_t* buf, uint32_t len) {
     uint32_t have = 0;
     uint32_t get = 0;
-    
+
     while (have < len) {
       get = read(buf+have, len-have);
       if (get <= 0) {
@@ -94,12 +106,12 @@ class TTransport {
       }
       have += get;
     }
-    
+
     return have;
   }
 
   /**
-   * Called when read is completed. 
+   * Called when read is completed.
    * This can be over-ridden to perform a transport-specific action
    * e.g. logging the request to a file
    *
@@ -115,12 +127,12 @@ class TTransport {
    * @param buf  The data to write out
    * @throws TTransportException if an error occurs
    */
-  virtual void write(const uint8_t* buf, uint32_t len) {
+  virtual void write(const uint8_t* /* buf */, uint32_t /* len */) {
     throw TTransportException(TTransportException::NOT_OPEN, "Base TTransport cannot write.");
   }
 
   /**
-   * Called when write is completed. 
+   * Called when write is completed.
    * This can be over-ridden to perform a transport-specific action
    * at the end of a request.
    *
@@ -139,21 +151,31 @@ class TTransport {
   virtual void flush() {}
 
   /**
-   * Attempts to copy len bytes from the transport into buf.  Does not consume
-   * the bytes read (i.e.: a later read will return the same data).  This
-   * method is meant to support protocols that need to read variable-length
-   * fields.  They can attempt to borrow the maximum amount of data that they
-   * will need, then consume (see next method) what they actually use.  Some
-   * transports will not support this method and others will fail occasionally,
-   * so protocols must be prepared to use read if borrow fails.
+   * Attempts to return a pointer to \c len bytes, possibly copied into \c buf.
+   * Does not consume the bytes read (i.e.: a later read will return the same
+   * data).  This method is meant to support protocols that need to read
+   * variable-length fields.  They can attempt to borrow the maximum amount of
+   * data that they will need, then consume (see next method) what they
+   * actually use.  Some transports will not support this method and others
+   * will fail occasionally, so protocols must be prepared to use read if
+   * borrow fails.
    *
-   * @oaram buf  The buffer to store the data
-   * @param len  How much data to borrow
-   * @return true if the requested data has been borrowed, false otherwise
+   * @oaram buf  A buffer where the data can be stored if needed.
+   *             If borrow doesn't return buf, then the contents of
+   *             buf after the call are undefined.
+   * @param len  *len should initially contain the number of bytes to borrow.
+   *             If borrow succeeds, *len will contain the number of bytes
+   *             available in the returned pointer.  This will be at least
+   *             what was requested, but may be more if borrow returns
+   *             a pointer to an internal buffer, rather than buf.
+   *             If borrow fails, the contents of *len are undefined.
+   * @return If the borrow succeeds, return a pointer to the borrowed data.
+   *         This might be equal to \c buf, or it might be a pointer into
+   *         the transport's internal buffers.
    * @throws TTransportException if an error occurs
    */
-  virtual bool borrow(uint8_t* buf, uint32_t len) {
-    return false;
+  virtual const uint8_t* borrow(uint8_t* /* buf */, uint32_t* /* len */) {
+    return NULL;
   }
 
   /**
@@ -165,7 +187,7 @@ class TTransport {
    * @param len  How many bytes to consume
    * @throws TTransportException If an error occurs
    */
-  virtual void consume(uint32_t len) {
+  virtual void consume(uint32_t /* len */) {
     throw TTransportException(TTransportException::NOT_OPEN, "Base TTransport cannot consume.");
   }
 
@@ -181,7 +203,6 @@ class TTransport {
  * source transport. Commonly used inside servers to make input and output
  * streams out of raw clients.
  *
- * @author Mark Slee <mcslee@facebook.com>
  */
 class TTransportFactory {
  public:
@@ -198,6 +219,6 @@ class TTransportFactory {
 
 };
 
-}}} // facebook::thrift::transport
+}}} // apache::thrift::transport
 
 #endif // #ifndef _THRIFT_TRANSPORT_TTRANSPORT_H_

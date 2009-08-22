@@ -21,6 +21,8 @@ Trunk -  Unreleased
     HIVE-713. Integrate operator counters into query plan to view progress of
     queries. (Namit Jain and Raghu Murthy via zshao)
 
+    HIVE-187. Preliminary ODBC Support. (Eric Hwang via rmurthy)
+
   IMPROVEMENTS
 
     HIVE-760. Add version info to META-INF/MANIFEST.MF.

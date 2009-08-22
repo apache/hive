@@ -1,17 +1,29 @@
-// Copyright (c) 2006- Facebook
-// Distributed under the Thrift Software License
-//
-// See accompanying file LICENSE or visit the Thrift site at:
-// http://developers.facebook.com/thrift/
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 
 #ifndef _THRIFT_TRANSPORT_TTRANSPORTEXCEPTION_H_
 #define _THRIFT_TRANSPORT_TTRANSPORTEXCEPTION_H_ 1
 
-#include <boost/lexical_cast.hpp>
 #include <string>
 #include <Thrift.h>
 
-namespace facebook { namespace thrift { namespace transport { 
+namespace apache { namespace thrift { namespace transport {
 
 /**
  * Class to encapsulate all the possible types of transport errors that may
@@ -20,45 +32,44 @@ namespace facebook { namespace thrift { namespace transport {
  * base of error handling to be used for various types of transports, i.e.
  * pipes etc.
  *
- * @author Mark Slee <mcslee@facebook.com>
  */
-class TTransportException : public facebook::thrift::TException {
+class TTransportException : public apache::thrift::TException {
  public:
   /**
    * Error codes for the various types of exceptions.
    */
-  enum TTransportExceptionType {
-    UNKNOWN = 0,
-    NOT_OPEN = 1,
-    ALREADY_OPEN = 2,
-    TIMED_OUT = 3,
-    END_OF_FILE = 4,
-    INTERRUPTED = 5,
-    BAD_ARGS = 6,
-    CORRUPTED_DATA = 7,
-    INTERNAL_ERROR = 8,
+  enum TTransportExceptionType
+  { UNKNOWN = 0
+  , NOT_OPEN = 1
+  , ALREADY_OPEN = 2
+  , TIMED_OUT = 3
+  , END_OF_FILE = 4
+  , INTERRUPTED = 5
+  , BAD_ARGS = 6
+  , CORRUPTED_DATA = 7
+  , INTERNAL_ERROR = 8
   };
-  
+
   TTransportException() :
-    facebook::thrift::TException(),
+    apache::thrift::TException(),
     type_(UNKNOWN) {}
 
   TTransportException(TTransportExceptionType type) :
-    facebook::thrift::TException(), 
+    apache::thrift::TException(),
     type_(type) {}
 
   TTransportException(const std::string& message) :
-    facebook::thrift::TException(message),
+    apache::thrift::TException(message),
     type_(UNKNOWN) {}
 
   TTransportException(TTransportExceptionType type, const std::string& message) :
-    facebook::thrift::TException(message),
+    apache::thrift::TException(message),
     type_(type) {}
 
   TTransportException(TTransportExceptionType type,
                       const std::string& message,
                       int errno_copy) :
-    facebook::thrift::TException(message + ": " + strerror_s(errno_copy)),
+    apache::thrift::TException(message + ": " + TOutput::strerror_s(errno_copy)),
     type_(type) {}
 
   virtual ~TTransportException() throw() {}
@@ -91,7 +102,7 @@ class TTransportException : public facebook::thrift::TException {
       return message_.c_str();
     }
   }
- 
+
  protected:
   /** Just like strerror_r but returns a C++ string object. */
   std::string strerror_s(int errno_copy);
@@ -101,6 +112,6 @@ class TTransportException : public facebook::thrift::TException {
 
 };
 
-}}} // facebook::thrift::transport
+}}} // apache::thrift::transport
 
 #endif // #ifndef _THRIFT_TRANSPORT_TTRANSPORTEXCEPTION_H_

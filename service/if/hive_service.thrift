@@ -29,6 +29,7 @@ include "metastore/if/hive_metastore.thrift"
 include "ql/if/queryplan.thrift"
 
 namespace java org.apache.hadoop.hive.service
+namespace cpp Apache.Hadoop.Hive
 
 // Enumeration of JobTracker.State                                                                      
 enum JobTrackerState {                                                                   

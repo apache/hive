@@ -1,8 +1,21 @@
-// Copyright (c) 2006- Facebook
-// Distributed under the Thrift Software License
-//
-// See accompanying file LICENSE or visit the Thrift site at:
-// http://developers.facebook.com/thrift/
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 
 #ifndef _THRIFT_TLOGGING_H_
 #define _THRIFT_TLOGGING_H_ 1
@@ -14,7 +27,6 @@
 /**
  * Contains utility macros for debugging and logging.
  *
- * @author Aditya Agarwal
  */
 
 #ifndef HAVE_CLOCK_GETTIME
@@ -29,37 +41,37 @@
 
 /**
  * T_GLOBAL_DEBUGGING_LEVEL = 0: all debugging turned off, debug macros undefined
- * T_GLOBAL_DEBUGGING_LEVEL = 1: all debugging turned on  
+ * T_GLOBAL_DEBUGGING_LEVEL = 1: all debugging turned on
  */
 #define T_GLOBAL_DEBUGGING_LEVEL 0
 
 
 /**
  * T_GLOBAL_LOGGING_LEVEL = 0: all logging turned off, logging macros undefined
- * T_GLOBAL_LOGGING_LEVEL = 1: all logging turned on  
+ * T_GLOBAL_LOGGING_LEVEL = 1: all logging turned on
  */
 #define T_GLOBAL_LOGGING_LEVEL   1
 
 
-/** 
+/**
  * Standard wrapper around fprintf what will prefix the file name and line
  * number to the line. Uses T_GLOBAL_DEBUGGING_LEVEL to control whether it is
  * turned on or off.
  *
- * @param format_string 
+ * @param format_string
  */
 #if T_GLOBAL_DEBUGGING_LEVEL > 0
   #define T_DEBUG(format_string,...)                                        \
     if (T_GLOBAL_DEBUGGING_LEVEL > 0) {                                     \
       fprintf(stderr,"[%s,%d] " #format_string " \n", __FILE__, __LINE__,##__VA_ARGS__); \
-  } 
+  }
 #else
   #define T_DEBUG(format_string,...)
 #endif
 
 
-/** 
- * analagous to T_DEBUG but also prints the time 
+/**
+ * analagous to T_DEBUG but also prints the time
  *
  * @param string  format_string input: printf style format string
  */
@@ -80,7 +92,7 @@
 #endif
 
 
-/** 
+/**
  * analagous to T_DEBUG but uses input level to determine whether or not the string
  * should be logged.
  *
@@ -93,7 +105,7 @@
   }
 
 
-/** 
+/**
  * Explicit error logging. Prints time, file name and line number
  *
  * @param string  format_string input: printf style format string
@@ -109,7 +121,7 @@
   }
 
 
-/** 
+/**
  * Analagous to T_ERROR, additionally aborting the process.
  * WARNING: macro calls abort(), ending program execution
  *
@@ -127,7 +139,7 @@
   }
 
 
-/** 
+/**
  * Log input message
  *
  * @param string  format_string input: printf style format string
@@ -143,7 +155,7 @@
         dbgtime[24] = '\0';                                                   \
         fprintf(stderr,"[%s] " #format_string " \n", dbgtime,##__VA_ARGS__);  \
       }                                                                       \
-    } 
+    }
 #else
   #define T_LOG_OPER(format_string,...)
 #endif

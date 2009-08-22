@@ -7,11 +7,9 @@
 #define fb303_TYPES_H
 
 #include <Thrift.h>
-#include <reflection_limited_types.h>
 #include <protocol/TProtocol.h>
 #include <transport/TTransport.h>
 
-#include "reflection_limited_types.h"
 
 
 namespace facebook { namespace fb303 {

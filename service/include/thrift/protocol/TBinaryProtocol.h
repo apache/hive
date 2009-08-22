@@ -1,8 +1,21 @@
-// Copyright (c) 2006- Facebook
-// Distributed under the Thrift Software License
-//
-// See accompanying file LICENSE or visit the Thrift site at:
-// http://developers.facebook.com/thrift/
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 
 #ifndef _THRIFT_PROTOCOL_TBINARYPROTOCOL_H_
 #define _THRIFT_PROTOCOL_TBINARYPROTOCOL_H_ 1
@@ -11,13 +24,12 @@
 
 #include <boost/shared_ptr.hpp>
 
-namespace facebook { namespace thrift { namespace protocol { 
+namespace apache { namespace thrift { namespace protocol {
 
 /**
  * The default binary protocol for thrift. Writes all data in a very basic
  * binary format, essentially just spitting out the raw bytes.
  *
- * @author Mark Slee <mcslee@facebook.com>
  */
 class TBinaryProtocol : public TProtocol {
  protected:
@@ -50,7 +62,7 @@ class TBinaryProtocol : public TProtocol {
 
   ~TBinaryProtocol() {
     if (string_buf_ != NULL) {
-      free(string_buf_);
+      std::free(string_buf_);
       string_buf_size_ = 0;
     }
   }
@@ -79,18 +91,18 @@ class TBinaryProtocol : public TProtocol {
   virtual uint32_t writeMessageEnd();
 
 
-  uint32_t writeStructBegin(const std::string& name);
+  uint32_t writeStructBegin(const char* name);
 
   uint32_t writeStructEnd();
 
-  uint32_t writeFieldBegin(const std::string& name,
+  uint32_t writeFieldBegin(const char* name,
                            const TType fieldType,
                            const int16_t fieldId);
 
   uint32_t writeFieldEnd();
 
   uint32_t writeFieldStop();
-                                       
+
   uint32_t writeMapBegin(const TType keyType,
                          const TType valType,
                          const uint32_t size);
@@ -119,8 +131,9 @@ class TBinaryProtocol : public TProtocol {
 
   uint32_t writeDouble(const double dub);
 
-
   uint32_t writeString(const std::string& str);
+
+  uint32_t writeBinary(const std::string& str);
 
   /**
    * Reading functions
@@ -140,9 +153,9 @@ class TBinaryProtocol : public TProtocol {
   uint32_t readFieldBegin(std::string& name,
                           TType& fieldType,
                           int16_t& fieldId);
-  
+
   uint32_t readFieldEnd();
- 
+
   uint32_t readMapBegin(TType& keyType,
                         TType& valType,
                         uint32_t& size);
@@ -151,7 +164,7 @@ class TBinaryProtocol : public TProtocol {
 
   uint32_t readListBegin(TType& elemType,
                          uint32_t& size);
-  
+
   uint32_t readListEnd();
 
   uint32_t readSetBegin(TType& elemType,
@@ -172,6 +185,8 @@ class TBinaryProtocol : public TProtocol {
   uint32_t readDouble(double& dub);
 
   uint32_t readString(std::string& str);
+
+  uint32_t readBinary(std::string& str);
 
  protected:
   uint32_t readStringBody(std::string& str, int32_t sz);
@@ -234,6 +249,6 @@ class TBinaryProtocolFactory : public TProtocolFactory {
 
 };
 
-}}} // facebook::thrift::protocol
+}}} // apache::thrift::protocol
 
 #endif // #ifndef _THRIFT_PROTOCOL_TBINARYPROTOCOL_H_

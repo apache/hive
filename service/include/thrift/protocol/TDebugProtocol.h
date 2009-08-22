@@ -1,8 +1,21 @@
-// Copyright (c) 2006- Facebook
-// Distributed under the Thrift Software License
-//
-// See accompanying file LICENSE or visit the Thrift site at:
-// http://developers.facebook.com/thrift/
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 
 #ifndef _THRIFT_PROTOCOL_TDEBUGPROTOCOL_H_
 #define _THRIFT_PROTOCOL_TDEBUGPROTOCOL_H_ 1
@@ -12,9 +25,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <transport/TTransportUtils.h>
-
-namespace facebook { namespace thrift { namespace protocol { 
+namespace apache { namespace thrift { namespace protocol {
 
 /*
 
@@ -34,24 +45,36 @@ Complaints are not. :R
  * Protocol that prints the payload in a nice human-readable format.
  * Reading from this protocol is not supported.
  *
- * @author David Reiss <dreiss@facebook.com>
  */
 class TDebugProtocol : public TWriteOnlyProtocol {
  private:
-  enum write_state_t {
-    UNINIT,
-    STRUCT,
-    LIST,
-    SET,
-    MAP_KEY,
-    MAP_VALUE,
+  enum write_state_t
+  { UNINIT
+  , STRUCT
+  , LIST
+  , SET
+  , MAP_KEY
+  , MAP_VALUE
   };
 
  public:
   TDebugProtocol(boost::shared_ptr<TTransport> trans)
     : TWriteOnlyProtocol(trans, "TDebugProtocol")
+    , string_limit_(DEFAULT_STRING_LIMIT)
+    , string_prefix_size_(DEFAULT_STRING_PREFIX_SIZE)
   {
     write_state_.push_back(UNINIT);
+  }
+
+  static const int32_t DEFAULT_STRING_LIMIT = 256;
+  static const int32_t DEFAULT_STRING_PREFIX_SIZE = 16;
+
+  void setStringSizeLimit(int32_t string_limit) {
+    string_limit_ = string_limit;
+  }
+
+  void setStringPrefixSize(int32_t string_prefix_size) {
+    string_prefix_size_ = string_prefix_size;
   }
 
 
@@ -62,18 +85,18 @@ class TDebugProtocol : public TWriteOnlyProtocol {
   virtual uint32_t writeMessageEnd();
 
 
-  uint32_t writeStructBegin(const std::string& name);
+  uint32_t writeStructBegin(const char* name);
 
   uint32_t writeStructEnd();
 
-  uint32_t writeFieldBegin(const std::string& name,
+  uint32_t writeFieldBegin(const char* name,
                            const TType fieldType,
                            const int16_t fieldId);
 
   uint32_t writeFieldEnd();
 
   uint32_t writeFieldStop();
-                                       
+
   uint32_t writeMapBegin(const TType keyType,
                          const TType valType,
                          const uint32_t size);
@@ -104,6 +127,8 @@ class TDebugProtocol : public TWriteOnlyProtocol {
 
   uint32_t writeString(const std::string& str);
 
+  uint32_t writeBinary(const std::string& str);
+
 
  private:
   void indentUp();
@@ -115,6 +140,9 @@ class TDebugProtocol : public TWriteOnlyProtocol {
   uint32_t writeItem(const std::string& str);
 
   static std::string fieldTypeName(TType type);
+
+  int32_t string_limit_;
+  int32_t string_prefix_size_;
 
   std::string indent_str_;
   static const int indent_inc = 2;
@@ -137,15 +165,18 @@ class TDebugProtocolFactory : public TProtocolFactory {
 
 };
 
-}}} // facebook::thrift::protocol
+}}} // apache::thrift::protocol
 
 
-namespace facebook { namespace thrift { 
+// TODO(dreiss): Move (part of) ThriftDebugString into a .cpp file and remove this.
+#include <transport/TBufferTransports.h>
+
+namespace apache { namespace thrift {
 
 template<typename ThriftStruct>
 std::string ThriftDebugString(const ThriftStruct& ts) {
-  using namespace facebook::thrift::transport;
-  using namespace facebook::thrift::protocol;
+  using namespace apache::thrift::transport;
+  using namespace apache::thrift::protocol;
   TMemoryBuffer* buffer = new TMemoryBuffer;
   boost::shared_ptr<TTransport> trans(buffer);
   TDebugProtocol protocol(trans);
@@ -162,8 +193,8 @@ std::string ThriftDebugString(const ThriftStruct& ts) {
 #if 0
 template<typename Object>
 std::string DebugString(const std::vector<Object>& vec) {
-  using namespace facebook::thrift::transport;
-  using namespace facebook::thrift::protocol;
+  using namespace apache::thrift::transport;
+  using namespace apache::thrift::protocol;
   TMemoryBuffer* buffer = new TMemoryBuffer;
   boost::shared_ptr<TTransport> trans(buffer);
   TDebugProtocol protocol(trans);
@@ -186,7 +217,7 @@ std::string DebugString(const std::vector<Object>& vec) {
 }
 #endif // 0
 
-}} // facebook::thrift
+}} // apache::thrift
 
 
 #endif // #ifndef _THRIFT_PROTOCOL_TDEBUGPROTOCOL_H_
