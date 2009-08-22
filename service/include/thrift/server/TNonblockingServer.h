@@ -1,25 +1,42 @@
-// Copyright (c) 2006- Facebook
-// Distributed under the Thrift Software License
-//
-// See accompanying file LICENSE or visit the Thrift site at:
-// http://developers.facebook.com/thrift/
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 
 #ifndef _THRIFT_SERVER_TNONBLOCKINGSERVER_H_
 #define _THRIFT_SERVER_TNONBLOCKINGSERVER_H_ 1
 
 #include <Thrift.h>
 #include <server/TServer.h>
-#include <transport/TTransportUtils.h>
+#include <transport/TBufferTransports.h>
 #include <concurrency/ThreadManager.h>
 #include <stack>
+#include <string>
+#include <errno.h>
+#include <cstdlib>
+#include <unistd.h>
 #include <event.h>
 
-namespace facebook { namespace thrift { namespace server {
+namespace apache { namespace thrift { namespace server {
 
-using facebook::thrift::transport::TMemoryBuffer;
-using facebook::thrift::protocol::TProtocol;
-using facebook::thrift::concurrency::Runnable;
-using facebook::thrift::concurrency::ThreadManager;
+using apache::thrift::transport::TMemoryBuffer;
+using apache::thrift::protocol::TProtocol;
+using apache::thrift::concurrency::Runnable;
+using apache::thrift::concurrency::ThreadManager;
 
 // Forward declaration of class
 class TConnection;
@@ -32,7 +49,6 @@ class TConnection;
  * It does not use the TServerTransport framework, but rather has socket
  * operations hardcoded for use with select.
  *
- * @author Mark Slee <mcslee@facebook.com>
  */
 class TNonblockingServer : public TServer {
  private:
@@ -40,14 +56,17 @@ class TNonblockingServer : public TServer {
   // Listen backlog
   static const int LISTEN_BACKLOG = 1024;
 
+  // Default limit on size of idle connection pool
+  static const size_t CONNECTION_STACK_LIMIT = 1024;
+
+  // Maximum size of buffer allocated to idle connection
+  static const uint32_t IDLE_BUFFER_MEM_LIMIT = 8192;
+
   // Server socket file descriptor
   int serverSocket_;
 
   // Port server runs on
   int port_;
-
-  // Whether to frame responses
-  bool frameResponses_;
 
   // For processing via thread pool, may be NULL
   boost::shared_ptr<ThreadManager> threadManager_;
@@ -60,6 +79,19 @@ class TNonblockingServer : public TServer {
 
   // Event struct, for use with eventBase_
   struct event serverEvent_;
+
+  // Number of TConnection object we've created
+  size_t numTConnections_;
+
+  // Limit for how many TConnection objects to cache
+  size_t connectionStackLimit_;
+
+  /**
+   * Max read buffer size for an idle connection.  When we place an idle
+   * TConnection into connectionStack_, we insure that its read buffer is
+   * reduced to this size to insure that idle connections don't hog memory.
+   */
+  uint32_t idleBufferMemLimit_;
 
   /**
    * This is a stack of all the objects that have been created but that
@@ -77,9 +109,11 @@ class TNonblockingServer : public TServer {
     TServer(processor),
     serverSocket_(-1),
     port_(port),
-    frameResponses_(true),
     threadPoolProcessing_(false),
-    eventBase_(NULL) {}
+    eventBase_(NULL),
+    numTConnections_(0),
+    connectionStackLimit_(CONNECTION_STACK_LIMIT),
+    idleBufferMemLimit_(IDLE_BUFFER_MEM_LIMIT) {}
 
   TNonblockingServer(boost::shared_ptr<TProcessor> processor,
                      boost::shared_ptr<TProtocolFactory> protocolFactory,
@@ -88,9 +122,11 @@ class TNonblockingServer : public TServer {
     TServer(processor),
     serverSocket_(-1),
     port_(port),
-    frameResponses_(true),
     threadManager_(threadManager),
-    eventBase_(NULL) {
+    eventBase_(NULL),
+    numTConnections_(0),
+    connectionStackLimit_(CONNECTION_STACK_LIMIT),
+    idleBufferMemLimit_(IDLE_BUFFER_MEM_LIMIT) {
     setInputTransportFactory(boost::shared_ptr<TTransportFactory>(new TTransportFactory()));
     setOutputTransportFactory(boost::shared_ptr<TTransportFactory>(new TTransportFactory()));
     setInputProtocolFactory(protocolFactory);
@@ -108,9 +144,11 @@ class TNonblockingServer : public TServer {
     TServer(processor),
     serverSocket_(0),
     port_(port),
-    frameResponses_(true),
     threadManager_(threadManager),
-    eventBase_(NULL) {
+    eventBase_(NULL),
+    numTConnections_(0),
+    connectionStackLimit_(CONNECTION_STACK_LIMIT),
+    idleBufferMemLimit_(IDLE_BUFFER_MEM_LIMIT) {
     setInputTransportFactory(inputTransportFactory);
     setOutputTransportFactory(outputTransportFactory);
     setInputProtocolFactory(inputProtocolFactory);
@@ -125,6 +163,28 @@ class TNonblockingServer : public TServer {
     threadPoolProcessing_ = (threadManager != NULL);
   }
 
+  boost::shared_ptr<ThreadManager> getThreadManager() {
+    return threadManager_;
+  }
+
+  /**
+   * Get the maximum number of unused TConnection we will hold in reserve.
+   *
+   * @return the current limit on TConnection pool size.
+   */
+  size_t getConnectionStackLimit() const {
+    return connectionStackLimit_;
+  }
+
+  /**
+   * Set the maximum number of unused TConnection we will hold in reserve.
+   *
+   * @param sz the new limit for TConnection pool size.
+   */
+  void setConnectionStackLimit(size_t sz) {
+    connectionStackLimit_ = sz;
+  }
+
   bool isThreadPoolProcessing() const {
     return threadPoolProcessing_;
   }
@@ -133,16 +193,44 @@ class TNonblockingServer : public TServer {
     threadManager_->add(task);
   }
 
-  void setFrameResponses(bool frameResponses) {
-    frameResponses_ = frameResponses;
-  }
-
-  bool getFrameResponses() const {
-    return frameResponses_;
-  }
-
   event_base* getEventBase() const {
     return eventBase_;
+  }
+
+  void incrementNumConnections() {
+    ++numTConnections_;
+  }
+
+  void decrementNumConnections() {
+    --numTConnections_;
+  }
+
+  size_t getNumConnections() {
+    return numTConnections_;
+  }
+
+  size_t getNumIdleConnections() {
+    return connectionStack_.size();
+  }
+
+  /**
+   * Get the maximum limit of memory allocated to idle TConnection objects.
+   *
+   * @return # bytes beyond which we will shrink buffers when idle.
+   */
+  size_t getIdleBufferMemLimit() const {
+    return idleBufferMemLimit_;
+  }
+
+  /**
+   * Set the maximum limit of memory allocated to idle TConnection objects.
+   * If a TConnection object goes idle with more than this much memory
+   * allocated to its buffer, we shrink it to this value.
+   *
+   * @param limit of bytes beyond which we will shrink buffers when idle.
+   */
+  void setIdleBufferMemLimit(size_t limit) {
+    idleBufferMemLimit_ = limit;
   }
 
   TConnection* createConnection(int socket, short flags);
@@ -160,7 +248,6 @@ class TNonblockingServer : public TServer {
   void registerEvents(event_base* base);
 
   void serve();
-
 };
 
 /**
@@ -183,7 +270,6 @@ enum TAppState {
   APP_READ_FRAME_SIZE,
   APP_READ_REQUEST,
   APP_WAIT_TASK,
-  APP_SEND_FRAME_SIZE,
   APP_SEND_RESULT
 };
 
@@ -235,8 +321,11 @@ class TConnection {
   // How far through writing are we?
   uint32_t writeBufferPos_;
 
-  // Frame size
-  int32_t frameSize_;
+  // How many times have we read since our last buffer reset?
+  uint32_t numReadsSinceReset_;
+
+  // How many times have we written since our last buffer reset?
+  uint32_t numWritesSinceReset_;
 
   // Task handle
   int taskHandle_;
@@ -288,11 +377,14 @@ class TConnection {
 
   // Constructor
   TConnection(int socket, short eventFlags, TNonblockingServer *s) {
-    readBuffer_ = (uint8_t*)malloc(1024);
+    readBuffer_ = (uint8_t*)std::malloc(1024);
     if (readBuffer_ == NULL) {
-      throw new facebook::thrift::TException("Out of memory.");
+      throw new apache::thrift::TException("Out of memory.");
     }
     readBufferSize_ = 1024;
+
+    numReadsSinceReset_ = 0;
+    numWritesSinceReset_ = 0;
 
     // Allocate input and output tranpsorts
     // these only need to be allocated once per TConnection (they don't need to be
@@ -301,7 +393,19 @@ class TConnection {
     outputTransport_ = boost::shared_ptr<TMemoryBuffer>(new TMemoryBuffer());
 
     init(socket, eventFlags, s);
+    server_->incrementNumConnections();
   }
+
+  ~TConnection() {
+    server_->decrementNumConnections();
+  }
+
+  /**
+   * Check read buffer against a given limit and shrink it if exceeded.
+   *
+   * @param limit we limit buffer size to.
+   */
+  void checkIdleBufferMemLimit(uint32_t limit);
 
   // Initialize
   void init(int socket, short eventFlags, TNonblockingServer *s);
@@ -310,22 +414,22 @@ class TConnection {
   void transition();
 
   // Handler wrapper
-  static void eventHandler(int fd, short which, void* v) {
+  static void eventHandler(int fd, short /* which */, void* v) {
     assert(fd == ((TConnection*)v)->socket_);
     ((TConnection*)v)->workSocket();
   }
 
   // Handler wrapper for task block
-  static void taskHandler(int fd, short which, void* v) {
+  static void taskHandler(int fd, short /* which */, void* v) {
     assert(fd == ((TConnection*)v)->taskHandle_);
     if (-1 == ::close(((TConnection*)v)->taskHandle_)) {
-      GlobalOutput("TConnection::taskHandler close handle failed, resource leak");
+      GlobalOutput.perror("TConnection::taskHandler close handle failed, resource leak ", errno);
     }
     ((TConnection*)v)->transition();
   }
 
 };
 
-}}} // facebook::thrift::server
+}}} // apache::thrift::server
 
 #endif // #ifndef _THRIFT_SERVER_TSIMPLESERVER_H_

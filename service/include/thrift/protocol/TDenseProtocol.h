@@ -1,15 +1,28 @@
-// Copyright (c) 2006- Facebook
-// Distributed under the Thrift Software License
-//
-// See accompanying file LICENSE or visit the Thrift site at:
-// http://developers.facebook.com/thrift/
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 
 #ifndef _THRIFT_PROTOCOL_TDENSEPROTOCOL_H_
 #define _THRIFT_PROTOCOL_TDENSEPROTOCOL_H_ 1
 
 #include "TBinaryProtocol.h"
 
-namespace facebook { namespace thrift { namespace protocol {
+namespace apache { namespace thrift { namespace protocol {
 
 /**
  * !!!WARNING!!!
@@ -20,7 +33,7 @@ namespace facebook { namespace thrift { namespace protocol {
  * The dense protocol is designed to use as little space as possible.
  *
  * There are two types of dense protocol instances.  Standalone instances
- * are not used for RPC and just encoded and decode structures of 
+ * are not used for RPC and just encoded and decode structures of
  * a predetermined type.  Non-standalone instances are used for RPC.
  * Currently, only standalone instances exist.
  *
@@ -42,7 +55,6 @@ namespace facebook { namespace thrift { namespace protocol {
  * We inherit so that we can can explicitly call TBPs's primitive-writing
  * methods within our versions.
  *
- * @author David Reiss <dreiss@facebook.com>
  */
 class TDenseProtocol : public TBinaryProtocol {
  protected:
@@ -51,7 +63,7 @@ class TDenseProtocol : public TBinaryProtocol {
   static const int32_t VERSION_2 = 0x80020000;
 
  public:
-  typedef facebook::thrift::reflection::local::TypeSpec TypeSpec;
+  typedef apache::thrift::reflection::local::TypeSpec TypeSpec;
   static const int FP_PREFIX_LEN;
 
   /**
@@ -84,11 +96,11 @@ class TDenseProtocol : public TBinaryProtocol {
   virtual uint32_t writeMessageEnd();
 
 
-  virtual uint32_t writeStructBegin(const std::string& name);
+  virtual uint32_t writeStructBegin(const char* name);
 
   virtual uint32_t writeStructEnd();
 
-  virtual uint32_t writeFieldBegin(const std::string& name,
+  virtual uint32_t writeFieldBegin(const char* name,
                                    const TType fieldType,
                                    const int16_t fieldId);
 
@@ -125,6 +137,8 @@ class TDenseProtocol : public TBinaryProtocol {
   virtual uint32_t writeDouble(const double dub);
 
   virtual uint32_t writeString(const std::string& str);
+
+  virtual uint32_t writeBinary(const std::string& str);
 
 
   /*
@@ -189,6 +203,7 @@ class TDenseProtocol : public TBinaryProtocol {
 
   uint32_t readString(std::string& str);
 
+  uint32_t readBinary(std::string& str);
 
   /*
    * Helper reading functions (don't do state transitions).
@@ -233,6 +248,6 @@ class TDenseProtocol : public TBinaryProtocol {
   bool standalone_;
 };
 
-}}} // facebook::thrift::protocol
+}}} // apache::thrift::protocol
 
 #endif // #ifndef _THRIFT_PROTOCOL_TDENSEPROTOCOL_H_

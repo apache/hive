@@ -28,6 +28,7 @@ include "thrift/fb303/if/fb303.thrift"
 include "metastore/if/hive_metastore.thrift"
 
 namespace java org.apache.hadoop.hive.service
+namespace cpp Apache.Hadoop.Hive
 
 // Enumeration of JobTracker.State                                                                      
 enum JobTrackerState {                                                                   

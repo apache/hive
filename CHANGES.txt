@@ -130,6 +130,8 @@ Release 0.4.0 -  Unreleased
 
     HIVE-748. Test for extracting urls. (Namit Jain via zshao)
 
+    HIVE-187. Preliminary ODBC Support. (Eric Hwang via rmurthy)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 

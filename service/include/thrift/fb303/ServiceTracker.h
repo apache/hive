@@ -1,8 +1,21 @@
-// Copyright (c) 2006- Facebook
-// Distributed under the Thrift Software License
-//
-// See accompanying file LICENSE or visit the Thrift site at:
-// http://developers.facebook.com/thrift/
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 
 /**
  * ServiceTracker is a utility class for logging and timing service
@@ -87,10 +100,10 @@
 #include <map>
 #include <boost/shared_ptr.hpp>
 
-#include "thrift/concurrency/Mutex.h"
+#include "concurrency/Mutex.h"
 
 
-namespace facebook { namespace thrift { namespace concurrency {
+namespace apache { namespace thrift { namespace concurrency {
   class ThreadManager;
 }}}
 
@@ -132,20 +145,20 @@ public:
                  Stopwatch::Unit stopwatchUnit
                  = Stopwatch::UNIT_MILLISECONDS);
 
-  void setThreadManager(boost::shared_ptr<facebook::thrift::concurrency::ThreadManager> threadManager);
+  void setThreadManager(boost::shared_ptr<apache::thrift::concurrency::ThreadManager> threadManager);
 
 private:
 
   facebook::fb303::FacebookBase *handler_;
   void (*logMethod_)(int, const std::string &);
-  boost::shared_ptr<facebook::thrift::concurrency::ThreadManager> threadManager_;
+  boost::shared_ptr<apache::thrift::concurrency::ThreadManager> threadManager_;
 
   bool featureCheckpoint_;
   bool featureStatusCheck_;
   bool featureThreadCheck_;
   Stopwatch::Unit stopwatchUnit_;
 
-  facebook::thrift::concurrency::Mutex statisticsMutex_;
+  apache::thrift::concurrency::Mutex statisticsMutex_;
   time_t checkpointTime_;
   uint64_t checkpointServices_;
   uint64_t checkpointDuration_;

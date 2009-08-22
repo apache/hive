@@ -1,16 +1,28 @@
-// Copyright (c) 2006- Facebook
-// Distributed under the Thrift Software License
-//
-// See accompanying file LICENSE or visit the Thrift site at:
-// http://developers.facebook.com/thrift/
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 
 #ifndef _THRIFT_PROTOCOL_TPROTOCOLEXCEPTION_H_
 #define _THRIFT_PROTOCOL_TPROTOCOLEXCEPTION_H_ 1
 
-#include <boost/lexical_cast.hpp>
 #include <string>
 
-namespace facebook { namespace thrift { namespace protocol { 
+namespace apache { namespace thrift { namespace protocol {
 
 /**
  * Class to encapsulate all the possible types of protocol errors that may
@@ -19,37 +31,36 @@ namespace facebook { namespace thrift { namespace protocol {
  * base of error handling to be used for various types of protocols, i.e.
  * pipes etc.
  *
- * @author Mark Slee <mcslee@facebook.com>
  */
-class TProtocolException : public facebook::thrift::TException {
+class TProtocolException : public apache::thrift::TException {
  public:
 
   /**
    * Error codes for the various types of exceptions.
    */
-  enum TProtocolExceptionType {
-    UNKNOWN = 0,
-    INVALID_DATA = 1,
-    NEGATIVE_SIZE = 2,
-    SIZE_LIMIT = 3,
-    BAD_VERSION = 4,
-    NOT_IMPLEMENTED = 5,
+  enum TProtocolExceptionType
+  { UNKNOWN = 0
+  , INVALID_DATA = 1
+  , NEGATIVE_SIZE = 2
+  , SIZE_LIMIT = 3
+  , BAD_VERSION = 4
+  , NOT_IMPLEMENTED = 5
   };
 
   TProtocolException() :
-    facebook::thrift::TException(),
+    apache::thrift::TException(),
     type_(UNKNOWN) {}
 
   TProtocolException(TProtocolExceptionType type) :
-    facebook::thrift::TException(), 
+    apache::thrift::TException(),
     type_(type) {}
 
   TProtocolException(const std::string& message) :
-    facebook::thrift::TException(message),
+    apache::thrift::TException(message),
     type_(UNKNOWN) {}
 
   TProtocolException(TProtocolExceptionType type, const std::string& message) :
-    facebook::thrift::TException(message),
+    apache::thrift::TException(message),
     type_(type) {}
 
   virtual ~TProtocolException() throw() {}
@@ -81,13 +92,13 @@ class TProtocolException : public facebook::thrift::TException {
   }
 
  protected:
-  /** 
+  /**
    * Error code
    */
   TProtocolExceptionType type_;
- 
+
 };
 
-}}} // facebook::thrift::protocol
+}}} // apache::thrift::protocol
 
 #endif // #ifndef _THRIFT_PROTOCOL_TPROTOCOLEXCEPTION_H_

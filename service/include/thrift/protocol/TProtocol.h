@@ -1,8 +1,21 @@
-// Copyright (c) 2006- Facebook
-// Distributed under the Thrift Software License
-//
-// See accompanying file LICENSE or visit the Thrift site at:
-// http://developers.facebook.com/thrift/
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 
 #ifndef _THRIFT_PROTOCOL_TPROTOCOL_H_
 #define _THRIFT_PROTOCOL_TPROTOCOL_H_ 1
@@ -11,15 +24,57 @@
 #include <protocol/TProtocolException.h>
 
 #include <boost/shared_ptr.hpp>
+#include <boost/static_assert.hpp>
 
 #include <netinet/in.h>
 #include <sys/types.h>
 #include <string>
 #include <map>
 
-namespace facebook { namespace thrift { namespace protocol { 
 
-using facebook::thrift::transport::TTransport;
+// Use this to get around strict aliasing rules.
+// For example, uint64_t i = bitwise_cast<uint64_t>(returns_double());
+// The most obvious implementation is to just cast a pointer,
+// but that doesn't work.
+// For a pretty in-depth explanation of the problem, see
+// http://www.cellperformance.com/mike_acton/2006/06/ (...)
+// understanding_strict_aliasing.html
+template <typename To, typename From>
+static inline To bitwise_cast(From from) {
+  BOOST_STATIC_ASSERT(sizeof(From) == sizeof(To));
+
+  // BAD!!!  These are all broken with -O2.
+  //return *reinterpret_cast<To*>(&from);  // BAD!!!
+  //return *static_cast<To*>(static_cast<void*>(&from));  // BAD!!!
+  //return *(To*)(void*)&from;  // BAD!!!
+
+  // Super clean and paritally blessed by section 3.9 of the standard.
+  //unsigned char c[sizeof(from)];
+  //memcpy(c, &from, sizeof(from));
+  //To to;
+  //memcpy(&to, c, sizeof(c));
+  //return to;
+
+  // Slightly more questionable.
+  // Same code emitted by GCC.
+  //To to;
+  //memcpy(&to, &from, sizeof(from));
+  //return to;
+
+  // Technically undefined, but almost universally supported,
+  // and the most efficient implementation.
+  union {
+    From f;
+    To t;
+  } u;
+  u.f = from;
+  return u.t;
+}
+
+
+namespace apache { namespace thrift { namespace protocol {
+
+using apache::thrift::transport::TTransport;
 
 #ifdef HAVE_ENDIAN_H
 #include <endian.h>
@@ -36,9 +91,28 @@ using facebook::thrift::transport::TTransport;
 #endif
 
 #if __BYTE_ORDER == __BIG_ENDIAN
-# define ntohll(n) (n)
-# define htonll(n) (n)
+#  define ntohll(n) (n)
+#  define htonll(n) (n)
+# if defined(__GNUC__) && defined(__GLIBC__)
+#  include <byteswap.h>
+#  define htolell(n) bswap_64(n)
+#  define letohll(n) bswap_64(n)
+# else /* GNUC & GLIBC */
+#  define bswap_64(n) \
+      ( (((n) & 0xff00000000000000ull) >> 56) \
+      | (((n) & 0x00ff000000000000ull) >> 40) \
+      | (((n) & 0x0000ff0000000000ull) >> 24) \
+      | (((n) & 0x000000ff00000000ull) >> 8)  \
+      | (((n) & 0x00000000ff000000ull) << 8)  \
+      | (((n) & 0x0000000000ff0000ull) << 24) \
+      | (((n) & 0x000000000000ff00ull) << 40) \
+      | (((n) & 0x00000000000000ffull) << 56) )
+#  define ntolell(n) bswap_64(n)
+#  define letonll(n) bswap_64(n)
+# endif /* GNUC & GLIBC */
 #elif __BYTE_ORDER == __LITTLE_ENDIAN
+#  define htolell(n) (n)
+#  define letohll(n) (n)
 # if defined(__GNUC__) && defined(__GLIBC__)
 #  include <byteswap.h>
 #  define ntohll(n) bswap_64(n)
@@ -84,7 +158,8 @@ enum TType {
 enum TMessageType {
   T_CALL       = 1,
   T_REPLY      = 2,
-  T_EXCEPTION  = 3
+  T_EXCEPTION  = 3,
+  T_ONEWAY     = 4
 };
 
 /**
@@ -100,7 +175,6 @@ enum TMessageType {
  * when parsing an input XML stream, reading should be batched rather than
  * looking ahead character by character for a close tag).
  *
- * @author Mark Slee <mcslee@facebook.com>
  */
 class TProtocol {
  public:
@@ -117,24 +191,24 @@ class TProtocol {
   virtual uint32_t writeMessageEnd() = 0;
 
 
-  virtual uint32_t writeStructBegin(const std::string& name) = 0;
-  
+  virtual uint32_t writeStructBegin(const char* name) = 0;
+
   virtual uint32_t writeStructEnd() = 0;
-  
-  virtual uint32_t writeFieldBegin(const std::string& name,
+
+  virtual uint32_t writeFieldBegin(const char* name,
                                    const TType fieldType,
                                    const int16_t fieldId) = 0;
 
   virtual uint32_t writeFieldEnd() = 0;
 
   virtual uint32_t writeFieldStop() = 0;
-                                      
+
   virtual uint32_t writeMapBegin(const TType keyType,
                                  const TType valType,
                                  const uint32_t size) = 0;
 
   virtual uint32_t writeMapEnd() = 0;
-  
+
   virtual uint32_t writeListBegin(const TType elemType,
                                   const uint32_t size) = 0;
 
@@ -159,6 +233,8 @@ class TProtocol {
 
   virtual uint32_t writeString(const std::string& str) = 0;
 
+  virtual uint32_t writeBinary(const std::string& str) = 0;
+
   /**
    * Reading functions
    */
@@ -166,7 +242,7 @@ class TProtocol {
   virtual uint32_t readMessageBegin(std::string& name,
                                     TMessageType& messageType,
                                     int32_t& seqid) = 0;
-  
+
   virtual uint32_t readMessageEnd() = 0;
 
   virtual uint32_t readStructBegin(std::string& name) = 0;
@@ -176,9 +252,9 @@ class TProtocol {
   virtual uint32_t readFieldBegin(std::string& name,
                                   TType& fieldType,
                                   int16_t& fieldId) = 0;
-  
+
   virtual uint32_t readFieldEnd() = 0;
- 
+
   virtual uint32_t readMapBegin(TType& keyType,
                                 TType& valType,
                                 uint32_t& size) = 0;
@@ -208,6 +284,15 @@ class TProtocol {
   virtual uint32_t readDouble(double& dub) = 0;
 
   virtual uint32_t readString(std::string& str) = 0;
+
+  virtual uint32_t readBinary(std::string& str) = 0;
+
+  uint32_t readBool(std::vector<bool>::reference ref) {
+    bool value;
+    uint32_t rv = readBool(value);
+    ref = value;
+    return rv;
+  }
 
   /**
    * Method to arbitrarily skip over data.
@@ -247,7 +332,7 @@ class TProtocol {
     case T_STRING:
       {
         std::string str;
-        return readString(str);
+        return readBinary(str);
       }
     case T_STRUCT:
       {
@@ -328,7 +413,7 @@ class TProtocol {
     ptrans_(ptrans) {
     trans_ = ptrans.get();
   }
-    
+
   boost::shared_ptr<TTransport> ptrans_;
   TTransport* trans_;
 
@@ -348,6 +433,6 @@ class TProtocolFactory {
   virtual boost::shared_ptr<TProtocol> getProtocol(boost::shared_ptr<TTransport> trans) = 0;
 };
 
-}}} // facebook::thrift::protocol
+}}} // apache::thrift::protocol
 
 #endif // #define _THRIFT_PROTOCOL_TPROTOCOL_H_ 1

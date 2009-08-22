@@ -1,16 +1,29 @@
-// Copyright (c) 2006- Facebook
-// Distributed under the Thrift Software License
-//
-// See accompanying file LICENSE or visit the Thrift site at:
-// http://developers.facebook.com/thrift/
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 
 #ifndef _FACEBOOK_TB303_FACEBOOKBASE_H_
 #define _FACEBOOK_TB303_FACEBOOKBASE_H_ 1
 
 #include "FacebookService.h"
 
-#include "thrift/server/TServer.h"
-#include "thrift/concurrency/Mutex.h"
+#include "server/TServer.h"
+#include "concurrency/Mutex.h"
 
 #include <time.h>
 #include <string>
@@ -18,24 +31,21 @@
 
 namespace facebook { namespace fb303 {
 
-using facebook::thrift::concurrency::Mutex;
-using facebook::thrift::concurrency::ReadWriteMutex;
-using facebook::thrift::server::TServer;
+using apache::thrift::concurrency::Mutex;
+using apache::thrift::concurrency::ReadWriteMutex;
+using apache::thrift::server::TServer;
 
 struct ReadWriteInt : ReadWriteMutex {int64_t value;};
 struct ReadWriteCounterMap : ReadWriteMutex,
                              std::map<std::string, ReadWriteInt> {};
 
-typedef void (*get_static_limref_ptr)(facebook::thrift::reflection::limited::Service &);
-
 /**
  * Base Facebook service implementation in C++.
  *
- * @author Mark Slee <mcslee@facebook.com>
  */
 class FacebookBase : virtual public FacebookServiceIf {
  protected:
-  FacebookBase(std::string name, get_static_limref_ptr reflect_lim = NULL);
+  FacebookBase(std::string name);
   virtual ~FacebookBase() {}
 
  public:
@@ -50,10 +60,6 @@ class FacebookBase : virtual public FacebookServiceIf {
   void getOptions(std::map<std::string, std::string> & _return);
 
   int64_t aliveSince();
-
-  void getLimitedReflection(facebook::thrift::reflection::limited::Service& _return) {
-    _return = reflection_limited_;
-  }
 
   virtual void reinitialize() {}
 
@@ -76,10 +82,11 @@ class FacebookBase : virtual public FacebookServiceIf {
     server_ = server;
   }
 
+  void getCpuProfile(std::string& _return, int32_t durSecs) { _return = ""; }
+
  private:
 
   std::string name_;
-  facebook::thrift::reflection::limited::Service reflection_limited_;
   int64_t aliveSince_;
 
   std::map<std::string, std::string> options_;

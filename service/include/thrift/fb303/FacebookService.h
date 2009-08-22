@@ -23,12 +23,10 @@ class FacebookServiceIf {
   virtual void setOption(const std::string& key, const std::string& value) = 0;
   virtual void getOption(std::string& _return, const std::string& key) = 0;
   virtual void getOptions(std::map<std::string, std::string> & _return) = 0;
+  virtual void getCpuProfile(std::string& _return, const int32_t profileDurationInSec) = 0;
   virtual int64_t aliveSince() = 0;
-  virtual void getLimitedReflection(facebook::thrift::reflection::limited::Service& _return) = 0;
   virtual void reinitialize() = 0;
   virtual void shutdown() = 0;
-  virtual void getSingleTimeseries(std::map<int64_t, double> & _return, const std::string& name, const int32_t series_length) = 0;
-  virtual void getTimeseries(std::map<std::string, std::map<int64_t, double> > & _return, const int32_t series_length) = 0;
 };
 
 class FacebookServiceNull : virtual public FacebookServiceIf {
@@ -63,23 +61,17 @@ class FacebookServiceNull : virtual public FacebookServiceIf {
   void getOptions(std::map<std::string, std::string> & /* _return */) {
     return;
   }
+  void getCpuProfile(std::string& /* _return */, const int32_t /* profileDurationInSec */) {
+    return;
+  }
   int64_t aliveSince() {
     int64_t _return = 0;
     return _return;
-  }
-  void getLimitedReflection(facebook::thrift::reflection::limited::Service& /* _return */) {
-    return;
   }
   void reinitialize() {
     return;
   }
   void shutdown() {
-    return;
-  }
-  void getSingleTimeseries(std::map<int64_t, double> & /* _return */, const std::string& /* name */, const int32_t /* series_length */) {
-    return;
-  }
-  void getTimeseries(std::map<std::string, std::map<int64_t, double> > & /* _return */, const int32_t /* series_length */) {
     return;
   }
 };
@@ -103,8 +95,8 @@ class FacebookService_getName_args {
 
   bool operator < (const FacebookService_getName_args & ) const;
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -115,7 +107,7 @@ class FacebookService_getName_pargs {
   virtual ~FacebookService_getName_pargs() throw() {}
 
 
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -146,8 +138,8 @@ class FacebookService_getName_result {
 
   bool operator < (const FacebookService_getName_result & ) const;
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -164,7 +156,7 @@ class FacebookService_getName_presult {
     bool success;
   } __isset;
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
 
 };
 
@@ -187,8 +179,8 @@ class FacebookService_getVersion_args {
 
   bool operator < (const FacebookService_getVersion_args & ) const;
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -199,7 +191,7 @@ class FacebookService_getVersion_pargs {
   virtual ~FacebookService_getVersion_pargs() throw() {}
 
 
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -230,8 +222,8 @@ class FacebookService_getVersion_result {
 
   bool operator < (const FacebookService_getVersion_result & ) const;
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -248,7 +240,7 @@ class FacebookService_getVersion_presult {
     bool success;
   } __isset;
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
 
 };
 
@@ -271,8 +263,8 @@ class FacebookService_getStatus_args {
 
   bool operator < (const FacebookService_getStatus_args & ) const;
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -283,7 +275,7 @@ class FacebookService_getStatus_pargs {
   virtual ~FacebookService_getStatus_pargs() throw() {}
 
 
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -314,8 +306,8 @@ class FacebookService_getStatus_result {
 
   bool operator < (const FacebookService_getStatus_result & ) const;
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -332,7 +324,7 @@ class FacebookService_getStatus_presult {
     bool success;
   } __isset;
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
 
 };
 
@@ -355,8 +347,8 @@ class FacebookService_getStatusDetails_args {
 
   bool operator < (const FacebookService_getStatusDetails_args & ) const;
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -367,7 +359,7 @@ class FacebookService_getStatusDetails_pargs {
   virtual ~FacebookService_getStatusDetails_pargs() throw() {}
 
 
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -398,8 +390,8 @@ class FacebookService_getStatusDetails_result {
 
   bool operator < (const FacebookService_getStatusDetails_result & ) const;
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -416,7 +408,7 @@ class FacebookService_getStatusDetails_presult {
     bool success;
   } __isset;
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
 
 };
 
@@ -439,8 +431,8 @@ class FacebookService_getCounters_args {
 
   bool operator < (const FacebookService_getCounters_args & ) const;
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -451,7 +443,7 @@ class FacebookService_getCounters_pargs {
   virtual ~FacebookService_getCounters_pargs() throw() {}
 
 
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -482,8 +474,8 @@ class FacebookService_getCounters_result {
 
   bool operator < (const FacebookService_getCounters_result & ) const;
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -500,7 +492,7 @@ class FacebookService_getCounters_presult {
     bool success;
   } __isset;
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
 
 };
 
@@ -531,8 +523,8 @@ class FacebookService_getCounter_args {
 
   bool operator < (const FacebookService_getCounter_args & ) const;
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -544,7 +536,7 @@ class FacebookService_getCounter_pargs {
 
   const std::string* key;
 
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -575,8 +567,8 @@ class FacebookService_getCounter_result {
 
   bool operator < (const FacebookService_getCounter_result & ) const;
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -593,7 +585,7 @@ class FacebookService_getCounter_presult {
     bool success;
   } __isset;
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
 
 };
 
@@ -628,8 +620,8 @@ class FacebookService_setOption_args {
 
   bool operator < (const FacebookService_setOption_args & ) const;
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -642,7 +634,7 @@ class FacebookService_setOption_pargs {
   const std::string* key;
   const std::string* value;
 
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -665,8 +657,8 @@ class FacebookService_setOption_result {
 
   bool operator < (const FacebookService_setOption_result & ) const;
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -677,7 +669,7 @@ class FacebookService_setOption_presult {
   virtual ~FacebookService_setOption_presult() throw() {}
 
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
 
 };
 
@@ -708,8 +700,8 @@ class FacebookService_getOption_args {
 
   bool operator < (const FacebookService_getOption_args & ) const;
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -721,7 +713,7 @@ class FacebookService_getOption_pargs {
 
   const std::string* key;
 
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -752,8 +744,8 @@ class FacebookService_getOption_result {
 
   bool operator < (const FacebookService_getOption_result & ) const;
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -770,7 +762,7 @@ class FacebookService_getOption_presult {
     bool success;
   } __isset;
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
 
 };
 
@@ -793,8 +785,8 @@ class FacebookService_getOptions_args {
 
   bool operator < (const FacebookService_getOptions_args & ) const;
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -805,7 +797,7 @@ class FacebookService_getOptions_pargs {
   virtual ~FacebookService_getOptions_pargs() throw() {}
 
 
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -836,8 +828,8 @@ class FacebookService_getOptions_result {
 
   bool operator < (const FacebookService_getOptions_result & ) const;
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -854,7 +846,100 @@ class FacebookService_getOptions_presult {
     bool success;
   } __isset;
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+class FacebookService_getCpuProfile_args {
+ public:
+
+  FacebookService_getCpuProfile_args() : profileDurationInSec(0) {
+  }
+
+  virtual ~FacebookService_getCpuProfile_args() throw() {}
+
+  int32_t profileDurationInSec;
+
+  struct __isset {
+    __isset() : profileDurationInSec(false) {}
+    bool profileDurationInSec;
+  } __isset;
+
+  bool operator == (const FacebookService_getCpuProfile_args & rhs) const
+  {
+    if (!(profileDurationInSec == rhs.profileDurationInSec))
+      return false;
+    return true;
+  }
+  bool operator != (const FacebookService_getCpuProfile_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const FacebookService_getCpuProfile_args & ) const;
+
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+class FacebookService_getCpuProfile_pargs {
+ public:
+
+
+  virtual ~FacebookService_getCpuProfile_pargs() throw() {}
+
+  const int32_t* profileDurationInSec;
+
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+class FacebookService_getCpuProfile_result {
+ public:
+
+  FacebookService_getCpuProfile_result() : success("") {
+  }
+
+  virtual ~FacebookService_getCpuProfile_result() throw() {}
+
+  std::string success;
+
+  struct __isset {
+    __isset() : success(false) {}
+    bool success;
+  } __isset;
+
+  bool operator == (const FacebookService_getCpuProfile_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const FacebookService_getCpuProfile_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const FacebookService_getCpuProfile_result & ) const;
+
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+class FacebookService_getCpuProfile_presult {
+ public:
+
+
+  virtual ~FacebookService_getCpuProfile_presult() throw() {}
+
+  std::string* success;
+
+  struct __isset {
+    __isset() : success(false) {}
+    bool success;
+  } __isset;
+
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
 
 };
 
@@ -877,8 +962,8 @@ class FacebookService_aliveSince_args {
 
   bool operator < (const FacebookService_aliveSince_args & ) const;
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -889,7 +974,7 @@ class FacebookService_aliveSince_pargs {
   virtual ~FacebookService_aliveSince_pargs() throw() {}
 
 
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -920,8 +1005,8 @@ class FacebookService_aliveSince_result {
 
   bool operator < (const FacebookService_aliveSince_result & ) const;
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -938,91 +1023,7 @@ class FacebookService_aliveSince_presult {
     bool success;
   } __isset;
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
-
-};
-
-class FacebookService_getLimitedReflection_args {
- public:
-
-  FacebookService_getLimitedReflection_args() {
-  }
-
-  virtual ~FacebookService_getLimitedReflection_args() throw() {}
-
-
-  bool operator == (const FacebookService_getLimitedReflection_args & /* rhs */) const
-  {
-    return true;
-  }
-  bool operator != (const FacebookService_getLimitedReflection_args &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const FacebookService_getLimitedReflection_args & ) const;
-
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-class FacebookService_getLimitedReflection_pargs {
- public:
-
-
-  virtual ~FacebookService_getLimitedReflection_pargs() throw() {}
-
-
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-class FacebookService_getLimitedReflection_result {
- public:
-
-  FacebookService_getLimitedReflection_result() {
-  }
-
-  virtual ~FacebookService_getLimitedReflection_result() throw() {}
-
-  facebook::thrift::reflection::limited::Service success;
-
-  struct __isset {
-    __isset() : success(false) {}
-    bool success;
-  } __isset;
-
-  bool operator == (const FacebookService_getLimitedReflection_result & rhs) const
-  {
-    if (!(success == rhs.success))
-      return false;
-    return true;
-  }
-  bool operator != (const FacebookService_getLimitedReflection_result &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const FacebookService_getLimitedReflection_result & ) const;
-
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-class FacebookService_getLimitedReflection_presult {
- public:
-
-
-  virtual ~FacebookService_getLimitedReflection_presult() throw() {}
-
-  facebook::thrift::reflection::limited::Service* success;
-
-  struct __isset {
-    __isset() : success(false) {}
-    bool success;
-  } __isset;
-
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
 
 };
 
@@ -1045,8 +1046,8 @@ class FacebookService_reinitialize_args {
 
   bool operator < (const FacebookService_reinitialize_args & ) const;
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -1057,7 +1058,7 @@ class FacebookService_reinitialize_pargs {
   virtual ~FacebookService_reinitialize_pargs() throw() {}
 
 
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -1080,8 +1081,8 @@ class FacebookService_shutdown_args {
 
   bool operator < (const FacebookService_shutdown_args & ) const;
 
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
@@ -1092,219 +1093,28 @@ class FacebookService_shutdown_pargs {
   virtual ~FacebookService_shutdown_pargs() throw() {}
 
 
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-class FacebookService_getSingleTimeseries_args {
- public:
-
-  FacebookService_getSingleTimeseries_args() : name(""), series_length(0) {
-  }
-
-  virtual ~FacebookService_getSingleTimeseries_args() throw() {}
-
-  std::string name;
-  int32_t series_length;
-
-  struct __isset {
-    __isset() : name(false), series_length(false) {}
-    bool name;
-    bool series_length;
-  } __isset;
-
-  bool operator == (const FacebookService_getSingleTimeseries_args & rhs) const
-  {
-    if (!(name == rhs.name))
-      return false;
-    if (!(series_length == rhs.series_length))
-      return false;
-    return true;
-  }
-  bool operator != (const FacebookService_getSingleTimeseries_args &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const FacebookService_getSingleTimeseries_args & ) const;
-
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-class FacebookService_getSingleTimeseries_pargs {
- public:
-
-
-  virtual ~FacebookService_getSingleTimeseries_pargs() throw() {}
-
-  const std::string* name;
-  const int32_t* series_length;
-
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-class FacebookService_getSingleTimeseries_result {
- public:
-
-  FacebookService_getSingleTimeseries_result() {
-  }
-
-  virtual ~FacebookService_getSingleTimeseries_result() throw() {}
-
-  std::map<int64_t, double>  success;
-
-  struct __isset {
-    __isset() : success(false) {}
-    bool success;
-  } __isset;
-
-  bool operator == (const FacebookService_getSingleTimeseries_result & rhs) const
-  {
-    if (!(success == rhs.success))
-      return false;
-    return true;
-  }
-  bool operator != (const FacebookService_getSingleTimeseries_result &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const FacebookService_getSingleTimeseries_result & ) const;
-
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-class FacebookService_getSingleTimeseries_presult {
- public:
-
-
-  virtual ~FacebookService_getSingleTimeseries_presult() throw() {}
-
-  std::map<int64_t, double> * success;
-
-  struct __isset {
-    __isset() : success(false) {}
-    bool success;
-  } __isset;
-
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
-
-};
-
-class FacebookService_getTimeseries_args {
- public:
-
-  FacebookService_getTimeseries_args() : series_length(0) {
-  }
-
-  virtual ~FacebookService_getTimeseries_args() throw() {}
-
-  int32_t series_length;
-
-  struct __isset {
-    __isset() : series_length(false) {}
-    bool series_length;
-  } __isset;
-
-  bool operator == (const FacebookService_getTimeseries_args & rhs) const
-  {
-    if (!(series_length == rhs.series_length))
-      return false;
-    return true;
-  }
-  bool operator != (const FacebookService_getTimeseries_args &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const FacebookService_getTimeseries_args & ) const;
-
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-class FacebookService_getTimeseries_pargs {
- public:
-
-
-  virtual ~FacebookService_getTimeseries_pargs() throw() {}
-
-  const int32_t* series_length;
-
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-class FacebookService_getTimeseries_result {
- public:
-
-  FacebookService_getTimeseries_result() {
-  }
-
-  virtual ~FacebookService_getTimeseries_result() throw() {}
-
-  std::map<std::string, std::map<int64_t, double> >  success;
-
-  struct __isset {
-    __isset() : success(false) {}
-    bool success;
-  } __isset;
-
-  bool operator == (const FacebookService_getTimeseries_result & rhs) const
-  {
-    if (!(success == rhs.success))
-      return false;
-    return true;
-  }
-  bool operator != (const FacebookService_getTimeseries_result &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const FacebookService_getTimeseries_result & ) const;
-
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
-  uint32_t write(facebook::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-class FacebookService_getTimeseries_presult {
- public:
-
-
-  virtual ~FacebookService_getTimeseries_presult() throw() {}
-
-  std::map<std::string, std::map<int64_t, double> > * success;
-
-  struct __isset {
-    __isset() : success(false) {}
-    bool success;
-  } __isset;
-
-  uint32_t read(facebook::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
 
 };
 
 class FacebookServiceClient : virtual public FacebookServiceIf {
  public:
-  FacebookServiceClient(boost::shared_ptr<facebook::thrift::protocol::TProtocol> prot) :
+  FacebookServiceClient(boost::shared_ptr<apache::thrift::protocol::TProtocol> prot) :
     piprot_(prot),
     poprot_(prot) {
     iprot_ = prot.get();
     oprot_ = prot.get();
   }
-  FacebookServiceClient(boost::shared_ptr<facebook::thrift::protocol::TProtocol> iprot, boost::shared_ptr<facebook::thrift::protocol::TProtocol> oprot) :
+  FacebookServiceClient(boost::shared_ptr<apache::thrift::protocol::TProtocol> iprot, boost::shared_ptr<apache::thrift::protocol::TProtocol> oprot) :
     piprot_(iprot),
     poprot_(oprot) {
     iprot_ = iprot.get();
     oprot_ = oprot.get();
   }
-  boost::shared_ptr<facebook::thrift::protocol::TProtocol> getInputProtocol() {
+  boost::shared_ptr<apache::thrift::protocol::TProtocol> getInputProtocol() {
     return piprot_;
   }
-  boost::shared_ptr<facebook::thrift::protocol::TProtocol> getOutputProtocol() {
+  boost::shared_ptr<apache::thrift::protocol::TProtocol> getOutputProtocol() {
     return poprot_;
   }
   void getName(std::string& _return);
@@ -1334,50 +1144,42 @@ class FacebookServiceClient : virtual public FacebookServiceIf {
   void getOptions(std::map<std::string, std::string> & _return);
   void send_getOptions();
   void recv_getOptions(std::map<std::string, std::string> & _return);
+  void getCpuProfile(std::string& _return, const int32_t profileDurationInSec);
+  void send_getCpuProfile(const int32_t profileDurationInSec);
+  void recv_getCpuProfile(std::string& _return);
   int64_t aliveSince();
   void send_aliveSince();
   int64_t recv_aliveSince();
-  void getLimitedReflection(facebook::thrift::reflection::limited::Service& _return);
-  void send_getLimitedReflection();
-  void recv_getLimitedReflection(facebook::thrift::reflection::limited::Service& _return);
   void reinitialize();
   void send_reinitialize();
   void shutdown();
   void send_shutdown();
-  void getSingleTimeseries(std::map<int64_t, double> & _return, const std::string& name, const int32_t series_length);
-  void send_getSingleTimeseries(const std::string& name, const int32_t series_length);
-  void recv_getSingleTimeseries(std::map<int64_t, double> & _return);
-  void getTimeseries(std::map<std::string, std::map<int64_t, double> > & _return, const int32_t series_length);
-  void send_getTimeseries(const int32_t series_length);
-  void recv_getTimeseries(std::map<std::string, std::map<int64_t, double> > & _return);
  protected:
-  boost::shared_ptr<facebook::thrift::protocol::TProtocol> piprot_;
-  boost::shared_ptr<facebook::thrift::protocol::TProtocol> poprot_;
-  facebook::thrift::protocol::TProtocol* iprot_;
-  facebook::thrift::protocol::TProtocol* oprot_;
+  boost::shared_ptr<apache::thrift::protocol::TProtocol> piprot_;
+  boost::shared_ptr<apache::thrift::protocol::TProtocol> poprot_;
+  apache::thrift::protocol::TProtocol* iprot_;
+  apache::thrift::protocol::TProtocol* oprot_;
 };
 
-class FacebookServiceProcessor : virtual public facebook::thrift::TProcessor {
+class FacebookServiceProcessor : virtual public apache::thrift::TProcessor {
  protected:
   boost::shared_ptr<FacebookServiceIf> iface_;
-  virtual bool process_fn(facebook::thrift::protocol::TProtocol* iprot, facebook::thrift::protocol::TProtocol* oprot, std::string& fname, int32_t seqid);
+  virtual bool process_fn(apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot, std::string& fname, int32_t seqid);
  private:
-  std::map<std::string, void (FacebookServiceProcessor::*)(int32_t, facebook::thrift::protocol::TProtocol*, facebook::thrift::protocol::TProtocol*)> processMap_;
-  void process_getName(int32_t seqid, facebook::thrift::protocol::TProtocol* iprot, facebook::thrift::protocol::TProtocol* oprot);
-  void process_getVersion(int32_t seqid, facebook::thrift::protocol::TProtocol* iprot, facebook::thrift::protocol::TProtocol* oprot);
-  void process_getStatus(int32_t seqid, facebook::thrift::protocol::TProtocol* iprot, facebook::thrift::protocol::TProtocol* oprot);
-  void process_getStatusDetails(int32_t seqid, facebook::thrift::protocol::TProtocol* iprot, facebook::thrift::protocol::TProtocol* oprot);
-  void process_getCounters(int32_t seqid, facebook::thrift::protocol::TProtocol* iprot, facebook::thrift::protocol::TProtocol* oprot);
-  void process_getCounter(int32_t seqid, facebook::thrift::protocol::TProtocol* iprot, facebook::thrift::protocol::TProtocol* oprot);
-  void process_setOption(int32_t seqid, facebook::thrift::protocol::TProtocol* iprot, facebook::thrift::protocol::TProtocol* oprot);
-  void process_getOption(int32_t seqid, facebook::thrift::protocol::TProtocol* iprot, facebook::thrift::protocol::TProtocol* oprot);
-  void process_getOptions(int32_t seqid, facebook::thrift::protocol::TProtocol* iprot, facebook::thrift::protocol::TProtocol* oprot);
-  void process_aliveSince(int32_t seqid, facebook::thrift::protocol::TProtocol* iprot, facebook::thrift::protocol::TProtocol* oprot);
-  void process_getLimitedReflection(int32_t seqid, facebook::thrift::protocol::TProtocol* iprot, facebook::thrift::protocol::TProtocol* oprot);
-  void process_reinitialize(int32_t seqid, facebook::thrift::protocol::TProtocol* iprot, facebook::thrift::protocol::TProtocol* oprot);
-  void process_shutdown(int32_t seqid, facebook::thrift::protocol::TProtocol* iprot, facebook::thrift::protocol::TProtocol* oprot);
-  void process_getSingleTimeseries(int32_t seqid, facebook::thrift::protocol::TProtocol* iprot, facebook::thrift::protocol::TProtocol* oprot);
-  void process_getTimeseries(int32_t seqid, facebook::thrift::protocol::TProtocol* iprot, facebook::thrift::protocol::TProtocol* oprot);
+  std::map<std::string, void (FacebookServiceProcessor::*)(int32_t, apache::thrift::protocol::TProtocol*, apache::thrift::protocol::TProtocol*)> processMap_;
+  void process_getName(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
+  void process_getVersion(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
+  void process_getStatus(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
+  void process_getStatusDetails(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
+  void process_getCounters(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
+  void process_getCounter(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
+  void process_setOption(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
+  void process_getOption(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
+  void process_getOptions(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
+  void process_getCpuProfile(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
+  void process_aliveSince(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
+  void process_reinitialize(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
+  void process_shutdown(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
  public:
   FacebookServiceProcessor(boost::shared_ptr<FacebookServiceIf> iface) :
     iface_(iface) {
@@ -1390,15 +1192,13 @@ class FacebookServiceProcessor : virtual public facebook::thrift::TProcessor {
     processMap_["setOption"] = &FacebookServiceProcessor::process_setOption;
     processMap_["getOption"] = &FacebookServiceProcessor::process_getOption;
     processMap_["getOptions"] = &FacebookServiceProcessor::process_getOptions;
+    processMap_["getCpuProfile"] = &FacebookServiceProcessor::process_getCpuProfile;
     processMap_["aliveSince"] = &FacebookServiceProcessor::process_aliveSince;
-    processMap_["getLimitedReflection"] = &FacebookServiceProcessor::process_getLimitedReflection;
     processMap_["reinitialize"] = &FacebookServiceProcessor::process_reinitialize;
     processMap_["shutdown"] = &FacebookServiceProcessor::process_shutdown;
-    processMap_["getSingleTimeseries"] = &FacebookServiceProcessor::process_getSingleTimeseries;
-    processMap_["getTimeseries"] = &FacebookServiceProcessor::process_getTimeseries;
   }
 
-  virtual bool process(boost::shared_ptr<facebook::thrift::protocol::TProtocol> piprot, boost::shared_ptr<facebook::thrift::protocol::TProtocol> poprot);
+  virtual bool process(boost::shared_ptr<apache::thrift::protocol::TProtocol> piprot, boost::shared_ptr<apache::thrift::protocol::TProtocol> poprot);
   virtual ~FacebookServiceProcessor() {}
 };
 
@@ -1515,6 +1315,18 @@ class FacebookServiceMultiface : virtual public FacebookServiceIf {
     }
   }
 
+  void getCpuProfile(std::string& _return, const int32_t profileDurationInSec) {
+    uint32_t sz = ifaces_.size();
+    for (uint32_t i = 0; i < sz; ++i) {
+      if (i == sz - 1) {
+        ifaces_[i]->getCpuProfile(_return, profileDurationInSec);
+        return;
+      } else {
+        ifaces_[i]->getCpuProfile(_return, profileDurationInSec);
+      }
+    }
+  }
+
   int64_t aliveSince() {
     uint32_t sz = ifaces_.size();
     for (uint32_t i = 0; i < sz; ++i) {
@@ -1522,18 +1334,6 @@ class FacebookServiceMultiface : virtual public FacebookServiceIf {
         return ifaces_[i]->aliveSince();
       } else {
         ifaces_[i]->aliveSince();
-      }
-    }
-  }
-
-  void getLimitedReflection(facebook::thrift::reflection::limited::Service& _return) {
-    uint32_t sz = ifaces_.size();
-    for (uint32_t i = 0; i < sz; ++i) {
-      if (i == sz - 1) {
-        ifaces_[i]->getLimitedReflection(_return);
-        return;
-      } else {
-        ifaces_[i]->getLimitedReflection(_return);
       }
     }
   }
@@ -1549,30 +1349,6 @@ class FacebookServiceMultiface : virtual public FacebookServiceIf {
     uint32_t sz = ifaces_.size();
     for (uint32_t i = 0; i < sz; ++i) {
       ifaces_[i]->shutdown();
-    }
-  }
-
-  void getSingleTimeseries(std::map<int64_t, double> & _return, const std::string& name, const int32_t series_length) {
-    uint32_t sz = ifaces_.size();
-    for (uint32_t i = 0; i < sz; ++i) {
-      if (i == sz - 1) {
-        ifaces_[i]->getSingleTimeseries(_return, name, series_length);
-        return;
-      } else {
-        ifaces_[i]->getSingleTimeseries(_return, name, series_length);
-      }
-    }
-  }
-
-  void getTimeseries(std::map<std::string, std::map<int64_t, double> > & _return, const int32_t series_length) {
-    uint32_t sz = ifaces_.size();
-    for (uint32_t i = 0; i < sz; ++i) {
-      if (i == sz - 1) {
-        ifaces_[i]->getTimeseries(_return, series_length);
-        return;
-      } else {
-        ifaces_[i]->getTimeseries(_return, series_length);
-      }
     }
   }
 

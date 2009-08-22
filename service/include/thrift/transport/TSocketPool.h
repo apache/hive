@@ -1,8 +1,21 @@
-// Copyright (c) 2006- Facebook
-// Distributed under the Thrift Software License
-//
-// See accompanying file LICENSE or visit the Thrift site at:
-// http://developers.facebook.com/thrift/
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 
 #ifndef _THRIFT_TRANSPORT_TSOCKETPOOL_H_
 #define _THRIFT_TRANSPORT_TSOCKETPOOL_H_ 1
@@ -10,16 +23,54 @@
 #include <vector>
 #include "TSocket.h"
 
-namespace facebook { namespace thrift { namespace transport { 
+namespace apache { namespace thrift { namespace transport {
+
+ /**
+  * Class to hold server information for TSocketPool
+  *
+  */
+class TSocketPoolServer {
+
+  public:
+  /**
+   * Default constructor for server info
+   */
+  TSocketPoolServer();
+
+  /**
+   * Constructor for TSocketPool server
+   */
+  TSocketPoolServer(const std::string &host, int port);
+
+  // Host name
+  std::string host_;
+
+  // Port to connect on
+  int port_;
+
+  // Socket for the server
+  int socket_;
+
+  // Last time connecting to this server failed
+  int lastFailTime_;
+
+  // Number of consecutive times connecting to this server failed
+  int consecutiveFailures_;
+};
 
 /**
  * TCP Socket implementation of the TTransport interface.
  *
- * @author Mark Slee <mcslee@facebook.com>
  */
 class TSocketPool : public TSocket {
 
  public:
+
+   /**
+    * Socket pool constructor
+    */
+   TSocketPool();
+
    /**
     * Socket pool constructor
     *
@@ -34,7 +85,14 @@ class TSocketPool : public TSocket {
     *
     * @param servers list of pairs of host name and port
     */
-   TSocketPool(const std::vector<std::pair<std::string, int> > servers);
+   TSocketPool(const std::vector<std::pair<std::string, int> >& servers);
+
+   /**
+    * Socket pool constructor
+    *
+    * @param servers list of TSocketPoolServers
+    */
+  TSocketPool(const std::vector< boost::shared_ptr<TSocketPoolServer> >& servers);
 
    /**
     * Socket pool constructor
@@ -53,6 +111,16 @@ class TSocketPool : public TSocket {
     * Add a server to the pool
     */
    void addServer(const std::string& host, int port);
+
+   /**
+    * Set list of servers in this pool
+    */
+  void setServers(const std::vector< boost::shared_ptr<TSocketPoolServer> >& servers);
+
+   /**
+    * Get list of servers in this pool
+    */
+  void getServers(std::vector< boost::shared_ptr<TSocketPoolServer> >& servers);
 
    /**
     * Sets how many times to keep retrying a host in the connect function.
@@ -84,10 +152,20 @@ class TSocketPool : public TSocket {
     */
    void open();
 
+   /*
+    * Closes the UNIX socket
+    */
+   void close();
+
  protected:
 
+  void setCurrentServer(const boost::shared_ptr<TSocketPoolServer> &server);
+
    /** List of servers to connect to */
-   std::vector<std::pair<std::string, int> > servers_;
+  std::vector< boost::shared_ptr<TSocketPoolServer> > servers_;
+
+  /** Current server */
+  boost::shared_ptr<TSocketPoolServer> currentServer_;
 
    /** How many times to retry each host in connect */
    int numRetries_;
@@ -107,7 +185,7 @@ class TSocketPool : public TSocket {
    bool alwaysTryLast_;
 };
 
-}}} // facebook::thrift::transport
+}}} // apache::thrift::transport
 
 #endif // #ifndef _THRIFT_TRANSPORT_TSOCKETPOOL_H_
 
