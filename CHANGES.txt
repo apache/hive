@@ -217,6 +217,9 @@ Release 0.4.0 -  Unreleased
     HIVE-737. Support having hadoop jars in HADOOP_HOME/build for running
     hive cli. (Johan Oskarsson via athusoo)
 
+    HIVE-760. Add version info to META-INF/MANIFEST.MF 
+    (Bill Graham via rmurthy)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).
