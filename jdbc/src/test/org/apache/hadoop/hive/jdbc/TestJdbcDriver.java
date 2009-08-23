@@ -20,18 +20,15 @@ package org.apache.hadoop.hive.jdbc;
 
 import java.sql.SQLException;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.sql.Driver;
 import java.sql.DriverManager;
-import java.util.Properties;
+import java.sql.DatabaseMetaData;
+import java.sql.DriverPropertyInfo;
+import java.sql.ResultSetMetaData;
+import java.sql.Types;
 import junit.framework.TestCase;
-import javax.naming.*;
-import javax.naming.directory.*;
-import javax.sql.DataSource;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 
 public class TestJdbcDriver extends TestCase {
@@ -62,6 +59,7 @@ public class TestJdbcDriver extends TestCase {
       con = DriverManager.getConnection("jdbc:hive://", "", "");
     }
     assertNotNull("Connection is null", con);
+    assertFalse("Connection should not be closed", con.isClosed());
     Statement stmt = con.createStatement();
     assertNotNull("Statement is null", stmt);
 
@@ -110,33 +108,53 @@ public class TestJdbcDriver extends TestCase {
     res = stmt.executeQuery("drop table " + partitionedTableName);
     assertFalse(res.next());
 
+    con.close();
+    assertTrue("Connection should be closed", con.isClosed());
+
+    Exception expectedException = null;
+    try {
+      con.createStatement();
+    }
+    catch(Exception e) {
+      expectedException = e;
+    }
+    
+    assertNotNull("createStatement() on closed connection should throw exception",
+                  expectedException);
   }
 
   public final void testSelectAll() throws Exception {
+    doTestSelectAll(this.tableName, -1); // tests not setting maxRows  (return all)
+    doTestSelectAll(this.tableName, 0);  // tests setting maxRows to 0 (return all)
+  }
+
+  public final void testSelectAllPartioned() throws Exception {
+    doTestSelectAll(this.partitionedTableName, -1); // tests not setting maxRows  (return all)
+    doTestSelectAll(this.partitionedTableName, 0);  // tests setting maxRows to 0 (return all)
+  }
+
+  public final void testSelectAllMaxRows() throws Exception {
+    doTestSelectAll(this.tableName, 100);
+  }
+
+  private final void doTestSelectAll(String tableName, int maxRows) throws Exception {
     Statement stmt = con.createStatement();
+    if (maxRows >= 0) stmt.setMaxRows(maxRows);
+
+    //JDBC says that 0 means return all, which is the default
+    int expectedMaxRows = maxRows < 1 ? 0 : maxRows;
+
     assertNotNull("Statement is null", stmt);
+    assertEquals("Statement max rows not as expected", expectedMaxRows, stmt.getMaxRows());
+    assertFalse("Statement should not be closed", stmt.isClosed());
 
     ResultSet res;
-
-    // TODO: There is no schema for show tables or describe table.
-    /*
-    stmt.executeQuery("drop table michi1");
-    stmt.executeQuery("drop table michi2");
-    stmt.executeQuery("drop table michi3");
-    stmt.executeQuery("create table michi1 (num int)");
-    stmt.executeQuery("create table michi2 (num int)");
-    stmt.executeQuery("create table michi3 (num int)");
-
-    res = stmt.executeQuery("show tables");
-    res = stmt.executeQuery("describe michi1");
-    while (res.next()) {
-      System.out.println(res.getString(0));
-    }
-    */
 
     // run some queries
     res = stmt.executeQuery("select * from " + tableName);
     assertNotNull("ResultSet is null", res);
+    assertTrue("getResultSet() not returning expected ResultSet", res == stmt.getResultSet());
+    assertEquals("get update count not as expected", 0, stmt.getUpdateCount());
     int i = 0;
 
     boolean moreRow = res.next();
@@ -146,6 +164,10 @@ public class TestJdbcDriver extends TestCase {
         res.getInt(1);
         res.getString(1);
         res.getString(2);
+        assertFalse("Last result value was not null", res.wasNull());
+        assertNull("No warnings should be found on ResultSet", res.getWarnings());
+        res.clearWarnings(); //verifying that method is supported
+        
         //System.out.println(res.getString(1) + " " + res.getString(2));
         assertEquals("getInt and getString don't align for the same result value",
                 String.valueOf(res.getInt(1)), res.getString(1));
@@ -159,47 +181,22 @@ public class TestJdbcDriver extends TestCase {
         throw new Exception(e.toString());
       }
     }
-    // supposed to get 500 rows
-    assertEquals(500, i);
+
+    // supposed to get 500 rows if maxRows isn't set
+    int expectedRowCount = maxRows > 0 ? maxRows : 500;
+    assertEquals("Incorrect number of rows returned", expectedRowCount, i);
 
     // should have no more rows
     assertEquals(false, moreRow);
-  }
 
-  public final void testSelectAllPartitioned() throws Exception {
-    Statement stmt = con.createStatement();
-    assertNotNull("Statement is null", stmt);
+    assertNull("No warnings should be found on statement", stmt.getWarnings());
+    stmt.clearWarnings(); //verifying that method is supported
 
-    // run some queries
-    ResultSet res = stmt.executeQuery("select * from " + partitionedTableName);
-    assertNotNull("ResultSet is null", res);
-    int i = 0;
+    assertNull("No warnings should be found on connection", con.getWarnings());
+    con.clearWarnings(); //verifying that method is supported
 
-    boolean moreRow = res.next();
-    while (moreRow) {
-      try {
-        i++;
-        res.getInt(1);
-        res.getString(1);
-        res.getString(2);
-        //System.out.println(res.getString(1) + " " + res.getString(2));
-        assertEquals("getInt and getString don't align for the same result value",
-                String.valueOf(res.getInt(1)), res.getString(1));
-        assertEquals("Unexpected result found",
-                "val_" + res.getString(1), res.getString(2));
-        moreRow = res.next();
-      }
-      catch (SQLException e) {
-        System.out.println(e.toString());
-        e.printStackTrace();
-        throw new Exception(e.toString());
-      }
-    }
-    // supposed to get 500 rows
-    assertEquals(500, i);
-
-    // should have no more rows
-    assertEquals(false, moreRow);
+    stmt.close();
+    assertTrue("Statement should be closed", stmt.isClosed());
   }
 
   public void testShowTables() throws SQLException {
@@ -237,4 +234,80 @@ public class TestJdbcDriver extends TestCase {
 
   }
 
+  public void testDatabaseMetaData() throws SQLException {
+    DatabaseMetaData meta = con.getMetaData();
+
+    assertEquals("Hive", meta.getDatabaseProductName());
+    assertEquals("0", meta.getDatabaseProductVersion());
+    assertNull(meta.getProcedures(null, null, null));
+    assertFalse(meta.supportsCatalogsInTableDefinitions());
+    assertFalse(meta.supportsSchemasInTableDefinitions());
+    assertFalse(meta.supportsSchemasInDataManipulation());
+    assertFalse(meta.supportsMultipleResultSets());
+    assertFalse(meta.supportsStoredProcedures());
+  }
+
+  public void testResultSetMetaData() throws SQLException {
+    Statement stmt = con.createStatement();
+    ResultSet res = stmt.executeQuery("drop table " + tableName);
+
+    //creating a table with tinyint is failing currently so not including
+    res = stmt.executeQuery("create table " + tableName + " (a string, b boolean, c bigint, d int, f double)");
+    res = stmt.executeQuery("select * from " + tableName + " limit 1");
+
+    ResultSetMetaData meta = res.getMetaData();
+    assertEquals("Unexpected column type", Types.VARCHAR, meta.getColumnType(1));
+    assertEquals("Unexpected column type", Types.BOOLEAN, meta.getColumnType(2));
+    assertEquals("Unexpected column type", Types.BIGINT,  meta.getColumnType(3));
+    assertEquals("Unexpected column type", Types.INTEGER, meta.getColumnType(4));
+    assertEquals("Unexpected column type", Types.DOUBLE,  meta.getColumnType(5));
+    assertEquals("Unexpected column type name", "string", meta.getColumnTypeName(1));
+    assertEquals("Unexpected column type name", "boolean",   meta.getColumnTypeName(2));
+    assertEquals("Unexpected column type name", "bigint",    meta.getColumnTypeName(3));
+    assertEquals("Unexpected column type name", "int",    meta.getColumnTypeName(4));
+    assertEquals("Unexpected column type name", "double", meta.getColumnTypeName(5));
+    assertEquals("Unexpected column display size", 32, meta.getColumnDisplaySize(1));
+    assertEquals("Unexpected column display size", 8,  meta.getColumnDisplaySize(2));
+    assertEquals("Unexpected column display size", 32, meta.getColumnDisplaySize(3));
+    assertEquals("Unexpected column display size", 16, meta.getColumnDisplaySize(4));
+    assertEquals("Unexpected column display size", 16, meta.getColumnDisplaySize(5));
+
+    for (int i = 1; i <= 5; i++) {
+      assertFalse(meta.isAutoIncrement(i));
+      assertFalse(meta.isCurrency(i));
+      assertEquals(ResultSetMetaData.columnNullable, meta.isNullable(i));
+
+      int expectedPrecision = i == 5 ? -1 : 0;
+      int expectedScale     = i == 5 ? -1 : 0;
+      assertEquals("Unexpected precision", expectedPrecision, meta.getPrecision(i));
+      assertEquals("Unexpected scale", expectedScale, meta.getScale(i));
+    }
+  }
+
+  // [url] [host] [port] [db]
+  private static final String[][] URL_PROPERTIES = new String[][] {
+          {"jdbc:hive://", "", "", "default"},
+          {"jdbc:hive://localhost:10001/default", "localhost", "10001", "default"},
+          {"jdbc:hive://localhost/notdefault", "localhost", "10000", "notdefault"},
+          {"jdbc:hive://foo:1243", "foo", "1243", "default"}
+  };
+  
+  public void testDriverProperties() throws SQLException {
+    HiveDriver driver = new HiveDriver();
+
+    for (String[] testValues : URL_PROPERTIES) {
+      DriverPropertyInfo[] dpi = driver.getPropertyInfo(testValues[0], null);
+      assertEquals("unexpected DriverPropertyInfo array size", 3, dpi.length);
+      assertDpi(dpi[0], "HOST", testValues[1]);
+      assertDpi(dpi[1], "PORT", testValues[2]);
+      assertDpi(dpi[2], "DBNAME", testValues[3]);
+    }
+
+  }
+
+  private static void assertDpi(DriverPropertyInfo dpi, String name, String value) {
+    assertEquals("Invalid DriverPropertyInfo name", name, dpi.name);
+    assertEquals("Invalid DriverPropertyInfo value", value, dpi.value);
+    assertEquals("Invalid DriverPropertyInfo required", false, dpi.required);
+  }
 }

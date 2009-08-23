@@ -49,7 +49,10 @@ import java.net.URI;
 public class HiveConnection implements java.sql.Connection {
   JdbcSessionState session;
 
+  private TTransport transport;
   private HiveInterface client;
+  boolean isClosed = true;
+  SQLWarning warningChain = null;
 
   private static final String URI_PREFIX = "jdbc:hive://";
   /**
@@ -86,11 +89,12 @@ public class HiveConnection implements java.sql.Connection {
       }
       catch (Exception e) {
       }
-      TTransport transport = new TSocket(host, port);
+      transport = new TSocket(host, port);
       TProtocol protocol = new TBinaryProtocol(transport);
       client = new HiveClient(protocol);
       transport.open();
     }
+    isClosed = false;
   }
 
   /* (non-Javadoc)
@@ -98,8 +102,7 @@ public class HiveConnection implements java.sql.Connection {
    */
 
   public void clearWarnings() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    this.warningChain = null;
   }
 
   /* (non-Javadoc)
@@ -107,8 +110,12 @@ public class HiveConnection implements java.sql.Connection {
    */
 
   public void close() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    try {
+      if (transport != null) transport.close();
+    }
+    finally {
+      isClosed = true;
+    }
   }
 
   /* (non-Javadoc)
@@ -173,6 +180,7 @@ public class HiveConnection implements java.sql.Connection {
    */
 
   public Statement createStatement() throws SQLException {
+    if (isClosed) throw new SQLException("Can't create Statement, connection is closed");
     return new HiveStatement(session, client);
   }
 
@@ -283,8 +291,7 @@ public class HiveConnection implements java.sql.Connection {
    */
 
   public SQLWarning getWarnings() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return this.warningChain;
   }
 
   /* (non-Javadoc)
@@ -292,8 +299,7 @@ public class HiveConnection implements java.sql.Connection {
    */
 
   public boolean isClosed() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return isClosed;
   }
 
   /* (non-Javadoc)

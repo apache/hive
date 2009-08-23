@@ -220,6 +220,9 @@ Release 0.4.0 -  Unreleased
     HIVE-760. Add version info to META-INF/MANIFEST.MF 
     (Bill Graham via rmurthy)
 
+    HIVE-679. Adding the basic JDBC methods to allow querying using the
+    SQuirrelSQL tool. (Bill Graham via rmurthy)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).
