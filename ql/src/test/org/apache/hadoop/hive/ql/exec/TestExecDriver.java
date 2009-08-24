@@ -205,7 +205,8 @@ public class TestExecDriver extends TestCase {
     Operator<scriptDesc> op2 = OperatorFactory.get
       (new scriptDesc("/bin/cat",
           PlanUtils.getDefaultTableDesc("" + Utilities.tabCode, "key,value"),
-          PlanUtils.getDefaultTableDesc("" + Utilities.tabCode, "key,value")),
+          PlanUtils.getDefaultTableDesc("" + Utilities.tabCode, "key,value"), 
+          TextRecordReader.class),
        op3);
 
 
@@ -344,8 +345,9 @@ public class TestExecDriver extends TestCase {
 
     Operator<scriptDesc> op0 = OperatorFactory.get
     (new scriptDesc("/bin/cat",
+        PlanUtils.getDefaultTableDesc("" + Utilities.tabCode, "key,value"),
         PlanUtils.getDefaultTableDesc("" + Utilities.tabCode, "tkey,tvalue"),
-        PlanUtils.getDefaultTableDesc("" + Utilities.tabCode, "key,value")),
+        TextRecordReader.class),
      op1);
 
     Operator<selectDesc> op4 = OperatorFactory.get(new selectDesc(
@@ -425,7 +427,8 @@ public class TestExecDriver extends TestCase {
     Operator<scriptDesc> op0 = OperatorFactory.get
       (new scriptDesc("\'/bin/cat\'",
           PlanUtils.getDefaultTableDesc("" + Utilities.tabCode, "tkey,tvalue"),
-          PlanUtils.getDefaultTableDesc("" + Utilities.tabCode, "tkey,tvalue")),
+          PlanUtils.getDefaultTableDesc("" + Utilities.tabCode, "tkey,tvalue"),
+          TextRecordReader.class),
        op1);
 
     Operator<selectDesc> op4 = OperatorFactory.get(new selectDesc(

@@ -133,6 +133,10 @@ public class HiveConf extends Configuration {
     //Location of Hive run time structured log file
     HIVEHISTORYFILELOC("hive.querylog.location",  "/tmp/"+System.getProperty("user.name")),
     
+    // Default serde and record reader for user scripts
+    HIVESCRIPTSERDE("hive.script.serde", "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"),
+    HIVESCRIPTRECORDREADER("hive.script.recordreader", "org.apache.hadoop.hive.ql.exec.TextRecordReader"),
+    
     // HWI
     HIVEHWILISTENHOST("hive.hwi.listen.host","0.0.0.0"),
     HIVEHWILISTENPORT("hive.hwi.listen.port","9999"),

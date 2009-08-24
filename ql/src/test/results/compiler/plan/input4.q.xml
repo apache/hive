@@ -26,7 +26,7 @@
            <boolean>true</boolean> 
           </void> 
           <void property="sourceDir"> 
-           <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1591943582/10000</string> 
+           <string>file:/data/users/njain/hive4/hive4/build/ql/tmp/1849422817/10000</string> 
           </void> 
           <void property="table"> 
            <object id="tableDesc0" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -79,7 +79,7 @@
               </void> 
               <void method="put"> 
                <string>location</string> 
-               <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/dest1</string> 
+               <string>file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/dest1</string> 
               </void> 
              </object> 
             </void> 
@@ -89,7 +89,7 @@
            </object> 
           </void> 
           <void property="tmpDir"> 
-           <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1591943582/10001</string> 
+           <string>file:/data/users/njain/hive4/hive4/build/ql/tmp/1849422817/10001</string> 
           </void> 
          </object> 
         </void> 
@@ -162,7 +162,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src</string> 
+            <string>file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/src</string> 
            </void> 
           </object> 
          </void> 
@@ -401,6 +401,9 @@
                 </void> 
                 <void property="conf"> 
                  <object class="org.apache.hadoop.hive.ql.plan.scriptDesc"> 
+                  <void property="outRecordReaderClass"> 
+                   <class>org.apache.hadoop.hive.ql.exec.TextRecordReader</class> 
+                  </void> 
                   <void property="scriptCmd"> 
                    <string>/bin/cat</string> 
                   </void> 
@@ -419,11 +422,19 @@
                      <object class="java.util.Properties"> 
                       <void method="put"> 
                        <string>columns</string> 
-                       <string></string> 
+                       <string>_col0,_col1</string> 
+                      </void> 
+                      <void method="put"> 
+                       <string>serialization.use.json.object</string> 
+                       <string>true</string> 
                       </void> 
                       <void method="put"> 
                        <string>serialization.format</string> 
                        <string>9</string> 
+                      </void> 
+                      <void method="put"> 
+                       <string>columns.types</string> 
+                       <string>string,string</string> 
                       </void> 
                      </object> 
                     </void> 
@@ -449,6 +460,10 @@
                       <void method="put"> 
                        <string>serialization.format</string> 
                        <string>9</string> 
+                      </void> 
+                      <void method="put"> 
+                       <string>columns.types</string> 
+                       <string>string,string</string> 
                       </void> 
                      </object> 
                     </void> 
@@ -675,7 +690,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>tmap:src</string> 
@@ -687,7 +702,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap0"/> 
@@ -735,7 +750,7 @@
                      <int>1</int> 
                     </void> 
                     <void property="dirName"> 
-                     <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1591943582/10000</string> 
+                     <string>file:/data/users/njain/hive4/hive4/build/ql/tmp/1849422817/10000</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object idref="tableDesc0"/> 

@@ -23,6 +23,8 @@ Trunk -  Unreleased
 
     HIVE-187. Preliminary ODBC Support. (Eric Hwang via rmurthy)
 
+    HIVE-708. Add TypedBytes SerDe for transform. (Namit Jain via zshao)
+
   IMPROVEMENTS
 
     HIVE-760. Add version info to META-INF/MANIFEST.MF.

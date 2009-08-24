@@ -5,7 +5,7 @@ query: LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE nullscript
 query: explain
 select transform(key) using '/bin/cat' as key1 from nullscript
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF nullscript)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (TOK_TABLE_OR_COL key)) '/bin/cat' (TOK_ALIASLIST key1))))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF nullscript)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (TOK_TABLE_OR_COL key)) TOK_SERDE '/bin/cat' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST key1))))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -42,7 +42,7 @@ STAGE PLANS:
 
 query: select transform(key) using '/bin/cat' as key1 from nullscript
 Input: default/nullscript
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/614707845/10000
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/978374417/10000
 238
 86
 311

@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
+import org.apache.hadoop.hive.ql.exec.RecordReader;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -132,6 +133,9 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.ql.exec.TextRecordReader;
+import org.apache.hadoop.hive.ql.exec.TypedBytesRecordReader;
 
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -1114,18 +1118,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return cmd;
   }
 
-  private tableDesc getTableDescFromSerDe(ASTNode child, String cols, boolean defaultCols) throws SemanticException {
+  private tableDesc getTableDescFromSerDe(ASTNode child, String cols, String colTypes, boolean defaultCols) throws SemanticException {
     if (child.getType() == HiveParser.TOK_SERDENAME) {
       String serdeName = unescapeSQLString(child.getChild(0).getText());
       Class<? extends Deserializer> serdeClass = null;
       
       try {
-        serdeClass = (Class<? extends Deserializer>)Class.forName(serdeName);
+        serdeClass = (Class<? extends Deserializer>)Class.forName(serdeName, true, JavaUtils.getClassLoader());
       } catch (ClassNotFoundException e) {
         throw new SemanticException(e);
       }
       
-      tableDesc tblDesc = PlanUtils.getTableDesc(serdeClass, Integer.toString(Utilities.tabCode), cols, defaultCols);
+      tableDesc tblDesc = PlanUtils.getTableDesc(serdeClass, Integer.toString(Utilities.tabCode), cols, colTypes, defaultCols, true);
       // copy all the properties
       if (child.getChildCount() == 2) {
         ASTNode prop = (ASTNode)((ASTNode)child.getChild(1)).getChild(0);
@@ -1138,7 +1142,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return tblDesc;
     }
     else if (child.getType() == HiveParser.TOK_SERDEPROPS) {
-      tableDesc tblDesc = PlanUtils.getDefaultTableDesc(Integer.toString(Utilities.ctrlaCode), cols, defaultCols);
+      tableDesc tblDesc = PlanUtils.getDefaultTableDesc(Integer.toString(Utilities.ctrlaCode), cols, colTypes, defaultCols);
       int numChildRowFormat = child.getChildCount();
       for (int numC = 0; numC < numChildRowFormat; numC++)
       {
@@ -1173,112 +1177,136 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // should never come here
     return null;
   }
-
+  
   @SuppressWarnings("nls")
   private Operator genScriptPlan(ASTNode trfm, QB qb,
       Operator input) throws SemanticException {
     // If there is no "AS" clause, the output schema will be "key,value"
     ArrayList<ColumnInfo> outputCols = new ArrayList<ColumnInfo>();
-    boolean defaultOutputColList = true;
-    int     inputSerDeChildNum = -1, outputSerDeChildNum = -1;
-    int     outputColumnNamesPos = -1, outputColumnSchemaPos = -1;
-    int     execPos = 1;
-
+    int     inputSerDeNum  = 1;
+    int     outputSerDeNum = 3, outputRecordReaderNum = 4;
+    int     outputColsNum = 5;
+    boolean outputColNames = false, outputColSchemas = false;
+    int     execPos = 2;
+    boolean defaultOutputCols = false;
+    
     // Go over all the children
-    for (int pos = 0; pos < trfm.getChildCount(); pos++) {
-      ASTNode child = (ASTNode)trfm.getChild(pos);
-      if (child.getType() == HiveParser.TOK_ALIASLIST) {
-        defaultOutputColList = false;
-        outputColumnNamesPos = pos;
-        break;
-      }
-      else if (child.getType() == HiveParser.TOK_TABCOLLIST) {
-        defaultOutputColList = false;
-        outputColumnSchemaPos = pos;
-        break;
-      }
+    if (trfm.getChildCount() > outputColsNum) {
+      ASTNode outCols = (ASTNode)trfm.getChild(outputColsNum);
+      if (outCols.getType() == HiveParser.TOK_ALIASLIST) 
+        outputColNames = true;
+      else if (outCols.getType() == HiveParser.TOK_TABCOLLIST) 
+        outputColSchemas = true;
     }
 
-    // input serde specified
-    if ((trfm.getChildCount() >  1) && 
-        (trfm.getChild(1).getType() == HiveParser.TOK_SERDE)) {
-      inputSerDeChildNum  = 1;
-      execPos++;
-    }
-
-    // output serde specified
-    int checkChildNum = -1;
-    if (outputColumnNamesPos >= 0)
-      checkChildNum = outputColumnNamesPos + 1;
-    else if (outputColumnSchemaPos >= 0)
-      checkChildNum = outputColumnSchemaPos + 1;
-    
-    if (checkChildNum >= 0) {
-      if ((trfm.getChildCount() > (checkChildNum))
-          && (trfm.getChild(checkChildNum).getType() == HiveParser.TOK_SERDE))
-        outputSerDeChildNum  = checkChildNum;
-    }
-    
     // If column type is not specified, use a string
-    if (defaultOutputColList) {
+    if (!outputColNames && !outputColSchemas) {
       outputCols.add(new ColumnInfo("key", TypeInfoFactory.stringTypeInfo, null, false));
       outputCols.add(new ColumnInfo("value", TypeInfoFactory.stringTypeInfo, null, false));
+      defaultOutputCols = true;
     } 
-    else if (outputColumnNamesPos >= 0) {
-      ASTNode collist = (ASTNode) trfm.getChild(outputColumnNamesPos);
-      int ccount = collist.getChildCount();
-      for (int i=0; i < ccount; ++i) {
-        outputCols.add(new ColumnInfo(unescapeIdentifier(((ASTNode)collist.getChild(i)).getText()), TypeInfoFactory.stringTypeInfo, null, false));
-      }
-    }
     else {
-      assert outputColumnSchemaPos >= 0;
-      ASTNode collist = (ASTNode) trfm.getChild(outputColumnSchemaPos);
+      ASTNode collist = (ASTNode) trfm.getChild(outputColsNum);
       int ccount = collist.getChildCount();
-      for (int i=0; i < ccount; ++i) {
-        ASTNode child = (ASTNode) collist.getChild(i);
-        assert child.getType() == HiveParser.TOK_TABCOL;  
-        outputCols.add(new ColumnInfo(unescapeIdentifier(((ASTNode)child.getChild(0)).getText()), 
-                                      TypeInfoUtils.getTypeInfoFromTypeString(DDLSemanticAnalyzer.getTypeName(((ASTNode)child.getChild(1)).getType())), null, false));
+      
+      if (outputColNames) {
+        for (int i=0; i < ccount; ++i) {
+          outputCols.add(new ColumnInfo(unescapeIdentifier(((ASTNode)collist.getChild(i)).getText()), TypeInfoFactory.stringTypeInfo, null, false));
+        }
+      }
+      else {
+        for (int i=0; i < ccount; ++i) {
+          ASTNode child = (ASTNode) collist.getChild(i);
+          assert child.getType() == HiveParser.TOK_TABCOL;  
+          outputCols.add(new ColumnInfo(unescapeIdentifier(((ASTNode)child.getChild(0)).getText()), 
+                                        TypeInfoUtils.getTypeInfoFromTypeString(DDLSemanticAnalyzer.getTypeName(((ASTNode)child.getChild(1)).getType())), null, false));
+        }
       }
     }
-
+    
     RowResolver out_rwsch = new RowResolver();
     StringBuilder columns = new StringBuilder();
+    StringBuilder columnTypes = new StringBuilder();
+    
     for (int i = 0; i < outputCols.size(); ++i) {
       if (i != 0) {
         columns.append(",");
+        columnTypes.append(",");
       }
+      
       columns.append(outputCols.get(i).getInternalName());
+      columnTypes.append(outputCols.get(i).getType().getTypeName());
+      
       out_rwsch.put(
         qb.getParseInfo().getAlias(),
         outputCols.get(i).getInternalName(),
         outputCols.get(i));
     }
 
+    StringBuilder inpColumns = new StringBuilder();
+    StringBuilder inpColumnTypes = new StringBuilder();
+    Vector<ColumnInfo> inputSchema = opParseCtx.get(input).getRR().getColumnInfos();
+    for (int i = 0; i < inputSchema.size(); ++i) {
+      if (i != 0) {
+        inpColumns.append(",");
+        inpColumnTypes.append(",");
+      }
+      
+      inpColumns.append(inputSchema.get(i).getInternalName());
+      inpColumnTypes.append(inputSchema.get(i).getType().getTypeName());        
+    }
+    
     tableDesc outInfo;
     tableDesc inInfo;
+    String    defaultSerdeName =  conf.getVar(HiveConf.ConfVars.HIVESCRIPTSERDE);
+    Class<? extends Deserializer> serde;
 
-    if (inputSerDeChildNum < 0)
-      inInfo = PlanUtils.getDefaultTableDesc(Integer.toString(Utilities.tabCode), "");
+    try {
+      serde = (Class<? extends Deserializer>)Class.forName(defaultSerdeName, true, JavaUtils.getClassLoader());
+    } catch (ClassNotFoundException e) {
+      throw new SemanticException(e);
+    }
+
+    // Input and Output Serdes
+    if (trfm.getChild(inputSerDeNum).getChildCount() > 0)
+      inInfo = getTableDescFromSerDe((ASTNode)(((ASTNode)trfm.getChild(inputSerDeNum))).getChild(0), inpColumns.toString(), inpColumnTypes.toString(), false);
     else 
-      inInfo = getTableDescFromSerDe((ASTNode)(((ASTNode)trfm.getChild(inputSerDeChildNum))).getChild(0), "", false);
+      inInfo = PlanUtils.getTableDesc(serde, Integer.toString(Utilities.tabCode), inpColumns.toString(), inpColumnTypes.toString(), false, true);
 
-    if (outputSerDeChildNum < 0)
-      outInfo = PlanUtils.getDefaultTableDesc(Integer.toString(Utilities.tabCode), columns.toString(), defaultOutputColList);
-    else 
-      outInfo = getTableDescFromSerDe((ASTNode)(((ASTNode)trfm.getChild(outputSerDeChildNum))).getChild(0), columns.toString(), defaultOutputColList);
+    if (trfm.getChild(inputSerDeNum).getChildCount() > 0)
+      outInfo = getTableDescFromSerDe((ASTNode)(((ASTNode)trfm.getChild(outputSerDeNum))).getChild(0), columns.toString(), columnTypes.toString(), false);
+    // This is for backward compatibility. If the user did not specify the output column list, we assume that there are 2 columns: key and value.
+    // However, if the script outputs: col1, col2, col3 seperated by TAB, the requirement is: key is col and value is (col2 TAB col3)
+    else
+      outInfo = PlanUtils.getTableDesc(serde, Integer.toString(Utilities.tabCode), columns.toString(), columnTypes.toString(), defaultOutputCols);
 
+    // Output record readers
+    Class <? extends RecordReader> outRecordReader = getRecordReader((ASTNode)trfm.getChild(outputRecordReaderNum));
+    
     Operator output = putOpInsertMap(OperatorFactory
             .getAndMakeChild(
-                new scriptDesc(
-                               getFixedCmd(stripQuotes(trfm.getChild(execPos).getText())),
-                      outInfo, inInfo),
+                new scriptDesc(getFixedCmd(stripQuotes(trfm.getChild(execPos).getText())), 
+                    inInfo, outInfo, outRecordReader),
                 new RowSchema(out_rwsch.getColumnInfos()), input), out_rwsch);
 
     return output;
   }
 
+  private Class<? extends RecordReader> getRecordReader(ASTNode node) throws SemanticException {
+    String name;
+
+    if (node.getChildCount() == 0) 
+      name = conf.getVar(HiveConf.ConfVars.HIVESCRIPTRECORDREADER);
+    else 
+      name = unescapeSQLString(node.getChild(0).getText());
+    
+    try {
+      return (Class<? extends RecordReader>)Class.forName(name, true, JavaUtils.getClassLoader());
+    } catch (ClassNotFoundException e) {
+      throw new SemanticException(e);
+    }
+  }
+  
   /**
    * This function is a wrapper of parseInfo.getGroupByForClause which automatically
    * translates SELECT DISTINCT a,b,c to SELECT a,b,c GROUP BY a,b,c.

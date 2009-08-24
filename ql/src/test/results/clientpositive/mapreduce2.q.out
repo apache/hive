@@ -6,7 +6,7 @@ MAP src.key, CAST(src.key / 10 AS INT), CAST(src.key % 10 AS INT), src.value
 USING '/bin/cat' AS (tkey, ten, one, tvalue)
 DISTRIBUTE BY tvalue, tkey
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) key) (TOK_FUNCTION TOK_INT (/ (. (TOK_TABLE_OR_COL src) key) 10)) (TOK_FUNCTION TOK_INT (% (. (TOK_TABLE_OR_COL src) key) 10)) (. (TOK_TABLE_OR_COL src) value)) '/bin/cat' (TOK_ALIASLIST tkey ten one tvalue)))) (TOK_DISTRIBUTEBY (TOK_TABLE_OR_COL tvalue) (TOK_TABLE_OR_COL tkey))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) key) (TOK_FUNCTION TOK_INT (/ (. (TOK_TABLE_OR_COL src) key) 10)) (TOK_FUNCTION TOK_INT (% (. (TOK_TABLE_OR_COL src) key) 10)) (. (TOK_TABLE_OR_COL src) value)) TOK_SERDE '/bin/cat' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST tkey ten one tvalue)))) (TOK_DISTRIBUTEBY (TOK_TABLE_OR_COL tvalue) (TOK_TABLE_OR_COL tkey))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -94,7 +94,7 @@ Input: default/src
 Output: default/dest1
 query: SELECT * FROM (SELECT dest1.* FROM dest1 DISTRIBUTE BY key SORT BY key, ten, one, value) T
 Input: default/dest1
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/593292888/10000
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1007603652/10000
 0	0	0	val_0
 0	0	0	val_0
 0	0	0	val_0

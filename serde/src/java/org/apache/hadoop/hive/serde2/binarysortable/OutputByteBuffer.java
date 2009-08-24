@@ -35,6 +35,10 @@ public class OutputByteBuffer {
     length = 0;
   }
   
+  public final void write(byte b) {
+    write(b, false);
+  }
+  
   /**
    * Write one byte to the byte buffer.
    * Final method to help inlining.

@@ -112,6 +112,7 @@ public class LazySimpleSerDe implements SerDe {
     boolean escaped;
     byte escapeChar;
     boolean[] needsEscape;
+    boolean jsonSerialize;
     
     public List<TypeInfo> getColumnTypes() {
       return columnTypes;
@@ -150,6 +151,21 @@ public class LazySimpleSerDe implements SerDe {
     public boolean[] getNeedsEscape() {
       return needsEscape;
     }
+
+    /**
+     * @return the jsonSerialize
+     */
+    public boolean isJsonSerialize() {
+      return jsonSerialize;
+    }
+
+    /**
+     * @param jsonSerialize the jsonSerialize to set
+     */
+    public void setJsonSerialize(boolean jsonSerialize) {
+      this.jsonSerialize = jsonSerialize;
+    }
+    
   }
 
   SerDeParameters serdeParams = null;
@@ -176,6 +192,9 @@ public class LazySimpleSerDe implements SerDe {
         serdeParams.isEscaped(),
         serdeParams.getEscapeChar());
 
+    if (serdeParams.isJsonSerialize())
+      setUseJSONSerialize(true);
+      
     cachedLazyStruct = (LazyStruct) LazyFactory
       .createLazyObject(cachedObjectInspector);
     
@@ -211,6 +230,10 @@ public class LazySimpleSerDe implements SerDe {
         .getProperty(Constants.SERIALIZATION_LAST_COLUMN_TAKES_REST);
     serdeParams.lastColumnTakesRest = (lastColumnTakesRestString != null && lastColumnTakesRestString
         .equalsIgnoreCase("true"));
+
+    String useJsonSerialize = tbl
+    .getProperty(Constants.SERIALIZATION_USE_JSON_OBJECTS);
+     serdeParams.jsonSerialize = (useJsonSerialize != null && useJsonSerialize.equalsIgnoreCase("true"));
 
     // Read the configuration parameters
     String columnNameProperty = tbl.getProperty(Constants.LIST_COLUMNS);

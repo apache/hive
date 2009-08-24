@@ -106,6 +106,13 @@ public class PlanUtils {
   public static tableDesc getTableDesc(Class<? extends Deserializer> serdeClass,
                                        String separatorCode, String columns, String columnTypes,
       boolean lastColumnTakesRestOfTheLine) {
+    return getTableDesc(serdeClass, separatorCode, columns, columnTypes, lastColumnTakesRestOfTheLine, false);
+  }
+
+  public static tableDesc getTableDesc(Class<? extends Deserializer> serdeClass,
+                                       String separatorCode, String columns, String columnTypes,
+                                       boolean lastColumnTakesRestOfTheLine, boolean useJSONForLazy) {
+
     Properties properties = Utilities.makeProperties(
       Constants.SERIALIZATION_FORMAT, separatorCode,
       Constants.LIST_COLUMNS, columns);
@@ -117,6 +124,16 @@ public class PlanUtils {
           Constants.SERIALIZATION_LAST_COLUMN_TAKES_REST,
           "true");
     }
+
+    // It is not a very clean way, and should be modified later - due to compatiblity reasons,
+    // user sees the results as json for custom scripts and has no way for specifying that.
+    // Right now, it is hard-coded in the code
+    if (useJSONForLazy)
+      properties.setProperty(
+          Constants.SERIALIZATION_USE_JSON_OBJECTS,
+          "true");
+      
+      
     return new tableDesc(
       serdeClass,
       TextInputFormat.class,

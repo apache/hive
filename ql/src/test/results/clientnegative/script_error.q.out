@@ -2,7 +2,7 @@ query: EXPLAIN
 SELECT TRANSFORM(src.key, src.value) USING '../data/scripts/error_script' AS (tkey, tvalue)
 FROM src
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) value)) '../data/scripts/error_script' (TOK_ALIASLIST tkey tvalue))))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) value)) TOK_SERDE '../data/scripts/error_script' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST tkey tvalue))))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -42,5 +42,5 @@ STAGE PLANS:
 query: SELECT TRANSFORM(src.key, src.value) USING '../data/scripts/error_script' AS (tkey, tvalue)
 FROM src
 Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2091756058/10000
+Output: file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/472875737/10000
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask
