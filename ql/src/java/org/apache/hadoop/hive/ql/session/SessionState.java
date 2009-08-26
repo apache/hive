@@ -360,6 +360,11 @@ public class SessionState {
           }
         }
         public boolean postHook(Set<String> cur, String s) { return unregisterJar(s); }
+      }),
+      
+    ARCHIVE(new ResourceHook () {
+        public String preHook(Set<String> cur, String s) { return validateFile(cur, s); }
+        public boolean postHook(Set<String> cur, String s) { return true; }
       });
 
     public ResourceHook hook;

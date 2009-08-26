@@ -115,6 +115,10 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
     if (StringUtils.isNotBlank(addedJars)) {
       HiveConf.setVar(job, ConfVars.HIVEADDEDJARS, addedJars);
     }
+    String addedArchives = getResourceFiles(job, SessionState.ResourceType.ARCHIVE);
+    if (StringUtils.isNotBlank(addedArchives)) {
+      HiveConf.setVar(job, ConfVars.HIVEADDEDARCHIVES, addedArchives);
+    }
   }
 
   /**
@@ -433,6 +437,11 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
     String addedFiles = HiveConf.getVar(job, HiveConf.ConfVars.HIVEADDEDFILES);
     if (StringUtils.isNotBlank(addedFiles)) {
       initializeFiles("tmpfiles", addedFiles);
+    }
+    // Transfer HIVEADDEDARCHIVES to "tmparchives" so hadoop understands it
+    String addedArchives = HiveConf.getVar(job, HiveConf.ConfVars.HIVEADDEDARCHIVES);
+    if (StringUtils.isNotBlank(addedArchives)) {
+      initializeFiles("tmparchives", addedArchives);
     }
     
     int returnVal = 0;

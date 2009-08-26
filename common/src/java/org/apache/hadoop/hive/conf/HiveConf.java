@@ -110,6 +110,7 @@ public class HiveConf extends Configuration {
     // hive added files and jars
     HIVEADDEDFILES("hive.added.files.path", ""),
     HIVEADDEDJARS("hive.added.jars.path", ""),
+    HIVEADDEDARCHIVES("hive.added.archives.path", ""),
    
     // for hive script operator
     HIVETABLENAME("hive.table.name", ""),

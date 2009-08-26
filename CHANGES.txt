@@ -27,6 +27,9 @@ Trunk -  Unreleased
 
     HIVE-777. CREATE TABLE with STRUCT type. (He Yongqiang via zshao)
 
+    HIVE-792. Support "add archive" in addition to "add file" and "add jar".
+    (He Yongqiang via zshao)
+
   IMPROVEMENTS
 
     HIVE-760. Add version info to META-INF/MANIFEST.MF.
