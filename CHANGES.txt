@@ -575,6 +575,8 @@ Release 0.4.0 -  Unreleased
 
     HIVE-764. Fixed json.jar. (Raghu Murthy via zshao)
 
+    HIVE-794. MergeTask should use COMPRESSRESULT. (Saurabh Nanda via zshao)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

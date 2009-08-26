@@ -172,7 +172,7 @@ public class GenMRFileSink1 implements NodeProcessor {
     FileSinkOperator newOutput = 
       (FileSinkOperator)OperatorFactory.getAndMakeChild(
          new fileSinkDesc(finalName, ts, 
-                          parseCtx.getConf().getBoolVar(HiveConf.ConfVars.COMPRESSINTERMEDIATE)),
+                          parseCtx.getConf().getBoolVar(HiveConf.ConfVars.COMPRESSRESULT)),
          fsRS, extract);
 
     cplan.setReducer(extract);
