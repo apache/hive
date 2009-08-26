@@ -25,6 +25,8 @@ Trunk -  Unreleased
 
     HIVE-708. Add TypedBytes SerDe for transform. (Namit Jain via zshao)
 
+    HIVE-777. CREATE TABLE with STRUCT type. (He Yongqiang via zshao)
+
   IMPROVEMENTS
 
     HIVE-760. Add version info to META-INF/MANIFEST.MF.

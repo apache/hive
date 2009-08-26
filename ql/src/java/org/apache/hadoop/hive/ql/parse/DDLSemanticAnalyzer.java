@@ -437,7 +437,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     return mapProp;
   }
 
-  private static String getTypeStringFromAST(ASTNode typeNode) {
+  private static String getTypeStringFromAST(ASTNode typeNode) throws SemanticException {
     switch (typeNode.getType()) {
     case HiveParser.TOK_LIST:
       return Constants.LIST_TYPE_NAME + "<"
@@ -446,12 +446,33 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       return Constants.MAP_TYPE_NAME + "<"
         + getTypeStringFromAST((ASTNode)typeNode.getChild(0)) + ","
         + getTypeStringFromAST((ASTNode)typeNode.getChild(1)) + ">";
+    case HiveParser.TOK_STRUCT:
+      return getStructTypeStringFromAST(typeNode);
     default:
       return getTypeName(typeNode.getType());
     }
   }
   
-  private List<FieldSchema> getColumns(ASTNode ast)
+  private static String getStructTypeStringFromAST(ASTNode typeNode)
+      throws SemanticException {
+    String typeStr = Constants.STRUCT_TYPE_NAME + "<";
+    typeNode = (ASTNode) typeNode.getChild(0);
+    int children = typeNode.getChildCount();
+    if(children <= 0)
+      throw new SemanticException("empty struct not allowed.");
+    for (int i = 0; i < children; i++) {
+      ASTNode child = (ASTNode) typeNode.getChild(i);
+      typeStr += unescapeIdentifier(child.getChild(0).getText()) + ":";
+      typeStr += getTypeStringFromAST((ASTNode) child.getChild(1));
+      if (i < children - 1)
+        typeStr += ",";
+    }
+      
+    typeStr += ">";
+    return typeStr;
+  }
+  
+  private List<FieldSchema> getColumns(ASTNode ast) throws SemanticException
   {
     List<FieldSchema> colList = new ArrayList<FieldSchema>();
     int numCh = ast.getChildCount();

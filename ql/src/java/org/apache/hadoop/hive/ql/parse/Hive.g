@@ -81,6 +81,7 @@ TOK_DATETIME;
 TOK_TIMESTAMP;
 TOK_STRING;
 TOK_LIST;
+TOK_STRUCT;
 TOK_MAP;
 TOK_CREATETABLE;
 TOK_LIKETABLE;
@@ -483,7 +484,13 @@ columnNameTypeList
 @after { msgs.pop(); }
     : columnNameType (COMMA columnNameType)* -> ^(TOK_TABCOLLIST columnNameType+)
     ;
-
+    
+columnNameColonTypeList
+@init { msgs.push("column name type list"); }
+@after { msgs.pop(); }
+    : columnNameColonType (COMMA columnNameColonType)* -> ^(TOK_TABCOLLIST columnNameColonType+)
+    ;
+    
 columnNameList
 @init { msgs.push("column name list"); }
 @after { msgs.pop(); }
@@ -526,6 +533,14 @@ columnNameType
     -> {$comment == null}? ^(TOK_TABCOL $colName colType)
     ->                     ^(TOK_TABCOL $colName colType $comment)
     ;
+    
+columnNameColonType
+@init { msgs.push("column specification"); }
+@after { msgs.pop(); }
+    : colName=Identifier COLON colType (KW_COMMENT comment=StringLiteral)?    
+    -> {$comment == null}? ^(TOK_TABCOL $colName colType)
+    ->                     ^(TOK_TABCOL $colName colType $comment)
+    ;
 
 colType
 @init { msgs.push("column type"); }
@@ -536,6 +551,7 @@ colType
 type
     : primitiveType
     | listType
+    | structType
     | mapType;
 
 primitiveType
@@ -558,6 +574,12 @@ listType
 @init { msgs.push("list type"); }
 @after { msgs.pop(); }
     : KW_ARRAY LESSTHAN type GREATERTHAN   -> ^(TOK_LIST type)
+    ;
+
+structType
+@init { msgs.push("struct type"); }
+@after { msgs.pop(); }
+    : KW_STRUCT LESSTHAN columnNameColonTypeList GREATERTHAN -> ^(TOK_STRUCT columnNameColonTypeList)
     ;
 
 mapType
@@ -1228,6 +1250,7 @@ KW_DATETIME: 'DATETIME';
 KW_TIMESTAMP: 'TIMESTAMP';
 KW_STRING: 'STRING';
 KW_ARRAY: 'ARRAY';
+KW_STRUCT: 'STRUCT';
 KW_MAP: 'MAP';
 KW_REDUCE: 'REDUCE';
 KW_PARTITIONED: 'PARTITIONED';
