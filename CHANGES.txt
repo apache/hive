@@ -30,6 +30,9 @@ Trunk -  Unreleased
     HIVE-792. Support "add archive" in addition to "add file" and "add jar".
     (He Yongqiang via zshao)
 
+    HIVE-645. UDF to run JDBC
+    (Edward Capriolo via namit)
+
   IMPROVEMENTS
 
     HIVE-760. Add version info to META-INF/MANIFEST.MF.
