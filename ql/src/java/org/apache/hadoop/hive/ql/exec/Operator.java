@@ -73,12 +73,20 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   
 
   private static int seqId;
-
+  
   // It can be optimized later so that an operator operator (init/close) is performed
   // only after that operation has been performed on all the parents. This will require
   // initializing the whole tree in all the mappers (which might be required for mappers
   // spanning multiple files anyway, in future)
-  public static enum State { UNINIT, INIT, CLOSE };
+  public static enum State { 
+    UNINIT,   // initialize() has not been called
+    INIT,     // initialize() has been called and close() has not been called,
+              // or close() has been called but one of its parent is not closed.
+    CLOSE     // all its parents operators are in state CLOSE and called close() 
+              // to children. Note: close() being called and its state being CLOSE is
+              // difference since close() could be called but state is not CLOSE if 
+              // one of its parent is not in state CLOSE..
+  };
   transient protected State state = State.UNINIT;
 
   static {
@@ -130,7 +138,7 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   public List<Operator<? extends Serializable>> getParentOperators() {
     return parentOperators;
   }
-
+  
   protected T conf;
   protected boolean done;
 
@@ -305,6 +313,7 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     }
     // derived classes can set this to different object if needed
     outputObjInspector = inputObjInspectors[0];
+    
     initializeOp(hconf);
     LOG.info("Initialization Done " + id + " " + getName());
   }
@@ -394,10 +403,35 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     LOG.debug("End group Done");
   }
 
+  private boolean allInitializedParentsAreClosed() {
+    if (parentOperators != null) {
+      for(Operator<? extends Serializable> parent: parentOperators) {
+        if (!(parent.state == State.CLOSE ||
+              parent.state == State.UNINIT)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+  
+  // This close() function does not need to be synchronized
+  // since it is called by its parents' main thread, so no
+  // more than 1 thread should call this close() function.
   public void close(boolean abort) throws HiveException {
+
     if (state == State.CLOSE) 
       return;
 
+    // check if all parents are finished
+    if (!allInitializedParentsAreClosed()) 
+      return;
+    
+    // set state as CLOSE as long as all parents are closed
+    // state == CLOSE doesn't mean all children are also in state CLOSE
+    state = State.CLOSE;
+    LOG.info(id + " finished. closing... ");
+    
     if (counterNameToEnum != null) {
       incrCounter(numInputRowsCntr, inputRows);
       incrCounter(numOutputRowsCntr, outputRows);
@@ -405,6 +439,9 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     }
     
     LOG.info(id + " forwarded " + cntr + " rows");
+
+    // call the operator specific close routine
+    closeOp(abort);
 
     try {
       logStats();
@@ -414,14 +451,22 @@ public abstract class Operator <T extends Serializable> implements Serializable,
       for(Operator<? extends Serializable> op: childOperators) {
         op.close(abort);
       }
-      state = State.CLOSE;
 
-      LOG.info("Close done");
+      LOG.info(id + " Close done");
     } catch (HiveException e) {
       e.printStackTrace();
       throw e;
     }
   }
+  
+  /**
+   * Operator specific close routine. Operators which inherents this
+   * class should overwrite this funtion for their specific cleanup
+   * routine.
+   */
+  protected void closeOp(boolean abort) throws HiveException {
+  }
+
 
   /**
    * Unlike other operator interfaces which are called from map or reduce task,
@@ -851,6 +896,4 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   public void setCounterNameToEnum(HashMap<String, ProgressCounter> counterNameToEnum) {
     this.counterNameToEnum = counterNameToEnum;
   }
-
-
 }

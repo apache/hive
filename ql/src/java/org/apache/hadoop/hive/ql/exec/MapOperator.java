@@ -63,6 +63,8 @@ public class MapOperator extends Operator <mapredWork> implements Serializable {
   transient private boolean isPartitioned;
   private Map<MapInputPath, MapOpCtx> opCtxMap;
   
+  private ArrayList<Operator<? extends Serializable>> extraChildrenToClose = null;
+  
   private static class MapInputPath {
     String path;
     String alias;
@@ -280,13 +282,34 @@ public class MapOperator extends Operator <mapredWork> implements Serializable {
   public void initializeOp(Configuration hconf) throws HiveException {
     // set that parent initialization is done and call initialize on children
     state = State.INIT;
+    List<Operator<? extends Serializable>> children = getChildOperators();
+
     for (Entry<MapInputPath, MapOpCtx> entry : opCtxMap.entrySet()) {
       // Add alias, table name, and partitions to hadoop conf so that their children will
       // inherit these
       HiveConf.setVar(hconf, HiveConf.ConfVars.HIVETABLENAME, entry.getValue().tableName);
       HiveConf.setVar(hconf, HiveConf.ConfVars.HIVEPARTITIONNAME, entry.getValue().partName);
       Operator<? extends Serializable> op = entry.getKey().op;
+      
+      // op is not in the children list, so need to remember it and close it afterwards
+      if ( children.indexOf(op) == -1 ) {
+        if ( extraChildrenToClose == null ) {
+          extraChildrenToClose = new ArrayList<Operator<? extends Serializable>>();
+        }
+        extraChildrenToClose.add(op);
+      }
       op.initialize(hconf, new ObjectInspector[]{entry.getValue().getRowObjectInspector()});
+    }
+  }
+  
+  /**
+   * close extra child operators that are initialized but are not executed.
+   */
+  public void closeOp(boolean abort) throws HiveException {
+    if ( extraChildrenToClose != null ) {
+      for (Operator<? extends Serializable> op : extraChildrenToClose) {
+        op.close(abort);
+      }
     }
   }
 

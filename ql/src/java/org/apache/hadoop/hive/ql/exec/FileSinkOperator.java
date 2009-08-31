@@ -183,18 +183,8 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
   }
 
   @Override
-  public void close(boolean abort) throws HiveException {
+  public void closeOp(boolean abort) throws HiveException {
 
-    if (state == State.CLOSE) 
-      return;
-
-    // Since close of super class is not invoked, update counters
-    if (counterNameToEnum != null) {
-      incrCounter(numInputRowsCntr, inputRows);
-      incrCounter(numOutputRowsCntr, outputRows);
-      incrCounter(timeTakenCntr, totalTime);
-    }
-    state = State.CLOSE;
     if (!abort) {
       if (outWriter != null) {
         try {

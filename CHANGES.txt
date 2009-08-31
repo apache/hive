@@ -65,6 +65,9 @@ Trunk -  Unreleased
     HIVE-780. Better error messages for wrong argument lengths in UDAFs
     (Zheng Shao via namit)
 
+    HIVE-790. racce conditions with script and union operators
+    (Ning Zhang via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

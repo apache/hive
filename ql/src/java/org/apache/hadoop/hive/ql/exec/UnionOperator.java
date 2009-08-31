@@ -110,21 +110,21 @@ public class UnionOperator extends  Operator<unionDesc>  implements Serializable
   }
   
   @Override
-  public void processOp(Object row, int tag) throws HiveException {
+  public synchronized void processOp(Object row, int tag) throws HiveException {
 
     StructObjectInspector soi = parentObjInspectors[tag];
-      List<? extends StructField> fields = parentFields[tag];
+    List<? extends StructField> fields = parentFields[tag];
 
-      if (needsTransform[tag]) {
-        for (int c = 0; c < fields.size(); c++) {
-          outputRow.set(c, columnTypeResolvers[c].convertIfNecessary(
-              soi.getStructFieldData(row, fields.get(c)),
-              fields.get(c).getFieldObjectInspector()));
-        }
-        forward(outputRow, outputObjInspector);
-      } else {
-        forward(row, inputObjInspectors[tag]);
+    if (needsTransform[tag]) {
+      for (int c = 0; c < fields.size(); c++) {
+        outputRow.set(c, columnTypeResolvers[c].convertIfNecessary(
+                                     soi.getStructFieldData(row, fields.get(c)),
+                                     fields.get(c).getFieldObjectInspector()));
       }
+      forward(outputRow, outputObjInspector);
+    } else {
+      forward(row, inputObjInspectors[tag]);
+    }
   }
 
   /**

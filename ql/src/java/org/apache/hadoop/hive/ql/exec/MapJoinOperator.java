@@ -322,11 +322,10 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
     return "MAPJOIN";
   }
   
-  public void close(boolean abort) throws HiveException {
+  public void closeOp(boolean abort) throws HiveException {
     for (File hTbl : hTables) {
       deleteDir(hTbl);
     }
-    super.close(abort);
   }
   
   private void deleteDir(File dir) {
