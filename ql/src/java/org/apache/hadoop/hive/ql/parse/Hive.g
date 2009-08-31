@@ -307,7 +307,7 @@ descStatement
 @init { msgs.push("describe statement"); }
 @after { msgs.pop(); }
     : KW_DESCRIBE (isExtended=KW_EXTENDED)? (parttype=partTypeExpr) -> ^(TOK_DESCTABLE $parttype $isExtended?)
-    | KW_DESCRIBE KW_FUNCTION KW_EXTENDED? Identifier -> ^(TOK_DESCFUNCTION Identifier KW_EXTENDED?) 
+    | KW_DESCRIBE KW_FUNCTION KW_EXTENDED? (name=descFuncNames) -> ^(TOK_DESCFUNCTION $name KW_EXTENDED?) 
     ;
 
 showStatement
@@ -1180,6 +1180,39 @@ partitionVal
     Identifier EQUAL constant -> ^(TOK_PARTVAL Identifier constant)
     ;    
 
+sysFuncNames 
+    :
+      KW_AND
+    | KW_OR
+    | KW_NOT
+    | KW_LIKE
+    | KW_IF
+    | EQUAL
+    | NOTEQUAL
+    | LESSTHANOREQUALTO
+    | LESSTHAN
+    | GREATERTHANOREQUALTO
+    | GREATERTHAN
+    | DIVIDE
+    | PLUS
+    | MINUS
+    | STAR
+    | MOD
+    | DIV
+    | AMPERSAND
+    | TILDE
+    | BITWISEOR
+    | BITWISEXOR
+    | KW_RLIKE 
+    | KW_REGEXP
+    ;
+
+descFuncNames
+    : 
+      sysFuncNames
+    | Identifier 
+    ;
+
 // Keywords
 KW_TRUE : 'TRUE';
 KW_FALSE : 'FALSE';
@@ -1345,6 +1378,7 @@ KW_RECORDREADER: 'RECORDREADER';
 
 
 // Operators
+// NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.
 
 DOT : '.'; // generated as a part of Number rule
 COLON : ':' ;
@@ -1446,5 +1480,4 @@ COMMENT
   : '--' (~('\n'|'\r'))*
     { $channel=HIDDEN; }
   ;
-
 

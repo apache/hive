@@ -71,6 +71,9 @@ Trunk -  Unreleased
     HIVE-798. remove UDAFSum and UDAFCount
     (Zheng Shao via namit)
 
+    HIVE-778. add describe for div
+    (Ning Zhang via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

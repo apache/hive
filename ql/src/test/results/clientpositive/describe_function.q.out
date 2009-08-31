@@ -1,15 +1,257 @@
+query: DESCRIBE FUNCTION concat
+concat(str1, str2) - returns the concatenation of str1 and str2
+query: DESCRIBE FUNCTION substr
+substr(str, pos[, len]) - returns the substring of str that starts at pos and is of length len
+query: DESCRIBE FUNCTION substring
+substring(str, pos[, len]) - returns the substring of str that starts at pos and is of length len
+query: DESCRIBE FUNCTION space
+space(n) - returns n spaces
+query: DESCRIBE FUNCTION repeat
+repeat(str, n) - repeat str n times 
+query: DESCRIBE FUNCTION ascii
+ascii(str) - returns the numeric value of the first character of str
+query: DESCRIBE FUNCTION lpad
+lpad(str, len, pad) - Returns str, left-padded with pad to a length of len
+query: DESCRIBE FUNCTION rpad
+rpad(str, len, pad) - Returns str, right-padded with pad to a length of len
+query: DESCRIBE FUNCTION size
+size(a) - Returns the size of a
+query: DESCRIBE FUNCTION round
+round(x[, d]) - round x to d decimal places
+query: DESCRIBE FUNCTION floor
+floor(x) - Find the largest integer not greater than x
+query: DESCRIBE FUNCTION sqrt
+sqrt(x) - returns the square root of x
+query: DESCRIBE FUNCTION ceil
+ceil(x) - Find the smallest integer not smaller than x
+query: DESCRIBE FUNCTION ceiling
+ceiling(x) - Find the smallest integer not smaller than x
+query: DESCRIBE FUNCTION rand
+rand([seed]) - Returns a pseudorandom number between 0 and 1
 query: DESCRIBE FUNCTION abs
 abs(x) - returns the absolute value of x
-query: DESCRIBE FUNCTION acos
-acos(x) - returns the arc cosine of x if -1<=x<=1 or NULL otherwise
+query: DESCRIBE FUNCTION pmod
+a pmod b - Compute the positive modulo
+query: DESCRIBE FUNCTION ln
+ln(x) - Returns the natural logarithm of x
+query: DESCRIBE FUNCTION log2
+log2(x) - Returns the logarithm of x with base 2
+query: DESCRIBE FUNCTION sin
+sin(x) - returns the sine of x (x is in radians)
 query: DESCRIBE FUNCTION asin
 asin(x) - returns the arc sine of x if -1<=x<=1 or NULL otherwise
-query: DESCRIBE FUNCTION date_add
-date_add(start_date, num_days) - Returns the date that is num_days after start_date.
+query: DESCRIBE FUNCTION cos
+cos(x) - returns the cosine of x (x is in radians)
+query: DESCRIBE FUNCTION acos
+acos(x) - returns the arc cosine of x if -1<=x<=1 or NULL otherwise
+query: DESCRIBE FUNCTION log10
+log10(x) - Returns the logarithm of x with base 10
+query: DESCRIBE FUNCTION log
+log([b], x) - Returns the logarithm of x with base b
+query: DESCRIBE FUNCTION exp
+exp(x) - Returns e to the power of x
+query: DESCRIBE FUNCTION power
+power(x1, x2) - raise x1 to the power of x2
+query: DESCRIBE FUNCTION pow
+pow(x1, x2) - raise x1 to the power of x2
+query: DESCRIBE FUNCTION conv
+conv(num, from_base, to_base) - convert num from from_base to to_base
+query: DESCRIBE FUNCTION bin
+bin(n) - returns n in binary
+query: DESCRIBE FUNCTION hex
+hex(n or str) - Convert the argument to hexadecimal 
+query: DESCRIBE FUNCTION upper
+upper(str) - Returns str with all characters changed to uppercase
+query: DESCRIBE FUNCTION lower
+lower(str) - Returns str with all characters changed to lowercase
+query: DESCRIBE FUNCTION ucase
+ucase(str) - Returns str with all characters changed to uppercase
+query: DESCRIBE FUNCTION lcase
+lcase(str) - Returns str with all characters changed to lowercase
+query: DESCRIBE FUNCTION trim
+trim(str) - Removes the leading and trailing space characters from str 
+query: DESCRIBE FUNCTION ltrim
+ltrim(str) - Removes the leading space characters from str 
+query: DESCRIBE FUNCTION rtrim
+rtrim(str) - Removes the trailing space characters from str 
+query: DESCRIBE FUNCTION length
+length(str) - Returns the length of str 
+query: DESCRIBE FUNCTION reverse
+reverse(str) - reverse str
+query: DESCRIBE FUNCTION like
+like(str, pattern) - Checks if str matches pattern
+query: DESCRIBE FUNCTION rlike
+str rlike regexp - Returns true if str matches regexp and false otherwise
+query: DESCRIBE FUNCTION regexp
+str regexp regexp - Returns true if str matches regexp and false otherwise
+query: DESCRIBE FUNCTION regexp_replace
+regexp_replace(str, regexp, rep) - replace all substrings of str that match regexp with rep
+query: DESCRIBE FUNCTION regexp_extract
+regexp_extract(str, regexp[, idx]) - extracts a group that matches regexp
 query: DESCRIBE FUNCTION parse_url
 parse_url(url, partToExtract[, key]) - extracts a part from a URL
 query: DESCRIBE FUNCTION split
 split(str, regex) - Splits str around occurances that match regex
+query: DESCRIBE FUNCTION positive
+positive a - Returns a
+query: DESCRIBE FUNCTION negative
+negative a - Returns -a
+query: DESCRIBE FUNCTION day
+day(date) - Returns the date of the month of date
+query: DESCRIBE FUNCTION dayofmonth
+dayofmonth(date) - Returns the date of the month of date
+query: DESCRIBE FUNCTION month
+month(date) - Returns the month of date
+query: DESCRIBE FUNCTION year
+year(date) - Returns the year of date
+query: DESCRIBE FUNCTION from_unixtime
+from_unixtime(unix_time, format) - returns unix_time in the specified format
+query: DESCRIBE FUNCTION unix_timestamp
+unix_timestamp([date[, pattern]]) - Returns the UNIX timestamp
+query: DESCRIBE FUNCTION to_date
+to_date(expr) - Extracts the date part of the date or datetime expression expr
+query: DESCRIBE FUNCTION date_add
+date_add(start_date, num_days) - Returns the date that is num_days after start_date.
+query: DESCRIBE FUNCTION date_sub
+date_sub(start_date, num_days) - Returns the date that is num_days before start_date.
+query: DESCRIBE FUNCTION datediff
+datediff(date1, date2) - Returns the number of days between date1 and date2
+query: DESCRIBE FUNCTION get_json_object
+get_json_object(json_txt, path) - Extract a json object from path 
+query: DESCRIBE FUNCTION +
+a + b - Returns a+b
+query: DESCRIBE FUNCTION -
+a - b - Returns the difference a-b
+query: DESCRIBE FUNCTION *
+a * b - Multiplies a by b
+query: DESCRIBE FUNCTION /
+a / b - Divide a by b
+query: DESCRIBE FUNCTION %
+a % b - Returns the remainder when dividing a by b
+query: DESCRIBE FUNCTION div
+a div b - Divide a by b rounded to the long integer
+query: DESCRIBE FUNCTION &
+a & b - Bitwise and
+query: DESCRIBE FUNCTION |
+a | b - Bitwise or
+query: DESCRIBE FUNCTION ^
+a ^ b - Bitwise exclusive or
+query: DESCRIBE FUNCTION ~
+~ n - Bitwise not
+query: DESCRIBE FUNCTION =
+a = b - Returns TRUE if a equals b and false otherwise
+query: DESCRIBE FUNCTION <>
+a <> b - Returns TRUE if a is not equal to b
+query: DESCRIBE FUNCTION <
+a < b - Returns TRUE if a is less than b
+query: DESCRIBE FUNCTION <=
+a <= b - Returns TRUE if b is not greater than a
+query: DESCRIBE FUNCTION >
+a > b - Returns TRUE if a is greater than b
+query: DESCRIBE FUNCTION >=
+a >= b - Returns TRUE if b is not smaller than a
+query: DESCRIBE FUNCTION and
+a and b - Logical and
+query: DESCRIBE FUNCTION or
+a or b - Logical or
+query: DESCRIBE FUNCTION not
+not a - Logical not
+query: DESCRIBE FUNCTION isnull
+isnull a - Returns true if a is NULL and false otherwise
+query: DESCRIBE FUNCTION isnotnull
+isnotnull a - Returns true if a is not NULL and false otherwise
+query: DESCRIBE FUNCTION EXTENDED concat
+concat(str1, str2) - returns the concatenation of str1 and str2
+Returns NULL if any argument is NULL.
+Example:
+  > SELECT concat('abc', 'def') FROM src LIMIT 1;
+  'abcdef'
+query: DESCRIBE FUNCTION EXTENDED substr
+substr(str, pos[, len]) - returns the substring of str that starts at pos and is of length len
+pos is a 1-based index. If pos<0 the starting position is determined by counting backwards from the end of str.
+Example:
+   > SELECT substr('Facebook', 5) FROM src LIMIT 1;
+  'book'
+  > SELECT substr('Facebook', -5) FROM src LIMIT 1;
+  'ebook'
+  > SELECT substr('Facebook', 5, 1) FROM src LIMIT 1;
+  'b'
+query: DESCRIBE FUNCTION EXTENDED substring
+substring(str, pos[, len]) - returns the substring of str that starts at pos and is of length len
+pos is a 1-based index. If pos<0 the starting position is determined by counting backwards from the end of str.
+Example:
+   > SELECT substring('Facebook', 5) FROM src LIMIT 1;
+  'book'
+  > SELECT substring('Facebook', -5) FROM src LIMIT 1;
+  'ebook'
+  > SELECT substring('Facebook', 5, 1) FROM src LIMIT 1;
+  'b'
+query: DESCRIBE FUNCTION EXTENDED space
+space(n) - returns n spaces
+Example:
+   > SELECT space(2) FROM src LIMIT 1;
+  '  '
+query: DESCRIBE FUNCTION EXTENDED repeat
+repeat(str, n) - repeat str n times 
+Example:
+  > SELECT repeat('123', 2) FROM src LIMIT 1;
+  '123123'
+query: DESCRIBE FUNCTION EXTENDED ascii
+ascii(str) - returns the numeric value of the first character of str
+Returns 0 if str is empty or NULL if str is NULL
+Example:
+  > SELECT ascii('222') FROM src LIMIT 1;  50
+  > SELECT ascii(2) FROM src LIMIT 1;
+  50
+query: DESCRIBE FUNCTION EXTENDED lpad
+lpad(str, len, pad) - Returns str, left-padded with pad to a length of len
+If str is longer than len, the return value is shortened to len characters.
+Example:
+  > SELECT lpad('hi', 5, '??') FROM src LIMIT 1;
+  '???hi'  > SELECT lpad('hi', 1, '??') FROM src LIMIT 1;
+  'h'
+query: DESCRIBE FUNCTION EXTENDED rpad
+rpad(str, len, pad) - Returns str, right-padded with pad to a length of len
+If str is longer than len, the return value is shortened to len characters.
+Example:
+  > SELECT rpad('hi', 5, '??') FROM src LIMIT 1;
+  'hi???'  > SELECT rpad('hi', 1, '??') FROM src LIMIT 1;
+  'h'
+query: DESCRIBE FUNCTION EXTENDED size
+size(a) - Returns the size of a
+query: DESCRIBE FUNCTION EXTENDED round
+round(x[, d]) - round x to d decimal places
+Example:
+  > SELECT round(12.3456, 1) FROM src LIMIT 1;
+  12.3'
+query: DESCRIBE FUNCTION EXTENDED floor
+floor(x) - Find the largest integer not greater than x
+Example:
+  > SELECT floor(-0.1) FROM src LIMIT 1;
+  -1
+  > SELECT floor(5) FROM src LIMIT 1;
+  5
+query: DESCRIBE FUNCTION EXTENDED sqrt
+sqrt(x) - returns the square root of x
+Example:
+   > SELECT sqrt(4) FROM src LIMIT 1;
+  2
+query: DESCRIBE FUNCTION EXTENDED ceil
+ceil(x) - Find the smallest integer not smaller than x
+Example:
+  > SELECT ceil(-0.1) FROM src LIMIT 1;
+  0
+  > SELECT ceil(5) FROM src LIMIT 1;
+  5
+query: DESCRIBE FUNCTION EXTENDED ceiling
+ceiling(x) - Find the smallest integer not smaller than x
+Example:
+  > SELECT ceiling(-0.1) FROM src LIMIT 1;
+  0
+  > SELECT ceiling(5) FROM src LIMIT 1;
+  5
+query: DESCRIBE FUNCTION EXTENDED rand
+rand([seed]) - Returns a pseudorandom number between 0 and 1
 query: DESCRIBE FUNCTION EXTENDED abs
 abs(x) - returns the absolute value of x
 Example:
@@ -17,13 +259,23 @@ Example:
   0
   > SELECT abs(-5) FROM src LIMIT 1;
   5
-query: DESCRIBE FUNCTION EXTENDED acos
-acos(x) - returns the arc cosine of x if -1<=x<=1 or NULL otherwise
+query: DESCRIBE FUNCTION EXTENDED pmod
+a pmod b - Compute the positive modulo
+query: DESCRIBE FUNCTION EXTENDED ln
+ln(x) - Returns the natural logarithm of x
 Example:
-  > SELECT acos(1) FROM src LIMIT 1;
+  > SELECT ln(1) FROM src LIMIT 1;
   0
-  > SELECT acos(2) FROM src LIMIT 1;
-  NULL
+query: DESCRIBE FUNCTION EXTENDED log2
+log2(x) - Returns the logarithm of x with base 2
+Example:
+  > SELECT log2(2) FROM src LIMIT 1;
+  1
+query: DESCRIBE FUNCTION EXTENDED sin
+sin(x) - returns the sine of x (x is in radians)
+Example:
+   > SELECT sin(0) FROM src LIMIT 1;
+  0
 query: DESCRIBE FUNCTION EXTENDED asin
 asin(x) - returns the arc sine of x if -1<=x<=1 or NULL otherwise
 Example:
@@ -31,12 +283,136 @@ Example:
   0
   > SELECT asin(2) FROM src LIMIT 1;
   NULL
-query: DESCRIBE FUNCTION EXTENDED date_add
-date_add(start_date, num_days) - Returns the date that is num_days after start_date.
-start_date is a string in the format 'yyyy-MM-dd HH:mm:ss' or 'yyyy-MM-dd'. num_days is a number. The time part of start_date is ignored.
+query: DESCRIBE FUNCTION EXTENDED cos
+cos(x) - returns the cosine of x (x is in radians)
 Example:
-   > SELECT date_add('2009-30-07', 1) FROM src LIMIT 1;
-  '2009-31-07'
+   > SELECT cos(0) FROM src LIMIT 1;
+  1
+query: DESCRIBE FUNCTION EXTENDED acos
+acos(x) - returns the arc cosine of x if -1<=x<=1 or NULL otherwise
+Example:
+  > SELECT acos(1) FROM src LIMIT 1;
+  0
+  > SELECT acos(2) FROM src LIMIT 1;
+  NULL
+query: DESCRIBE FUNCTION EXTENDED log10
+log10(x) - Returns the logarithm of x with base 10
+Example:
+  > SELECT log10(10) FROM src LIMIT 1;
+  1
+query: DESCRIBE FUNCTION EXTENDED log
+log([b], x) - Returns the logarithm of x with base b
+Example:
+  > SELECT log(13, 13) FROM src LIMIT 1;
+  1
+query: DESCRIBE FUNCTION EXTENDED exp
+exp(x) - Returns e to the power of x
+Example:
+   > SELECT exp(0) FROM src LIMIT 1;
+  1
+query: DESCRIBE FUNCTION EXTENDED power
+power(x1, x2) - raise x1 to the power of x2
+Example:
+  > SELECT power(2, 3) FROM src LIMIT 1;
+  8
+query: DESCRIBE FUNCTION EXTENDED pow
+pow(x1, x2) - raise x1 to the power of x2
+Example:
+  > SELECT pow(2, 3) FROM src LIMIT 1;
+  8
+query: DESCRIBE FUNCTION EXTENDED conv
+conv(num, from_base, to_base) - convert num from from_base to to_base
+If to_base is negative, treat num as a signed integer,otherwise, treat it as an unsigned integer.
+Example:
+  > SELECT conv('100', 2, 10) FROM src LIMIT 1;
+  '4'
+  > SELECT conv(-10, 16, -10) FROM src LIMIT 1;
+  '16'
+query: DESCRIBE FUNCTION EXTENDED bin
+bin(n) - returns n in binary
+n is a BIGINT. Returns NULL if n is NULL.
+Example:
+  > SELECT bin(13) FROM src LIMIT 1
+  '1101'
+query: DESCRIBE FUNCTION EXTENDED hex
+hex(n or str) - Convert the argument to hexadecimal 
+If the argument is a string, returns two hex digits for each character in the string.
+If the argument is a number, returns the hexadecimal representation.
+Example:
+  > SELECT hex(17) FROM src LIMIT 1;
+  'H1'
+  > SELECT hex('Facebook') FROM src LIMIT 1;
+  '46616365626F6F6B'
+query: DESCRIBE FUNCTION EXTENDED upper
+upper(str) - Returns str with all characters changed to uppercase
+Example:
+  > SELECT upper('Facebook') FROM src LIMIT 1;
+  'FACEBOOK'
+query: DESCRIBE FUNCTION EXTENDED lower
+lower(str) - Returns str with all characters changed to lowercase
+Example:
+  > SELECT lower('Facebook') FROM src LIMIT 1;
+  'facebook'
+query: DESCRIBE FUNCTION EXTENDED ucase
+ucase(str) - Returns str with all characters changed to uppercase
+Example:
+  > SELECT ucase('Facebook') FROM src LIMIT 1;
+  'FACEBOOK'
+query: DESCRIBE FUNCTION EXTENDED lcase
+lcase(str) - Returns str with all characters changed to lowercase
+Example:
+  > SELECT lcase('Facebook') FROM src LIMIT 1;
+  'facebook'
+query: DESCRIBE FUNCTION EXTENDED trim
+trim(str) - Removes the leading and trailing space characters from str 
+Example:
+  > SELECT trim('   facebook  ') FROM src LIMIT 1;
+  'facebook'
+query: DESCRIBE FUNCTION EXTENDED ltrim
+ltrim(str) - Removes the leading space characters from str 
+Example:
+  > SELECT ltrim('   facebook') FROM src LIMIT 1;
+  'facebook'
+query: DESCRIBE FUNCTION EXTENDED rtrim
+rtrim(str) - Removes the trailing space characters from str 
+Example:
+  > SELECT rtrim('facebook   ') FROM src LIMIT 1;
+  'facebook'
+query: DESCRIBE FUNCTION EXTENDED length
+length(str) - Returns the length of str 
+Example:
+  > SELECT length('Facebook') FROM src LIMIT 1;
+  8
+query: DESCRIBE FUNCTION EXTENDED reverse
+reverse(str) - reverse str
+Example:
+  > SELECT reverse('Facebook') FROM src LIMIT 1;
+  'koobecaF'
+query: DESCRIBE FUNCTION EXTENDED like
+like(str, pattern) - Checks if str matches pattern
+Example:
+  > SELECT a.* FROM srcpart a WHERE a.hr like '%2' LIMIT 1;
+  27      val_27  2008-04-08      12
+query: DESCRIBE FUNCTION EXTENDED rlike
+str rlike regexp - Returns true if str matches regexp and false otherwise
+Example:
+  > SELECT 'fb' rlike '.*' FROM src LIMIT 1;
+  true
+query: DESCRIBE FUNCTION EXTENDED regexp
+str regexp regexp - Returns true if str matches regexp and false otherwise
+Example:
+  > SELECT 'fb' regexp '.*' FROM src LIMIT 1;
+  true
+query: DESCRIBE FUNCTION EXTENDED regexp_replace
+regexp_replace(str, regexp, rep) - replace all substrings of str that match regexp with rep
+Example:
+  > SELECT regexp_replace('100-200', '(\d+)', 'num') FROM src LIMIT 1;
+  'num-num'
+query: DESCRIBE FUNCTION EXTENDED regexp_extract
+regexp_extract(str, regexp[, idx]) - extracts a group that matches regexp
+Example:
+  > SELECT regexp_extract('100-200', '(\d+)-(\d+)', 1) FROM src LIMIT 1;
+  '100'
 query: DESCRIBE FUNCTION EXTENDED parse_url
 parse_url(url, partToExtract[, key]) - extracts a part from a URL
 Parts: HOST, PATH, QUERY, REF, PROTOCOL, AUTHORITY, FILE, USERINFO
@@ -53,3 +429,141 @@ split(str, regex) - Splits str around occurances that match regex
 Example:
   > SELECT split('oneAtwoBthreeC', '[ABC]') FROM src LIMIT 1;
   ["one", "two", "three"]
+query: DESCRIBE FUNCTION EXTENDED positive
+positive a - Returns a
+query: DESCRIBE FUNCTION EXTENDED negative
+negative a - Returns -a
+query: DESCRIBE FUNCTION EXTENDED day
+day(date) - Returns the date of the month of date
+date is a string in the format of 'yyyy-MM-dd HH:mm:ss' or 'yyyy-MM-dd'.
+Example:
+   > SELECT day('2009-30-07', 1) FROM src LIMIT 1;
+  30
+query: DESCRIBE FUNCTION EXTENDED dayofmonth
+dayofmonth(date) - Returns the date of the month of date
+date is a string in the format of 'yyyy-MM-dd HH:mm:ss' or 'yyyy-MM-dd'.
+Example:
+   > SELECT dayofmonth('2009-30-07', 1) FROM src LIMIT 1;
+  30
+query: DESCRIBE FUNCTION EXTENDED month
+month(date) - Returns the month of date
+Example:
+  > SELECT month('2009-30-07') FROM src LIMIT 1;
+  7
+query: DESCRIBE FUNCTION EXTENDED year
+year(date) - Returns the year of date
+date is a string in the format of 'yyyy-MM-dd HH:mm:ss' or 'yyyy-MM-dd'.
+Example:
+   > SELECT year('2009-30-07', 1) FROM src LIMIT 1;
+  2009
+query: DESCRIBE FUNCTION EXTENDED from_unixtime
+from_unixtime(unix_time, format) - returns unix_time in the specified format
+Example:
+  > SELECT from_unixtime(0, 'yyyy-MM-dd HH:mm:ss') FROM src LIMIT 1;
+  '1970-01-01 00:00:00'
+query: DESCRIBE FUNCTION EXTENDED unix_timestamp
+unix_timestamp([date[, pattern]]) - Returns the UNIX timestamp
+Converts the current or specified time to number of seconds since 1970-01-01.
+query: DESCRIBE FUNCTION EXTENDED to_date
+to_date(expr) - Extracts the date part of the date or datetime expression expr
+Example:
+   > SELECT to_date('2009-30-07 04:17:52') FROM src LIMIT 1;
+  '2009-30-07'
+query: DESCRIBE FUNCTION EXTENDED date_add
+date_add(start_date, num_days) - Returns the date that is num_days after start_date.
+start_date is a string in the format 'yyyy-MM-dd HH:mm:ss' or 'yyyy-MM-dd'. num_days is a number. The time part of start_date is ignored.
+Example:
+   > SELECT date_add('2009-30-07', 1) FROM src LIMIT 1;
+  '2009-31-07'
+query: DESCRIBE FUNCTION EXTENDED date_sub
+date_sub(start_date, num_days) - Returns the date that is num_days before start_date.
+start_date is a string in the format 'yyyy-MM-dd HH:mm:ss' or 'yyyy-MM-dd'. num_days is a number. The time part of start_date is ignored.
+Example:
+   > SELECT date_sub('2009-30-07', 1) FROM src LIMIT 1;
+  '2009-29-07'
+query: DESCRIBE FUNCTION EXTENDED datediff
+datediff(date1, date2) - Returns the number of days between date1 and date2
+date1 and date2 are strings in the format 'yyyy-MM-dd HH:mm:ss' or 'yyyy-MM-dd'. The time parts are ignored.If date1 is earlier than date2, the result is negative.
+Example:
+   > SELECT datediff('2009-30-07', '2009-31-07') FROM src LIMIT 1;
+  1
+query: DESCRIBE FUNCTION EXTENDED get_json_object
+get_json_object(json_txt, path) - Extract a json object from path 
+Extract json object from a json string based on json path specified, and return json string of the extracted json object. It will return null if the input json string is invalid.
+A limited version of JSONPath supported:
+  $   : Root object
+  .   : Child operator
+  []  : Subscript operator for array
+  *   : Wildcard for []
+Syntax not supported that's worth noticing:
+  ''  : Zero length string as key
+  ..  : Recursive descent
+  &amp;#064;   : Current object/element
+  ()  : Script expression
+  ?() : Filter (script) expression.
+  [,] : Union operator
+  [start:end:step] : array slice operator
+
+query: DESCRIBE FUNCTION EXTENDED +
+a + b - Returns a+b
+query: DESCRIBE FUNCTION EXTENDED -
+a - b - Returns the difference a-b
+query: DESCRIBE FUNCTION EXTENDED *
+a * b - Multiplies a by b
+query: DESCRIBE FUNCTION EXTENDED /
+a / b - Divide a by b
+Example:
+  > SELECT 3 / 2 FROM src LIMIT 1;
+  1.5
+query: DESCRIBE FUNCTION EXTENDED %
+a % b - Returns the remainder when dividing a by b
+query: DESCRIBE FUNCTION EXTENDED div
+a div b - Divide a by b rounded to the long integer
+Example:
+  > SELECT 3 div 2 FROM src LIMIT 1;
+  1
+query: DESCRIBE FUNCTION EXTENDED &
+a & b - Bitwise and
+Example:
+  > SELECT 3 & 5 FROM src LIMIT 1;
+  1
+query: DESCRIBE FUNCTION EXTENDED |
+a | b - Bitwise or
+Example:
+  > SELECT 3 | 5 FROM src LIMIT 1;
+  7
+query: DESCRIBE FUNCTION EXTENDED ^
+a ^ b - Bitwise exclusive or
+Example:
+  > SELECT 3 ^ 5 FROM src LIMIT 1;
+  2
+query: DESCRIBE FUNCTION EXTENDED ~
+~ n - Bitwise not
+Example:
+  > SELECT ~ 0 FROM src LIMIT 1;
+  -1
+query: DESCRIBE FUNCTION EXTENDED =
+a = b - Returns TRUE if a equals b and false otherwise
+query: DESCRIBE FUNCTION EXTENDED <>
+a <> b - Returns TRUE if a is not equal to b
+query: DESCRIBE FUNCTION EXTENDED <
+a < b - Returns TRUE if a is less than b
+query: DESCRIBE FUNCTION EXTENDED <=
+a <= b - Returns TRUE if b is not greater than a
+query: DESCRIBE FUNCTION EXTENDED >
+a > b - Returns TRUE if a is greater than b
+query: DESCRIBE FUNCTION EXTENDED >=
+a >= b - Returns TRUE if b is not smaller than a
+query: DESCRIBE FUNCTION EXTENDED and
+a and b - Logical and
+Example:
+  > SELECT * FROM srcpart WHERE src.hr=12 and src.hr='2008-04-08' LIMIT 1;
+  27      val_27  2008-04-08      12
+query: DESCRIBE FUNCTION EXTENDED or
+a or b - Logical or
+query: DESCRIBE FUNCTION EXTENDED not
+not a - Logical not
+query: DESCRIBE FUNCTION EXTENDED isnull
+isnull a - Returns true if a is NULL and false otherwise
+query: DESCRIBE FUNCTION EXTENDED isnotnull
+isnotnull a - Returns true if a is not NULL and false otherwise

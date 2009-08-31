@@ -30,7 +30,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 
 @description(
-    name = "/",
+    name = "div",
     value = "a _FUNC_ b - Divide a by b rounded to the long integer",
     extended = "Example:\n" +
         "  > SELECT 3 _FUNC_ 2 FROM src LIMIT 1;\n" +
