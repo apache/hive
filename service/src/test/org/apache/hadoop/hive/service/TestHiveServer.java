@@ -115,6 +115,53 @@ public class TestHiveServer extends TestCase {
     transport.close();
   }
 
+  public void testNonHiveCommand() throws Exception {
+    try {
+      client.execute("drop table " + tableName);
+    } catch (Exception ex) {
+    }
+
+    client.execute("create table " + tableName + " (num int)");
+    client.execute("load data local inpath '" + dataFilePath.toString() + "' into table " + tableName);
+    
+    // Command not part of HiveQL -  verify no results
+    client.execute("SET hive.mapred.mode = nonstrict");
+    
+    Schema schema = client.getSchema();
+    assertEquals(schema.getFieldSchemasSize(), 0);
+    assertEquals(schema.getPropertiesSize(), 0);
+    
+    Schema thriftschema = client.getThriftSchema();
+    assertEquals(thriftschema.getFieldSchemasSize(), 0);
+    assertEquals(thriftschema.getPropertiesSize(), 0);
+    
+    assertEquals(client.fetchOne(), "");
+    assertEquals(client.fetchN(10).size(), 0);
+    assertEquals(client.fetchAll().size(), 0);
+    
+    // Execute Hive query and fetch
+    client.execute("select * from " + tableName + " limit 10");
+    String row = client.fetchOne();
+    
+    // Re-execute command not part of HiveQL - verify still no results
+    client.execute("SET hive.mapred.mode = nonstrict");
+    
+    schema = client.getSchema();
+    assertEquals(schema.getFieldSchemasSize(), 0);
+    assertEquals(schema.getPropertiesSize(), 0);
+    
+    thriftschema = client.getThriftSchema();
+    assertEquals(thriftschema.getFieldSchemasSize(), 0);
+    assertEquals(thriftschema.getPropertiesSize(), 0);
+    
+    assertEquals(client.fetchOne(), "");
+    assertEquals(client.fetchN(10).size(), 0);
+    assertEquals(client.fetchAll().size(), 0);
+
+    // Cleanup
+    client.execute("drop table " + tableName);
+  }
+  
   /**
    * Test metastore call
    */
