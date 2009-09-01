@@ -79,6 +79,9 @@ Trunk -  Unreleased
     HIVE-778. add describe for div
     (Ning Zhang via namit)
 
+    HIVE-755. Driver NullPointerException when calling getResults without first compiling
+    (Eric Hwang via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

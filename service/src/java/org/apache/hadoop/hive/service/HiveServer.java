@@ -72,6 +72,11 @@ public class HiveServer extends ThriftHive {
      * Stores state per connection
      */
     private SessionState session;
+    
+    /**
+     * Flag that indicates whether the last executed command was a Hive query
+     */
+    private boolean isHiveQuery;
 
     public static final Log LOG = LogFactory.getLog(HiveServer.class.getName());
 
@@ -81,6 +86,7 @@ public class HiveServer extends ThriftHive {
     public HiveServerHandler() throws MetaException {
       super(HiveServer.class.getName());
 
+      isHiveQuery = false;
       SessionState session = new SessionState(new HiveConf(SessionState.class));
       SessionState.start(session);
       session.in = null;
@@ -107,8 +113,10 @@ public class HiveServer extends ThriftHive {
         CommandProcessor proc = CommandProcessorFactory.get(tokens[0]);
         if(proc != null) {
           if (proc instanceof Driver) {
+        	  isHiveQuery = true;
             ret = driver.run(cmd);
           } else {
+        	  isHiveQuery = false;
             ret = proc.run(cmd_1);
           }
         }
@@ -164,6 +172,10 @@ public class HiveServer extends ThriftHive {
      * Return the Hive schema of the query result
      */
     public Schema getSchema() throws HiveServerException, TException {
+      if (!isHiveQuery)
+        // Return empty schema if the last command was not a Hive query
+        return new Schema();	
+    	
       try {
         Schema schema = driver.getSchema();
         if (schema == null) {
@@ -183,6 +195,10 @@ public class HiveServer extends ThriftHive {
      * Return the Thrift schema of the query result
      */
     public Schema getThriftSchema() throws HiveServerException, TException {
+      if (!isHiveQuery)
+        // Return empty schema if the last command was not a Hive query
+        return new Schema();
+    	
       try {
         Schema schema = driver.getThriftSchema();
         if (schema == null) {
@@ -205,8 +221,12 @@ public class HiveServer extends ThriftHive {
      * @return the next row in a query result set. null if there is no more row to fetch.
      */
     public String fetchOne() throws HiveServerException, TException {
-      driver.setMaxRows(1);
+      if (!isHiveQuery)
+        // Return no results if the last command was not a Hive query
+        return "";
+      
       Vector<String> result = new Vector<String>();
+      driver.setMaxRows(1);
       try {
         if (driver.getResults(result)) {
           return result.get(0);
@@ -234,7 +254,11 @@ public class HiveServer extends ThriftHive {
       if (numRows < 0) {
         throw new HiveServerException("Invalid argument for number of rows: " + numRows);
       } 
-      Vector<String> result = new Vector<String>();
+      if (!isHiveQuery)
+      	// Return no results if the last command was not a Hive query
+        return new Vector<String>();
+      
+      Vector<String> result = new Vector<String>();      
       driver.setMaxRows(numRows);
       try {
         driver.getResults(result);
@@ -253,6 +277,10 @@ public class HiveServer extends ThriftHive {
      * to the client. Decide whether the buffering should be done in the client.
      */
     public List<String> fetchAll() throws HiveServerException, TException {
+      if (!isHiveQuery)
+        // Return no results if the last command was not a Hive query
+        return new Vector<String>();
+      
       Vector<String> rows = new Vector<String>();
       Vector<String> result = new Vector<String>();
       try {
