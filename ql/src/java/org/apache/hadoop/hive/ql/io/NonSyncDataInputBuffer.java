@@ -35,7 +35,7 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements DataInp
 
   private NonSyncByteArrayInputStream buffer;
 
-  byte[] buff;
+  byte[] buff = new byte[16];
 
   /** Constructs a new empty buffer. */
   public NonSyncDataInputBuffer() {

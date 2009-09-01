@@ -7,7 +7,7 @@ FROM (
 ) tmap
 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100 AND tmap.ds = '2008-04-08'
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) ds) (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) value)) TOK_SERDE '/bin/cat' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST ds tkey tvalue)))) (TOK_CLUSTERBY (TOK_TABLE_OR_COL tkey)))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) tkey)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) tvalue))) (TOK_WHERE (AND (< (. (TOK_TABLE_OR_COL tmap) tkey) 100) (= (. (TOK_TABLE_OR_COL tmap) ds) '2008-04-08')))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) ds) (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) value)) TOK_SERDE TOK_RECORDWRITER '/bin/cat' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST ds tkey tvalue)))) (TOK_CLUSTERBY (TOK_TABLE_OR_COL tkey)))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) tkey)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) tvalue))) (TOK_WHERE (AND (< (. (TOK_TABLE_OR_COL tmap) tkey) 100) (= (. (TOK_TABLE_OR_COL tmap) ds) '2008-04-08')))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -56,12 +56,12 @@ STAGE PLANS:
                         type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [tmap:src]
-        file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [tmap:src]
-        file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 [tmap:src]
-        file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 [tmap:src]
+        file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [tmap:src]
+        file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [tmap:src]
+        file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 [tmap:src]
+        file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 [tmap:src]
       Path -> Partition:
-        file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
             partition values:
               ds 2008-04-08
@@ -80,10 +80,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
             partition values:
               ds 2008-04-08
@@ -102,10 +102,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 
+        file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 
           Partition
             partition values:
               ds 2008-04-09
@@ -124,10 +124,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
+        file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
           Partition
             partition values:
               ds 2008-04-09
@@ -146,7 +146,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
       Reduce Operator Tree:
@@ -166,7 +166,7 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
-                directory: file:/data/users/njain/hive4/hive4/build/ql/tmp/1048025632/10001
+                directory: file:/data/users/njain/hive3/hive3/build/ql/tmp/1679006471/10001
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -191,7 +191,7 @@ Input: default/srcpart/ds=2008-04-08/hr=11
 Input: default/srcpart/ds=2008-04-08/hr=12
 Input: default/srcpart/ds=2008-04-09/hr=11
 Input: default/srcpart/ds=2008-04-09/hr=12
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1138294576/10000
+Output: file:/data/users/njain/hive3/hive3/build/ql/tmp/1777289435/10000
 0	val_0
 0	val_0
 0	val_0

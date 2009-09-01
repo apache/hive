@@ -8,7 +8,7 @@ FROM (
 ) tmap
 INSERT OVERWRITE TABLE dest1 SELECT tmap.tkey, tmap.tvalue
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src_thrift)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src_thrift) lint) (. (TOK_TABLE_OR_COL src_thrift) lintstring)) TOK_SERDE '/bin/cat' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST tkey tvalue)))) (TOK_CLUSTERBY (TOK_TABLE_OR_COL tkey)))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) tkey)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) tvalue)))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src_thrift)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src_thrift) lint) (. (TOK_TABLE_OR_COL src_thrift) lintstring)) TOK_SERDE TOK_RECORDWRITER '/bin/cat' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST tkey tvalue)))) (TOK_CLUSTERBY (TOK_TABLE_OR_COL tkey)))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) tkey)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) tvalue)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -87,7 +87,7 @@ Input: default/src_thrift
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/212735197/10000
+Output: file:/data/users/njain/hive3/hive3/build/ql/tmp/690928213/10000
 [0,0,0]	[{"myint":0,"mystring":"0","underscore_int":0}]
 [1,2,3]	[{"myint":1,"mystring":"1","underscore_int":1}]
 [2,4,6]	[{"myint":4,"mystring":"8","underscore_int":2}]

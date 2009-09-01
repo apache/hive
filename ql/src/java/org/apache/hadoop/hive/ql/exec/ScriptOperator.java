@@ -58,9 +58,6 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
   transient private LongWritable deserialize_error_count = new LongWritable ();
   transient private LongWritable serialize_error_count = new LongWritable ();
 
-  transient DataOutputStream scriptOut;
-  transient DataInputStream scriptErr;
-  transient DataInputStream scriptIn;
   transient Thread outThread;
   transient Thread errThread;
   transient Process scriptPid;
@@ -70,6 +67,7 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
   // Output from the script
   transient Deserializer scriptOutputDeserializer;
   transient volatile Throwable scriptError = null;
+  transient RecordWriter scriptOutWriter;
 
   /**
    * Timer to send periodic reports back to the tracker.
@@ -220,9 +218,12 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
       env.put(safeEnvVarName(HiveConf.ConfVars.HIVEALIAS.varname), String.valueOf(alias));
       scriptPid = pb.start();       // Runtime.getRuntime().exec(wrappedCmdArgs);
 
-      scriptOut = new DataOutputStream(new BufferedOutputStream(scriptPid.getOutputStream()));
-      scriptIn = new DataInputStream(new BufferedInputStream(scriptPid.getInputStream()));
-      scriptErr = new DataInputStream(new BufferedInputStream(scriptPid.getErrorStream()));
+      DataOutputStream scriptOut = new DataOutputStream(new BufferedOutputStream(scriptPid.getOutputStream()));
+      DataInputStream  scriptIn = new DataInputStream(new BufferedInputStream(scriptPid.getInputStream()));
+      DataInputStream  scriptErr = new DataInputStream(new BufferedInputStream(scriptPid.getErrorStream()));
+
+      scriptOutWriter = conf.getInRecordWriterClass().newInstance();
+      scriptOutWriter.initialize(scriptOut, hconf);
       
       RecordReader scriptOutputReader = conf.getOutRecordReaderClass().newInstance();
       scriptOutputReader.initialize(scriptIn, hconf);
@@ -266,16 +267,15 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
     }
   }
 
-  Text text = new Text();
   public void processOp(Object row, int tag) throws HiveException {
 
     if(scriptError != null) {
       throw new HiveException(scriptError);
     }
+
     try {
-      text = (Text) scriptInputSerializer.serialize(row, inputObjInspectors[tag]);
-      scriptOut.write(text.getBytes(), 0, text.getLength());
-      scriptOut.write(Utilities.newLineCode);
+      Writable res = scriptInputSerializer.serialize(row, inputObjInspectors[tag]);
+      scriptOutWriter.write(res);
     } catch (SerDeException e) {
       LOG.error("Error in serializing the row: " + e.getMessage());
       scriptError = e;
@@ -297,8 +297,7 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
       }
       // everything ok. try normal shutdown
       try {
-        scriptOut.flush();
-        scriptOut.close();
+        scriptOutWriter.close();
         int exitVal = scriptPid.waitFor();
         if (exitVal != 0) {
           LOG.error("Script failed with code " + exitVal);
@@ -421,6 +420,7 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
 
         while(true) {
           long bytes = in.next(row);
+
           if(bytes <= 0) {
             break;
           }

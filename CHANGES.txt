@@ -6,7 +6,7 @@ Trunk -  Unreleased
 
   NEW FEATURES
   
-    HIVE-743. Let user specify serde for custom sctipts.
+    HIVE-743. Let user specify serde for custom scripts.
     (Namit Jain via rmurthy)
 
     HIVE-749. add hive.optimize.pruner
@@ -32,6 +32,8 @@ Trunk -  Unreleased
 
     HIVE-645. UDF to run JDBC
     (Edward Capriolo via namit)
+
+    HIVE-785. Add RecordWriter for ScriptOperator. (Namit Jain via zshao)
 
   IMPROVEMENTS
 

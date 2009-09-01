@@ -351,4 +351,10 @@
   <description>The default record reader for reading data from the user scripts. </description>
 </property>
 
+<property>
+  <name>hive.script.recordwriter</name>
+  <value>org.apache.hadoop.hive.ql.exec.TextRecordWriter</value>
+  <description>The default record writer for writing data to the user scripts. </description>
+</property>
+
 </configuration>

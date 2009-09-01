@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.exec.RecordReader;
+import org.apache.hadoop.hive.ql.exec.RecordWriter;
 
 @explain(displayName="Transform Operator")
 public class scriptDesc implements Serializable {
@@ -28,6 +29,8 @@ public class scriptDesc implements Serializable {
   private String scriptCmd;
   // Describe how to deserialize data back from user script
   private tableDesc scriptOutputInfo;
+  private Class<? extends RecordWriter> inRecordWriterClass;
+
   // Describe how to serialize data out to user script
   private tableDesc scriptInputInfo;
   private Class<? extends RecordReader> outRecordReaderClass;
@@ -36,11 +39,13 @@ public class scriptDesc implements Serializable {
   public scriptDesc(
     final String scriptCmd,
     final tableDesc scriptInputInfo,
+    final Class<? extends RecordWriter> inRecordWriterClass,
     final tableDesc scriptOutputInfo,
     final Class<? extends RecordReader> outRecordReaderClass) {
     
     this.scriptCmd = scriptCmd;
     this.scriptInputInfo = scriptInputInfo;
+    this.inRecordWriterClass = inRecordWriterClass;
     this.scriptOutputInfo = scriptOutputInfo;
     this.outRecordReaderClass = outRecordReaderClass;
   }
@@ -79,4 +84,18 @@ public class scriptDesc implements Serializable {
       Class<? extends RecordReader> outRecordReaderClass) {
     this.outRecordReaderClass = outRecordReaderClass;
   }
+  /**
+   * @return the inRecordWriterClass
+   */
+  public Class<? extends RecordWriter> getInRecordWriterClass() {
+    return inRecordWriterClass;
+  }
+  /**
+   * @param inRecordWriterClass the inRecordWriterClass to set
+   */
+  public void setInRecordWriterClass(
+      Class<? extends RecordWriter> inRecordWriterClass) {
+    this.inRecordWriterClass = inRecordWriterClass;
+  }
+
 }

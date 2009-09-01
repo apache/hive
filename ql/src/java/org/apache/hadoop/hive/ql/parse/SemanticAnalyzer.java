@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.exec.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.RecordReader;
+import org.apache.hadoop.hive.ql.exec.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -135,7 +136,6 @@ import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.ql.exec.TextRecordReader;
-import org.apache.hadoop.hive.ql.exec.TypedBytesRecordReader;
 
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -1183,11 +1183,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       Operator input) throws SemanticException {
     // If there is no "AS" clause, the output schema will be "key,value"
     ArrayList<ColumnInfo> outputCols = new ArrayList<ColumnInfo>();
-    int     inputSerDeNum  = 1;
-    int     outputSerDeNum = 3, outputRecordReaderNum = 4;
-    int     outputColsNum = 5;
+    int     inputSerDeNum  = 1, inputRecordWriterNum = 2;
+    int     outputSerDeNum = 4, outputRecordReaderNum = 5;
+    int     outputColsNum = 6;
     boolean outputColNames = false, outputColSchemas = false;
-    int     execPos = 2;
+    int     execPos = 3;
     boolean defaultOutputCols = false;
     
     // Go over all the children
@@ -1273,7 +1273,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     else 
       inInfo = PlanUtils.getTableDesc(serde, Integer.toString(Utilities.tabCode), inpColumns.toString(), inpColumnTypes.toString(), false, true);
 
-    if (trfm.getChild(inputSerDeNum).getChildCount() > 0)
+    if (trfm.getChild(outputSerDeNum).getChildCount() > 0)
       outInfo = getTableDescFromSerDe((ASTNode)(((ASTNode)trfm.getChild(outputSerDeNum))).getChild(0), columns.toString(), columnTypes.toString(), false);
     // This is for backward compatibility. If the user did not specify the output column list, we assume that there are 2 columns: key and value.
     // However, if the script outputs: col1, col2, col3 seperated by TAB, the requirement is: key is col and value is (col2 TAB col3)
@@ -1282,11 +1282,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // Output record readers
     Class <? extends RecordReader> outRecordReader = getRecordReader((ASTNode)trfm.getChild(outputRecordReaderNum));
+    Class <? extends RecordWriter> inRecordWriter = getRecordWriter((ASTNode)trfm.getChild(inputRecordWriterNum));
     
     Operator output = putOpInsertMap(OperatorFactory
             .getAndMakeChild(
                 new scriptDesc(getFixedCmd(stripQuotes(trfm.getChild(execPos).getText())), 
-                    inInfo, outInfo, outRecordReader),
+                               inInfo, inRecordWriter, outInfo, outRecordReader),
                 new RowSchema(out_rwsch.getColumnInfos()), input), out_rwsch);
 
     return output;
@@ -1302,6 +1303,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     
     try {
       return (Class<? extends RecordReader>)Class.forName(name, true, JavaUtils.getClassLoader());
+    } catch (ClassNotFoundException e) {
+      throw new SemanticException(e);
+    }
+  }
+
+  private Class<? extends RecordWriter> getRecordWriter(ASTNode node) throws SemanticException {
+    String name;
+
+    if (node.getChildCount() == 0) 
+      name = conf.getVar(HiveConf.ConfVars.HIVESCRIPTRECORDWRITER);
+    else 
+      name = unescapeSQLString(node.getChild(0).getText());
+    
+    try {
+      return (Class<? extends RecordWriter>)Class.forName(name, true, JavaUtils.getClassLoader());
     } catch (ClassNotFoundException e) {
       throw new SemanticException(e);
     }

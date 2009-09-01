@@ -139,6 +139,7 @@ TOK_HINTARGLIST;
 TOK_USERSCRIPTCOLNAMES;
 TOK_USERSCRIPTCOLSCHEMA;
 TOK_RECORDREADER;
+TOK_RECORDWRITER;
 }
 
 
@@ -368,11 +369,11 @@ tableBuckets
     -> ^(TOK_TABLEBUCKETS $bucketCols $sortCols? $num)
     ;
 
-serde
+rowFormat
 @init { msgs.push("serde specification"); }
 @after { msgs.pop(); }
-    : serdeFormat -> ^(TOK_SERDE serdeFormat)
-    | serdePropertiesFormat -> ^(TOK_SERDE serdePropertiesFormat)
+    : rowFormatSerde -> ^(TOK_SERDE rowFormatSerde)
+    | rowFormatDelimited -> ^(TOK_SERDE rowFormatDelimited)
     |   -> ^(TOK_SERDE)
     ;
 
@@ -383,14 +384,21 @@ recordReader
     |   -> ^(TOK_RECORDREADER)
     ;
 
-serdeFormat
+recordWriter
+@init { msgs.push("record writer specification"); }
+@after { msgs.pop(); }
+    : KW_RECORDWRITER StringLiteral -> ^(TOK_RECORDWRITER StringLiteral)
+    |   -> ^(TOK_RECORDWRITER)
+    ;
+
+rowFormatSerde
 @init { msgs.push("serde format specification"); }
 @after { msgs.pop(); }
     : KW_ROW KW_FORMAT KW_SERDE name=StringLiteral (KW_WITH KW_SERDEPROPERTIES serdeprops=tableProperties)?
     -> ^(TOK_SERDENAME $name $serdeprops?)
     ;
 
-serdePropertiesFormat
+rowFormatDelimited
 @init { msgs.push("serde properties specification"); }
 @after { msgs.pop(); }
     :
@@ -402,10 +410,10 @@ tableRowFormat
 @init { msgs.push("table row format specification"); }
 @after { msgs.pop(); }
     :
-      serdePropertiesFormat
-    -> ^(TOK_TABLEROWFORMAT serdePropertiesFormat)
-    | serdeFormat
-    -> ^(TOK_TABLESERIALIZER serdeFormat)
+      rowFormatDelimited
+    -> ^(TOK_TABLEROWFORMAT rowFormatDelimited)
+    | rowFormatSerde
+    -> ^(TOK_TABLESERIALIZER rowFormatSerde)
     ;
 
 tableProperties
@@ -761,11 +769,11 @@ trfmClause
     ( KW_SELECT KW_TRANSFORM LPAREN selectExpressionList RPAREN
       | KW_MAP    selectExpressionList
       | KW_REDUCE selectExpressionList )
-    inSerde=serde 
+    inSerde=rowFormat inRec=recordWriter
     KW_USING StringLiteral 
     ( KW_AS ((LPAREN (aliasList | columnNameTypeList) RPAREN) | (aliasList | columnNameTypeList)))? 
-    outSerde=serde outRec=recordReader
-    -> ^(TOK_TRANSFORM selectExpressionList $inSerde StringLiteral $outSerde $outRec aliasList? columnNameTypeList?)
+    outSerde=rowFormat outRec=recordReader
+    -> ^(TOK_TRANSFORM selectExpressionList $inSerde $inRec StringLiteral $outSerde $outRec aliasList? columnNameTypeList?)
     ;
     
 selectExpression
@@ -1375,6 +1383,7 @@ KW_CONTINUE: 'CONTINUE';
 KW_CURSOR: 'CURSOR';
 KW_TRIGGER: 'TRIGGER';
 KW_RECORDREADER: 'RECORDREADER';
+KW_RECORDWRITER: 'RECORDWRITER';
 
 
 // Operators

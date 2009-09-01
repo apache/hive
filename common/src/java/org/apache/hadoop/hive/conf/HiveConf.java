@@ -137,6 +137,7 @@ public class HiveConf extends Configuration {
     // Default serde and record reader for user scripts
     HIVESCRIPTSERDE("hive.script.serde", "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"),
     HIVESCRIPTRECORDREADER("hive.script.recordreader", "org.apache.hadoop.hive.ql.exec.TextRecordReader"),
+    HIVESCRIPTRECORDWRITER("hive.script.recordwriter", "org.apache.hadoop.hive.ql.exec.TextRecordWriter"),
     
     // HWI
     HIVEHWILISTENHOST("hive.hwi.listen.host","0.0.0.0"),

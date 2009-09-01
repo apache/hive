@@ -26,9 +26,9 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.ql.util.typedbytes.Type;
-import org.apache.hadoop.hive.ql.util.typedbytes.TypedBytesWritableInput;
-import org.apache.hadoop.hive.ql.util.typedbytes.TypedBytesWritableOutput;
+import org.apache.hadoop.hive.contrib.util.typedbytes.Type;
+import org.apache.hadoop.hive.contrib.util.typedbytes.TypedBytesWritableInput;
+import org.apache.hadoop.hive.contrib.util.typedbytes.TypedBytesWritableOutput;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -159,11 +159,11 @@ public class TypedBytesSerDe implements SerDe {
   public Object deserialize(Writable blob) throws SerDeException {
 
     BytesWritable data = (BytesWritable)blob;
-    inBarrStr.reset(data.get(), 0, data.getSize()-1);   
-    
+    inBarrStr.reset(data.get(), 0, data.getSize());   
+
     try {
 
-      for (int i=0; i<columnNames.size(); i++) {
+      for (int i=0; i < columnNames.size(); i++) {
         row.set(i, deserializeField(tbIn, columnTypes.get(i), row.get(i)));
       }
 

@@ -8,7 +8,7 @@ FROM (
 ) tmap
 INSERT OVERWRITE TABLE dest1 SELECT tkey, tvalue
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) value)) (TOK_SERDE (TOK_SERDEPROPS (TOK_TABLEROWFORMATFIELD '\002'))) '/bin/cat' (TOK_SERDE (TOK_SERDEPROPS (TOK_TABLEROWFORMATFIELD '\002'))) TOK_RECORDREADER (TOK_ALIASLIST tkey tvalue)))))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL tkey)) (TOK_SELEXPR (TOK_TABLE_OR_COL tvalue)))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) value)) (TOK_SERDE (TOK_SERDEPROPS (TOK_TABLEROWFORMATFIELD '\002'))) TOK_RECORDWRITER '/bin/cat' (TOK_SERDE (TOK_SERDEPROPS (TOK_TABLEROWFORMATFIELD '\002'))) TOK_RECORDREADER (TOK_ALIASLIST tkey tvalue)))))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL tkey)) (TOK_SELEXPR (TOK_TABLE_OR_COL tvalue)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -63,10 +63,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/njain/hive4/hive4/build/ql/tmp/690413108/10000
+                destination: file:/data/users/njain/hive3/hive3/build/ql/tmp/64811552/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/njain/hive4/hive4/build/ql/tmp/1173839113/10002 
+              file:/data/users/njain/hive3/hive3/build/ql/tmp/1494510808/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -111,7 +111,7 @@ Input: default/src
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1858771858/10000
+Output: file:/data/users/njain/hive3/hive3/build/ql/tmp/560708701/10000
 238	val_238
 86	val_86
 311	val_311

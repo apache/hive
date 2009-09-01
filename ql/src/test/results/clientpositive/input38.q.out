@@ -8,7 +8,7 @@ FROM (
 ) tmap
 INSERT OVERWRITE TABLE dest1 SELECT tmap.key, tmap.value
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) value) (+ 1 2) (+ 3 4)) TOK_SERDE '/bin/cat' TOK_SERDE TOK_RECORDREADER))))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) value)))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) value) (+ 1 2) (+ 3 4)) TOK_SERDE TOK_RECORDWRITER '/bin/cat' TOK_SERDE TOK_RECORDREADER))))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -60,10 +60,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/njain/hive4/hive4/build/ql/tmp/1215985021/10000
+                destination: file:/data/users/njain/hive3/hive3/build/ql/tmp/1962987332/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/njain/hive4/hive4/build/ql/tmp/986711911/10002 
+              file:/data/users/njain/hive3/hive3/build/ql/tmp/1219497579/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -107,7 +107,7 @@ Input: default/src
 Output: default/dest1
 query: SELECT dest1.* FROM dest1
 Input: default/dest1
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1895427421/10000
+Output: file:/data/users/njain/hive3/hive3/build/ql/tmp/364487394/10000
 238	val_238	3	7
 86	val_86	3	7
 311	val_311	3	7

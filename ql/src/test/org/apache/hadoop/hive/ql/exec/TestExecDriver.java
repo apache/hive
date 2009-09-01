@@ -205,6 +205,7 @@ public class TestExecDriver extends TestCase {
     Operator<scriptDesc> op2 = OperatorFactory.get
       (new scriptDesc("/bin/cat",
           PlanUtils.getDefaultTableDesc("" + Utilities.tabCode, "key,value"),
+                      TextRecordWriter.class,
           PlanUtils.getDefaultTableDesc("" + Utilities.tabCode, "key,value"), 
           TextRecordReader.class),
        op3);
@@ -346,6 +347,7 @@ public class TestExecDriver extends TestCase {
     Operator<scriptDesc> op0 = OperatorFactory.get
     (new scriptDesc("/bin/cat",
         PlanUtils.getDefaultTableDesc("" + Utilities.tabCode, "key,value"),
+                    TextRecordWriter.class,
         PlanUtils.getDefaultTableDesc("" + Utilities.tabCode, "tkey,tvalue"),
         TextRecordReader.class),
      op1);
@@ -427,6 +429,7 @@ public class TestExecDriver extends TestCase {
     Operator<scriptDesc> op0 = OperatorFactory.get
       (new scriptDesc("\'/bin/cat\'",
           PlanUtils.getDefaultTableDesc("" + Utilities.tabCode, "tkey,tvalue"),
+                      TextRecordWriter.class,
           PlanUtils.getDefaultTableDesc("" + Utilities.tabCode, "tkey,tvalue"),
           TextRecordReader.class),
        op1);
