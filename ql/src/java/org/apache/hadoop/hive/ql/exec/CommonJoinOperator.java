@@ -565,9 +565,8 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
    * All done
    * 
    */
-  public void close(boolean abort) throws HiveException {
+  public void closeOp(boolean abort) throws HiveException {
     LOG.trace("Join Op close");
-    super.close(abort);
   }
 
   @Override

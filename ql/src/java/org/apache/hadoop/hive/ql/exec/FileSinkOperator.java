@@ -156,11 +156,7 @@ public class FileSinkOperator extends TerminalOperator <fileSinkDesc> implements
     }
   }
 
-  public void close(boolean abort) throws HiveException {
-    if (state == State.CLOSE) 
-      return;
-  
-    state = State.CLOSE;
+  public void closeOp(boolean abort) throws HiveException {
     if (!abort) {
       if (outWriter != null) {
         try {

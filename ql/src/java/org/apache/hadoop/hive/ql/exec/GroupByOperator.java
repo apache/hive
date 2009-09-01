@@ -701,7 +701,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
    * We need to forward all the aggregations to children.
    * 
    */
-  public void close(boolean abort) throws HiveException {
+  public void closeOp(boolean abort) throws HiveException {
     if (!abort) {
       try {
         // If there is no grouping key and no row came to this operator
@@ -750,7 +750,6 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
         throw new HiveException(e);
       }
     }
-    super.close(abort);
   }
 
   // Group by contains the columns needed - no need to aggregate from children
