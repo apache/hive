@@ -153,7 +153,7 @@ public class QBJoinTree
   }
 
   /**
-   * @param mapSidejoin the mapSidejoin to set
+   * @param mapSideJoin the mapSidejoin to set
    */
   public void setMapSideJoin(boolean mapSideJoin) {
     this.mapSideJoin = mapSideJoin;

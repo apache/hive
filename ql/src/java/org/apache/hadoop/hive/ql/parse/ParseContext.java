@@ -86,21 +86,25 @@ public class ParseContext {
    *          map from table scan operator to partition pruner
    * @param aliasToSamplePruner
    *          sample pruner list
-   * @param loadFileWork
-   *          list of destination files being loaded
-   * @param loadTableWork
-   *          list of destination tables being loaded
-   * @param opParseCtx
-   *          operator parse context - contains a mapping from operator to
-   *          operator parse state (row resolver etc.)
    * @param topOps
    *          list of operators for the top query
    * @param topSelOps
    *          list of operators for the selects introduced for column pruning
+   * @param opParseCtx
+   *          operator parse context - contains a mapping from operator to
+   *          operator parse state (row resolver etc.)
+   * @param joinContext context needed join processing (map join specifically)
+   * @param topToTable the top tables being processed
+   * @param loadTableWork
+   *          list of destination tables being loaded
+   * @param loadFileWork
+   *          list of destination files being loaded
+   * @param ctx parse context
+   * @param idToTableNameMap
+   * @param destTableId
+   * @param uCtx
    * @param listMapJoinOpsNoReducer
    *          list of map join operators with no reducer
-   * @param hasNonPartCols
-   *          the query has non partition columns
    */
   public ParseContext(HiveConf conf, QB qb, ASTNode ast,
       HashMap<String, ASTPartitionPruner> aliasToPruner,

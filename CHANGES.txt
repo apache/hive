@@ -237,6 +237,8 @@ Release 0.4.0 -  Unreleased
     HIVE-610. Move all properties from jpox.properties to hive-site.xml.
     (Prasad Chakka via zshao)
 
+    HIVE-811. Fix Javadocs. (Namit Jain via zshao)
+
   BUG FIXES
 
     HIVE-381. Fix JDBC HiveResultSet's next function.

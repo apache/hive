@@ -118,7 +118,6 @@ public class LazyBinaryUtils {
    * @param bytes     bytes arrays store the table row
    * @param offset    offset of this field
    * @param recordInfo  modify this byteinfo object and return it
-   * @return size and offset in bytes of this field
    */
   public static void checkObjectByteInfo(ObjectInspector objectInspector, byte[] bytes, int offset, RecordInfo recordInfo) {
     Category category = objectInspector.getCategory(); 
@@ -177,7 +176,6 @@ public class LazyBinaryUtils {
   
   /**
    *  A zero-compressed encoded long
-   *  @see WritableUtils#readVLong(java.io.DataInput)
    */
   public static class VLong {
     public VLong() {
@@ -193,7 +191,6 @@ public class LazyBinaryUtils {
    * @param bytes   the byte array
    * @param offset  offset of the array to read from
    * @param vlong   storing the deserialized long and its size in byte
-   * @see WritableUtils#readVLong(java.io.DataInput)
    */
   public static void readVLong(byte[] bytes, int offset, VLong vlong) {
     byte firstByte = bytes[offset];
@@ -213,7 +210,6 @@ public class LazyBinaryUtils {
   
   /**
    *  A zero-compressed encoded integer
-   *  @see WritableUtils#readVInt(java.io.DataInput)
    */
   public static class VInt {
     public VInt() {
@@ -228,8 +224,7 @@ public class LazyBinaryUtils {
    * Reads a zero-compressed encoded int from a byte array and returns it.
    * @param bytes   the byte array
    * @param offset  offset of the array to read from
-   * @param vint    storing the deserialized int and its size in byte
-   * @see WritableUtils#readVInt(java.io.DataInput)
+   * @param vInt    storing the deserialized int and its size in byte
    */
   public static void readVInt(byte[] bytes, int offset, VInt vInt) {
     byte firstByte = bytes[offset];
@@ -251,7 +246,6 @@ public class LazyBinaryUtils {
    * Writes a zero-compressed encoded int to a byte array.
    * @param byteStream   the byte array/stream
    * @param i            the int
-   * @see LazyBinaryUtils#writeVLong(Output, long)
    */
   public static void writeVInt(Output byteStream, int i) {
     writeVLong(byteStream, i);
@@ -261,7 +255,6 @@ public class LazyBinaryUtils {
    * Write a zero-compressed encoded long to a byte array.
    * @param byteStream   the byte array/stream
    * @param l            the long
-   * @see WritableUtils#writeVLong(java.io.DataOutput, long)
    */
   public static void writeVLong(Output byteStream, long l) {
     if (l >= -112 && l <= 127) {

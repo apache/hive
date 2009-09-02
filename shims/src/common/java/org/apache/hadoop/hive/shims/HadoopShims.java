@@ -45,7 +45,7 @@ public interface HadoopShims {
   /**
    * Calls fs.deleteOnExit(path) if such a function exists.
    *
-   * @returns true if the call was successful
+   * @return true if the call was successful
    */
   public boolean fileSystemDeleteOnExit(FileSystem fs, Path path) throws IOException;
 

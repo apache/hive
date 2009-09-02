@@ -98,7 +98,7 @@ public class PartitionPruner implements Transform {
    * @param prunerExpr  the pruner expression for the alias
    * @param conf   for checking whether "strict" mode is on.
    * @param alias  for generating error message only.
-   * @return
+   * @return the partition list for the table that satisfies the partition pruner condition.
    * @throws HiveException
    */
   public static PrunedPartitionList prune(Table tab, exprNodeDesc prunerExpr,

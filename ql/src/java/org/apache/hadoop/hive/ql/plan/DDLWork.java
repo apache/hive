@@ -135,7 +135,7 @@ public class DDLWork implements Serializable {
   }
 
   /**
-   * @param createTblDesc the createTblDesc to set
+   * @param createTblLikeDesc the createTblDesc to set
    */
   public void setCreateTblLikeDesc(createTableLikeDesc createTblLikeDesc) {
     this.createTblLikeDesc = createTblLikeDesc;
@@ -210,7 +210,7 @@ public class DDLWork implements Serializable {
   }
   
   /**
-   * @param showFuncsDesc the showFuncsDesc to set
+   * @param descFuncDesc the showFuncsDesc to set
    */
   public void setDescFuncDesc(descFunctionDesc descFuncDesc) {
     this.descFunctionDesc = descFuncDesc;

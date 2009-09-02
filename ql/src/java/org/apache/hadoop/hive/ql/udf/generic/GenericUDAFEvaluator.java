@@ -117,7 +117,6 @@ public abstract class GenericUDAFEvaluator {
   /**
    * This function will be called by GroupByOperator when it sees a new input row.
    * @param agg  The object to store the aggregation result.  
-   * @param parameterOIs  The row, can be inspected by the OIs passed in init().
    */
   public Object evaluate(AggregationBuffer agg) throws HiveException {
     if (mode == Mode.PARTIAL1 || mode == Mode.PARTIAL2) {

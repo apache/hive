@@ -27,7 +27,7 @@ class ThriftStructObjectInspector extends
     ReflectionStructObjectInspector {
 
   public boolean shouldIgnoreField(String name) {
-    return "__isset".equals(name);
+    return name != null && name.startsWith("__isset");
   }
   
   public boolean equals(Object b) {

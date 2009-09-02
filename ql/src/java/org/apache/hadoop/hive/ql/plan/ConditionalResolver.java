@@ -27,7 +27,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 public interface ConditionalResolver {
 	/**
 	 * All conditional resolvers implement this interface
-	 * @param pctx opaque context
+	 * @param conf configuration
+	 * @param ctx  opaque context
 	 * @return position of the task
 	 */
 	public int getTaskId(HiveConf conf, Object ctx);
