@@ -9,6 +9,10 @@ set mapred.reduce.tasks=1;
 
 ADD JAR ../lib/derby.jar ;
 
+DESCRIBE FUNCTION dboutput;
+
+DESCRIBE FUNCTION EXTENDED dboutput;
+
 EXPLAIN FROM src
 
 SELECT dboutput ( 'jdbc:derby:../build/test_dboutput_db\;create=true','','',

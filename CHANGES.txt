@@ -84,6 +84,8 @@ Trunk -  Unreleased
 
     HIVE-752. Bug in shimLoader for HWI server (Edward Capriolo via namit)
 
+    HIVE-810. add test and annotation for jdbc udf (Edward Capriolo via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

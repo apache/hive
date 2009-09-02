@@ -21,6 +21,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import org.apache.hadoop.hive.ql.udf.UDFType;
+import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.description;
 
 import org.apache.hadoop.hive.ql.udf.generic.*;
 import org.apache.commons.logging.Log;
@@ -48,6 +51,17 @@ import org.apache.hadoop.io.IntWritable;
 * Use hive's ADD JAR feature to add your JDBC Driver to the distributed cache,
 * otherwise GenericUDFDBoutput will fail.
 */
+@description(
+    name = "dboutput",
+    value = "_FUNC_(jdbcstring,username,password,preparedstatement,[arguments]) - sends data to a jdbc driver",
+    extended = 
+    "argument 0 is the JDBC connection string\n"+
+    "argument 1 is the user name\n"+
+    "argument 2 is the password\n"+
+    "argument 3 is an SQL query to be used in the PreparedStatement\n"+
+    "argument (4-n) The remaining arguments must be primitive and are passed to the PreparedStatement object\n"
+)
+@UDFType(deterministic=false)
 public class GenericUDFDBOutput extends GenericUDF {
   private static Log LOG = LogFactory.getLog(GenericUDFDBOutput.class.getName());
 

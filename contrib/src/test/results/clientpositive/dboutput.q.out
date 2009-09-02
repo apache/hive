@@ -1,4 +1,14 @@
 query: CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput'
+query: DESCRIBE FUNCTION dboutput
+dboutput(jdbcstring,username,password,preparedstatement,[arguments]) - sends data to a jdbc driver
+query: DESCRIBE FUNCTION EXTENDED dboutput
+dboutput(jdbcstring,username,password,preparedstatement,[arguments]) - sends data to a jdbc driver
+argument 0 is the JDBC connection string
+argument 1 is the user name
+argument 2 is the password
+argument 3 is an SQL query to be used in the PreparedStatement
+argument (4-n) The remaining arguments must be primitive and are passed to the PreparedStatement object
+
 query: EXPLAIN FROM src
 
 SELECT dboutput ( 'jdbc:derby:../build/test_dboutput_db;create=true','','',
@@ -60,7 +70,7 @@ dboutput('jdbc:derby:../build/test_dboutput_db','','',
 
 limit 1
 Input: default/src
-Output: file:/home/ecapriolo/hive-20/hive-trunk/build/ql/tmp/546437302/10000
+Output: file:/home/ecapriolo/hive-617/hive-trunk/build/ql/tmp/753506919/10000
 0	0	1
 query: EXPLAIN SELECT
 
@@ -114,7 +124,7 @@ dboutput('jdbc:derby:../build/test_dboutput_db','','',
 
 FROM src WHERE key < 10
 Input: default/src
-Output: file:/home/ecapriolo/hive-20/hive-trunk/build/ql/tmp/1720943059/10000
+Output: file:/home/ecapriolo/hive-617/hive-trunk/build/ql/tmp/1030277391/10000
 0
 0
 0
@@ -125,6 +135,6 @@ Output: file:/home/ecapriolo/hive-20/hive-trunk/build/ql/tmp/1720943059/10000
 0
 1
 0
-Deleted file:/home/ecapriolo/hive-20/hive-trunk/build/test_dboutput_db
-Deleted file:/home/ecapriolo/hive-20/hive-trunk/contrib/derby.log
+Deleted file:/home/ecapriolo/hive-617/hive-trunk/build/test_dboutput_db
+Deleted file:/home/ecapriolo/hive-617/hive-trunk/contrib/derby.log
 query: DROP TEMPORARY FUNCTION dboutput
