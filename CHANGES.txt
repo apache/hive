@@ -82,6 +82,8 @@ Trunk -  Unreleased
     HIVE-755. Driver NullPointerException when calling getResults without first compiling
     (Eric Hwang via namit)
 
+    HIVE-752. Bug in shimLoader for HWI server (Edward Capriolo via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

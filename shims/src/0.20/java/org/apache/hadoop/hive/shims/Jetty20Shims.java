@@ -34,6 +34,8 @@ public class Jetty20Shims implements JettyShims {
   private static class Server extends org.mortbay.jetty.Server implements JettyShims.Server {
     public void addWar(String war, String contextPath) {
       WebAppContext wac = new WebAppContext();
+      wac.setContextPath(contextPath);
+      wac.setWar(war);
       RequestLogHandler rlh = new RequestLogHandler();
       rlh.setHandler(wac);
       this.addHandler(rlh);
