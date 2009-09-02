@@ -19,7 +19,7 @@
     <fileset dir="${test.src.data.dir}" includes="files/*.jar"/>
     <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
     <pathelement location="${build.dir.hive}/ql/test/classes"/>
-    <path refid="classpath"/>
+    <path refid="classpath-hwi"/>
   </path>
 
   <target name="compile" depends="hwi-init">

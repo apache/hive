@@ -46,10 +46,10 @@ public abstract class ShimLoader {
     new HashMap<String, String>();
 
   static {
-    JETTY_SHIM_CLASSES.put("0.17", "org.apache.jetty.hive.shims.Jetty17Shims");
-    JETTY_SHIM_CLASSES.put("0.18", "org.apache.jetty.hive.shims.Jetty18Shims");
-    JETTY_SHIM_CLASSES.put("0.19", "org.apache.jetty.hive.shims.Jetty19Shims");
-    JETTY_SHIM_CLASSES.put("0.20", "org.apache.jetty.hive.shims.Jetty20Shims");
+    JETTY_SHIM_CLASSES.put("0.17", "org.apache.hadoop.hive.shims.Jetty17Shims");
+    JETTY_SHIM_CLASSES.put("0.18", "org.apache.hadoop.hive.shims.Jetty18Shims");
+    JETTY_SHIM_CLASSES.put("0.19", "org.apache.hadoop.hive.shims.Jetty19Shims");
+    JETTY_SHIM_CLASSES.put("0.20", "org.apache.hadoop.hive.shims.Jetty20Shims");
   }
 
 
