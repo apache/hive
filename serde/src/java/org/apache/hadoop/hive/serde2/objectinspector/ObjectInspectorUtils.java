@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -429,7 +430,8 @@ public class ObjectInspectorUtils {
               Text t2 = (Text)poi2.getPrimitiveWritableObject(o2);
               return t1 == null
                      ? (t2 == null ? 0 : -1)
-                     : (t2 == null ? 1 : t1.compareTo(t2));
+                     : (t2 == null ? 1 : 
+                       ShimLoader.getHadoopShims().compareText(t1, t2));
             } else {
               String s1 = (String)poi1.getPrimitiveJavaObject(o1);
               String s2 = (String)poi2.getPrimitiveJavaObject(o2);

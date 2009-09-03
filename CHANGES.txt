@@ -88,6 +88,9 @@ Trunk -  Unreleased
 
     HIVE-810. add test and annotation for jdbc udf (Edward Capriolo via namit)
 
+    HIVE-812. Hive compiled with ant package works with all supported hadoop versions
+    (Zheng Shao via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

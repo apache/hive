@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.shims;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.dfs.MiniDFSCluster;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobClient;
@@ -76,4 +77,18 @@ public class Hadoop18Shims implements HadoopShims {
       cluster.shutdown();
     }
   }
+
+  /**
+   * We define this function here to make the code compatible between
+   * hadoop 0.17 and hadoop 0.20.
+   *
+   * Hive binary that compiled Text.compareTo(Text) with hadoop 0.20 won't
+   * work with hadoop 0.17 because in hadoop 0.20, Text.compareTo(Text) is
+   * implemented in org.apache.hadoop.io.BinaryComparable, and Java compiler
+   * references that class, which is not available in hadoop 0.17.
+   */
+  public int compareText(Text a, Text b) {
+    return a.compareTo(b);
+  }
+
 }

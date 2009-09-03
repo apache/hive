@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.ql.exec.UDAF;
 import org.apache.hadoop.hive.ql.exec.UDAFEvaluator;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -244,7 +245,7 @@ public class UDAFMin extends UDAF {
         if (mEmpty) {
           mMin = new Text(o);
           mEmpty = false;
-        } else if (mMin.compareTo(o) > 0) {
+        } else if (ShimLoader.getHadoopShims().compareText(mMin, o) > 0) {
           mMin.set(o);
         }
       }
