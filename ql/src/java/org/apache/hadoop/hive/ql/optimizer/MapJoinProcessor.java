@@ -493,7 +493,7 @@ public class MapJoinProcessor implements Transform {
     MapJoinOperator       currMapJoinOp;
 
     /**
-     * @param listMapJoins
+     * @param listMapJoinsNoRed
      */
     public MapJoinWalkerCtx(List<MapJoinOperator> listMapJoinsNoRed) {
       this.listMapJoinsNoRed = listMapJoinsNoRed;
@@ -509,7 +509,7 @@ public class MapJoinProcessor implements Transform {
     }
 
     /**
-     * @param listMapJoins the listMapJoins to set
+     * @param listMapJoinsNoRed the listMapJoins to set
      */
     public void setListMapJoins(List<MapJoinOperator> listMapJoinsNoRed) {
       this.listMapJoinsNoRed = listMapJoinsNoRed;

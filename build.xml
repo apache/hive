@@ -332,7 +332,6 @@
   </target>
 
   <target name="javadoc" depends="package" description="Generate javadoc">
-
     <mkdir dir="${build.javadoc}"/>
     <javadoc
       packagenames="org.apache.hadoop.hive.*"
@@ -344,6 +343,7 @@
       doctitle="${Name} ${version} API"
       bottom="Copyright &amp;copy; ${year} The Apache Software Foundation"
       >
+
       <packageset dir="ant/src"/>
       <packageset dir="hwi/src/java"/>
       <packageset dir="hwi/src/test"/>
@@ -363,6 +363,7 @@
       <packageset dir="cli/src/java"/>
       <packageset dir="ql/src/java"/>
       <packageset dir="${build.dir.hive}/ql/gen-java"/>
+      <packageset dir="shims/src/common/java"/>
 
       <link href="${javadoc.link.java}"/>
 

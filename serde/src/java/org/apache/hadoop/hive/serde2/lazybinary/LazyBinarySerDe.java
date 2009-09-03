@@ -80,7 +80,6 @@ public class LazyBinarySerDe implements SerDe {
   
   /**
    * Initialize the SerDe with configuration and table information
-   * @see SerDe#initialize(Configuration, Properties)
    */
   @Override
   public void initialize(Configuration conf, Properties tbl)
@@ -112,7 +111,6 @@ public class LazyBinarySerDe implements SerDe {
   
   /**
    * Returns the ObjectInspector for the row.
-   * @see Deserializer#getObjectInspector()
    */
   @Override
   public ObjectInspector getObjectInspector() throws SerDeException {
@@ -121,7 +119,6 @@ public class LazyBinarySerDe implements SerDe {
 
   /**
    * Returns the Writable Class after serialization.
-   * @see Serializer#getSerializedClass()
    */
   @Override
   public Class<? extends Writable> getSerializedClass() { 
@@ -133,7 +130,6 @@ public class LazyBinarySerDe implements SerDe {
   
   /**
    * Deserialize a table record to a lazybinary struct.
-   * @see Deserializer#deserialize(Writable)
    */
   @Override
   public Object deserialize(Writable field) throws SerDeException {
@@ -168,7 +164,6 @@ public class LazyBinarySerDe implements SerDe {
 
   /**
    * Serialize an object to a byte buffer in a binary compact way.
-   * @see Serializer#serialize(Object, ObjectInspector)
    */
   @Override
   public Writable serialize(Object obj, ObjectInspector objInspector)
@@ -242,8 +237,6 @@ public class LazyBinarySerDe implements SerDe {
    * @param byteStream      the byte stream storing the serialization data
    * @param obj             the object to serialize
    * @param objInspector    the object inspector
-   * @see LazyBinaryUtils#checkObjectByteInfo(ObjectInspector, byte[], int, LazyBinaryUtils.RecordInfo) for
-   *      how the byte sizes of different object are decoded.  
    */
   private void serialize(Output byteStream,
       Object obj, ObjectInspector objInspector) {

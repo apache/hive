@@ -32,8 +32,8 @@ import org.apache.hadoop.io.LongWritable;
 /**
  * class for computing positive modulo.
  * Used for positive_mod command in Cli
- * @ See {@link org.apache.hadoop.hive.ql.udf.UDFOPMod}
- * @ See {@link org.apache.hadoop.hive.ql.exec.FunctionRegistry}
+ * See {org.apache.hadoop.hive.ql.udf.UDFOPMod}
+ * See {org.apache.hadoop.hive.ql.exec.FunctionRegistry}
  */
 @description(
     name = "pmod",

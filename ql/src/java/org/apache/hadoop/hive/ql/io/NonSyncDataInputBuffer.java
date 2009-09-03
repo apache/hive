@@ -77,9 +77,7 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements DataInp
    * 
    * @throws IOException
    *           If a problem occurs reading from this DataInputStream.
-   * 
-   * @see DataOutput#write(byte[])
-   * @see DataOutput#write(byte[], int, int)
+   *
    */
   @Override
   public final int read(byte[] buffer) throws IOException {
@@ -103,8 +101,6 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements DataInp
    * @throws IOException
    *           If a problem occurs reading from this DataInputStream.
    * 
-   * @see DataOutput#write(byte[])
-   * @see DataOutput#write(byte[], int, int)
    */
   @Override
   public final int read(byte[] buffer, int offset, int length)
@@ -120,7 +116,6 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements DataInp
    * @throws IOException
    *           If a problem occurs reading from this DataInputStream.
    * 
-   * @see DataOutput#writeBoolean(boolean)
    */
   public final boolean readBoolean() throws IOException {
     int temp = in.read();
@@ -138,7 +133,6 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements DataInp
    * @throws IOException
    *           If a problem occurs reading from this DataInputStream.
    * 
-   * @see DataOutput#writeByte(int)
    */
   public final byte readByte() throws IOException {
     int temp = in.read();
@@ -156,7 +150,6 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements DataInp
    * @throws IOException
    *           If a problem occurs reading from this DataInputStream.
    * 
-   * @see DataOutput#writeChar(int)
    */
   private int readToBuff(int count) throws IOException {
     int offset = 0;
@@ -186,7 +179,6 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements DataInp
    * @throws IOException
    *           If a problem occurs reading from this DataInputStream.
    * 
-   * @see DataOutput#writeDouble(double)
    */
   public final double readDouble() throws IOException {
     return Double.longBitsToDouble(readLong());
@@ -200,7 +192,6 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements DataInp
    * @throws IOException
    *           If a problem occurs reading from this DataInputStream.
    * 
-   * @see DataOutput#writeFloat(float)
    */
   public final float readFloat() throws IOException {
     return Float.intBitsToFloat(readInt());
@@ -217,8 +208,6 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements DataInp
    * @throws IOException
    *           If a problem occurs reading from this DataInputStream.
    * 
-   * @see DataOutput#write(byte[])
-   * @see DataOutput#write(byte[], int, int)
    */
   public final void readFully(byte[] buffer) throws IOException {
     readFully(buffer, 0, buffer.length);
@@ -241,7 +230,6 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements DataInp
    * @throws EOFException
    *           if reaches the end of the stream before enough bytes have been
    *           read
-   * @see java.io.DataInput#readFully(byte[], int, int)
    */
   public final void readFully(byte[] buffer, int offset, int length)
       throws IOException {
@@ -276,7 +264,6 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements DataInp
    * @throws IOException
    *           If a problem occurs reading from this DataInputStream.
    * 
-   * @see DataOutput#writeInt(int)
    */
   public final int readInt() throws IOException {
     if (readToBuff(4) < 0) {
@@ -345,7 +332,6 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements DataInp
    * @throws IOException
    *           If a problem occurs reading from this DataInputStream.
    * 
-   * @see DataOutput#writeLong(long)
    */
   public final long readLong() throws IOException {
     if (readToBuff(8) < 0) {
@@ -367,7 +353,6 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements DataInp
    * @throws IOException
    *           If a problem occurs reading from this DataInputStream.
    * 
-   * @see DataOutput#writeShort(int)
    */
   public final short readShort() throws IOException {
     if (readToBuff(2) < 0) {
@@ -385,7 +370,6 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements DataInp
    * @throws IOException
    *           If a problem occurs reading from this DataInputStream.
    * 
-   * @see DataOutput#writeByte(int)
    */
   public final int readUnsignedByte() throws IOException {
     int temp = in.read();
@@ -404,7 +388,6 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements DataInp
    * @throws IOException
    *           If a problem occurs reading from this DataInputStream.
    * 
-   * @see DataOutput#writeShort(int)
    */
   public final int readUnsignedShort() throws IOException {
     if (readToBuff(2) < 0) {
@@ -421,7 +404,6 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements DataInp
    * @throws IOException
    *           If a problem occurs reading from this DataInputStream.
    * 
-   * @see DataOutput#writeUTF(java.lang.String)
    */
   public final String readUTF() throws IOException {
     return decodeUTF(readUnsignedShort());
@@ -449,7 +431,6 @@ public class NonSyncDataInputBuffer extends FilterInputStream implements DataInp
    * @throws IOException
    *           If a problem occurs reading from this DataInputStream.
    * 
-   * @see DataOutput#writeUTF(java.lang.String)
    */
   public static final String readUTF(DataInput in) throws IOException {
     return decodeUTF(in.readUnsignedShort(), in);

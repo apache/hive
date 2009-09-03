@@ -98,7 +98,7 @@ public class HiveServer extends ThriftHive {
     /**
      * Executes a query.
      *
-     * @param query HiveQL query to execute
+     * @param cmd HiveQL query to execute
      */
     public void execute(String cmd) throws HiveServerException, TException {
       HiveServerHandler.LOG.info("Running the query: " + cmd);

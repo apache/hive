@@ -135,7 +135,7 @@ public class mapredWork implements Serializable {
   }
 
   /**
-   * @param mapredLocalWork the mapredLocalWork to set
+   * @param mapLocalWork the mapredLocalWork to set
    */
   public void setMapLocalWork(final mapredLocalWork mapLocalWork) {
     this.mapLocalWork = mapLocalWork;

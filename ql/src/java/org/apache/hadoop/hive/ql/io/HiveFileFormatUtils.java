@@ -41,8 +41,8 @@ import org.apache.hadoop.util.StringUtils;
 
 /**
  * An util class for various Hive file format tasks.
- * {@link #registerOutputFormatSubstitute(Class, Class) and 
- * {@link #getOutputFormatSubstitute(Class)} are added for backward 
+ * registerOutputFormatSubstitute(Class, Class) 
+ * getOutputFormatSubstitute(Class) are added for backward 
  * compatibility. They return the newly added HiveOutputFormat for the older 
  * ones.
  * 

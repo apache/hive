@@ -47,7 +47,6 @@ public class MapJoinObjectValue implements Externalizable {
 
   /**
    * @param metadataTag
-   * @param objectTypeTag
    * @param obj
    */
   public MapJoinObjectValue(int metadataTag, ArrayList<ArrayList<Object>> obj) {

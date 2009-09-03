@@ -143,7 +143,7 @@ public class GenMRProcContext implements NodeProcessorCtx {
     /**
      * @param taskTmpDir
      * @param tt_desc
-     * @param childSelect
+     * @param rootMapJoinOp
      * @param oldMapJoin
      */
     public GenMRMapJoinCtx(String taskTmpDir, tableDesc tt_desc, 

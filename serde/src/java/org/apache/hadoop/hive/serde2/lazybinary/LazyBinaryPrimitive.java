@@ -19,15 +19,15 @@ package org.apache.hadoop.hive.serde2.lazybinary;
 
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Writable;
+
 /**
- * Defines a LazyBianryPrimitive. 
+ * Defines a LazyBinaryPrimitive. 
  * 
- * {@data} will be initialized to corresponding types in 
- * different LazyBinary primitive classes. For example, {@data} will
+ * data will be initialized to corresponding types in 
+ * different LazyBinary primitive classes. For example, data will
  * be a BooleanWritable in the LazyBinaryBoolean class.
  * 
  * There is no null flag any more, 
- * @see {@link LazyBinaryObject#init(ByteArrayRef, int, int)} 
  *
  */
 public abstract class LazyBinaryPrimitive<OI extends ObjectInspector, 

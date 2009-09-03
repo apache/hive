@@ -241,9 +241,7 @@ public class FetchOperator {
 
   /**
    * Get the next row. The fetch context is modified appropriately.
-   * 
-   * @param ctx
-   *          fetch context
+   *
    **/
   public InspectableObject getNextRow() throws IOException {
     try {
@@ -279,8 +277,6 @@ public class FetchOperator {
   /**
    * Clear the context, if anything needs to be done.
    * 
-   * @param ctx
-   *          fetch context
    **/
   public void clearFetchContext() throws HiveException {
     try {

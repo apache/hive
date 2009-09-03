@@ -51,6 +51,8 @@ Trunk -  Unreleased
     HIVE-679. Adding the basic JDBC methods to allow querying using the
     SQuirrelSQL tool. (Bill Graham via rmurthy)
 
+    HIVE-811. Fix Javadocs. (Namit Jain via zshao)
+
   OPTIMIZATIONS
 
   BUG FIXES
