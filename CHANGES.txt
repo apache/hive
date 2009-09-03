@@ -541,6 +541,8 @@ Release 0.4.0 -  Unreleased
 
     HIVE-752. Bug in shimLoader for HWI server (Edward Capriolo via namit)
 
+    HIVE-812. ant package should work with all versions of hadoop (Zheng Shao via namit)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES

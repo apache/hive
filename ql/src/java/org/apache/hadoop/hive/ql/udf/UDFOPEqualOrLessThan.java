@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -48,7 +49,7 @@ public class UDFOPEqualOrLessThan extends UDFBaseCompare {
     if ((a == null) || (b == null)) {
       r = null;
     } else {
-      r.set(a.compareTo(b) <= 0);
+      r.set(ShimLoader.getHadoopShims().compareText(a, b) <= 0);
     }
     // LOG.info("evaluate(" + a + "," + b + ")=" + r);
     return r;
