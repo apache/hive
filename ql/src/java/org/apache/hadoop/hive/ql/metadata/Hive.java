@@ -784,6 +784,7 @@ public class Hive {
     IMetaStoreClient msc = threadLocalMSC.get();
     if(msc == null) {
       msc = this.createMetaStoreClient();
+      threadLocalMSC.set(msc);
     }
     return msc;
   }
