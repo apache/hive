@@ -64,7 +64,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/dest1</string> 
+            <string>file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/dest1</string> 
            </void> 
           </object> 
          </void> 
@@ -92,7 +92,7 @@
                 <void property="conf"> 
                  <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                   <void property="dirName"> 
-                   <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1900414590/10001</string> 
+                   <string>file:/data/users/njain/hive4/hive4/build/ql/tmp/981463087/10001</string> 
                   </void> 
                   <void property="tableInfo"> 
                    <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -128,18 +128,18 @@
                 <void property="counterNames"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <string>CNTR_NAME_FS_736_NUM_INPUT_ROWS</string> 
+                   <string>CNTR_NAME_FS_738_NUM_INPUT_ROWS</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_FS_736_NUM_OUTPUT_ROWS</string> 
+                   <string>CNTR_NAME_FS_738_NUM_OUTPUT_ROWS</string> 
                   </void> 
                   <void method="add"> 
-                   <string>CNTR_NAME_FS_736_TIME_TAKEN</string> 
+                   <string>CNTR_NAME_FS_738_TIME_TAKEN</string> 
                   </void> 
                  </object> 
                 </void> 
                 <void property="operatorId"> 
-                 <string>FS_736</string> 
+                 <string>FS_738</string> 
                 </void> 
                 <void property="parentOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -1234,18 +1234,18 @@
             <void property="counterNames"> 
              <object class="java.util.ArrayList"> 
               <void method="add"> 
-               <string>CNTR_NAME_SEL_735_NUM_INPUT_ROWS</string> 
+               <string>CNTR_NAME_SEL_737_NUM_INPUT_ROWS</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_SEL_735_NUM_OUTPUT_ROWS</string> 
+               <string>CNTR_NAME_SEL_737_NUM_OUTPUT_ROWS</string> 
               </void> 
               <void method="add"> 
-               <string>CNTR_NAME_SEL_735_TIME_TAKEN</string> 
+               <string>CNTR_NAME_SEL_737_TIME_TAKEN</string> 
               </void> 
              </object> 
             </void> 
             <void property="operatorId"> 
-             <string>SEL_735</string> 
+             <string>SEL_737</string> 
             </void> 
             <void property="parentOperators"> 
              <object class="java.util.ArrayList"> 
@@ -1466,13 +1466,13 @@
         <void property="counterNames"> 
          <object class="java.util.ArrayList"> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_734_NUM_INPUT_ROWS</string> 
+           <string>CNTR_NAME_TS_736_NUM_INPUT_ROWS</string> 
           </void> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_734_NUM_OUTPUT_ROWS</string> 
+           <string>CNTR_NAME_TS_736_NUM_OUTPUT_ROWS</string> 
           </void> 
           <void method="add"> 
-           <string>CNTR_NAME_TS_734_TIME_TAKEN</string> 
+           <string>CNTR_NAME_TS_736_TIME_TAKEN</string> 
           </void> 
          </object> 
         </void> 
@@ -1480,7 +1480,7 @@
          <object class="java.util.ArrayList"/> 
         </void> 
         <void property="operatorId"> 
-         <string>TS_734</string> 
+         <string>TS_736</string> 
         </void> 
         <void property="schema"> 
          <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
@@ -1521,7 +1521,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/dest1</string> 
+       <string>file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/dest1</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>dest1</string> 
@@ -1533,7 +1533,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/dest1</string> 
+       <string>file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/dest1</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap0"/> 

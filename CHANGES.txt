@@ -303,6 +303,9 @@ Release 0.4.0 -  Unreleased
     HIVE-737. Support having hadoop jars in HADOOP_HOME/build for running
     hive cli. (Johan Oskarsson via athusoo)
 
+    HIVE-750. New partitionpruner does not work with test mode.
+    (Namit Jain via zshao)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).

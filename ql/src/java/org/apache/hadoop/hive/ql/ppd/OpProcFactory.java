@@ -93,59 +93,10 @@ public class OpProcFactory {
         Object... nodeOutputs) throws SemanticException {
       LOG.info("Processing for " +  nd.getName() + "(" + ((Operator)nd).getIdentifier() + ")");
       OpWalkerInfo owi = (OpWalkerInfo)procCtx;
-      RowResolver inputRR = owi.getRowResolver(nd);
       TableScanOperator tsOp = (TableScanOperator)nd;
       mergeWithChildrenPred(tsOp, owi, null, null, false);
       ExprWalkerInfo pushDownPreds = owi.getPrunedPreds(tsOp);
-
-      if (pushDownPreds == null 
-          || pushDownPreds.getFinalCandidates() == null 
-          || pushDownPreds.getFinalCandidates().size() == 0) {
-        return null;
-      }
-      
-      // combine all predicates into a single expression
-      List<exprNodeDesc> preds = null;
-      exprNodeDesc condn = null; 
-      Iterator<List<exprNodeDesc>> iterator = pushDownPreds.getFinalCandidates().values().iterator();
-      while (iterator.hasNext()) {
-        preds = iterator.next();
-        int i = 0;
-        if(condn == null) {
-          condn = preds.get(0);
-          i++;
-        }
-        for(; i < preds.size(); i++) {
-          List<exprNodeDesc> children = new ArrayList<exprNodeDesc>(2);
-          children.add(condn);
-          children.add((exprNodeDesc) preds.get(i));
-          condn = new exprNodeGenericFuncDesc(
-              TypeInfoFactory.booleanTypeInfo,
-              FunctionRegistry.getGenericUDFForAnd(),
-              children
-              );
-        }
-      }
-      if(condn == null)
-        return null;
-      // add new filter op
-      List<Operator<? extends Serializable>> originalChilren = tsOp.getChildOperators();
-      tsOp.setChildOperators(null);
-      Operator<filterDesc> output = 
-        OperatorFactory.getAndMakeChild(new filterDesc(condn, false),
-                              new RowSchema(inputRR.getColumnInfos()), 
-                              tsOp);
-      output.setChildOperators(originalChilren);
-      for (Operator<? extends Serializable> ch : originalChilren) {
-        List<Operator<? extends Serializable>> parentOperators = ch.getParentOperators();
-        int pos = parentOperators.indexOf(tsOp);
-        assert pos != -1;
-        parentOperators.remove(pos);
-        parentOperators.add(pos, output); // add the new op as the old
-      }
-      OpParseContext ctx = new OpParseContext(inputRR);
-      owi.put(output, ctx);
-      return output;
+      return createFilter(tsOp, pushDownPreds, owi);
     }
 
   }
@@ -163,10 +114,13 @@ public class OpProcFactory {
       OpWalkerInfo owi = (OpWalkerInfo)procCtx;
       Operator<? extends Serializable> op = (Operator<? extends Serializable>) nd;
       exprNodeDesc predicate = (((FilterOperator)nd).getConf()).getPredicate();
-      // get pushdown predicates for this operato's predicate
+      // get pushdown predicates for this operator's predicate
       ExprWalkerInfo ewi = ExprWalkerProcFactory.extractPushdownPreds(owi, op, predicate);
       if (!ewi.isDeterministic()) {
         /* predicate is not deterministic */
+        if (op.getChildren() != null && op.getChildren().size() == 1)
+          createFilter(op, owi.getPrunedPreds((Operator<? extends Serializable>)(op.getChildren().get(0))), owi);
+
         return null;
       }
 
@@ -332,6 +286,62 @@ public class OpProcFactory {
     }
   }
 
+  protected static Object createFilter(Operator op, ExprWalkerInfo pushDownPreds, OpWalkerInfo owi) {
+    if (pushDownPreds == null 
+        || pushDownPreds.getFinalCandidates() == null 
+        || pushDownPreds.getFinalCandidates().size() == 0) {
+      return null;
+    }
+      
+    RowResolver inputRR = owi.getRowResolver(op);
+
+    // combine all predicates into a single expression
+    List<exprNodeDesc> preds = null;
+    exprNodeDesc condn = null; 
+    Iterator<List<exprNodeDesc>> iterator = pushDownPreds.getFinalCandidates().values().iterator();
+    while (iterator.hasNext()) {
+      preds = iterator.next();
+      int i = 0;
+      if (condn == null) {
+        condn = preds.get(0);
+        i++;
+      }
+
+      for(; i < preds.size(); i++) {
+        List<exprNodeDesc> children = new ArrayList<exprNodeDesc>(2);
+        children.add(condn);
+        children.add((exprNodeDesc) preds.get(i));
+        condn = new exprNodeGenericFuncDesc(
+                                            TypeInfoFactory.booleanTypeInfo,
+                                            FunctionRegistry.getGenericUDFForAnd(),
+                                            children
+                                            );
+      }
+    }
+
+    if(condn == null)
+      return null;
+
+    // add new filter op
+    List<Operator<? extends Serializable>> originalChilren = op.getChildOperators();
+    op.setChildOperators(null);
+    Operator<filterDesc> output = 
+      OperatorFactory.getAndMakeChild(new filterDesc(condn, false),
+                                      new RowSchema(inputRR.getColumnInfos()), 
+                                      op);
+    output.setChildOperators(originalChilren);
+    for (Operator<? extends Serializable> ch : originalChilren) {
+      List<Operator<? extends Serializable>> parentOperators = ch.getParentOperators();
+      int pos = parentOperators.indexOf(op);
+      assert pos != -1;
+      parentOperators.remove(pos);
+      parentOperators.add(pos, output); // add the new op as the old
+    }
+    OpParseContext ctx = new OpParseContext(inputRR);
+    owi.put(output, ctx);
+    return output;
+  }
+  
   public static NodeProcessor getFilterProc() {
     return new FilterPPD();
   }
