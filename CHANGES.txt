@@ -53,6 +53,9 @@ Trunk -  Unreleased
 
     HIVE-811. Fix Javadocs. (Namit Jain via zshao)
 
+    HIVE-813. Show the actual exception thrown in UDF evaluation
+    (Zheng Shao via rmurthy)
+
   OPTIMIZATIONS
 
   BUG FIXES
