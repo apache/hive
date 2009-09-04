@@ -31,6 +31,8 @@ Release 0.3.1 - Unreleased
     HIVE-453. Use FileSystem derived from user supplied path when present
     instead of default. (Joydeep Sen Sarma via prasadc)
 
+    HIVE-816. Cache MetastoreClient. (Dave Lerman via zshao)
+
 Release 0.3.0 - 2009-04-20
 
   INCOMPATIBLE CHANGES
