@@ -612,6 +612,9 @@ Release 0.4.0 -  Unreleased
     HIVE-726. Make "ant package -Dhadoop.version=0.17.0" work.
     (Todd Lipcon via zshao)
 
+    HIVE-799. final.name should not include hadoop version.
+    (Todd Lipcon via zshao)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES
