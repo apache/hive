@@ -79,12 +79,12 @@
     <ivy:retrieve pattern="${build.dir.hadoop}/[artifact]-[revision].[ext]"/>
   </target>
 
-  <available property="hadoopcore.${hadoop.version}.install.done" file="${build.dir.hadoop}/hadoop-${hadoop.version}.installed"/>
+  <available property="hadoopcore.${hadoop.version.ant-internal}.install.done" file="${build.dir.hadoop}/hadoop-${hadoop.version.ant-internal}.installed"/>
 
-  <target name="install-hadoopcore-internal" depends="resolve" unless="hadoopcore.${hadoop.version}.install.done">
-    <untar src="${build.dir.hadoop}/hadoop-${hadoop.version}.tar.gz" dest="${build.dir.hadoop}" compression="gzip"/>
+  <target name="install-hadoopcore-internal" depends="resolve" unless="hadoopcore.${hadoop.version.ant-internal}.install.done">
+    <untar src="${build.dir.hadoop}/hadoop-${hadoop.version.ant-internal}.tar.gz" dest="${build.dir.hadoop}" compression="gzip"/>
     <chmod file="${hadoop.root}/bin/hadoop" perm="+x"/>
-    <touch file="${build.dir.hadoop}/hadoop-${hadoop.version}.installed"/>
+    <touch file="${build.dir.hadoop}/hadoop-${hadoop.version.ant-internal}.installed"/>
   </target>
 
   <target name="install-hadoopcore-default" unless="hadoop.root.nondefault">

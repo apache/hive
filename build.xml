@@ -45,7 +45,7 @@
   <property name="images.src" value="${docs.src}/images"/>
   <property name="javadoc.link.java"
             value="http://java.sun.com/javase/6/docs/api/"/>
-  <property name="final.name" value="${name}-${version}-hadoop-${hadoop.version}"/>
+  <property name="final.name" value="${name}-${version}-hadoop-${hadoop.version.ant-internal}"/>
   <property name="dev.final.name" value="${final.name}-dev"/>
   <property name="bin.final.name" value="${final.name}-bin"/>
 
@@ -267,17 +267,17 @@
   <target name="eclipse-files" depends="init"
           description="Generate files for Eclipse">
 
-    <condition property="hadoop.version" value="0.19">
+    <condition property="hadoop.version.ant-internal" value="0.19">
       <not>
-        <isset property="hadoop.version"/>
+        <isset property="hadoop.version.ant-internal"/>
       </not>
     </condition>
-    <echo message="Using hadoop version ${hadoop.version}"/>
+    <echo message="Using hadoop version ${hadoop.version.ant-internal}"/>
 
     <taskdef name="getversionpref" classname="org.apache.hadoop.hive.ant.GetVersionPref"
              classpath="${build.dir.hive}/anttasks/hive_anttasks.jar"/>
 
-    <getversionpref property="hadoop.version.prefix" input="${hadoop.version}"/>
+    <getversionpref property="hadoop.version.ant-internal.prefix" input="${hadoop.version.ant-internal}"/>
 
     <pathconvert property="eclipse.project">
       <path path="${basedir}"/>
@@ -290,8 +290,8 @@
       </fileset>
       <filterset>
         <filter token="PROJECT" value="${eclipse.project}"/>
-        <filter token="HADOOPVER" value="${hadoop.version}"/>
-        <filter token="HADOOPVERPREF" value="${hadoop.version.prefix}"/>
+        <filter token="HADOOPVER" value="${hadoop.version.ant-internal}"/>
+        <filter token="HADOOPVERPREF" value="${hadoop.version.ant-internal.prefix}"/>
       </filterset>
     </copy>
     <move todir="." includeemptydirs="false">
