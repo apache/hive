@@ -35,6 +35,8 @@ Trunk -  Unreleased
 
     HIVE-785. Add RecordWriter for ScriptOperator. (Namit Jain via zshao)
 
+    HIVE-687. Add UDF unhex. (Mihir Kedia via namit)
+
   IMPROVEMENTS
 
     HIVE-760. Add version info to META-INF/MANIFEST.MF.

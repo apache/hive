@@ -1,0 +1,21 @@
+query: -- Good inputs
+
+SELECT
+  unhex('4D7953514C'),
+  unhex('31323637'),
+  unhex('61'),
+  unhex('2D34'),
+  unhex('')
+FROM src limit 1
+Input: default/src
+Output: file:/mnt/vol/devrs002.snc1/mkedia/hive_trunk/build/ql/tmp/1289795595/10000
+MySQL	1267	a	-4	
+query: -- Bad inputs
+SELECT
+  unhex('MySQL'),
+  unhex('G123'),
+  unhex('\0')
+FROM src limit 1
+Input: default/src
+Output: file:/mnt/vol/devrs002.snc1/mkedia/hive_trunk/build/ql/tmp/328234582/10000
+NULL	NULL	NULL

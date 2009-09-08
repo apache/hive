@@ -94,6 +94,7 @@ public class FunctionRegistry {
     registerUDF("conv", UDFConv.class, false);
     registerUDF("bin", UDFBin.class, false);
     registerUDF("hex", UDFHex.class, false);
+    registerUDF("unhex", UDFUnhex.class, false);
     
     registerUDF("upper", UDFUpper.class, false);
     registerUDF("lower", UDFLower.class, false);

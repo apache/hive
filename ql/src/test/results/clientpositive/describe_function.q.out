@@ -60,6 +60,8 @@ query: DESCRIBE FUNCTION bin
 bin(n) - returns n in binary
 query: DESCRIBE FUNCTION hex
 hex(n or str) - Convert the argument to hexadecimal 
+query: DESCRIBE FUNCTION unhex
+unhex(str) - Converts hexadecimal argument to string
 query: DESCRIBE FUNCTION upper
 upper(str) - Returns str with all characters changed to uppercase
 query: DESCRIBE FUNCTION lower
@@ -343,6 +345,25 @@ Example:
   'H1'
   > SELECT hex('Facebook') FROM src LIMIT 1;
   '46616365626F6F6B'
+query: DESCRIBE FUNCTION EXTENDED unhex
+unhex(str) - Converts hexadecimal argument to string
+Performs the inverse operation of HEX(str). That is, it interprets
+each pair of hexadecimal digits in the argument as a number and
+converts it to the character represented by the number. The
+resulting characters are returned as a binary string.
+
+Example:
+> SELECT UNHEX('4D7953514C') from src limit 1;
+'MySQL'
+> SELECT UNHEX(HEX('string')) from src limit 1;
+'string'
+> SELECT HEX(UNHEX('1267')) from src limit 1;
+'1267'
+
+The characters in the argument string must be legal hexadecimal
+digits: '0' .. '9', 'A' .. 'F', 'a' .. 'f'. If UNHEX() encounters
+any nonhexadecimal digits in the argument, it returns NULL. Also,
+if there are an odd number of characters a leading 0 is appended.
 query: DESCRIBE FUNCTION EXTENDED upper
 upper(str) - Returns str with all characters changed to uppercase
 Example:

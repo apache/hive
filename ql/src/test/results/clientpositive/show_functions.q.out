@@ -103,6 +103,7 @@ tinyint
 to_date
 trim
 ucase
+unhex
 unix_timestamp
 upper
 var_pop
