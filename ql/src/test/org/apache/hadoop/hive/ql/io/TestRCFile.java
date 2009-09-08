@@ -175,7 +175,7 @@ public class TestRCFile extends TestCase {
       StructObjectInspector oi = (StructObjectInspector) serDe
           .getObjectInspector();
       List<? extends StructField> fieldRefs = oi.getAllStructFieldRefs();
-      assertEquals(8, fieldRefs.size());
+      assertEquals("Field size should be 8", 8, fieldRefs.size());
       for (int j = 0; j < fieldRefs.size(); j++) {
         Object fieldData = oi.getStructFieldData(row, fieldRefs.get(j));
         Object standardWritableData = ObjectInspectorUtils.copyToStandardObject(fieldData, 
@@ -301,7 +301,7 @@ public class TestRCFile extends TestCase {
       StructObjectInspector oi = (StructObjectInspector) serDe
           .getObjectInspector();
       List<? extends StructField> fieldRefs = oi.getAllStructFieldRefs();
-      assertEquals(8, fieldRefs.size());
+      assertEquals("Field size should be 8", 8, fieldRefs.size());
       for (int i = 0; i < fieldRefs.size(); i++) {
         Object fieldData = oi.getStructFieldData(row, fieldRefs.get(i));
         Object standardWritableData = ObjectInspectorUtils.copyToStandardObject(fieldData, 
@@ -309,7 +309,7 @@ public class TestRCFile extends TestCase {
         assertEquals("Field " + i, standardWritableData, expectedFieldsData[i]);
       }
       // Serialize
-      assertEquals(BytesRefArrayWritable.class, serDe.getSerializedClass());
+      assertEquals("Class of the serialized object should be BytesRefArrayWritable", BytesRefArrayWritable.class, serDe.getSerializedClass());
       BytesRefArrayWritable serializedText = (BytesRefArrayWritable) serDe
           .serialize(row, oi);
       assertEquals("Serialized data", s, serializedText);
@@ -334,6 +334,7 @@ public class TestRCFile extends TestCase {
 
     LongWritable rowID = new LongWritable();
     BytesRefArrayWritable cols = new BytesRefArrayWritable();
+    
     while (reader.next(rowID)) {
       reader.getCurrentRow(cols);
       Object row = serDe.deserialize(cols);
@@ -341,16 +342,16 @@ public class TestRCFile extends TestCase {
       StructObjectInspector oi = (StructObjectInspector) serDe
           .getObjectInspector();
       List<? extends StructField> fieldRefs = oi.getAllStructFieldRefs();
-      assertEquals(8, fieldRefs.size());
+      assertEquals("Field size should be 8", 8, fieldRefs.size());
 
-      for (int i = 0; i < fieldRefs.size(); i++) {
+      for (int i : readCols) {
         Object fieldData = oi.getStructFieldData(row, fieldRefs.get(i));
         Object standardWritableData = ObjectInspectorUtils.copyToStandardObject(fieldData, 
             fieldRefs.get(i).getFieldObjectInspector(), ObjectInspectorCopyOption.WRITABLE);
         assertEquals("Field " + i, standardWritableData, expectedPartitalFieldsData[i]);
       }
 
-      assertEquals(BytesRefArrayWritable.class, serDe.getSerializedClass());
+      assertEquals("Class of the serialized object should be BytesRefArrayWritable", BytesRefArrayWritable.class, serDe.getSerializedClass());
       BytesRefArrayWritable serializedBytes = (BytesRefArrayWritable) serDe
           .serialize(row, oi);
       assertEquals("Serialized data", patialS, serializedBytes);

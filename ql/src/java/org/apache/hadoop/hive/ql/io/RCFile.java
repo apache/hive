@@ -863,6 +863,8 @@ public class RCFile {
 
     private Decompressor keyDecompressor;
     NonSyncDataOutputBuffer keyDecompressedData = new NonSyncDataOutputBuffer();
+    
+    int[] prjColIDs = null; // selected column IDs
 
     /** Create a new RCFile reader. */
     public Reader(FileSystem fs, Path file, Configuration conf)
@@ -900,6 +902,9 @@ public class RCFile {
             skippedColIDs[read] = false;
         }
       } else {
+        // TODO: if no column name is specified e.g, in select count(1) from tt;
+        // skip all columns, this should be distinguished from the case:
+        // select * from tt;
         for (int i = 0; i < skippedColIDs.length; i++) {
           skippedColIDs[i] = false;
         }
@@ -910,6 +915,14 @@ public class RCFile {
         for (int i = 0; i < skippedColIDs.length; i++) {
           if (skippedColIDs[i])
             loadColumnNum -= 1;
+        }
+      }
+
+      // get list of selected column IDs
+      prjColIDs = new int[loadColumnNum];
+      for ( int i = 0, j = 0; i < columnNumber; ++i ) {
+        if (!skippedColIDs[i]) {
+          prjColIDs[j++] = i;
         }
       }
 
@@ -1128,9 +1141,8 @@ public class RCFile {
       readRowsIndexInBuffer = 0;
       recordsNumInValBuffer = currentKey.numberRows;
 
-      for (int i = 0; i < columnNumber; i++) {
-        if (skippedColIDs[i])
-          continue;
+      for (int j = 0; j < prjColIDs.length; j++) {
+        int i = prjColIDs[j];
         colValLenBufferReadIn[i].reset(currentKey.allCellValLenBuffer[i]
             .getData(), currentKey.allCellValLenBuffer[i].getLength());
         columnRowReadIndex[i] = 0;
@@ -1258,29 +1270,23 @@ public class RCFile {
 
       if (!currentValue.inited) {
         currentValueBuffer();
+        ret.resetValid(columnNumber); // do this only when not intialized 
       }
 
       // we do not use BytesWritable here to avoid the byte-copy from
       // DataOutputStream to BytesWritable
 
-      ret.resetValid(columnNumber);
+      for (int j = 0; j < prjColIDs.length; ++j) {
+        int i = prjColIDs[j];
 
-      for (int i = 0, readIndex = 0; i < columnNumber; i++) {
         BytesRefWritable ref = ret.unCheckedGet(i);
-
-        if (skippedColIDs[i]) {
-          if (ref != BytesRefWritable.ZeroBytesRefWritable)
-            ret.set(i, BytesRefWritable.ZeroBytesRefWritable);
-          continue;
-        }
 
         int columnCurrentRowStart = (int) columnRowReadIndex[i];
         int length = (int) WritableUtils.readVLong(colValLenBufferReadIn[i]);
         columnRowReadIndex[i] = columnCurrentRowStart + length;
 
-        ref.set(currentValue.loadedColumnsValueBuffer[readIndex].getData(),
+        ref.set(currentValue.loadedColumnsValueBuffer[j].getData(),
             columnCurrentRowStart, length);
-        readIndex++;
       }
       rowFetched = true;
     }

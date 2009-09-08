@@ -56,6 +56,9 @@ Trunk -  Unreleased
     HIVE-813. Show the actual exception thrown in UDF evaluation
     (Zheng Shao via rmurthy)
 
+    HIVE-756. Performance improvement for RCFile and ColumnarSerDe in Hive.
+    (Ning Zhang via zshao)
+
   OPTIMIZATIONS
 
   BUG FIXES
