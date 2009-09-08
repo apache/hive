@@ -35,8 +35,8 @@ to call at top-level: ant deploy-contrib compile-core-test
   </path>
 
   <target name="build_shims" description="Build shims against a particular hadoop version" depends="install-hadoopcore-internal, resolve">
-    <getversionpref property="hadoop.version.prefix" input="${hadoop.version}" />
-    <echo message="Compiling shims against hadoop ${hadoop.version}"/>
+    <getversionpref property="hadoop.version.ant-internal.prefix" input="${hadoop.version.ant-internal}" />
+    <echo message="Compiling shims against hadoop ${hadoop.version.ant-internal} (${hadoop.root})"/>
     <javac
      encoding="${build.encoding}"
      includes="**/*.java"
@@ -45,23 +45,23 @@ to call at top-level: ant deploy-contrib compile-core-test
      deprecation="${javac.deprecation}">
       <compilerarg line="${javac.args} ${javac.args.warnings}" />
       <classpath refid="classpath"/>
-      <src path="${basedir}/src/${hadoop.version.prefix}/java" />
+      <src path="${basedir}/src/${hadoop.version.ant-internal.prefix}/java" />
       <src path="${basedir}/src/common/java" />
     </javac>
   </target>
 
-  <target name="compile" depends="init, install-hadoopcore, setup">
+  <target name="compile" depends="init">
     <antcall target="build_shims" inheritRefs="false" inheritAll="false">
-      <param name="hadoop.version" value="0.17.2.1" />
+      <param name="hadoop.version.ant-internal" value="0.17.2.1" />
     </antcall>
     <antcall target="build_shims" inheritRefs="false" inheritAll="false">
-      <param name="hadoop.version" value="0.18.3" />
+      <param name="hadoop.version.ant-internal" value="0.18.3" />
     </antcall>
     <antcall target="build_shims" inheritRefs="false" inheritAll="false">
-      <param name="hadoop.version" value="0.19.0" />
+      <param name="hadoop.version.ant-internal" value="0.19.0" />
     </antcall>
     <antcall target="build_shims" inheritRefs="false" inheritAll="false">
-      <param name="hadoop.version" value="0.20.0" />
+      <param name="hadoop.version.ant-internal" value="0.20.0" />
     </antcall>
   </target>
 
