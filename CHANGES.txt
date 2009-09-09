@@ -223,6 +223,9 @@ Release 0.4.0 -  Unreleased
     HIVE-679. Adding the basic JDBC methods to allow querying using the
     SQuirrelSQL tool. (Bill Graham via rmurthy)
 
+    HIVE-813. Show the actual exception thrown in UDF evaluation.
+    (Zheng Shao via rmurthy)
+
   OPTIMIZATIONS
 
     HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).
