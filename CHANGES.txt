@@ -37,6 +37,8 @@ Trunk -  Unreleased
 
     HIVE-687. Add UDF unhex. (Mihir Kedia via namit)
 
+    HIVE-591. Add Unique Join. (Emil Ibrishimov via namit)
+
   IMPROVEMENTS
 
     HIVE-760. Add version info to META-INF/MANIFEST.MF.

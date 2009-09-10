@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,6 +39,7 @@ import java.lang.ClassNotFoundException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -412,7 +414,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if ((node.getToken().getType() == HiveParser.TOK_JOIN) ||
         (node.getToken().getType() == HiveParser.TOK_LEFTOUTERJOIN) ||
         (node.getToken().getType() == HiveParser.TOK_RIGHTOUTERJOIN) ||
-        (node.getToken().getType() == HiveParser.TOK_FULLOUTERJOIN))
+        (node.getToken().getType() == HiveParser.TOK_FULLOUTERJOIN) ||
+        (node.getToken().getType() == HiveParser.TOK_UNIQUEJOIN))
       return true;
 
     return false;
@@ -421,7 +424,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   @SuppressWarnings("nls")
   private void processJoin(QB qb, ASTNode join) throws SemanticException {
     int numChildren = join.getChildCount();
-    if ((numChildren != 2) && (numChildren != 3))
+    if ((numChildren != 2) && (numChildren != 3)
+        && join.getToken().getType() != HiveParser.TOK_UNIQUEJOIN)
       throw new SemanticException("Join with multiple children");
 
     for (int num = 0; num < numChildren; num++) {
@@ -3265,6 +3269,92 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return cols;
   }
   
+  private QBJoinTree genUniqueJoinTree(QB qb, ASTNode joinParseTree)
+  throws SemanticException {
+    QBJoinTree joinTree = new QBJoinTree();
+    joinTree.setNoOuterJoin(false);
+    
+    joinTree.setExpressions(new Vector<Vector<ASTNode>>());
+    joinTree.setFilters(new Vector<Vector<ASTNode>>());
+    
+    // Create joinTree structures to fill them up later
+    Vector<String> rightAliases = new Vector<String>();
+    Vector<String> leftAliases  = new Vector<String>();
+    Vector<String> baseSrc      = new Vector<String>();
+    Vector<Boolean> preserved   = new Vector<Boolean>();
+
+    boolean lastPreserved = false;
+    int cols = -1;
+    
+    for(int i = 0; i < joinParseTree.getChildCount(); i++) { 
+      ASTNode child = (ASTNode) joinParseTree.getChild(i);
+      
+      switch(child.getToken().getType()) {
+        case HiveParser.TOK_TABREF:
+          // Handle a table - populate aliases appropriately:
+          // leftAliases should contain the first table, rightAliases should
+          // contain all other tables and baseSrc should contain all tables
+          
+          String table_name = unescapeIdentifier(child.getChild(0).getText());
+          String alias = child.getChildCount() == 1 ? table_name : 
+            unescapeIdentifier(child.getChild(child.getChildCount()-1).getText().toLowerCase());
+          
+          if (i == 0) {
+            leftAliases.add(alias);
+            joinTree.setLeftAlias(alias);
+          } else {
+            rightAliases.add(alias);
+          }
+          baseSrc.add(alias);
+          
+          preserved.add(lastPreserved);
+          lastPreserved = false;
+          break;
+          
+        case HiveParser.TOK_EXPLIST:
+          if (cols == -1 && child.getChildCount() != 0) {
+            cols = child.getChildCount();
+          } else if(child.getChildCount() != cols) {
+            throw new SemanticException("Tables with different or invalid " +
+            		"number of keys in UNIQUEJOIN");
+          }
+          
+          Vector<ASTNode> expressions = new Vector<ASTNode>();
+          Vector<ASTNode> filt = new Vector<ASTNode>();
+
+          for (Node exp: child.getChildren()) {
+            expressions.add((ASTNode)exp);
+          }
+          
+          joinTree.getExpressions().add(expressions);
+          joinTree.getFilters().add(filt);
+          break;
+          
+        case HiveParser.KW_PRESERVE:
+          lastPreserved = true;
+          break;
+          
+        case HiveParser.TOK_SUBQUERY:
+          throw new SemanticException("Subqueries are not supported in UNIQUEJOIN");
+          
+        default:
+          throw new SemanticException("Unexpected UNIQUEJOIN structure");
+      }
+    }
+    
+    joinTree.setBaseSrc(baseSrc.toArray(new String[0]));
+    joinTree.setLeftAliases(leftAliases.toArray(new String[0]));
+    joinTree.setRightAliases(rightAliases.toArray(new String[0]));
+    
+    joinCond[] condn = new joinCond[preserved.size()];
+    for (int i = 0; i < condn.length; i++) {
+      condn[i] = new joinCond(preserved.get(i));
+    }
+    joinTree.setJoinCond(condn);
+    
+    return joinTree;
+  }
+  
   private QBJoinTree genJoinTree(QB qb, ASTNode joinParseTree)
       throws SemanticException {
     QBJoinTree joinTree = new QBJoinTree();
@@ -4188,10 +4278,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // process join
     if (qb.getParseInfo().getJoinExpr() != null) {
       ASTNode joinExpr = qb.getParseInfo().getJoinExpr();
-      QBJoinTree joinTree = genJoinTree(qb, joinExpr);
-      qb.setQbJoinTree(joinTree);
-      mergeJoinTree(qb);
 
+      if (joinExpr.getToken().getType() == HiveParser.TOK_UNIQUEJOIN) {
+        QBJoinTree joinTree = genUniqueJoinTree(qb, joinExpr);
+        qb.setQbJoinTree(joinTree);
+      } else {
+        QBJoinTree joinTree = genJoinTree(qb, joinExpr);
+        qb.setQbJoinTree(joinTree);
+        mergeJoinTree(qb);
+      }
+      
       // if any filters are present in the join tree, push them on top of the table
       pushJoinFilters(qb, qb.getQbJoinTree(), aliasToOpInfo);
       srcOpInfo = genJoinPlan(qb, aliasToOpInfo);

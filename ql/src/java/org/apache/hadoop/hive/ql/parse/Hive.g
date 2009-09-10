@@ -65,6 +65,7 @@ TOK_JOIN;
 TOK_LEFTOUTERJOIN;
 TOK_RIGHTOUTERJOIN;
 TOK_FULLOUTERJOIN;
+TOK_UNIQUEJOIN;
 TOK_LOAD;
 TOK_NULL;
 TOK_ISNULL;
@@ -833,10 +834,27 @@ fromClause
 joinSource
 @init { msgs.push("join source"); }
 @after { msgs.pop(); }
-    :
-    fromSource
-    ( joinToken^ fromSource (KW_ON! expression)? )*
+    : fromSource ( joinToken^ fromSource (KW_ON! expression)? )*
+    | uniqueJoinToken^ uniqueJoinSource (COMMA! uniqueJoinSource)+
     ;
+
+uniqueJoinSource
+@init { msgs.push("join source"); }
+@after { msgs.pop(); }
+    : KW_PRESERVE? fromSource uniqueJoinExpr 
+    ;
+
+uniqueJoinExpr
+@init { msgs.push("unique join expression list"); }
+@after { msgs.pop(); }
+    : LPAREN e1+=expression (COMMA e1+=expression)* RPAREN 
+      -> ^(TOK_EXPLIST $e1*)
+    ;
+
+uniqueJoinToken
+@init { msgs.push("unique join"); }
+@after { msgs.pop(); }
+    : KW_UNIQUEJOIN -> TOK_UNIQUEJOIN;
 
 joinToken
 @init { msgs.push("join type specifier"); }
@@ -1246,6 +1264,8 @@ KW_DISTINCT : 'DISTINCT';
 KW_INSERT : 'INSERT';
 KW_OVERWRITE : 'OVERWRITE';
 KW_OUTER : 'OUTER';
+KW_UNIQUEJOIN : 'UNIQUEJOIN';
+KW_PRESERVE : 'PRESERVE';
 KW_JOIN : 'JOIN';
 KW_LEFT : 'LEFT';
 KW_RIGHT : 'RIGHT';

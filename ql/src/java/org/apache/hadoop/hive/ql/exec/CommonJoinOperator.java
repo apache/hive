@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -542,23 +543,77 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
     checkAndGenObject();
   }
 
-  protected void checkAndGenObject() throws HiveException {
-    // does any result need to be emitted
-    for (int i = 0; i < numAliases; i++) {
-      Byte alias = order[i];
-      if (storage.get(alias).iterator().hasNext() == false) {
-        if (noOuterJoin) {
-          LOG.trace("No data for alias=" + i);
-          return;
-        } else {
-          storage.put(alias, dummyObjVectors[i]);
+  private void genUniqueJoinObject(int aliasNum, IntermediateObject intObj)
+               throws HiveException {
+    if (aliasNum == numAliases) {
+      int p = 0;
+      for (int i = 0; i < numAliases; i++) {
+        int sz = joinValues.get(order[i]).size();
+        ArrayList<Object> obj = intObj.getObjs()[i];
+        for (int j = 0; j < sz; j++) {
+          forwardCache[p++] = obj.get(j);
         }
       }
+      
+      forward(forwardCache, outputObjInspector);
+      return;
     }
+    
+    Iterator<ArrayList<Object>> alias = storage.get(order[aliasNum]).iterator();
+    while (alias.hasNext()) {
+      intObj.pushObj(alias.next());
+      genUniqueJoinObject(aliasNum+1, intObj);
+      intObj.popObj();
+    }
+  }
+  
+  protected void checkAndGenObject() throws HiveException {
+    if (condn[0].getType() == joinDesc.UNIQUE_JOIN) {
+      IntermediateObject intObj = 
+                          new IntermediateObject(new ArrayList[numAliases], 0);
+      
+      // Check if results need to be emitted.
+      // Results only need to be emitted if there is a non-null entry in a table
+      // that is preserved or if there are no non-null entries
+      boolean preserve = false; // Will be true if there is a non-null entry
+                                // in a preserved table
+      boolean hasNulls = false; // Will be true if there are null entries
+      for (int i = 0; i < numAliases; i++) {
+        Byte alias = order[i];
+        Iterator<ArrayList<Object>> aliasRes = storage.get(alias).iterator();
+        if (aliasRes.hasNext() == false) {
+          storage.put(alias, dummyObjVectors[i]);
+          hasNulls = true;
+        } else if(condn[i].getPreserved()) {
+          preserve = true;
+        }
+      }
+      
+      if (hasNulls && !preserve) {
+        return;
+      }
 
-    LOG.trace("calling genObject");
-    genObject(null, 0, new IntermediateObject(new ArrayList[numAliases], 0), true);
-    LOG.trace("called genObject");
+      LOG.trace("calling genUniqueJoinObject");
+      genUniqueJoinObject(0, new IntermediateObject(new ArrayList[numAliases], 0));
+      LOG.trace("called genUniqueJoinObject");
+    } else {
+      // does any result need to be emitted
+      for (int i = 0; i < numAliases; i++) {
+        Byte alias = order[i];
+        if (storage.get(alias).iterator().hasNext() == false) {
+          if (noOuterJoin) {
+            LOG.trace("No data for alias=" + i);
+            return;
+          } else {
+            storage.put(alias, dummyObjVectors[i]);
+          }
+        }
+      }
+      
+      LOG.trace("calling genObject");
+      genObject(null, 0, new IntermediateObject(new ArrayList[numAliases], 0), true);
+      LOG.trace("called genObject");
+    }
   }
 
   /**

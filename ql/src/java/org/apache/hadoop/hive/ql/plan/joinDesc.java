@@ -41,6 +41,7 @@ public class joinDesc implements Serializable {
   public static final int LEFT_OUTER_JOIN = 1;
   public static final int RIGHT_OUTER_JOIN = 2;
   public static final int FULL_OUTER_JOIN = 3;
+  public static final int UNIQUE_JOIN = 4;
 
   // alias to key mapping
   private Map<Byte, List<exprNodeDesc>> exprs;

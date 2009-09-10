@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import java.util.Vector;
 
 /**
  * Join conditions Descriptor implementation.
@@ -29,6 +30,7 @@ public class joinCond implements Serializable {
   private int left;
   private int right;
   private int type;
+  private boolean preserved;
 
   public joinCond() {}
 
@@ -39,8 +41,9 @@ public class joinCond implements Serializable {
   }
 
   public joinCond(org.apache.hadoop.hive.ql.parse.joinCond condn) {
-    this.left     = condn.getLeft();
-    this.right    = condn.getRight();
+    this.left       = condn.getLeft();
+    this.right      = condn.getRight();
+    this.preserved  = condn.getPreserved();
     org.apache.hadoop.hive.ql.parse.joinType itype = condn.getJoinType();
     if (itype == org.apache.hadoop.hive.ql.parse.joinType.INNER)
       this.type = joinDesc.INNER_JOIN;
@@ -50,8 +53,24 @@ public class joinCond implements Serializable {
       this.type = joinDesc.RIGHT_OUTER_JOIN;
     else if (itype == org.apache.hadoop.hive.ql.parse.joinType.FULLOUTER)
       this.type = joinDesc.FULL_OUTER_JOIN;
+    else if (itype == org.apache.hadoop.hive.ql.parse.joinType.UNIQUE)
+      this.type = joinDesc.UNIQUE_JOIN;
     else
       assert false;
+  }
+  
+  /**
+   * @return true if table is preserved, false otherwise
+   */
+  public boolean getPreserved() {
+    return this.preserved;
+  }
+  
+  /**
+   * @param preserved if table is preserved, false otherwise
+   */
+  public void setPreserved(final boolean preserved) {
+    this.preserved = preserved;
   }
   
   public int getLeft() {
@@ -94,6 +113,9 @@ public class joinCond implements Serializable {
       break;
     case joinDesc.RIGHT_OUTER_JOIN:
       sb.append("Right Outer Join");
+      break;
+    case joinDesc.UNIQUE_JOIN:
+      sb.append("Unique Join");
       break;
     default:
       sb.append("Unknow Join");
