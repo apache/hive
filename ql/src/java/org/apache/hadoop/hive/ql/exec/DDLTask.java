@@ -26,6 +26,7 @@ import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,7 @@ import java.util.Map.Entry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -63,6 +65,7 @@ import org.apache.hadoop.hive.ql.plan.descTableDesc;
 import org.apache.hadoop.hive.ql.plan.dropTableDesc;
 import org.apache.hadoop.hive.ql.plan.showFunctionsDesc;
 import org.apache.hadoop.hive.ql.plan.showPartitionsDesc;
+import org.apache.hadoop.hive.ql.plan.showTableStatusDesc;
 import org.apache.hadoop.hive.ql.plan.showTablesDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
@@ -74,6 +77,7 @@ import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.hive.ql.QueryPlan;
 
@@ -148,6 +152,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       showTablesDesc showTbls = work.getShowTblsDesc();
       if (showTbls != null) {
         return showTables(db, showTbls);
+      }
+      
+      showTableStatusDesc showTblStatus = work.getShowTblStatusDesc();
+      if (showTblStatus != null) {
+        return showTableStatus(db, showTblStatus);
       }
 
       showFunctionsDesc showFuncs = work.getShowFuncsDesc();
@@ -482,7 +491,111 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       throw new HiveException(e.toString());
     }
     return 0;
-  }  
+  }
+  
+  
+  /**
+   * Write the status of tables to a file.
+   * 
+   * @param db  The database in question.
+   * @param showTblStatus tables we are interested in
+   * @return Return 0 when execution succeeds and above 0 if it fails.
+   */
+  private int showTableStatus(Hive db, showTableStatusDesc showTblStatus)
+      throws HiveException {
+    // get the tables for the desired pattenn - populate the output stream
+    List<Table> tbls = new ArrayList<Table>();
+    HashMap<String, String> part = showTblStatus.getPartSpec();
+    Partition par = null;
+    if (part != null) {
+      Table tbl = db.getTable(showTblStatus.getDbName(), showTblStatus
+          .getPattern());
+      par = db.getPartition(tbl, part, false);
+      tbls.add(tbl);
+    } else {
+      LOG.info("pattern: " + showTblStatus.getPattern());
+      List<String> tblStr = db.getTablesForDb(showTblStatus.getDbName(),
+          showTblStatus.getPattern());
+      SortedSet<String> sortedTbls = new TreeSet<String>(tblStr);
+      Iterator<String> iterTbls = sortedTbls.iterator();
+      while (iterTbls.hasNext()) {
+        // create a row per table name
+        String tblName = iterTbls.next();
+        Table tbl = db.getTable(showTblStatus.getDbName(), tblName);
+        tbls.add(tbl);
+      }
+      LOG.info("results : " + tblStr.size());
+    }
+
+    // write the results in the file
+    try {
+      FileSystem fs = showTblStatus.getResFile().getFileSystem(conf);
+      DataOutput outStream = (DataOutput) fs.create(showTblStatus.getResFile());
+
+      Iterator<Table> iterTables = tbls.iterator();
+      while (iterTables.hasNext()) {
+        // create a row per table name
+        Table tbl = iterTables.next();
+        String tableName = tbl.getName();
+        String tblLoc = tbl.getDataLocation().toString();
+        String inputFormattCls = tbl.getInputFormatClass().getName();
+        String outputFormattCls = tbl.getOutputFormatClass().getName();
+        String owner = tbl.getOwner();
+        List<FieldSchema> cols = tbl.getCols();
+        String ddlCols = MetaStoreUtils.getDDLFromFieldSchema("columns", cols);
+        boolean isPartitioned = tbl.isPartitioned();
+        String partitionCols = "";
+        if (isPartitioned)
+          partitionCols = MetaStoreUtils.getDDLFromFieldSchema(
+              "partition_columns", tbl.getPartCols());
+
+        outStream.writeBytes("tableName:" + tableName);
+        outStream.write(terminator);
+        outStream.writeBytes("owner:" + owner);
+        outStream.write(terminator);
+        outStream.writeBytes("location:" + tblLoc);
+        outStream.write(terminator);
+        outStream.writeBytes("inputformat:" + inputFormattCls);
+        outStream.write(terminator);
+        outStream.writeBytes("outputformat:" + outputFormattCls);
+        outStream.write(terminator);
+        outStream.writeBytes("columns:" + ddlCols);
+        outStream.write(terminator);
+        outStream.writeBytes("partitioned:" + isPartitioned);
+        outStream.write(terminator);
+        outStream.writeBytes("partitionColumns:" + partitionCols);
+        outStream.write(terminator);
+        // output file system information
+        Path tablLoc = tbl.getPath();
+        List<Path> locations = new ArrayList<Path>();
+        if (isPartitioned) {
+          if (par == null) {
+            List<Partition> parts = db.getPartitions(tbl);
+            for (Partition curPart : parts)
+              locations.add(new Path(curPart.getTPartition().getSd()
+                  .getLocation()));
+          } else {
+            locations.add(new Path(par.getTPartition().getSd().getLocation()));
+          }
+        } else {
+          locations.add(tablLoc);
+        }
+        writeFileSystemStats(outStream, locations, tablLoc, false, 0);
+
+        outStream.write(terminator);
+      }
+      ((FSDataOutputStream) outStream).close();
+    } catch (FileNotFoundException e) {
+      LOG.info("show table status: " + StringUtils.stringifyException(e));
+      return 1;
+    } catch (IOException e) {
+      LOG.info("show table status: " + StringUtils.stringifyException(e));
+      return 1;
+    } catch (Exception e) {
+      throw new HiveException(e.toString());
+    }
+    return 0;
+  }
   
   /**
    * Write the description of a table to a file.
@@ -611,6 +724,112 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     return 0;
   }
+  
+  private void writeFileSystemStats(DataOutput outStream, List<Path> locations,
+      Path tabLoc, boolean partSpecified, int indent) throws IOException {
+    long totalFileSize = 0;
+    long maxFileSize = 0;
+    long minFileSize = Long.MAX_VALUE;
+    long lastAccessTime = 0;
+    long lastUpdateTime = 0;
+    int numOfFiles = 0;
+
+    boolean unknown = false;
+    FileSystem fs = tabLoc.getFileSystem(conf);
+    // in case all files in locations do not exist
+    try {
+      FileStatus tmpStatus = fs.getFileStatus(tabLoc);
+      lastAccessTime = ShimLoader.getHadoopShims().getAccessTime(tmpStatus);
+      lastUpdateTime = tmpStatus.getModificationTime();
+      if (partSpecified) {
+        // check whether the part exists or not in fs
+        tmpStatus = fs.getFileStatus(locations.get(0));
+      }
+    } catch (IOException e) {
+      LOG.warn("Cannot access File System. File System status will be unknown: ", e);
+      unknown = true;
+    }
+    
+    if (!unknown) {
+      for (Path loc : locations) {
+        try {
+          FileStatus status = fs.getFileStatus(tabLoc);
+          FileStatus[] files = fs.listStatus(loc);
+          long accessTime = ShimLoader.getHadoopShims().getAccessTime(status);
+          long updateTime = status.getModificationTime();
+          // no matter loc is the table location or part location, it must be a
+          // directory.
+          if (!status.isDir())
+            continue;
+          if (accessTime > lastAccessTime)
+            lastAccessTime = accessTime;
+          if (updateTime > lastUpdateTime)
+            lastUpdateTime = updateTime;
+          for (FileStatus currentStatus : files) {
+            if (currentStatus.isDir())
+              continue;
+            numOfFiles++;
+            long fileLen = currentStatus.getLen();
+            totalFileSize += fileLen;
+            if (fileLen > maxFileSize)
+              maxFileSize = fileLen;
+            if (fileLen < minFileSize)
+              minFileSize = fileLen;
+            accessTime = ShimLoader.getHadoopShims().getAccessTime(currentStatus);
+            updateTime = currentStatus.getModificationTime();
+            if (accessTime > lastAccessTime)
+              lastAccessTime = accessTime;
+            if (updateTime > lastUpdateTime)
+              lastUpdateTime = updateTime;
+          }
+        } catch (IOException e) {
+          // ignore
+        }
+      }
+    }
+    String unknownString = "unknown";
+    
+    for (int k = 0; k < indent; k++)
+      outStream.writeBytes(Utilities.INDENT);
+    outStream.writeBytes("totalNumberFiles:");
+    outStream.writeBytes(unknown ? unknownString : "" + numOfFiles);
+    outStream.write(terminator);
+    
+    for (int k = 0; k < indent; k++)
+      outStream.writeBytes(Utilities.INDENT);
+    outStream.writeBytes("totalFileSize:");
+    outStream.writeBytes(unknown ? unknownString : "" + totalFileSize);
+    outStream.write(terminator);
+    
+    for (int k = 0; k < indent; k++)
+      outStream.writeBytes(Utilities.INDENT);
+    outStream.writeBytes("maxFileSize:");
+    outStream.writeBytes(unknown ? unknownString : "" + maxFileSize);
+    outStream.write(terminator);
+    
+    for (int k = 0; k < indent; k++)
+      outStream.writeBytes(Utilities.INDENT); 
+    outStream.writeBytes("minFileSize:");
+    if (numOfFiles > 0)
+      outStream.writeBytes(unknown ? unknownString : "" + minFileSize);
+    else
+      outStream.writeBytes(unknown ? unknownString : "" + 0);
+    outStream.write(terminator);
+    
+    for (int k = 0; k < indent; k++)
+      outStream.writeBytes(Utilities.INDENT); 
+    outStream.writeBytes("lastAccessTime:");
+    outStream.writeBytes((unknown || lastAccessTime < 0) ? unknownString : ""
+        + lastAccessTime);
+    outStream.write(terminator);
+    
+    for (int k = 0; k < indent; k++)
+      outStream.writeBytes(Utilities.INDENT); 
+    outStream.writeBytes("lastUpdateTime:");
+    outStream.writeBytes(unknown ? unknownString : "" + lastUpdateTime);
+    outStream.write(terminator);
+  }
+
 
   /**
    * Alter a given table.

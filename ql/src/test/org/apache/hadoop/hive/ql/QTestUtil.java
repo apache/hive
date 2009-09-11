@@ -691,15 +691,23 @@ public class QTestUtil {
   public int checkCliDriverResults(String tname) throws Exception {
     String [] cmdArray;
 
-    cmdArray = new String[6];
+    cmdArray = new String[12];
     cmdArray[0] = "diff";
     cmdArray[1] = "-a";
     cmdArray[2] = "-I";
     cmdArray[3] = "\\(file:\\)\\|\\(/tmp/.*\\)";
-    cmdArray[4] = (new File(logDir, tname + ".out")).getPath();
-    cmdArray[5] = (new File(outDir, tname + ".out")).getPath();
+    cmdArray[4] = "-I";
+    cmdArray[5] = "lastUpdateTime";
+    cmdArray[6] = "-I";
+    cmdArray[7] = "lastAccessTime";
+    cmdArray[8] = "-I";
+    cmdArray[9] = "owner";
+    cmdArray[10] = (new File(logDir, tname + ".out")).getPath();
+    cmdArray[11] = (new File(outDir, tname + ".out")).getPath();
     System.out.println(cmdArray[0] + " " + cmdArray[1] + " " + cmdArray[2] + " " +
-                       cmdArray[3] + " " + cmdArray[4] + " " + cmdArray[5]);
+                       cmdArray[3] + " " + cmdArray[4] + " " + cmdArray[5] + " " +
+                       cmdArray[6] + " " + cmdArray[7] + " " + cmdArray[8] + " " +
+                       cmdArray[9] + " " + cmdArray[10] + " " + cmdArray[11]);
 
     Process executor = Runtime.getRuntime().exec(cmdArray);
 

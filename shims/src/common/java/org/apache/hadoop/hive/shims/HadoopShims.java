@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.shims;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
@@ -62,6 +63,13 @@ public interface HadoopShims {
    * This applies for Hadoop 0.17 through 0.19
    */
   public void setTmpFiles(String prop, String files);
+  
+  /**
+   * return the last access time of the given file.
+   * @param file
+   * @return last access time. -1 if not supported.
+   */
+  public long getAccessTime(FileStatus file);
 
   /**
    * Returns a shim to wrap MiniDFSCluster. This is necessary since this class

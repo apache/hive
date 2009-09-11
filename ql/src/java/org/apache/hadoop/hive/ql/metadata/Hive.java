@@ -389,23 +389,32 @@ public class Hive {
   public List<String> getAllTables() throws HiveException {
     return getTablesByPattern(".*");
   }
-  
+
   /**
-   * returns all existing tables that match the given pattern. The matching occurs as per Java regular expressions
-   * @param tablePattern java re pattern
+   * returns all existing tables from default database which match the given
+   * pattern. The matching occurs as per Java regular expressions
+   * 
+   * @param tablePattern
+   *          java re pattern
    * @return list of table names
    * @throws HiveException
    */
   public List<String> getTablesByPattern(String tablePattern) throws HiveException {
-    try {
-      return getMSC().getTables(MetaStoreUtils.DEFAULT_DATABASE_NAME, tablePattern);
-    } catch(Exception e) {
-      throw new HiveException(e);
-    }
+    return getTablesForDb(MetaStoreUtils.DEFAULT_DATABASE_NAME, tablePattern);
   }
-  
-  // for testing purposes
-  protected List<String> getTablesForDb(String database, String tablePattern) throws HiveException {
+
+  /**
+   * returns all existing tables from the given database which match the given
+   * pattern. The matching occurs as per Java regular expressions
+   * 
+   * @param database
+   *          the database name
+   * @param tablePattern
+   *          java re pattern
+   * @return list of table names
+   * @throws HiveException
+   */
+  public List<String> getTablesForDb(String database, String tablePattern) throws HiveException {
     try {
       return getMSC().getTables(database, tablePattern);
     } catch(Exception e) {

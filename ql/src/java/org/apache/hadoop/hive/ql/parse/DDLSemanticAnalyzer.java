@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.ql.plan.dropTableDesc;
 import org.apache.hadoop.hive.ql.plan.fetchWork;
 import org.apache.hadoop.hive.ql.plan.showFunctionsDesc;
 import org.apache.hadoop.hive.ql.plan.showPartitionsDesc;
+import org.apache.hadoop.hive.ql.plan.showTableStatusDesc;
 import org.apache.hadoop.hive.ql.plan.showTablesDesc;
 import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.ql.plan.alterTableDesc.alterTableTypes;
@@ -116,6 +117,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     {
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeShowTables(ast);
+    } else if (ast.getToken().getType() == HiveParser.TOK_SHOW_TABLESTATUS) {
+      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
+      analyzeShowTableStatus(ast);
     } else if (ast.getToken().getType() == HiveParser.TOK_SHOWFUNCTIONS) {
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeShowFunctions(ast);
@@ -563,12 +567,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     // get partition metadata if partition specified
     if (tableTypeExpr.getChildCount() == 2) {
       ASTNode partspec = (ASTNode) tableTypeExpr.getChild(1);
-      partSpec = new LinkedHashMap<String, String>();
-      for (int i = 0; i < partspec.getChildCount(); ++i) {
-        ASTNode partspec_val = (ASTNode) partspec.getChild(i);
-        String val = stripQuotes(partspec_val.getChild(1).getText());
-        partSpec.put(partspec_val.getChild(0).getText().toLowerCase(), val);
-      }
+      partSpec = getPartSpec(partspec);
     }
     
     boolean isExt = ast.getChildCount() > 1;
@@ -576,6 +575,18 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(TaskFactory.get(new DDLWork(descTblDesc), conf));
     setFetchTask(createFetchTask(descTblDesc.getSchema()));
     LOG.info("analyzeDescribeTable done");
+  }
+  
+  
+  private HashMap<String, String> getPartSpec(ASTNode partspec)
+      throws SemanticException {
+    HashMap<String, String> partSpec = new LinkedHashMap<String, String>();
+    for (int i = 0; i < partspec.getChildCount(); ++i) {
+      ASTNode partspec_val = (ASTNode) partspec.getChild(i);
+      String val = stripQuotes(partspec_val.getChild(1).getText());
+      partSpec.put(partspec_val.getChild(0).getText().toLowerCase(), val);
+    }
+    return partSpec;
   }
   
   private void analyzeShowPartitions(ASTNode ast) 
@@ -600,6 +611,31 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     rootTasks.add(TaskFactory.get(new DDLWork(showTblsDesc), conf));
     setFetchTask(createFetchTask(showTblsDesc.getSchema()));
+  }
+  
+  private void analyzeShowTableStatus(ASTNode ast) 
+  throws SemanticException {
+    showTableStatusDesc showTblStatusDesc;
+    String tableNames = unescapeIdentifier(ast.getChild(0).getText());
+    String dbName = MetaStoreUtils.DEFAULT_DATABASE_NAME;
+    int children = ast.getChildCount(); 
+    HashMap<String, String> partSpec = null;
+    if (children >= 2) {
+      if(children > 3)
+        throw new SemanticException(ErrorMsg.GENERIC_ERROR.getMsg());
+      for (int i = 1; i < children; i++) {
+        ASTNode child = (ASTNode) ast.getChild(i);
+        if(child.getToken().getType() == HiveParser.Identifier)
+          dbName = unescapeIdentifier(child.getText());
+        else if (child.getToken().getType() == HiveParser.TOK_PARTSPEC)
+          partSpec = getPartSpec(child);
+        else
+          throw new SemanticException(ErrorMsg.GENERIC_ERROR.getMsg());
+      }
+    }
+    showTblStatusDesc = new showTableStatusDesc(ctx.getResFile(), dbName, tableNames, partSpec);
+    rootTasks.add(TaskFactory.get(new DDLWork(showTblStatusDesc), conf));
+    setFetchTask(createFetchTask(showTblStatusDesc.getSchema()));
   }
 
   /**

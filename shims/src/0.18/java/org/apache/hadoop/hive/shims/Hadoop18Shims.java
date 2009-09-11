@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.shims;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
@@ -89,6 +90,11 @@ public class Hadoop18Shims implements HadoopShims {
    */
   public int compareText(Text a, Text b) {
     return a.compareTo(b);
+  }
+
+  @Override
+  public long getAccessTime(FileStatus file) {
+    return -1;
   }
 
 }

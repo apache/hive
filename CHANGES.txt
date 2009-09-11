@@ -39,6 +39,9 @@ Trunk -  Unreleased
 
     HIVE-591. Add Unique Join. (Emil Ibrishimov via namit)
 
+    HIVE-667. Provide hive ql to check table/partition status.
+    (Yongqiang He via zshao)
+
   IMPROVEMENTS
 
     HIVE-760. Add version info to META-INF/MANIFEST.MF.

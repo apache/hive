@@ -1,0 +1,101 @@
+query: EXPLAIN 
+SHOW TABLE EXTENDED IN default LIKE `src`
+ABSTRACT SYNTAX TREE:
+  (TOK_SHOW_TABLESTATUS `src` default)
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+
+
+query: SHOW TABLE EXTENDED IN default LIKE `src`
+tableName:src
+owner:null
+location:file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/src
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { string key, string value}
+partitioned:false
+partitionColumns:
+totalNumberFiles:1
+totalFileSize:5812
+maxFileSize:5812
+minFileSize:5812
+lastAccessTime:0
+lastUpdateTime:1252656570000
+
+query: SHOW TABLE EXTENDED from default LIKE `src`
+tableName:src
+owner:null
+location:file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/src
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { string key, string value}
+partitioned:false
+partitionColumns:
+totalNumberFiles:1
+totalFileSize:5812
+maxFileSize:5812
+minFileSize:5812
+lastAccessTime:0
+lastUpdateTime:1252656570000
+
+query: SHOW TABLE EXTENDED LIKE `src`
+tableName:src
+owner:null
+location:file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/src
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { string key, string value}
+partitioned:false
+partitionColumns:
+totalNumberFiles:1
+totalFileSize:5812
+maxFileSize:5812
+minFileSize:5812
+lastAccessTime:0
+lastUpdateTime:1252656570000
+
+query: SHOW TABLE EXTENDED LIKE `src.?`
+query: SHOW TABLE EXTENDED from default LIKE `src.?`
+query: SHOW TABLE EXTENDED LIKE `^s.*`
+query: SHOW TABLE EXTENDED from default LIKE `^s.*`
+query: SHOW TABLE EXTENDED LIKE `srcpart` PARTITION(ds='2008-04-08', hr=11)
+tableName:srcpart
+owner:null
+location:file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { string key, string value}
+partitioned:true
+partitionColumns:struct partition_columns { string ds, string hr}
+totalNumberFiles:1
+totalFileSize:5812
+maxFileSize:5812
+minFileSize:5812
+lastAccessTime:0
+lastUpdateTime:1252656569000
+
+query: SHOW TABLE EXTENDED from default LIKE src
+tableName:src
+owner:null
+location:file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/src
+inputformat:org.apache.hadoop.mapred.TextInputFormat
+outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+columns:struct columns { string key, string value}
+partitioned:false
+partitionColumns:
+totalNumberFiles:1
+totalFileSize:5812
+maxFileSize:5812
+minFileSize:5812
+lastAccessTime:0
+lastUpdateTime:1252656570000
+

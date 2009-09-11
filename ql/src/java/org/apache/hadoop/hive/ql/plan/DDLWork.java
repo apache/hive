@@ -33,6 +33,7 @@ public class DDLWork implements Serializable {
   private descTableDesc        descTblDesc;
   private AddPartitionDesc addPartitionDesc;
   private MsckDesc msckDesc;
+  private showTableStatusDesc showTblStatusDesc;
 
   public DDLWork() { }
 
@@ -109,6 +110,13 @@ public class DDLWork implements Serializable {
 
   public DDLWork(MsckDesc checkDesc) {
     this.msckDesc = checkDesc;
+  }
+
+  /**
+   * @param showTblStatusDesc show table status descriptor
+   */
+  public DDLWork(showTableStatusDesc showTblStatusDesc) {
+    this.showTblStatusDesc = showTblStatusDesc;
   }
 
   /**
@@ -274,6 +282,20 @@ public class DDLWork implements Serializable {
    */
   public void setMsckDesc(MsckDesc msckDesc) {
     this.msckDesc = msckDesc;
+  }
+
+  /**
+   * @return show table descriptor
+   */
+  public showTableStatusDesc getShowTblStatusDesc() {
+    return showTblStatusDesc;
+  }
+
+  /**
+   * @param showTblStatusDesc show table descriptor
+   */
+  public void setShowTblStatusDesc(showTableStatusDesc showTblStatusDesc) {
+    this.showTblStatusDesc = showTblStatusDesc;
   }
   
 }
