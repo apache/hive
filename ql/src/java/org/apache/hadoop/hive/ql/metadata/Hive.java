@@ -66,17 +66,18 @@ import org.apache.thrift.TException;
 public class Hive {
 
   static final private Log LOG = LogFactory.getLog("hive.ql.metadata.Hive");
-  static Hive db = null;
   
   private HiveConf conf = null;
-  private ThreadLocal<IMetaStoreClient> threadLocalMSC = new ThreadLocal() {
+  private IMetaStoreClient metaStoreClient;
+  
+  private static ThreadLocal<Hive> hiveDB = new ThreadLocal() {
     protected synchronized Object initialValue() {
         return null;
     }
     
     public synchronized void remove() {
       if( this.get() != null ) {
-        ((IMetaStoreClient)this.get()).close();
+        ((Hive)this.get()).close();
       }
       super.remove();
     }
@@ -92,7 +93,7 @@ public class Hive {
    */
   public static Hive get(HiveConf c) throws HiveException {
     boolean needsRefresh = false;
-
+    Hive db = hiveDB.get();
     if(db != null) {
       for(HiveConf.ConfVars oneVar: HiveConf.metaVars) {
         String oldVar = db.getConf().getVar(oneVar);
@@ -114,25 +115,27 @@ public class Hive {
    * @throws HiveException
    */
   public static Hive get(HiveConf c, boolean needsRefresh) throws HiveException {
+    Hive db = hiveDB.get();
     if(db == null || needsRefresh) {
       closeCurrent();
       c.set("fs.scheme.class","dfs");
       db = new Hive(c);
+      hiveDB.set(db);
     }
     return db;
   }
 
   public static Hive get() throws HiveException {
+    Hive db = hiveDB.get();
     if(db == null) {
       db = new Hive(new HiveConf(Hive.class));
+      hiveDB.set(db);
     }
     return db;
   }
   
   public static void closeCurrent() {
-    if(db != null) {
-      db.close();
-    }
+    hiveDB.remove();
   }
   
   /**
@@ -151,7 +154,7 @@ public class Hive {
    */
   private void close() {
     LOG.info("Closing current thread's connection to Hive Metastore.");
-    db.threadLocalMSC.remove();
+    metaStoreClient.close();
   }
   
   /**
@@ -781,12 +784,10 @@ public class Hive {
    * @throws MetaException
    */
   private IMetaStoreClient getMSC() throws MetaException {
-    IMetaStoreClient msc = threadLocalMSC.get();
-    if(msc == null) {
-      msc = this.createMetaStoreClient();
-      threadLocalMSC.set(msc);
+    if(metaStoreClient == null) {
+      metaStoreClient = this.createMetaStoreClient();
     }
-    return msc;
+    return metaStoreClient;
   }
 
   public static List<FieldSchema> getFieldsFromDeserializer(String name, Deserializer serde) throws HiveException {

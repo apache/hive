@@ -48,8 +48,5 @@ public class CliSessionState extends SessionState {
   public CliSessionState (HiveConf conf) {
     super(conf);
   }
-  
-  public CliSessionState (HiveConf conf, Hive db) {
-    super(conf, db);
-  }
+
 }

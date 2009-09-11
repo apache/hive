@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.jdbc;
 
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 
 public class JdbcSessionState extends SessionState {
 
@@ -30,9 +29,5 @@ public class JdbcSessionState extends SessionState {
 
   public JdbcSessionState (HiveConf conf) {
     super(conf);
-  }
-
-  public JdbcSessionState (HiveConf conf, Hive db) {
-    super(conf, db);
   }
 }

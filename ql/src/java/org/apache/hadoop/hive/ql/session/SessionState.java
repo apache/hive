@@ -54,11 +54,6 @@ public class SessionState {
    */
   protected boolean isSilent;
 
-  /**
-   * cached current connection to Hive MetaStore
-   */
-  protected Hive db;
-
   /*
    *  HiveHistory Object 
    */
@@ -86,43 +81,12 @@ public class SessionState {
   }
 
   public SessionState() {
-    this(null, null);
+    this(null);
   }
 
   public SessionState (HiveConf conf) {
-    this (conf, null);
-  }
-  
-  public SessionState (HiveConf conf, Hive db) {
     this.conf = conf;
-    this.db = db;
 
-    for(HiveConf.ConfVars oneVar: HiveConf.metaVars) {
-      dbOptions.put(oneVar, conf.getVar(oneVar));
-    }
-  }
-
-  /**
-   * cached values of such options
-   */
-  private final HashMap<HiveConf.ConfVars, String> dbOptions =
-    new HashMap<HiveConf.ConfVars, String> ();
-
-  public Hive getDb() throws HiveException {
-    boolean needsRefresh = false;
-
-    for(HiveConf.ConfVars oneVar: HiveConf.metaVars) {
-      if(!StringUtils.isEmpty(StringUtils.difference(dbOptions.get(oneVar), conf.getVar(oneVar)))) {
-        needsRefresh = true;
-        break;
-      }
-    }
-    
-    if((db == null) || needsRefresh) {
-      db = Hive.get(conf, needsRefresh);
-    }
-  
-    return db;
   }
 
   public void setCmd(String cmdString) {

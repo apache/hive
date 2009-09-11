@@ -67,15 +67,8 @@ public abstract class Task <T extends Serializable> implements Serializable {
     started = false;
     this.conf = conf;
 
-    SessionState ss = SessionState.get();
     try {
-      if (ss == null) {
-        // test case - no session setup perhaps
         db = Hive.get(conf);
-      } else {
-        // normal case - session has handle to db
-        db = ss.getDb();
-      }
     } catch (HiveException e) {
       // Bail out ungracefully - we should never hit
       // this here - but would have hit it in SemanticAnalyzer

@@ -63,6 +63,9 @@ Trunk -  Unreleased
     HIVE-756. Performance improvement for RCFile and ColumnarSerDe in Hive.
     (Ning Zhang via zshao)
 
+    HIVE-584. Clean up global and ThreadLocal variables in Hive.
+    (Yonqqiang He via zshao)
+
   OPTIMIZATIONS
 
   BUG FIXES
