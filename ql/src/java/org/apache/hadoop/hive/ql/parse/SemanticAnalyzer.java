@@ -3257,7 +3257,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ASTNode hintTblNames = (ASTNode)hint.getChild(1);
         int numCh = hintTblNames.getChildCount();
         for (int tblPos = 0; tblPos < numCh; tblPos++) {
-          String tblName = ((ASTNode)hintTblNames.getChild(tblPos)).getText();
+          String tblName = ((ASTNode)hintTblNames.getChild(tblPos)).getText().toLowerCase();
           if (cols == null)
             cols = new ArrayList<String>();
           if (!cols.contains(tblName))
@@ -3452,11 +3452,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       for (String mapTbl : mapSideTables) {
         boolean mapTable = false;
         for (String leftAlias : joinTree.getLeftAliases()) {
-          if (mapTbl.equals(leftAlias))
+          if (mapTbl.equalsIgnoreCase(leftAlias))
             mapTable = true;
         }
         for (String rightAlias : joinTree.getRightAliases()) {
-          if (mapTbl.equals(rightAlias))
+          if (mapTbl.equalsIgnoreCase(rightAlias))
             mapTable = true;
         }
         

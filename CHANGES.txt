@@ -107,6 +107,9 @@ Trunk -  Unreleased
     HIVE-812. Hive compiled with ant package works with all supported hadoop versions
     (Zheng Shao via namit)
 
+    HIVE-823. Make table alise in MAPJOIN hint case insensitive.
+    (Namit Jain via zshao)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
