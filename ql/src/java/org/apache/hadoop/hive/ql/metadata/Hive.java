@@ -674,8 +674,8 @@ public class Hive {
                                             items[j].toString());
                 }
                 Path tmpDest = new Path(destf, items[j].getPath().getName());
-                if(!replace && fs.exists(tmpDest)) {
-                    throw new HiveException("checkPaths: " + tmpDest + " already exists");
+                if (!replace && fs.exists(tmpDest)) {
+                  throw new HiveException("checkPaths: " + tmpDest + " already exists");
                 }
             }
         }
@@ -685,6 +685,14 @@ public class Hive {
 }
 
   static protected void copyFiles(Path srcf, Path destf, FileSystem fs) throws HiveException {
+    try {
+      // create the destination if it does not exist
+      if (!fs.exists(destf))
+        fs.mkdirs(destf);
+    } catch (IOException e) {
+      throw new HiveException("copyFiles: error while checking/creating destination directory!!!", e);
+    }
+
     FileStatus[] srcs;
     try {
       srcs = fs.globStatus(srcf);
@@ -709,7 +717,7 @@ public class Hive {
         }
       }
     } catch (IOException e) {
-      throw new HiveException("addFiles: error while moving files!!!", e);
+      throw new HiveException("copyFiles: error while moving files!!!", e);
     }
   }
 

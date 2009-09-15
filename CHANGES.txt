@@ -634,6 +634,9 @@ Release 0.4.0 -  Unreleased
     HIVE-799. final.name should not include hadoop version.
     (Todd Lipcon via zshao)
 
+    HIVE-718. Fix Loading data inpath into a new partition.
+    (Namit Jain via zshao)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES
