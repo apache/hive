@@ -23,16 +23,14 @@ import java.io.FileOutputStream;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.apache.hadoop.mapred.JobConf;
-
-import org.apache.hadoop.hive.ql.plan.mapredWork;
-import org.apache.hadoop.hive.ql.exec.Utilities.*;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.exec.Utilities.StreamPrinter;
+import org.apache.hadoop.hive.ql.plan.mapredWork;
+import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Alternate implementation (to ExecDriver) of spawning a mapreduce task that runs it from
@@ -161,5 +159,9 @@ public class MapRedTask extends Task<mapredWork> implements Serializable {
   public boolean hasReduce() {
     mapredWork w = getWork();
     return w.getReducer() != null;
+  }
+  
+  public int getType() {
+    return StageType.MAPREDLOCAL;
   }
 }

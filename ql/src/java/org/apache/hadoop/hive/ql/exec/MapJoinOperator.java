@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.mapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.tableDesc;
+import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.util.jdbm.RecordManager;
 import org.apache.hadoop.hive.ql.util.jdbm.RecordManagerFactory;
 import org.apache.hadoop.hive.ql.util.jdbm.RecordManagerOptions;
@@ -337,5 +338,9 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
     }
 
     dir.delete();
+  }
+  
+  public int getType() {
+    return OperatorType.MAPJOIN;
   }
 }

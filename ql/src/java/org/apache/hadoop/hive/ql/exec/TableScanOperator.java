@@ -22,6 +22,7 @@ import java.io.Serializable;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.tableScanDesc;
+import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 
 /**
  * Table Scan Operator
@@ -64,4 +65,7 @@ public class TableScanOperator extends Operator<tableScanDesc> implements Serial
     return neededColumnIDs;
   }
 
+  public int getType() {
+    return OperatorType.TABLESCAN;
+  }
 }

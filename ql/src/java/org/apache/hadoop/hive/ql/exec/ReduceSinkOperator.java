@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.reduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.tableDesc;
+import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
@@ -224,4 +225,7 @@ public class ReduceSinkOperator extends TerminalOperator <reduceSinkDesc> implem
     return new String("RS");
   }
   
+  public int getType() {
+    return OperatorType.REDUCESINK;
+  }
 }

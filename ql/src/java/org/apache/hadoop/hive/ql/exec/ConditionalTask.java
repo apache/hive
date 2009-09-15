@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolver;
 import org.apache.hadoop.hive.ql.plan.ConditionalWork;
+import org.apache.hadoop.hive.ql.plan.api.StageType;
 
 /**
  * Conditional Task implementation
@@ -110,5 +111,9 @@ public class ConditionalTask extends Task<ConditionalWork> implements Serializab
    */
   public void setListTasks(List<Task<? extends Serializable>> listTasks) {
     this.listTasks = listTasks;
+  }
+  
+  public int getType() {
+    return StageType.CONDITIONAL;
   }
 }

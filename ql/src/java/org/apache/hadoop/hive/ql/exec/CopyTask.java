@@ -25,6 +25,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.hive.ql.plan.copyWork;
+import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.parse.LoadSemanticAnalyzer;
 import org.apache.hadoop.util.StringUtils;
 
@@ -80,5 +81,9 @@ public class CopyTask extends Task<copyWork> implements Serializable {
       console.printError("Failed with exception " +   e.getMessage(), "\n" + StringUtils.stringifyException(e));
       return (1);
     }
+  }
+  
+  public int getType() {
+    return StageType.COPY;
   }
 }

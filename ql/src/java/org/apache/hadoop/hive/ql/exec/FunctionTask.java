@@ -18,17 +18,16 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.net.URLClassLoader;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FunctionWork;
 import org.apache.hadoop.hive.ql.plan.createFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.dropFunctionDesc;
+import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.util.ReflectionUtils;
@@ -105,5 +104,9 @@ public class FunctionTask extends Task<FunctionWork> {
   private Class<?> getUdfClass(createFunctionDesc desc)
       throws ClassNotFoundException {
     return Class.forName(desc.getClassName(), true, JavaUtils.getClassLoader());
+  }
+  
+  public int getType() {
+    return StageType.FUNC;
   }
 }

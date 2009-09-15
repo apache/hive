@@ -67,6 +67,7 @@ import org.apache.hadoop.hive.ql.plan.showFunctionsDesc;
 import org.apache.hadoop.hive.ql.plan.showPartitionsDesc;
 import org.apache.hadoop.hive.ql.plan.showTableStatusDesc;
 import org.apache.hadoop.hive.ql.plan.showTablesDesc;
+import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.serde.Constants;
@@ -1147,6 +1148,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     // create the table
     db.createTable(tbl, crtTbl.getIfNotExists());
     return 0;
+  }
+  
+  public int getType() {
+    return StageType.DDL;
   }
   
 }

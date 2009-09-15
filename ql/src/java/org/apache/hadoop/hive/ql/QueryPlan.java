@@ -26,27 +26,26 @@ import java.util.Collection;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.LinkedList;
-import java.util.List;
-
-import org.apache.hadoop.hive.ql.exec.*;
-import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
-import org.apache.hadoop.hive.ql.plan.api.AdjacencyType;
-import org.apache.hadoop.hive.ql.plan.api.NodeType;
-import org.apache.hadoop.hive.ql.plan.api.OperatorType;
-import org.apache.hadoop.hive.ql.plan.api.StageType;
-import org.apache.hadoop.hive.ql.plan.api.TaskType;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.ConditionalTask;
+import org.apache.hadoop.hive.ql.exec.ExecDriver;
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.plan.api.AdjacencyType;
+import org.apache.hadoop.hive.ql.plan.api.NodeType;
+import org.apache.hadoop.hive.ql.plan.api.TaskType;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TJSONProtocol;
 import org.apache.thrift.transport.TMemoryBuffer;
-import org.apache.thrift.transport.TTransportException;
 
 
 public class QueryPlan implements Serializable {
@@ -61,7 +60,7 @@ public class QueryPlan implements Serializable {
   private Map<String, Map<String, Long>> counters;
   private Set<String> done;
   private Set<String> started;
-
+  
   private boolean add;
 
 
@@ -102,93 +101,6 @@ public class QueryPlan implements Serializable {
   }
 
   /**
-   * TODO each Task should define a getType() method which will return the values
-   * instead of this method
-   * @param task
-   * @return
-   */
-  private int getStageType(Task<? extends Serializable> task) {
-    if (task instanceof ConditionalTask) {
-      return StageType.CONDITIONAL;
-    }
-    if (task instanceof CopyTask) {
-      return StageType.COPY;
-    }
-    if (task instanceof DDLTask) {
-      return StageType.DDL;
-    }
-    if (task instanceof ExecDriver) {
-      return StageType.MAPRED;
-    }
-    if (task instanceof ExplainTask) {
-      return StageType.EXPLAIN;
-    }
-    if (task instanceof FetchTask) {
-      return StageType.FETCH;
-    }
-    if (task instanceof FunctionTask) {
-      return StageType.FUNC;
-    }
-    if (task instanceof MapRedTask) {
-      return StageType.MAPREDLOCAL;
-    }
-    if (task instanceof MoveTask) {
-      return StageType.MOVE;
-    }
-    assert false;
-    return -1;
-  }
-
-  /**
-   * TODO remove this method. add a getType() method for each operator
-   * @param op
-   * @return
-   */
-  private int getOperatorType(Operator<? extends Serializable> op) {
-    if (op instanceof JoinOperator) {
-      return OperatorType.JOIN;
-    }
-    if (op instanceof MapJoinOperator) {
-      return OperatorType.MAPJOIN;
-    }
-    if (op instanceof ExtractOperator) {
-      return OperatorType.EXTRACT;
-    }
-    if (op instanceof FilterOperator) {
-      return OperatorType.FILTER;
-    }
-    if (op instanceof ForwardOperator) {
-      return OperatorType.FORWARD;
-    }
-    if (op instanceof GroupByOperator) {
-      return OperatorType.GROUPBY;
-    }
-    if (op instanceof LimitOperator) {
-      return OperatorType.LIMIT;
-    }
-    if (op instanceof ScriptOperator) {
-      return OperatorType.SCRIPT;
-    }
-    if (op instanceof SelectOperator) {
-      return OperatorType.SELECT;
-    }
-    if (op instanceof TableScanOperator) {
-      return OperatorType.TABLESCAN;
-    }
-    if (op instanceof FileSinkOperator) {
-      return OperatorType.FILESINK;
-    }
-    if (op instanceof ReduceSinkOperator) {
-      return OperatorType.REDUCESINK;
-    }
-    if (op instanceof UnionOperator) {
-      return OperatorType.UNION;
-    }
-    assert false;
-    return -1;
-  }
-
-  /**
    * generate the operator graph and operator list for the given task based on
    * the operators corresponding to that task
    * @param task   api.Task which needs its operator graph populated
@@ -210,7 +122,7 @@ public class QueryPlan implements Serializable {
       // populate the operator
       org.apache.hadoop.hive.ql.plan.api.Operator operator = new org.apache.hadoop.hive.ql.plan.api.Operator();
       operator.setOperatorId(op.getOperatorId());
-      operator.setOperatorType(getOperatorType(op));
+      operator.setOperatorType(op.getType());
       task.addToOperatorList(operator);
       // done processing the operator
       if (op.getChildOperators() != null) {
@@ -247,7 +159,7 @@ public class QueryPlan implements Serializable {
       // populate stage
       org.apache.hadoop.hive.ql.plan.api.Stage stage = new org.apache.hadoop.hive.ql.plan.api.Stage();
       stage.setStageId(task.getId());
-      stage.setStageType(getStageType(task));
+      stage.setStageType(task.getType());
       query.addToStageList(stage);
       
       if (task instanceof ExecDriver) {

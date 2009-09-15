@@ -113,6 +113,8 @@ Trunk -  Unreleased
     HIVE-823. Make table alise in MAPJOIN hint case insensitive.
     (Namit Jain via zshao)
 
+    HIVE-771. Code cleanup in QueryPlan (Emil Ibrishimov via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

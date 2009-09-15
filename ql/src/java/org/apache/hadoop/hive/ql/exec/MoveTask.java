@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.loadFileDesc;
 import org.apache.hadoop.hive.ql.plan.loadTableDesc;
 import org.apache.hadoop.hive.ql.plan.moveWork;
+import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.util.StringUtils;
 
 /**
@@ -167,5 +168,9 @@ public class MoveTask extends Task<moveWork> implements Serializable {
     }
     
     return false;
+  }
+  
+  public int getType() {
+    return StageType.MOVE;
   }
 }

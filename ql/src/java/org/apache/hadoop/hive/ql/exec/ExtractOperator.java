@@ -23,6 +23,7 @@ import java.io.Serializable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.extractDesc;
+import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 
 /**
  * Extract operator implementation
@@ -42,5 +43,7 @@ public class ExtractOperator extends Operator<extractDesc> implements Serializab
     forward(eval.evaluate(row), outputObjInspector);
   }
 
-  
+  public int getType() {
+    return OperatorType.EXTRACT;
+  }
 }

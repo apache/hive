@@ -239,4 +239,14 @@ public abstract class Task <T extends Serializable> implements Serializable {
     return taskCounters;
   }
 
+  /**
+   * Should be overridden to return the type of the specific task among
+   * the types in TaskType
+   * 
+   * @return TaskTypeType.* or -1 if not overridden
+   */
+  public int getType() {
+    assert false;
+    return -1;
+  }
 }

@@ -31,15 +31,14 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.explain;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Counters;
+import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
 
 /**
@@ -896,4 +895,15 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   public void setCounterNameToEnum(HashMap<String, ProgressCounter> counterNameToEnum) {
     this.counterNameToEnum = counterNameToEnum;
   }
+  
+   /**
+   * Should be overridden to return the type of the specific operator among
+    * the types in OperatorType
+    * 
+    * @return OperatorType.* or -1 if not overridden
+    */
+   public int getType() {
+     assert false;
+     return -1;
+   }
 }
