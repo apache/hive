@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.varia.NullAppender;
+import java.lang.ClassNotFoundException;
 
 public class ExecDriver extends Task<mapredWork> implements Serializable {
 
@@ -415,7 +416,17 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
     job.setNumReduceTasks(work.getNumReduceTasks().intValue());
     job.setReducerClass(ExecReducer.class);
 
-    job.setInputFormat(org.apache.hadoop.hive.ql.io.HiveInputFormat.class);
+    String inpFormat = HiveConf.getVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT);
+    if ((inpFormat == null) || (!StringUtils.isNotBlank(inpFormat)))
+      inpFormat = ShimLoader.getHadoopShims().getInputFormatClassName();
+
+    LOG.info("Using " + inpFormat);
+
+    try {
+      job.setInputFormat((Class<? extends InputFormat>)(Class.forName(inpFormat)));
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e.getMessage());
+    }
 
     // No-Op - we don't really write anything here ..
     job.setOutputKeyClass(Text.class);
@@ -449,7 +460,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
     boolean success = false;
 
     try {
-      addInputPaths(job, work, hiveScratchDir);
+      addInputPaths(job, work, hiveScratchDir.toString());
       Utilities.setMapRedWork(job, work);
 
       // remove the pwd from conf file so that job tracker doesn't show this logs
@@ -738,9 +749,8 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
   /**
    * Handle a empty/null path for a given alias
    */
-  private int addInputPath(String path, JobConf job, mapredWork work, String hiveScratchDir, int numEmptyPaths, boolean isEmptyPath,
-                           String alias) 
-    throws Exception {
+  private int addInputPath(String path, JobConf job, mapredWork work, String hiveScratchDir, int numEmptyPaths, 
+                           boolean isEmptyPath, String alias) throws Exception {
     // either the directory does not exist or it is empty
     assert path == null || isEmptyPath;
 
@@ -750,10 +760,14 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
     if (isEmptyPath) 
       outFileFormat = work.getPathToPartitionInfo().get(path).getTableDesc().getOutputFileFormatClass();
     else
-      outFileFormat = (Class<? extends HiveOutputFormat>)(HiveSequenceFileOutputFormat.class);
+      outFileFormat = work.getAliasToPartnInfo().get(alias).getTableDesc().getOutputFileFormatClass();
     
-    String newFile = hiveScratchDir + File.separator + (++numEmptyPaths);
-    Path newPath = new Path(newFile);
+    // create a dummy empty file in a new directory
+    String newDir = hiveScratchDir + File.separator + (++numEmptyPaths);
+    Path newPath = new Path(newDir);
+    String newFile = newDir + File.separator + "emptyFile";
+    Path newFilePath = new Path(newFile);
+
     LOG.info("Changed input file to " + newPath.toString());
     
     // toggle the work
@@ -779,14 +793,12 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
     }
     else {
       partitionDesc pDesc = work.getAliasToPartnInfo().get(alias).clone();
-      Class<? extends InputFormat>      inputFormat = SequenceFileInputFormat.class;
-      pDesc.getTableDesc().setInputFileFormatClass(inputFormat);
       pathToPartitionInfo.put(newPath.toUri().toString(), pDesc);
     }
     work.setPathToPartitionInfo(pathToPartitionInfo);
     
     String onefile = newPath.toString();
-    RecordWriter recWriter = outFileFormat.newInstance().getHiveRecordWriter(job, newPath, Text.class, false, new Properties(), null);
+    RecordWriter recWriter = outFileFormat.newInstance().getHiveRecordWriter(job, newFilePath, Text.class, false, new Properties(), null);
     recWriter.close(false);
     FileInputFormat.addInputPaths(job, onefile);
     return numEmptyPaths;

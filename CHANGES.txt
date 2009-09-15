@@ -69,6 +69,9 @@ Trunk -  Unreleased
     HIVE-584. Clean up global and ThreadLocal variables in Hive.
     (Yonqqiang He via zshao)
 
+    HIVE-74. Hive can use CombineFileInputFormat for when the input has many
+    small files (Namit Jain via rmurthy)
+
   OPTIMIZATIONS
 
   BUG FIXES

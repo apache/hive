@@ -92,9 +92,16 @@ public class Hadoop18Shims implements HadoopShims {
     return a.compareTo(b);
   }
 
+  public HadoopShims.CombineFileInputFormatShim getCombineFileInputFormat() {
+    return null;
+  }
+  
+  public String getInputFormatClassName() {
+    return "org.apache.hadoop.hive.ql.io.HiveInputFormat";
+  }
+
   @Override
   public long getAccessTime(FileStatus file) {
     return -1;
   }
-
 }

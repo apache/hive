@@ -161,6 +161,8 @@ public class HiveConf extends Configuration {
 
     HIVEJOBPROGRESS("hive.task.progress", false),
 
+    HIVEINPUTFORMAT("hive.input.format", ""),
+
     // Optimizer
     HIVEOPTCP("hive.optimize.cp", true), // column pruner
     HIVEOPTPPD("hive.optimize.ppd", true), // predicate pushdown

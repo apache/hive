@@ -96,4 +96,11 @@ public class Hadoop17Shims implements HadoopShims {
     return -1;
   }
 
+  public HadoopShims.CombineFileInputFormatShim getCombineFileInputFormat() {
+    return null;
+  }
+
+  public String getInputFormatClassName() {
+    return "org.apache.hadoop.hive.ql.io.HiveInputFormat";
+  }
 }
