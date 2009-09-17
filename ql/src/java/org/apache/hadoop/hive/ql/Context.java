@@ -206,14 +206,14 @@ public class Context {
     if (explain) {
       try {
         if (localScratchDir != null)
-          FileSystem.getLocal(conf).delete(localScratchDir);
+          FileSystem.getLocal(conf).delete(localScratchDir, true);
       } catch (Exception e) {
         LOG.warn("Error Removing Scratch: " + StringUtils.stringifyException(e));
       }
     } else {
       for (Path p: allScratchDirs) {
         try {
-          p.getFileSystem(conf).delete(p);
+          p.getFileSystem(conf).delete(p, true);
         } catch (Exception e) {
           LOG.warn("Error Removing Scratch: " + StringUtils.stringifyException(e));
         }
