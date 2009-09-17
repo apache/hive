@@ -4727,10 +4727,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if ((task instanceof MapRedTask) || (task instanceof ExecDriver)) {
       mapredWork work = (mapredWork)task.getWork();
 
-      if (conf.getVar(HiveConf.ConfVars.HIVEMAPREDMODE).equalsIgnoreCase("strict")) {
-        if ((work.getPathToAliases() == null) || (work.getPathToAliases().isEmpty()))
-          throw new SemanticException(ErrorMsg.NO_VALID_PARTN.getMsg());
-      }
+      // If the plan does not contain any path, an empty file 
+      // will be added by ExecDriver at execute time
     }
 
     if (task.getChildTasks() == null)

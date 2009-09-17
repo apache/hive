@@ -115,6 +115,9 @@ Trunk -  Unreleased
 
     HIVE-771. Code cleanup in QueryPlan (Emil Ibrishimov via namit)
 
+    HIVE-838. In strict mode, remove error if no partition is selected.
+    (Namit Jain via rmurthy)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
