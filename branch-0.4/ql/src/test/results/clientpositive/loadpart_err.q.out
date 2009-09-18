@@ -1,0 +1,16 @@
+query: DROP TABLE loadpart1
+query: CREATE TABLE loadpart1(a STRING, b STRING) PARTITIONED BY (ds STRING)
+query: INSERT OVERWRITE TABLE loadpart1 PARTITION (ds='2009-01-01')
+SELECT TRANSFORM(src.key, src.value) USING '../data/scripts/error_script' AS (tkey, tvalue)
+FROM src
+Input: default/src
+Output: default/loadpart1/ds=2009-01-01
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask
+query: DESCRIBE loadpart1
+a	string	
+b	string	
+ds	string	
+query: SHOW PARTITIONS loadpart1
+FAILED: Error in semantic analysis: line 3:23 Invalid Path '../data1/files/kv1.txt': No files matching path file:/data/users/pchakka/workspace/oshive/data1/files/kv1.txt
+query: SHOW PARTITIONS loadpart1
+query: DROP TABLE loadpart1

@@ -1,0 +1,2 @@
+query: DROP TEMPORARY FUNCTION max
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.FunctionTask

@@ -1,0 +1,14 @@
+query: CREATE TEMPORARY FUNCTION test_translate AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestTranslate'
+query: EXPLAIN
+DROP TEMPORARY FUNCTION test_translate
+ABSTRACT SYNTAX TREE:
+  (TOK_DROPFUNCTION test_translate)
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+
+
+query: DROP TEMPORARY FUNCTION test_translate

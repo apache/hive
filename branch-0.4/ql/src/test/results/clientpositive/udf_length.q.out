@@ -1,0 +1,144 @@
+query: CREATE TABLE dest1(len INT)
+query: EXPLAIN FROM src1 INSERT OVERWRITE TABLE dest1 SELECT length(src1.value)
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src1)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION length (. (TOK_TABLE_OR_COL src1) value))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-4 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-4
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src1 
+          TableScan
+            alias: src1
+            Select Operator
+              expressions:
+                    expr: length(value)
+                    type: int
+              outputColumnNames: _col0
+              File Output Operator
+                compressed: false
+                GlobalTableId: 1
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: dest1
+
+  Stage: Stage-4
+    Conditional Operator
+      list of dependent Tasks:
+          Move Operator
+            files:
+                hdfs directory: true
+                destination: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2113573167/10000
+          Map Reduce
+            Alias -> Map Operator Tree:
+              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1544905742/10002 
+                  Reduce Output Operator
+                    sort order: 
+                    Map-reduce partition columns:
+                          expr: rand()
+                          type: double
+                    tag: -1
+                    value expressions:
+                          expr: len
+                          type: int
+            Reduce Operator Tree:
+              Extract
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: dest1
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: dest1
+
+
+query: FROM src1 INSERT OVERWRITE TABLE dest1 SELECT length(src1.value)
+Input: default/src1
+Output: default/dest1
+query: SELECT dest1.* FROM dest1
+Input: default/dest1
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/966501876/10000
+7
+0
+7
+6
+7
+7
+7
+7
+6
+7
+7
+7
+7
+7
+7
+0
+0
+6
+0
+7
+7
+7
+0
+0
+0
+query: DROP TABLE dest1
+query: -- Test with non-ascii characters. 
+CREATE TABLE dest1(name STRING) STORED AS TEXTFILE
+query: LOAD DATA LOCAL INPATH '../data/files/kv4.txt' INTO TABLE dest1
+query: EXPLAIN SELECT length(dest1.name) FROM dest1
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF dest1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION length (. (TOK_TABLE_OR_COL dest1) name))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        dest1 
+          TableScan
+            alias: dest1
+            Select Operator
+              expressions:
+                    expr: length(name)
+                    type: int
+              outputColumnNames: _col0
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+query: SELECT length(dest1.name) FROM dest1
+Input: default/dest1
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1105559783/10000
+2
+query: DROP TABLE dest1

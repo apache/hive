@@ -1,0 +1,50 @@
+query: CREATE TABLE shtb_test1(KEY STRING, VALUE STRING) PARTITIONED BY(ds DATETIME) STORED AS TEXTFILE
+query: CREATE TABLE shtb_test2(KEY STRING, VALUE STRING) PARTITIONED BY(ds DATETIME) STORED AS TEXTFILE
+query: EXPLAIN
+SHOW TABLES 'shtb_*'
+ABSTRACT SYNTAX TREE:
+  (TOK_SHOWTABLES 'shtb_*')
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+      Show Table Operator:
+        Show Tables
+          pattern: shtb_*
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+
+
+query: SHOW TABLES 'shtb_*'
+shtb_test1
+shtb_test2
+query: EXPLAIN
+SHOW TABLES 'shtb_test1|shtb_test2'
+ABSTRACT SYNTAX TREE:
+  (TOK_SHOWTABLES 'shtb_test1|shtb_test2')
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+      Show Table Operator:
+        Show Tables
+          pattern: shtb_test1|shtb_test2
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+
+
+query: SHOW TABLES 'shtb_test1|shtb_test2'
+shtb_test1
+shtb_test2
+query: DROP TABLE shtb_test1
+query: DROP TABLE shtb_test2

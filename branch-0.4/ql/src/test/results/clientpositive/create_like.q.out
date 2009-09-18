@@ -1,0 +1,50 @@
+query: DROP TABLE table1
+query: DROP TABLE table2
+query: DROP TABLE table3
+query: CREATE TABLE table1 (a STRING, b STRING) STORED AS TEXTFILE
+query: DESCRIBE table1
+a	string	
+b	string	
+query: DESCRIBE EXTENDED table1
+a	string	
+b	string	
+	 	 
+Detailed Table Information	Table(tableName:table1,dbName:default,owner:zshao,createTime:1243547901,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:string,comment:null), FieldSchema(name:b,type:string,comment:null)],location:file:/data/users/zshao/tools/495-trunk-apache-hive/build/ql/test/data/warehouse/table1,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[],parameters:{})	
+query: CREATE TABLE table2 LIKE table1
+query: DESCRIBE table2
+a	string	
+b	string	
+query: DESCRIBE EXTENDED table2
+a	string	
+b	string	
+	 	 
+Detailed Table Information	Table(tableName:table2,dbName:default,owner:zshao,createTime:1243547901,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:string,comment:null), FieldSchema(name:b,type:string,comment:null)],location:file:/data/users/zshao/tools/495-trunk-apache-hive/build/ql/test/data/warehouse/table2,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[],parameters:{EXTERNAL=FALSE})	
+query: CREATE TABLE IF NOT EXISTS table2 LIKE table1
+query: CREATE EXTERNAL TABLE IF NOT EXISTS table2 LIKE table1
+query: CREATE EXTERNAL TABLE IF NOT EXISTS table3 LIKE table1
+query: DESCRIBE table3
+a	string	
+b	string	
+query: DESCRIBE EXTENDED table3
+a	string	
+b	string	
+	 	 
+Detailed Table Information	Table(tableName:table3,dbName:default,owner:zshao,createTime:1243547901,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:string,comment:null), FieldSchema(name:b,type:string,comment:null)],location:file:/data/users/zshao/tools/495-trunk-apache-hive/build/ql/test/data/warehouse/table3,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[],parameters:{EXTERNAL=TRUE})	
+query: INSERT OVERWRITE TABLE table1 SELECT key, value FROM src WHERE key = 86
+Input: default/src
+Output: default/table1
+query: INSERT OVERWRITE TABLE table2 SELECT key, value FROM src WHERE key = 100
+Input: default/src
+Output: default/table2
+query: SELECT * FROM table1
+Input: default/table1
+Output: file:/data/users/zshao/tools/495-trunk-apache-hive/build/ql/tmp/2122743298/10000
+86	val_86
+query: SELECT * FROM table2
+Input: default/table2
+Output: file:/data/users/zshao/tools/495-trunk-apache-hive/build/ql/tmp/1988589189/10000
+100	val_100
+100	val_100
+query: DROP TABLE table1
+query: DROP TABLE table2
+query: DROP TABLE table3

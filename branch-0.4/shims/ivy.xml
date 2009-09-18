@@ -1,0 +1,18 @@
+<ivy-module version="2.0">
+    <info organisation="org.apache.hadoop.hive" module="shims"/>
+    <dependencies>
+        <dependency org="hadoop" name="core" rev="0.17.2.1">
+          <artifact name="hadoop" type="source" ext="tar.gz"/>
+        </dependency> 
+        <dependency org="hadoop" name="core" rev="0.18.3">
+          <artifact name="hadoop" type="source" ext="tar.gz"/>
+        </dependency> 
+        <dependency org="hadoop" name="core" rev="0.19.0">
+          <artifact name="hadoop" type="source" ext="tar.gz"/>
+        </dependency> 
+        <dependency org="hadoop" name="core" rev="0.20.0">
+          <artifact name="hadoop" type="source" ext="tar.gz"/>
+        </dependency> 
+        <conflict manager="all" />
+    </dependencies>
+</ivy-module>

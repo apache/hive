@@ -1,0 +1,3 @@
+<ivy-module version="2.0">
+    <info organisation="org.apache.hadoop.hive" module="ant"/>
+</ivy-module>

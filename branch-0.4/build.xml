@@ -1,0 +1,422 @@
+<?xml version="1.0"?>
+
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+
+<project name="hive" default="jar" >
+
+  <property name="hive.root" location="${basedir}"/>
+  <property file="${hive.root}/build.properties"/>
+  <property file="${user.home}/build.properties" />
+  <property file="${basedir}/build.properties" />
+
+  <!-- This is the version added to the manifest, which must be manually rev'ed
+  whenever a branch version is created. The non-numberic/dot characters are
+  silently dropped from the Implementation-Version when added to the manifest. -->
+  <property name="version" value="0.4.0-dev"/>
+
+  <property name="target.dir" location="${build.dir.hive}/dist"/>
+  <property name="target.lib.dir" location="${target.dir}/lib"/>
+  <property name="target.conf.dir" location="${target.dir}/conf"/>
+  <property name="target.bin.dir" location="${target.dir}/bin"/>
+  <property name="target.example.dir" location="${target.dir}/examples"/>
+  <property name="ql.test.query.dir" location="${basedir}/ql/src/test/queries"/>
+  <property name="test.data.dir" location="${basedir}/data"/>
+  <property name="test.build.dir" value="${build.dir.hive}/test"/>
+  <property name="build.docs" value="${target.dir}/docs"/>
+  <property name="build.javadoc" value="${build.docs}/api"/>
+  <property name="docs.src" value="${hive.root}/docs"/>
+  <property name="changes.src" value="${docs.src}/changes"/>
+  <property name="images.src" value="${docs.src}/images"/>
+  <property name="javadoc.link.java"
+            value="http://java.sun.com/javase/6/docs/api/"/>
+  <property name="final.name" value="${name}-${version}"/>
+  <property name="dev.final.name" value="${final.name}-dev"/>
+  <property name="bin.final.name" value="${final.name}-bin"/>
+
+  <!-- ====================================================== -->
+  <!-- Macro definitions                                      -->
+  <!-- ====================================================== -->
+  <macrodef name="macro_tar" description="Worker Macro for tar">
+    <attribute name="param.destfile"/>
+    <element name="param.listofitems"/>
+    <sequential>
+      <tar compression="gzip" longfile="gnu"
+      destfile="@{param.destfile}">
+      <param.listofitems/>
+      </tar>
+    </sequential>
+  </macrodef>
+
+  <macrodef name="iterate-cpp">
+    <attribute name="target"/>
+    <sequential>
+      <subant target="@{target}">
+	<property name="thrift.home" value="${thrift.home}"/>
+        <!-- TODO filelist dir="." files="metastore/build.xml,serde/build.xml,service/build.xml,odbc/build.xml"/-->
+        <filelist dir="." files="odbc/build.xml"/>
+      </subant>
+    </sequential>
+  </macrodef>
+
+  <macrodef name="iterate-all">
+    <attribute name="target"/>
+    <sequential>
+      <subant target="@{target}">
+        <filelist dir="." files="ant/build.xml,shims/build.xml,common/build.xml,serde/build.xml,metastore/build.xml,ql/build.xml,cli/build.xml,contrib/build.xml,service/build.xml,jdbc/build.xml,hwi/build.xml,ant/build.xml"/>
+      </subant>
+    </sequential>
+  </macrodef>
+
+  <macrodef name="iterate">
+    <attribute name="target"/>
+    <sequential>
+      <subant target="@{target}">
+        <filelist dir="." files="shims/build.xml,common/build.xml,serde/build.xml,metastore/build.xml,ql/build.xml,cli/build.xml,contrib/build.xml,service/build.xml,jdbc/build.xml,hwi/build.xml"/>
+      </subant>
+    </sequential>
+  </macrodef>
+
+  <!-- the normal classpath -->
+  <path id="common-classpath">
+    <pathelement location="${hadoop.jar}"/>
+    <pathelement location="${build.dir.hive}/classes"/>
+    <fileset dir="${hive.root}" includes="hive_*.jar"/>
+    <fileset dir="${hive.root}/lib" includes="*.jar"/>
+    <fileset dir="${hive.root}/ql/lib" includes="*.jar"/>
+  </path>
+
+  <path id="classpath">
+    <pathelement location="${build.dir.hive}/common/classes"/>
+    <pathelement location="${build.dir.hive}/serde/classes"/>
+    <pathelement location="${build.dir.hive}/metastore/classes"/>
+    <pathelement location="${build.dir.hive}/ql/classes"/>
+    <pathelement location="${build.dir.hive}/cli/classes"/>
+    <fileset dir="${hive.root}/data" includes="files/*.jar"/>
+    <fileset dir="${hive.root}/ql" includes="lib/*.jar"/>
+    <fileset dir="${hive.root}/cli" includes="lib/*.jar"/>
+    <fileset dir="${hive.root}/service" includes="lib/*.jar"/>
+    <path refid="common-classpath"/>
+  </path>
+
+  <target name="init">
+    <iterate-all target="init"/>
+  </target>
+
+  <target name="test-init">
+    <iterate-all target="test-init"/>
+  </target>
+
+  <target name="compile-cpp" depends="init">
+    <iterate-cpp target="compile-cpp"/>
+  </target>
+
+  <target name="compile-cpp-clean">
+    <iterate-cpp target="clean"/>
+  </target>
+
+  <target name="compile" depends="compile-cpp">
+    <iterate target="compile"/>
+  </target>
+
+  <target name="jar">
+    <iterate target="jar"/>
+  </target>
+
+  <target name="test" depends="clean-test,jar">
+    <iterate target="test"/>
+    <iterate-cpp target="test"/>
+  </target>
+
+  <!-- create an html report from junit output files -->
+  <target name="testreport">
+    <junitreport todir="${test.build.dir}">
+      <fileset dir="${build.dir.hive}">
+        <include name="**/TEST-*.xml"/>
+      </fileset>
+      <report format="noframes" todir="${test.build.dir}"/>
+    </junitreport>
+  </target>
+
+  <target name="clean-test">
+    <iterate target="clean-test"/>
+    <delete dir="${build.dir.hive}/test"/>
+  </target>
+
+  <target name="clean">
+    <iterate-all target="clean"/>
+    <iterate-cpp target="clean"/>
+    <delete dir="${target.dir}"/>
+    <delete dir="${build.dir.hive}"/>
+  </target>
+
+  <!-- ====================================================== -->
+  <!-- Generate some of the test data.                        -->
+  <!-- ====================================================== -->
+  <target name="gen-testdata" depends="jar">
+    <subant target="gen-testdata">
+      <fileset dir="." includes="serde/build.xml"/>
+    </subant>
+  </target>
+
+  <target name="package-cpp" depends="package,compile-cpp">
+    <mkdir dir="${target.dir}/include"/>
+    <copy todir="${target.dir}/include" preservelastmodified="true" flatten="true">
+      <fileset file="${build.dir.hive}/odbc/include/*"/>
+    </copy>
+    <copy todir="${target.lib.dir}" preservelastmodified="true" flatten="true">
+      <fileset file="${build.dir.hive}/odbc/lib/*" excludes="*.so"/>
+    </copy>
+    <symlink link="${target.lib.dir}/libhiveclient.so" resource="libhiveclient.so.1.0.0"/>
+
+  </target>
+
+  <target name="package" depends="jar">
+    <echo message="Deploying Hive jars to ${target.dir}"/>
+    <mkdir dir="${target.dir}"/>
+    <mkdir dir="${target.lib.dir}"/>
+    <mkdir dir="${target.conf.dir}"/>
+    <mkdir dir="${target.bin.dir}"/>
+    <mkdir dir="${target.example.dir}"/>
+    <mkdir dir="${target.example.dir}/files"/>
+    <mkdir dir="${target.example.dir}/queries"/>
+    <mkdir dir="${target.lib.dir}/py"/>
+    <mkdir dir="${target.lib.dir}/php"/>
+    <copy file="${hive.root}/bin/hive" todir="${target.bin.dir}"/>
+    <copy todir="${target.bin.dir}/ext">
+      <fileset dir="${hive.root}/bin/ext" excludes="**/.svn"/>
+    </copy>
+    <copy file="${hive.root}/bin/hive-config.sh" todir="${target.bin.dir}"/>
+    <copy file="${basedir}/conf/hive-default.xml" todir="${target.conf.dir}"/>
+    <copy file="${basedir}/conf/hive-log4j.properties" todir="${target.conf.dir}"/>
+    <copy todir="${target.lib.dir}/php">
+      <fileset dir="${hive.root}/serde/src/gen-php" excludes="**/.svn"/>
+      <fileset dir="${hive.root}/metastore/src/gen-php" excludes="**/.svn"/>
+    </copy>
+    <!-- Create the python thrift package -->
+    <copy todir="${target.lib.dir}/py">
+      <fileset dir="${hive.root}/service/lib/py" excludes="**/.svn"/>
+    </copy>
+    <copy todir="${target.lib.dir}/py/hive_serde">
+      <fileset dir="${hive.root}/serde/src/gen-py/org_apache_hadoop_hive_serde" excludes="**/.svn"/>
+    </copy>
+    <copy todir="${target.lib.dir}/py/hive_metastore">
+      <fileset dir="${hive.root}/metastore/src/gen-py/hive_metastore" excludes="**/.svn"/>
+    </copy>
+    <copy todir="${target.lib.dir}/py/hive_service">
+      <fileset dir="${hive.root}/service/src/gen-py/hive_service" excludes="**/.svn"/>
+    </copy>
+    <copy todir="${target.lib.dir}" preservelastmodified="true" flatten="true">
+      <fileset dir="${hive.root}" includes="*/*.jar, */*/*.jar" excludes="**/antlr-2*,**/antlr-3*,**/TestSerDe.jar"/>
+      <fileset file="${build.dir.hive}/cli/hive_cli.jar"/>
+      <fileset file="${build.dir.hive}/common/hive_common.jar"/>
+      <fileset file="${build.dir.hive}/ql/hive_exec.jar"/>
+      <fileset file="${build.dir.hive}/metastore/hive_metastore.jar"/>
+      <fileset file="${build.dir.hive}/hive_hwi.war"/>
+      <fileset file="${build.dir.hive}/contrib/hive_contrib.jar"/>
+    </copy>
+    <copy todir="${target.example.dir}/files" preservelastmodified="true" flatten="true">
+      <fileset dir="${test.data.dir}/files" includes="*.*" excludes="**/.svn"/>
+    </copy>
+    <copy file="${basedir}/README.txt" todir="${target.dir}"/>
+    <copy todir="${target.example.dir}/queries" preservelastmodified="true" flatten="true">
+      <fileset dir="${ql.test.query.dir}/positive" includes="*.q" excludes="**/.svn"/>
+    </copy>
+    <chmod perm="ugo+x" type="file" parallel="false">
+      <fileset dir="${target.bin.dir}"/>
+    </chmod>
+  </target>
+
+  <!-- ====================================================== -->
+  <!-- Generate files for eclipse.                            -->
+  <!-- ====================================================== -->
+  <target name="eclipse-files" depends="init"
+          description="Generate files for Eclipse">
+
+    <condition property="hadoop.version.ant-internal" value="0.19">
+      <not>
+        <isset property="hadoop.version.ant-internal"/>
+      </not>
+    </condition>
+    <echo message="Using hadoop version ${hadoop.version.ant-internal}"/>
+
+    <taskdef name="getversionpref" classname="org.apache.hadoop.hive.ant.GetVersionPref"
+             classpath="${build.dir.hive}/anttasks/hive_anttasks.jar"/>
+
+    <getversionpref property="hadoop.version.ant-internal.prefix" input="${hadoop.version.ant-internal}"/>
+
+    <pathconvert property="eclipse.project">
+      <path path="${basedir}"/>
+      <regexpmapper from="^.*/([^/]+)$$" to="\1" handledirsep="yes"/>
+    </pathconvert>
+    <copy todir="." overwrite="true">
+      <fileset dir="eclipse-templates">
+        <exclude name="**/README.txt"/>
+        <exclude name="**/.svn"/>
+      </fileset>
+      <filterset>
+        <filter token="PROJECT" value="${eclipse.project}"/>
+        <filter token="HADOOPVER" value="${hadoop.version.ant-internal}"/>
+        <filter token="HADOOPVERPREF" value="${hadoop.version.ant-internal.prefix}"/>
+      </filterset>
+    </copy>
+    <move todir="." includeemptydirs="false">
+      <fileset dir=".">
+        <include name="*.launchtemplate"/>
+      </fileset>
+      <mapper type="glob" from="*.launchtemplate" to="*.launch"/>
+    </move>
+
+  </target>
+
+  <target name="clean-eclipse-files"
+          description="Delete files for Eclipse">
+    <delete includeemptydirs="true">
+      <fileset dir="." includes=".classpath .project .settings/ .externalToolBuilders/"/>
+    </delete>
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- Documentation                                                      -->
+  <!-- ================================================================== -->
+
+  <target name="docs">
+    <antcall target="changes-to-html"/>
+  </target>
+
+  <target name="changes-to-html" description="Convert CHANGES.txt into an html file">
+    <mkdir dir="${build.docs}"/>
+    <exec executable="perl" input="CHANGES.txt" output="${build.docs}/changes.html" failonerror="true">
+      <arg value="${changes.src}/changes2html.pl"/>
+    </exec>
+    <copy todir="${build.docs}">
+      <fileset dir="${changes.src}" includes="*.css"/>
+    </copy>
+    <copy todir="${build.docs}/images">
+      <fileset dir="${images.src}" includes="*.jpg"/>
+    </copy>
+  </target>
+
+  <target name="javadoc" depends="package" description="Generate javadoc">
+    <mkdir dir="${build.javadoc}"/>
+    <javadoc
+      packagenames="org.apache.hadoop.hive.*"
+      destdir="${build.javadoc}"
+      author="true"
+      version="true"
+      use="true"
+      windowtitle="${Name} ${version} API"
+      doctitle="${Name} ${version} API"
+      bottom="Copyright &amp;copy; ${year} The Apache Software Foundation"
+      >
+
+      <packageset dir="ant/src"/>
+      <packageset dir="hwi/src/java"/>
+      <packageset dir="hwi/src/test"/>
+      <packageset dir="common/src/java"/>
+      <packageset dir="service/src/java"/>
+      <packageset dir="service/src/test"/>
+      <packageset dir="service/src/gen-javabean"/>
+      <packageset dir="serde/src/java"/>
+      <packageset dir="serde/src/test"/>
+      <packageset dir="serde/src/gen-java"/>
+      <packageset dir="jdbc/src/java"/>
+      <packageset dir="jdbc/src/test"/>
+      <packageset dir="metastore/src/java"/>
+      <packageset dir="metastore/src/test"/>
+      <packageset dir="metastore/src/gen-javabean"/>
+      <packageset dir="metastore/src/model"/>
+      <packageset dir="cli/src/java"/>
+      <packageset dir="ql/src/java"/>
+      <packageset dir="${build.dir.hive}/ql/gen-java"/>
+      <packageset dir="shims/src/common/java"/>
+
+      <link href="${javadoc.link.java}"/>
+
+      <classpath >
+        <fileset dir="${hadoop.root}/lib">
+          <include name="**/*.jar" />
+          <exclude name="**/excluded/" />
+        </fileset>
+        <path refid="classpath" />
+        <pathelement path="${java.class.path}"/>
+      </classpath>
+
+      <group title="Hive" packages="org.apache.*"/>
+  </javadoc>
+
+  </target>
+
+  <!-- ================================================================== -->
+  <!-- Make release tarball                                               -->
+  <!-- ================================================================== -->
+
+  <target name="tar" depends="package, docs, javadoc" description="Make release tarball">
+    <macro_tar param.destfile="${build.dir.hive}/${dev.final.name}.tar.gz">
+      <param.listofitems>
+        <tarfileset dir="${build.dir.hive}/dist" mode="755" prefix="${dev.final.name}">
+          <include name="bin/**"/>
+        </tarfileset>
+        <tarfileset dir="${build.dir.hive}/dist" mode="755" prefix="${dev.final.name}">
+          <include name="lib/py/**/*-remote"/>
+        </tarfileset>
+        <tarfileset dir="${build.dir.hive}/dist" mode="664" prefix="${dev.final.name}">
+          <include name="**"/>
+          <exclude name="bin/**"/>
+          <exclude name="lib/py/**/*-remote"/>
+        </tarfileset>
+        <tarfileset dir="${hive.root}" mode="664" prefix="${dev.final.name}/src">
+          <exclude name="build/**" />
+          <exclude name="bin/**" />
+          <exclude name="**/py/**/*-remote" />
+          <exclude name="data/scripts/**" />
+          <exclude name="metastore/scripts/**" />
+          <exclude name="ql/src/test/scripts/**" />
+        </tarfileset>
+        <tarfileset dir="${hive.root}" mode="755" prefix="${dev.final.name}/src">
+          <exclude name="build/**" />
+          <include name="bin/**" />
+          <include name="**/py/**/*-remote" />
+          <include name="data/scripts/**" />
+          <include name="metastore/scripts/**" />
+          <include name="ql/src/test/scripts/**" />
+        </tarfileset>
+      </param.listofitems>
+    </macro_tar>
+  </target>
+
+  <target name="binary" depends="package, docs, javadoc" description="Make tarball without source and documentation">
+    <macro_tar param.destfile="${build.dir.hive}/${bin.final.name}.tar.gz">
+      <param.listofitems>
+        <tarfileset dir="${build.dir.hive}/dist" mode="755" prefix="${bin.final.name}">
+          <include name="bin/**"/>
+        </tarfileset>
+        <tarfileset dir="${build.dir.hive}/dist" mode="755" prefix="${bin.final.name}">
+          <include name="lib/py/**/*-remote"/>
+        </tarfileset>
+        <tarfileset dir="${build.dir.hive}/dist" mode="664" prefix="${bin.final.name}">
+          <include name="**"/>
+          <exclude name="bin/**"/>
+          <exclude name="docs/**"/>
+          <exclude name="lib/py/**/*-remote"/>
+        </tarfileset>
+      </param.listofitems>
+    </macro_tar>
+  </target>
+
+</project>

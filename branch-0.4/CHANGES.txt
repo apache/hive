@@ -1,0 +1,1033 @@
+Hive Change Log
+
+Release 0.4.0 -  Unreleased
+
+  INCOMPATIBLE CHANGES
+
+    HIVE-143. Remove the old file based metastore, in favour of the
+    RDBMS based metastore. (prasadc via johan)
+
+    HIVE-724. Change HiveServer.getSchema() to return Hive types rather
+    than Thrift types. Changed existing getSchema() to getThriftSchema()
+    (Eric Hwang via rmurthy)
+
+  NEW FEATURES
+
+    HIVE-354. UDF for length of a string. (Neil Conway via namit).
+
+    HIVE-402. Implement UDF regexp. (Raghotham Murthy via namit)
+
+    HIVE-250. Shared memory java dbm for map-side joins.
+    (Joydeep Sen Sarma via zshao)
+
+    HIVE-164. Use CASE through GenericUDF (Zheng Shao via namit)
+
+    HIVE-464. Add alter partition method to the meastore interface.
+    (Prasad Chakka via zshao)
+
+    HIVE-352. Column-based storage format RCFile.
+    (Yongqiang He via zshao)
+
+    HIVE-420. Support regular expressions for column names
+    (Zheng Shao via namit)
+
+    HIVE-463. Add a pre execution hook to ql
+    (Ashish Thusoo via prasadc)
+
+    HIVE-476. Add getTable and getPartition calls to the ReadEntity and
+     WriteEntity objects in PreExecute hooks. (Ashish Thusoo via prasadc)
+
+    HIVE-518. Add test mode to hive where input tables are sampled.
+    (Namit Jain via rmurthy)
+
+    HIVE-509. Add create table like.
+    (Zheng Shao via namit)
+
+    HIVE-195. Map-side join. (Namit Jain via zshao)
+
+    HIVE-470. Add COALESCE. (Zheng Shao via namit)
+
+    HIVE-460. Improve Column Pruning. (He Yongqiang via namit)
+
+    HIVE-563. UDF for parsing the URL: parse_url. (Suresh Antony via zshao)
+
+    HIVE-338. add/delete jar commands, Hive Server fix for multithreading,
+    cli commands via hiveserver
+    (Min Zhou and Joydeep Sen Sarma via jssarma)
+
+    HIVE-338. Postfix for HIVE-338. (zshao)
+
+    HIVE-567. jdbc: integrate hive with pentaho report designer
+    (Raghotham Murthy via namit)
+
+    HIVE-136. escaping in lazy serde
+    (Zheng Shao via namit)
+
+    HIVE-603. list of maps and vice versa
+    (Zheng Shao via namit)
+
+    HIVE-553. add BinarySortableSerDe
+    (Zheng Shao via namit)
+
+    HIVE-622. add UDF reverse
+    (Emil Ibrishimov via namit)
+
+    HIVE-438. Make Hive work with apache thrift
+    (Raghu Murthy via namit)
+
+    HIVE-522. Extend GenericUDAF to support complex types
+    (Zheng Shao via namit)
+
+    HIVE-541. add UDF locate and instr
+    (Min Zhou via namit)
+
+    HIVE-646. add UDF conv, bin and hex
+    (Emil Ibrishimov via namit)
+
+    HIVE-512. add UDF elt.
+    (Min Zhou via namit)
+
+    HIVE-609. Optimize multi-group by. (Namit Jain via zshao)
+
+    HIVE-642. add UDF split (Emil Ibrishimov via namit)
+
+    HIVE-639. create contrib directory (Zheng Shao via namit)
+
+    HIVE-674. add UDFs sin, cos, asin, acos (Karan Mangla via namit)
+
+    HIVE-668. add UDFs abs, ascii, repeat, lpad, rpad, space, substring (Emil Ibrishimov via namit)
+
+    HIVE-167. add regex serde(Zheng Shao via namit)
+
+    HIVE-665. Get hadoop/mapreduce cluster status from hive server
+    (Eric Hwang via rmurthy)
+
+    HIVE-580. add 'show functions {pattern}'
+    (Scott Chen via namit)
+
+    HIVE-656. Add a PMOD (POSITIVE MOD) function. (Scott Chen via zshao)
+
+    HIVE-698. Add create temporary function for generic UDAF.
+    (Zheng Shao via namit)
+
+    HIVE-607. Add udafs for variance and standard deviation
+    (Emil Ibrishimov via namit)
+
+    HIVE-487. Make hive compatibale with hadoop 20
+    (Todd Lipcon via namit)
+
+    HIVE-640. Add LazyBinarySerDe to Hive. (Yuntao Jia via zshao)
+
+    HIVE-729. Make AS in select list optional. (Zheng Shao via namit)
+
+    HIVE-691. show documentation for functions. (Emil Ibrishimov via namit)
+
+    HIVE-743. Let user specify serde for custom sctipts.   
+    (Namit Jain via rmurthy)
+
+    HIVE-749. add hive.optimize.pruner
+    (Zheng Shao via namit)
+
+    HIVE-748. Test for extracting urls. (Namit Jain via zshao)
+
+    HIVE-187. Preliminary ODBC Support. (Eric Hwang via rmurthy)
+
+  IMPROVEMENTS
+    HIVE-389. Option to build without ivy (jssarma)
+
+    HIVE-360. Generalize the FileFormat Interface in Hive.
+    (He Yongqiang via zshao)
+
+    HIVE-406. Build file improvements. (Joydeep Sen Sarma via zshao).
+
+    HIVE-254. Link jobtracker from Hive History in Hive Web Interface.
+    (Edward Capriolo via athusoo)
+
+    HIVE-502. Optimize RCFile's performance by removeing all synchronized
+    modifiers. (Yongqiang He via zshao)
+
+    HIVE-204. Provide option to run tests with MiniMRCluster.
+    (Namit Jain via athusoo)
+
+    HIVE-511. Make DoubleWritable's hashCode more uniform.
+    (Zheng Shao via rmurthy)
+
+    HIVE-490. Add missing configuration variables to hive-default.xml.
+    (Yongqiang He via zshao)
+
+    HIVE-528. Map Join followup: split MapJoinObject into MapJoinObjectKey and
+    MapJoinObjectValue. (Namit Jain via zshao)
+
+    HIVE-542. UDF: Faster String Like. (Yuntao Jia via zshao)
+
+    HIVE-521. Move size, if, isnull, isnotnull to GenericUDF.
+    (Min Zhou via zshao)
+
+    HIVE-439. Merge small files after a map-only job. (Namit Jain via zshao)
+
+    HIVE-516. Enable predicate pushdown for junit tests.
+    (Prasad Chakka via zshao)
+
+    HIVE-530. Map Join followup: optimize number of map-reduce jobs.
+    (Namit Jain via zshao)
+
+    HIVE-445. Upgrade JPOX to datanuclues plugins. (Prasad Chakka via zshao)
+
+    HIVE-593. UDF and GenericUDF clean-up. (Zheng Shao via pchakka)
+
+    HIVE-605. Change eclipse classpath for datanuclues.
+    (Prasad Chakka via zshao)
+
+    HIVE-461. Optimize RCFile reading by using column pruning results.
+    (Yongqiang He via zshao)
+
+    HIVE-628. Remove stray lines from hive-default.xml.
+    (Prasad Chakka via zshao)
+
+    HIVE-629. Concat files for map-reduce jobs. (Namit Jain via zshao)
+
+    HIVE-644. Change default size for merging files to 256MB.
+    (Namit Jain via zshao)
+
+    HIVE-405. Cleanup operator initialization. (Prasad Chakka via zshao)
+
+    HIVE-652. Turn off auto-merge for insert local. (Namit Jain via zshao)
+
+    HIVE-677. Operators to show number of rows forwarded. (Namit Jain via zshao)
+
+    HIVE-689. Dump more memory stat periodically. (Namit Jain via zshao)
+
+    HIVE-280. Reserve keywords such as database etc. (Namit Jain via zshao)
+
+    HIVE-720. Improve ByteStream by removing all synchronized method calls.
+    (Yongqiang He via zshao)
+
+    HIVE-454. Support escaping of ; in cli.
+    (Edward Capriolo via namit)
+
+    HIVE-736. Provide a function in Metastore to return the schema of a table.
+    (Eric Hwang via rmurthy)
+
+    HIVE-617. Add 'jar' service to hive client shell.
+    (Edward Capriolo via rmurthy)
+
+    HIVE-578. Refactor partition pruning.
+    (Ashish Thusoo via namit)
+
+    HIVE-737. Support having hadoop jars in HADOOP_HOME/build for running
+    hive cli. (Johan Oskarsson via athusoo)
+
+    HIVE-760. Add version info to META-INF/MANIFEST.MF 
+    (Bill Graham via rmurthy)
+
+    HIVE-679. Adding the basic JDBC methods to allow querying using the
+    SQuirrelSQL tool. (Bill Graham via rmurthy)
+
+    HIVE-813. Show the actual exception thrown in UDF evaluation.
+    (Zheng Shao via rmurthy)
+
+  OPTIMIZATIONS
+
+    HIVE-279. Predicate Pushdown support (Prasad Chakka via athusoo).
+
+    HIVE-266. Use Text instead of String (Zheng Shao via namit).
+
+    HIVE-427. Add missing config parameters in hive-default.xml.
+    (Namit Jain via zshao)
+
+    HIVE-462. Avoid Text->String->Text conversion (Namit Jain via zshao)
+
+    HIVE-610. Move all properties from jpox.properties to hive-site.xml.
+    (Prasad Chakka via zshao)
+
+    HIVE-811. Fix Javadocs. (Namit Jain via zshao)
+
+  BUG FIXES
+
+    HIVE-381. Fix JDBC HiveResultSet's next function.
+    (Kim P via namit)
+
+    HIVE-387. Use URI from FileSystem Object instead of from HADOOPFS
+    directly. (jssarma)
+
+    HIVE-385. Split Driver's run into compile and execute.
+    (Neil Conway via namit)
+
+    HIVE-393. Remove unnecessary checks in movetask for file type.
+    (Zheng Shao via namit)
+
+    HIVE-403. remove password param from job config that is submitted to job
+    tracker and from log (Prasad Chakka)
+
+    HIVE-407. fix permissions for test scripts in release tarball.
+    (Ashish Thusoo via namit)
+
+    HIVE-414. Add Hive Web Interface code to Eclipse config
+    (Prasad Chakka)
+
+    HIVE-372. Fix UDF memory consumptions and bad error messages.
+    (Zheng Shao via namit)
+
+    HIVE-413. Fix multi-table insert. (Namit Jain via zshao)
+
+    HIVE-415. Fix long query parsing problems. (Zheng Shao via namit).
+
+    HIVE-421. Fix union followed by multi-table insert. (Namit Jain via zshao).
+
+    HIVE-423. Change launch templates to use hive_model.jar.
+    (Raghotham Murthy via zshao)
+
+    HIVE-426. Fix undeterministic query plan because of aliasToWork.
+    (Namit Jain via zshao)
+
+    HIVE-404. Fix ordering in "SELECT * FROM t SORT BY col1 LIMIT 100" when
+    query is a outer-most query.  (Namit Jain via zshao)
+
+    HIVE-432. Fix "SORT BY" using only one reducer.
+    (Zheng Shao via namit)
+
+    HIVE-435. Fix Null pointer exception if password is null.
+    (Prasad Chakka via namit)
+
+    HIVE-437. Allow both table.name and col.field
+    (Zheng Shao via namit)
+
+    HIVE-366. testParse should not depend on a static field
+    (Zheng Shao via namit)
+
+    HIVE-433. Fixed union18 and union19 tests.
+    (athusoo via johan)
+
+    HIVE-324. Fix AccessControlException when loading data.
+    (Ashish Thusoo via zshao)
+
+    HIVE-395. Fix build problems with eclipse and 0.19 hadoop.
+    (Neil Conway via athusoo)
+
+    HIVE-456. Add option to run junit tests in quiet mode.
+    (Zheng Shao via prasadc)
+
+    HIVE-453. Use FileSystem derived from user supplied path when present
+    instead of default. (Joydeep Sen Sarma via prasadc)
+
+    HIVE-442. Create partitions after data is moved in the query
+    in order to close out an inconsistent window. (Prasad Chakka via athusoo)
+
+    HIVE-483. Fix incorect handling of comments in middle of a query
+    (Namit Jain via athusoo)
+
+    HIVE-486. Fix concurrent modification exception in case of empty partitions
+    (Namit Jain via prasadc)
+
+    HIVE-485. Fix join not to assume all columns are strings.
+    (Namit Jain via zshao)
+
+    HIVE-488. Fix load partition for table with multiple partition columns.
+    (Prasad Chakka via athusoo)
+
+    HIVE-496. UDFDate fails on null. (Zheng Shao via pchakka)
+
+    HIVE-498. Fix null pointer exception in UDFRegExp when
+    the expression string is empty. (Zheng Shao via athusoo)
+
+    HIVE-410: Heartbeating for streaming jobs should not depend on stdout.
+    (Ashish Thusoo via namit)
+
+    HIVE-499. Fix for CAST operator on the same type. (Zheng Shao via athusoo)
+
+    HIVE-501. Fix UDFLower() bug. (Zheng Shao via prasadc)
+
+    HIVE-505. console.info prints to stderr. (Raghotham Murthy via namit)
+
+    HIVE-504. Fix script operator with empty input file.
+    (Raghotham Murthy via zshao)
+
+    HIVE-507. Handle empty files properly. (Namit Jain via zshao)
+
+    HIVE-497. Fix predicate pushdowns when all the columns are not
+    selected in the query. (Prasad Chakka via athusoo)
+
+    HIVE-500. Fix select from newly created table.
+    (Yongqiang He via zshao)
+
+    HIVE-451. Fix ORDER BY xxx DESC (He Yongqiang via namit)
+
+    HIVE-467. Scratch data location should be on different filesystems for
+    different types of intermediate data. (Joydeep Sen Sarma via rmurthy)
+
+    HIVE-514. Partition key names should be case insensitive in alter table add
+    partition statement. (Prasad Chakka via zshao)
+
+    HIVE-523. Fix PartitionPruner not to fetch all partitions at once.
+    (Prasad Chakka via zshao)
+
+    HIVE-506. MoveTask should fail if target path cannot be deleted.
+    (Yongqiang He via zshao)
+
+    HIVE-520. Fix TestTCTLSeparatedProtocol. (Johan Oskarsson via zshao)
+
+    HIVE-525. Fix Eclipse classpath by adding Hadoop test jar.
+    (Prasad Chakka via johan)
+
+    HIVE-495. Fix join of a table of ThriftSerDe with complex columns
+    (Zheng Shao via namit)
+
+    HIVE-532. Predicates not pushed above limit
+    (Prasad Chakka via namit)
+
+    HIVE-534. Fix in the cli so that it does not ignore the first
+    newline character. (Raghotham Murthy via athusoo)
+
+    HIVE-443. Remove deprecated functions from metastore.
+    (Prasad Chaaka via athusoo)
+
+    HIVE-479. Change RCFileOutputFormat's generic signatute.
+    (Yongqiang He via zshao)
+
+    HIVE-533. Predicates containing rand() not pushed above
+    (Prasad Chakka via namit)
+
+    HIVE-540. Restore test.silent setting
+    (Zheng Shao via namit)
+
+    HIVE-544. Fix predicate push for exprFieldNodeDesc.
+    (Prasad Chakka via zshao)
+
+    HIVE-547. Better logging in ExecDriver
+    (Zheng Shao via namit)
+
+    HIVE-561. Make hash aggregation threshold configurable
+    (Zheng Shao via namit)
+
+    HIVE-529. Some cleanup for join operator
+    (Zheng Shao via namit)
+
+    HIVE-573. Fix TestHiveServer. (Raghotham Murthy via zshao)
+
+    HIVE-575. Fix Map join out-of-memory problem. (Namit Jain via zshao)
+
+    HIVE-472. HiveFileFormatUtils's checkInputFormat does not include RCFile.
+    (He Yongqiang via namit)
+
+    HIVE-560. Column Pruning for mapjoins
+    (He Yongqiang via namit)
+
+    HIVE-583. Fix spurious 'default database not found'.
+    (Prasad Chakka via zshao)
+
+    HIVE-587. Duplicate results from multiple TIP
+    (Zheng Shao via namit)
+
+    HIVE-582. bug in column pruning
+    (He Yongqiang via namit)
+
+    HIVE-596. Fix PartitionPruner to work with GenericUDF.
+    (Namit Jain via zshao)
+
+    HIVE-590. Pass type information in genFileSinkPlan and improve getSchema
+    call in Driver. (Namit Jain via rmurthy)
+
+    HIVE-612. Problem in removing temp files in FileSinkOperator.jobClose
+    (Zheng Shao via namit)
+
+    HIVE-608. No type conversion in GenericUDF
+    (Zheng Shao via namit)
+
+    HIVE-616. Make hive work with symbolic linked sub directories
+    (Zheng Shao via rmurthy)
+
+    HIVE-527. Inserting into a partitioned table without specifying the partition field should fail.
+    (He Yongqiang via namit)
+
+    HIVE-473. Clean up after tests.
+    (Johan Oskarsson via namit)
+
+    HIVE-624. Bug in TypeConvertor
+    (Zheng Shao via namit)
+
+    HIVE-555. Support create temporary function for udaf and generic udf
+    (Min Zhou via namit)
+
+    HIVE-631. Fix TestParse. (Namit Jain via zshao)
+
+    HIVE-626. Fix Column Pruner column order bug. (Yongqiang He via zshao)
+
+    HIVE-623. optimize UDF reverse and UDF length
+    (Emil Ibrishimov via namit)
+
+    HIVE-632. Make conditional task serializable. (Namit Jain via zshao)
+
+    HIVE-160. Bug in sampling for subqueries. (Raghu Murthy via namit)
+
+    HIVE-636. Fix concatenation task with partitioned table.
+    (Namit Jain via zshao)
+
+    HIVE-641. fix test udf_reverse.q
+    (Emil Ibrishimov via namit)
+
+    HIVE-635. fix union accepting multiple objectinspectors
+    (Zheng Shao via namit)
+
+    HIVE-643. recognize escaped strings
+    (Emil Ibrishimov via namit)
+
+    HIVE-592. Renaming internal table should rename HDFS.
+    (Prasad Chakka via zshao)
+
+    HIVE-654. renaming thrift serde
+    (Zheng Shao via namit)
+
+    HIVE-666. Propagate errors in FetchTask to client.
+    (Zheng Shao via rmurthy)
+
+    HIVE-620. bug in displaying function name when more than 1 function points to the same class
+    (Emil Ibrishimov via namit)
+
+    HIVE-670. dump output column names in explain
+    (Zheng Shao via namit)
+
+    HIVE-673. Bug in handling of null partitions.
+    (Namit Jain via zshao)
+
+    HIVE-690. Fix script operator timeout bug
+    (Zheng Shao via namit)
+
+    HIVE-697. GroupByOperator's initialization calls GenericUDAF.newAggregation before GenericUDAF.init
+    (Zheng Shao via namit)
+
+    HIVE-700. Fix test error by adding "DROP FUNCTION".
+    (Min Zhou and Namit Jain via zshao)
+
+    HIVE-702. bug in drop temporary function
+    (Min Zhou via namit)
+
+    HIVE-710. Fix serialization bug in BinarySortableSerDe for negative double
+    and float numbers (Zheng Shao via pchakka)
+
+    HIVE-719. Lazy Array/Map index out of bound bug.
+    (Zheng Shao via namit)
+
+    HIVE-725. Add missing classpath: shims/src/common/java. Bug appeared
+    after HIVE-487 was committed. (Zheng Shao via rmurthy)
+
+    HIVE-711. test for negative double value.
+    (Karan Mangla via namit)
+
+    HIVE-344. Fixes for running Hive under cygwin.
+    (Amr Awadallah via athusoo)
+
+    HIVE-740. Fix HiveMetaStore get_fields. (Eric Hwang via zshao)
+
+    HIVE-597. apache header for jdbc files. (Raghu Murthy via namit)
+
+    HIVE-734. fix nulls insertion problem. (Ning Zhang via via namit)
+
+    HIVE-772. Fix genConversionSelect for init serde with null.
+    (Namit Jain via zshao)
+
+    HIVE-769. Fix bug in partition pruning (Zheng Shao via namit)
+
+    HIVE-769. Fix bug in partition pruning - bug in patch (Zheng Shao via namit)
+
+    HIVE-774. Fix the behavior of "/" and add "DIV". (Ning Zhang via zshao)
+
+    HIVE-776. Make "DIV" an infix operator. (Ning Zhang via zshao)
+
+    HIVE-764. Fixed json.jar. (Raghu Murthy via zshao)
+
+    HIVE-794. MergeTask should use COMPRESSRESULT. (Saurabh Nanda via zshao)
+
+    HIVE-790. Bug in union and script. (Ning Zhang via namit)
+
+    HIVE-755. Driver NullPointerException when calling getResults without first
+    compiling (Eric Hwang via namit)
+
+    HIVE-752. Bug in shimLoader for HWI server (Edward Capriolo via namit)
+
+    HIVE-812. ant package should work with all versions of hadoop.
+    (Zheng Shao via namit)
+
+    HIVE-750. New partitionpruner does not work with test mode.
+    (Namit Jain via zshao)
+
+    HIVE-726. Make "ant package -Dhadoop.version=0.17.0" work.
+    (Todd Lipcon via zshao)
+
+    HIVE-799. final.name should not include hadoop version.
+    (Todd Lipcon via zshao)
+
+    HIVE-718. Fix Loading data inpath into a new partition.
+    (Namit Jain via zshao)
+
+    HIVE-838. In strict mode, remove error if no partition is selected.
+    (Namit Jain via rmurthy)
+
+Release 0.3.1 - Unreleased
+
+  INCOMPATIBLE CHANGES
+
+  NEW FEATURES
+
+    HIVE-61. Implement "ORDER BY". (Namit Jain via zshao)
+
+    HIVE-376. In strict mode do not allow join without "ON" condition.
+    (Namit Jain via zshao)
+
+  IMPROVEMENTS
+
+    HIVE-440. Reducer and Join to print out number of rows processed.
+    (Namit Jain via zshao)
+
+  OPTIMIZATIONS
+
+  BUG FIXES
+
+    HIVE-416. Fix backtrack in Hive.g. (Namit Jain via zshao)
+
+    HIVE-442. Move the data before creating the partition.
+    (Prasad Chakka via zshao)
+
+    HIVE-447. Fix tests on hudson. (Ashish Thusoo via zshao)
+
+    HIVE-469. Fix errors for cases where the partition or the
+    table is empty. (Namit Jain via athusoo)
+
+    HIVE-816. Cache MetastoreClient. (Dave Lerman via zshao)
+
+Release 0.3.0 - 2009-04-20
+
+  INCOMPATIBLE CHANGES
+
+  NEW FEATURES
+
+    HIVE-337. LazySimpleSerDe to support multi-level nested array, map, struct
+    types. (zshao)
+
+    HIVE-313. Add UDF date_add, date_sub, datediff. (zshao)
+
+    HIVE-79. Print number of rows inserted to table(s).
+    (Suresh Antony via zshao)
+
+    HIVE-30. Hive Web User Interface. (Edward Capriolo via athusoo)
+
+    HIVE-343. Include py packages for thrift service.
+    (Raghotham Murthy via zshao)
+
+    HIVE-299. Include php packages for thrift service.
+    (Raghotham Murthy via zshao)
+
+    HIVE-82 Support for building tarballs and javadocs
+    (Ashish Thusoo via rmurthy)
+
+  IMPROVEMENTS
+
+    HIVE-132. Show table and describe results to be read via FetchTask.
+    (Raghotham Murthy via zshao)
+
+  OPTIMIZATIONS
+
+  BUG FIXES
+
+    HIVE-349. Fix TestCliDriver when there are test cases with no tasks.
+    (Suresh Antony via zshao)
+
+    HIVE-339. Fix count distinct in 1 map-reduce job with map side
+    aggregation. (Namit Jain via zshao)
+
+    HIVE-271. Move test-udfs creation to build-common in order to
+    fix broken 0.17 build. (athusoo)
+
+    HIVE-286. Use round(xxx,12) to make sure there is no precision
+    matching problem in testCliDriver_udf7. (zshao via johan)
+
+    HIVE-327. Fix row counts printed in hive history to reflect the
+    count of rows from the query in the session. (Suresh Anthony via athusoo)
+
+    HIVE-334. Make union3 test output deterministic.
+    (Joydeep Sen Sarma via athusoo)
+
+    HIVE-320. Fix intermittent nullpointer exception in count(DISTINCT).
+    (Namit Jain via athusoo)
+
+    HIVE-124. Fix empty aggregations to return 1 row instead of
+    nothing. (namit)
+
+    HIVE-347. Fix lot of partition scans in strict mode in case of error in
+    partition specification error. (namit)
+
+    HIVE-251. Throw an error to the CLI if a user defined script fails in
+    TRANSFORM, MAP or REDUCE commands. (athusoo)
+
+    HIVE-317. Fix HiveServer to accept 1 argument for port.
+    (Min Zhou via athusoo)
+
+    HIVE-285. Fix to disallow union of different schemas.
+    (Raghotham Murthy via namit)
+
+    HIVE-253. Fix to disallow computation of rand() at compilation stage.
+    (Raghotham Murthy via namit)
+
+    HIVE-350. Fix wrong order of aggregations in explain plan.
+    (namit)
+
+    HIVE-347. undo for Fix lot of partition scans in strict mode in case of error in
+    partition specification error. (namit)
+
+    HIVE-319. Add UDF for unix timestamp.
+    (Hao Liu via namit)
+
+    HIVE-363. Use 1 reducer in case of aggregations with no grouping keys.
+    (namit)
+
+    HIVE-366. Make id a non-bean attribute so that TestParse does not depend on that.
+    (namit)
+
+    HIVE-342. Fix TestMTQueries
+    (Prasad Chakka via namit)
+
+    HIVE-318. Fix union all queries. (Namit Jain via zshao)
+
+    HIVE-367. Null Pointer when some of the files in the table are
+    empty. (Namit Jain via athusoo)
+
+    HIVE-278. Add support for Hive History to
+    Hive Web UI. (Edward Capriolo via athusoo)
+
+    HIVE-356. Treat Object[] and List<Object> differently.
+    (Zheng Shao via namit)
+
+    HIVE-373. 1 reducer should be used if no grouping key is present in all
+    scenarios. (Namit Jain via zshao)
+
+    HIVE-375. LazySimpleSerDe directly creates a UTF8 buffer for primitive types.
+    (Zheng Shao via namit)
+
+    HIVE-382. Fix for hash aggr, remove elements from hash table in the loop
+    during close, rather than waiting till the end. (Namit Jain via rmurthy)
+
+    HIVE-391. Fix for UDAFCount which was not handling merging nulls
+    (Namit Jain via rmurthy)
+
+    HIVE-384. Fixing UNION ALL when the first job is a map-only job.
+    (Namit Jain via zshao)
+
+    HIVE-394. Break plans in Cluster Mode. (Namit Jain via zshao)
+
+    HIVE-399. Fix timeout problems caused due to the bigdata test.
+    (Namit Jain via athusoo)
+
+    HIVE-397. Make union tests deterministic by ordering the
+    output results. (Namit Jain via athusoo)
+
+    HIVE-400. Fix bug in genColList. (Namit Jain via zshao)
+
+    HIVE-390. Make partition pruner tests deterministic by ordering the
+    output results. (Namit Jain via athusoo)
+
+Release 0.2.0 - Unreleased
+
+  INCOMPATIBLE CHANGES
+
+    HIVE-194. Support specifying decimal places for ROUND function.
+    ROUND always rounds away from zero now. (David Phillips via zshao)
+
+  NEW FEATURES
+
+    HIVE-223. Single map-reduce group-by using map-side aggregation.
+    (Namit Jain via zshao)
+
+    HIVE-269. Add log/exp/pow UDF functions to Hive. (zshao)
+
+    HIVE-258. New UDF IF(test, valueTrue, valueFalseOrNull). (zshao)
+
+    HIVE-105. Automatically estimate number of required reducers. (zshao)
+
+    HIVE-176. Added a history log for Hive. (Suresh Anthony via athusoo)
+
+    HIVE-244. Add SQRT() UDF. (Jeff Hammerbacher via zshao)
+
+    HIVE-216. Generate ruby bindings for service. (Raghotham Murthy via zshao)
+
+    HIVE-163. JSON udf function added. (Hao Liu via zshao)
+
+    HIVE-142. Add a metastore check command. (Johan Oskarsson via zshao)
+
+    HIVE-91. Add ADD PARTITION support to ALTER TABLE in order to add
+    partitions to a table. (Johan Oskarsson via athusoo)
+
+    HIVE-148. Extend bin/hive to include the lineage tool.
+    (Suresh Antony via zshao)
+
+    HIVE-147. Add a tool for extracting lineage info from hive sql.
+    (Suresh Antony via zshao)
+
+    HIVE-48.  Support JDBC connections for interoperability between
+    Hive and RDBMS.  (Raghotham Murthy and Michi Mutsuzaki via dhruba)
+
+    HIVE-140. Event Based Infrastructure for Syntax Trees in the compiler.
+    (Ashish Thusoo through zshao)
+
+    HIVE-98. Dependency management with hadoop core using ivy.
+    (Ashish Thusoo through zshao)
+
+    HIVE-73. Thrift Server and Client for Hive (Raghotham Murthy through zshao)
+
+    HIVE-113. Distribute by and sort by support. (zshao)
+
+    HIVE-118. Add date related functions. (zshao)
+
+    HIVE-62. Support nested types.
+    (Ashish Thusoo via dhruba)
+
+  IMPROVEMENTS
+
+    HIVE-300. DISTRIBUTE BY now supports expressions. (zshao)
+
+    HIVE-292. Replace MetadataTypedColumnsetSerde with LazySimpleSerDe. (zshao)
+
+    HIVE-294. Support MAP(a.*), REDUCE(a.*) and TRANSFORM(a.*). (zshao)
+
+    HIVE-270. Add a lazy-deserialized SerDe for efficient deserialization of
+    rows with primitive types. (zshao)
+
+    HIVE-288. Removed the old serde package. (zshao)
+
+    HIVE-240. Support CREATE TABLE IF NOT EXISTS. (zshao)
+
+    HIVE-126. Don't fetch information on Partitions from HDFS instead of
+    MetaStore.  (Johan Oskarsson via zshao)
+
+    HIVE-209. Enabling asserts in tests. (Prasad Chakka via zshao)
+
+    HIVE-177. Allow specifying custom input and output format in CREATE TABLE.
+    (David Phillips via zshao)
+
+    HIVE-166. Create eclipse project template. (Ashish Thusoo via zshao)
+
+    HIVE-186. Refactor code to use a single graph, nodeprocessor, dispatcher
+    and rule abstraction. (Ashish Thusoo via zshao)
+
+    HIVE-182. Add database name parameter to getTable and dropTable.
+    (Johan Oskarsson via zshao)
+
+    HIVE-181. Restore UDFTestLength unit test for UDFs.
+    (David Phillips via zshao)
+
+    HIVE-107. Case structure for bin/hive. (Edward Capriolo via zshao)
+
+    HIVE-101. Set svn:ignore for the root. (Johan Oskarsson via zshao)
+
+    HIVE-170. Map-side aggregations to estimate memory size. (Namit via zshao)
+
+    HIVE-180. Data Generator for thrift-serialized sequence files. (zshao)
+
+    HIVE-157. Update README.txt to remove refs to mirror.facebook.com. (zshao)
+
+    HIVE-95. Improve cli error messages by lowering backtracking to 1.
+    (Pete Wyckoff through zshao)
+
+    HIVE-102. Refactor DDLTask. (Johan Oskarsson through zshao)
+
+    HIVE-85. New compression options for Hive. (Joydeep Sarma through zshao)
+
+    HIVE-69. genMapRedTasks uses tree walker. (Namit through zshao)
+
+    HIVE-249. Give execute permissions to the hive binary
+    (Jeff Hammerbacher via athusoo)
+
+    HIVE-231. Create junit reports for tests. (Johan Oskarsson via athusoo)
+
+    HIVE-119. Make error messages more informative. (Pete Wyckoff via athusoo)
+
+  OPTIMIZATIONS
+
+  BUG FIXES
+
+    HIVE-340. Fixed null pointer exception with nulls in map-side aggregation.
+    (Namit Jain via zshao)
+
+    HIVE-308. UNION ALL: FileSinkOperator now adds files in case the target
+    exists. (zshao)
+
+    HIVE-276. Fix input3_limit.q for hadoop 0.17. (zshao)
+
+    HIVE-131. Remove uncommitted files from failed tasks.
+    (Joydeep Sen Sarma via zshao)
+
+    HIVE-264. TBinarySortable Protocol supports null characters. (zshao)
+
+    HIVE-255. Propagate user name to Hive metastore. (Prasad Chakka via zshao)
+
+    HIVE-263. TCTLSeparatedProtocol should use UTF-8 to encode/decode
+    the data. (zshao)
+
+    HIVE-255. Propagate user name to Hive metastore. (Prasad Chakka via zshao)
+
+    HIVE-235. Fixed DynamicSerDe to work with null values with Thrift
+    Protocols that can have missing fields for null values. (zshao)
+
+    HIVE-222. Fixed Group by on a combination of disitinct and non distinct
+    aggregates. (Ashish Thusoo via zshao)
+
+    HIVE-161. Fixed xpath x.y when x is a null list. (zshao)
+
+    HIVE-206. Fixed partition pruning check for uppercase table names.
+    (Ashish Thusoo via zshao)
+
+    HIVE-151. Tasks depending on other tasks cannot be a root task.
+    (Namit Jain via zshao)
+
+    HIVE-197. Fixed UDFToBoolean. (zshao)
+
+    HIVE-171. Fixed select star with cluster by, distribute by and sort by.
+    (zshao)
+
+    HIVE-190. Fixed tests failed due to test running order. (zshao)
+
+    HIVE-184. Tests fail due to including old hive jar files.
+    (David Phillips via zshao)
+
+    HIVE-188. Hive CLI quits when stdout is closed. (zshao)
+
+    HIVE-104. Tables with at least 1 non-string columns to use DynamicSerDe.
+    (zshao)
+
+    HIVE-158. Make table aliases work for sampled tables in joins.
+    (Raghotham Murthy via zshao)
+
+    HIVE-168. Fixed join on a subquery with a group by. (Namit Jain via zshao)
+
+    HIVE-169. Fixed configuration parameter used for determining join interval
+    in JoinOperator. (Namit Jain via zshao)
+
+    HIVE-114. Drop partition does not delete data for external tables now.
+    (Johan Oskarsson via zshao)
+
+    HIVE-144. Hive/ql java source copied to build/ql/java to make it work
+    with eclipse. (Johan Oskarsson via zshao)
+
+    HIVE-129. Fix aux.jar packaging to work properly with 0.17 and 0.18
+    versions of hadoop. (Joydeep Sarma via zshao)
+
+    HIVE-162. Fix join0.q test failure with hadoop 0.17. (zshao)
+
+    HIVE-146. Fix builds for non-default build directory.
+    (David Phillips through zshao)
+
+    HIVE-47. CLI to support multiline queries from an input file.
+    (Ashish through zshao)
+
+    HIVE-103. Disable inserts in sub queries. (Namit Jain through zshao)
+
+    HIVE-92. Fixed union all for non-embedded query. (Namit Jain through zshao)
+
+    HIVE-93. Dynamic serde to handle _-prefixed column names in DDL.
+    (Pete Wyckoff through zshao)
+
+    HIVE-127. Fetch Task to pass the jobconf to SerDe. (Namit through zshao)
+
+    HIVE-116. Let test depend on deploy. (Johan Oskarsson through zshao)
+
+    HIVE-90. Fixed TestGetDBs for File.list() order.
+    (Johan Oskarsson through zshao)
+
+    HIVE-111. Support join without a ON clause. (Namit through zshao)
+
+    HIVE-77. Thread safe query execution. (Joydeep through zshao)
+
+    HIVE-86. Drop table should not delete data for external tables.
+    (Johan Oskarsson through zshao)
+
+    HIVE-108. Sampling to use internal column name. (Namit through zshao)
+
+    HIVE-60. Fix the build scripts for the new hive tree.
+    (Ashish through zshao)
+
+    HIVE-54. Create this file to record the patches going into a
+    particular release. (dhruba)
+
+    HIVE-12. Improve README for Hive.
+    (Ashish Thusoo via dhruba)
+
+    HIVE-68. Fix casting to short.
+    (Ashish Thusoo via dhruba)
+
+    HIVE-70. A configuration variable that limits the amount of data
+    writen by a task to its standard error.
+    (Joydeep Sen Sarma via dhruba)
+
+    HIVE-17. Remove duplicate entries for hive.metastore.uris in config file.
+    (Jeff Hammerbacher via dhruba)
+
+    HIVE-72. Generate correct results when partition pruning is not strict
+    and no map-reduce jobs are needed.  (Namim Jain via dhruba)
+
+    HIVE-75. Make limit work when applied to outermost block that is not
+    a query.  (Namim Jain via dhruba)
+
+    HIVE-76. Fix for column number mismatch between query and destination
+    tables when alias.* expressions are present in the select list of a
+    join. (Ashish Thusoo via dhruba)
+
+    HIVE-196. Two test runs can run simultaneously on the same machine.
+    (Ashish Thusoo via dhruba)
+
+    HIVE-202. Fix Lineage for join queries.
+    (Suresh Antony via dhruba)
+
+    HIVE-84.  Make MetaStore Client thread safe.  (Prasad Chakka via dhruba)
+
+    HIVE-203. Fix eclipse templates to get junit tests to run.
+    (Raghotham Murthy via dhruba)
+
+    HIVE-220. Incorrect log directory in TestMTQueries causing null pointer
+    exception.  (Prasad Chakka via dhruba)
+
+    HIVE-230.  Fix for a Null Pointer Exception that occured while loading a
+    table from a query that returns empty data.  (Prasad Chakka via dhruba)
+
+    HIVE-232. Metastore.warehouse configuration should use inherited
+    hadoop configuration. (Prasad Chakka via dhruba)
+
+    HIVE-239. Check that replace columns in alter table does not have names
+    that are same as the partitioning columns. (Prasad Chakka via athusoo)
+
+    HIVE-25. Enable Table aliases in cluster by, distribute by and sort
+    by clauses. (Prasad Chakka via athusoo)
+
+    HIVE-217. Report progress during FileSinkOperator in order to avoid
+    Stream closes exceptions. (Johan Oskarsson via athusoo)
+
+    HIVE-242. Fix to allow CLI to interpret line breaks in any CLI
+    command. (Prasad Chakka via athusoo)
+
+    HIVE-65. Rewrite typechecking to use the walker interface and add
+    Resolvers to UDF and UDAF to support proper implicit casting
+    in a manner similar to other RDBMSs. (athusoo)
+
+    HIVE-246. Fix to make msck command to look for tables in hdfs
+    that are in the metastore. (Johan Oskarsson via athusoo)
+
+    HIVE-248. Create file path names properly during the load command
+    in case relative path names were specified. (Prasad Chakka via athusoo)
+
+    HIVE-179. Make substr behavior similar to other RDBMS.
+    (David Phillips via athusoo)
+
+    HIVE-257. Set hive history log location to build for tests.
+    (Suresh Anthony via athusoo)
+
+    HIVE-256. Fix in map side aggregation wherein we were not including
+    private members of the records in calculating the avg size of the
+    rows and we were also not estimating variable length columns
+    properly. (Namit Jain via athusoo)
+
+    HIVE-262. Fix for joins wherein a merged join having and outer or
+    right outer join gave spurious rows in join. (Namit Jain via athusoo)
+
+    HIVE-189. Make sampling tests deterministic by sorting output. (athusoo)
+
+    HIVE-273. Fix avg UDAF which got broken hive 65. (athusoo)
+
+    HIVE-283. Do case insensitive comparison of aliases in partition
+    pruning. (athusoo)

@@ -1,0 +1,29 @@
+query: EXPLAIN
+CREATE TABLE INPUTDDL2(key INT, value STRING) PARTITIONED BY(ds DATETIME, country STRING) STORED AS TEXTFILE
+ABSTRACT SYNTAX TREE:
+  (TOK_CREATETABLE INPUTDDL2 TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL key TOK_INT) (TOK_TABCOL value TOK_STRING)) (TOK_TABLEPARTCOLS (TOK_TABCOLLIST (TOK_TABCOL ds TOK_DATETIME) (TOK_TABCOL country TOK_STRING))) TOK_TBLTEXTFILE)
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+      Create Table Operator:
+        Create Table
+          columns: key int, value string
+          if not exists: false
+          input format: org.apache.hadoop.mapred.TextInputFormat
+          # buckets: -1
+          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          partition columns: ds datetime, country string
+          name: INPUTDDL2
+          isExternal: false
+
+
+query: CREATE TABLE INPUTDDL2(key INT, value STRING) PARTITIONED BY(ds DATETIME, country STRING) STORED AS TEXTFILE
+query: DESCRIBE INPUTDDL2
+key	int	
+value	string	
+ds	datetime	
+country	string	
+query: DROP TABLE INPUTDDL2

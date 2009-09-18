@@ -1,0 +1,15 @@
+query: from src
+select transform('aa;') using '/bin/cat' as a  limit 1
+Input: default/src
+Output: file:/home/ecapriolo/downloads/hive/build/ql/tmp/908269546/10000
+aa;
+query: from src
+select transform('bb') using '/bin/cat' as b limit 1
+Input: default/src
+Output: file:/home/ecapriolo/downloads/hive/build/ql/tmp/435017951/10000
+bb
+query: from src
+select transform('cc') using '/bin/cat' as c limit 1
+Input: default/src
+Output: file:/home/ecapriolo/downloads/hive/build/ql/tmp/373219255/10000
+cc

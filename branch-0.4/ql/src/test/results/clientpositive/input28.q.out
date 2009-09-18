@@ -1,0 +1,12 @@
+query: drop table tst
+query: create table tst(a string, b string) partitioned by (d string)
+query: alter table tst add partition (d='2009-01-01')
+query: insert overwrite table tst partition(d='2009-01-01')
+select tst.a, src.value from tst join src ON (tst.a = src.key)
+Input: default/tst/d=2009-01-01
+Input: default/src
+Output: default/tst/d=2009-01-01
+query: select * from tst where tst.d='2009-01-01'
+Input: default/tst/d=2009-01-01
+Output: /data/users/njain/hive6/hive6/ql/../build/ql/tmp/29384498/467749736.10000
+query: drop table tst

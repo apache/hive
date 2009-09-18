@@ -1,0 +1,342 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<configuration>
+
+<!-- Hive Configuration can either be stored in this file or in the hadoop configuration files  -->
+<!-- that are implied by Hadoop setup variables.                                                -->
+<!-- Aside from Hadoop setup variables - this file is provided as a convenience so that Hive    -->
+<!-- users do not have to edit hadoop configuration files (that may be managed as a centralized -->
+<!-- resource).                                                                                 -->
+
+<!-- Hive Execution Parameters -->
+<property>
+  <name>mapred.reduce.tasks</name>
+  <value>-1</value>
+    <description>The default number of reduce tasks per job.  Typically set
+  to a prime close to the number of available hosts.  Ignored when
+  mapred.job.tracker is "local". Hadoop set this to 1 by default, whereas hive uses -1 as its default value.
+  By setting this property to -1, Hive will automatically figure out what should be the number of reducers.
+  </description>
+</property>
+
+<property>
+  <name>hive.exec.reducers.bytes.per.reducer</name>
+  <value>1000000000</value>
+  <description>size per reducer.The default is 1G, i.e if the input size is 10G, it will use 10 reducers.</description>
+</property>
+
+<property>
+  <name>hive.exec.reducers.max</name>
+  <value>999</value>
+  <description>max number of reducers will be used. If the one
+	specified in the configuration parameter mapred.reduce.tasks is
+	negative, hive will use this one as the max number of reducers when
+	automatically determine number of reducers.</description>
+</property>
+
+<property>
+  <name>hive.exec.scratchdir</name>
+  <value>/tmp/hive-${user.name}</value>
+  <description>Scratch space for Hive jobs</description>
+</property>
+
+<property>
+  <name>hive.test.mode</name>
+  <value>false</value>
+  <description>whether hive is running in test mode. If yes, it turns on sampling and prefixes the output tablename</description>
+</property>
+
+<property>
+  <name>hive.test.mode.prefix</name>
+  <value>test_</value>
+  <description>if hive is running in test mode, prefixes the output table by this string</description>
+</property>
+
+<!-- If the input table is not bucketed, the denominator of the tablesample is determinied by the parameter below   -->
+<!-- For example, the following query:                                                                              -->
+<!--   INSERT OVERWRITE TABLE dest                                                                                  -->
+<!--   SELECT col1 from src                                                                                         -->
+<!-- would be converted to                                                                                          -->
+<!--   INSERT OVERWRITE TABLE test_dest                                                                             -->
+<!--   SELECT col1 from src TABLESAMPLE (BUCKET 1 out of 32 on rand(1))                                             -->
+<property>
+  <name>hive.test.mode.samplefreq</name>
+  <value>32</value>
+  <description>if hive is running in test mode and table is not bucketed, sampling frequency</description>
+</property>
+
+<property>
+  <name>hive.test.mode.nosamplelist</name>
+  <value></value>
+  <description>if hive is running in test mode, dont sample the above comma seperated list of tables</description>
+</property>
+
+<property>
+  <name>hive.metastore.local</name>
+  <value>true</value>
+  <description>controls whether to connect to remove metastore server or open a new metastore server in Hive Client JVM</description>
+</property>
+
+<property>
+  <name>javax.jdo.option.ConnectionURL</name>
+  <value>jdbc:derby:;databaseName=metastore_db;create=true</value>
+  <description>JDBC connect string for a JDBC metastore</description>
+</property>
+
+<property>
+  <name>javax.jdo.option.ConnectionDriverName</name>
+  <value>org.apache.derby.jdbc.EmbeddedDriver</value>
+  <description>Driver class name for a JDBC metastore</description>
+</property>
+
+<property>
+  <name>javax.jdo.PersistenceManagerFactoryClass</name>
+  <value>org.datanucleus.jdo.JDOPersistenceManagerFactory</value>
+  <description>class implementing the jdo persistence</description>
+</property>
+
+<property>
+  <name>javax.jdo.option.DetachAllOnCommit</name>
+  <value>true</value>
+  <description>detaches all objects from session so that they can be used after transaction is committed</description>
+</property>
+
+<property>
+  <name>javax.jdo.option.NonTransactionalRead</name>
+  <value>true</value>
+  <description>reads outside of transactions</description>
+</property>
+
+<property>
+  <name>javax.jdo.option.ConnectionUserName</name>
+  <value>APP</value>
+  <description>username to use against metastore database</description>
+</property>
+
+<property>
+  <name>javax.jdo.option.ConnectionPassword</name>
+  <value>mine</value>
+  <description>password to use against metastore database</description>
+</property>
+
+<property>
+  <name>datanucleus.validateTables</name>
+  <value>false</value>
+  <description>validates existing schema against code. turn this on if you want to verify existing schema </description>
+</property>
+
+<property>
+  <name>datanucleus.validateColumns</name>
+  <value>false</value>
+  <description>validates existing schema against code. turn this on if you want to verify existing schema </description>
+</property>
+
+<property>
+  <name>datanucleus.validateConstraints</name>
+  <value>false</value>
+  <description>validates existing schema against code. turn this on if you want to verify existing schema </description>
+</property>
+
+<property>
+  <name>datanucleus.storeManagerType</name>
+  <value>rdbms</value>
+  <description>metadata store type</description>
+</property>
+
+<property>
+  <name>datanucleus.autoCreateSchema</name>
+  <value>true</value>
+  <description>creates necessary schema on a startup if one doesn't exist. set this to false, after creating it once</description>
+</property>
+
+<property>
+  <name>datanucleus.autoStartMechanismMode</name>
+  <value>checked</value>
+  <description>throw exception if metadata tables are incorrect</description>
+</property>
+
+<property>
+  <name>datancucleus.transactionIsolation</name>
+  <value>read-committed</value>
+  <description></description>
+</property>
+
+<property>
+  <name>datanuclues.cache.level2</name>
+  <value>true</value>
+  <description>use a level 2 cache. turn this off if metadata is changed independently of hive metastore server</description>
+</property>
+
+<property>
+  <name>datanuclues.cache.level2.type</name>
+  <value>SOFT</value>
+  <description>SOFT=soft reference based cache, WEAK=weak reference based cache.</description>
+</property>
+
+<property>
+  <name>hive.metastore.warehouse.dir</name>
+  <value>/user/hive/warehouse</value>
+  <description>location of default database for the warehouse</description>
+</property>
+
+<property>
+  <name>hive.metastore.connect.retries</name>
+  <value>5</value>
+  <description>Number of retries while opening a connection to metastore</description>
+</property>
+
+<property>
+  <name>hive.metastore.rawstore.impl</name>
+  <value>org.apache.hadoop.hive.metastore.ObjectStore</value>
+  <description>Name of the class that implements org.apache.hadoop.hive.metastore.rawstore interface. This class is used to store and retrieval of raw metadata objects such as table, database</description>
+</property>
+
+<property>
+  <name>hive.default.fileformat</name>
+  <value>TextFile</value>
+  <description>Default file format for CREATE TABLE statement. Options are TextFile and SequenceFile. Users can explicitly say CREATE TABLE ... STORED AS &lt;TEXTFILE|SEQUENCEFILE&gt; to override</description>
+</property>
+
+<property>
+  <name>hive.map.aggr</name>
+  <value>true</value>
+  <description>Whether to use map-side aggregation in Hive Group By queries</description>
+</property>
+
+<property>
+  <name>hive.groupby.skewindata</name>
+  <value>false</value>
+  <description>Whether there is skew in data to optimize group by queries</description>
+</property>
+
+<property>
+  <name>hive.groupby.mapaggr.checkinterval</name>
+  <value>100000</value>
+  <description>Number of rows after which size of the grouping keys/aggregation classes is performed</description>
+</property>
+
+<property>
+  <name>hive.mapred.local.mem</name>
+  <value>0</value>
+  <description>For local mode, memory of the mappers/reducers</description>
+</property>
+
+<property>
+  <name>hive.map.aggr.hash.percentmemory</name>
+  <value>0.5</value>
+  <description>Portion of total memory to be used by map-side grup aggregation hash table</description>
+</property>
+
+<property>
+  <name>hive.map.aggr.hash.min.reduction</name>
+  <value>0.5</value>
+  <description>Hash aggregation will be turned off if the ratio between hash
+  table size and input rows is bigger than this number. Set to 1 to make sure
+  hash aggregation is never turned off.</description>
+</property>
+
+<property>
+  <name>hive.optimize.cp</name>
+  <value>true</value>
+  <description>Whether to enable column pruner</description>
+</property>
+
+<property>
+  <name>hive.optimize.ppd</name>
+  <value>true</value>
+  <description>Whether to enable predicate pushdown</description>
+</property>
+
+<property>
+  <name>hive.optimize.pruner</name>
+  <value>true</value>
+  <description>Whether to enable the new partition pruner which depends on predicate pushdown. If this is disabled,
+  the old partition pruner which is based on AST will be enabled.</description>
+</property>
+
+<property>
+  <name>hive.join.emit.interval</name>
+  <value>1000</value>
+  <description>How many rows in the right-most join operand Hive should buffer before emitting the join result. </description>
+</property>
+
+<property>
+  <name>hive.mapred.mode</name>
+  <value>nonstrict</value>
+  <description>The mode in which the hive operations are being performed. In strict mode, some risky queries are not allowed to run</description>
+</property>
+
+<property>
+  <name>hive.exec.script.maxerrsize</name>
+  <value>100000</value>
+  <description>Maximum number of bytes a script is allowed to emit to standard error (per map-reduce task). This prevents runaway scripts from filling logs partitions to capacity </description>
+</property>
+
+<property>
+  <name>hive.exec.compress.output</name>
+  <value>false</value>
+  <description> This controls whether the final outputs of a query (to a local/hdfs file or a hive table) is compressed. The compression codec and other options are determined from hadoop config variables mapred.output.compress* </description>
+</property>
+
+<property>
+  <name>hive.exec.compress.intermediate</name>
+  <value>false</value>
+  <description> This controls whether intermediate files produced by hive between multiple map-reduce jobs are compressed. The compression codec and other options are determined from hadoop config variables mapred.output.compress* </description>
+</property>
+
+<property>
+  <name>hive.hwi.listen.host</name>
+  <value>0.0.0.0</value>
+  <description>This is the host address the Hive Web Interface will listen on</description>
+</property>
+
+<property>
+  <name>hive.hwi.listen.port</name>
+  <value>9999</value>
+  <description>This is the port the Hive Web Interface will listen on</description>
+</property>
+
+<property>
+  <name>hive.hwi.war.file</name>
+  <value>${HIVE_HOME}/lib/hive-hwi.war</value>
+  <description>This is the WAR file with the jsp content for Hive Web Interface</description>
+</property>
+
+<property>
+  <name>hive.exec.pre.hooks</name>
+  <value></value>
+  <description>Pre Execute Hook for Tests</description>
+</property>
+
+<property>
+  <name>hive.merge.mapfiles</name>
+  <value>true</value>
+  <description>Merge small files at the end of a map-only job</description>
+</property>
+
+<property>
+  <name>hive.merge.mapredfiles</name>
+  <value>false</value>
+  <description>Merge small files at the end of any job(map only or map-reduce)</description>
+</property>
+
+<property>
+  <name>hive.heartbeat.interval</name>
+  <value>1000</value>
+  <description>Send a heartbeat after this interval - used by mapjoin and filter operators</description>
+</property>
+
+<property>
+  <name>hive.merge.size.per.task</name>
+  <value>256000000</value>
+  <description>Size of merged files at the end of the job</description>
+</property>
+
+<property>
+  <name>hive.script.auto.progress</name>
+  <value>false</value>
+  <description>Whether Hive Tranform/Map/Reduce Clause should automatically send progress information to TaskTracker to avoid the task getting killed because of inactivity.  Hive sends progress information when the script is outputting to stderr.  This option removes the need of periodically producing stderr messages, but users should be cautious because this may prevent infinite loops in the scripts to be killed by TaskTracker.  </description>
+</property>
+
+</configuration>

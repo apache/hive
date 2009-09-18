@@ -1,0 +1,42 @@
+query: drop table alter3_src
+query: drop table alter3
+query: create table alter3_src ( col1 string ) stored as textfile
+query: load data local inpath '../data/files/test.dat' overwrite into table alter3_src
+query: create table alter3 ( col1 string ) partitioned by (pcol1 string , pcol2 string) stored as sequencefile
+query: insert overwrite table alter3 partition (pCol1='test_part', pcol2='test_part') select col1 from alter3_src
+Input: default/alter3_src
+Output: default/alter3/pcol1=test_part/pcol2=test_part
+query: select * from alter3 where pcol1='test_part' and pcol2='test_part'
+Input: default/alter3/pcol1=test_part/pcol2=test_part
+Output: file:/data/users/pchakka/workspace/oshive2/build/ql/tmp/1140751313/10000
+1	test_part	test_part
+2	test_part	test_part
+3	test_part	test_part
+4	test_part	test_part
+5	test_part	test_part
+6	test_part	test_part
+query: alter table alter3 rename to alter3_renamed
+query: describe extended alter3_renamed
+col1	string	
+pcol1	string	
+pcol2	string	
+	 	 
+Detailed Table Information	Table(tableName:alter3_renamed, dbName:default, owner:pchakka, createTime:1247544316, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:file:/data/users/pchakka/workspace/oshive2/build/ql/test/data/warehouse/alter3_renamed, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:pcol1, type:string, comment:null), FieldSchema(name:pcol2, type:string, comment:null)], parameters:{last_modified_by=pchakka,last_modified_time=1247544320})	
+query: describe extended alter3_renamed partition (pCol1='test_part', pcol2='test_part')
+col1	string	
+pcol1	string	
+pcol2	string	
+	 	 
+Detailed Partition Information	Partition(values:[test_part, test_part], dbName:default, tableName:alter3_renamed, createTime:0, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:file:/data/users/pchakka/workspace/oshive2/build/ql/test/data/warehouse/alter3_renamed/pcol1=test_part/pcol2=test_part, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{})	
+query: select * from alter3_renamed where pcol1='test_part' and pcol2='test_part'
+Input: default/alter3_renamed/pcol1=test_part/pcol2=test_part
+Output: file:/data/users/pchakka/workspace/oshive2/build/ql/tmp/862867654/10000
+1	test_part	test_part
+2	test_part	test_part
+3	test_part	test_part
+4	test_part	test_part
+5	test_part	test_part
+6	test_part	test_part
+query: drop table alter3_src
+query: drop table alter3
+query: drop table alter3_renamed

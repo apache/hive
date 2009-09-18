@@ -1,0 +1,20 @@
+query: SELECT asin(null)
+FROM src LIMIT 1
+Input: default/src
+Output: file:/home/kmangla/hive/build/ql/tmp/991103884/10000
+NULL
+query: SELECT asin(0)
+FROM src LIMIT 1
+Input: default/src
+Output: file:/home/kmangla/hive/build/ql/tmp/1020681434/10000
+0.0
+query: SELECT asin(-0.5), asin(0.66)
+FROM src LIMIT 1
+Input: default/src
+Output: file:/home/kmangla/hive/build/ql/tmp/702113357/10000
+-0.5235987755982989	0.7208187608700897
+query: SELECT asin(2)
+FROM src LIMIT 1
+Input: default/src
+Output: file:/home/kmangla/hive/build/ql/tmp/985907824/10000
+NaN

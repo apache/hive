@@ -1,0 +1,1 @@
+FAILED: Error in semantic analysis: line 3:20 Argument Type Mismatch 4: The expressions after THEN should have the same type: "string" is expected but "int" is found

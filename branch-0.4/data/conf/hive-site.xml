@@ -1,0 +1,127 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<configuration>
+
+<!-- Hive Configuration can either be stored in this file or in the hadoop configuration files  -->
+<!-- that are implied by Hadoop setup variables.                                                -->
+<!-- Aside from Hadoop setup variables - this file is provided as a convenience so that Hive    -->
+<!-- users do not have to edit hadoop configuration files (that may be managed as a centralized -->
+<!-- resource).                                                                                 -->
+
+<!-- Hive Execution Parameters -->
+<property>
+  <name>hadoop.tmp.dir</name>
+  <value>${user.dir}/../build/test/hadoop-${user.name}</value>
+  <description>A base for other temporary directories.</description>
+</property>
+
+<property>
+  <name>hive.exec.scratchdir</name>
+  <value>${user.dir}/../build/ql/tmp</value>
+  <description>Scratch space for Hive jobs</description>
+</property>
+
+<property>
+  <name>javax.jdo.option.ConnectionURL</name>
+  <value>jdbc:derby:;databaseName=../build/test/junit_metastore_db;create=true</value>
+</property>
+
+<property>
+  <name>javax.jdo.option.ConnectionDriverName</name>
+  <value>org.apache.derby.jdbc.EmbeddedDriver</value>
+</property>
+
+<property>
+  <name>javax.jdo.option.ConnectionUserName</name>
+  <value>APP</value>
+</property>
+
+<property>
+  <name>javax.jdo.option.ConnectionPassword</name>
+  <value>mine</value>
+</property>
+
+<property>
+  <name>hive.metastore.local</name>
+  <value>true</value>
+  <description>controls whether to connect to remove metastore server or open a new metastore server in Hive Client JVM</description>
+</property>
+
+<property>
+  <!--  this should eventually be deprecated since the metastore should supply this -->
+  <name>hive.metastore.warehouse.dir</name>
+  <value>file://${user.dir}/../build/ql/test/data/warehouse/</value>
+  <description></description>
+</property>
+
+<property>
+  <name>hive.metastore.metadb.dir</name>
+  <value>file://${user.dir}/../build/ql/test/data/metadb/</value>
+  <description> 
+  Required by metastore server or if the uris argument below is not supplied
+  </description>
+</property>
+
+<property>
+  <name>fs.default.name</name>
+  <value>file:///</value>
+  <description></description>
+</property>
+
+<property>
+  <name>mapred.job.tracker</name>
+  <value>local</value>
+  <description></description>
+</property>
+
+<property>
+  <name>test.log.dir</name>
+  <value>${user.dir}/../build/ql/test/logs</value>
+  <description></description>
+</property>
+
+<property>
+  <name>test.src.dir</name>
+  <value>file://${user.dir}/../ql/src/test</value>
+  <description></description>
+</property>
+
+<property>
+  <name>test.data.files</name>
+  <value>${user.dir}/../data/files</value>
+  <description></description>
+</property>
+
+<property>
+  <name>test.query.file1</name>
+  <value>file://${user.dir}/../ql/src/test/org/apache/hadoop/hive/ql/input2.q</value>
+  <value></value>
+  <description></description>
+</property>
+
+<property>
+  <name>hive.jar.path</name>
+  <value>${user.dir}/../build/ql/hive_exec.jar</value>
+  <description></description>
+</property>
+
+<property>
+  <name>hive.metastore.rawstore.impl</name>
+  <value>org.apache.hadoop.hive.metastore.ObjectStore</value>
+  <description>Name of the class that implements org.apache.hadoop.hive.metastore.rawstore interface. This class is used to store and retrieval of raw metadata objects such as table, database</description>
+</property>
+
+<property>
+  <name>hive.querylog.location</name>
+  <value>${user.dir}/../build/ql/tmp</value>
+  <description>Location of the structured hive logs</description>
+</property>
+
+<property>
+  <name>hive.exec.pre.hooks</name>
+  <value>org.apache.hadoop.hive.ql.hooks.PreExecutePrinter</value>
+  <description>Pre Execute Hook for Tests</description>
+</property>
+
+</configuration>

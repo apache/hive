@@ -1,0 +1,52 @@
+query: CREATE TABLE implicit_test1(a BIGINT, b STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe' WITH SERDEPROPERTIES('serialization.format'= 'org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol') STORED AS TEXTFILE
+query: EXPLAIN
+SELECT implicit_test1.*
+FROM implicit_test1
+WHERE implicit_test1.a <> 0
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF implicit_test1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF implicit_test1))) (TOK_WHERE (<> (. (TOK_TABLE_OR_COL implicit_test1) a) 0))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        implicit_test1 
+          TableScan
+            alias: implicit_test1
+            Filter Operator
+              predicate:
+                  expr: (UDFToDouble(a) <> UDFToDouble(0))
+                  type: boolean
+              Filter Operator
+                predicate:
+                    expr: (UDFToDouble(a) <> UDFToDouble(0))
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: a
+                        type: bigint
+                        expr: b
+                        type: string
+                  outputColumnNames: _col0, _col1
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+query: SELECT implicit_test1.*
+FROM implicit_test1
+WHERE implicit_test1.a <> 0
+Input: default/implicit_test1
+Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/915534198/10000
+query: DROP TABLE implicit_test1

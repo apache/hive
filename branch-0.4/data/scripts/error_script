@@ -1,0 +1,11 @@
+#! /bin/bash
+
+exit 1
+ret=0
+while [ "$ret" = "0" ];
+do 
+  read -t 1 -a v
+  ret=$?
+done
+
+exit 1

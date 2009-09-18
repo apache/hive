@@ -1,0 +1,174 @@
+#!/usr/bin/env bash
+
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+cygwin=false
+case "`uname`" in
+   CYGWIN*) cygwin=true;;
+esac
+
+bin=`dirname "$0"`
+bin=`cd "$bin"; pwd`
+
+. "$bin"/hive-config.sh
+
+CLASSPATH="${HIVE_CONF_DIR}"
+
+HIVE_LIB=${HIVE_HOME}/lib
+
+# needed for execution
+if [ ! -f "${HIVE_LIB}/hive_exec.jar" ]; then
+  echo "Missing Hive Execution Jar: ${HIVE_LIB}/hive_exec.jar"
+  exit 1;
+fi
+
+if [ ! -f "${HIVE_LIB}/hive_metastore.jar" ]; then
+  echo "Missing Hive MetaStore Jar"
+  exit 2;
+fi
+
+# cli specific code
+if [ ! -f "${HIVE_LIB}/hive_cli.jar" ]; then
+  echo "Missing Hive CLI Jar"
+  exit 3;
+fi
+
+for f in ${HIVE_LIB}/*.jar; do
+  CLASSPATH=${CLASSPATH}:$f;
+done
+
+# add the auxillary jars such as serdes
+if [ -d "${HIVE_AUX_JARS_PATH}" ]; then
+  for f in ${HIVE_AUX_JARS_PATH}/*.jar; do
+    if [[ ! -f $f ]]; then
+        continue;
+    fi
+    if $cygwin; then
+	f=`cygpath -w "$f"`
+    fi
+    AUX_CLASSPATH=${AUX_CLASSPATH}:$f
+    if [ "${AUX_PARAM}" == "" ]; then
+        AUX_PARAM=file://$f
+    else
+        AUX_PARAM=${AUX_PARAM},file://$f;
+    fi
+  done
+elif [ "${HIVE_AUX_JARS_PATH}" != "" ]; then 
+  if $cygwin; then
+      HIVE_AUX_JARS_PATH=`echo $HIVE_AUX_JARS_PATH | sed 's/,/:/g'`
+      HIVE_AUX_JARS_PATH=`cygpath -p -w "$HIVE_AUX_JARS_PATH"`
+      HIVE_AUX_JARS_PATH=`echo $HIVE_AUX_JARS_PATH | sed 's/;/,/g'`
+  fi
+  AUX_CLASSPATH=${HIVE_AUX_JARS_PATH}
+  AUX_PARAM=file://${HIVE_AUX_JARS_PATH}
+  AUX_PARAM=`echo $AUX_PARAM | sed 's/,/,file:\/\//g'`
+fi
+
+# adding jars from auxlib directory
+for f in ${HIVE_HOME}/auxlib/*.jar; do
+  if [[ ! -f $f ]]; then
+      continue;
+  fi
+  if $cygwin; then
+      f=`cygpath -w "$f"`
+  fi
+  AUX_CLASSPATH=${AUX_CLASSPATH}:$f
+  if [ "${AUX_PARAM}" == "" ]; then
+    AUX_PARAM=file://$f
+  else
+    AUX_PARAM=${AUX_PARAM},file://$f;
+  fi
+done
+if $cygwin; then
+    CLASSPATH=`cygpath -p -w "$CLASSPATH"`
+    CLASSPATH=${CLASSPATH};${AUX_CLASSPATH}
+else
+    CLASSPATH=${CLASSPATH}:${AUX_CLASSPATH}
+fi
+
+# pass classpath to hadoop
+export HADOOP_CLASSPATH=${CLASSPATH}
+
+# check for hadoop in the path
+HADOOP_IN_PATH=`which hadoop 2>/dev/null`
+if [ -f ${HADOOP_IN_PATH} ]; then
+  HADOOP_DIR=`dirname "$HADOOP_IN_PATH"`/..
+fi
+# HADOOP_HOME env variable overrides hadoop in the path
+HADOOP_HOME=${HADOOP_HOME:-$HADOOP_DIR}
+if [ "$HADOOP_HOME" == "" ]; then
+  echo "Cannot find hadoop installation: \$HADOOP_HOME must be set or hadoop must be in the path";
+  exit 4;
+fi
+
+HADOOP=$HADOOP_HOME/bin/hadoop
+if [ ! -f ${HADOOP} ]; then
+  echo "Cannot find hadoop installation: \$HADOOP_HOME must be set or hadoop must be in the path";
+  exit 4;
+fi
+
+if [ "${AUX_PARAM}" != "" ]; then
+  HIVE_OPTS="$HIVE_OPTS -hiveconf hive.aux.jars.path=${AUX_PARAM}"
+  AUX_JARS_CMD_LINE="-libjars ${AUX_PARAM}"
+fi
+
+SERVICE_LIST=""
+
+for i in "$bin"/ext/*.sh ; do
+  . $i
+done
+
+SERVICE=""
+HELP=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --service)
+      shift
+      SERVICE=$1
+      shift
+      ;;
+    --help)
+      HELP=_help
+      shift
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+if [ "$SERVICE" = "" ] ; then
+  if [ "$HELP" = "_help" ] ; then
+    SERVICE="help"
+  else
+    SERVICE="cli"
+  fi
+fi
+
+TORUN=""
+for j in $SERVICE_LIST ; do
+  if [ "$j" = "$SERVICE" ] ; then
+    TORUN=${j}$HELP
+  fi
+done
+
+if [ "$TORUN" = "" ] ; then
+  echo "Service $SERVICE not found"
+  echo "Available Services: $SERVICE_LIST"
+  exit 5
+else
+  $TORUN "$@"
+fi

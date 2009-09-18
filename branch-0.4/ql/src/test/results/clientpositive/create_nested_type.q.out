@@ -1,0 +1,28 @@
+query: DROP TABLE table1
+query: CREATE TABLE table1 (
+       a STRING,
+       b ARRAY<STRING>,
+       c ARRAY<MAP<STRING,STRING>>,
+       d MAP<STRING,ARRAY<STRING>>
+       ) STORED AS TEXTFILE
+query: DESCRIBE table1
+a	string	
+b	array<string>	
+c	array<map<string,string>>	
+d	map<string,array<string>>	
+query: DESCRIBE EXTENDED table1
+a	string	
+b	array<string>	
+c	array<map<string,string>>	
+d	map<string,array<string>>	
+	 	 
+Detailed Table Information	Table(tableName:table1,dbName:default,owner:zshao,createTime:1246574836,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:string,comment:null), FieldSchema(name:b,type:array<string>,comment:null), FieldSchema(name:c,type:array<map<string,string>>,comment:null), FieldSchema(name:d,type:map<string,array<string>>,comment:null)],location:file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/test/data/warehouse/table1,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[],parameters:{})	
+query: LOAD DATA LOCAL INPATH '../data/files/create_nested_type.txt' OVERWRITE INTO TABLE table1
+query: SELECT * from table1
+Input: default/table1
+Output: file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/1990601936/10000
+a0	["b00","b01"]	[{"c001":"C001","c002":"C002"},{"c011":null,"c012":"C012"}]	{"d01":["d011","d012"],"d02":["d021","d022"]}
+a1	["b10"]	[{"c001":"C001","c002":"C002"}]	{"d01":["d011","d012"],"d02":null}
+a2	[]	[{"c001":null,"c002":"C002"},{"c011":"C011","c012":"C012"}]	{"d01":[null,"d012"],"d02":["d021","d022"]}
+a3	null	null	null
+query: DROP TABLE table1

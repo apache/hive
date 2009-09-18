@@ -1,0 +1,20 @@
+query: -- Describe a list structure in a thrift table
+describe src_thrift.lint
+lint	array<int>	from deserializer
+query: -- Describe the element of a list
+describe src_thrift.lint.$elem$
+$elem$	int	from deserializer
+query: -- Describe the key of a map
+describe src_thrift.mStringString.$key$
+$key$	string	from deserializer
+query: -- Describe the value of a map
+describe src_thrift.mStringString.$value$
+$value$	string	from deserializer
+query: -- Describe a complex element of a list
+describe src_thrift.lintString.$elem$
+myint	int	from deserializer
+mystring	string	from deserializer
+underscore_int	int	from deserializer
+query: -- Describe a member of an element of a list
+describe src_thrift.lintString.$elem$.myint
+myint	int	from deserializer

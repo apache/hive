@@ -1,0 +1,5 @@
+#! /bin/bash
+
+# This script outputs a row of the following format
+# <# of values for the key> <key>_<key>
+uniq -c | sed "s@^ *@@" | sed "s@\t@_@" | sed "s@ @\t@"
