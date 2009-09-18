@@ -72,6 +72,9 @@ Trunk -  Unreleased
     HIVE-74. Hive can use CombineFileInputFormat for when the input has many
     small files (Namit Jain via rmurthy)
 
+    HIVE-827. Increase hive.mapjoin.cache.numrows default value.
+    (Namit Jain via zshao)
+
   OPTIMIZATIONS
 
   BUG FIXES

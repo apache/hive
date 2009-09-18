@@ -122,7 +122,7 @@ public class HiveConf extends Configuration {
     HIVEGROUPBYSKEW("hive.groupby.skewindata", "false"),
     HIVEJOINEMITINTERVAL("hive.join.emit.interval", 1000),
     HIVEMAPJOINROWSIZE("hive.mapjoin.size.key", 10000),
-    HIVEMAPJOINCACHEROWS("hive.mapjoin.cache.numrows", 10000),
+    HIVEMAPJOINCACHEROWS("hive.mapjoin.cache.numrows", 25000),
     HIVEGROUPBYMAPINTERVAL("hive.groupby.mapaggr.checkinterval", 100000),
     HIVEMAPAGGRHASHMEMORY("hive.map.aggr.hash.percentmemory", (float)0.5),
     HIVEMAPAGGRHASHMINREDUCTION("hive.map.aggr.hash.min.reduction", (float)0.5),

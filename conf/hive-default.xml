@@ -262,6 +262,12 @@
 </property>
 
 <property>
+  <name>hive.mapjoin.cache.numrows</name>
+  <value>25000</value>
+  <description>How many rows should be cached by jdbm for map join. </description>
+</property>
+
+<property>
   <name>hive.mapred.mode</name>
   <value>nonstrict</value>
   <description>The mode in which the hive operations are being performed. In strict mode, some risky queries are not allowed to run</description>
