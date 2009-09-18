@@ -1,1 +1,0 @@
-FAILED: Error in semantic analysis: The query does not reference any valid partition. To run this query, set hive.mapred.mode=nonstrict

@@ -559,6 +559,9 @@ Release 0.4.0 -  Unreleased
     HIVE-718. Fix Loading data inpath into a new partition.
     (Namit Jain via zshao)
 
+    HIVE-838. In strict mode, remove error if no partition is selected.
+    (Namit Jain via rmurthy)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES
