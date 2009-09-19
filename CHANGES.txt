@@ -42,6 +42,9 @@ Trunk -  Unreleased
     HIVE-667. Provide hive ql to check table/partition status.
     (Yongqiang He via zshao)
 
+    HIVE-843. Add UDFs for hour, minute and second
+    (Zheng Shao via namit)
+
   IMPROVEMENTS
 
     HIVE-760. Add version info to META-INF/MANIFEST.MF.

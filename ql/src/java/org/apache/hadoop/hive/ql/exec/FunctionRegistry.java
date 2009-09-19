@@ -121,6 +121,9 @@ public class FunctionRegistry {
     registerUDF("dayofmonth", UDFDayOfMonth.class, false);
     registerUDF("month", UDFMonth.class, false);
     registerUDF("year", UDFYear.class, false);
+    registerUDF("hour", UDFHour.class, false);
+    registerUDF("minute", UDFMinute.class, false);
+    registerUDF("second", UDFSecond.class, false);
     registerUDF("from_unixtime", UDFFromUnixTime.class, false);
     registerUDF("unix_timestamp", UDFUnixTimeStamp.class, false);
     registerUDF("to_date", UDFDate.class, false);

@@ -47,6 +47,7 @@ from_unixtime
 get_json_object
 hash
 hex
+hour
 if
 index
 instr
@@ -66,6 +67,7 @@ lpad
 ltrim
 max
 min
+minute
 month
 negative
 not
@@ -85,6 +87,7 @@ rlike
 round
 rpad
 rtrim
+second
 sin
 size
 smallint
@@ -131,6 +134,7 @@ from_unixtime
 lcase
 like
 locate
+minute
 negative
 positive
 regexp_replace
