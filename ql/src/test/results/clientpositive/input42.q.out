@@ -1,7 +1,7 @@
-query: EXPLAIN
-SELECT x.* FROM SRCPART x WHERE x.ds = '2008-04-08'
+query: explain extended
+select * from srcpart a where a.ds='2008-04-08'
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF SRCPART x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF x))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) ds) '2008-04-08'))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (. (TOK_TABLE_OR_COL a) ds) '2008-04-08'))))
 
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
@@ -12,10 +12,10 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT x.* FROM SRCPART x WHERE x.ds = '2008-04-08'
+query: select * from srcpart a where a.ds='2008-04-08'
 Input: default/srcpart/ds=2008-04-08/hr=11
 Input: default/srcpart/ds=2008-04-08/hr=12
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1270624914/10000
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/503307728/10000
 238	val_238	2008-04-08	11
 86	val_86	2008-04-08	11
 311	val_311	2008-04-08	11
@@ -1015,4 +1015,488 @@ Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1270624914/10000
 403	val_403	2008-04-08	12
 400	val_400	2008-04-08	12
 200	val_200	2008-04-08	12
+97	val_97	2008-04-08	12
+query: explain extended
+select * from srcpart a where a.ds='2008-04-08' and key < 200
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (= (. (TOK_TABLE_OR_COL a) ds) '2008-04-08') (< (TOK_TABLE_OR_COL key) 200)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Filter Operator
+              isSamplingPred: false
+              predicate:
+                  expr: ((ds = '2008-04-08') and (key < 200))
+                  type: boolean
+              Filter Operator
+                isSamplingPred: false
+                predicate:
+                    expr: ((ds = '2008-04-08') and (key < 200))
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
+                        type: string
+                        expr: value
+                        type: string
+                        expr: ds
+                        type: string
+                        expr: hr
+                        type: string
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    directory: file:/data/users/njain/hive4/hive4/build/ql/tmp/82878543/10001
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                        properties:
+                          columns _col0,_col1,_col2,_col3
+                          serialization.format 1
+                          columns.types string:string:string:string
+      Needs Tagging: false
+      Path -> Alias:
+        file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [a]
+        file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [a]
+      Path -> Partition:
+        file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+          Partition
+            partition values:
+              ds 2008-04-08
+              hr 11
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                name srcpart
+                columns.types string:string
+                serialization.ddl struct srcpart { string key, string value}
+                serialization.format 1
+                columns key,value
+                partition_columns ds/hr
+                bucket_count -1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                location file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcpart
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: srcpart
+        file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+          Partition
+            partition values:
+              ds 2008-04-08
+              hr 12
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                name srcpart
+                columns.types string:string
+                serialization.ddl struct srcpart { string key, string value}
+                serialization.format 1
+                columns key,value
+                partition_columns ds/hr
+                bucket_count -1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                file.inputformat org.apache.hadoop.mapred.TextInputFormat
+                file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                location file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/srcpart
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: srcpart
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+query: select * from srcpart a where a.ds='2008-04-08' and key < 200
+Input: default/srcpart/ds=2008-04-08/hr=11
+Input: default/srcpart/ds=2008-04-08/hr=12
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1821159430/10000
+86	val_86	2008-04-08	11
+27	val_27	2008-04-08	11
+165	val_165	2008-04-08	11
+98	val_98	2008-04-08	11
+193	val_193	2008-04-08	11
+150	val_150	2008-04-08	11
+66	val_66	2008-04-08	11
+128	val_128	2008-04-08	11
+146	val_146	2008-04-08	11
+152	val_152	2008-04-08	11
+145	val_145	2008-04-08	11
+37	val_37	2008-04-08	11
+15	val_15	2008-04-08	11
+82	val_82	2008-04-08	11
+166	val_166	2008-04-08	11
+153	val_153	2008-04-08	11
+193	val_193	2008-04-08	11
+174	val_174	2008-04-08	11
+199	val_199	2008-04-08	11
+174	val_174	2008-04-08	11
+162	val_162	2008-04-08	11
+167	val_167	2008-04-08	11
+195	val_195	2008-04-08	11
+17	val_17	2008-04-08	11
+113	val_113	2008-04-08	11
+155	val_155	2008-04-08	11
+0	val_0	2008-04-08	11
+128	val_128	2008-04-08	11
+57	val_57	2008-04-08	11
+149	val_149	2008-04-08	11
+129	val_129	2008-04-08	11
+170	val_170	2008-04-08	11
+20	val_20	2008-04-08	11
+157	val_157	2008-04-08	11
+92	val_92	2008-04-08	11
+111	val_111	2008-04-08	11
+47	val_47	2008-04-08	11
+72	val_72	2008-04-08	11
+4	val_4	2008-04-08	11
+35	val_35	2008-04-08	11
+169	val_169	2008-04-08	11
+125	val_125	2008-04-08	11
+192	val_192	2008-04-08	11
+187	val_187	2008-04-08	11
+176	val_176	2008-04-08	11
+54	val_54	2008-04-08	11
+51	val_51	2008-04-08	11
+138	val_138	2008-04-08	11
+103	val_103	2008-04-08	11
+176	val_176	2008-04-08	11
+65	val_65	2008-04-08	11
+137	val_137	2008-04-08	11
+83	val_83	2008-04-08	11
+180	val_180	2008-04-08	11
+12	val_12	2008-04-08	11
+181	val_181	2008-04-08	11
+67	val_67	2008-04-08	11
+138	val_138	2008-04-08	11
+84	val_84	2008-04-08	11
+58	val_58	2008-04-08	11
+8	val_8	2008-04-08	11
+24	val_24	2008-04-08	11
+179	val_179	2008-04-08	11
+172	val_172	2008-04-08	11
+42	val_42	2008-04-08	11
+129	val_129	2008-04-08	11
+158	val_158	2008-04-08	11
+119	val_119	2008-04-08	11
+0	val_0	2008-04-08	11
+197	val_197	2008-04-08	11
+100	val_100	2008-04-08	11
+199	val_199	2008-04-08	11
+191	val_191	2008-04-08	11
+96	val_96	2008-04-08	11
+26	val_26	2008-04-08	11
+165	val_165	2008-04-08	11
+120	val_120	2008-04-08	11
+131	val_131	2008-04-08	11
+51	val_51	2008-04-08	11
+43	val_43	2008-04-08	11
+156	val_156	2008-04-08	11
+95	val_95	2008-04-08	11
+196	val_196	2008-04-08	11
+98	val_98	2008-04-08	11
+197	val_197	2008-04-08	11
+187	val_187	2008-04-08	11
+137	val_137	2008-04-08	11
+169	val_169	2008-04-08	11
+85	val_85	2008-04-08	11
+77	val_77	2008-04-08	11
+0	val_0	2008-04-08	11
+87	val_87	2008-04-08	11
+179	val_179	2008-04-08	11
+118	val_118	2008-04-08	11
+134	val_134	2008-04-08	11
+138	val_138	2008-04-08	11
+15	val_15	2008-04-08	11
+118	val_118	2008-04-08	11
+72	val_72	2008-04-08	11
+90	val_90	2008-04-08	11
+19	val_19	2008-04-08	11
+10	val_10	2008-04-08	11
+177	val_177	2008-04-08	11
+5	val_5	2008-04-08	11
+58	val_58	2008-04-08	11
+35	val_35	2008-04-08	11
+95	val_95	2008-04-08	11
+11	val_11	2008-04-08	11
+168	val_168	2008-04-08	11
+34	val_34	2008-04-08	11
+143	val_143	2008-04-08	11
+160	val_160	2008-04-08	11
+195	val_195	2008-04-08	11
+42	val_42	2008-04-08	11
+119	val_119	2008-04-08	11
+78	val_78	2008-04-08	11
+76	val_76	2008-04-08	11
+41	val_41	2008-04-08	11
+149	val_149	2008-04-08	11
+138	val_138	2008-04-08	11
+30	val_30	2008-04-08	11
+64	val_64	2008-04-08	11
+76	val_76	2008-04-08	11
+74	val_74	2008-04-08	11
+69	val_69	2008-04-08	11
+33	val_33	2008-04-08	11
+103	val_103	2008-04-08	11
+113	val_113	2008-04-08	11
+167	val_167	2008-04-08	11
+116	val_116	2008-04-08	11
+70	val_70	2008-04-08	11
+191	val_191	2008-04-08	11
+5	val_5	2008-04-08	11
+128	val_128	2008-04-08	11
+2	val_2	2008-04-08	11
+35	val_35	2008-04-08	11
+80	val_80	2008-04-08	11
+44	val_44	2008-04-08	11
+193	val_193	2008-04-08	11
+104	val_104	2008-04-08	11
+175	val_175	2008-04-08	11
+53	val_53	2008-04-08	11
+105	val_105	2008-04-08	11
+190	val_190	2008-04-08	11
+114	val_114	2008-04-08	11
+90	val_90	2008-04-08	11
+12	val_12	2008-04-08	11
+164	val_164	2008-04-08	11
+125	val_125	2008-04-08	11
+164	val_164	2008-04-08	11
+187	val_187	2008-04-08	11
+5	val_5	2008-04-08	11
+70	val_70	2008-04-08	11
+24	val_24	2008-04-08	11
+104	val_104	2008-04-08	11
+70	val_70	2008-04-08	11
+163	val_163	2008-04-08	11
+119	val_119	2008-04-08	11
+199	val_199	2008-04-08	11
+120	val_120	2008-04-08	11
+169	val_169	2008-04-08	11
+178	val_178	2008-04-08	11
+83	val_83	2008-04-08	11
+136	val_136	2008-04-08	11
+172	val_172	2008-04-08	11
+133	val_133	2008-04-08	11
+175	val_175	2008-04-08	11
+189	val_189	2008-04-08	11
+26	val_26	2008-04-08	11
+134	val_134	2008-04-08	11
+67	val_67	2008-04-08	11
+18	val_18	2008-04-08	11
+100	val_100	2008-04-08	11
+9	val_9	2008-04-08	11
+146	val_146	2008-04-08	11
+186	val_186	2008-04-08	11
+167	val_167	2008-04-08	11
+18	val_18	2008-04-08	11
+183	val_183	2008-04-08	11
+97	val_97	2008-04-08	11
+84	val_84	2008-04-08	11
+28	val_28	2008-04-08	11
+37	val_37	2008-04-08	11
+152	val_152	2008-04-08	11
+194	val_194	2008-04-08	11
+126	val_126	2008-04-08	11
+90	val_90	2008-04-08	11
+169	val_169	2008-04-08	11
+97	val_97	2008-04-08	11
+86	val_86	2008-04-08	12
+27	val_27	2008-04-08	12
+165	val_165	2008-04-08	12
+98	val_98	2008-04-08	12
+193	val_193	2008-04-08	12
+150	val_150	2008-04-08	12
+66	val_66	2008-04-08	12
+128	val_128	2008-04-08	12
+146	val_146	2008-04-08	12
+152	val_152	2008-04-08	12
+145	val_145	2008-04-08	12
+37	val_37	2008-04-08	12
+15	val_15	2008-04-08	12
+82	val_82	2008-04-08	12
+166	val_166	2008-04-08	12
+153	val_153	2008-04-08	12
+193	val_193	2008-04-08	12
+174	val_174	2008-04-08	12
+199	val_199	2008-04-08	12
+174	val_174	2008-04-08	12
+162	val_162	2008-04-08	12
+167	val_167	2008-04-08	12
+195	val_195	2008-04-08	12
+17	val_17	2008-04-08	12
+113	val_113	2008-04-08	12
+155	val_155	2008-04-08	12
+0	val_0	2008-04-08	12
+128	val_128	2008-04-08	12
+57	val_57	2008-04-08	12
+149	val_149	2008-04-08	12
+129	val_129	2008-04-08	12
+170	val_170	2008-04-08	12
+20	val_20	2008-04-08	12
+157	val_157	2008-04-08	12
+92	val_92	2008-04-08	12
+111	val_111	2008-04-08	12
+47	val_47	2008-04-08	12
+72	val_72	2008-04-08	12
+4	val_4	2008-04-08	12
+35	val_35	2008-04-08	12
+169	val_169	2008-04-08	12
+125	val_125	2008-04-08	12
+192	val_192	2008-04-08	12
+187	val_187	2008-04-08	12
+176	val_176	2008-04-08	12
+54	val_54	2008-04-08	12
+51	val_51	2008-04-08	12
+138	val_138	2008-04-08	12
+103	val_103	2008-04-08	12
+176	val_176	2008-04-08	12
+65	val_65	2008-04-08	12
+137	val_137	2008-04-08	12
+83	val_83	2008-04-08	12
+180	val_180	2008-04-08	12
+12	val_12	2008-04-08	12
+181	val_181	2008-04-08	12
+67	val_67	2008-04-08	12
+138	val_138	2008-04-08	12
+84	val_84	2008-04-08	12
+58	val_58	2008-04-08	12
+8	val_8	2008-04-08	12
+24	val_24	2008-04-08	12
+179	val_179	2008-04-08	12
+172	val_172	2008-04-08	12
+42	val_42	2008-04-08	12
+129	val_129	2008-04-08	12
+158	val_158	2008-04-08	12
+119	val_119	2008-04-08	12
+0	val_0	2008-04-08	12
+197	val_197	2008-04-08	12
+100	val_100	2008-04-08	12
+199	val_199	2008-04-08	12
+191	val_191	2008-04-08	12
+96	val_96	2008-04-08	12
+26	val_26	2008-04-08	12
+165	val_165	2008-04-08	12
+120	val_120	2008-04-08	12
+131	val_131	2008-04-08	12
+51	val_51	2008-04-08	12
+43	val_43	2008-04-08	12
+156	val_156	2008-04-08	12
+95	val_95	2008-04-08	12
+196	val_196	2008-04-08	12
+98	val_98	2008-04-08	12
+197	val_197	2008-04-08	12
+187	val_187	2008-04-08	12
+137	val_137	2008-04-08	12
+169	val_169	2008-04-08	12
+85	val_85	2008-04-08	12
+77	val_77	2008-04-08	12
+0	val_0	2008-04-08	12
+87	val_87	2008-04-08	12
+179	val_179	2008-04-08	12
+118	val_118	2008-04-08	12
+134	val_134	2008-04-08	12
+138	val_138	2008-04-08	12
+15	val_15	2008-04-08	12
+118	val_118	2008-04-08	12
+72	val_72	2008-04-08	12
+90	val_90	2008-04-08	12
+19	val_19	2008-04-08	12
+10	val_10	2008-04-08	12
+177	val_177	2008-04-08	12
+5	val_5	2008-04-08	12
+58	val_58	2008-04-08	12
+35	val_35	2008-04-08	12
+95	val_95	2008-04-08	12
+11	val_11	2008-04-08	12
+168	val_168	2008-04-08	12
+34	val_34	2008-04-08	12
+143	val_143	2008-04-08	12
+160	val_160	2008-04-08	12
+195	val_195	2008-04-08	12
+42	val_42	2008-04-08	12
+119	val_119	2008-04-08	12
+78	val_78	2008-04-08	12
+76	val_76	2008-04-08	12
+41	val_41	2008-04-08	12
+149	val_149	2008-04-08	12
+138	val_138	2008-04-08	12
+30	val_30	2008-04-08	12
+64	val_64	2008-04-08	12
+76	val_76	2008-04-08	12
+74	val_74	2008-04-08	12
+69	val_69	2008-04-08	12
+33	val_33	2008-04-08	12
+103	val_103	2008-04-08	12
+113	val_113	2008-04-08	12
+167	val_167	2008-04-08	12
+116	val_116	2008-04-08	12
+70	val_70	2008-04-08	12
+191	val_191	2008-04-08	12
+5	val_5	2008-04-08	12
+128	val_128	2008-04-08	12
+2	val_2	2008-04-08	12
+35	val_35	2008-04-08	12
+80	val_80	2008-04-08	12
+44	val_44	2008-04-08	12
+193	val_193	2008-04-08	12
+104	val_104	2008-04-08	12
+175	val_175	2008-04-08	12
+53	val_53	2008-04-08	12
+105	val_105	2008-04-08	12
+190	val_190	2008-04-08	12
+114	val_114	2008-04-08	12
+90	val_90	2008-04-08	12
+12	val_12	2008-04-08	12
+164	val_164	2008-04-08	12
+125	val_125	2008-04-08	12
+164	val_164	2008-04-08	12
+187	val_187	2008-04-08	12
+5	val_5	2008-04-08	12
+70	val_70	2008-04-08	12
+24	val_24	2008-04-08	12
+104	val_104	2008-04-08	12
+70	val_70	2008-04-08	12
+163	val_163	2008-04-08	12
+119	val_119	2008-04-08	12
+199	val_199	2008-04-08	12
+120	val_120	2008-04-08	12
+169	val_169	2008-04-08	12
+178	val_178	2008-04-08	12
+83	val_83	2008-04-08	12
+136	val_136	2008-04-08	12
+172	val_172	2008-04-08	12
+133	val_133	2008-04-08	12
+175	val_175	2008-04-08	12
+189	val_189	2008-04-08	12
+26	val_26	2008-04-08	12
+134	val_134	2008-04-08	12
+67	val_67	2008-04-08	12
+18	val_18	2008-04-08	12
+100	val_100	2008-04-08	12
+9	val_9	2008-04-08	12
+146	val_146	2008-04-08	12
+186	val_186	2008-04-08	12
+167	val_167	2008-04-08	12
+18	val_18	2008-04-08	12
+183	val_183	2008-04-08	12
+97	val_97	2008-04-08	12
+84	val_84	2008-04-08	12
+28	val_28	2008-04-08	12
+37	val_37	2008-04-08	12
+152	val_152	2008-04-08	12
+194	val_194	2008-04-08	12
+126	val_126	2008-04-08	12
+90	val_90	2008-04-08	12
+169	val_169	2008-04-08	12
 97	val_97	2008-04-08	12

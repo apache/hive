@@ -126,6 +126,9 @@ Trunk -  Unreleased
 
     HIVE-841. Change deprecated Hadoop APIs in Context.java (Cyrus Katrak via namit)
 
+    HIVE-844. Remove ASTPartitionPruner from genmapredTasks.
+    (Namit Jain via zshao)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

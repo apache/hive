@@ -4,17 +4,17 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF SRC x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF x)))))
 
 STAGE DEPENDENCIES:
-  Stage-0 is a root stage
+  Stage-2 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-0
+  Stage: Stage-2
     Fetch Operator
       limit: -1
 
 
 query: SELECT x.* FROM SRC x
 Input: default/src
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/75849450/132865701.10000
+Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1897097966/10000
 238	val_238
 86	val_86
 311	val_311
