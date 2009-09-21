@@ -305,8 +305,8 @@
 
 <property>
   <name>hive.hwi.war.file</name>
-  <value>${HIVE_HOME}/lib/hive-hwi.war</value>
-  <description>This is the WAR file with the jsp content for Hive Web Interface</description>
+  <value>lib/hive_hwi.war</value>
+  <description>path appended to HIVE_HOME to locate the HWI WAR file</description>
 </property>
 
 <property>

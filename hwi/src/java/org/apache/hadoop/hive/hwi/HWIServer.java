@@ -57,12 +57,16 @@ public class HWIServer {
 
 	
 	    String hwiWAR = conf.getVar(HiveConf.ConfVars.HIVEHWIWARFILE);
-	    if (! new File (hwiWAR).exists() ){
+ 	    String hivehome = System.getenv().get("HIVE_HOME");
+ 	    File hwiWARFile = new File(hivehome,hwiWAR);
+	    if (! hwiWARFile.exists() ){
 	    	l4j.fatal("HWI WAR file not found at "+ hwiWAR );
+                System.exit(1);
 	    }
 	    
+	    
         webServer = ShimLoader.getJettyShims().startServer(listen, port);
-        webServer.addWar(hwiWAR, "/hwi");
+        webServer.addWar(hwiWARFile.toString(), "/hwi");
 	    
 	    /*The command line args may be used by multiple components. Rather by setting
 	     * these as a system property we avoid having to specifically pass them
