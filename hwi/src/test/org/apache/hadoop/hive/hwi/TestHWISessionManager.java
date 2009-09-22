@@ -1,3 +1,21 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.hadoop.hive.hwi;
 
 import java.io.BufferedReader;
@@ -11,7 +29,8 @@ import org.apache.hadoop.hive.hwi.HWIAuth;
 import org.apache.hadoop.hive.hwi.HWISessionItem;
 import org.apache.hadoop.hive.hwi.HWISessionManager;
 import org.apache.hadoop.hive.ql.history.HiveHistoryViewer;
-
+import java.util.ArrayList;
+import java.util.Vector;
 public class TestHWISessionManager extends TestCase {
 
 	private static String tableName = "test_hwi_table";
@@ -66,30 +85,45 @@ public class TestHWISessionManager extends TestCase {
 		HWISessionItem searchItem = hsm.findSessionItemByName(user1, "session1");
 		assertEquals(searchItem, user1_item1);
 
-		searchItem.setQuery("create table " + tableName
+		searchItem.addQuery("create table " + tableName
 				+ " (key int, value string)");
+		searchItem.addQuery("describe "+tableName);
 		searchItem.clientStart();
 
 		// wait for the session manager to make the table. It is non blocking API.
-		while (searchItem.getStatus() != HWISessionItem.WebSessionItemStatus.QUERY_COMPLETE) {
-			Thread.sleep(1);
+ 		synchronized (searchItem.runnable ) {
+		  while (searchItem.getStatus() != HWISessionItem.WebSessionItemStatus.READY) {
+			searchItem.runnable.wait();
+                  }
 		}
-		assertEquals(searchItem.getQueryRet(), 0);
-
+		ArrayList<Integer> zero = new ArrayList<Integer>(); zero.add(0); zero.add(0); zero.add(0); zero.add(0);
+		ArrayList<Integer> zero3 = new ArrayList<Integer>(); zero3.add(0); zero3.add(0); zero3.add(0);
+		ArrayList<Integer> zero1 = new ArrayList<Integer>(); zero1.add(0);
+		assertEquals( zero , searchItem.getQueryRet());
+		
+		Vector<Vector<String>> searchBlockRes = searchItem.getResultBucket();
+		
+		String resLine =  searchBlockRes.get(0).get(0) ;
+		assertEquals(true, resLine.contains("key") );
+                assertEquals(true, resLine.contains("int") );
+                String resLine2= searchBlockRes.get(0).get(1) ;
+                assertEquals(true, resLine2.contains("value") );
+                assertEquals(true, resLine2.contains("string") );
+	
 		// load data into table
 		searchItem.clientRenew();
-		searchItem.setQuery(("load data local inpath '" + dataFilePath.toString()
-				+ "' into table " + tableName));
+		searchItem.addQuery("load data local inpath '" + dataFilePath.toString()
+				+ "' into table " + tableName);
 		searchItem.clientStart();
-		while (searchItem.getStatus() != HWISessionItem.WebSessionItemStatus.QUERY_COMPLETE) {
+		while (searchItem.getStatus() != HWISessionItem.WebSessionItemStatus.READY) {
 			Thread.sleep(1);
 		}
-		assertEquals(searchItem.getQueryRet(), 0);
+		assertEquals(zero1 , searchItem.getQueryRet());
 
 		// start two queries simultaniously
-		user1_item2.setQuery("select distinct(test_hwi_table.key) from "
+		user1_item2.addQuery("select distinct(test_hwi_table.key) from "
 				+ tableName);
-		user2_item1.setQuery("select distinct(test_hwi_table.key) from "
+		user2_item1.addQuery("select distinct(test_hwi_table.key) from "
 				+ tableName);
 
 		// set result files to compare results
@@ -114,16 +148,21 @@ public class TestHWISessionManager extends TestCase {
 		user1_item2.clientStart();
 		user2_item1.clientStart();
 
-		while (user1_item2.getStatus() != HWISessionItem.WebSessionItemStatus.QUERY_COMPLETE) {
-			Thread.sleep(1);
-		}
-		while (user2_item1.getStatus() != HWISessionItem.WebSessionItemStatus.QUERY_COMPLETE) {
-			Thread.sleep(1);
+		synchronized (user1_item2.runnable) {
+		  while (user1_item2.getStatus() != HWISessionItem.WebSessionItemStatus.READY) {
+		    user1_item2.runnable.wait();		
+		  }
 		}
 
-		assertEquals(user1_item2.getQueryRet(), 0);
-		assertEquals(user2_item1.getQueryRet(), 0);
-		assertEquals(isFileContentEqual(result1, result2), true);
+ 		synchronized (user2_item1.runnable) {
+		  while (user2_item1.getStatus() != HWISessionItem.WebSessionItemStatus.READY) {
+		    user2_item1.runnable.wait();
+		  }
+                }
+
+		assertEquals(zero3 , user1_item2.getQueryRet() );
+		assertEquals(zero3 , user2_item1.getQueryRet() );
+		assertEquals(true , isFileContentEqual(result1, result2));
 
 		// clean up the files
 		result1.delete();
@@ -131,26 +170,31 @@ public class TestHWISessionManager extends TestCase {
 
 		// test a session renew/refresh
 		user2_item1.clientRenew();
-		user2_item1.setQuery("select distinct(test_hwi_table.key) from "
+		user2_item1.addQuery("select distinct(test_hwi_table.key) from "
 				+ tableName);
 		user2_item1.clientStart();
-		while (user2_item1.getStatus() != HWISessionItem.WebSessionItemStatus.QUERY_COMPLETE) {
-			Thread.sleep(1);
+
+		synchronized (user2_item1.runnable ) {
+		  while (user2_item1.getStatus() != HWISessionItem.WebSessionItemStatus.READY) {
+		    user2_item1.runnable.wait();
+		  }
 		}
 
 		// cleanup
 		HWISessionItem cleanup = hsm.createSession(user1, "cleanup");
-		cleanup.setQuery("drop table " + tableName);
+		cleanup.addQuery("drop table " + tableName);
 		cleanup.clientStart();
 
-		while (cleanup.getStatus() != HWISessionItem.WebSessionItemStatus.QUERY_COMPLETE) {
-			Thread.sleep(1);
+		synchronized (cleanup.runnable) {
+		  while (cleanup.getStatus() != HWISessionItem.WebSessionItemStatus.READY) {
+		    cleanup.runnable.wait();
+ 		  }
 		}
 
 		// test the history is non null object.
 		HiveHistoryViewer hhv = cleanup.getHistoryViewer();
 		assertNotNull(hhv);
-		assertEquals(cleanup.getQueryRet(), 0);
+		assertEquals( zero3 , cleanup.getQueryRet() );
 	}
 
 	public boolean isFileContentEqual(File one, File two) throws Exception {

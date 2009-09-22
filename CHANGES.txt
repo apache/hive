@@ -134,6 +134,9 @@ Trunk -  Unreleased
 
     HIVE-795. Better error messages from Hive Server (Bill Graham via namit)
 
+    HIVE-716. Web interface wait/notify, interface changes
+    (Edward Capriolo via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

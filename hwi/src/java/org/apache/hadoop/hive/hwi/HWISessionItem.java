@@ -1,3 +1,21 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.hadoop.hive.hwi;
 
 import java.io.File;
@@ -6,10 +24,13 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Collection;
 import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.cli.OptionsProcessor;
-import org.apache.hadoop.hive.ql.processors.SetProcessor;
+import org.apache.hadoop.hive.ql.processors.CommandProcessor;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.ExecDriver;
@@ -27,152 +48,150 @@ import org.apache.commons.logging.LogFactory;
  */
 public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
 
-	protected static final Log l4j = LogFactory.getLog(HWISessionItem.class
-			.getName());
+  protected static final Log l4j = LogFactory.getLog(HWISessionItem.class.getName());
 
-	/**
-	 * Represents the state a session item can be in.
-	 * 
-	 */
-	public enum WebSessionItemStatus {
-		NEW, QUERY_SET, QUERY_RUNNING, QUERY_COMPLETE, DESTROY, KILL_QUERY
-	};
+  /**  Represents the state a session item can be in. */
+  public enum WebSessionItemStatus {
+    NEW, READY, QUERY_SET, QUERY_RUNNING, DESTROY, KILL_QUERY
+  };
 
-	private String sessionName;
-	private HWISessionItem.WebSessionItemStatus status;
+  /** The Web Interface sessionName this is used to identify the session */
+  private String sessionName;
+	
+  /** Respresents the current status of the session. Used by components to determine state. 
+  * Operations will throw exceptions if the item is not in the correct state. */
+  private HWISessionItem.WebSessionItemStatus status;
 
-	private CliSessionState ss;
-	private SetProcessor sp;
-	private Driver qp;
+  private CliSessionState ss;
+  
+  /** Standard out from the session will be written to this local file */
+  private String resultFile;
+  
+  /** Standard error from the session will be written to this local file */
+  private String errorFile;
 
-	private String resultFile;
-	private String errorFile;
+  /** The results from the Driver. This is used for storing the most result 
+  results from the driver in memory */ 
+  private Vector<Vector<String>>resultBucket;
 
-	private String query;
-	private int queryRet;
+  /** Limits the resultBucket to be no greater then this size */
+  private int resultBucketMaxSize;
 
-	HiveConf conf;
-	Thread runnable;
-	HWIAuth auth;
-	private String historyFile;
+  /** List of queries that this item should/has operated on */
+  private List<String>  queries;
 
-	/**
-	 * Creates an instance of WebSessionItem, sets status to NEW.
-	 */
-	protected HWISessionItem() {
-		l4j.debug("HWISessionItem created");
-		status = WebSessionItemStatus.NEW;
-		queryRet = -40;
-		runnable = new Thread(this);
-		runnable.start();
-	}
+  /** status code results of queries */
+  private List<Integer> queryRet;
 
-	/**
-	 * This is the initialization process that is carried out for each
-	 * SessionItem. The goal is to emulate the startup of CLIDriver.
-	 */
-	protected void itemInit() {
-		l4j.debug("HWISessionItem itemInit start " + this.getSessionName());
-		OptionsProcessor oproc = new OptionsProcessor();
+  /** Reference to the configuration */
+  private HiveConf conf;
+  
+  /** User privileges */
+  private HWIAuth auth;
 
-		if (System.getProperty("hwi-args") != null) {
-			String[] parts = System.getProperty("hwi-args").split("\\s+");
+  public Thread runnable;
 
-			if (!oproc.process_stage1(parts)) {
-			}
-		}
+  /** Threading SessionState issues require us to capture a reference to 
+  * the hive history file and store it*/
+  private String historyFile;
 
-		SessionState.initHiveLog4j();
-		conf = new HiveConf(SessionState.class);
-		ss = new CliSessionState(conf);
-		SessionState.start(ss);
-		sp = new SetProcessor();
-		qp = new Driver();
+  /**
+  * Creates an instance of WebSessionItem, sets status to NEW.
+  */
+  public HWISessionItem(HWIAuth auth, String sessionName) {
+    this.auth=auth;
+    this.sessionName=sessionName;
+    l4j.debug("HWISessionItem created");
+    status = WebSessionItemStatus.NEW;
+    queries = new ArrayList<String>();
+    queryRet = new ArrayList<Integer>();
+    resultBucket = new Vector<Vector<String>>();
+    resultBucketMaxSize=1000;
+    runnable = new Thread(this);
+    runnable.start();
+  
+    l4j.debug("Wait for NEW->READY transition");
+    synchronized (this.runnable){
+      if (this.status != WebSessionItemStatus.READY) {
+	try {
+	  this.runnable.wait();
+        } catch (Exception ex) {}
+      }
+    }
+    l4j.debug("NEW->READY transition complete");
+  }
 
-		runSetProcessorQuery("hadoop.job.ugi=" + auth.getUser() + ","
-				+ auth.getGroups()[0]);
-		runSetProcessorQuery("user.name=" + auth.getUser());
-		/*
-		 * HiveHistoryFileName will not be accessible outside this thread. We must
-		 * capture this now.
-		 */
-		this.historyFile = this.ss.get().getHiveHistory().getHistFileName();
-		l4j.debug("HWISessionItem itemInit Complete " + this.getSessionName());
-	}
+  /**
+  * This is the initialization process that is carried out for each
+  * SessionItem. The goal is to emulate the startup of CLIDriver.
+  */
+  private void itemInit() {
+    l4j.debug("HWISessionItem itemInit start " + this.getSessionName());
+    OptionsProcessor oproc = new OptionsProcessor();
 
-	/**
-	 * Set processor queries block for only a short amount of time. The client can
-	 * issue these directly.
-	 * 
-	 * @param query
-	 *          This is a query in the form of SET THIS=THAT
-	 * @return chained call to setProcessor.run(String)
-	 */
-	public int runSetProcessorQuery(String query) {
-		return sp.run(query);
-	}
+    if (System.getProperty("hwi-args") != null) {
+      String[] parts = System.getProperty("hwi-args").split("\\s+");
+      if (!oproc.process_stage1(parts)) {
+      }
+    }
 
-	/**
-	 * HWISessionItem is a Runnable instance. Calling this method will change the
-	 * status to QUERY_SET and notify(). The run method detects this and then
-	 * continues processing.
-	 */
-	public void clientStart() throws HWIException {
+    SessionState.initHiveLog4j();
+    conf = new HiveConf(SessionState.class);
+    ss = new CliSessionState(conf);
+    SessionState.start(ss);
+    queries.add("set hadoop.job.ugi=" + auth.getUser() + ","
+                                + auth.getGroups()[0]);
+    queries.add("set user.name="+auth.getUser() );
+    /*
+    * HiveHistoryFileName will not be accessible outside this thread. We must
+    * capture this now.
+    */
+    this.historyFile = this.ss.get().getHiveHistory().getHistFileName();
+    l4j.debug("HWISessionItem itemInit Complete " + this.getSessionName());
+    this.status= WebSessionItemStatus.READY;
 
-		if (this.status == WebSessionItemStatus.QUERY_RUNNING) {
-			throw new HWIException("Query already running");
-		}
-		this.status = WebSessionItemStatus.QUERY_SET;
-		synchronized (this.runnable) {
-			this.runnable.notifyAll();
-		}
-		l4j.debug(this.getSessionName() + " Query is set to start");
-	}
+    synchronized (this.runnable){
+      this.runnable.notifyAll();
+    }
+  }
 
-	public void clientKill() throws HWIException {
-		if (this.status != WebSessionItemStatus.QUERY_RUNNING) {
-			throw new HWIException("Can not kill that which is not running.");
-		}
-		this.status = WebSessionItemStatus.KILL_QUERY;
-		l4j.debug(this.getSessionName() + " Query is set to KILL_QUERY");
-	}
+  /**
+  * HWISessionItem is a Runnable instance. Calling this method will change the
+  * status to QUERY_SET and notify(). The run method detects this and then
+  * continues processing.
+  */
+  public void clientStart() throws HWIException {
+    if (this.status == WebSessionItemStatus.QUERY_RUNNING) {
+      throw new HWIException("Query already running");
+    }
+    this.status = WebSessionItemStatus.QUERY_SET;
+    synchronized (this.runnable) {
+      this.runnable.notifyAll();
+    }
+    l4j.debug(this.getSessionName() + " Query is set to start");
+  }
 
-	/** This method clears the private member variables. */
-	public void clientRenew() throws HWIException {
-		if (this.status == WebSessionItemStatus.QUERY_RUNNING) {
-			throw new HWIException("Query already running");
-		}
+  public void clientKill() throws HWIException {
+    if (this.status != WebSessionItemStatus.QUERY_RUNNING) {
+      throw new HWIException("Can not kill that which is not running.");
+    }
+    this.status = WebSessionItemStatus.KILL_QUERY;
+    l4j.debug(this.getSessionName() + " Query is set to KILL_QUERY");
+  }
 
-		this.query = null;
-		this.resultFile = null;
-		this.errorFile = null;
-		this.status = WebSessionItemStatus.NEW;
-		this.resultFile = null;
-		this.conf = null;
-		this.ss = null;
-		this.qp = null;
-		this.sp = null;
-		l4j.debug(this.getSessionName() + " Query is renewed to start");
-	}
-
-	/**
-	 * This is a chained call to SessionState.setIsSilent(). Use this if you do
-	 * not want the result file to have information status
-	 */
-	public void setSSIsSilent(boolean silent) throws HWIException {
-		if (ss == null)
-			throw new HWIException("Session State is null");
-		this.ss.setIsSilent(silent);
-	}
-
-	/**
-	 * This is a chained call to SessionState.getIsSilent()
-	 */
-	public boolean getSSIsSilent() throws HWIException {
-		if (ss == null)
-			throw new HWIException("Session State is null");
-		return ss.getIsSilent();
-	}
+  /** This method clears the private member variables. */
+  public void clientRenew() throws HWIException {
+    throwIfRunning();
+    this.queries = new ArrayList<String>();
+    this.queryRet = new ArrayList<Integer>();
+    this.resultBucket = new Vector<Vector<String>>();
+    this.resultFile = null;
+    this.errorFile = null;
+    //this.conf = null;
+    //this.ss = null;
+    this.status = WebSessionItemStatus.NEW;
+    l4j.debug(this.getSessionName() + " Query is renewed to start");
+  }
 
 	/**
 	 * This is a callback style function used by the HiveSessionManager. The
@@ -245,216 +264,211 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
 		}
 		return jtparts[0]+":"+jthttpParts[1]+"/jobdetails.jsp?jobid="+jobid+"&refresh=30";
 	}
-	@Override
-	/*
-	 * HWISessionItem uses a wait() notify() system. If the thread detects conf to
-	 * be null, control is transfered to initItem().A status of QUERY_SET causes
-	 * control to transfer to the runQuery() method. DESTROY will cause the run
-	 * loop to end permanently.
-	 */
-	public void run() {
-		synchronized (this.runnable) {
-			while (this.status != HWISessionItem.WebSessionItemStatus.DESTROY) {
-				if (conf == null) {
-					this.itemInit();
-				}
-				if (this.status == WebSessionItemStatus.QUERY_SET) {
-					this.runQuery();
-				}
-				try {
-					this.runnable.wait();
-				} catch (InterruptedException e) {
-					l4j.error("in wait() state ", e);
-				}
-			}
-		}
+  @Override
+  /*
+  * HWISessionItem uses a wait() notify() system. If the thread detects conf to
+  * be null, control is transfered to initItem(). A status of QUERY_SET causes
+  * control to transfer to the runQuery() method. DESTROY will cause the run
+  * loop to end permanently.
+  */
+  public void run() {
+    synchronized (this.runnable) {
+      while (this.status != HWISessionItem.WebSessionItemStatus.DESTROY) {
+        if (this.status == WebSessionItemStatus.NEW) {
+	  this.itemInit();
 	}
+ 					
+	if (this.status == WebSessionItemStatus.QUERY_SET) {
+	  this.runQuery();
+	}
+				
+	try {
+	  this.runnable.wait();
+	} catch (InterruptedException e) {
+	  l4j.error("in wait() state ", e);
+	}
+      } //end while
+    } //end sync
+  } //end run
 
-	/**
-	 * This method calls the qp.run() method, writes the output to the result
-	 * file, when finished the status will be QUERY_COMPLETE.
-	 */
-	public void runQuery() {
-
-		FileOutputStream fos = null;
-
-		if (this.getResultFile() != null) {
-			try {
-				fos = new FileOutputStream(new File(this.resultFile));
-				ss.out = new PrintStream(fos, true, "UTF-8");
-			} catch (java.io.FileNotFoundException fex) {
-				l4j.error(this.getSessionName() + " opening resultfile "
+  /**
+  runQuery iterates the list of queries executing each query.
+  */
+  public void runQuery() {
+    FileOutputStream fos = null;
+    if (this.getResultFile() != null) {
+      try {
+	fos = new FileOutputStream(new File(this.resultFile));
+	ss.out = new PrintStream(fos, true, "UTF-8");
+      } catch (java.io.FileNotFoundException fex) {
+        l4j.error(this.getSessionName() + " opening resultfile "
 						+ this.resultFile, fex);
-			} catch (java.io.UnsupportedEncodingException uex) {
-				l4j.error(this.getSessionName() + " opening resultfile "
+      } catch (java.io.UnsupportedEncodingException uex) {
+        l4j.error(this.getSessionName() + " opening resultfile "
 						+ this.resultFile, uex);
-			}
-		} else {
-			l4j.debug(this.getSessionName() + " Output file was not specified");
-		}
-
-		l4j.debug(this.getSessionName() + " state is now QUERY_RUNNING.");
-		this.status = WebSessionItemStatus.QUERY_RUNNING;
-
-		queryRet = qp.run(this.query);
-		Vector<String> res = new Vector<String>();
-    try {
-  		while (qp.getResults(res)) {
-  			for (String row : res) {
-  				if (ss.out != null) {
-  					ss.out.println(row);
-  				}
-  			}
-  			res.clear();
-  		}
-    } catch (IOException ex) {
-      l4j.error(this.getSessionName() + " getting results "
-          + this.getResultFile() + " caused exception.", ex);
+      }
+    } else {
+      l4j.debug(this.getSessionName() + " Output file was not specified");
     }
-		try {
-			if (fos != null) {
-				fos.close();
-			}
-		} catch (IOException ex) {
-			l4j.error(this.getSessionName() + " closing result file "
-					+ this.getResultFile() + " caused exception.", ex);
-		}
-		this.status = WebSessionItemStatus.QUERY_COMPLETE;
-		l4j.debug(this.getSessionName() + " state is now QUERY_COMPLETE.");
-	}
+    l4j.debug(this.getSessionName() + " state is now QUERY_RUNNING.");
+    this.status = WebSessionItemStatus.QUERY_RUNNING;
 
-	public int compareTo(HWISessionItem other) {
-		if (other == null)
-			return -1;
-		return this.getSessionName().compareTo(other.getSessionName());
-	}
+    //expect one return per query
+    queryRet = new ArrayList<Integer> ( this.queries.size() );
+    for (int i=0;i<this.queries.size();i++){
+      String cmd = queries.get(i);
+      String cmd_trimmed = cmd.trim();
+      String[] tokens = cmd_trimmed.split("\\s+");
+      String cmd_1 = cmd_trimmed.substring(tokens[0].length()).trim();
 
-	/**
-	 * 
-	 * @return the HiveHistoryViewer for the session
-	 * @throws HWIException
-	 */
-	public HiveHistoryViewer getHistoryViewer() throws HWIException {
-		if (ss == null)
-			throw new HWIException("Session state was null");
-		/*
-		 * we can not call this.ss.get().getHiveHistory().getHistFileName() directly
-		 * as this call is made from a a Jetty thread and will return null
-		 */
-		HiveHistoryViewer hv = new HiveHistoryViewer(this.historyFile);
-		return hv;
-	}
-
-	/**
-	 * Uses the sessionName property to compare to sessions
-	 * 
-	 * @return true if sessionNames are equal false otherwise
-	 */
-	public boolean equals(Object other) {
-		if (other == null)
-			return false;
-		if (!(other instanceof HWISessionItem))
-			return false;
-		HWISessionItem o = (HWISessionItem) other;
-		if (this.getSessionName().equals(o.getSessionName())) {
-			return true;
+      CommandProcessor proc = CommandProcessorFactory.get(tokens[0]);
+      if (proc !=null){
+        if (proc instanceof Driver) {
+          Driver qp = (Driver) proc;
+          queryRet.add ( new Integer(qp.run(cmd)));
+          Vector<String> res = new Vector<String>();
+          try {
+            while (qp.getResults(res)) {
+	      resultBucket.add(res);
+              if (resultBucket.size() > resultBucketMaxSize) 
+    		resultBucket.remove(0);
+              for (String row : res) {
+		if (ss != null) { 
+  	          if (ss.out != null) 
+  	            ss.out.println(row);
 		} else {
-			return false;
+		  throw new RuntimeException ("ss was null" );
 		}
-	}
+  	      }
+//  	      res.clear();
+            }
+          } catch (IOException ex) {
+            l4j.error(this.getSessionName() + " getting results "
+            + this.getResultFile() + " caused exception.", ex);
+          }
+          qp.close();
+        } else {
+          queryRet.add( new Integer(proc.run(cmd_1) ) );
+        }
+      } else {
+        //processor was null
+	l4j.error(this.getSessionName() + 
+	" query processor was not found for query "+ cmd );
+      } 
+    } // end for
 
-	protected void setQp(Driver qp) {
-		this.qp = qp;
-	}
+    //cleanup
+    try {
+      if (fos != null) {
+        fos.close();
+      }
+    } catch (IOException ex) {
+      l4j.error(this.getSessionName() + " closing result file "
+	+ this.getResultFile() + " caused exception.", ex);
+    }
+    this.status = WebSessionItemStatus.READY;
+    l4j.debug(this.getSessionName() + " state is now READY");
+    synchronized (this.runnable){
+      this.runnable.notifyAll();
+    }
+  }
 
-	/**
-	 * The query executed by Hive
-	 * 
-	 * @return The query that this is executing or will be executed
-	 */
-	public String getQuery() {
-		return query;
-	}
+ /**
+ * This is a chained call to SessionState.setIsSilent(). Use this if you do
+ * not want the result file to have information status
+ */
+  public void setSSIsSilent(boolean silent) throws HWIException {
+    if (ss == null)
+      throw new HWIException("Session State is null");
+    this.ss.setIsSilent(silent);
+ }
 
-	/**
-	 * Use this function to set the query that Hive will run.
-	 * 
-	 * @param query
-	 *          A query in Hive Query Language
-	 */
-	public void setQuery(String query) {
-		this.query = query;
-	}
+ /**
+ * This is a chained call to SessionState.getIsSilent()
+ */
+ public boolean getSSIsSilent() throws HWIException {
+   if (ss == null)
+     throw new HWIException("Session State is null");
+   return ss.getIsSilent();
+ }
 
-	/**
-	 * Used to determine the status of a query, possibly why it failed
-	 * 
-	 * @return The result from Hive queryProcessor
-	 */
-	public int getQueryRet() {
-		return queryRet;
-	}
+  /** to support sorting/Set*/
+  public int compareTo(HWISessionItem other) {
+    if (other == null)
+      return -1;
+    return this.getSessionName().compareTo(other.getSessionName());
+  }
 
-	protected void setQueryRet(int queryRet) {
-		this.queryRet = queryRet;
-	}
+  /**
+  * 
+  * @return the HiveHistoryViewer for the session
+  * @throws HWIException
+  */
+  public HiveHistoryViewer getHistoryViewer() throws HWIException {
+    if (ss == null)
+      throw new HWIException("Session state was null");
+    /*
+    * we can not call this.ss.get().getHiveHistory().getHistFileName() directly
+    * as this call is made from a a Jetty thread and will return null
+    */
+    HiveHistoryViewer hv = new HiveHistoryViewer(this.historyFile);
+    return hv;
+  }
 
-	public String getResultFile() {
-		return resultFile;
-	}
+  /**
+  * Uses the sessionName property to compare to sessions
+  * 
+  * @return true if sessionNames are equal false otherwise
+  */
+  public boolean equals(Object other) {
+    if (other == null)
+      return false;
+    if (!(other instanceof HWISessionItem))
+      return false;
+    HWISessionItem o = (HWISessionItem) other;
+    if (this.getSessionName().equals(o.getSessionName())) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 
-	public void setResultFile(String resultFile) {
-		this.resultFile = resultFile;
-	}
+  public String getResultFile() {
+    return resultFile;
+  }
 
-	/**
-	 * The session name is an identifier to recognize the session
-	 * 
-	 * @return the session's name
-	 */
-	public String getSessionName() {
-		return sessionName;
-	}
+  public void setResultFile(String resultFile) {
+    this.resultFile = resultFile;
+  }
 
-	protected void setSessionName(String sessionName) {
-		this.sessionName = sessionName;
-	}
+  /**
+  * The session name is an identifier to recognize the session
+  * 
+  * @return the session's name
+  */
+  public String getSessionName() {
+    return sessionName;
+  }
 
-	protected SetProcessor getSp() {
-		return sp;
-	}
+  /**
+  * Used to represent to the user and other components what state the
+  * HWISessionItem is in. Certain commands can only be run when the application
+  * is in certain states.
+  * 
+  * @return the current status of the session
+  */
+  public WebSessionItemStatus getStatus() {
+    return status;
+  }
 
-	protected void setSp(SetProcessor sp) {
-		this.sp = sp;
-	}
-
-	protected CliSessionState getSs() {
-		return ss;
-	}
-
-	protected void setSs(CliSessionState ss) {
-		this.ss = ss;
-	}
-
-	/**
-	 * Used to represent to the user and other components what state the
-	 * HWISessionItem is in. Certain commands can only be run when the application
-	 * is in certain states.
-	 * 
-	 * @return the current status of the session
-	 */
-	public WebSessionItemStatus getStatus() {
-		return status;
-	}
-
-	/**
-	 * Currently unused
-	 * 
-	 * @return a String with the full path to the error file.
-	 */
-	public String getErrorFile() {
-		return errorFile;
-	}
+  /**
+  * Currently unused
+  * 
+  * @return a String with the full path to the error file.
+  */
+  public String getErrorFile() {
+    return errorFile;
+  }
 
 	/**
 	 * Currently unused
@@ -462,22 +476,82 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
 	 * @param errorFile
 	 *          the full path to the file for results.
 	 */
-	public void setErrorFile(String errorFile) {
-		this.errorFile = errorFile;
-	}
+  public void setErrorFile(String errorFile) {
+    this.errorFile = errorFile;
+  }
 
-	/**
-	 * @return the auth
-	 */
-	public HWIAuth getAuth() {
-		return auth;
-	}
+  /**
+  * @return the auth
+  */
+  public HWIAuth getAuth() {
+    return auth;
+  }
 
-	/**
-	 * @param auth the auth to set
-	 */
-	protected void setAuth(HWIAuth auth) {
-		this.auth = auth;
-	}
+  /**
+  * @param auth the auth to set
+  */
+  protected void setAuth(HWIAuth auth) {
+    this.auth = auth;
+  }
+
+  /** returns an unmodifiable list of queries */
+  public List<String> getQueries(){
+    return java.util.Collections.unmodifiableList(this.queries);
+  }
+  
+  /** adds a new query to the execution list 
+   @param query query to be added to the list*/
+  public void addQuery(String query) throws HWIException {
+    throwIfRunning();
+    this.queries.add(query);
+  }
+
+  /** removes a query from the execution list 
+  * @param item the 0 based index of the item to be removed
+  */
+  public void removeQuery(int item) throws HWIException {
+    throwIfRunning();
+    queries.remove(item);  	
+  }
+ 
+  public void clearQueries() throws HWIException {
+    throwIfRunning();
+    queries.clear();
+  }
+
+  /** returns the value for resultBucketMaxSize */
+  public int getResultBucketMaxSize(){
+    return resultBucketMaxSize;
+  }
+
+  /** sets the value for resultBucketMaxSize 
+    @param size the new size
+  */
+  public void setResultBucketMaxSize(int size){
+    resultBucketMaxSize=size;
+  }
+
+  /** gets the value for resultBucket */
+  public Vector<Vector<String>> getResultBucket(){
+    return resultBucket;
+  }
+
+  /**
+  * The HWISessionItem stores the result of each query in an array
+  * @return unmodifiable list of return codes 
+  */
+  public List<Integer> getQueryRet(){
+    return java.util.Collections.unmodifiableList(queryRet);
+  }
+
+  /**
+  * If the ItemStatus is QueryRunning most of the configuration
+  * is in a read only state.  
+  */
+  private void throwIfRunning() throws HWIException {
+    if (this.status == WebSessionItemStatus.QUERY_RUNNING) {
+      throw new HWIException("Query already running");
+    }
+  }
 
 }

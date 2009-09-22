@@ -1,3 +1,22 @@
+<%--
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+--%>
 <%@page import="org.apache.hadoop.hive.hwi.*" %>
 <%@page errorPage="error_page.jsp" %>
 <% HWISessionManager hs = (HWISessionManager) application.getAttribute("hs");; %>
@@ -18,27 +37,28 @@
 %>
 <% 
   if (request.getParameter("start")!=null ){ 
-    if ( sess.getStatus()!=HWISessionItem.WebSessionItemStatus.QUERY_RUNNING){
+    if ( sess.getStatus()==HWISessionItem.WebSessionItemStatus.READY){
       sess.setErrorFile(errorFile);
-	  sess.setResultFile(resultFile);
-	  sess.setQuery(query);
-	  
-	  if (query.length()==0){
-		  message="You did not specify a query";
-		  start="NO";
-	  }
-	  
-	  if (silent.equalsIgnoreCase("YES") )
-		sess.setSSIsSilent(true);
-	  else
-		sess.setSSIsSilent(false);
+      sess.setResultFile(resultFile);
+      sess.clearQueries();
+      for (String q : query.split(";") ){
+        sess.addQuery(q);
+      }
+      if (query.length()==0){
+        message="You did not specify a query";
+        start="NO";
+      }
+      if (silent.equalsIgnoreCase("YES") )
+	sess.setSSIsSilent(true);
+      else
+	sess.setSSIsSilent(false);
 		   
-	  message="Changes accepted.";
-	  if (start.equalsIgnoreCase("YES") ){
-	    sess.clientStart();
-		message="Session is set to start.";
-	  }
+	message="Changes accepted.";
+	if (start.equalsIgnoreCase("YES") ){
+	  sess.clientStart();
+          message="Session is set to start.";
 	}
+      }
   } 
 %>
 
@@ -72,9 +92,9 @@
           
           Session History:  <a href="/hwi/session_history.jsp?sessionName=<%=sessionName%>"><%=sessionName%></a><br> 
           Session Diagnostics: <a href="/hwi/session_diagnostics.jsp?sessionName=<%=sessionName%>"><%=sessionName%></a><br>
-		  Set Processor: <a href="/hwi/set_processor.jsp?sessionName=<%=sessionName%>"><%=sessionName%></a><br> 
           Session Remove: <a href="/hwi/session_remove.jsp?sessionName=<%=sessionName%>"><%=sessionName%></a><br> 
-          <br>
+          Session Result Bucket: <a href="/hwi/session_result.jsp?sessionName=<%=sessionName%>"><%=sessionName%></a><br>
+	<br>
           
 			<form action="session_manage.jsp">
 				<input type="hidden" name="sessionName" value="<%=sessionName %>">
@@ -102,7 +122,13 @@
 				<tr>
 					<td>Query</td>
 					<td><textarea name="query" rows="8" cols="70"><% 
-				if (sess.getQuery()==null) { out.print(""); } else { out.print(sess.getQuery()); }
+				if (sess.getQueries()==null) { 
+				  out.print(""); 
+				} else { 
+			          for (String qu: sess.getQueries() ) {
+				    out.print(qu); out.print(" ; ");
+				  }	
+				}
 				%></textarea></td>
 				</tr>
 				
@@ -129,8 +155,11 @@
 				</tr>
 					
 				<tr>
-					<td>Query Return Code</td>
-					<td><%=sess.getQueryRet() %></td>
+					<td>Query Return Codes</td>
+					<td> <% for (int i=0; i< sess.getQueryRet().size();++i ){ %>
+						<%=i%> : <%=sess.getQueryRet().get(i)%><br>
+					     <% } %>
+					</td>
 				</tr>
 				<tr>
 					<td colSpan="2">
