@@ -199,6 +199,57 @@ public class TestJdbcDriver extends TestCase {
     assertTrue("Statement should be closed", stmt.isClosed());
   }
 
+  public void testErrorMessages() throws SQLException {
+    String invalidSyntaxSQLState = "42000";
+    int parseErrorCode = 10;
+
+    //These tests inherently cause exceptions to be written to the test output
+    //logs. This is undesirable, since you it might appear to someone looking
+    //at the test output logs as if something is failing when it isn't. Not sure
+    //how to get around that.
+    doTestErrorCase("SELECTT * FROM " + tableName,
+            "cannot recognize input 'SELECTT'",
+            invalidSyntaxSQLState, 11);
+    doTestErrorCase("SELECT * FROM some_table_that_does_not_exist",
+            "Table not found", "42S02", parseErrorCode);
+    doTestErrorCase("drop table some_table_that_does_not_exist",
+            "Table not found", "42S02", parseErrorCode);
+    doTestErrorCase("SELECT invalid_column FROM " + tableName,
+            "Invalid Table Alias or Column Reference",
+            invalidSyntaxSQLState, parseErrorCode);
+    doTestErrorCase("SELECT invalid_function(key) FROM " + tableName,
+            "Invalid Function", invalidSyntaxSQLState, parseErrorCode);
+
+    //TODO: execute errors like this currently don't return good messages (i.e.
+    //'Table already exists'). This is because the Driver class calls
+    //Task.executeTask() which swallows meaningful exceptions and returns a status
+    //code. This should be refactored.
+    doTestErrorCase("create table " + tableName + " (key int, value string)",
+            "Query returned non-zero code: 9, cause: FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask",
+            "08S01", 9);
+  }
+
+  private void doTestErrorCase(String sql, String expectedMessage,
+                                           String expectedSQLState,
+                                           int expectedErrorCode) throws SQLException {
+    Statement stmt = con.createStatement();
+    boolean exceptionFound = false;
+    try {
+      stmt.executeQuery(sql);
+    }
+    catch(SQLException e) {
+      assertTrue("Adequate error messaging not found for '" + sql + "': " +
+              e.getMessage(), e.getMessage().contains(expectedMessage));
+      assertEquals("Expected SQLState not found for '" + sql + "'",
+              expectedSQLState, e.getSQLState());
+      assertEquals("Expected error code not found for '" + sql + "'",
+              expectedErrorCode, e.getErrorCode());
+      exceptionFound = true;
+    }
+
+    assertNotNull("Exception should have been thrown for query: " + sql, exceptionFound);
+  }
+
   public void testShowTables() throws SQLException {
     Statement stmt = con.createStatement();
     assertNotNull("Statement is null", stmt);
@@ -239,6 +290,7 @@ public class TestJdbcDriver extends TestCase {
 
     assertEquals("Hive", meta.getDatabaseProductName());
     assertEquals("0", meta.getDatabaseProductVersion());
+    assertEquals(DatabaseMetaData.sqlStateSQL99, meta.getSQLStateType());
     assertNull(meta.getProcedures(null, null, null));
     assertFalse(meta.supportsCatalogsInTableDefinitions());
     assertFalse(meta.supportsSchemasInTableDefinitions());

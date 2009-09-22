@@ -49,6 +49,8 @@ struct HiveClusterStatus {
 
 exception HiveServerException {
   1: string message
+  2: i32 errorCode
+  3: string SQLState
 }
 
 # Interface for Thrift Hive Server

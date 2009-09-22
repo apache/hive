@@ -200,6 +200,8 @@ class HiveServerException extends TException {
   static $_TSPEC;
 
   public $message = null;
+  public $errorCode = null;
+  public $SQLState = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -208,11 +210,25 @@ class HiveServerException extends TException {
           'var' => 'message',
           'type' => TType::STRING,
           ),
+        2 => array(
+          'var' => 'errorCode',
+          'type' => TType::I32,
+          ),
+        3 => array(
+          'var' => 'SQLState',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
       if (isset($vals['message'])) {
         $this->message = $vals['message'];
+      }
+      if (isset($vals['errorCode'])) {
+        $this->errorCode = $vals['errorCode'];
+      }
+      if (isset($vals['SQLState'])) {
+        $this->SQLState = $vals['SQLState'];
       }
     }
   }
@@ -243,6 +259,20 @@ class HiveServerException extends TException {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 2:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->errorCode);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->SQLState);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -259,6 +289,16 @@ class HiveServerException extends TException {
     if ($this->message !== null) {
       $xfer += $output->writeFieldBegin('message', TType::STRING, 1);
       $xfer += $output->writeString($this->message);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->errorCode !== null) {
+      $xfer += $output->writeFieldBegin('errorCode', TType::I32, 2);
+      $xfer += $output->writeI32($this->errorCode);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->SQLState !== null) {
+      $xfer += $output->writeFieldBegin('SQLState', TType::STRING, 3);
+      $xfer += $output->writeString($this->SQLState);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

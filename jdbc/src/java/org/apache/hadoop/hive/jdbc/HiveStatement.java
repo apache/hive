@@ -24,6 +24,7 @@ import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.util.Vector;
 import org.apache.hadoop.hive.service.HiveInterface;
+import org.apache.hadoop.hive.service.HiveServerException;
 
 public class HiveStatement implements java.sql.Statement {
   JdbcSessionState session;
@@ -167,9 +168,13 @@ public class HiveStatement implements java.sql.Statement {
     try {
       this.resultSet = null;
       client.execute(sql);
-    } catch (Exception ex) {
-      throw new SQLException(ex.toString());
+    } 
+    catch (HiveServerException e) {
+      throw new SQLException(e.getMessage(), e.getSQLState(), e.getErrorCode());
     }
+    catch (Exception ex) {
+      throw new SQLException(ex.toString(), "08S01");
+    }                     
     this.resultSet = new HiveResultSet(client, maxRows);
     return this.resultSet;
   }

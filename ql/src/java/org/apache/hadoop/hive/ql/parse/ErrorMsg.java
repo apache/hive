@@ -20,13 +20,25 @@ package org.apache.hadoop.hive.ql.parse;
 
 import org.antlr.runtime.tree.*;
 
+import java.util.Map;
+import java.util.HashMap;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+
 /**
  * List of error messages thrown by the parser
  **/
 
 public enum ErrorMsg {
+  //SQLStates are taken from Section 12.5 of ISO-9075.
+  //See http://www.contrib.andrew.cmu.edu/~shadow/sql/sql1992.txt
+  //Most will just rollup to the generic syntax error state of 42000, but
+  //specific errors can override the that state.
+  //See this page for how MySQL uses SQLState codes:
+  //http://dev.mysql.com/doc/refman/5.0/en/connector-j-reference-error-sqlstates.html
+
   GENERIC_ERROR("Exception while processing"),
-  INVALID_TABLE("Table not found"),
+  INVALID_TABLE("Table not found", "42S02"),
   INVALID_COLUMN("Invalid Column Reference"),
   INVALID_TABLE_OR_COLUMN("Invalid Table Alias or Column Reference"),
   AMBIGUOUS_TABLE_OR_COLUMN("Ambiguous Table Alias or Column Reference"),
@@ -39,7 +51,7 @@ public enum ErrorMsg {
   INVALID_FUNCTION_SIGNATURE("Function Argument Type Mismatch"),
   INVALID_OPERATOR_SIGNATURE("Operator Argument Type Mismatch"),
   INVALID_ARGUMENT("Wrong Arguments"),
-  INVALID_ARGUMENT_LENGTH("Arguments Length Mismatch"),
+  INVALID_ARGUMENT_LENGTH("Arguments Length Mismatch", "21000"),
   INVALID_ARGUMENT_TYPE("Argument Type Mismatch"),
   INVALID_JOIN_CONDITION_1("Both Left and Right Aliases Encountered in Join"),
   INVALID_JOIN_CONDITION_2("Neither Left nor Right Aliases Encountered in Join"),
@@ -87,8 +99,79 @@ public enum ErrorMsg {
   NEED_PARTITION_ERROR("need to specify partition columns because the destination table is partitioned.");
 
   private String mesg;
+  private String SQLState;
+
+  private static char SPACE = ' ';
+  private static Pattern ERROR_MESSAGE_PATTERN = Pattern.compile(".*line [0-9]+:[0-9]+ (.*)");
+  private static Map<String, ErrorMsg> mesgToErrorMsgMap = new HashMap<String, ErrorMsg>();
+  private static int minMesgLength = -1;
+
+  static {
+    for (ErrorMsg errorMsg : values()) {
+      mesgToErrorMsgMap.put(errorMsg.getMsg().trim(), errorMsg);
+
+      int length = errorMsg.getMsg().trim().length();
+      if (minMesgLength == -1 || length < minMesgLength)
+        minMesgLength = length;
+    }
+  }
+
+  /**
+   * For a given error message string, searches for a <code>ErrorMsg</code>
+   * enum that appears to be a match. If an match is found, returns the
+   * <code>SQLState</code> associated with the <code>ErrorMsg</code>. If a match
+   * is not found or <code>ErrorMsg</code> has no <code>SQLState</code>, returns
+   * the <code>SQLState</code> bound to the <code>GENERIC_ERROR</code>
+   * <code>ErrorMsg</code>.
+   *
+   * @param mesg An error message string
+   * @return SQLState
+   */
+  public static String findSQLState(String mesg) {
+
+    //first see if there is a direct match
+    ErrorMsg errorMsg = mesgToErrorMsgMap.get(mesg);
+    if (errorMsg != null) {
+      if (errorMsg.getSQLState() != null)
+        return errorMsg.getSQLState();
+      else
+        return GENERIC_ERROR.getSQLState();
+    }
+
+    //if not see if the mesg follows type of format, which is typically the case:
+    //line 1:14 Table not found table_name
+    String truncatedMesg = mesg.trim();
+    Matcher match = ERROR_MESSAGE_PATTERN.matcher(mesg);
+    if (match.matches()) truncatedMesg = match.group(1);
+
+    //appends might exist after the root message, so strip tokens off until we match
+    while (truncatedMesg.length() > minMesgLength) {
+      errorMsg = mesgToErrorMsgMap.get(truncatedMesg.trim());
+      if (errorMsg != null) {
+        if (errorMsg.getSQLState() != null)
+          return errorMsg.getSQLState();
+        else
+          return GENERIC_ERROR.getSQLState();
+      }
+
+      int lastSpace = truncatedMesg.lastIndexOf(SPACE);
+      if (lastSpace == -1) break;
+
+      // hack off the last word and try again
+      truncatedMesg = truncatedMesg.substring(0, lastSpace).trim();
+    }
+
+    return GENERIC_ERROR.getSQLState();
+  }
+
   ErrorMsg(String mesg) {
+    //42000 is the generic SQLState for syntax error.
+    this(mesg, "42000");
+  }
+
+  ErrorMsg(String mesg, String SQLState) {
     this.mesg = mesg;
+    this.SQLState = SQLState;
   }
 
   private int getLine(ASTNode tree) {
@@ -140,4 +223,7 @@ public enum ErrorMsg {
     return mesg;
   }
 
+  public String getSQLState() {
+    return SQLState;
+  }
 }

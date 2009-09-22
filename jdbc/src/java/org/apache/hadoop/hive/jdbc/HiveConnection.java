@@ -43,8 +43,8 @@ import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
-import org.apache.hadoop.hive.conf.HiveConf;
-import java.net.URI;
+import org.apache.thrift.transport.TTransportException;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 
 public class HiveConnection implements java.sql.Connection {
   JdbcSessionState session;
@@ -56,25 +56,32 @@ public class HiveConnection implements java.sql.Connection {
 
   private static final String URI_PREFIX = "jdbc:hive://";
   /**
-   * TODO: - throw more specific exception
-   *       - parse uri (use java.net.URI?)
+   * TODO: - parse uri (use java.net.URI?)
    */
-  public HiveConnection(String uri, Properties info) throws Exception {
+  public HiveConnection(String uri, Properties info) throws SQLException {
     session = new JdbcSessionState(new HiveConf(SessionState.class));
     session.in = null;
     session.out = null;
     session.err = null;
     SessionState.start(session);
+    String originalUri = uri;
 
     if (!uri.startsWith(URI_PREFIX)) {
-      throw new Exception("Invalid URL: " + uri);
+      throw new SQLException("Invalid URL: " + uri, "08S01");
     }
+
     // remove prefix
     uri = uri.substring(URI_PREFIX.length());
 
     // If uri is not specified, use local mode.
     if (uri.isEmpty()) {
-      client = new HiveServer.HiveServerHandler();
+      try {
+        client = new HiveServer.HiveServerHandler();
+      }
+      catch (MetaException e) {
+        throw new SQLException("Error accessing Hive metastore: " +
+                                e.getMessage(), "08S01");
+      }
     } else {
       // parse uri
       // form: hostname:port/databasename
@@ -92,7 +99,13 @@ public class HiveConnection implements java.sql.Connection {
       transport = new TSocket(host, port);
       TProtocol protocol = new TBinaryProtocol(transport);
       client = new HiveClient(protocol);
-      transport.open();
+      try {
+        transport.open();
+      }
+      catch (TTransportException e) {
+        throw new SQLException("Could not establish connecton to " +
+                                originalUri + ": " + e.getMessage(), "08S01");
+      }
     }
     isClosed = false;
   }

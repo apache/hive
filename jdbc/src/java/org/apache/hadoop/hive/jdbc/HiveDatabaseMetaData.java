@@ -22,6 +22,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.RowIdLifetime;
 import java.sql.SQLException;
+import java.sql.DatabaseMetaData;
 import java.net.URL;
 import java.util.jar.Manifest;
 import java.util.jar.Attributes;
@@ -619,8 +620,7 @@ public class HiveDatabaseMetaData implements java.sql.DatabaseMetaData {
    */
 
   public int getSQLStateType() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return DatabaseMetaData.sqlStateSQL99;
   }
 
   /* (non-Javadoc)

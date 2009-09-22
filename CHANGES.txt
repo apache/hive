@@ -132,6 +132,8 @@ Trunk -  Unreleased
     HIVE-817. hive.hwi.war.file incorrectly tries to use environment variables to locate war file
     (Edward Capriolo via namit)
 
+    HIVE-795. Better error messages from Hive Server (Bill Graham via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

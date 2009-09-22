@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
+import org.apache.hadoop.hive.ql.parse.ErrorMsg;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.exec.ExecDriver;
@@ -69,6 +70,8 @@ public class Driver implements CommandProcessor {
   private DataInput resStream;
   private Context ctx;
   private QueryPlan plan;
+  private String errorMessage;
+  private String SQLState;
 
   public int countJobs(List<Task<? extends Serializable>> tasks) {
     return countJobs(tasks, new ArrayList<Task<? extends Serializable>>());
@@ -255,16 +258,21 @@ public class Driver implements CommandProcessor {
       plan = new QueryPlan(command, sem);
       return (0);
     } catch (SemanticException e) {
-      console.printError("FAILED: Error in semantic analysis: "
-          + e.getMessage(), "\n"
+      errorMessage = "FAILED: Error in semantic analysis: " + e.getMessage();
+      SQLState = ErrorMsg.findSQLState(e.getMessage());
+      console.printError(errorMessage, "\n"
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return (10);
     } catch (ParseException e) {
-      console.printError("FAILED: Parse Error: " + e.getMessage(), "\n"
+      errorMessage = "FAILED: Parse Error: " + e.getMessage();
+      SQLState = ErrorMsg.findSQLState(e.getMessage());
+      console.printError(errorMessage, "\n"
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return (11);
     } catch (Exception e) {
-      console.printError("FAILED: Unknown exception : " + e.getMessage(), "\n"
+      errorMessage = "FAILED: Unknown exception: " + e.getMessage();
+      SQLState = ErrorMsg.findSQLState(e.getMessage());
+      console.printError(errorMessage, "\n"
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return (12);
     }
@@ -276,13 +284,50 @@ public class Driver implements CommandProcessor {
   public QueryPlan getPlan() {
     return plan;
   }
-  
+
   public int run(String command) {
+    DriverResponse response = runCommand(command);
+    return response.getResponseCode();
+  }
+
+  public DriverResponse runCommand(String command) {
+    errorMessage = null;
+    SQLState = null;
+
     int ret = compile(command);
     if (ret != 0)
-      return (ret);
+      return new DriverResponse(ret, errorMessage, SQLState);
 
-    return execute();
+    ret = execute();
+    if (ret != 0)
+      return new DriverResponse(ret, errorMessage, SQLState);
+
+    return new DriverResponse(ret);
+  }
+
+  /**
+   * Encapsulates the basic response info returned by the Driver. Typically
+   * <code>errorMessage</code> and <code>SQLState</code> will only be set if
+   * the <code>responseCode</code> is not 0.
+   */
+  public class DriverResponse {
+    private int responseCode;
+    private String errorMessage;
+    private String SQLState;
+
+    public DriverResponse(int responseCode) {
+      this(responseCode, null, null);
+    }
+
+    public DriverResponse(int responseCode, String errorMessage, String SQLState) {
+      this.responseCode = responseCode;
+      this.errorMessage = errorMessage;
+      this.SQLState = SQLState;
+    }
+
+    public int getResponseCode() { return responseCode; }
+    public String getErrorMessage() { return errorMessage; }
+    public String getSQLState() { return SQLState; }
   }
 
   private List<PreExecute> getPreExecHooks() throws Exception {
@@ -384,8 +429,11 @@ public class Driver implements CommandProcessor {
           SessionState.get().getHiveHistory().endTask(queryId, tsk);
         }
         if (exitVal != 0) {
-          console.printError("FAILED: Execution Error, return code " + exitVal
-              + " from " + tsk.getClass().getName());
+          //TODO: This error messaging is not very informative. Fix that.
+          errorMessage = "FAILED: Execution Error, return code " + exitVal
+                         + " from " + tsk.getClass().getName();
+          SQLState = "08S01";
+          console.printError(errorMessage);
           return 9;
         }
 
@@ -413,7 +461,10 @@ public class Driver implements CommandProcessor {
       if (SessionState.get() != null)
         SessionState.get().getHiveHistory().setQueryProperty(queryId,
             Keys.QUERY_RET_CODE, String.valueOf(12));
-      console.printError("FAILED: Unknown exception : " + e.getMessage(), "\n"
+      //TODO: do better with handling types of Exception here
+      errorMessage = "FAILED: Unknown exception : " + e.getMessage();
+      SQLState = "08S01";
+      console.printError(errorMessage, "\n"
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return (12);
     } finally {

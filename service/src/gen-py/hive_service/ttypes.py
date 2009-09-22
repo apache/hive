@@ -142,15 +142,21 @@ class HiveServerException(Exception):
   """
   Attributes:
    - message
+   - errorCode
+   - SQLState
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRING, 'message', None, None, ), # 1
+    (2, TType.I32, 'errorCode', None, None, ), # 2
+    (3, TType.STRING, 'SQLState', None, None, ), # 3
   )
 
-  def __init__(self, message=None,):
+  def __init__(self, message=None, errorCode=None, SQLState=None,):
     self.message = message
+    self.errorCode = errorCode
+    self.SQLState = SQLState
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -166,6 +172,16 @@ class HiveServerException(Exception):
           self.message = iprot.readString();
         else:
           iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.I32:
+          self.errorCode = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.SQLState = iprot.readString();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -179,6 +195,14 @@ class HiveServerException(Exception):
     if self.message != None:
       oprot.writeFieldBegin('message', TType.STRING, 1)
       oprot.writeString(self.message)
+      oprot.writeFieldEnd()
+    if self.errorCode != None:
+      oprot.writeFieldBegin('errorCode', TType.I32, 2)
+      oprot.writeI32(self.errorCode)
+      oprot.writeFieldEnd()
+    if self.SQLState != None:
+      oprot.writeFieldBegin('SQLState', TType.STRING, 3)
+      oprot.writeString(self.SQLState)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
