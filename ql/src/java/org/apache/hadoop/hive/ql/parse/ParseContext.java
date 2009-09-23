@@ -43,13 +43,12 @@ import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
  * populated. Note that since the parse context contains the operator tree, it
  * can be easily retrieved by the next optimization step or finally for task
  * generation after the plan has been completely optimized.
- * 
+ *
  **/
 
 public class ParseContext {
   private QB qb;
   private ASTNode ast;
-  private HashMap<String, ASTPartitionPruner> aliasToPruner;
   private HashMap<TableScanOperator, exprNodeDesc> opToPartPruner;
   private HashMap<String, SamplePruner> aliasToSamplePruner;
   private HashMap<String, Operator<? extends Serializable>> topOps;
@@ -68,20 +67,18 @@ public class ParseContext {
 
   // is set to true if the expression only contains partitioning columns and not any other column reference.
   // This is used to optimize select * from table where ... scenario, when the where condition only references
-  // partitioning columns - the partitions are identified and streamed directly to the client without requiring 
+  // partitioning columns - the partitions are identified and streamed directly to the client without requiring
   // a map-reduce job
   private boolean hasNonPartCols;
-  
-  public ParseContext() {  
+
+  public ParseContext() {
   }
-  
+
   /**
    * @param qb
    *          current QB
    * @param ast
    *          current parse tree
-   * @param aliasToPruner
-   *          partition pruner list
    * @param opToPartPruner
    *          map from table scan operator to partition pruner
    * @param aliasToSamplePruner
@@ -107,7 +104,6 @@ public class ParseContext {
    *          list of map join operators with no reducer
    */
   public ParseContext(HiveConf conf, QB qb, ASTNode ast,
-      HashMap<String, ASTPartitionPruner> aliasToPruner,
       HashMap<TableScanOperator, exprNodeDesc> opToPartPruner,
       HashMap<String, SamplePruner> aliasToSamplePruner,
       HashMap<String, Operator<? extends Serializable>> topOps,
@@ -121,7 +117,6 @@ public class ParseContext {
     this.conf = conf;
     this.qb = qb;
     this.ast = ast;
-    this.aliasToPruner = aliasToPruner;
     this.opToPartPruner = opToPartPruner;
     this.aliasToSamplePruner = aliasToSamplePruner;
     this.joinContext = joinContext;
@@ -197,21 +192,6 @@ public class ParseContext {
    */
   public void setParseTree(ASTNode ast) {
     this.ast = ast;
-  }
-
-  /**
-   * @return the aliasToPruner
-   */
-  public HashMap<String, ASTPartitionPruner> getAliasToPruner() {
-    return aliasToPruner;
-  }
-
-  /**
-   * @param aliasToPruner
-   *          the aliasToPruner to set
-   */
-  public void setAliasToPruner(HashMap<String, ASTPartitionPruner> aliasToPruner) {
-    this.aliasToPruner = aliasToPruner;
   }
 
   /**
@@ -351,7 +331,7 @@ public class ParseContext {
   public void setDestTableId(int destTableId) {
     this.destTableId = destTableId;
   }
-  
+
   public UnionProcContext getUCtx() {
     return uCtx;
   }
@@ -388,7 +368,7 @@ public class ParseContext {
       List<MapJoinOperator> listMapJoinOpsNoReducer) {
     this.listMapJoinOpsNoReducer = listMapJoinOpsNoReducer;
   }
-  
+
   /**
    * Sets the hasNonPartCols flag
    * @param val
@@ -396,7 +376,7 @@ public class ParseContext {
   public void setHasNonPartCols(boolean val) {
     this.hasNonPartCols = val;
   }
-  
+
   /**
    * Gets the value of the hasNonPartCols flag
    */

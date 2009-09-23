@@ -4,17 +4,17 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF SRC x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF x))) (TOK_LIMIT 20)))
 
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-2
+  Stage: Stage-0
     Fetch Operator
       limit: 20
 
 
 query: SELECT x.* FROM SRC x LIMIT 20
 Input: default/src
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/738165830/10000
+Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/197174171/10000
 238	val_238
 86	val_86
 311	val_311

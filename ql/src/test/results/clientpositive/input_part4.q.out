@@ -4,13 +4,13 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF SRCPART x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF x))) (TOK_WHERE (and (= (. (TOK_TABLE_OR_COL x) ds) '2008-04-08') (= (. (TOK_TABLE_OR_COL x) hr) 15)))))
 
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-2
+  Stage: Stage-0
     Fetch Operator
       limit: -1
 
 
 query: SELECT x.* FROM SRCPART x WHERE x.ds = '2008-04-08' and x.hr = 15
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/1460662833/10000
+Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/1328250162/10000

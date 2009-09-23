@@ -148,7 +148,6 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
  */
 
 public class SemanticAnalyzer extends BaseSemanticAnalyzer {
-  private HashMap<String, org.apache.hadoop.hive.ql.parse.ASTPartitionPruner> aliasToPruner;
   private HashMap<TableScanOperator, exprNodeDesc> opToPartPruner;
   private HashMap<String, SamplePruner> aliasToSamplePruner;
   private HashMap<String, Operator<? extends Serializable>> topOps;
@@ -182,7 +181,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     super(conf);
 
-    this.aliasToPruner = new HashMap<String, org.apache.hadoop.hive.ql.parse.ASTPartitionPruner>();
     this.opToPartPruner = new HashMap<TableScanOperator, exprNodeDesc>();
     this.aliasToSamplePruner = new HashMap<String, SamplePruner>();
     this.topOps = new HashMap<String, Operator<? extends Serializable>>();
@@ -204,7 +202,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   @Override
   protected void reset() {
     super.reset();
-    this.aliasToPruner.clear();
     this.loadTableWork.clear();
     this.loadFileWork.clear();
     this.topOps.clear();
@@ -220,7 +217,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   public void init(ParseContext pctx) {
-    aliasToPruner = pctx.getAliasToPruner();
     opToPartPruner = pctx.getOpToPartPruner();
     aliasToSamplePruner = pctx.getAliasToSamplePruner();
     topOps = pctx.getTopOps();
@@ -238,8 +234,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   public ParseContext getParseContext() {
-    return new ParseContext(conf, qb, ast, aliasToPruner, opToPartPruner, aliasToSamplePruner, topOps,
-                            topSelOps, opParseCtx, joinContext, topToTable, loadTableWork, loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
+    return new ParseContext(conf, qb, ast, opToPartPruner, aliasToSamplePruner, topOps,
+                            topSelOps, opParseCtx, joinContext, topToTable, loadTableWork,
+                            loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
                             listMapJoinOpsNoReducer);
   }
 
@@ -586,109 +583,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
         // Recurse
         doPhase1((ASTNode) ast.getChild(child_pos), qb, ctx_1);
-      }
-    }
-  }
-
-  private void genPartitionPruners(QBExpr qbexpr) throws SemanticException {
-    if (qbexpr.getOpcode() == QBExpr.Opcode.NULLOP) {
-      genPartitionPruners(qbexpr.getQB());
-    } else {
-      genPartitionPruners(qbexpr.getQBExpr1());
-      genPartitionPruners(qbexpr.getQBExpr2());
-    }
-  }
-
-  /**
-   * Generate partition pruners. The filters can occur in the where clause and in the JOIN conditions. First, walk over the
-   * filters in the join condition and AND them, since all of them are needed. Then for each where clause, traverse the
-   * filter.
-   * Note that, currently we do not propagate filters over subqueries. For eg: if the query is of the type:
-   * select ... FROM t1 JOIN (select ... t2) x where x.partition
-   * we will not recognize that x.partition condition introduces a parition pruner on t2
-   *
-   */
-  @SuppressWarnings("nls")
-  private void genPartitionPruners(QB qb) throws SemanticException {
-    Map<String, Boolean> joinPartnPruner = new HashMap<String, Boolean>();
-    QBParseInfo qbp = qb.getParseInfo();
-
-    // Recursively prune subqueries
-    for (String alias : qb.getSubqAliases()) {
-      QBExpr qbexpr = qb.getSubqForAlias(alias);
-      genPartitionPruners(qbexpr);
-    }
-
-    for (String alias : qb.getTabAliases()) {
-      String alias_id = (qb.getId() == null ? alias : qb.getId() + ":" + alias);
-
-      org.apache.hadoop.hive.ql.parse.ASTPartitionPruner pruner =
-        new org.apache.hadoop.hive.ql.parse.ASTPartitionPruner(alias, qb.getMetaData(), conf);
-
-      // Pass each where clause to the pruner
-      for(String clause: qbp.getClauseNames()) {
-
-        ASTNode whexp = (ASTNode)qbp.getWhrForClause(clause);
-        if (whexp != null) {
-          pruner.addExpression((ASTNode)whexp.getChild(0));
-        }
-      }
-
-      // Add the pruner to the list
-      this.aliasToPruner.put(alias_id, pruner);
-    }
-
-    if (!qb.getTabAliases().isEmpty() && qb.getQbJoinTree() != null) {
-      int pos = 0;
-      for (String alias : qb.getQbJoinTree().getBaseSrc()) {
-        if (alias != null) {
-          String alias_id = (qb.getId() == null ? alias : qb.getId() + ":" + alias);
-          org.apache.hadoop.hive.ql.parse.ASTPartitionPruner pruner =
-            this.aliasToPruner.get(alias_id);
-          if(pruner == null) {
-            // this means that the alias is a subquery
-            pos++;
-            continue;
-          }
-          Vector<ASTNode> filters = qb.getQbJoinTree().getFilters().get(pos);
-          for (ASTNode cond : filters) {
-            pruner.addJoinOnExpression(cond);
-            if (pruner.hasPartitionPredicate(cond))
-              joinPartnPruner.put(alias_id, new Boolean(true));
-          }
-          if (qb.getQbJoinTree().getJoinSrc() != null) {
-            filters = qb.getQbJoinTree().getFilters().get(0);
-            for (ASTNode cond : filters) {
-              pruner.addJoinOnExpression(cond);
-              if (pruner.hasPartitionPredicate(cond))
-                joinPartnPruner.put(alias_id, new Boolean(true));
-            }
-          }
-        }
-        pos++;
-      }
-    }
-
-    // Do old-style partition pruner check only if the new partition pruner
-    // is not enabled.
-    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEOPTPPD)
-        || !HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEOPTPPR)) {
-      for (String alias : qb.getTabAliases()) {
-        String alias_id = (qb.getId() == null ? alias : qb.getId() + ":" + alias);
-        org.apache.hadoop.hive.ql.parse.ASTPartitionPruner pruner = this.aliasToPruner.get(alias_id);
-        if (joinPartnPruner.get(alias_id) == null) {
-          // Pass each where clause to the pruner
-           for(String clause: qbp.getClauseNames()) {
-
-             ASTNode whexp = (ASTNode)qbp.getWhrForClause(clause);
-             if (pruner.getTable().isPartitioned() &&
-                 conf.getVar(HiveConf.ConfVars.HIVEMAPREDMODE).equalsIgnoreCase("strict") &&
-                 (whexp == null || !pruner.hasPartitionPredicate((ASTNode)whexp.getChild(0)))) {
-               throw new SemanticException(ErrorMsg.NO_PARTITION_PREDICATE.getMsg(whexp != null ? whexp : qbp.getSelForClause(clause),
-                                                                                  " for Alias " + alias + " Table " + pruner.getTable().getName()));
-             }
-           }
-        }
       }
     }
   }
@@ -4336,6 +4230,71 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     QBParseInfo qbParseInfo = qb.getParseInfo();
 
+    // Does this query need reduce job
+    if (qb.isSelectStarQuery()
+        && qbParseInfo.getDestToClusterBy().isEmpty()
+        && qbParseInfo.getDestToDistributeBy().isEmpty()
+        && qbParseInfo.getDestToOrderBy().isEmpty()
+        && qbParseInfo.getDestToSortBy().isEmpty()) {
+      boolean noMapRed = false;
+
+      Iterator<Map.Entry<String, Table>> iter = qb.getMetaData().getAliasToTable().entrySet().iterator();
+      Table tab = ((Map.Entry<String, Table>)iter.next()).getValue();
+      if (!tab.isPartitioned()) {
+        if (qbParseInfo.getDestToWhereExpr().isEmpty()) {
+          fetch = new fetchWork(tab.getPath().toString(), Utilities.getTableDesc(tab), qb.getParseInfo().getOuterQueryLimit());
+          noMapRed = true;
+          inputs.add(new ReadEntity(tab));
+        }
+      }
+      else {
+
+        if (topOps.size() == 1) {
+          TableScanOperator ts = (TableScanOperator)topOps.values().toArray()[0];
+
+          // check if the pruner only contains partition columns
+          if (PartitionPruner.onlyContainsPartnCols(topToTable.get(ts), opToPartPruner.get(ts))) {
+
+            PrunedPartitionList partsList = null;
+            try {
+              partsList = PartitionPruner.prune(topToTable.get(ts), opToPartPruner.get(ts), conf, (String)topOps.keySet().toArray()[0]);
+            } catch (HiveException e) {
+              // Has to use full name to make sure it does not conflict with org.apache.commons.lang.StringUtils
+              LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
+              throw new SemanticException(e.getMessage(), e);
+            }
+
+            // If there is any unknown partition, create a map-reduce job for the filter to prune correctly
+            if (partsList.getUnknownPartns().size() == 0) {
+              List<String> listP = new ArrayList<String>();
+              List<partitionDesc> partP = new ArrayList<partitionDesc>();
+
+              Set<Partition> parts = partsList.getConfirmedPartns();
+              Iterator<Partition> iterParts = parts.iterator();
+              while (iterParts.hasNext()) {
+                Partition part = iterParts.next();
+                listP.add(part.getPartitionPath().toString());
+                partP.add(Utilities.getPartitionDesc(part));
+                inputs.add(new ReadEntity(part));
+              }
+
+              fetch = new fetchWork(listP, partP, qb.getParseInfo().getOuterQueryLimit());
+              noMapRed = true;
+            }
+          }
+        }
+      }
+
+      if (noMapRed) {
+        fetchTask = TaskFactory.get(fetch, this.conf);
+        setFetchTask(fetchTask);
+
+        // remove root tasks if any
+        rootTasks.clear();
+        return;
+      }
+    }
+
     // In case of a select, use a fetch task instead of a move task
     if (qb.getIsQuery()) {
       if ((!loadTableWork.isEmpty()) || (loadFileWork.size() != 1))
@@ -4397,69 +4356,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(this.topOps.values());
     ogw.startWalking(topNodes, null);
-
-    // Does this query need reduce job
-    if (qb.isSelectStarQuery()
-        && qbParseInfo.getDestToClusterBy().isEmpty()
-        && qbParseInfo.getDestToDistributeBy().isEmpty()
-        && qbParseInfo.getDestToOrderBy().isEmpty()
-        && qbParseInfo.getDestToSortBy().isEmpty()) {
-      boolean noMapRed = false;
-
-      Iterator<Map.Entry<String, Table>> iter = qb.getMetaData().getAliasToTable().entrySet().iterator();
-      Table tab = ((Map.Entry<String, Table>)iter.next()).getValue();
-      if (!tab.isPartitioned()) {
-        if (qbParseInfo.getDestToWhereExpr().isEmpty()) {
-          fetch = new fetchWork(tab.getPath().toString(), Utilities.getTableDesc(tab), qb.getParseInfo().getOuterQueryLimit());
-          noMapRed = true;
-        }
-      }
-      else {
-
-        if (topOps.size() == 1) {
-          TableScanOperator ts = (TableScanOperator)topOps.values().toArray()[0];
-
-          // check if the pruner only contains partition columns
-          if (PartitionPruner.onlyContainsPartnCols(topToTable.get(ts), opToPartPruner.get(ts))) {
-
-            PrunedPartitionList partsList = null;
-            try {
-              partsList = PartitionPruner.prune(topToTable.get(ts), opToPartPruner.get(ts), conf, null);
-            } catch (HiveException e) {
-              // Has to use full name to make sure it does not conflict with org.apache.commons.lang.StringUtils
-              LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
-              throw new SemanticException(e.getMessage(), e);
-            }
-
-            // If there is any unknown partition, create a map-reduce job for the filter to prune correctly
-            if (partsList.getUnknownPartns().size() == 0) {
-              List<String> listP = new ArrayList<String>();
-              List<partitionDesc> partP = new ArrayList<partitionDesc>();
-
-              Set<Partition> parts = partsList.getConfirmedPartns();
-              Iterator<Partition> iterParts = parts.iterator();
-              while (iterParts.hasNext()) {
-                Partition part = iterParts.next();
-                listP.add(part.getPartitionPath().toString());
-                partP.add(Utilities.getPartitionDesc(part));
-              }
-
-              fetch = new fetchWork(listP, partP, qb.getParseInfo().getOuterQueryLimit());
-              noMapRed = true;
-            }
-          }
-        }
-      }
-
-      if (noMapRed) {
-        fetchTask = TaskFactory.get(fetch, this.conf);
-        setFetchTask(fetchTask);
-
-        // remove root tasks if any
-        rootTasks.clear();
-        return;
-      }
-    }
 
     // reduce sink does not have any kids - since the plan by now has been broken up into multiple
     // tasks, iterate over all tasks.
@@ -4606,7 +4502,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     genPlan(qb);
 
 
-    ParseContext pCtx = new ParseContext(conf, qb, ast, aliasToPruner, opToPartPruner, aliasToSamplePruner, topOps,
+    ParseContext pCtx = new ParseContext(conf, qb, ast, opToPartPruner, aliasToSamplePruner, topOps,
                                          topSelOps, opParseCtx, joinContext, topToTable, loadTableWork, loadFileWork,
                                          ctx, idToTableNameMap, destTableId, uCtx, listMapJoinOpsNoReducer);
 
@@ -4616,10 +4512,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     pCtx = optm.optimize();
     init(pCtx);
     qb = pCtx.getQB();
-
-    // Do any partition pruning using ASTPartitionPruner
-    genPartitionPruners(qb);
-    LOG.info("Completed partition pruning");
 
     // Do any sample pruning
     genSamplePruners(qb);

@@ -137,6 +137,9 @@ Trunk -  Unreleased
     HIVE-716. Web interface wait/notify, interface changes
     (Edward Capriolo via namit)
 
+    HIVE-831. Remove ASTPartitionPruner (missed this in HIVE-844)
+    (Namit Jain via rmurthy)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

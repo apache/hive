@@ -49,6 +49,8 @@ import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
@@ -106,6 +108,11 @@ public class PartitionPruner implements Transform {
       String colName = ((exprNodeColumnDesc)expr).getColumn();
       return tab.isPartitionKey(colName);
     }
+
+    // It cannot contain a non-deterministic function
+    if ((expr instanceof exprNodeGenericFuncDesc) &&
+        !FunctionRegistry.isDeterministic(((exprNodeGenericFuncDesc)expr).getGenericUDF()))
+      return false;
 
     // All columns of the expression must be parttioned columns
     List<exprNodeDesc> children = expr.getChildren();

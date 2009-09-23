@@ -37,7 +37,7 @@ public class Optimizer {
 
 	/**
 	 * create the list of transformations
-	 * @param hiveConf 
+	 * @param hiveConf
 	 */
   public void initialize(HiveConf hiveConf) {
     transformations = new ArrayList<Transform>();
@@ -46,9 +46,7 @@ public class Optimizer {
     }
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPD)) {
       transformations.add(new PredicatePushDown());
-      if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPR)) {
-        transformations.add(new PartitionPruner());
-      }
+      transformations.add(new PartitionPruner());
     }
     transformations.add(new UnionProcessor());
     transformations.add(new MapJoinProcessor());

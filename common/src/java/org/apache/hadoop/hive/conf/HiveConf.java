@@ -91,27 +91,27 @@ public class HiveConf extends Configuration {
 
     // session identifier
     HIVESESSIONID("hive.session.id", ""),
-    
+
     // query being executed (multiple per session)
     HIVEQUERYSTRING("hive.query.string", ""),
-    
+
     // id of query being executed (multiple per session)
     HIVEQUERYID("hive.query.id", ""),
-    
+
     // id of the mapred plan being executed (multiple per query)
     HIVEPLANID("hive.query.planid", ""),
     // max jobname length
     HIVEJOBNAMELENGTH("hive.jobname.length", 50),
-    
+
     // hive jar
-    HIVEJAR("hive.jar.path", ""), 
+    HIVEJAR("hive.jar.path", ""),
     HIVEAUXJARS("hive.aux.jars.path", ""),
-    
+
     // hive added files and jars
     HIVEADDEDFILES("hive.added.files.path", ""),
     HIVEADDEDJARS("hive.added.jars.path", ""),
     HIVEADDEDARCHIVES("hive.added.archives.path", ""),
-   
+
     // for hive script operator
     HIVETABLENAME("hive.table.name", ""),
     HIVEPARTITIONNAME("hive.partition.name", ""),
@@ -126,19 +126,19 @@ public class HiveConf extends Configuration {
     HIVEGROUPBYMAPINTERVAL("hive.groupby.mapaggr.checkinterval", 100000),
     HIVEMAPAGGRHASHMEMORY("hive.map.aggr.hash.percentmemory", (float)0.5),
     HIVEMAPAGGRHASHMINREDUCTION("hive.map.aggr.hash.min.reduction", (float)0.5),
-    
+
     // Default file format for CREATE TABLE statement
     // Options: TextFile, SequenceFile
     HIVEDEFAULTFILEFORMAT("hive.default.fileformat", "TextFile"),
-    
+
     //Location of Hive run time structured log file
     HIVEHISTORYFILELOC("hive.querylog.location",  "/tmp/"+System.getProperty("user.name")),
-    
+
     // Default serde and record reader for user scripts
     HIVESCRIPTSERDE("hive.script.serde", "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"),
     HIVESCRIPTRECORDREADER("hive.script.recordreader", "org.apache.hadoop.hive.ql.exec.TextRecordReader"),
     HIVESCRIPTRECORDWRITER("hive.script.recordwriter", "org.apache.hadoop.hive.ql.exec.TextRecordWriter"),
-    
+
     // HWI
     HIVEHWILISTENHOST("hive.hwi.listen.host","0.0.0.0"),
     HIVEHWILISTENPORT("hive.hwi.listen.port","9999"),
@@ -156,7 +156,7 @@ public class HiveConf extends Configuration {
     HIVEMERGEMAPFILES("hive.merge.mapfiles", true),
     HIVEMERGEMAPREDFILES("hive.merge.mapredfiles", false),
     HIVEMERGEMAPFILESSIZE("hive.merge.size.per.task", (long)(256*1000*1000)),
-      
+
     HIVESENDHEARTBEAT("hive.heartbeat.interval", 1000),
 
     HIVEJOBPROGRESS("hive.task.progress", false),
@@ -165,9 +165,8 @@ public class HiveConf extends Configuration {
 
     // Optimizer
     HIVEOPTCP("hive.optimize.cp", true), // column pruner
-    HIVEOPTPPD("hive.optimize.ppd", true), // predicate pushdown
-    HIVEOPTPPR("hive.optimize.pruner", true); // partition pruner
-    
+    HIVEOPTPPD("hive.optimize.ppd", true); // predicate pushdown
+
     public final String varname;
     public final String defaultVal;
     public final int defaultIntVal;
@@ -235,7 +234,7 @@ public class HiveConf extends Configuration {
     assert(var.valClass == Integer.class);
     return conf.getInt(var.varname, var.defaultIntVal);
   }
-  
+
   public int getIntVar(ConfVars var) {
     return getIntVar(this, var);
   }
@@ -294,7 +293,7 @@ public class HiveConf extends Configuration {
   public HiveConf() {
     super();
   }
-  
+
   public HiveConf(Class<?> cls) {
     super();
     initialize(cls);
@@ -318,11 +317,11 @@ public class HiveConf extends Configuration {
 
   private void initialize(Class<?> cls) {
     hiveJar = (new JobConf(cls)).getJar();
-    
+
     // preserve the original configuration
     origProp = getUnderlyingProps();
-    
-    // let's add the hive configuration 
+
+    // let's add the hive configuration
     URL hconfurl = getClassLoader().getResource("hive-default.xml");
     if(hconfurl == null) {
       l4j.debug("hive-default.xml not found.");
@@ -336,10 +335,10 @@ public class HiveConf extends Configuration {
       addResource(hsiteurl);
     }
 
-    // if hadoop configuration files are already in our path - then define 
+    // if hadoop configuration files are already in our path - then define
     // the containing directory as the configuration directory
     URL hadoopconfurl = getClassLoader().getResource("hadoop-default.xml");
-    if(hadoopconfurl == null) 
+    if(hadoopconfurl == null)
       hadoopconfurl = getClassLoader().getResource("hadoop-site.xml");
     if(hadoopconfurl != null) {
       String conffile = hadoopconfurl.getPath();
@@ -353,7 +352,7 @@ public class HiveConf extends Configuration {
     if(hiveJar == null) {
       hiveJar = this.get(ConfVars.HIVEJAR.varname);
     }
-    
+
     if(auxJars == null) {
       auxJars = this.get(ConfVars.HIVEAUXJARS.varname);
     }
@@ -405,7 +404,7 @@ public class HiveConf extends Configuration {
     this.auxJars = auxJars;
     setVar(this, ConfVars.HIVEAUXJARS, auxJars);
   }
-  
+
   /**
    * @return the user name set in hadoop.job.ugi param or the current user from System
    * @throws IOException
@@ -421,7 +420,7 @@ public class HiveConf extends Configuration {
       throw (IOException)new IOException().initCause(e);
     }
   }
-  
+
   public static String getColumnInternalName(int pos){
     return "_col"+pos;
   }
