@@ -28,12 +28,12 @@ import java.net.URI;
  * tables that are read by the query.
  */
 public class ReadEntity {
-  
+
   /**
    * The partition. This is null for a non partitioned table.
    */
   private Partition p;
-  
+
   /**
    * The table.
    */
@@ -41,17 +41,17 @@ public class ReadEntity {
 
   /**
    * Constructor.
-   * 
+   *
    * @param t The Table that the query reads from.
    */
   public ReadEntity(Table t) {
     this.t = t;
     this.p = null;
   }
-  
+
   /**
    * Constructor given a partiton.
-   * 
+   *
    * @param p The partition that the query reads from.
    */
   public ReadEntity(Partition p) {
@@ -62,14 +62,14 @@ public class ReadEntity {
    * Enum that tells what time of a read entity this is.
    */
   public static enum Type {TABLE, PARTITION};
-  
+
   /**
    * Get the type.
    */
   public Type getType() {
     return p == null ? Type.TABLE : Type.PARTITION;
   }
-  
+
   /**
    * Get the parameter map of the Entity.
    */
@@ -81,7 +81,7 @@ public class ReadEntity {
       return t.getTTable().getParameters();
     }
   }
-  
+
   /**
    * Get the location of the entity.
    */
@@ -107,20 +107,20 @@ public class ReadEntity {
   public Table getTable() {
     return t;
   }
-  
+
   /**
    * toString function.
    */
   @Override
   public String toString() {
     if (p != null) {
-      return p.getTable().getDbName() + "/" + p.getTable().getName() + "/" + p.getName();
+      return p.getTable().getDbName() + "@" + p.getTable().getName() + "@" + p.getName();
     }
     else {
-      return t.getDbName() + "/" + t.getName();
+      return t.getDbName() + "@" + t.getName();
     }
   }
-  
+
   /**
    * Equals function.
    */
@@ -128,7 +128,7 @@ public class ReadEntity {
   public boolean equals(Object o) {
     if (o == null)
       return false;
-    
+
     if (o instanceof ReadEntity) {
       ReadEntity ore = (ReadEntity)o;
       return (toString().equalsIgnoreCase(ore.toString()));
@@ -136,7 +136,7 @@ public class ReadEntity {
     else
       return false;
   }
-  
+
   /**
    * Hashcode function.
    */

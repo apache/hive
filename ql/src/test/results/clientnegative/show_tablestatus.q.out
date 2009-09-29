@@ -1,3 +1,4 @@
-query: SHOW TABLE EXTENDED LIKE `srcpar*` PARTITION(ds='2008-04-08', hr=11)
+PREHOOK: query: SHOW TABLE EXTENDED LIKE `srcpar*` PARTITION(ds='2008-04-08', hr=11)
+PREHOOK: type: SHOW_TABLESTATUS
 Table srcpar* does not exist
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

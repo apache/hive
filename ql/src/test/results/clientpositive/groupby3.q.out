@@ -1,5 +1,9 @@
-query: CREATE TABLE dest1(c1 DOUBLE, c2 DOUBLE, c3 DOUBLE, c4 DOUBLE, c5 DOUBLE, c6 DOUBLE, c7 DOUBLE, c8 DOUBLE, c9 DOUBLE) STORED AS TEXTFILE
-query: EXPLAIN
+PREHOOK: query: CREATE TABLE dest1(c1 DOUBLE, c2 DOUBLE, c3 DOUBLE, c4 DOUBLE, c5 DOUBLE, c6 DOUBLE, c7 DOUBLE, c8 DOUBLE, c9 DOUBLE) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest1(c1 DOUBLE, c2 DOUBLE, c3 DOUBLE, c4 DOUBLE, c5 DOUBLE, c6 DOUBLE, c7 DOUBLE, c8 DOUBLE, c9 DOUBLE) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest1
+PREHOOK: query: EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest1 SELECT 
   sum(substr(src.value,5)), 
@@ -11,6 +15,20 @@ INSERT OVERWRITE TABLE dest1 SELECT
   stddev_samp(substr(src.value,5)),
   variance(substr(src.value,5)),
   var_samp(substr(src.value,5))
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM src
+INSERT OVERWRITE TABLE dest1 SELECT 
+  sum(substr(src.value,5)), 
+  avg(substr(src.value,5)), 
+  avg(DISTINCT substr(src.value,5)), 
+  max(substr(src.value,5)),
+  min(substr(src.value,5)), 
+  std(substr(src.value,5)),
+  stddev_samp(substr(src.value,5)),
+  variance(substr(src.value,5)),
+  var_samp(substr(src.value,5))
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) value) 5))) (TOK_SELEXPR (TOK_FUNCTION avg (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) value) 5))) (TOK_SELEXPR (TOK_FUNCTIONDI avg (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) value) 5))) (TOK_SELEXPR (TOK_FUNCTION max (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) value) 5))) (TOK_SELEXPR (TOK_FUNCTION min (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) value) 5))) (TOK_SELEXPR (TOK_FUNCTION std (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) value) 5))) (TOK_SELEXPR (TOK_FUNCTION stddev_samp (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) value) 5))) (TOK_SELEXPR (TOK_FUNCTION variance (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) value) 5))) (TOK_SELEXPR (TOK_FUNCTION var_samp (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) value) 5))))))
 
@@ -64,7 +82,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/313900141/10002 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/837344184/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -163,7 +181,7 @@ STAGE PLANS:
               name: dest1
 
 
-query: FROM src
+PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE dest1 SELECT 
   sum(substr(src.value,5)), 
   avg(substr(src.value,5)), 
@@ -174,10 +192,34 @@ INSERT OVERWRITE TABLE dest1 SELECT
   stddev_samp(substr(src.value,5)),
   variance(substr(src.value,5)),
   var_samp(substr(src.value,5))
-Input: default/src
-Output: default/dest1
-query: SELECT dest1.* FROM dest1
-Input: default/dest1
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1347361975/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1
+POSTHOOK: query: FROM src
+INSERT OVERWRITE TABLE dest1 SELECT 
+  sum(substr(src.value,5)), 
+  avg(substr(src.value,5)), 
+  avg(DISTINCT substr(src.value,5)), 
+  max(substr(src.value,5)), 
+  min(substr(src.value,5)), 
+  std(substr(src.value,5)),
+  stddev_samp(substr(src.value,5)),
+  variance(substr(src.value,5)),
+  var_samp(substr(src.value,5))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1
+PREHOOK: query: SELECT dest1.* FROM dest1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/837906913/10000
+POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/837906913/10000
 130091.0	260.182	256.10355987055016	98.0	0.0	142.92680950752379	143.06995106518903	20428.072875999995	20469.010897795586
-query: DROP TABLE dest1
+PREHOOK: query: DROP TABLE dest1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE dest1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@dest1

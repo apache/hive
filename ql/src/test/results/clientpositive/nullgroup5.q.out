@@ -1,16 +1,47 @@
-query: DROP TABLE tstparttbl
-query: CREATE TABLE tstparttbl(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
-query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE tstparttbl PARTITION (ds='2009-04-09')
-query: DROP TABLE tstparttbl2
-query: CREATE TABLE tstparttbl2(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
-query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE tstparttbl2 PARTITION (ds='2009-04-09')
-query: explain
+PREHOOK: query: DROP TABLE tstparttbl
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE tstparttbl
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE tstparttbl(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE tstparttbl(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tstparttbl
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE tstparttbl PARTITION (ds='2009-04-09')
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE tstparttbl PARTITION (ds='2009-04-09')
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@tstparttbl@ds=2009-04-09
+PREHOOK: query: DROP TABLE tstparttbl2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE tstparttbl2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE tstparttbl2(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE tstparttbl2(KEY STRING, VALUE STRING) PARTITIONED BY(ds string) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tstparttbl2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE tstparttbl2 PARTITION (ds='2009-04-09')
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE tstparttbl2 PARTITION (ds='2009-04-09')
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@tstparttbl2@ds=2009-04-09
+PREHOOK: query: explain
 select u.* from
 (
   select key, value from tstparttbl x where x.ds='2009-04-05'
     union all  
   select key, value from tstparttbl2 y where y.ds='2009-04-09'
 )u
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select u.* from
+(
+  select key, value from tstparttbl x where x.ds='2009-04-05'
+    union all  
+  select key, value from tstparttbl2 y where y.ds='2009-04-09'
+)u
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF tstparttbl x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) ds) '2009-04-05')))) (TOK_QUERY (TOK_FROM (TOK_TABREF tstparttbl2 y)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL y) ds) '2009-04-09'))))) u)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF u)))))
 
@@ -92,14 +123,24 @@ STAGE PLANS:
       limit: -1
 
 
-query: select u.* from
+PREHOOK: query: select u.* from
 (
   select key, value from tstparttbl x where x.ds='2009-04-05'
     union all  
   select key, value from tstparttbl2 y where y.ds='2009-04-09'
 )u
-Input: default/tstparttbl2/ds=2009-04-09
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2066174418/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tstparttbl2@ds=2009-04-09
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/379898854/10000
+POSTHOOK: query: select u.* from
+(
+  select key, value from tstparttbl x where x.ds='2009-04-05'
+    union all  
+  select key, value from tstparttbl2 y where y.ds='2009-04-09'
+)u
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstparttbl2@ds=2009-04-09
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/379898854/10000
 238	val_238
 86	val_86
 311	val_311
@@ -600,5 +641,13 @@ Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2066174418/
 400	val_400
 200	val_200
 97	val_97
-query: DROP TABLE tstparttbl
-query: DROP TABLE tstparttbl2
+PREHOOK: query: DROP TABLE tstparttbl
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE tstparttbl
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@tstparttbl
+PREHOOK: query: DROP TABLE tstparttbl2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE tstparttbl2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@tstparttbl2

@@ -1,4 +1,4 @@
-query: EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
  FROM 
   src a
  FULL OUTER JOIN 
@@ -6,6 +6,16 @@ query: EXPLAIN EXTENDED
  ON (a.key = b.key AND b.ds = '2008-04-08')
  SELECT a.key, a.value, b.key, b.value
  WHERE a.key > 10 AND a.key < 20 AND b.key > 15 AND b.key < 25
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN EXTENDED
+ FROM 
+  src a
+ FULL OUTER JOIN 
+  srcpart b 
+ ON (a.key = b.key AND b.ds = '2008-04-08')
+ SELECT a.key, a.value, b.key, b.value
+ WHERE a.key > 10 AND a.key < 20 AND b.key > 15 AND b.key < 25
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_FULLOUTERJOIN (TOK_TABREF src a) (TOK_TABREF srcpart b) (AND (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)) (= (. (TOK_TABLE_OR_COL b) ds) '2008-04-08')))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) value))) (TOK_WHERE (AND (AND (AND (> (. (TOK_TABLE_OR_COL a) key) 10) (< (. (TOK_TABLE_OR_COL a) key) 20)) (> (. (TOK_TABLE_OR_COL b) key) 15)) (< (. (TOK_TABLE_OR_COL b) key) 25)))))
 
@@ -63,11 +73,11 @@ STAGE PLANS:
                     type: string
       Needs Tagging: true
       Path -> Alias:
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [b]
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [b]
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/src [a]
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [b]
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [b]
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/src [a]
       Path -> Partition:
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
             partition values:
               ds 2008-04-08
@@ -86,10 +96,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
             partition values:
               ds 2008-04-08
@@ -108,10 +118,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/src 
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/src 
           Partition
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -126,7 +136,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/src
+                location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/src
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
       Reduce Operator Tree:
@@ -156,7 +166,7 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
-                directory: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1059297917/10001
+                directory: file:/data/users/njain/hive5/hive5/build/ql/tmp/219924728/10001
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -170,17 +180,30 @@ STAGE PLANS:
       limit: -1
 
 
-query: FROM 
+PREHOOK: query: FROM 
   src a
  FULL OUTER JOIN 
   srcpart b 
  ON (a.key = b.key AND b.ds = '2008-04-08')
  SELECT a.key, a.value, b.key, b.value
  WHERE a.key > 10 AND a.key < 20 AND b.key > 15 AND b.key < 25
-Input: default/srcpart/ds=2008-04-08/hr=11
-Input: default/srcpart/ds=2008-04-08/hr=12
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/50824508/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1301653310/10000
+POSTHOOK: query: FROM 
+  src a
+ FULL OUTER JOIN 
+  srcpart b 
+ ON (a.key = b.key AND b.ds = '2008-04-08')
+ SELECT a.key, a.value, b.key, b.value
+ WHERE a.key > 10 AND a.key < 20 AND b.key > 15 AND b.key < 25
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1301653310/10000
 17	val_17	17	val_17
 17	val_17	17	val_17
 18	val_18	18	val_18
@@ -193,7 +216,7 @@ Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp
 18	val_18	18	val_18
 19	val_19	19	val_19
 19	val_19	19	val_19
-query: EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
  FROM 
   src a
  FULL OUTER JOIN 
@@ -201,6 +224,16 @@ query: EXPLAIN EXTENDED
  ON (a.key = b.key)
  SELECT a.key, a.value, b.key, b.value
  WHERE a.key > 10 AND a.key < 20 AND b.key > 15 AND b.key < 25 AND b.ds = '2008-04-08'
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN EXTENDED
+ FROM 
+  src a
+ FULL OUTER JOIN 
+  srcpart b 
+ ON (a.key = b.key)
+ SELECT a.key, a.value, b.key, b.value
+ WHERE a.key > 10 AND a.key < 20 AND b.key > 15 AND b.key < 25 AND b.ds = '2008-04-08'
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_FULLOUTERJOIN (TOK_TABREF src a) (TOK_TABREF srcpart b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) value))) (TOK_WHERE (AND (AND (AND (AND (> (. (TOK_TABLE_OR_COL a) key) 10) (< (. (TOK_TABLE_OR_COL a) key) 20)) (> (. (TOK_TABLE_OR_COL b) key) 15)) (< (. (TOK_TABLE_OR_COL b) key) 25)) (= (. (TOK_TABLE_OR_COL b) ds) '2008-04-08')))))
 
@@ -250,13 +283,13 @@ STAGE PLANS:
                     type: string
       Needs Tagging: true
       Path -> Alias:
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [b]
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [b]
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 [b]
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 [b]
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/src [a]
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [b]
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [b]
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 [b]
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 [b]
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/src [a]
       Path -> Partition:
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
             partition values:
               ds 2008-04-08
@@ -275,10 +308,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
             partition values:
               ds 2008-04-08
@@ -297,10 +330,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 
           Partition
             partition values:
               ds 2008-04-09
@@ -319,10 +352,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
           Partition
             partition values:
               ds 2008-04-09
@@ -341,10 +374,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/src 
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/src 
           Partition
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -359,7 +392,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/src
+                location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/src
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
       Reduce Operator Tree:
@@ -389,7 +422,7 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
-                directory: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/290690655/10001
+                directory: file:/data/users/njain/hive5/hive5/build/ql/tmp/629197613/10001
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -403,19 +436,34 @@ STAGE PLANS:
       limit: -1
 
 
-query: FROM 
+PREHOOK: query: FROM 
   src a
  FULL OUTER JOIN 
   srcpart b 
  ON (a.key = b.key)
  SELECT a.key, a.value, b.key, b.value
  WHERE a.key > 10 AND a.key < 20 AND b.key > 15 AND b.key < 25 AND b.ds = '2008-04-08'
-Input: default/srcpart/ds=2008-04-08/hr=11
-Input: default/srcpart/ds=2008-04-08/hr=12
-Input: default/srcpart/ds=2008-04-09/hr=11
-Input: default/srcpart/ds=2008-04-09/hr=12
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/676402963/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/815022945/10000
+POSTHOOK: query: FROM 
+  src a
+ FULL OUTER JOIN 
+  srcpart b 
+ ON (a.key = b.key)
+ SELECT a.key, a.value, b.key, b.value
+ WHERE a.key > 10 AND a.key < 20 AND b.key > 15 AND b.key < 25 AND b.ds = '2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/815022945/10000
 17	val_17	17	val_17
 17	val_17	17	val_17
 18	val_18	18	val_18

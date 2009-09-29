@@ -68,6 +68,7 @@ public class HiveConf extends Configuration {
     BYTESPERREDUCER("hive.exec.reducers.bytes.per.reducer", (long)(1000*1000*1000)),
     MAXREDUCERS("hive.exec.reducers.max", 999),
     PREEXECHOOKS("hive.exec.pre.hooks", ""),
+    POSTEXECHOOKS("hive.exec.post.hooks", ""),
 
     // hadoop stuff
     HADOOPBIN("hadoop.bin.path", System.getenv("HADOOP_HOME") + "/bin/hadoop"),

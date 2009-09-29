@@ -1,5 +1,9 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT * FROM srcpart
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT * FROM srcpart
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
 
@@ -12,8 +16,12 @@ STAGE PLANS:
       limit: -1
 
 
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT `..` FROM srcpart
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT `..` FROM srcpart
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL `..`)))))
 
@@ -47,8 +55,12 @@ STAGE PLANS:
       limit: -1
 
 
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT srcpart.`..` FROM srcpart
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT srcpart.`..` FROM srcpart
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL srcpart) `..`)))))
 
@@ -82,9 +94,14 @@ STAGE PLANS:
       limit: -1
 
 
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT `..` FROM srcpart a JOIN srcpart b
 ON a.key = b.key AND a.value = b.value
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT `..` FROM srcpart a JOIN srcpart b
+ON a.key = b.key AND a.value = b.value
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF srcpart a) (TOK_TABREF srcpart b) (AND (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)) (= (. (TOK_TABLE_OR_COL a) value) (. (TOK_TABLE_OR_COL b) value))))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL `..`)))))
 
@@ -169,10 +186,16 @@ STAGE PLANS:
       limit: -1
 
 
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT b.`..` FROM srcpart a JOIN srcpart b
 ON a.key = b.key AND a.hr = b.hr AND a.ds = b.ds AND a.key = 103
 ORDER BY ds, hr
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT b.`..` FROM srcpart a JOIN srcpart b
+ON a.key = b.key AND a.hr = b.hr AND a.ds = b.ds AND a.key = 103
+ORDER BY ds, hr
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF srcpart a) (TOK_TABREF srcpart b) (AND (AND (AND (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)) (= (. (TOK_TABLE_OR_COL a) hr) (. (TOK_TABLE_OR_COL b) hr))) (= (. (TOK_TABLE_OR_COL a) ds) (. (TOK_TABLE_OR_COL b) ds))) (= (. (TOK_TABLE_OR_COL a) key) 103)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) `..`))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL ds)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL hr)))))
 
@@ -263,7 +286,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive1/hive1/build/ql/tmp/938805392/10002 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/1096160234/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -291,14 +314,24 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT b.`..` FROM srcpart a JOIN srcpart b
+PREHOOK: query: SELECT b.`..` FROM srcpart a JOIN srcpart b
 ON a.key = b.key AND a.hr = b.hr AND a.ds = b.ds AND a.key = 103
 ORDER BY ds, hr
-Input: default/srcpart/ds=2008-04-08/hr=11
-Input: default/srcpart/ds=2008-04-08/hr=12
-Input: default/srcpart/ds=2008-04-09/hr=11
-Input: default/srcpart/ds=2008-04-09/hr=12
-Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/404701516/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1674830821/10000
+POSTHOOK: query: SELECT b.`..` FROM srcpart a JOIN srcpart b
+ON a.key = b.key AND a.hr = b.hr AND a.ds = b.ds AND a.key = 103
+ORDER BY ds, hr
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1674830821/10000
 2008-04-08	11
 2008-04-08	11
 2008-04-08	11
@@ -315,8 +348,12 @@ Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/404701516/10000
 2008-04-09	12
 2008-04-09	12
 2008-04-09	12
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT `.e.` FROM srcpart
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT `.e.` FROM srcpart
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL `.e.`)))))
 
@@ -348,8 +385,12 @@ STAGE PLANS:
       limit: -1
 
 
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT `d.*` FROM srcpart
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT `d.*` FROM srcpart
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL `d.*`)))))
 
@@ -381,8 +422,12 @@ STAGE PLANS:
       limit: -1
 
 
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT `(ds)?+.+` FROM srcpart
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT `(ds)?+.+` FROM srcpart
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL `(ds)?+.+`)))))
 
@@ -418,8 +463,12 @@ STAGE PLANS:
       limit: -1
 
 
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT `(ds|hr)?+.+` FROM srcpart ORDER BY key, value LIMIT 10
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT `(ds|hr)?+.+` FROM srcpart ORDER BY key, value LIMIT 10
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL `(ds|hr)?+.+`))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value))) (TOK_LIMIT 10)))
 
@@ -469,12 +518,20 @@ STAGE PLANS:
       limit: 10
 
 
-query: SELECT `(ds|hr)?+.+` FROM srcpart ORDER BY key, value LIMIT 10
-Input: default/srcpart/ds=2008-04-08/hr=11
-Input: default/srcpart/ds=2008-04-08/hr=12
-Input: default/srcpart/ds=2008-04-09/hr=11
-Input: default/srcpart/ds=2008-04-09/hr=12
-Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/2025278770/10000
+PREHOOK: query: SELECT `(ds|hr)?+.+` FROM srcpart ORDER BY key, value LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1522188417/10000
+POSTHOOK: query: SELECT `(ds|hr)?+.+` FROM srcpart ORDER BY key, value LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1522188417/10000
 0	val_0
 0	val_0
 0	val_0

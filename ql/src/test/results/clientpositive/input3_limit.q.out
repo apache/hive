@@ -1,11 +1,37 @@
-query: DROP TABLE T1
-query: CREATE TABLE T1(key STRING, value STRING) STORED AS TEXTFILE
-query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE T1
-query: LOAD DATA LOCAL INPATH '../data/files/kv2.txt' INTO TABLE T1
-query: DROP TABLE T2
-query: CREATE TABLE T2(key STRING, value STRING)
-query: EXPLAIN 
+PREHOOK: query: DROP TABLE T1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE T1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE T1(key STRING, value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE T1(key STRING, value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@T1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE T1
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE T1
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@t1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv2.txt' INTO TABLE T1
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv2.txt' INTO TABLE T1
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@t1
+PREHOOK: query: DROP TABLE T2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE T2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE T2(key STRING, value STRING)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE T2(key STRING, value STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@T2
+PREHOOK: query: EXPLAIN 
 INSERT OVERWRITE TABLE T2 SELECT * FROM (SELECT * FROM T1 DISTRIBUTE BY key SORT BY key, value) T LIMIT 20
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN 
+INSERT OVERWRITE TABLE T2 SELECT * FROM (SELECT * FROM T1 DISTRIBUTE BY key SORT BY key, value) T LIMIT 20
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF T1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_DISTRIBUTEBY (TOK_TABLE_OR_COL key)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value))))) T)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB T2)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_LIMIT 20)))
 
@@ -64,7 +90,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1953025922/10002 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/1571190278/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -96,12 +122,22 @@ STAGE PLANS:
               name: t2
 
 
-query: INSERT OVERWRITE TABLE T2 SELECT * FROM (SELECT * FROM T1 DISTRIBUTE BY key SORT BY key, value) T LIMIT 20
-Input: default/t1
-Output: default/t2
-query: SELECT * FROM T2 SORT BY key, value
-Input: default/t2
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/741107383/10000
+PREHOOK: query: INSERT OVERWRITE TABLE T2 SELECT * FROM (SELECT * FROM T1 DISTRIBUTE BY key SORT BY key, value) T LIMIT 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@t2
+POSTHOOK: query: INSERT OVERWRITE TABLE T2 SELECT * FROM (SELECT * FROM T1 DISTRIBUTE BY key SORT BY key, value) T LIMIT 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@t2
+PREHOOK: query: SELECT * FROM T2 SORT BY key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2048970411/10000
+POSTHOOK: query: SELECT * FROM T2 SORT BY key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2048970411/10000
 0	val_0
 0	val_0
 0	val_0
@@ -122,5 +158,13 @@ Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/741107383/1
 104	val_104
 104	val_105
 104	val_105
-query: DROP TABLE T1
-query: DROP TABLE T2
+PREHOOK: query: DROP TABLE T1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE T1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@t1
+PREHOOK: query: DROP TABLE T2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE T2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@t2

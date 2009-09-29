@@ -21,35 +21,25 @@ package org.apache.hadoop.hive.ql.hooks;
 import java.util.Set;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 
 /**
- * Implementation of a pre execute hook that simply prints out its
- * parameters to standard output.
+ * The post execute hook interface. A list of such hooks can
+ * be configured to be called after compilation and before
+ * execution.
  */
-public class PreExecutePrinter implements PreExecute {
+public interface PostExecute {
 
-  @Override
+  /**
+   * The run command that is called just before the execution of the
+   * query.
+   *
+   * @param sess The session state.
+   * @param inputs The set of input tables and partitions.
+   * @param outputs The set of output tables, partitions, local and hdfs directories.
+   * @param ugi The user group security information.
+   */
   public void run(SessionState sess, Set<ReadEntity> inputs,
       Set<WriteEntity> outputs, UserGroupInformation ugi)
-    throws Exception {
-
-    LogHelper console = SessionState.getConsole();
-
-    if (console == null)
-      return;
-
-    if (sess != null) {
-      console.printError("PREHOOK: query: " + sess.getCmd().trim());
-      console.printError("PREHOOK: type: " + sess.getCommandType());
-    }
-
-    for(ReadEntity re: inputs) {
-      console.printError("PREHOOK: Input: " + re.toString());
-    }
-    for(WriteEntity we: outputs) {
-      console.printError("PREHOOK: Output: " + we.toString());
-    }
-  }
+    throws Exception;
 
 }

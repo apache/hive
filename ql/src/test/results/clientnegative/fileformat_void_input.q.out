@@ -1,8 +1,20 @@
-query: CREATE TABLE dest1(key INT, value STRING) STORED AS
+PREHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS
   INPUTFORMAT 'java.lang.Void'
   OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'
-query: FROM src
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS
+  INPUTFORMAT 'java.lang.Void'
+  OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest1
+PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE dest1 SELECT src.key, src.value WHERE src.key < 10
-Input: default/src
-Output: default/dest1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1
+POSTHOOK: query: FROM src
+INSERT OVERWRITE TABLE dest1 SELECT src.key, src.value WHERE src.key < 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1
 FAILED: Error in semantic analysis: line 3:20 Input Format must implement InputFormat dest1

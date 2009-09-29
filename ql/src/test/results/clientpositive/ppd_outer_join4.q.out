@@ -1,4 +1,4 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
  FROM 
   src a
  LEFT OUTER JOIN
@@ -9,6 +9,19 @@ query: EXPLAIN
  ON (a.key = c.key)
  SELECT a.key, a.value, b.key, b.value, c.key
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25' AND sqrt(c.key) <> 13
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+ FROM 
+  src a
+ LEFT OUTER JOIN
+  src b
+ ON (a.key = b.key)
+ RIGHT OUTER JOIN 
+  src c 
+ ON (a.key = c.key)
+ SELECT a.key, a.value, b.key, b.value, c.key
+ WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25' AND sqrt(c.key) <> 13
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_TABREF src a) (TOK_TABREF src b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF src c) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL c) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL c) key))) (TOK_WHERE (AND (AND (AND (AND (> (. (TOK_TABLE_OR_COL a) key) '10') (< (. (TOK_TABLE_OR_COL a) key) '20')) (> (. (TOK_TABLE_OR_COL b) key) '15')) (< (. (TOK_TABLE_OR_COL b) key) '25')) (<> (TOK_FUNCTION sqrt (. (TOK_TABLE_OR_COL c) key)) 13)))))
 
@@ -108,7 +121,7 @@ STAGE PLANS:
       limit: -1
 
 
-query: FROM 
+PREHOOK: query: FROM 
   src a
  LEFT OUTER JOIN
   src b
@@ -118,8 +131,22 @@ query: FROM
  ON (a.key = c.key)
  SELECT a.key, a.value, b.key, b.value, c.key
  WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25' AND sqrt(c.key) <> 13
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1874030546/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1441048357/10000
+POSTHOOK: query: FROM 
+  src a
+ LEFT OUTER JOIN
+  src b
+ ON (a.key = b.key)
+ RIGHT OUTER JOIN 
+  src c 
+ ON (a.key = c.key)
+ SELECT a.key, a.value, b.key, b.value, c.key
+ WHERE a.key > '10' AND a.key < '20' AND b.key > '15' AND b.key < '25' AND sqrt(c.key) <> 13
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1441048357/10000
 150	val_150	150	val_150	150
 152	val_152	152	val_152	152
 152	val_152	152	val_152	152

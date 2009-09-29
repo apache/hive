@@ -1,8 +1,20 @@
-query: drop TABLE dest_j1
-query: CREATE TABLE dest_j1(key INT, cnt INT)
-query: EXPLAIN
+PREHOOK: query: drop TABLE dest_j1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop TABLE dest_j1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE dest_j1(key INT, cnt INT)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest_j1(key INT, cnt INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest_j1
+PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE dest_j1 
 SELECT /*+ MAPJOIN(x) */ x.key, count(1) FROM src1 x JOIN src y ON (x.key = y.key) group by x.key
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE dest_j1 
+SELECT /*+ MAPJOIN(x) */ x.key, count(1) FROM src1 x JOIN src y ON (x.key = y.key) group by x.key
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF src1 x) (TOK_TABREF src y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest_j1)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST x))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x) key))))
 
@@ -66,7 +78,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/1485698152/10002 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/1813447614/10002 
           Select Operator
             expressions:
                   expr: _col0
@@ -140,14 +152,26 @@ STAGE PLANS:
               name: dest_j1
 
 
-query: INSERT OVERWRITE TABLE dest_j1 
+PREHOOK: query: INSERT OVERWRITE TABLE dest_j1 
 SELECT /*+ MAPJOIN(x) */ x.key, count(1) FROM src1 x JOIN src y ON (x.key = y.key) group by x.key
-Input: default/src
-Input: default/src1
-Output: default/dest_j1
-query: select * from dest_j1 x order by x.key
-Input: default/dest_j1
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/1791269044/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@dest_j1
+POSTHOOK: query: INSERT OVERWRITE TABLE dest_j1 
+SELECT /*+ MAPJOIN(x) */ x.key, count(1) FROM src1 x JOIN src y ON (x.key = y.key) group by x.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@dest_j1
+PREHOOK: query: select * from dest_j1 x order by x.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest_j1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2134823884/10000
+POSTHOOK: query: select * from dest_j1 x order by x.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest_j1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2134823884/10000
 66	1
 98	2
 128	3
@@ -163,4 +187,8 @@ Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp
 369	3
 401	5
 406	4
-query: drop TABLE dest_j1
+PREHOOK: query: drop TABLE dest_j1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop TABLE dest_j1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@dest_j1

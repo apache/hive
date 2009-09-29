@@ -1,9 +1,22 @@
-query: CREATE TABLE dest1(c1 STRING) STORED AS TEXTFILE
-query: FROM src INSERT OVERWRITE TABLE dest1 SELECT '  abc  ' WHERE src.key = 86
-Input: default/src
-Output: default/dest1
-query: EXPLAIN
+PREHOOK: query: CREATE TABLE dest1(c1 STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest1(c1 STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest1
+PREHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT '  abc  ' WHERE src.key = 86
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1
+POSTHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT '  abc  ' WHERE src.key = 86
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1
+PREHOOK: query: EXPLAIN
 SELECT '|', trim(dest1.c1), '|', rtrim(dest1.c1), '|', ltrim(dest1.c1), '|' FROM dest1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT '|', trim(dest1.c1), '|', rtrim(dest1.c1), '|', ltrim(dest1.c1), '|' FROM dest1
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF dest1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR '|') (TOK_SELEXPR (TOK_FUNCTION trim (. (TOK_TABLE_OR_COL dest1) c1))) (TOK_SELEXPR '|') (TOK_SELEXPR (TOK_FUNCTION rtrim (. (TOK_TABLE_OR_COL dest1) c1))) (TOK_SELEXPR '|') (TOK_SELEXPR (TOK_FUNCTION ltrim (. (TOK_TABLE_OR_COL dest1) c1))) (TOK_SELEXPR '|'))))
 
@@ -47,7 +60,12 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT '|', trim(dest1.c1), '|', rtrim(dest1.c1), '|', ltrim(dest1.c1), '|' FROM dest1
-Input: default/dest1
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1661443030/10000
+PREHOOK: query: SELECT '|', trim(dest1.c1), '|', rtrim(dest1.c1), '|', ltrim(dest1.c1), '|' FROM dest1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1681092465/10000
+POSTHOOK: query: SELECT '|', trim(dest1.c1), '|', rtrim(dest1.c1), '|', ltrim(dest1.c1), '|' FROM dest1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1681092465/10000
 |	abc	|	  abc	|	abc  	|

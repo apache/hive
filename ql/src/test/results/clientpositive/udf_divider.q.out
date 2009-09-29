@@ -1,8 +1,18 @@
-query: SELECT 3 / 2 FROM SRC LIMIT 1
-Input: default/src
-Output: file:/data/users/nzhang/work/774/774-trunk-apache-hive/build/ql/tmp/1383988370/10000
+PREHOOK: query: SELECT 3 / 2 FROM SRC LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/399492793/10000
+POSTHOOK: query: SELECT 3 / 2 FROM SRC LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/399492793/10000
 1.5
-query: SELECT 3 DIV 2 FROM SRC LIMIT 1
-Input: default/src
-Output: file:/data/users/nzhang/work/774/774-trunk-apache-hive/build/ql/tmp/1562639283/10000
+PREHOOK: query: SELECT 3 DIV 2 FROM SRC LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1110831247/10000
+POSTHOOK: query: SELECT 3 DIV 2 FROM SRC LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1110831247/10000
 1

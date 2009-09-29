@@ -1,12 +1,33 @@
-query: drop table texternal
-query: create table texternal(key string, val string) partitioned by (insertdate string)
-query: alter table texternal add partition (insertdate='2008-01-01') location 'file:///tmp/texternal/2008-01-01'
-query: from src insert overwrite table texternal partition (insertdate='2008-01-01') select *
-Input: default/src
-Output: default/texternal/insertdate=2008-01-01
-query: select * from texternal where insertdate='2008-01-01'
-Input: default/texternal/insertdate=2008-01-01
-Output: file:/d1/jssarma/src/hive-scratchdir/build/ql/tmp/1849466824/10000
+PREHOOK: query: drop table texternal
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table texternal
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table texternal(key string, val string) partitioned by (insertdate string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table texternal(key string, val string) partitioned by (insertdate string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@texternal
+PREHOOK: query: alter table texternal add partition (insertdate='2008-01-01') location 'file:///tmp/texternal/2008-01-01'
+PREHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: query: alter table texternal add partition (insertdate='2008-01-01') location 'file:///tmp/texternal/2008-01-01'
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@texternal@insertdate=2008-01-01
+PREHOOK: query: from src insert overwrite table texternal partition (insertdate='2008-01-01') select *
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@texternal@insertdate=2008-01-01
+POSTHOOK: query: from src insert overwrite table texternal partition (insertdate='2008-01-01') select *
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@texternal@insertdate=2008-01-01
+PREHOOK: query: select * from texternal where insertdate='2008-01-01'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@texternal@insertdate=2008-01-01
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1173088928/10000
+POSTHOOK: query: select * from texternal where insertdate='2008-01-01'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@texternal@insertdate=2008-01-01
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1173088928/10000
 238	val_238	2008-01-01
 86	val_86	2008-01-01
 311	val_311	2008-01-01

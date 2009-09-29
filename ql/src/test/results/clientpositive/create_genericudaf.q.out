@@ -1,5 +1,9 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 CREATE TEMPORARY FUNCTION test_avg AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage'
+PREHOOK: type: CREATEFUNCTION
+POSTHOOK: query: EXPLAIN
+CREATE TEMPORARY FUNCTION test_avg AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage'
+POSTHOOK: type: CREATEFUNCTION
 ABSTRACT SYNTAX TREE:
   (TOK_CREATEFUNCTION test_avg 'org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage')
 
@@ -10,12 +14,22 @@ STAGE PLANS:
   Stage: Stage-0
 
 
-query: CREATE TEMPORARY FUNCTION test_avg AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage'
-query: EXPLAIN
+PREHOOK: query: CREATE TEMPORARY FUNCTION test_avg AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage'
+PREHOOK: type: CREATEFUNCTION
+POSTHOOK: query: CREATE TEMPORARY FUNCTION test_avg AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage'
+POSTHOOK: type: CREATEFUNCTION
+PREHOOK: query: EXPLAIN
 SELECT
     test_avg(1),
     test_avg(substr(value,5))
 FROM src
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT
+    test_avg(1),
+    test_avg(substr(value,5))
+FROM src
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION test_avg 1)) (TOK_SELEXPR (TOK_FUNCTION test_avg (TOK_FUNCTION substr (TOK_TABLE_OR_COL value) 5))))))
 
@@ -75,11 +89,22 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT
+PREHOOK: query: SELECT
     test_avg(1),
     test_avg(substr(value,5))
 FROM src
-Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1700649603/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1951411616/10000
+POSTHOOK: query: SELECT
+    test_avg(1),
+    test_avg(substr(value,5))
+FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1951411616/10000
 1.0	260.182
-query: DROP TEMPORARY FUNCTIOn test_avg
+PREHOOK: query: DROP TEMPORARY FUNCTIOn test_avg
+PREHOOK: type: DROPFUNCTION
+POSTHOOK: query: DROP TEMPORARY FUNCTIOn test_avg
+POSTHOOK: type: DROPFUNCTION

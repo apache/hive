@@ -1,5 +1,8 @@
-query: CREATE TEMPORARY FUNCTION example_add AS 'org.apache.hadoop.hive.contrib.udf.example.UDFExampleAdd'
-query: EXPLAIN
+PREHOOK: query: CREATE TEMPORARY FUNCTION example_add AS 'org.apache.hadoop.hive.contrib.udf.example.UDFExampleAdd'
+PREHOOK: type: CREATEFUNCTION
+POSTHOOK: query: CREATE TEMPORARY FUNCTION example_add AS 'org.apache.hadoop.hive.contrib.udf.example.UDFExampleAdd'
+POSTHOOK: type: CREATEFUNCTION
+PREHOOK: query: EXPLAIN
 SELECT example_add(1, 2),
        example_add(1, 2, 3),
        example_add(1, 2, 3, 4),
@@ -8,6 +11,17 @@ SELECT example_add(1, 2),
        example_add(1.1, 2.2, 3.3, 4.4),
        example_add(1, 2, 3, 4.4)
 FROM src LIMIT 1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT example_add(1, 2),
+       example_add(1, 2, 3),
+       example_add(1, 2, 3, 4),
+       example_add(1.1, 2.2),
+       example_add(1.1, 2.2, 3.3),
+       example_add(1.1, 2.2, 3.3, 4.4),
+       example_add(1, 2, 3, 4.4)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION example_add 1 2)) (TOK_SELEXPR (TOK_FUNCTION example_add 1 2 3)) (TOK_SELEXPR (TOK_FUNCTION example_add 1 2 3 4)) (TOK_SELEXPR (TOK_FUNCTION example_add 1.1 2.2)) (TOK_SELEXPR (TOK_FUNCTION example_add 1.1 2.2 3.3)) (TOK_SELEXPR (TOK_FUNCTION example_add 1.1 2.2 3.3 4.4)) (TOK_SELEXPR (TOK_FUNCTION example_add 1 2 3 4.4))) (TOK_LIMIT 1)))
 
@@ -52,7 +66,7 @@ STAGE PLANS:
       limit: 1
 
 
-query: SELECT example_add(1, 2),
+PREHOOK: query: SELECT example_add(1, 2),
        example_add(1, 2, 3),
        example_add(1, 2, 3, 4),
        example_add(1.1, 2.2),
@@ -60,7 +74,22 @@ query: SELECT example_add(1, 2),
        example_add(1.1, 2.2, 3.3, 4.4),
        example_add(1, 2, 3, 4.4)
 FROM src LIMIT 1
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/build/ql/tmp/221019346/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/504154641/10000
+POSTHOOK: query: SELECT example_add(1, 2),
+       example_add(1, 2, 3),
+       example_add(1, 2, 3, 4),
+       example_add(1.1, 2.2),
+       example_add(1.1, 2.2, 3.3),
+       example_add(1.1, 2.2, 3.3, 4.4),
+       example_add(1, 2, 3, 4.4)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/504154641/10000
 3	6	10	3.3000000000000003	6.6	11.0	10.4
-query: DROP TEMPORARY FUNCTION example_add
+PREHOOK: query: DROP TEMPORARY FUNCTION example_add
+PREHOOK: type: DROPFUNCTION
+POSTHOOK: query: DROP TEMPORARY FUNCTION example_add
+POSTHOOK: type: DROPFUNCTION

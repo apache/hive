@@ -1,7 +1,16 @@
-query: CREATE TABLE dest_j1(key INT, value STRING) STORED AS TEXTFILE
-query: EXPLAIN
+PREHOOK: query: CREATE TABLE dest_j1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest_j1(key INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest_j1
+PREHOOK: query: EXPLAIN
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM src src1 JOIN src src2 ON (src1.key = src2.key)
+INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF src src1) (TOK_TABREF src src2) (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest_j1)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) value)))))
 
@@ -85,13 +94,24 @@ STAGE PLANS:
               name: dest_j1
 
 
-query: FROM src src1 JOIN src src2 ON (src1.key = src2.key)
+PREHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value
-Input: default/src
-Output: default/dest_j1
-query: SELECT dest_j1.* FROM dest_j1
-Input: default/dest_j1
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/862388733/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest_j1
+POSTHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key)
+INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest_j1
+PREHOOK: query: SELECT dest_j1.* FROM dest_j1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest_j1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/.ptest_3/build/ql/tmp/1880963968/10000
+POSTHOOK: query: SELECT dest_j1.* FROM dest_j1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest_j1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/.ptest_3/build/ql/tmp/1880963968/10000
 0	val_0
 0	val_0
 0	val_0

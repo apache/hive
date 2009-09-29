@@ -163,15 +163,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private UnionProcContext uCtx;
   List<MapJoinOperator> listMapJoinOpsNoReducer;
 
-  /**
-   * ReadEntitites that are passed to the hooks.
-   */
-  private Set<ReadEntity> inputs;
-  /**
-   * List of WriteEntities that are passed to the hooks.
-   */
-  private Set<WriteEntity> outputs;
-
   private static class Phase1Ctx {
     String dest;
     int nextNum;
@@ -193,11 +184,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     this.destTableId = 1;
     this.uCtx = null;
     this.listMapJoinOpsNoReducer = new ArrayList<MapJoinOperator>();
-
-    inputs = new LinkedHashSet<ReadEntity>();
-    outputs = new LinkedHashSet<WriteEntity>();
   }
-
 
   @Override
   protected void reset() {
@@ -4319,9 +4306,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // the tasks that have a file sink operation
       List<moveWork>  mv = new ArrayList<moveWork>();
       for (loadTableDesc ltd : loadTableWork)
-        mvTask.add(TaskFactory.get(new moveWork(ltd, null, false), this.conf));
+        mvTask.add(TaskFactory.get(new moveWork(null, null, ltd, null, false), this.conf));
       for (loadFileDesc lfd : loadFileWork)
-        mvTask.add(TaskFactory.get(new moveWork(null, lfd, false), this.conf));
+        mvTask.add(TaskFactory.get(new moveWork(null, null, null, lfd, false), this.conf));
     }
 
     // generate map reduce plans
@@ -4643,12 +4630,4 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       validate(childTask);
   }
 
-  @Override
-  public Set<ReadEntity> getInputs() {
-    return inputs;
-  }
-
-  public Set<WriteEntity> getOutputs() {
-    return outputs;
-  }
 }

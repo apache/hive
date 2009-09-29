@@ -1,7 +1,21 @@
-query: DROP TABLE src_null
-query: CREATE TABLE src_null(a STRING, b STRING, c STRING, d STRING) STORED AS TEXTFILE
-query: LOAD DATA LOCAL INPATH '../data/files/null.txt' INTO TABLE src_null
-query: EXPLAIN SELECT * FROM src_null DISTRIBUTE BY c SORT BY d
+PREHOOK: query: DROP TABLE src_null
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE src_null
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE src_null(a STRING, b STRING, c STRING, d STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE src_null(a STRING, b STRING, c STRING, d STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@src_null
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/null.txt' INTO TABLE src_null
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/null.txt' INTO TABLE src_null
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@src_null
+PREHOOK: query: EXPLAIN SELECT * FROM src_null DISTRIBUTE BY c SORT BY d
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT * FROM src_null DISTRIBUTE BY c SORT BY d
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src_null)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_DISTRIBUTEBY (TOK_TABLE_OR_COL c)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL d)))))
 
@@ -59,9 +73,14 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT * FROM src_null DISTRIBUTE BY c SORT BY d
-Input: default/src_null
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/497061078/10000
+PREHOOK: query: SELECT * FROM src_null DISTRIBUTE BY c SORT BY d
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_null
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/944884170/10000
+POSTHOOK: query: SELECT * FROM src_null DISTRIBUTE BY c SORT BY d
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_null
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/944884170/10000
 1.0	1	same	0
 1.0	1	same	1
 1.0	1	same	2
@@ -72,4 +91,8 @@ NULL	NULL	same	6
 1.0	NULL	same	7
 1.0	1	same	8
 1.0	1	same	9
-query: DROP TABLE src_null
+PREHOOK: query: DROP TABLE src_null
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE src_null
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@src_null

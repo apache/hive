@@ -1,4 +1,7 @@
-query: SHOW FUNCTIONS
+PREHOOK: query: SHOW FUNCTIONS
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS
+POSTHOOK: type: SHOWFUNCTIONS
 !
 %
 &
@@ -117,7 +120,10 @@ year
 |
 ||
 ~
-query: SHOW FUNCTIONS '^c.*'
+PREHOOK: query: SHOW FUNCTIONS '^c.*'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS '^c.*'
+POSTHOOK: type: SHOWFUNCTIONS
 case
 ceil
 ceiling
@@ -126,7 +132,10 @@ concat
 conv
 cos
 count
-query: SHOW FUNCTIONS '.*e$'
+PREHOOK: query: SHOW FUNCTIONS '.*e$'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS '.*e$'
+POSTHOOK: type: SHOWFUNCTIONS
 case
 coalesce
 double
@@ -145,13 +154,22 @@ space
 to_date
 ucase
 variance
-query: SHOW FUNCTIONS 'log.*'
+PREHOOK: query: SHOW FUNCTIONS 'log.*'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS 'log.*'
+POSTHOOK: type: SHOWFUNCTIONS
 log
 log10
 log2
-query: SHOW FUNCTIONS '.*date.*'
+PREHOOK: query: SHOW FUNCTIONS '.*date.*'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS '.*date.*'
+POSTHOOK: type: SHOWFUNCTIONS
 date_add
 date_sub
 datediff
 to_date
-query: SHOW FUNCTIONS '***'
+PREHOOK: query: SHOW FUNCTIONS '***'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS '***'
+POSTHOOK: type: SHOWFUNCTIONS

@@ -1,9 +1,17 @@
-query: EXPLAIN SELECT
+PREHOOK: query: EXPLAIN SELECT
   repeat("Facebook", 3),
   repeat("", 4),
   repeat("asd", 0),
   repeat("asdf", -1)
 FROM src LIMIT 1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT
+  repeat("Facebook", 3),
+  repeat("", 4),
+  repeat("asd", 0),
+  repeat("asdf", -1)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION repeat "Facebook" 3)) (TOK_SELEXPR (TOK_FUNCTION repeat "" 4)) (TOK_SELEXPR (TOK_FUNCTION repeat "asd" 0)) (TOK_SELEXPR (TOK_FUNCTION repeat "asdf" (- 1)))) (TOK_LIMIT 1)))
 
@@ -42,12 +50,22 @@ STAGE PLANS:
       limit: 1
 
 
-query: SELECT
+PREHOOK: query: SELECT
   repeat("Facebook", 3),
   repeat("", 4),
   repeat("asd", 0),
   repeat("asdf", -1)
 FROM src LIMIT 1
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/302987092/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/208533019/10000
+POSTHOOK: query: SELECT
+  repeat("Facebook", 3),
+  repeat("", 4),
+  repeat("asd", 0),
+  repeat("asdf", -1)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/208533019/10000
 FacebookFacebookFacebook			

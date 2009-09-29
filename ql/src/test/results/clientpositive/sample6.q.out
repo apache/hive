@@ -1,8 +1,18 @@
-query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
-query: -- both input pruning and sample filter
+PREHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest1
+PREHOOK: query: -- both input pruning and sample filter
 EXPLAIN EXTENDED
 INSERT OVERWRITE TABLE dest1 SELECT s.* 
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 4 on key) s
+PREHOOK: type: QUERY
+POSTHOOK: query: -- both input pruning and sample filter
+EXPLAIN EXTENDED
+INSERT OVERWRITE TABLE dest1 SELECT s.* 
+FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 4 on key) s
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF srcbucket (TOK_TABLESAMPLE 1 4 (TOK_TABLE_OR_COL key)) s)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF s)))))
 
@@ -38,7 +48,7 @@ STAGE PLANS:
                   File Output Operator
                     compressed: false
                     GlobalTableId: 1
-                    directory: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/237880152/10002
+                    directory: file:/data/users/njain/hive5/hive5/build/ql/tmp/637597862/10002
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -52,14 +62,14 @@ STAGE PLANS:
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           file.inputformat org.apache.hadoop.mapred.TextInputFormat
                           file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          location file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/dest1
+                          location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/dest1
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: dest1
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcbucket/srcbucket0.txt 
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcbucket/srcbucket0.txt [s]
       Path -> Partition:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcbucket/srcbucket0.txt 
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcbucket/srcbucket0.txt 
           Partition
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -75,7 +85,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcbucket
+                location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcbucket
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcbucket
 
@@ -85,11 +95,11 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                source: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/237880152/10002
-                destination: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/871659719/10000
+                source: file:/data/users/njain/hive5/hive5/build/ql/tmp/637597862/10002
+                destination: file:/data/users/njain/hive5/hive5/build/ql/tmp/1958087377/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/237880152/10002 
+              file:/data/users/njain/hive5/hive5/build/ql/tmp/637597862/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -103,9 +113,9 @@ STAGE PLANS:
                           type: string
             Needs Tagging: false
             Path -> Alias:
-              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/237880152/10002 
+              file:/data/users/njain/hive5/hive5/build/ql/tmp/637597862/10002 [file:/data/users/njain/hive5/hive5/build/ql/tmp/637597862/10002]
             Path -> Partition:
-              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/237880152/10002 
+              file:/data/users/njain/hive5/hive5/build/ql/tmp/637597862/10002 
                 Partition
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -120,7 +130,7 @@ STAGE PLANS:
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       file.inputformat org.apache.hadoop.mapred.TextInputFormat
                       file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      location file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/dest1
+                      location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/dest1
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: dest1
             Reduce Operator Tree:
@@ -128,7 +138,7 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
-                  directory: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/871659719/10000
+                  directory: file:/data/users/njain/hive5/hive5/build/ql/tmp/1958087377/10000
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -141,7 +151,7 @@ STAGE PLANS:
                         bucket_count -1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                        location file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/dest1
+                        location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/dest1
                         file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: dest1
@@ -150,7 +160,7 @@ STAGE PLANS:
     Move Operator
       tables:
           replace: true
-          source: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/871659719/10000
+          source: file:/data/users/njain/hive5/hive5/build/ql/tmp/1958087377/10000
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -164,19 +174,30 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/dest1
+                location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/dest1
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: dest1
-          tmp directory: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/871659719/10001
+          tmp directory: file:/data/users/njain/hive5/hive5/build/ql/tmp/1958087377/10001
 
 
-query: INSERT OVERWRITE TABLE dest1 SELECT s.* 
+PREHOOK: query: INSERT OVERWRITE TABLE dest1 SELECT s.* 
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 4 on key) s
-Input: default/srcbucket
-Output: default/dest1
-query: SELECT dest1.* FROM dest1
-Input: default/dest1
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/899553837/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket
+PREHOOK: Output: default@dest1
+POSTHOOK: query: INSERT OVERWRITE TABLE dest1 SELECT s.* 
+FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 4 on key) s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket
+POSTHOOK: Output: default@dest1
+PREHOOK: query: SELECT dest1.* FROM dest1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/516821472/10000
+POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/516821472/10000
 468	val_469
 272	val_273
 448	val_449

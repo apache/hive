@@ -1,14 +1,35 @@
-query: CREATE TABLE DEST1(key INT, value STRING) STORED AS TEXTFILE
-query: CREATE TABLE DEST2(key INT, value STRING) STORED AS TEXTFILE
-query: FROM SRC
+PREHOOK: query: CREATE TABLE DEST1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE DEST1(key INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@DEST1
+PREHOOK: query: CREATE TABLE DEST2(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE DEST2(key INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@DEST2
+PREHOOK: query: FROM SRC
 INSERT OVERWRITE TABLE DEST1 SELECT SRC.key, sum(SUBSTR(SRC.value,5)) GROUP BY SRC.key
 INSERT OVERWRITE TABLE DEST2 SELECT SRC.key, sum(SUBSTR(SRC.value,5)) GROUP BY SRC.key
-Input: default/src
-Output: default/dest1
-Output: default/dest2
-query: SELECT DEST1.* FROM DEST1
-Input: default/dest1
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/533394424/23653585.10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1
+PREHOOK: Output: default@dest2
+POSTHOOK: query: FROM SRC
+INSERT OVERWRITE TABLE DEST1 SELECT SRC.key, sum(SUBSTR(SRC.value,5)) GROUP BY SRC.key
+INSERT OVERWRITE TABLE DEST2 SELECT SRC.key, sum(SUBSTR(SRC.value,5)) GROUP BY SRC.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest2
+PREHOOK: query: SELECT DEST1.* FROM DEST1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1435060476/10000
+POSTHOOK: query: SELECT DEST1.* FROM DEST1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1435060476/10000
 0	0.0
 10	10.0
 100	200.0
@@ -318,9 +339,14 @@ Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/533394424/
 96	96.0
 97	194.0
 98	196.0
-query: SELECT DEST2.* FROM DEST2
-Input: default/dest2
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/1095125127/364198571.10000
+PREHOOK: query: SELECT DEST2.* FROM DEST2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest2
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/322094219/10000
+POSTHOOK: query: SELECT DEST2.* FROM DEST2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest2
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/322094219/10000
 0	0.0
 10	10.0
 100	200.0

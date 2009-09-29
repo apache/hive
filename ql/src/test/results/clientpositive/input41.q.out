@@ -1,19 +1,37 @@
-query: select * from 
+PREHOOK: query: select * from 
   (select count(1) from src 
     union all
    select count(1) from srcpart where ds = '2009-08-09'
   )x
-Input: default/src
-Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/607183026/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/576939637/10000
+POSTHOOK: query: select * from 
+  (select count(1) from src 
+    union all
+   select count(1) from srcpart where ds = '2009-08-09'
+  )x
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/576939637/10000
 500
 0
-query: select * from 
+PREHOOK: query: select * from 
   (select * from src 
     union all
    select * from srcpart where ds = '2009-08-09'
   )x
-Input: default/src
-Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/329948857/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/563082762/10000
+POSTHOOK: query: select * from 
+  (select * from src 
+    union all
+   select * from srcpart where ds = '2009-08-09'
+  )x
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/563082762/10000
 238	val_238
 86	val_86
 311	val_311

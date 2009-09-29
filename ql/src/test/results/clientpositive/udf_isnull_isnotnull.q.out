@@ -1,9 +1,17 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT NULL IS NULL,
        1 IS NOT NULL, 
        'my string' IS NOT NULL
 FROM src
 WHERE true IS NOT NULL LIMIT 1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT NULL IS NULL,
+       1 IS NOT NULL, 
+       'my string' IS NOT NULL
+FROM src
+WHERE true IS NOT NULL LIMIT 1
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION TOK_ISNULL TOK_NULL)) (TOK_SELEXPR (TOK_FUNCTION TOK_ISNOTNULL 1)) (TOK_SELEXPR (TOK_FUNCTION TOK_ISNOTNULL 'my string'))) (TOK_WHERE (TOK_FUNCTION TOK_ISNOTNULL true)) (TOK_LIMIT 1)))
 
@@ -48,21 +56,39 @@ STAGE PLANS:
       limit: 1
 
 
-query: SELECT NULL IS NULL,
+PREHOOK: query: SELECT NULL IS NULL,
        1 IS NOT NULL, 
        'my string' IS NOT NULL
 FROM src
 WHERE true IS NOT NULL LIMIT 1
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/2138330121/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1106726580/10000
+POSTHOOK: query: SELECT NULL IS NULL,
+       1 IS NOT NULL, 
+       'my string' IS NOT NULL
+FROM src
+WHERE true IS NOT NULL LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1106726580/10000
 true	true	true
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 FROM src_thrift
 SELECT src_thrift.lint IS NOT NULL, 
        src_thrift.lintstring IS NOT NULL, 
        src_thrift.mstringstring IS NOT NULL
 WHERE  src_thrift.lint IS NOT NULL 
        AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM src_thrift
+SELECT src_thrift.lint IS NOT NULL, 
+       src_thrift.lintstring IS NOT NULL, 
+       src_thrift.mstringstring IS NOT NULL
+WHERE  src_thrift.lint IS NOT NULL 
+       AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src_thrift)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION TOK_ISNOTNULL (. (TOK_TABLE_OR_COL src_thrift) lint))) (TOK_SELEXPR (TOK_FUNCTION TOK_ISNOTNULL (. (TOK_TABLE_OR_COL src_thrift) lintstring))) (TOK_SELEXPR (TOK_FUNCTION TOK_ISNOTNULL (. (TOK_TABLE_OR_COL src_thrift) mstringstring)))) (TOK_WHERE (AND (TOK_FUNCTION TOK_ISNOTNULL (. (TOK_TABLE_OR_COL src_thrift) lint)) (NOT (TOK_FUNCTION TOK_ISNULL (. (TOK_TABLE_OR_COL src_thrift) mstringstring))))) (TOK_LIMIT 1)))
 
@@ -107,12 +133,22 @@ STAGE PLANS:
       limit: 1
 
 
-query: FROM src_thrift
+PREHOOK: query: FROM src_thrift
 SELECT src_thrift.lint IS NOT NULL, 
        src_thrift.lintstring IS NOT NULL, 
        src_thrift.mstringstring IS NOT NULL
 WHERE  src_thrift.lint IS NOT NULL 
        AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
-Input: default/src_thrift
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/262628946/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1995556677/10000
+POSTHOOK: query: FROM src_thrift
+SELECT src_thrift.lint IS NOT NULL, 
+       src_thrift.lintstring IS NOT NULL, 
+       src_thrift.mstringstring IS NOT NULL
+WHERE  src_thrift.lint IS NOT NULL 
+       AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1995556677/10000
 true	true	true

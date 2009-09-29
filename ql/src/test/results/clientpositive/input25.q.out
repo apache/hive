@@ -1,13 +1,36 @@
-query: drop table tst
-query: create table tst(a int, b int) partitioned by (d string)
-query: alter table tst add partition (d='2009-01-01')
-query: alter table tst add partition (d='2009-02-02')
-query: explain
+PREHOOK: query: drop table tst
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tst
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table tst(a int, b int) partitioned by (d string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tst(a int, b int) partitioned by (d string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tst
+PREHOOK: query: alter table tst add partition (d='2009-01-01')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: query: alter table tst add partition (d='2009-01-01')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@tst@d=2009-01-01
+PREHOOK: query: alter table tst add partition (d='2009-02-02')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: query: alter table tst add partition (d='2009-02-02')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@tst@d=2009-02-02
+PREHOOK: query: explain
 select * from (
   select * from tst x where x.d='2009-01-01' limit 10
     union all
   select * from tst x where x.d='2009-02-02' limit 10
 ) subq
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select * from (
+  select * from tst x where x.d='2009-01-01' limit 10
+    union all
+  select * from tst x where x.d='2009-02-02' limit 10
+) subq
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF tst x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) d) '2009-01-01')) (TOK_LIMIT 10))) (TOK_QUERY (TOK_FROM (TOK_TABREF tst x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) d) '2009-02-02')) (TOK_LIMIT 10)))) subq)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
 
@@ -66,7 +89,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/197206999/10002 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/1731789138/10002 
           Union
             Select Operator
               expressions:
@@ -83,7 +106,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/197206999/10003 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/1731789138/10003 
           Union
             Select Operator
               expressions:
@@ -150,12 +173,26 @@ STAGE PLANS:
       limit: -1
 
 
-query: select * from (
+PREHOOK: query: select * from (
   select * from tst x where x.d='2009-01-01' limit 10
     union all
   select * from tst x where x.d='2009-02-02' limit 10
 ) subq
-Input: default/tst/d=2009-01-01
-Input: default/tst/d=2009-02-02
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1412410730/10000
-query: drop table tst
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tst@d=2009-01-01
+PREHOOK: Input: default@tst@d=2009-02-02
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/288203570/10000
+POSTHOOK: query: select * from (
+  select * from tst x where x.d='2009-01-01' limit 10
+    union all
+  select * from tst x where x.d='2009-02-02' limit 10
+) subq
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tst@d=2009-01-01
+POSTHOOK: Input: default@tst@d=2009-02-02
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/288203570/10000
+PREHOOK: query: drop table tst
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tst
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@tst

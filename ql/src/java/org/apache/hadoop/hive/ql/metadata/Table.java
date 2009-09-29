@@ -70,7 +70,7 @@ public class Table {
 
   /**
    * Table (only used internally)
-   * @throws HiveException 
+   * @throws HiveException
    *
    */
   protected Table() throws HiveException {
@@ -88,7 +88,7 @@ public class Table {
    *
    * @exception HiveException on internal error. Note not possible now, but in the future reserve the right to throw an exception
    */
-  public Table(String name, Properties schema, Deserializer deserializer, 
+  public Table(String name, Properties schema, Deserializer deserializer,
       Class<? extends InputFormat<?, ?>> inputFormatClass,
       Class<?> outputFormatClass,
       URI dataLocation, Hive hive) throws HiveException {
@@ -102,18 +102,18 @@ public class Table {
     setOutputFormatClass(HiveFileFormatUtils.getOutputFormatSubstitute(outputFormatClass));
     setDataLocation(dataLocation);
   }
-  
+
   public Table(String name) {
     // fill in defaults
     initEmpty();
     getTTable().setTableName(name);
     getTTable().setDbName(MetaStoreUtils.DEFAULT_DATABASE_NAME);
-    // We have to use MetadataTypedColumnsetSerDe because LazySimpleSerDe does not 
+    // We have to use MetadataTypedColumnsetSerDe because LazySimpleSerDe does not
     // support a table with no columns.
     getSerdeInfo().setSerializationLib(MetadataTypedColumnsetSerDe.class.getName());
     getSerdeInfo().getParameters().put(Constants.SERIALIZATION_FORMAT, "1");
   }
-  
+
   void initEmpty() {
     setTTable(new org.apache.hadoop.hive.metastore.api.Table());
     getTTable().setSd(new StorageDescriptor());
@@ -127,10 +127,10 @@ public class Table {
     sd.setCols(new ArrayList<FieldSchema>());
     sd.setParameters(new HashMap<String, String>());
     sd.setSortCols(new ArrayList<Order>());
-    
+
     sd.getSerdeInfo().setParameters(new HashMap<String, String>());
   }
-  
+
   public void reinitSerDe() throws HiveException {
     try {
       deserializer = MetaStoreUtils.getDeserializer(Hive.get().getConf(), this.getTTable());
@@ -138,7 +138,7 @@ public class Table {
       throw new HiveException(e);
     }
   }
-  
+
   protected void initSerDe() throws HiveException {
     if (deserializer == null) {
       try {
@@ -148,7 +148,7 @@ public class Table {
       }
     }
   }
-  
+
   public void checkValidity() throws HiveException {
     // check for validity
     String name = getTTable().getTableName();
@@ -167,7 +167,7 @@ public class Table {
     if (null == getOutputFormatClass()) {
       throw new HiveException("must specify an OutputFormat class");
     }
-    
+
     Iterator<FieldSchema> iterCols = getCols().iterator();
     List<String> colNames = new ArrayList<String>();
     while (iterCols.hasNext()) {
@@ -175,7 +175,7 @@ public class Table {
       Iterator<String> iter = colNames.iterator();
       while (iter.hasNext()) {
         String oldColName = iter.next();
-        if (colName.equalsIgnoreCase(oldColName)) 
+        if (colName.equalsIgnoreCase(oldColName))
           throw new HiveException("Duplicate column name " + colName + " in the table definition.");
       }
       colNames.add(colName.toLowerCase());
@@ -195,7 +195,7 @@ public class Table {
   }
 
   /**
-   * @param inputFormatClass 
+   * @param inputFormatClass
    */
   public void setInputFormatClass(Class<? extends InputFormat> inputFormatClass) {
     this.inputFormatClass = inputFormatClass;
@@ -203,7 +203,7 @@ public class Table {
   }
 
   /**
-   * @param class1 
+   * @param class1
    */
   public void setOutputFormatClass(Class<?> class1) {
     this.outputFormatClass = HiveFileFormatUtils.getOutputFormatSubstitute(class1);
@@ -255,11 +255,11 @@ public class Table {
       else
         return true;
     }
-    
+
     if((spec == null) || (spec.size() != partCols.size())) {
       throw new HiveException("table is partitioned but partition spec is not specified or tab: " + spec);
     }
-    
+
     for (FieldSchema field : partCols) {
       if(spec.get(field.getName()) == null) {
         throw new HiveException(field.getName() + " not found in table's partition spec: " + spec);
@@ -268,7 +268,7 @@ public class Table {
 
     return true;
   }
-  
+
   public void setProperty(String name, String value) {
     getTTable().getParameters().put(name, value);
   }
@@ -308,7 +308,7 @@ public class Table {
       throw new RuntimeException(e);
     }
   }
-  
+
   /**
    * @param schema the schema to set
    */
@@ -323,7 +323,7 @@ public class Table {
     this.deserializer = deserializer;
   }
 
-  public String toString() { 
+  public String toString() {
     return getTTable().getTableName();
   }
 
@@ -335,7 +335,7 @@ public class Table {
     }
     return partKeys;
   }
-  
+
   public boolean isPartitionKey(String colName) {
     for (FieldSchema key : getPartCols()) {
       if(key.getName().toLowerCase().equals(colName)) {
@@ -351,11 +351,11 @@ public class Table {
     if(bcols == null || bcols.size() == 0) {
       return null;
     }
-    
+
     if(bcols.size() > 1) {
       LOG.warn(this + " table has more than one dimensions which aren't supported yet");
     }
-    
+
     return bcols.get(0);
   }
 
@@ -385,7 +385,7 @@ public class Table {
 
     for (String col : bucketCols) {
       if(!isField(col))
-        throw new HiveException("Bucket columns " + col + " is not part of the table columns" ); 
+        throw new HiveException("Bucket columns " + col + " is not part of the table columns" );
     }
     getTTable().getSd().setBucketCols(bucketCols);
   }
@@ -400,7 +400,7 @@ public class Table {
         return true;
       }
     }
-    return false; 
+    return false;
   }
 
   public List<FieldSchema> getCols() {
@@ -419,7 +419,7 @@ public class Table {
 
   /**
    * Returns a list of all the columns of the table (data columns + partition columns in that order.
-   * 
+   *
    * @return List<FieldSchema>
    */
   public List<FieldSchema> getAllCols() {
@@ -439,7 +439,7 @@ public class Table {
   public int getNumBuckets() {
     return getTTable().getSd().getNumBuckets();
   }
-  
+
   /**
    * Replaces files in the partition with new data set specified by srcf. Works by moving files
    * @param srcf Files to be replaced. Leaf directories or globbed file paths
@@ -487,7 +487,7 @@ public class Table {
     }
   }
 
-  
+
   public boolean isPartitioned() {
     if(getPartCols() == null) {
       return false;
@@ -554,11 +554,11 @@ public class Table {
   public String getSerializationLib() {
     return getSerdeInfo().getSerializationLib();
   }
-  
+
   public String getSerdeParam(String param) {
     return getSerdeInfo().getParameters().get(param);
   }
-  
+
   public String setSerdeParam(String param, String value) {
     return getSerdeInfo().getParameters().put(param, value);
   }
@@ -570,7 +570,7 @@ public class Table {
   public List<Order> getSortCols() {
     return getTTable().getSd().getSortCols();
   }
-  
+
   /**
    * Creates a partition name -> value spec map object
    * @param tp Use the information from this partition.
@@ -578,7 +578,7 @@ public class Table {
    */
   public LinkedHashMap<String, String> createSpec(
       org.apache.hadoop.hive.metastore.api.Partition tp) {
-    
+
     List<FieldSchema> fsl = getPartCols();
     List<String> tpl = tp.getValues();
     LinkedHashMap<String, String> spec = new LinkedHashMap<String, String>();
@@ -589,5 +589,17 @@ public class Table {
     }
     return spec;
   }
-  
+
+  public Table copy() throws HiveException {
+    Table newTbl = new Table();
+
+    newTbl.schema = this.schema;
+    newTbl.deserializer = this.deserializer; //TODO: convert to SerDeInfo format
+
+    newTbl.setTTable(getTTable().clone());
+    newTbl.uri = this.uri;
+    newTbl.inputFormatClass  = this.inputFormatClass;
+    newTbl.outputFormatClass = this.outputFormatClass;
+    return newTbl;
+  }
 };

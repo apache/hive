@@ -1,8 +1,23 @@
-query: CREATE TABLE fetchtask_ioexception (
+PREHOOK: query: CREATE TABLE fetchtask_ioexception (
   KEY STRING,
   VALUE STRING) STORED AS SEQUENCEFILE
-query: LOAD DATA LOCAL INPATH '../data/files/kv1_broken.seq' OVERWRITE INTO TABLE fetchtask_ioexception
-query: SELECT * FROM fetchtask_ioexception
-Input: default/fetchtask_ioexception
-Output: file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/1939498833/10000
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE fetchtask_ioexception (
+  KEY STRING,
+  VALUE STRING) STORED AS SEQUENCEFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@fetchtask_ioexception
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1_broken.seq' OVERWRITE INTO TABLE fetchtask_ioexception
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1_broken.seq' OVERWRITE INTO TABLE fetchtask_ioexception
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@fetchtask_ioexception
+PREHOOK: query: SELECT * FROM fetchtask_ioexception
+PREHOOK: type: QUERY
+PREHOOK: Input: default@fetchtask_ioexception
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/.ptest_3/build/ql/tmp/1739034966/10000
+POSTHOOK: query: SELECT * FROM fetchtask_ioexception
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@fetchtask_ioexception
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/.ptest_3/build/ql/tmp/1739034966/10000
 Failed with exception java.io.IOException:java.io.EOFException

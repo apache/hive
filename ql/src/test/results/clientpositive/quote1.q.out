@@ -1,7 +1,16 @@
-query: CREATE TABLE dest1(`location` INT, `type` STRING) PARTITIONED BY(`table` STRING) STORED AS TEXTFILE
-query: EXPLAIN
+PREHOOK: query: CREATE TABLE dest1(`location` INT, `type` STRING) PARTITIONED BY(`table` STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest1(`location` INT, `type` STRING) PARTITIONED BY(`table` STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest1
+PREHOOK: query: EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest1 PARTITION(`table`='2008-04-08') SELECT src.key as `partition`, src.value as `from` WHERE src.key >= 200 and src.key < 300
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM src
+INSERT OVERWRITE TABLE dest1 PARTITION(`table`='2008-04-08') SELECT src.key as `partition`, src.value as `from` WHERE src.key >= 200 and src.key < 300
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1 (TOK_PARTSPEC (TOK_PARTVAL `table` '2008-04-08')))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key) `partition`) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value) `from`)) (TOK_WHERE (and (>= (. (TOK_TABLE_OR_COL src) key) 200) (< (. (TOK_TABLE_OR_COL src) key) 300)))))
 
@@ -54,10 +63,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/623709009/10000
+                destination: file:/data/users/njain/hive5/hive5/build/ql/tmp/893867519/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/2105860679/10002 
+              file:/data/users/njain/hive5/hive5/build/ql/tmp/52521188/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -93,8 +102,12 @@ STAGE PLANS:
               name: dest1
 
 
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT `int`.`location`, `int`.`type`, `int`.`table` FROM dest1 `int` WHERE `int`.`table` = '2008-04-08'
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT `int`.`location`, `int`.`type`, `int`.`table` FROM dest1 `int` WHERE `int`.`table` = '2008-04-08'
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF dest1 `int`)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL `int`) `location`)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL `int`) `type`)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL `int`) `table`))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL `int`) `table`) '2008-04-08'))))
 
@@ -138,13 +151,24 @@ STAGE PLANS:
       limit: -1
 
 
-query: FROM src
+PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE dest1 PARTITION(`table`='2008-04-08') SELECT src.key as `partition`, src.value as `from` WHERE src.key >= 200 and src.key < 300
-Input: default/src
-Output: default/dest1/table=2008-04-08
-query: SELECT `int`.`location`, `int`.`type`, `int`.`table` FROM dest1 `int` WHERE `int`.`table` = '2008-04-08'
-Input: default/dest1/table=2008-04-08
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/180511317/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1@table=2008-04-08
+POSTHOOK: query: FROM src
+INSERT OVERWRITE TABLE dest1 PARTITION(`table`='2008-04-08') SELECT src.key as `partition`, src.value as `from` WHERE src.key >= 200 and src.key < 300
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1@table=2008-04-08
+PREHOOK: query: SELECT `int`.`location`, `int`.`type`, `int`.`table` FROM dest1 `int` WHERE `int`.`table` = '2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1@table=2008-04-08
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1716449767/10000
+POSTHOOK: query: SELECT `int`.`location`, `int`.`type`, `int`.`table` FROM dest1 `int` WHERE `int`.`table` = '2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1@table=2008-04-08
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1716449767/10000
 238	val_238	2008-04-08
 255	val_255	2008-04-08
 278	val_278	2008-04-08

@@ -1,16 +1,45 @@
-query: drop table join_rc1
-query: drop table join_rc2
-query: create table join_rc1(key string, value string) stored as RCFile
-query: create table join_rc2(key string, value string) stored as RCFile
-query: insert overwrite table join_rc1 select * from src
-Input: default/src
-Output: default/join_rc1
-query: insert overwrite table join_rc2 select * from src
-Input: default/src
-Output: default/join_rc2
-query: explain
+PREHOOK: query: drop table join_rc1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table join_rc1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table join_rc2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table join_rc2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table join_rc1(key string, value string) stored as RCFile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table join_rc1(key string, value string) stored as RCFile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@join_rc1
+PREHOOK: query: create table join_rc2(key string, value string) stored as RCFile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table join_rc2(key string, value string) stored as RCFile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@join_rc2
+PREHOOK: query: insert overwrite table join_rc1 select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@join_rc1
+POSTHOOK: query: insert overwrite table join_rc1 select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@join_rc1
+PREHOOK: query: insert overwrite table join_rc2 select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@join_rc2
+POSTHOOK: query: insert overwrite table join_rc2 select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@join_rc2
+PREHOOK: query: explain
 select join_rc1.key, join_rc2.value
 FROM join_rc1 JOIN join_rc2 ON join_rc1.key = join_rc2.key
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select join_rc1.key, join_rc2.value
+FROM join_rc1 JOIN join_rc2 ON join_rc1.key = join_rc2.key
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF join_rc1) (TOK_TABREF join_rc2) (= (. (TOK_TABLE_OR_COL join_rc1) key) (. (TOK_TABLE_OR_COL join_rc2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL join_rc1) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL join_rc2) value)))))
 
@@ -79,11 +108,18 @@ STAGE PLANS:
       limit: -1
 
 
-query: select join_rc1.key, join_rc2.value
+PREHOOK: query: select join_rc1.key, join_rc2.value
 FROM join_rc1 JOIN join_rc2 ON join_rc1.key = join_rc2.key
-Input: default/join_rc2
-Input: default/join_rc1
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/206616711/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@join_rc2
+PREHOOK: Input: default@join_rc1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/476047237/10000
+POSTHOOK: query: select join_rc1.key, join_rc2.value
+FROM join_rc1 JOIN join_rc2 ON join_rc1.key = join_rc2.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@join_rc2
+POSTHOOK: Input: default@join_rc1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/476047237/10000
 0	val_0
 0	val_0
 0	val_0
@@ -1112,5 +1148,13 @@ Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/206616711/1
 98	val_98
 98	val_98
 98	val_98
-query: drop table join_rc1
-query: drop table join_rc2
+PREHOOK: query: drop table join_rc1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table join_rc1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@join_rc1
+PREHOOK: query: drop table join_rc2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table join_rc2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@join_rc2

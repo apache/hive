@@ -1,4 +1,4 @@
-query: -- union case: 1 subquery is a map-reduce job, different inputs for sub-queries, followed by reducesink
+PREHOOK: query: -- union case: 1 subquery is a map-reduce job, different inputs for sub-queries, followed by reducesink
 
 explain 
   select unionsrc.key, count(1) FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
@@ -6,6 +6,16 @@ explain
                                             select s2.key as key, s2.value as value from src1 s2
                                         UNION  ALL  
                                             select s3.key as key, s3.value as value from src1 s3) unionsrc group by unionsrc.key
+PREHOOK: type: QUERY
+POSTHOOK: query: -- union case: 1 subquery is a map-reduce job, different inputs for sub-queries, followed by reducesink
+
+explain 
+  select unionsrc.key, count(1) FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
+                                        UNION  ALL  
+                                            select s2.key as key, s2.value as value from src1 s2
+                                        UNION  ALL  
+                                            select s3.key as key, s3.value as value from src1 s3) unionsrc group by unionsrc.key
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF src s1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst1' key) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (TOK_FUNCTION count 1)) value)))) (TOK_QUERY (TOK_FROM (TOK_TABREF src1 s2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) key) key) (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) value) value))))) (TOK_QUERY (TOK_FROM (TOK_TABREF src1 s3)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s3) key) key) (TOK_SELEXPR (. (TOK_TABLE_OR_COL s3) value) value))))) unionsrc)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL unionsrc) key))))
 
@@ -60,7 +70,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2063466051/10002 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/318495577/10002 
           Union
             Select Operator
               expressions:
@@ -87,7 +97,7 @@ STAGE PLANS:
                   value expressions:
                         expr: _col1
                         type: bigint
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2063466051/10003 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/318495577/10003 
           Union
             Select Operator
               expressions:
@@ -114,7 +124,7 @@ STAGE PLANS:
                   value expressions:
                         expr: _col1
                         type: bigint
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2063466051/10004 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/318495577/10004 
           Union
             Select Operator
               expressions:
@@ -209,14 +219,24 @@ STAGE PLANS:
       limit: -1
 
 
-query: select unionsrc.key, count(1) FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
+PREHOOK: query: select unionsrc.key, count(1) FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                                         UNION  ALL  
                                             select s2.key as key, s2.value as value from src1 s2
                                         UNION  ALL  
                                             select s3.key as key, s3.value as value from src1 s3) unionsrc group by unionsrc.key
-Input: default/src
-Input: default/src1
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1243316410/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/189882705/10000
+POSTHOOK: query: select unionsrc.key, count(1) FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
+                                        UNION  ALL  
+                                            select s2.key as key, s2.value as value from src1 s2
+                                        UNION  ALL  
+                                            select s3.key as key, s3.value as value from src1 s3) unionsrc group by unionsrc.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/189882705/10000
 	20
 128	2
 146	2

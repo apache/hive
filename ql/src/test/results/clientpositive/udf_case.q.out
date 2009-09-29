@@ -1,4 +1,4 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT CASE 1
         WHEN 1 THEN 2
         WHEN 3 THEN 4
@@ -25,6 +25,35 @@ SELECT CASE 1
         WHEN 21 THEN 24
        END
 FROM src LIMIT 1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT CASE 1
+        WHEN 1 THEN 2
+        WHEN 3 THEN 4
+        ELSE 5
+       END,
+       CASE 2
+        WHEN 1 THEN 2
+        ELSE 5
+       END,
+       CASE 14
+        WHEN 12 THEN 13
+        WHEN 14 THEN 15
+       END,
+       CASE 16
+        WHEN 12 THEN 13
+        WHEN 14 THEN 15
+       END,
+       CASE 17
+        WHEN 18 THEN NULL
+        WHEN 17 THEN 20
+       END,
+       CASE 21
+        WHEN 22 THEN 23
+        WHEN 21 THEN 24
+       END
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION CASE 1 1 2 3 4 5)) (TOK_SELEXPR (TOK_FUNCTION CASE 2 1 2 5)) (TOK_SELEXPR (TOK_FUNCTION CASE 14 12 13 14 15)) (TOK_SELEXPR (TOK_FUNCTION CASE 16 12 13 14 15)) (TOK_SELEXPR (TOK_FUNCTION CASE 17 18 TOK_NULL 17 20)) (TOK_SELEXPR (TOK_FUNCTION CASE 21 22 23 21 24))) (TOK_LIMIT 1)))
 
@@ -67,7 +96,7 @@ STAGE PLANS:
       limit: 1
 
 
-query: SELECT CASE 1
+PREHOOK: query: SELECT CASE 1
         WHEN 1 THEN 2
         WHEN 3 THEN 4
         ELSE 5
@@ -93,6 +122,36 @@ query: SELECT CASE 1
         WHEN 21 THEN 24
        END
 FROM src LIMIT 1
-Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1655100692/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/606727511/10000
+POSTHOOK: query: SELECT CASE 1
+        WHEN 1 THEN 2
+        WHEN 3 THEN 4
+        ELSE 5
+       END,
+       CASE 2
+        WHEN 1 THEN 2
+        ELSE 5
+       END,
+       CASE 14
+        WHEN 12 THEN 13
+        WHEN 14 THEN 15
+       END,
+       CASE 16
+        WHEN 12 THEN 13
+        WHEN 14 THEN 15
+       END,
+       CASE 17
+        WHEN 18 THEN NULL
+        WHEN 17 THEN 20
+       END,
+       CASE 21
+        WHEN 22 THEN 23
+        WHEN 21 THEN 24
+       END
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/606727511/10000
 2	5	15	NULL	20	24

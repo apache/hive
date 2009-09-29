@@ -1,14 +1,45 @@
-query: drop table dest1
-query: drop table dest2
-query: drop table INPUT
-query: CREATE TABLE dest1(key INT, val1 INT, val2 INT)
-query: CREATE TABLE dest2(key INT, val1 INT, val2 INT)
-query: CREATE TABLE INPUT(key INT, value STRING) STORED AS TEXTFILE
-query: LOAD DATA LOCAL INPATH '../data/files/kv5.txt' INTO TABLE INPUT
-query: EXPLAIN
+PREHOOK: query: drop table dest1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table dest1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table dest2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table dest2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table INPUT
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table INPUT
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE dest1(key INT, val1 INT, val2 INT)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest1(key INT, val1 INT, val2 INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest1
+PREHOOK: query: CREATE TABLE dest2(key INT, val1 INT, val2 INT)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest2(key INT, val1 INT, val2 INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest2
+PREHOOK: query: CREATE TABLE INPUT(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE INPUT(key INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@INPUT
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv5.txt' INTO TABLE INPUT
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv5.txt' INTO TABLE INPUT
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@input
+PREHOOK: query: EXPLAIN
 FROM INPUT 
 INSERT OVERWRITE TABLE dest1 SELECT INPUT.key, count(substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 INSERT OVERWRITE TABLE dest2 SELECT INPUT.key, sum(substr(INPUT.value,5)), sum(distinct substr(INPUT.value,5))   GROUP BY INPUT.key
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM INPUT 
+INSERT OVERWRITE TABLE dest1 SELECT INPUT.key, count(substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
+INSERT OVERWRITE TABLE dest2 SELECT INPUT.key, sum(substr(INPUT.value,5)), sum(distinct substr(INPUT.value,5))   GROUP BY INPUT.key
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF INPUT)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL INPUT) key)) (TOK_SELEXPR (TOK_FUNCTION count (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL INPUT) value) 5))) (TOK_SELEXPR (TOK_FUNCTIONDI count (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL INPUT) value) 5)))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL INPUT) key))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest2)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL INPUT) key)) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL INPUT) value) 5))) (TOK_SELEXPR (TOK_FUNCTIONDI sum (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL INPUT) value) 5)))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL INPUT) key))))
 
@@ -74,7 +105,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/458423382/10004 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/1745933773/10004 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -139,7 +170,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/458423382/10005 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/1745933773/10005 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -202,15 +233,28 @@ STAGE PLANS:
               name: dest2
 
 
-query: FROM INPUT
+PREHOOK: query: FROM INPUT
 INSERT OVERWRITE TABLE dest1 SELECT INPUT.key, count(substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 INSERT OVERWRITE TABLE dest2 SELECT INPUT.key, sum(substr(INPUT.value,5)), sum(distinct substr(INPUT.value,5))   GROUP BY INPUT.key
-Input: default/input
-Output: default/dest1
-Output: default/dest2
-query: SELECT * from dest1
-Input: default/dest1
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1557071213/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@input
+PREHOOK: Output: default@dest1
+PREHOOK: Output: default@dest2
+POSTHOOK: query: FROM INPUT
+INSERT OVERWRITE TABLE dest1 SELECT INPUT.key, count(substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
+INSERT OVERWRITE TABLE dest2 SELECT INPUT.key, sum(substr(INPUT.value,5)), sum(distinct substr(INPUT.value,5))   GROUP BY INPUT.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@input
+POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest2
+PREHOOK: query: SELECT * from dest1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/810841334/10000
+POSTHOOK: query: SELECT * from dest1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/810841334/10000
 27	1	1
 66	1	1
 86	1	1
@@ -231,9 +275,14 @@ Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1557071213/
 401	1	1
 409	1	1
 484	1	1
-query: SELECT * from dest2
-Input: default/dest2
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1527114002/10000
+PREHOOK: query: SELECT * from dest2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest2
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/566919289/10000
+POSTHOOK: query: SELECT * from dest2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest2
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/566919289/10000
 27	27	27
 66	66	66
 86	86	86
@@ -254,6 +303,18 @@ Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1527114002/
 401	401	401
 409	409	409
 484	484	484
-query: drop table INPUT
-query: drop table dest1
-query: drop table dest2
+PREHOOK: query: drop table INPUT
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table INPUT
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@input
+PREHOOK: query: drop table dest1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table dest1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@dest1
+PREHOOK: query: drop table dest2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table dest2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@dest2

@@ -1,19 +1,49 @@
-query: DROP TABLE columnTable_Bigdata
-query: CREATE table columnTable_Bigdata (key STRING, value STRING)
+PREHOOK: query: DROP TABLE columnTable_Bigdata
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE columnTable_Bigdata
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE table columnTable_Bigdata (key STRING, value STRING)
 ROW FORMAT SERDE
   'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
 STORED AS
   INPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileInputFormat'
   OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
-query: FROM (FROM src MAP src.key,src.value USING 'python ../data/scripts/dumpdata_script.py' AS (key,value) WHERE src.key = 10) subq
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE table columnTable_Bigdata (key STRING, value STRING)
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+STORED AS
+  INPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileInputFormat'
+  OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@columnTable_Bigdata
+PREHOOK: query: FROM (FROM src MAP src.key,src.value USING 'python ../data/scripts/dumpdata_script.py' AS (key,value) WHERE src.key = 10) subq
 INSERT OVERWRITE TABLE columnTable_Bigdata SELECT subq.key, subq.value
-Input: default/src
-Output: default/columntable_bigdata
-query: describe columnTable_Bigdata
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@columntable_bigdata
+POSTHOOK: query: FROM (FROM src MAP src.key,src.value USING 'python ../data/scripts/dumpdata_script.py' AS (key,value) WHERE src.key = 10) subq
+INSERT OVERWRITE TABLE columnTable_Bigdata SELECT subq.key, subq.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@columntable_bigdata
+PREHOOK: query: describe columnTable_Bigdata
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe columnTable_Bigdata
+POSTHOOK: type: DESCTABLE
 key	string	from deserializer
 value	string	from deserializer
-query: select count(columnTable_Bigdata.key) from columnTable_Bigdata
-Input: default/columntable_bigdata
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/106490373/1362629310.10000
+PREHOOK: query: select count(columnTable_Bigdata.key) from columnTable_Bigdata
+PREHOOK: type: QUERY
+PREHOOK: Input: default@columntable_bigdata
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/438172653/10000
+POSTHOOK: query: select count(columnTable_Bigdata.key) from columnTable_Bigdata
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@columntable_bigdata
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/438172653/10000
 5005500
-query: DROP TABLE columnTable_Bigdata
+PREHOOK: query: DROP TABLE columnTable_Bigdata
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE columnTable_Bigdata
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@columntable_bigdata

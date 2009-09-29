@@ -1,10 +1,22 @@
-query: SELECT sin(null)
+PREHOOK: query: SELECT sin(null)
 FROM src LIMIT 1
-Input: default/src
-Output: file:/home/kmangla/hive/build/ql/tmp/2092943307/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1281720904/10000
+POSTHOOK: query: SELECT sin(null)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1281720904/10000
 NULL
-query: SELECT sin(0.98), sin(1.57), sin(-0.5)
+PREHOOK: query: SELECT sin(0.98), sin(1.57), sin(-0.5)
 FROM src LIMIT 1
-Input: default/src
-Output: file:/home/kmangla/hive/build/ql/tmp/1611665044/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/820458381/10000
+POSTHOOK: query: SELECT sin(0.98), sin(1.57), sin(-0.5)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/820458381/10000
 0.8304973704919705	0.9999996829318346	-0.479425538604203

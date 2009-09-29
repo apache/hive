@@ -1,5 +1,9 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 CREATE TEMPORARY FUNCTION test_max AS 'org.apache.hadoop.hive.ql.udf.UDAFTestMax'
+PREHOOK: type: CREATEFUNCTION
+POSTHOOK: query: EXPLAIN
+CREATE TEMPORARY FUNCTION test_max AS 'org.apache.hadoop.hive.ql.udf.UDAFTestMax'
+POSTHOOK: type: CREATEFUNCTION
 ABSTRACT SYNTAX TREE:
   (TOK_CREATEFUNCTION test_max 'org.apache.hadoop.hive.ql.udf.UDAFTestMax')
 
@@ -10,13 +14,33 @@ STAGE PLANS:
   Stage: Stage-0
 
 
-query: CREATE TEMPORARY FUNCTION test_max AS 'org.apache.hadoop.hive.ql.udf.UDAFTestMax'
-query: CREATE TABLE dest1(col INT)
-query: FROM src INSERT OVERWRITE TABLE dest1 SELECT test_max(length(src.value))
-Input: default/src
-Output: default/dest1
-query: SELECT dest1.* FROM dest1
-Input: default/dest1
-Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/208230949/10000
+PREHOOK: query: CREATE TEMPORARY FUNCTION test_max AS 'org.apache.hadoop.hive.ql.udf.UDAFTestMax'
+PREHOOK: type: CREATEFUNCTION
+POSTHOOK: query: CREATE TEMPORARY FUNCTION test_max AS 'org.apache.hadoop.hive.ql.udf.UDAFTestMax'
+POSTHOOK: type: CREATEFUNCTION
+PREHOOK: query: CREATE TABLE dest1(col INT)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest1(col INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest1
+PREHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT test_max(length(src.value))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1
+POSTHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT test_max(length(src.value))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1
+PREHOOK: query: SELECT dest1.* FROM dest1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1967995374/10000
+POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1967995374/10000
 7
-query: DROP TEMPORARY FUNCTION test_max
+PREHOOK: query: DROP TEMPORARY FUNCTION test_max
+PREHOOK: type: DROPFUNCTION
+POSTHOOK: query: DROP TEMPORARY FUNCTION test_max
+POSTHOOK: type: DROPFUNCTION

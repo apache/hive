@@ -1,53 +1,148 @@
-query: -- test for loading into tables with the correct file format
+PREHOOK: query: -- test for loading into tables with the correct file format
 -- test for loading into partitions with the correct file format
 
 DROP TABLE T1
-query: CREATE TABLE T1(name STRING) STORED AS TEXTFILE
-query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE T1
-query: SELECT COUNT(1) FROM T1
-Input: default/t1
-Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/481089091/6749578.10000
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- test for loading into tables with the correct file format
+-- test for loading into partitions with the correct file format
+
+DROP TABLE T1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE T1(name STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE T1(name STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@T1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE T1
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE T1
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@t1
+PREHOOK: query: SELECT COUNT(1) FROM T1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/61579512/10000
+POSTHOOK: query: SELECT COUNT(1) FROM T1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/61579512/10000
 500
-query: DROP TABLE T2
-query: CREATE TABLE T2(name STRING) STORED AS SEQUENCEFILE
-query: LOAD DATA LOCAL INPATH '../data/files/kv1.seq' INTO TABLE T2
-query: SELECT COUNT(1) FROM T2
-Input: default/t2
-Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/270146214/416573491.10000
+PREHOOK: query: DROP TABLE T2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE T2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE T2(name STRING) STORED AS SEQUENCEFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE T2(name STRING) STORED AS SEQUENCEFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@T2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.seq' INTO TABLE T2
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.seq' INTO TABLE T2
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@t2
+PREHOOK: query: SELECT COUNT(1) FROM T2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1996309805/10000
+POSTHOOK: query: SELECT COUNT(1) FROM T2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1996309805/10000
 500
-query: DROP TABLE T3
-query: CREATE TABLE T3(name STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
-query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE T3 PARTITION (ds='2008-04-09')
-query: SELECT COUNT(1) FROM T3 where T3.ds='2008-04-09'
-Input: default/t3/ds=2008-04-09
-Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/244295858/783017444.10000
+PREHOOK: query: DROP TABLE T3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE T3
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE T3(name STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE T3(name STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@T3
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE T3 PARTITION (ds='2008-04-09')
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE T3 PARTITION (ds='2008-04-09')
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@t3@ds=2008-04-09
+PREHOOK: query: SELECT COUNT(1) FROM T3 where T3.ds='2008-04-09'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t3@ds=2008-04-09
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/440386486/10000
+POSTHOOK: query: SELECT COUNT(1) FROM T3 where T3.ds='2008-04-09'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t3@ds=2008-04-09
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/440386486/10000
 500
-query: DROP TABLE T4
-query: CREATE TABLE T4(name STRING) PARTITIONED BY(ds STRING) STORED AS SEQUENCEFILE
-query: LOAD DATA LOCAL INPATH '../data/files/kv1.seq' INTO TABLE T4 PARTITION (ds='2008-04-09')
-query: SELECT COUNT(1) FROM T4 where T4.ds='2008-04-09'
-Input: default/t4/ds=2008-04-09
-Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/32294603/204394858.10000
+PREHOOK: query: DROP TABLE T4
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE T4
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE T4(name STRING) PARTITIONED BY(ds STRING) STORED AS SEQUENCEFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE T4(name STRING) PARTITIONED BY(ds STRING) STORED AS SEQUENCEFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@T4
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.seq' INTO TABLE T4 PARTITION (ds='2008-04-09')
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.seq' INTO TABLE T4 PARTITION (ds='2008-04-09')
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@t4@ds=2008-04-09
+PREHOOK: query: SELECT COUNT(1) FROM T4 where T4.ds='2008-04-09'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t4@ds=2008-04-09
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1615485265/10000
+POSTHOOK: query: SELECT COUNT(1) FROM T4 where T4.ds='2008-04-09'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t4@ds=2008-04-09
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1615485265/10000
 500
-query: DESCRIBE EXTENDED T1
+PREHOOK: query: DESCRIBE EXTENDED T1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE EXTENDED T1
+POSTHOOK: type: DESCTABLE
 name	string	
 	 	 
-Detailed Table Information	Table(tableName:t1,dbName:default,owner:njain,createTime:1242172820,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:name,type:string,comment:null)],location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/t1,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[],parameters:{})	
-query: DESCRIBE EXTENDED T2
+Detailed Table Information	Table(tableName:t1, dbName:default, owner:njain, createTime:1253780757, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:name, type:string, comment:null)], location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/t1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{})	
+PREHOOK: query: DESCRIBE EXTENDED T2
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE EXTENDED T2
+POSTHOOK: type: DESCTABLE
 name	string	
 	 	 
-Detailed Table Information	Table(tableName:t2,dbName:default,owner:njain,createTime:1242172823,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:name,type:string,comment:null)],location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/t2,inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[],parameters:{})	
-query: DESCRIBE EXTENDED T3 PARTITION (ds='2008-04-09')
+Detailed Table Information	Table(tableName:t2, dbName:default, owner:njain, createTime:1253780761, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:name, type:string, comment:null)], location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/t2, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{})	
+PREHOOK: query: DESCRIBE EXTENDED T3 PARTITION (ds='2008-04-09')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE EXTENDED T3 PARTITION (ds='2008-04-09')
+POSTHOOK: type: DESCTABLE
 name	string	
 ds	string	
 	 	 
-Detailed Partition Information	Partition(values:[2008-04-09],dbName:default,tableName:t3,createTime:0,lastAccessTime:0,sd:StorageDescriptor(cols:[FieldSchema(name:name,type:string,comment:null)],location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/t3/ds=2008-04-09,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),parameters:{})	
-query: DESCRIBE EXTENDED T4 PARTITION (ds='2008-04-09')
+Detailed Partition Information	Partition(values:[2008-04-09], dbName:default, tableName:t3, createTime:0, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:name, type:string, comment:null)], location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/t3/ds=2008-04-09, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{})	
+PREHOOK: query: DESCRIBE EXTENDED T4 PARTITION (ds='2008-04-09')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE EXTENDED T4 PARTITION (ds='2008-04-09')
+POSTHOOK: type: DESCTABLE
 name	string	
 ds	string	
 	 	 
-Detailed Partition Information	Partition(values:[2008-04-09],dbName:default,tableName:t4,createTime:0,lastAccessTime:0,sd:StorageDescriptor(cols:[FieldSchema(name:name,type:string,comment:null)],location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/t4/ds=2008-04-09,inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),parameters:{})	
-query: DROP TABLE T1
-query: DROP TABLE T2
-query: DROP TABLE T3
-query: DROP TABLE T4
+Detailed Partition Information	Partition(values:[2008-04-09], dbName:default, tableName:t4, createTime:0, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:name, type:string, comment:null)], location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/t4/ds=2008-04-09, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{})	
+PREHOOK: query: DROP TABLE T1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE T1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@t1
+PREHOOK: query: DROP TABLE T2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE T2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@t2
+PREHOOK: query: DROP TABLE T3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE T3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@t3
+PREHOOK: query: DROP TABLE T4
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE T4
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@t4

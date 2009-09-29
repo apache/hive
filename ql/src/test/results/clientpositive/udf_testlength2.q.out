@@ -1,5 +1,9 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 CREATE TEMPORARY FUNCTION testlength2 AS 'org.apache.hadoop.hive.ql.udf.UDFTestLength2'
+PREHOOK: type: CREATEFUNCTION
+POSTHOOK: query: EXPLAIN
+CREATE TEMPORARY FUNCTION testlength2 AS 'org.apache.hadoop.hive.ql.udf.UDFTestLength2'
+POSTHOOK: type: CREATEFUNCTION
 ABSTRACT SYNTAX TREE:
   (TOK_CREATEFUNCTION testlength2 'org.apache.hadoop.hive.ql.udf.UDFTestLength2')
 
@@ -10,14 +14,31 @@ STAGE PLANS:
   Stage: Stage-0
 
 
-query: CREATE TEMPORARY FUNCTION testlength2 AS 'org.apache.hadoop.hive.ql.udf.UDFTestLength2'
-query: CREATE TABLE dest1(len INT)
-query: FROM src INSERT OVERWRITE TABLE dest1 SELECT testlength2(src.value)
-Input: default/src
-Output: default/dest1
-query: SELECT dest1.* FROM dest1
-Input: default/dest1
-Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/744584966/10000
+PREHOOK: query: CREATE TEMPORARY FUNCTION testlength2 AS 'org.apache.hadoop.hive.ql.udf.UDFTestLength2'
+PREHOOK: type: CREATEFUNCTION
+POSTHOOK: query: CREATE TEMPORARY FUNCTION testlength2 AS 'org.apache.hadoop.hive.ql.udf.UDFTestLength2'
+POSTHOOK: type: CREATEFUNCTION
+PREHOOK: query: CREATE TABLE dest1(len INT)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest1(len INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest1
+PREHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT testlength2(src.value)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1
+POSTHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT testlength2(src.value)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1
+PREHOOK: query: SELECT dest1.* FROM dest1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1473790346/10000
+POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1473790346/10000
 7
 6
 7
@@ -518,4 +539,7 @@ Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/744584966/
 7
 7
 6
-query: DROP TEMPORARY FUNCTION testlength2
+PREHOOK: query: DROP TEMPORARY FUNCTION testlength2
+PREHOOK: type: DROPFUNCTION
+POSTHOOK: query: DROP TEMPORARY FUNCTION testlength2
+POSTHOOK: type: DROPFUNCTION

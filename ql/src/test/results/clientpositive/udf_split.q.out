@@ -1,9 +1,17 @@
-query: EXPLAIN SELECT 
+PREHOOK: query: EXPLAIN SELECT 
   split('a b c', ' '),
   split('oneAtwoBthreeC', '[ABC]'),
   split('', '.'),
   split(50401020, 0)
 FROM src LIMIT 1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT 
+  split('a b c', ' '),
+  split('oneAtwoBthreeC', '[ABC]'),
+  split('', '.'),
+  split(50401020, 0)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION split 'a b c' ' ')) (TOK_SELEXPR (TOK_FUNCTION split 'oneAtwoBthreeC' '[ABC]')) (TOK_SELEXPR (TOK_FUNCTION split '' '.')) (TOK_SELEXPR (TOK_FUNCTION split 50401020 0))) (TOK_LIMIT 1)))
 
@@ -42,12 +50,22 @@ STAGE PLANS:
       limit: 1
 
 
-query: SELECT 
+PREHOOK: query: SELECT 
   split('a b c', ' '),
   split('oneAtwoBthreeC', '[ABC]'),
   split('', '.'),
   split(50401020, 0)
 FROM src LIMIT 1
-Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2093678093/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/415947738/10000
+POSTHOOK: query: SELECT 
+  split('a b c', ' '),
+  split('oneAtwoBthreeC', '[ABC]'),
+  split('', '.'),
+  split(50401020, 0)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/415947738/10000
 ["a","b","c"]	["one","two","three"]	[]	["5","4","1","2"]

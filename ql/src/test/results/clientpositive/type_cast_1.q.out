@@ -1,5 +1,9 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT IF(false, 1, cast(2 as smallint)) + 3 FROM src LIMIT 1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT IF(false, 1, cast(2 as smallint)) + 3 FROM src LIMIT 1
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (+ (TOK_FUNCTION IF false 1 (TOK_FUNCTION TOK_SMALLINT 2)) 3))) (TOK_LIMIT 1)))
 
@@ -32,7 +36,12 @@ STAGE PLANS:
       limit: 1
 
 
-query: SELECT IF(false, 1, cast(2 as smallint)) + 3 FROM src LIMIT 1
-Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2072313548/10000
+PREHOOK: query: SELECT IF(false, 1, cast(2 as smallint)) + 3 FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1298461066/10000
+POSTHOOK: query: SELECT IF(false, 1, cast(2 as smallint)) + 3 FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1298461066/10000
 5

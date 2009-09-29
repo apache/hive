@@ -1,8 +1,15 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT '_%_' LIKE '%\_\%\_%', '__' LIKE '%\_\%\_%', '%%_%_' LIKE '%\_\%\_%', '%_%_%' LIKE '%\%\_\%',
   '_%_' LIKE '\%\_%', '%__' LIKE '__\%%', '_%' LIKE '\_\%\_\%%', '_%' LIKE '\_\%_%',
   '%_' LIKE '\%\_', 'ab' LIKE '\%\_', 'ab' LIKE '_a%', 'ab' LIKE 'a'
 FROM src WHERE src.key = 86
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT '_%_' LIKE '%\_\%\_%', '__' LIKE '%\_\%\_%', '%%_%_' LIKE '%\_\%\_%', '%_%_%' LIKE '%\%\_\%',
+  '_%_' LIKE '\%\_%', '%__' LIKE '__\%%', '_%' LIKE '\_\%\_\%%', '_%' LIKE '\_\%_%',
+  '%_' LIKE '\%\_', 'ab' LIKE '\%\_', 'ab' LIKE '_a%', 'ab' LIKE 'a'
+FROM src WHERE src.key = 86
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (LIKE '_%_' '%\_\%\_%')) (TOK_SELEXPR (LIKE '__' '%\_\%\_%')) (TOK_SELEXPR (LIKE '%%_%_' '%\_\%\_%')) (TOK_SELEXPR (LIKE '%_%_%' '%\%\_\%')) (TOK_SELEXPR (LIKE '_%_' '\%\_%')) (TOK_SELEXPR (LIKE '%__' '__\%%')) (TOK_SELEXPR (LIKE '_%' '\_\%\_\%%')) (TOK_SELEXPR (LIKE '_%' '\_\%_%')) (TOK_SELEXPR (LIKE '%_' '\%\_')) (TOK_SELEXPR (LIKE 'ab' '\%\_')) (TOK_SELEXPR (LIKE 'ab' '_a%')) (TOK_SELEXPR (LIKE 'ab' 'a'))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL src) key) 86))))
 
@@ -64,10 +71,18 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT '_%_' LIKE '%\_\%\_%', '__' LIKE '%\_\%\_%', '%%_%_' LIKE '%\_\%\_%', '%_%_%' LIKE '%\%\_\%',
+PREHOOK: query: SELECT '_%_' LIKE '%\_\%\_%', '__' LIKE '%\_\%\_%', '%%_%_' LIKE '%\_\%\_%', '%_%_%' LIKE '%\%\_\%',
   '_%_' LIKE '\%\_%', '%__' LIKE '__\%%', '_%' LIKE '\_\%\_\%%', '_%' LIKE '\_\%_%',
   '%_' LIKE '\%\_', 'ab' LIKE '\%\_', 'ab' LIKE '_a%', 'ab' LIKE 'a'
 FROM src WHERE src.key = 86
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/1633414177/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/148481666/10000
+POSTHOOK: query: SELECT '_%_' LIKE '%\_\%\_%', '__' LIKE '%\_\%\_%', '%%_%_' LIKE '%\_\%\_%', '%_%_%' LIKE '%\%\_\%',
+  '_%_' LIKE '\%\_%', '%__' LIKE '__\%%', '_%' LIKE '\_\%\_\%%', '_%' LIKE '\_\%_%',
+  '%_' LIKE '\%\_', 'ab' LIKE '\%\_', 'ab' LIKE '_a%', 'ab' LIKE 'a'
+FROM src WHERE src.key = 86
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/148481666/10000
 true	false	true	true	false	false	false	false	true	false	false	false

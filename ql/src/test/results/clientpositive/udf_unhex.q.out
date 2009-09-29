@@ -1,4 +1,4 @@
-query: -- Good inputs
+PREHOOK: query: -- Good inputs
 
 SELECT
   unhex('4D7953514C'),
@@ -7,15 +7,38 @@ SELECT
   unhex('2D34'),
   unhex('')
 FROM src limit 1
-Input: default/src
-Output: file:/mnt/vol/devrs002.snc1/mkedia/hive_trunk/build/ql/tmp/1289795595/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/791570897/10000
+POSTHOOK: query: -- Good inputs
+
+SELECT
+  unhex('4D7953514C'),
+  unhex('31323637'),
+  unhex('61'),
+  unhex('2D34'),
+  unhex('')
+FROM src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/791570897/10000
 MySQL	1267	a	-4	
-query: -- Bad inputs
+PREHOOK: query: -- Bad inputs
 SELECT
   unhex('MySQL'),
   unhex('G123'),
   unhex('\0')
 FROM src limit 1
-Input: default/src
-Output: file:/mnt/vol/devrs002.snc1/mkedia/hive_trunk/build/ql/tmp/328234582/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1722929824/10000
+POSTHOOK: query: -- Bad inputs
+SELECT
+  unhex('MySQL'),
+  unhex('G123'),
+  unhex('\0')
+FROM src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1722929824/10000
 NULL	NULL	NULL

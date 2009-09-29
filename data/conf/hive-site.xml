@@ -58,7 +58,7 @@
 <property>
   <name>hive.metastore.metadb.dir</name>
   <value>file://${user.dir}/../build/ql/test/data/metadb/</value>
-  <description> 
+  <description>
   Required by metastore server or if the uris argument below is not supplied
   </description>
 </property>
@@ -122,6 +122,12 @@
   <name>hive.exec.pre.hooks</name>
   <value>org.apache.hadoop.hive.ql.hooks.PreExecutePrinter</value>
   <description>Pre Execute Hook for Tests</description>
+</property>
+
+<property>
+  <name>hive.exec.post.hooks</name>
+  <value>org.apache.hadoop.hive.ql.hooks.PostExecutePrinter</value>
+  <description>Post Execute Hook for Tests</description>
 </property>
 
 <property>

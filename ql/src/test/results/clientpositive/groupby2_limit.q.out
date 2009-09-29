@@ -1,5 +1,9 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT src.key, sum(substr(src.value,5)) FROM src GROUP BY src.key LIMIT 5
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT src.key, sum(substr(src.value,5)) FROM src GROUP BY src.key LIMIT 5
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key)) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) value) 5)))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL src) key)) (TOK_LIMIT 5)))
 
@@ -70,9 +74,14 @@ STAGE PLANS:
       limit: 5
 
 
-query: SELECT src.key, sum(substr(src.value,5)) FROM src GROUP BY src.key LIMIT 5
-Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1181116822/10000
+PREHOOK: query: SELECT src.key, sum(substr(src.value,5)) FROM src GROUP BY src.key LIMIT 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2031440533/10000
+POSTHOOK: query: SELECT src.key, sum(substr(src.value,5)) FROM src GROUP BY src.key LIMIT 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2031440533/10000
 0	0.0
 10	10.0
 100	200.0

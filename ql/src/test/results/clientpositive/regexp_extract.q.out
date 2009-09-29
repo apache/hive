@@ -1,4 +1,4 @@
-query: EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 FROM (
   FROM src
   SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
@@ -6,6 +6,16 @@ FROM (
   CLUSTER BY key
 ) tmap
 SELECT tmap.key, regexp_extract(tmap.value, 'val_(\\d+\\t\\d+)',1) WHERE tmap.key < 100
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN EXTENDED
+FROM (
+  FROM src
+  SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
+         USING '/bin/cat'
+  CLUSTER BY key
+) tmap
+SELECT tmap.key, regexp_extract(tmap.value, 'val_(\\d+\\t\\d+)',1) WHERE tmap.key < 100
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) value) (+ 1 2) (+ 3 4)) TOK_SERDE TOK_RECORDWRITER '/bin/cat' TOK_SERDE TOK_RECORDREADER))) (TOK_CLUSTERBY (TOK_TABLE_OR_COL key)))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) key)) (TOK_SELEXPR (TOK_FUNCTION regexp_extract (. (TOK_TABLE_OR_COL tmap) value) 'val_(\\d+\\t\\d+)' 1))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL tmap) key) 100))))
 
@@ -57,9 +67,9 @@ STAGE PLANS:
                         type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src [tmap:src]
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/src [tmap:src]
       Path -> Partition:
-        file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src 
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/src 
           Partition
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -74,7 +84,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src
+                location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/src
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
       Reduce Operator Tree:
@@ -94,7 +104,7 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
-                directory: file:/data/users/njain/hive3/hive3/build/ql/tmp/284176909/10001
+                directory: file:/data/users/njain/hive5/hive5/build/ql/tmp/1466313209/10001
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -108,15 +118,26 @@ STAGE PLANS:
       limit: -1
 
 
-query: FROM (
+PREHOOK: query: FROM (
   FROM src
   SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
          USING '/bin/cat'
   CLUSTER BY key
 ) tmap
 SELECT tmap.key, regexp_extract(tmap.value, 'val_(\\d+\\t\\d+)',1) WHERE tmap.key < 100
-Input: default/src
-Output: file:/data/users/njain/hive3/hive3/build/ql/tmp/1144091804/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/718076594/10000
+POSTHOOK: query: FROM (
+  FROM src
+  SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
+         USING '/bin/cat'
+  CLUSTER BY key
+) tmap
+SELECT tmap.key, regexp_extract(tmap.value, 'val_(\\d+\\t\\d+)',1) WHERE tmap.key < 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/718076594/10000
 0	0	3
 0	0	3
 0	0	3
@@ -201,7 +222,7 @@ Output: file:/data/users/njain/hive3/hive3/build/ql/tmp/1144091804/10000
 97	97	3
 98	98	3
 98	98	3
-query: EXPLAIN EXTENDED
+PREHOOK: query: EXPLAIN EXTENDED
 FROM (
   FROM src
   SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
@@ -209,6 +230,16 @@ FROM (
   CLUSTER BY key
 ) tmap
 SELECT tmap.key, regexp_extract(tmap.value, 'val_(\\d+\\t\\d+)') WHERE tmap.key < 100
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN EXTENDED
+FROM (
+  FROM src
+  SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
+         USING '/bin/cat'
+  CLUSTER BY key
+) tmap
+SELECT tmap.key, regexp_extract(tmap.value, 'val_(\\d+\\t\\d+)') WHERE tmap.key < 100
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) value) (+ 1 2) (+ 3 4)) TOK_SERDE TOK_RECORDWRITER '/bin/cat' TOK_SERDE TOK_RECORDREADER))) (TOK_CLUSTERBY (TOK_TABLE_OR_COL key)))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) key)) (TOK_SELEXPR (TOK_FUNCTION regexp_extract (. (TOK_TABLE_OR_COL tmap) value) 'val_(\\d+\\t\\d+)'))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL tmap) key) 100))))
 
@@ -260,9 +291,9 @@ STAGE PLANS:
                         type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src [tmap:src]
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/src [tmap:src]
       Path -> Partition:
-        file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src 
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/src 
           Partition
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -277,7 +308,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src
+                location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/src
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
       Reduce Operator Tree:
@@ -297,7 +328,7 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
-                directory: file:/data/users/njain/hive3/hive3/build/ql/tmp/626003763/10001
+                directory: file:/data/users/njain/hive5/hive5/build/ql/tmp/1577694586/10001
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -311,15 +342,26 @@ STAGE PLANS:
       limit: -1
 
 
-query: FROM (
+PREHOOK: query: FROM (
   FROM src
   SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
          USING '/bin/cat'
   CLUSTER BY key
 ) tmap
 SELECT tmap.key, regexp_extract(tmap.value, 'val_(\\d+\\t\\d+)') WHERE tmap.key < 100
-Input: default/src
-Output: file:/data/users/njain/hive3/hive3/build/ql/tmp/846152682/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/137072546/10000
+POSTHOOK: query: FROM (
+  FROM src
+  SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
+         USING '/bin/cat'
+  CLUSTER BY key
+) tmap
+SELECT tmap.key, regexp_extract(tmap.value, 'val_(\\d+\\t\\d+)') WHERE tmap.key < 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/137072546/10000
 0	0	3
 0	0	3
 0	0	3

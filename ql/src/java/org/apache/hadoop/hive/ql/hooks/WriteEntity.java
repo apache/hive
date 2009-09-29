@@ -33,12 +33,12 @@ public class WriteEntity {
    * The type of the write entity.
    */
   public static enum Type {TABLE, PARTITION, DFS_DIR, LOCAL_DIR};
-  
+
   /**
    * The type.
    */
   private Type typ;
-  
+
   /**
    * The table. This is null if this is a directory.
    */
@@ -48,15 +48,15 @@ public class WriteEntity {
    * The partition.This is null if this object is not a partition.
    */
   private Partition p;
-  
+
   /**
    * The directory if this is a directory.
    */
   private String d;
-  
+
   /**
    * Constructor for a table.
-   * 
+   *
    * @param t Table that is written to.
    */
   public WriteEntity(Table t) {
@@ -65,10 +65,10 @@ public class WriteEntity {
     this.t = t;
     this.typ = Type.TABLE;
   }
-  
+
   /**
    * Constructor for a partition.
-   * 
+   *
    * @param p Partition that is written to.
    */
   public WriteEntity(Partition p) {
@@ -77,10 +77,10 @@ public class WriteEntity {
     this.t = p.getTable();
     this.typ = Type.PARTITION;
   }
-  
+
   /**
    * Constructor for a file.
-   * 
+   *
    * @param d The name of the directory that is being written to.
    * @param islocal Flag to decide whether this directory is local or in dfs.
    */
@@ -95,30 +95,30 @@ public class WriteEntity {
       this.typ = Type.DFS_DIR;
     }
   }
-  
+
   /**
    * Get the type of the entity.
    */
   public Type getType() {
     return typ;
   }
-  
+
   /**
    * Get the location of the entity.
    */
   public URI getLocation() throws Exception {
     if (typ == Type.TABLE)
       return t.getDataLocation();
-    
+
     if (typ == Type.PARTITION)
       return p.getDataLocation();
-    
+
     if (typ == Type.DFS_DIR || typ == Type.LOCAL_DIR)
       return new URI(d);
-    
+
     return null;
   }
- 
+
   /**
    * Get the partition associated with the entity.
    */
@@ -139,14 +139,14 @@ public class WriteEntity {
   public String toString() {
     switch(typ) {
     case TABLE:
-      return t.getDbName() + "/" + t.getName();
+      return t.getDbName() + "@" + t.getName();
     case PARTITION:
-      return t.getDbName() + "/" + t.getName() + "/" + p.getName();
+      return t.getDbName() + "@" + t.getName() + "@" + p.getName();
     default:
       return d;
     }
   }
-  
+
   /**
    * Equals function.
    */
@@ -154,7 +154,7 @@ public class WriteEntity {
   public boolean equals(Object o) {
     if (o == null)
       return false;
-    
+
     if (o instanceof WriteEntity) {
       WriteEntity ore = (WriteEntity)o;
       return (toString().equalsIgnoreCase(ore.toString()));
@@ -162,7 +162,7 @@ public class WriteEntity {
     else
       return false;
   }
-  
+
   /**
    * Hashcode function.
    */

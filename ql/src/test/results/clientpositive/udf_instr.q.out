@@ -1,4 +1,4 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT instr('abcd', 'abc'),
        instr('abcabc', 'ccc'),
        instr(123, '23'),
@@ -13,6 +13,23 @@ SELECT instr('abcd', 'abc'),
        instr(null, 'abc'),
        instr('abcd', null)
 FROM src LIMIT 1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT instr('abcd', 'abc'),
+       instr('abcabc', 'ccc'),
+       instr(123, '23'),
+       instr(123, 23),
+       instr(TRUE, 1),
+       instr(FALSE, 1),
+       instr('12345', CAST('2' AS TINYINT)),
+       instr(CAST('12345' AS SMALLINT), '34'),
+       instr(CAST('123456789012' AS BIGINT), '456'),
+       instr(CAST(1.25 AS FLOAT), '.25'),
+       instr(CAST(16.0 AS DOUBLE), '.0'),
+       instr(null, 'abc'),
+       instr('abcd', null)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION instr 'abcd' 'abc')) (TOK_SELEXPR (TOK_FUNCTION instr 'abcabc' 'ccc')) (TOK_SELEXPR (TOK_FUNCTION instr 123 '23')) (TOK_SELEXPR (TOK_FUNCTION instr 123 23)) (TOK_SELEXPR (TOK_FUNCTION instr TRUE 1)) (TOK_SELEXPR (TOK_FUNCTION instr FALSE 1)) (TOK_SELEXPR (TOK_FUNCTION instr '12345' (TOK_FUNCTION TOK_TINYINT '2'))) (TOK_SELEXPR (TOK_FUNCTION instr (TOK_FUNCTION TOK_SMALLINT '12345') '34')) (TOK_SELEXPR (TOK_FUNCTION instr (TOK_FUNCTION TOK_BIGINT '123456789012') '456')) (TOK_SELEXPR (TOK_FUNCTION instr (TOK_FUNCTION TOK_FLOAT 1.25) '.25')) (TOK_SELEXPR (TOK_FUNCTION instr (TOK_FUNCTION TOK_DOUBLE 16.0) '.0')) (TOK_SELEXPR (TOK_FUNCTION instr TOK_NULL 'abc')) (TOK_SELEXPR (TOK_FUNCTION instr 'abcd' TOK_NULL))) (TOK_LIMIT 1)))
 
@@ -69,7 +86,7 @@ STAGE PLANS:
       limit: 1
 
 
-query: SELECT instr('abcd', 'abc'),
+PREHOOK: query: SELECT instr('abcd', 'abc'),
        instr('abcabc', 'ccc'),
        instr(123, '23'),
        instr(123, 23),
@@ -83,6 +100,24 @@ query: SELECT instr('abcd', 'abc'),
        instr(null, 'abc'),
        instr('abcd', null)
 FROM src LIMIT 1
-Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1911960579/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1088179989/10000
+POSTHOOK: query: SELECT instr('abcd', 'abc'),
+       instr('abcabc', 'ccc'),
+       instr(123, '23'),
+       instr(123, 23),
+       instr(TRUE, 1),
+       instr(FALSE, 1),
+       instr('12345', CAST('2' AS TINYINT)),
+       instr(CAST('12345' AS SMALLINT), '34'),
+       instr(CAST('123456789012' AS BIGINT), '456'),
+       instr(CAST(1.25 AS FLOAT), '.25'),
+       instr(CAST(16.0 AS DOUBLE), '.0'),
+       instr(null, 'abc'),
+       instr('abcd', null)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1088179989/10000
 1	0	2	2	0	0	2	3	4	2	3	NULL	NULL

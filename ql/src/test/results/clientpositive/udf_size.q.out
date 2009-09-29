@@ -1,4 +1,4 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 FROM src_thrift
 SELECT size(src_thrift.lint), 
        size(src_thrift.lintstring), 
@@ -6,6 +6,16 @@ SELECT size(src_thrift.lint),
        size(null)
 WHERE  src_thrift.lint IS NOT NULL 
        AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM src_thrift
+SELECT size(src_thrift.lint), 
+       size(src_thrift.lintstring), 
+       size(src_thrift.mstringstring),
+       size(null)
+WHERE  src_thrift.lint IS NOT NULL 
+       AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src_thrift)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION size (. (TOK_TABLE_OR_COL src_thrift) lint))) (TOK_SELEXPR (TOK_FUNCTION size (. (TOK_TABLE_OR_COL src_thrift) lintstring))) (TOK_SELEXPR (TOK_FUNCTION size (. (TOK_TABLE_OR_COL src_thrift) mstringstring))) (TOK_SELEXPR (TOK_FUNCTION size TOK_NULL))) (TOK_WHERE (AND (TOK_FUNCTION TOK_ISNOTNULL (. (TOK_TABLE_OR_COL src_thrift) lint)) (NOT (TOK_FUNCTION TOK_ISNULL (. (TOK_TABLE_OR_COL src_thrift) mstringstring))))) (TOK_LIMIT 1)))
 
@@ -52,13 +62,24 @@ STAGE PLANS:
       limit: 1
 
 
-query: FROM src_thrift
+PREHOOK: query: FROM src_thrift
 SELECT size(src_thrift.lint), 
        size(src_thrift.lintstring), 
        size(src_thrift.mstringstring),
        size(null)
 WHERE  src_thrift.lint IS NOT NULL 
        AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
-Input: default/src_thrift
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/914164736/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1116336737/10000
+POSTHOOK: query: FROM src_thrift
+SELECT size(src_thrift.lint), 
+       size(src_thrift.lintstring), 
+       size(src_thrift.mstringstring),
+       size(null)
+WHERE  src_thrift.lint IS NOT NULL 
+       AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1116336737/10000
 3	1	1	-1

@@ -1,10 +1,29 @@
-query: create table tst1(key STRING, cnt INT)
-query: INSERT OVERWRITE TABLE tst1
+PREHOOK: query: create table tst1(key STRING, cnt INT)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tst1(key STRING, cnt INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tst1
+PREHOOK: query: INSERT OVERWRITE TABLE tst1
 SELECT a.key, count(1) FROM src a group by a.key
-Input: default/src
-Output: default/tst1
-query: SELECT sum(a.cnt)  FROM tst1 a JOIN tst1 b ON a.key = b.key
-Input: default/tst1
-Output: file:/data/users/zshao/tools/522-trunk-apache-hive/build/ql/tmp/2016366076/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tst1
+POSTHOOK: query: INSERT OVERWRITE TABLE tst1
+SELECT a.key, count(1) FROM src a group by a.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tst1
+PREHOOK: query: SELECT sum(a.cnt)  FROM tst1 a JOIN tst1 b ON a.key = b.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tst1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1057588423/10000
+POSTHOOK: query: SELECT sum(a.cnt)  FROM tst1 a JOIN tst1 b ON a.key = b.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tst1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1057588423/10000
 500
-query: drop table tst1
+PREHOOK: query: drop table tst1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tst1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@tst1

@@ -1,13 +1,28 @@
-query: CREATE TABLE dest1(a array<int>, b array<string>, c map<string,string>, d int, e string)
+PREHOOK: query: CREATE TABLE dest1(a array<int>, b array<string>, c map<string,string>, d int, e string)
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '1'
 COLLECTION ITEMS TERMINATED BY '2'
 MAP KEYS TERMINATED BY '3'
 LINES TERMINATED BY '10'
 STORED AS TEXTFILE
-query: EXPLAIN
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest1(a array<int>, b array<string>, c map<string,string>, d int, e string)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '1'
+COLLECTION ITEMS TERMINATED BY '2'
+MAP KEYS TERMINATED BY '3'
+LINES TERMINATED BY '10'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest1
+PREHOOK: query: EXPLAIN
 FROM src_thrift
 INSERT OVERWRITE TABLE dest1 SELECT src_thrift.lint, src_thrift.lstring, src_thrift.mstringstring, src_thrift.aint, src_thrift.astring
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM src_thrift
+INSERT OVERWRITE TABLE dest1 SELECT src_thrift.lint, src_thrift.lstring, src_thrift.mstringstring, src_thrift.aint, src_thrift.astring
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src_thrift)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src_thrift) lint)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src_thrift) lstring)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src_thrift) mstringstring)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src_thrift) aint)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src_thrift) astring)))))
 
@@ -51,10 +66,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1925142463/10000
+                destination: file:/data/users/njain/hive5/hive5/build/ql/tmp/1462054105/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1140895264/10002 
+              file:/data/users/njain/hive5/hive5/build/ql/tmp/2096286623/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -94,13 +109,24 @@ STAGE PLANS:
               name: dest1
 
 
-query: FROM src_thrift
+PREHOOK: query: FROM src_thrift
 INSERT OVERWRITE TABLE dest1 SELECT src_thrift.lint, src_thrift.lstring, src_thrift.mstringstring, src_thrift.aint, src_thrift.astring
-Input: default/src_thrift
-Output: default/dest1
-query: SELECT dest1.* FROM dest1
-Input: default/dest1
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/842958925/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+PREHOOK: Output: default@dest1
+POSTHOOK: query: FROM src_thrift
+INSERT OVERWRITE TABLE dest1 SELECT src_thrift.lint, src_thrift.lstring, src_thrift.mstringstring, src_thrift.aint, src_thrift.astring
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+POSTHOOK: Output: default@dest1
+PREHOOK: query: SELECT dest1.* FROM dest1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1569256194/10000
+POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1569256194/10000
 [0,0,0]	["0","0","0"]	{"key_0":"value_0"}	1712634731	record_0
 [1,2,3]	["10","100","1000"]	{"key_1":"value_1"}	465985200	record_1
 [2,4,6]	["20","200","2000"]	{"key_2":"value_2"}	-751827638	record_2
@@ -112,9 +138,14 @@ Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/842958925/1
 [8,16,24]	["80","800","8000"]	{"key_8":"value_8"}	1638581578	record_8
 [9,18,27]	["90","900","9000"]	{"key_9":"value_9"}	336964413	record_9
 null	null	null	0	NULL
-query: SELECT dest1.a[0], dest1.b[0], dest1.c['key2'], dest1.d, dest1.e FROM dest1
-Input: default/dest1
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1145493551/10000
+PREHOOK: query: SELECT dest1.a[0], dest1.b[0], dest1.c['key2'], dest1.d, dest1.e FROM dest1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/632615537/10000
+POSTHOOK: query: SELECT dest1.a[0], dest1.b[0], dest1.c['key2'], dest1.d, dest1.e FROM dest1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/632615537/10000
 0	0	NULL	1712634731	record_0
 1	10	NULL	465985200	record_1
 2	20	NULL	-751827638	record_2

@@ -1,7 +1,16 @@
-query: CREATE TABLE ppd_constant_expr(c1 STRING, c2 INT, c3 DOUBLE) STORED AS TEXTFILE
-query: EXPLAIN
+PREHOOK: query: CREATE TABLE ppd_constant_expr(c1 STRING, c2 INT, c3 DOUBLE) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE ppd_constant_expr(c1 STRING, c2 INT, c3 DOUBLE) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@ppd_constant_expr
+PREHOOK: query: EXPLAIN
 FROM src1 
 INSERT OVERWRITE TABLE ppd_constant_expr SELECT 4 + NULL, src1.key - NULL, NULL + NULL
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM src1 
+INSERT OVERWRITE TABLE ppd_constant_expr SELECT 4 + NULL, src1.key - NULL, NULL + NULL
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src1)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB ppd_constant_expr)) (TOK_SELECT (TOK_SELEXPR (+ 4 TOK_NULL)) (TOK_SELEXPR (- (. (TOK_TABLE_OR_COL src1) key) TOK_NULL)) (TOK_SELEXPR (+ TOK_NULL TOK_NULL)))))
 
@@ -50,10 +59,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/564929089/10000
+                destination: file:/data/users/njain/hive5/hive5/build/ql/tmp/1422233089/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/852084220/10002 
+              file:/data/users/njain/hive5/hive5/build/ql/tmp/70851087/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -89,13 +98,24 @@ STAGE PLANS:
               name: ppd_constant_expr
 
 
-query: FROM src1 
+PREHOOK: query: FROM src1 
 INSERT OVERWRITE TABLE ppd_constant_expr SELECT 4 + NULL, src1.key - NULL, NULL + NULL
-Input: default/src1
-Output: default/ppd_constant_expr
-query: SELECT ppd_constant_expr.* FROM ppd_constant_expr
-Input: default/ppd_constant_expr
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/2124439979/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@ppd_constant_expr
+POSTHOOK: query: FROM src1 
+INSERT OVERWRITE TABLE ppd_constant_expr SELECT 4 + NULL, src1.key - NULL, NULL + NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@ppd_constant_expr
+PREHOOK: query: SELECT ppd_constant_expr.* FROM ppd_constant_expr
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ppd_constant_expr
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1300457424/10000
+POSTHOOK: query: SELECT ppd_constant_expr.* FROM ppd_constant_expr
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ppd_constant_expr
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1300457424/10000
 NULL	NULL	NULL
 NULL	NULL	NULL
 NULL	NULL	NULL
@@ -121,4 +141,8 @@ NULL	NULL	NULL
 NULL	NULL	NULL
 NULL	NULL	NULL
 NULL	NULL	NULL
-query: DROP TABLE ppd_constant_expr
+PREHOOK: query: DROP TABLE ppd_constant_expr
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE ppd_constant_expr
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@ppd_constant_expr

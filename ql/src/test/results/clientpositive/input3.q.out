@@ -1,16 +1,42 @@
-query: DROP TABLE TEST3a
-query: DROP TABLE TEST3b
-query: DROP TABLE TEST3c
-query: CREATE TABLE TEST3a(A INT, B DOUBLE) STORED AS TEXTFILE
-query: DESCRIBE TEST3a
+PREHOOK: query: DROP TABLE TEST3a
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE TEST3a
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE TEST3b
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE TEST3b
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE TEST3c
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE TEST3c
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE TEST3a(A INT, B DOUBLE) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE TEST3a(A INT, B DOUBLE) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@TEST3a
+PREHOOK: query: DESCRIBE TEST3a
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE TEST3a
+POSTHOOK: type: DESCTABLE
 a	int	
 b	double	
-query: CREATE TABLE TEST3b(A ARRAY<INT>, B DOUBLE, C MAP<DOUBLE, INT>) STORED AS TEXTFILE
-query: DESCRIBE TEST3b
+PREHOOK: query: CREATE TABLE TEST3b(A ARRAY<INT>, B DOUBLE, C MAP<DOUBLE, INT>) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE TEST3b(A ARRAY<INT>, B DOUBLE, C MAP<DOUBLE, INT>) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@TEST3b
+PREHOOK: query: DESCRIBE TEST3b
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE TEST3b
+POSTHOOK: type: DESCTABLE
 a	array<int>	
 b	double	
 c	map<double,int>	
-query: SHOW TABLES
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
 src
 src1
 src_json
@@ -20,8 +46,12 @@ srcbucket
 srcpart
 test3a
 test3b
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 ALTER TABLE TEST3b ADD COLUMNS (X DOUBLE)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: query: EXPLAIN
+ALTER TABLE TEST3b ADD COLUMNS (X DOUBLE)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
 ABSTRACT SYNTAX TREE:
   (TOK_ALTERTABLE_ADDCOLS TEST3b (TOK_TABCOLLIST (TOK_TABCOL X TOK_DOUBLE)))
 
@@ -37,14 +67,26 @@ STAGE PLANS:
           old name: TEST3b
 
 
-query: ALTER TABLE TEST3b ADD COLUMNS (X DOUBLE)
-query: DESCRIBE TEST3b
+PREHOOK: query: ALTER TABLE TEST3b ADD COLUMNS (X DOUBLE)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: query: ALTER TABLE TEST3b ADD COLUMNS (X DOUBLE)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@test3b
+POSTHOOK: Output: default@test3b
+PREHOOK: query: DESCRIBE TEST3b
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE TEST3b
+POSTHOOK: type: DESCTABLE
 a	array<int>	
 b	double	
 c	map<double,int>	
 x	double	
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 ALTER TABLE TEST3b RENAME TO TEST3c
+PREHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: query: EXPLAIN
+ALTER TABLE TEST3b RENAME TO TEST3c
+POSTHOOK: type: ALTERTABLE_RENAME
 ABSTRACT SYNTAX TREE:
   (TOK_ALTERTABLE_RENAME TEST3b TEST3c)
 
@@ -60,13 +102,24 @@ STAGE PLANS:
           old name: TEST3b
 
 
-query: ALTER TABLE TEST3b RENAME TO TEST3c
-query: DESCRIBE TEST3c
+PREHOOK: query: ALTER TABLE TEST3b RENAME TO TEST3c
+PREHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: query: ALTER TABLE TEST3b RENAME TO TEST3c
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: default@test3b
+POSTHOOK: Output: default@TEST3c
+PREHOOK: query: DESCRIBE TEST3c
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE TEST3c
+POSTHOOK: type: DESCTABLE
 a	array<int>	
 b	double	
 c	map<double,int>	
 x	double	
-query: SHOW TABLES
+PREHOOK: query: SHOW TABLES
+PREHOOK: type: SHOWTABLES
+POSTHOOK: query: SHOW TABLES
+POSTHOOK: type: SHOWTABLES
 src
 src1
 src_json
@@ -76,8 +129,12 @@ srcbucket
 srcpart
 test3a
 test3c
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 ALTER TABLE TEST3c REPLACE COLUMNS (R1 INT, R2 DOUBLE)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: query: EXPLAIN
+ALTER TABLE TEST3c REPLACE COLUMNS (R1 INT, R2 DOUBLE)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
 ABSTRACT SYNTAX TREE:
   (TOK_ALTERTABLE_REPLACECOLS TEST3c (TOK_TABCOLLIST (TOK_TABCOL R1 TOK_INT) (TOK_TABCOL R2 TOK_DOUBLE)))
 
@@ -93,12 +150,31 @@ STAGE PLANS:
           old name: TEST3c
 
 
-query: ALTER TABLE TEST3c REPLACE COLUMNS (R1 INT, R2 DOUBLE)
-query: DESCRIBE EXTENDED TEST3c
+PREHOOK: query: ALTER TABLE TEST3c REPLACE COLUMNS (R1 INT, R2 DOUBLE)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: query: ALTER TABLE TEST3c REPLACE COLUMNS (R1 INT, R2 DOUBLE)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@test3c
+POSTHOOK: Output: default@test3c
+PREHOOK: query: DESCRIBE EXTENDED TEST3c
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE EXTENDED TEST3c
+POSTHOOK: type: DESCTABLE
 r1	int	
 r2	double	
 	 	 
-Detailed Table Information	Table(tableName:test3c,dbName:default,owner:athusoo,createTime:1241278187,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:r1,type:int,comment:null), FieldSchema(name:r2,type:double,comment:null)],location:file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/test3b,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[],parameters:{last_modified_by=athusoo,last_modified_time=1241278187})	
-query: DROP TABLE TEST3a
-query: DROP TABLE TEST3b
-query: DROP TABLE TEST3c
+Detailed Table Information	Table(tableName:test3c, dbName:default, owner:njain, createTime:1253780443, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:r1, type:int, comment:null), FieldSchema(name:r2, type:double, comment:null)], location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/test3c, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=njain,last_modified_time=1253780444})	
+PREHOOK: query: DROP TABLE TEST3a
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE TEST3a
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@test3a
+PREHOOK: query: DROP TABLE TEST3b
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE TEST3b
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE TEST3c
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE TEST3c
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@test3c

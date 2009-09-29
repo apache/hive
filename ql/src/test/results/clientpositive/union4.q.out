@@ -1,12 +1,28 @@
-query: -- union case: both subqueries are map-reduce jobs on same input, followed by filesink
+PREHOOK: query: -- union case: both subqueries are map-reduce jobs on same input, followed by filesink
 
 drop table tmptable
-query: create table tmptable(key string, value int)
-query: explain 
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- union case: both subqueries are map-reduce jobs on same input, followed by filesink
+
+drop table tmptable
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table tmptable(key string, value int)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tmptable(key string, value int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tmptable
+PREHOOK: query: explain 
 insert overwrite table tmptable
   select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, count(1) as value from src s1
                                         UNION  ALL  
                                             select 'tst2' as key, count(1) as value from src s2) unionsrc
+PREHOOK: type: QUERY
+POSTHOOK: query: explain 
+insert overwrite table tmptable
+  select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, count(1) as value from src s1
+                                        UNION  ALL  
+                                            select 'tst2' as key, count(1) as value from src s2) unionsrc
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF src s1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst1' key) (TOK_SELEXPR (TOK_FUNCTION count 1) value)))) (TOK_QUERY (TOK_FROM (TOK_TABREF src s2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst2' key) (TOK_SELEXPR (TOK_FUNCTION count 1) value))))) unionsrc)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB tmptable)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) value)))))
 
@@ -62,7 +78,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/793944135/10002 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/543273791/10002 
           Union
             Select Operator
               expressions:
@@ -86,7 +102,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/793944135/10004 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/543273791/10004 
           Union
             Select Operator
               expressions:
@@ -117,10 +133,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1820922097/10000
+                destination: file:/data/users/njain/hive5/hive5/build/ql/tmp/541591404/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/793944135/10003 
+              file:/data/users/njain/hive5/hive5/build/ql/tmp/543273791/10003 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -192,15 +208,32 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
 
-query: insert overwrite table tmptable
+PREHOOK: query: insert overwrite table tmptable
 select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, count(1) as value from src s1
                                         UNION  ALL  
                                           select 'tst2' as key, count(1) as value from src s2) unionsrc
-Input: default/src
-Output: default/tmptable
-query: select * from tmptable x sort by x.key
-Input: default/tmptable
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1401758833/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tmptable
+POSTHOOK: query: insert overwrite table tmptable
+select unionsrc.key, unionsrc.value FROM (select 'tst1' as key, count(1) as value from src s1
+                                        UNION  ALL  
+                                          select 'tst2' as key, count(1) as value from src s2) unionsrc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tmptable
+PREHOOK: query: select * from tmptable x sort by x.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmptable
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1853179862/10000
+POSTHOOK: query: select * from tmptable x sort by x.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmptable
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1853179862/10000
 tst1	500
 tst2	500
-query: drop table tmptable
+PREHOOK: query: drop table tmptable
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tmptable
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@tmptable

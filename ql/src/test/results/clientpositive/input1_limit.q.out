@@ -1,9 +1,23 @@
-query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
-query: CREATE TABLE dest2(key INT, value STRING) STORED AS TEXTFILE
-query: EXPLAIN
+PREHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest1
+PREHOOK: query: CREATE TABLE dest2(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest2(key INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest2
+PREHOOK: query: EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest1 SELECT src.key, src.value WHERE src.key < 100 LIMIT 10
 INSERT OVERWRITE TABLE dest2 SELECT src.key, src.value WHERE src.key < 100 LIMIT 5
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM src
+INSERT OVERWRITE TABLE dest1 SELECT src.key, src.value WHERE src.key < 100 LIMIT 10
+INSERT OVERWRITE TABLE dest2 SELECT src.key, src.value WHERE src.key < 100 LIMIT 5
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL src) key) 100)) (TOK_LIMIT 10)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest2)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL src) key) 100)) (TOK_LIMIT 5)))
 
@@ -90,7 +104,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1991354827/10004 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/1197694849/10004 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -129,15 +143,28 @@ STAGE PLANS:
               name: dest2
 
 
-query: FROM src
+PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE dest1 SELECT src.key, src.value WHERE src.key < 100 LIMIT 10
 INSERT OVERWRITE TABLE dest2 SELECT src.key, src.value WHERE src.key < 100 LIMIT 5
-Input: default/src
-Output: default/dest1
-Output: default/dest2
-query: SELECT dest1.* FROM dest1
-Input: default/dest1
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1070027433/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1
+PREHOOK: Output: default@dest2
+POSTHOOK: query: FROM src
+INSERT OVERWRITE TABLE dest1 SELECT src.key, src.value WHERE src.key < 100 LIMIT 10
+INSERT OVERWRITE TABLE dest2 SELECT src.key, src.value WHERE src.key < 100 LIMIT 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest2
+PREHOOK: query: SELECT dest1.* FROM dest1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1527068792/10000
+POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1527068792/10000
 86	val_86
 27	val_27
 98	val_98
@@ -148,13 +175,26 @@ Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp
 17	val_17
 0	val_0
 57	val_57
-query: SELECT dest2.* FROM dest2
-Input: default/dest2
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1883602206/10000
+PREHOOK: query: SELECT dest2.* FROM dest2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest2
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/651013402/10000
+POSTHOOK: query: SELECT dest2.* FROM dest2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest2
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/651013402/10000
 86	val_86
 27	val_27
 98	val_98
 66	val_66
 37	val_37
-query: DROP TABLE dest1
-query: DROP TABLE dest2
+PREHOOK: query: DROP TABLE dest1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE dest1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@dest1
+PREHOOK: query: DROP TABLE dest2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE dest2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@dest2

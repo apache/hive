@@ -1,12 +1,28 @@
-query: drop table dest1
-query: CREATE TABLE dest1(key STRING, value STRING) STORED AS TEXTFILE
-query: EXPLAIN
+PREHOOK: query: drop table dest1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table dest1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE dest1(key STRING, value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest1(key STRING, value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest1
+PREHOOK: query: EXPLAIN
 FROM (
   FROM src
   SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
          USING '/bin/cat'
 ) tmap
 INSERT OVERWRITE TABLE dest1 SELECT tmap.key, tmap.value
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM (
+  FROM src
+  SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
+         USING '/bin/cat'
+) tmap
+INSERT OVERWRITE TABLE dest1 SELECT tmap.key, tmap.value
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) value) (+ 1 2) (+ 3 4)) TOK_SERDE TOK_RECORDWRITER '/bin/cat' TOK_SERDE TOK_RECORDREADER))))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) value)))))
 
@@ -60,10 +76,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/njain/hive3/hive3/build/ql/tmp/1962987332/10000
+                destination: file:/data/users/njain/hive5/hive5/build/ql/tmp/209905315/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/njain/hive3/hive3/build/ql/tmp/1219497579/10002 
+              file:/data/users/njain/hive5/hive5/build/ql/tmp/2069167411/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -97,17 +113,32 @@ STAGE PLANS:
               name: dest1
 
 
-query: FROM (
+PREHOOK: query: FROM (
   FROM src
   SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
          USING '/bin/cat'
 ) tmap
 INSERT OVERWRITE TABLE dest1 SELECT tmap.key, tmap.value
-Input: default/src
-Output: default/dest1
-query: SELECT dest1.* FROM dest1
-Input: default/dest1
-Output: file:/data/users/njain/hive3/hive3/build/ql/tmp/364487394/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1
+POSTHOOK: query: FROM (
+  FROM src
+  SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
+         USING '/bin/cat'
+) tmap
+INSERT OVERWRITE TABLE dest1 SELECT tmap.key, tmap.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1
+PREHOOK: query: SELECT dest1.* FROM dest1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/131517216/10000
+POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/131517216/10000
 238	val_238	3	7
 86	val_86	3	7
 311	val_311	3	7
@@ -608,4 +639,8 @@ Output: file:/data/users/njain/hive3/hive3/build/ql/tmp/364487394/10000
 400	val_400	3	7
 200	val_200	3	7
 97	val_97	3	7
-query: drop table dest1
+PREHOOK: query: drop table dest1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table dest1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@dest1

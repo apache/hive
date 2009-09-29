@@ -1,10 +1,22 @@
-query: DESCRIBE FUNCTION hour
+PREHOOK: query: DESCRIBE FUNCTION hour
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION hour
+POSTHOOK: type: DESCFUNCTION
 hour(date) - Returns the hour of date
-query: DESCRIBE FUNCTION minute
+PREHOOK: query: DESCRIBE FUNCTION minute
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION minute
+POSTHOOK: type: DESCFUNCTION
 minute(date) - Returns the minute of date
-query: DESCRIBE FUNCTION second
+PREHOOK: query: DESCRIBE FUNCTION second
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION second
+POSTHOOK: type: DESCFUNCTION
 second(date) - Returns the second of date
-query: DESCRIBE FUNCTION EXTENDED hour
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED hour
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED hour
+POSTHOOK: type: DESCFUNCTION
 hour(date) - Returns the hour of date
 date is a string in the format of 'yyyy-MM-dd HH:mm:ss' or 'HH:mm:ss'.
 Example:
@@ -12,7 +24,10 @@ Example:
   12
   > SELECT hour('12:58:59') FROM src LIMIT 1;
   12
-query: DESCRIBE FUNCTION EXTENDED minute
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED minute
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED minute
+POSTHOOK: type: DESCFUNCTION
 minute(date) - Returns the minute of date
 date is a string in the format of 'yyyy-MM-dd HH:mm:ss' or 'HH:mm:ss'.
 Example:
@@ -20,7 +35,10 @@ Example:
   58
   > SELECT minute('12:58:59') FROM src LIMIT 1;
   58
-query: DESCRIBE FUNCTION EXTENDED second
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED second
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED second
+POSTHOOK: type: DESCFUNCTION
 second(date) - Returns the second of date
 date is a string in the format of 'yyyy-MM-dd HH:mm:ss' or 'HH:mm:ss'.
 Example:
@@ -28,11 +46,18 @@ Example:
   59
   > SELECT second('12:58:59') FROM src LIMIT 1;
   59
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT hour('2009-08-07 13:14:15'), hour('13:14:15'), hour('2009-08-07'),
        minute('2009-08-07 13:14:15'), minute('13:14:15'), minute('2009-08-07'),
        second('2009-08-07 13:14:15'), second('13:14:15'), second('2009-08-07')
 FROM src WHERE key = 86
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT hour('2009-08-07 13:14:15'), hour('13:14:15'), hour('2009-08-07'),
+       minute('2009-08-07 13:14:15'), minute('13:14:15'), minute('2009-08-07'),
+       second('2009-08-07 13:14:15'), second('13:14:15'), second('2009-08-07')
+FROM src WHERE key = 86
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION hour '2009-08-07 13:14:15')) (TOK_SELEXPR (TOK_FUNCTION hour '13:14:15')) (TOK_SELEXPR (TOK_FUNCTION hour '2009-08-07')) (TOK_SELEXPR (TOK_FUNCTION minute '2009-08-07 13:14:15')) (TOK_SELEXPR (TOK_FUNCTION minute '13:14:15')) (TOK_SELEXPR (TOK_FUNCTION minute '2009-08-07')) (TOK_SELEXPR (TOK_FUNCTION second '2009-08-07 13:14:15')) (TOK_SELEXPR (TOK_FUNCTION second '13:14:15')) (TOK_SELEXPR (TOK_FUNCTION second '2009-08-07'))) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 86))))
 
@@ -88,10 +113,18 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT hour('2009-08-07 13:14:15'), hour('13:14:15'), hour('2009-08-07'),
+PREHOOK: query: SELECT hour('2009-08-07 13:14:15'), hour('13:14:15'), hour('2009-08-07'),
        minute('2009-08-07 13:14:15'), minute('13:14:15'), minute('2009-08-07'),
        second('2009-08-07 13:14:15'), second('13:14:15'), second('2009-08-07')
 FROM src WHERE key = 86
-Input: default/src
-Output: file:/data/users/zshao/tools/fb_hadoop/trunk/VENDOR.hive/trunk/build/ql/tmp/388087227/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/785767007/10000
+POSTHOOK: query: SELECT hour('2009-08-07 13:14:15'), hour('13:14:15'), hour('2009-08-07'),
+       minute('2009-08-07 13:14:15'), minute('13:14:15'), minute('2009-08-07'),
+       second('2009-08-07 13:14:15'), second('13:14:15'), second('2009-08-07')
+FROM src WHERE key = 86
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/785767007/10000
 13	13	NULL	14	14	NULL	15	15	NULL

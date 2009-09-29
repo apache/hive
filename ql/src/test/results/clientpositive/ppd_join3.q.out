@@ -1,4 +1,4 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT src1.c1, src2.c4 
 FROM
 (SELECT src.key as c1, src.value as c2 from src where src.key <> '11' ) src1
@@ -9,6 +9,19 @@ JOIN
 (SELECT src.key as c5, src.value as c6 from src where src.key <> '13' ) src3
 ON src1.c1 = src3.c5
 WHERE src1.c1 > '0' and (src1.c2 <> 'val_500' or src1.c1 > '1') and (src2.c3 > '10' or src1.c1 <> '10') and (src2.c3 <> '4') and (src3.c5 <> '1')
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT src1.c1, src2.c4 
+FROM
+(SELECT src.key as c1, src.value as c2 from src where src.key <> '11' ) src1
+JOIN
+(SELECT src.key as c3, src.value as c4 from src where src.key <> '12' ) src2
+ON src1.c1 = src2.c3 AND src1.c1 < '400'
+JOIN
+(SELECT src.key as c5, src.value as c6 from src where src.key <> '13' ) src3
+ON src1.c1 = src3.c5
+WHERE src1.c1 > '0' and (src1.c2 <> 'val_500' or src1.c1 > '1') and (src2.c3 > '10' or src1.c1 <> '10') and (src2.c3 <> '4') and (src3.c5 <> '1')
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key) c1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value) c2)) (TOK_WHERE (<> (. (TOK_TABLE_OR_COL src) key) '11')))) src1) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key) c3) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value) c4)) (TOK_WHERE (<> (. (TOK_TABLE_OR_COL src) key) '12')))) src2) (AND (= (. (TOK_TABLE_OR_COL src1) c1) (. (TOK_TABLE_OR_COL src2) c3)) (< (. (TOK_TABLE_OR_COL src1) c1) '400'))) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key) c5) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value) c6)) (TOK_WHERE (<> (. (TOK_TABLE_OR_COL src) key) '13')))) src3) (= (. (TOK_TABLE_OR_COL src1) c1) (. (TOK_TABLE_OR_COL src3) c5)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) c1)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) c4))) (TOK_WHERE (and (and (and (and (> (. (TOK_TABLE_OR_COL src1) c1) '0') (or (<> (. (TOK_TABLE_OR_COL src1) c2) 'val_500') (> (. (TOK_TABLE_OR_COL src1) c1) '1'))) (or (> (. (TOK_TABLE_OR_COL src2) c3) '10') (<> (. (TOK_TABLE_OR_COL src1) c1) '10'))) (<> (. (TOK_TABLE_OR_COL src2) c3) '4')) (<> (. (TOK_TABLE_OR_COL src3) c5) '1')))))
 
@@ -149,7 +162,7 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT src1.c1, src2.c4 
+PREHOOK: query: SELECT src1.c1, src2.c4 
 FROM
 (SELECT src.key as c1, src.value as c2 from src where src.key <> '11' ) src1
 JOIN
@@ -159,8 +172,22 @@ JOIN
 (SELECT src.key as c5, src.value as c6 from src where src.key <> '13' ) src3
 ON src1.c1 = src3.c5
 WHERE src1.c1 > '0' and (src1.c2 <> 'val_500' or src1.c1 > '1') and (src2.c3 > '10' or src1.c1 <> '10') and (src2.c3 <> '4') and (src3.c5 <> '1')
-Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1265462406/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/.ptest_3/build/ql/tmp/105199665/10000
+POSTHOOK: query: SELECT src1.c1, src2.c4 
+FROM
+(SELECT src.key as c1, src.value as c2 from src where src.key <> '11' ) src1
+JOIN
+(SELECT src.key as c3, src.value as c4 from src where src.key <> '12' ) src2
+ON src1.c1 = src2.c3 AND src1.c1 < '400'
+JOIN
+(SELECT src.key as c5, src.value as c6 from src where src.key <> '13' ) src3
+ON src1.c1 = src3.c5
+WHERE src1.c1 > '0' and (src1.c2 <> 'val_500' or src1.c1 > '1') and (src2.c3 > '10' or src1.c1 <> '10') and (src2.c3 <> '4') and (src3.c5 <> '1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/.ptest_3/build/ql/tmp/105199665/10000
 100	val_100
 100	val_100
 100	val_100

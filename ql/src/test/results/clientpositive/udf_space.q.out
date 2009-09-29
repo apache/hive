@@ -1,10 +1,19 @@
-query: EXPLAIN SELECT
+PREHOOK: query: EXPLAIN SELECT
   space(10),
   space(0),
   space(1),
   space(-1),
   space(-100)
 FROM src LIMIT 1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT
+  space(10),
+  space(0),
+  space(1),
+  space(-1),
+  space(-100)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION space 10)) (TOK_SELEXPR (TOK_FUNCTION space 0)) (TOK_SELEXPR (TOK_FUNCTION space 1)) (TOK_SELEXPR (TOK_FUNCTION space (- 1))) (TOK_SELEXPR (TOK_FUNCTION space (- 100)))) (TOK_LIMIT 1)))
 
@@ -45,23 +54,45 @@ STAGE PLANS:
       limit: 1
 
 
-query: SELECT
+PREHOOK: query: SELECT
   length(space(10)),
   length(space(0)),
   length(space(1)),
   length(space(-1)),
   length(space(-100))
 FROM src LIMIT 1
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1516911469/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/228561399/10000
+POSTHOOK: query: SELECT
+  length(space(10)),
+  length(space(0)),
+  length(space(1)),
+  length(space(-1)),
+  length(space(-100))
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/228561399/10000
 10	0	1	0	0
-query: SELECT
+PREHOOK: query: SELECT
   space(10),
   space(0),
   space(1),
   space(-1),
   space(-100)
 FROM src LIMIT 1
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1726324605/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/201745127/10000
+POSTHOOK: query: SELECT
+  space(10),
+  space(0),
+  space(1),
+  space(-1),
+  space(-100)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/201745127/10000
           		 		

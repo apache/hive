@@ -1,4 +1,4 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 FROM (
   FROM src
   SELECT TRANSFORM(src.key, src.value)
@@ -6,6 +6,16 @@ FROM (
   CLUSTER BY tkey 
 ) tmap
 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM (
+  FROM src
+  SELECT TRANSFORM(src.key, src.value)
+         USING '/bin/cat' AS (tkey, tvalue) 
+  CLUSTER BY tkey 
+) tmap
+SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) value)) TOK_SERDE TOK_RECORDWRITER '/bin/cat' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST tkey tvalue)))) (TOK_CLUSTERBY (TOK_TABLE_OR_COL tkey)))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) tkey)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) tvalue))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL tmap) tkey) 100))))
 
@@ -71,15 +81,26 @@ STAGE PLANS:
       limit: -1
 
 
-query: FROM (
+PREHOOK: query: FROM (
   FROM src
   SELECT TRANSFORM(src.key, src.value)
          USING '/bin/cat' AS (tkey, tvalue) 
   CLUSTER BY tkey 
 ) tmap
 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
-Input: default/src
-Output: file:/data/users/njain/hive3/hive3/build/ql/tmp/363562838/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/932734239/10000
+POSTHOOK: query: FROM (
+  FROM src
+  SELECT TRANSFORM(src.key, src.value)
+         USING '/bin/cat' AS (tkey, tvalue) 
+  CLUSTER BY tkey 
+) tmap
+SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/932734239/10000
 0	val_0
 0	val_0
 0	val_0

@@ -1,4 +1,4 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT
     'abc',        "abc",
     'abc\'',      "abc\"",
@@ -12,6 +12,22 @@ SELECT
     'tab\ttab',   "tab\ttab"
 FROM src
 LIMIT 1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT
+    'abc',        "abc",
+    'abc\'',      "abc\"",
+    'abc\\',      "abc\\",
+    'abc\\\'',    "abc\\\"",
+    'abc\\\\',    "abc\\\\",
+    'abc\\\\\'',  "abc\\\\\"",
+    'abc\\\\\\',  "abc\\\\\\",
+    'abc""""\\',  "abc''''\\",
+    "awk '{print NR\"\\t\"$0}'",
+    'tab\ttab',   "tab\ttab"
+FROM src
+LIMIT 1
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'abc') (TOK_SELEXPR "abc") (TOK_SELEXPR 'abc\'') (TOK_SELEXPR "abc\"") (TOK_SELEXPR 'abc\\') (TOK_SELEXPR "abc\\") (TOK_SELEXPR 'abc\\\'') (TOK_SELEXPR "abc\\\"") (TOK_SELEXPR 'abc\\\\') (TOK_SELEXPR "abc\\\\") (TOK_SELEXPR 'abc\\\\\'') (TOK_SELEXPR "abc\\\\\"") (TOK_SELEXPR 'abc\\\\\\') (TOK_SELEXPR "abc\\\\\\") (TOK_SELEXPR 'abc""""\\') (TOK_SELEXPR "abc''''\\") (TOK_SELEXPR "awk '{print NR\"\\t\"$0}'") (TOK_SELEXPR 'tab\ttab') (TOK_SELEXPR "tab\ttab")) (TOK_LIMIT 1)))
 
@@ -80,7 +96,7 @@ STAGE PLANS:
       limit: 1
 
 
-query: SELECT
+PREHOOK: query: SELECT
     'abc',        "abc",
     'abc\'',      "abc\"",
     'abc\\',      "abc\\",
@@ -93,6 +109,23 @@ query: SELECT
     'tab\ttab',   "tab\ttab"
 FROM src
 LIMIT 1
-Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1457515970/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/969406060/10000
+POSTHOOK: query: SELECT
+    'abc',        "abc",
+    'abc\'',      "abc\"",
+    'abc\\',      "abc\\",
+    'abc\\\'',    "abc\\\"",
+    'abc\\\\',    "abc\\\\",
+    'abc\\\\\'',  "abc\\\\\"",
+    'abc\\\\\\',  "abc\\\\\\",
+    'abc""""\\',  "abc''''\\",
+    "awk '{print NR\"\\t\"$0}'",
+    'tab\ttab',   "tab\ttab"
+FROM src
+LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/969406060/10000
 abc	abc	abc'	abc"	abc\	abc\	abc\'	abc\"	abc\\	abc\\	abc\\'	abc\\"	abc\\\	abc\\\	abc""""\	abc''''\	awk '{print NR"\t"$0}'	tab	tab	tab	tab

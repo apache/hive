@@ -1,13 +1,33 @@
-query: drop table abc
-query: create table abc(strct struct<a:int, b:string, c:string>)
+PREHOOK: query: drop table abc
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table abc
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table abc(strct struct<a:int, b:string, c:string>)
 row format delimited
   fields terminated by '\t'
   collection items terminated by '\001'
-query: load data local inpath '../data/files/kv1.txt'
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table abc(strct struct<a:int, b:string, c:string>)
+row format delimited
+  fields terminated by '\t'
+  collection items terminated by '\001'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@abc
+PREHOOK: query: load data local inpath '../data/files/kv1.txt'
 overwrite into table abc
-query: SELECT strct, strct.a, strct.b FROM abc LIMIT 10
-Input: default/abc
-Output: file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/1624100365/10000
+PREHOOK: type: LOAD
+POSTHOOK: query: load data local inpath '../data/files/kv1.txt'
+overwrite into table abc
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@abc
+PREHOOK: query: SELECT strct, strct.a, strct.b FROM abc LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@abc
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/611539169/10000
+POSTHOOK: query: SELECT strct, strct.a, strct.b FROM abc LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@abc
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/611539169/10000
 {"a":238,"b":"val_238","c":null}	238	val_238
 {"a":86,"b":"val_86","c":null}	86	val_86
 {"a":311,"b":"val_311","c":null}	311	val_311
@@ -18,4 +38,8 @@ Output: file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/16241
 {"a":278,"b":"val_278","c":null}	278	val_278
 {"a":98,"b":"val_98","c":null}	98	val_98
 {"a":484,"b":"val_484","c":null}	484	val_484
-query: drop table abc
+PREHOOK: query: drop table abc
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table abc
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@abc

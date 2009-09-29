@@ -1,5 +1,9 @@
-query: explain
+PREHOOK: query: explain
 select count(1), count(distinct x.value) from src x where x.key = 9999
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(1), count(distinct x.value) from src x where x.key = 9999
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)) (TOK_SELEXPR (TOK_FUNCTIONDI count (. (TOK_TABLE_OR_COL x) value)))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 9999))))
 
@@ -68,7 +72,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/2126451963/10002 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/1567123524/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -103,12 +107,21 @@ STAGE PLANS:
       limit: -1
 
 
-query: select count(1), count(distinct x.value) from src x where x.key = 9999
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/871904429/10000
+PREHOOK: query: select count(1), count(distinct x.value) from src x where x.key = 9999
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/223672369/10000
+POSTHOOK: query: select count(1), count(distinct x.value) from src x where x.key = 9999
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/223672369/10000
 0	0
-query: explain
+PREHOOK: query: explain
 select count(1), count(distinct x.value) from src x where x.key = 9999
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(1), count(distinct x.value) from src x where x.key = 9999
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)) (TOK_SELEXPR (TOK_FUNCTIONDI count (. (TOK_TABLE_OR_COL x) value)))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 9999))))
 
@@ -182,12 +195,21 @@ STAGE PLANS:
       limit: -1
 
 
-query: select count(1), count(distinct x.value) from src x where x.key = 9999
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/266232005/10000
+PREHOOK: query: select count(1), count(distinct x.value) from src x where x.key = 9999
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/302365134/10000
+POSTHOOK: query: select count(1), count(distinct x.value) from src x where x.key = 9999
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/302365134/10000
 0	0
-query: explain
+PREHOOK: query: explain
 select count(1), count(distinct x.value) from src x where x.key = 9999
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(1), count(distinct x.value) from src x where x.key = 9999
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)) (TOK_SELEXPR (TOK_FUNCTIONDI count (. (TOK_TABLE_OR_COL x) value)))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 9999))))
 
@@ -245,7 +267,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/682272974/10002 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/1614683110/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -280,12 +302,21 @@ STAGE PLANS:
       limit: -1
 
 
-query: select count(1), count(distinct x.value) from src x where x.key = 9999
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/1786332270/10000
+PREHOOK: query: select count(1), count(distinct x.value) from src x where x.key = 9999
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1454983724/10000
+POSTHOOK: query: select count(1), count(distinct x.value) from src x where x.key = 9999
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1454983724/10000
 0	0
-query: explain
+PREHOOK: query: explain
 select count(1), count(distinct x.value) from src x where x.key = 9999
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(1), count(distinct x.value) from src x where x.key = 9999
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)) (TOK_SELEXPR (TOK_FUNCTIONDI count (. (TOK_TABLE_OR_COL x) value)))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 9999))))
 
@@ -348,7 +379,12 @@ STAGE PLANS:
       limit: -1
 
 
-query: select count(1), count(distinct x.value) from src x where x.key = 9999
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/346530810/10000
+PREHOOK: query: select count(1), count(distinct x.value) from src x where x.key = 9999
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1653936568/10000
+POSTHOOK: query: select count(1), count(distinct x.value) from src x where x.key = 9999
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1653936568/10000
 0	0

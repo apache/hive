@@ -1,8 +1,20 @@
-query: drop table dest1
-query: create table dest1(key int, val int)
-query: explain
+PREHOOK: query: drop table dest1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table dest1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table dest1(key int, val int)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table dest1(key int, val int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest1
+PREHOOK: query: explain
 insert overwrite table dest1
 select key, count(1) from src group by key
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+insert overwrite table dest1
+select key, count(1) from src group by key
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_GROUPBY (TOK_TABLE_OR_COL key))))
 
@@ -81,10 +93,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1134406044/10000
+                destination: file:/data/users/njain/hive5/hive5/build/ql/tmp/1186355480/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2072613560/10002 
+              file:/data/users/njain/hive5/hive5/build/ql/tmp/443335059/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -118,13 +130,24 @@ STAGE PLANS:
               name: dest1
 
 
-query: insert overwrite table dest1
+PREHOOK: query: insert overwrite table dest1
 select key, count(1) from src group by key
-Input: default/src
-Output: default/dest1
-query: select * from dest1
-Input: default/dest1
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1979784812/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1
+POSTHOOK: query: insert overwrite table dest1
+select key, count(1) from src group by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1
+PREHOOK: query: select * from dest1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1168542666/10000
+POSTHOOK: query: select * from dest1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1168542666/10000
 0	3
 10	1
 100	2
@@ -434,4 +457,8 @@ Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1979784812/
 96	1
 97	2
 98	2
-query: drop table dest1
+PREHOOK: query: drop table dest1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table dest1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@dest1

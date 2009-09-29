@@ -1,6 +1,14 @@
-query: CREATE TABLE dest1(c1 INT, c2 DOUBLE, c3 DOUBLE, c4 DOUBLE, c5 INT, c6 STRING, c7 INT) STORED AS TEXTFILE
-query: EXPLAIN
+PREHOOK: query: CREATE TABLE dest1(c1 INT, c2 DOUBLE, c3 DOUBLE, c4 DOUBLE, c5 INT, c6 STRING, c7 INT) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest1(c1 INT, c2 DOUBLE, c3 DOUBLE, c4 DOUBLE, c5 INT, c6 STRING, c7 INT) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest1
+PREHOOK: query: EXPLAIN
 FROM src INSERT OVERWRITE TABLE dest1 SELECT 3 + 2, 3.0 + 2, 3 + 2.0, 3.0 + 2.0, 3 + CAST(2.0 AS INT) + CAST(CAST(0 AS SMALLINT) AS INT), CAST(1 AS BOOLEAN), CAST(TRUE AS INT) WHERE src.key = 86
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM src INSERT OVERWRITE TABLE dest1 SELECT 3 + 2, 3.0 + 2, 3 + 2.0, 3.0 + 2.0, 3 + CAST(2.0 AS INT) + CAST(CAST(0 AS SMALLINT) AS INT), CAST(1 AS BOOLEAN), CAST(TRUE AS INT) WHERE src.key = 86
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (+ 3 2)) (TOK_SELEXPR (+ 3.0 2)) (TOK_SELEXPR (+ 3 2.0)) (TOK_SELEXPR (+ 3.0 2.0)) (TOK_SELEXPR (+ (+ 3 (TOK_FUNCTION TOK_INT 2.0)) (TOK_FUNCTION TOK_INT (TOK_FUNCTION TOK_SMALLINT 0)))) (TOK_SELEXPR (TOK_FUNCTION TOK_BOOLEAN 1)) (TOK_SELEXPR (TOK_FUNCTION TOK_INT TRUE))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL src) key) 86))))
 
@@ -56,10 +64,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/1859655774/10000
+                destination: file:/data/users/njain/hive5/hive5/build/ql/tmp/1071125214/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/599057975/10002 
+              file:/data/users/njain/hive5/hive5/build/ql/tmp/517302853/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -103,10 +111,20 @@ STAGE PLANS:
               name: dest1
 
 
-query: FROM src INSERT OVERWRITE TABLE dest1 SELECT 3 + 2, 3.0 + 2, 3 + 2.0, 3.0 + 2.0, 3 + CAST(2.0 AS INT) + CAST(CAST(0 AS SMALLINT) AS INT), CAST(1 AS BOOLEAN), CAST(TRUE AS INT) WHERE src.key = 86
-Input: default/src
-Output: default/dest1
-query: select dest1.* FROM dest1
-Input: default/dest1
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/1345350120/10000
+PREHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT 3 + 2, 3.0 + 2, 3 + 2.0, 3.0 + 2.0, 3 + CAST(2.0 AS INT) + CAST(CAST(0 AS SMALLINT) AS INT), CAST(1 AS BOOLEAN), CAST(TRUE AS INT) WHERE src.key = 86
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1
+POSTHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT 3 + 2, 3.0 + 2, 3 + 2.0, 3.0 + 2.0, 3 + CAST(2.0 AS INT) + CAST(CAST(0 AS SMALLINT) AS INT), CAST(1 AS BOOLEAN), CAST(TRUE AS INT) WHERE src.key = 86
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1
+PREHOOK: query: select dest1.* FROM dest1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/822287214/10000
+POSTHOOK: query: select dest1.* FROM dest1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/822287214/10000
 5	5.0	5.0	5.0	5	true	1

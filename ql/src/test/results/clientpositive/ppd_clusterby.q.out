@@ -1,5 +1,9 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF SRC x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 10)) (TOK_CLUSTERBY (. (TOK_TABLE_OR_COL x) key))))
 
@@ -57,12 +61,21 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/1472307014/10000
+PREHOOK: query: SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/316889945/10000
+POSTHOOK: query: SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/316889945/10000
 10	val_10
-query: EXPLAIN 
+PREHOOK: query: EXPLAIN 
 SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key)  where x.key = 20 CLUSTER BY v1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN 
+SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key)  where x.key = 20 CLUSTER BY v1
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF SRC x) (TOK_TABREF SRC y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value) v1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) key))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (TOK_TABLE_OR_COL v1))))
 
@@ -142,7 +155,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/2071281213/10002 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/780988822/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col1
@@ -173,7 +186,12 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/1376273049/10000
+PREHOOK: query: SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1647676332/10000
+POSTHOOK: query: SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1647676332/10000
 20	val_20	20

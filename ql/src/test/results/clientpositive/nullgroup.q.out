@@ -1,5 +1,9 @@
-query: explain
+PREHOOK: query: explain
 select count(1) from src x where x.key > 9999
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(1) from src x where x.key > 9999
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (> (. (TOK_TABLE_OR_COL x) key) 9999))))
 
@@ -57,12 +61,21 @@ STAGE PLANS:
       limit: -1
 
 
-query: select count(1) from src x where x.key > 9999
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1836686316/10000
+PREHOOK: query: select count(1) from src x where x.key > 9999
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/306583345/10000
+POSTHOOK: query: select count(1) from src x where x.key > 9999
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/306583345/10000
 0
-query: explain
+PREHOOK: query: explain
 select count(1) from src x where x.key > 9999
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(1) from src x where x.key > 9999
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (> (. (TOK_TABLE_OR_COL x) key) 9999))))
 
@@ -120,12 +133,21 @@ STAGE PLANS:
       limit: -1
 
 
-query: select count(1) from src x where x.key > 9999
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1953617237/10000
+PREHOOK: query: select count(1) from src x where x.key > 9999
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/975282783/10000
+POSTHOOK: query: select count(1) from src x where x.key > 9999
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/975282783/10000
 0
-query: explain
+PREHOOK: query: explain
 select count(1) from src x where x.key > 9999
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(1) from src x where x.key > 9999
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (> (. (TOK_TABLE_OR_COL x) key) 9999))))
 
@@ -175,7 +197,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/181284866/10002 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/321134863/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -205,12 +227,21 @@ STAGE PLANS:
       limit: -1
 
 
-query: select count(1) from src x where x.key > 9999
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/2085444097/10000
+PREHOOK: query: select count(1) from src x where x.key > 9999
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1134965962/10000
+POSTHOOK: query: select count(1) from src x where x.key > 9999
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1134965962/10000
 0
-query: explain
+PREHOOK: query: explain
 select count(1) from src x where x.key > 9999
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(1) from src x where x.key > 9999
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (> (. (TOK_TABLE_OR_COL x) key) 9999))))
 
@@ -263,7 +294,12 @@ STAGE PLANS:
       limit: -1
 
 
-query: select count(1) from src x where x.key > 9999
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/244114908/10000
+PREHOOK: query: select count(1) from src x where x.key > 9999
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2046297028/10000
+POSTHOOK: query: select count(1) from src x where x.key > 9999
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2046297028/10000
 0

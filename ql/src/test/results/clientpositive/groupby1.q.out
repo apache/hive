@@ -1,6 +1,14 @@
-query: CREATE TABLE dest_g1(key INT, value DOUBLE) STORED AS TEXTFILE
-query: EXPLAIN
+PREHOOK: query: CREATE TABLE dest_g1(key INT, value DOUBLE) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest_g1(key INT, value DOUBLE) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest_g1
+PREHOOK: query: EXPLAIN
 FROM src INSERT OVERWRITE TABLE dest_g1 SELECT src.key, sum(substr(src.value,5)) GROUP BY src.key
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM src INSERT OVERWRITE TABLE dest_g1 SELECT src.key, sum(substr(src.value,5)) GROUP BY src.key
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest_g1)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key)) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_FUNCTION substr (. (TOK_TABLE_OR_COL src) value) 5)))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL src) key))))
 
@@ -54,7 +62,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        invalidscheme:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1292130777/10002 
+        invalidscheme:/data/users/njain/hive5/hive5/.ptest_3/build/ql/tmp/1275589613/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -110,12 +118,22 @@ STAGE PLANS:
               name: dest_g1
 
 
-query: FROM src INSERT OVERWRITE TABLE dest_g1 SELECT src.key, sum(substr(src.value,5)) GROUP BY src.key
-Input: default/src
-Output: default/dest_g1
-query: SELECT dest_g1.* FROM dest_g1
-Input: default/dest_g1
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/216605822/10000
+PREHOOK: query: FROM src INSERT OVERWRITE TABLE dest_g1 SELECT src.key, sum(substr(src.value,5)) GROUP BY src.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest_g1
+POSTHOOK: query: FROM src INSERT OVERWRITE TABLE dest_g1 SELECT src.key, sum(substr(src.value,5)) GROUP BY src.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest_g1
+PREHOOK: query: SELECT dest_g1.* FROM dest_g1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest_g1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/.ptest_3/build/ql/tmp/1595205675/10000
+POSTHOOK: query: SELECT dest_g1.* FROM dest_g1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest_g1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/.ptest_3/build/ql/tmp/1595205675/10000
 0	0.0
 10	10.0
 100	200.0

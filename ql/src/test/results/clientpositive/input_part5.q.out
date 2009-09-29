@@ -1,8 +1,20 @@
-query: drop table tmptable
-query: create table tmptable(key string, value string, hr string, ds string)
-query: EXPLAIN
+PREHOOK: query: drop table tmptable
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tmptable
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table tmptable(key string, value string, hr string, ds string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tmptable(key string, value string, hr string, ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tmptable
+PREHOOK: query: EXPLAIN
 insert overwrite table tmptable
 SELECT x.* FROM SRCPART x WHERE x.ds = '2008-04-08' and x.key < 100
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+insert overwrite table tmptable
+SELECT x.* FROM SRCPART x WHERE x.ds = '2008-04-08' and x.key < 100
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF SRCPART x)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB tmptable)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF x))) (TOK_WHERE (and (= (. (TOK_TABLE_OR_COL x) ds) '2008-04-08') (< (. (TOK_TABLE_OR_COL x) key) 100)))))
 
@@ -52,10 +64,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/687063779/10000
+                destination: file:/data/users/njain/hive5/hive5/build/ql/tmp/482076054/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1908905243/10002 
+              file:/data/users/njain/hive5/hive5/build/ql/tmp/662191449/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -93,14 +105,26 @@ STAGE PLANS:
               name: tmptable
 
 
-query: insert overwrite table tmptable
+PREHOOK: query: insert overwrite table tmptable
 SELECT x.* FROM SRCPART x WHERE x.ds = '2008-04-08' and x.key < 100
-Input: default/srcpart/ds=2008-04-08/hr=11
-Input: default/srcpart/ds=2008-04-08/hr=12
-Output: default/tmptable
-query: select * from tmptable x sort by x.key,x.value,x.ds,x.hr
-Input: default/tmptable
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1949291650/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@tmptable
+POSTHOOK: query: insert overwrite table tmptable
+SELECT x.* FROM SRCPART x WHERE x.ds = '2008-04-08' and x.key < 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@tmptable
+PREHOOK: query: select * from tmptable x sort by x.key,x.value,x.ds,x.hr
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmptable
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1384620991/10000
+POSTHOOK: query: select * from tmptable x sort by x.key,x.value,x.ds,x.hr
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmptable
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1384620991/10000
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11
@@ -269,4 +293,8 @@ Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp
 98	val_98	2008-04-08	11
 98	val_98	2008-04-08	12
 98	val_98	2008-04-08	12
-query: drop table tmptable
+PREHOOK: query: drop table tmptable
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tmptable
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@tmptable

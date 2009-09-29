@@ -1,10 +1,29 @@
-query: drop table tst_dest31
-query: drop table dest31
-query: create table tst_dest31(a int)
-query: create table dest31(a int)
-query: explain 
+PREHOOK: query: drop table tst_dest31
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tst_dest31
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table dest31
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table dest31
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table tst_dest31(a int)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tst_dest31(a int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tst_dest31
+PREHOOK: query: create table dest31(a int)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table dest31(a int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest31
+PREHOOK: query: explain 
 insert overwrite table dest31
 select count(1) from srcbucket
+PREHOOK: type: QUERY
+POSTHOOK: query: explain 
+insert overwrite table dest31
+select count(1) from srcbucket
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF srcbucket)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest31)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)))))
 
@@ -67,13 +86,32 @@ STAGE PLANS:
               name: tst_dest31
 
 
-query: insert overwrite table dest31
+PREHOOK: query: insert overwrite table dest31
 select count(1) from srcbucket
-Input: default/srcbucket
-Output: default/tst_dest31
-query: select * from tst_dest31
-Input: default/tst_dest31
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2034201146/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket
+PREHOOK: Output: default@tst_dest31
+POSTHOOK: query: insert overwrite table dest31
+select count(1) from srcbucket
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket
+POSTHOOK: Output: default@tst_dest31
+PREHOOK: query: select * from tst_dest31
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tst_dest31
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1444121473/10000
+POSTHOOK: query: select * from tst_dest31
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tst_dest31
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1444121473/10000
 493
-query: drop table tst_dest31
-query: drop table dest31
+PREHOOK: query: drop table tst_dest31
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tst_dest31
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@tst_dest31
+PREHOOK: query: drop table dest31
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table dest31
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@dest31

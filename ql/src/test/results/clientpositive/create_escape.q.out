@@ -1,22 +1,57 @@
-query: DROP TABLE table1
-query: DROP TABLE table2
-query: DROP TABLE table3
-query: CREATE TABLE table1 (a STRING, b STRING)
+PREHOOK: query: DROP TABLE table1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE table1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE table2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE table2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE table3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE table3
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE table1 (a STRING, b STRING)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' ESCAPED BY '\\'
 STORED AS TEXTFILE
-query: DESCRIBE table1
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE table1 (a STRING, b STRING)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' ESCAPED BY '\\'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@table1
+PREHOOK: query: DESCRIBE table1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE table1
+POSTHOOK: type: DESCTABLE
 a	string	
 b	string	
-query: DESCRIBE EXTENDED table1
+PREHOOK: query: DESCRIBE EXTENDED table1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE EXTENDED table1
+POSTHOOK: type: DESCTABLE
 a	string	
 b	string	
 	 	 
-Detailed Table Information	Table(tableName:table1,dbName:default,owner:zshao,createTime:1245330503,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:string,comment:null), FieldSchema(name:b,type:string,comment:null)],location:file:/data/users/zshao/tools/136-trunk-apache-hive/build/ql/test/data/warehouse/table1,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=9,escape.delim=\,field.delim=	}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[],parameters:{})
-query: INSERT OVERWRITE TABLE table1 SELECT key, '\\\t\\' FROM src WHERE key = 86
-Input: default/src
-Output: default/table1
-query: SELECT * FROM table1
-Input: default/table1
-Output: file:/data/users/zshao/tools/136-trunk-apache-hive/build/ql/tmp/822936101/10000
+Detailed Table Information	Table(tableName:table1, dbName:default, owner:njain, createTime:1253779812, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null), FieldSchema(name:b, type:string, comment:null)], location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/table1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=9,escape.delim=\,field.delim=	}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{})
+PREHOOK: query: INSERT OVERWRITE TABLE table1 SELECT key, '\\\t\\' FROM src WHERE key = 86
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@table1
+POSTHOOK: query: INSERT OVERWRITE TABLE table1 SELECT key, '\\\t\\' FROM src WHERE key = 86
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@table1
+PREHOOK: query: SELECT * FROM table1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1244934892/10000
+POSTHOOK: query: SELECT * FROM table1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1244934892/10000
 86	\	\
-query: DROP TABLE table1
+PREHOOK: query: DROP TABLE table1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE table1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@table1

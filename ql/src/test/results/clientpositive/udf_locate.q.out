@@ -1,4 +1,4 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT locate('abc', 'abcd'),
        locate('ccc', 'abcabc'),
        locate('23', 123),
@@ -17,6 +17,27 @@ SELECT locate('abc', 'abcd'),
        locate('abc', 'abcd', null),
        locate('abc', 'abcd', 'invalid number')
 FROM src LIMIT 1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT locate('abc', 'abcd'),
+       locate('ccc', 'abcabc'),
+       locate('23', 123),
+       locate(23, 123),
+       locate('abc', 'abcabc', 2),
+       locate('abc', 'abcabc', '2'),
+       locate(1, TRUE),
+       locate(1, FALSE),
+       locate(CAST('2' AS TINYINT), '12345'),
+       locate('34', CAST('12345' AS SMALLINT)),
+       locate('456', CAST('123456789012' AS BIGINT)),
+       locate('.25', CAST(1.25 AS FLOAT)),
+       locate('.0', CAST(16.0 AS DOUBLE)),
+       locate(null, 'abc'),
+       locate('abc', null),
+       locate('abc', 'abcd', null),
+       locate('abc', 'abcd', 'invalid number')
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION locate 'abc' 'abcd')) (TOK_SELEXPR (TOK_FUNCTION locate 'ccc' 'abcabc')) (TOK_SELEXPR (TOK_FUNCTION locate '23' 123)) (TOK_SELEXPR (TOK_FUNCTION locate 23 123)) (TOK_SELEXPR (TOK_FUNCTION locate 'abc' 'abcabc' 2)) (TOK_SELEXPR (TOK_FUNCTION locate 'abc' 'abcabc' '2')) (TOK_SELEXPR (TOK_FUNCTION locate 1 TRUE)) (TOK_SELEXPR (TOK_FUNCTION locate 1 FALSE)) (TOK_SELEXPR (TOK_FUNCTION locate (TOK_FUNCTION TOK_TINYINT '2') '12345')) (TOK_SELEXPR (TOK_FUNCTION locate '34' (TOK_FUNCTION TOK_SMALLINT '12345'))) (TOK_SELEXPR (TOK_FUNCTION locate '456' (TOK_FUNCTION TOK_BIGINT '123456789012'))) (TOK_SELEXPR (TOK_FUNCTION locate '.25' (TOK_FUNCTION TOK_FLOAT 1.25))) (TOK_SELEXPR (TOK_FUNCTION locate '.0' (TOK_FUNCTION TOK_DOUBLE 16.0))) (TOK_SELEXPR (TOK_FUNCTION locate TOK_NULL 'abc')) (TOK_SELEXPR (TOK_FUNCTION locate 'abc' TOK_NULL)) (TOK_SELEXPR (TOK_FUNCTION locate 'abc' 'abcd' TOK_NULL)) (TOK_SELEXPR (TOK_FUNCTION locate 'abc' 'abcd' 'invalid number'))) (TOK_LIMIT 1)))
 
@@ -81,7 +102,7 @@ STAGE PLANS:
       limit: 1
 
 
-query: SELECT locate('abc', 'abcd'),
+PREHOOK: query: SELECT locate('abc', 'abcd'),
        locate('ccc', 'abcabc'),
        locate('23', 123),
        locate(23, 123),
@@ -99,6 +120,28 @@ query: SELECT locate('abc', 'abcd'),
        locate('abc', 'abcd', null),
        locate('abc', 'abcd', 'invalid number')
 FROM src LIMIT 1
-Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/436151757/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/572327680/10000
+POSTHOOK: query: SELECT locate('abc', 'abcd'),
+       locate('ccc', 'abcabc'),
+       locate('23', 123),
+       locate(23, 123),
+       locate('abc', 'abcabc', 2),
+       locate('abc', 'abcabc', '2'),
+       locate(1, TRUE),
+       locate(1, FALSE),
+       locate(CAST('2' AS TINYINT), '12345'),
+       locate('34', CAST('12345' AS SMALLINT)),
+       locate('456', CAST('123456789012' AS BIGINT)),
+       locate('.25', CAST(1.25 AS FLOAT)),
+       locate('.0', CAST(16.0 AS DOUBLE)),
+       locate(null, 'abc'),
+       locate('abc', null),
+       locate('abc', 'abcd', null),
+       locate('abc', 'abcd', 'invalid number')
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/572327680/10000
 1	0	2	2	4	4	0	0	2	3	4	2	3	NULL	NULL	0	0

@@ -1,8 +1,17 @@
-query: CREATE TEMPORARY FUNCTION example_avg AS 'org.apache.hadoop.hive.contrib.udaf.example.UDAFExampleAvg'
-query: EXPLAIN
+PREHOOK: query: CREATE TEMPORARY FUNCTION example_avg AS 'org.apache.hadoop.hive.contrib.udaf.example.UDAFExampleAvg'
+PREHOOK: type: CREATEFUNCTION
+POSTHOOK: query: CREATE TEMPORARY FUNCTION example_avg AS 'org.apache.hadoop.hive.contrib.udaf.example.UDAFExampleAvg'
+POSTHOOK: type: CREATEFUNCTION
+PREHOOK: query: EXPLAIN
 SELECT example_avg(substr(value,5)),
        example_avg(IF(substr(value,5) > 250, NULL, substr(value,5)))
 FROM src
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT example_avg(substr(value,5)),
+       example_avg(IF(substr(value,5) > 250, NULL, substr(value,5)))
+FROM src
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION example_avg (TOK_FUNCTION substr (TOK_TABLE_OR_COL value) 5))) (TOK_SELEXPR (TOK_FUNCTION example_avg (TOK_FUNCTION IF (> (TOK_FUNCTION substr (TOK_TABLE_OR_COL value) 5) 250) TOK_NULL (TOK_FUNCTION substr (TOK_TABLE_OR_COL value) 5)))))))
 
@@ -62,10 +71,20 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT example_avg(substr(value,5)),
+PREHOOK: query: SELECT example_avg(substr(value,5)),
        example_avg(IF(substr(value,5) > 250, NULL, substr(value,5)))
 FROM src
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/build/ql/tmp/532982360/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1148096071/10000
+POSTHOOK: query: SELECT example_avg(substr(value,5)),
+       example_avg(IF(substr(value,5) > 250, NULL, substr(value,5)))
+FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1148096071/10000
 260.182	134.82926829268294
-query: DROP TEMPORARY FUNCTION example_avg
+PREHOOK: query: DROP TEMPORARY FUNCTION example_avg
+PREHOOK: type: DROPFUNCTION
+POSTHOOK: query: DROP TEMPORARY FUNCTION example_avg
+POSTHOOK: type: DROPFUNCTION

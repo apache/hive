@@ -1,5 +1,9 @@
-query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
-query: EXPLAIN
+PREHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest1
+PREHOOK: query: EXPLAIN
 FROM (
   FROM src
   MAP src.key, src.key 
@@ -11,6 +15,20 @@ INSERT OVERWRITE TABLE dest1
 REDUCE tmap.key, tmap.value
 USING '../data/scripts/input20_script'
 AS (key STRING, value STRING)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM (
+  FROM src
+  MAP src.key, src.key 
+  USING 'cat'
+  DISTRIBUTE BY key
+  SORT BY key, value
+) tmap
+INSERT OVERWRITE TABLE dest1
+REDUCE tmap.key, tmap.value
+USING '../data/scripts/input20_script'
+AS (key STRING, value STRING)
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) key)) TOK_SERDE TOK_RECORDWRITER 'cat' TOK_SERDE TOK_RECORDREADER))) (TOK_DISTRIBUTEBY (TOK_TABLE_OR_COL key)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value))))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL tmap) key) (. (TOK_TABLE_OR_COL tmap) value)) TOK_SERDE TOK_RECORDWRITER '../data/scripts/input20_script' TOK_SERDE TOK_RECORDREADER (TOK_TABCOLLIST (TOK_TABCOL key TOK_STRING) (TOK_TABCOL value TOK_STRING)))))))
 
@@ -94,7 +112,7 @@ STAGE PLANS:
               name: dest1
 
 
-query: FROM (
+PREHOOK: query: FROM (
   FROM src
   MAP src.key, src.key
   USING 'cat' 
@@ -105,11 +123,31 @@ INSERT OVERWRITE TABLE dest1
 REDUCE tmap.key, tmap.value
 USING '../data/scripts/input20_script'
 AS (key STRING, value STRING)
-Input: default/src
-Output: default/dest1
-query: SELECT * FROM dest1 SORT BY key, value
-Input: default/dest1
-Output: file:/data/users/njain/hive3/hive3/build/ql/tmp/1803933232/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1
+POSTHOOK: query: FROM (
+  FROM src
+  MAP src.key, src.key
+  USING 'cat' 
+  DISTRIBUTE BY key
+  SORT BY key, value
+) tmap
+INSERT OVERWRITE TABLE dest1
+REDUCE tmap.key, tmap.value
+USING '../data/scripts/input20_script'
+AS (key STRING, value STRING)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1
+PREHOOK: query: SELECT * FROM dest1 SORT BY key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2057999513/10000
+POSTHOOK: query: SELECT * FROM dest1 SORT BY key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2057999513/10000
 1	105_105
 1	10_10
 1	111_111

@@ -18,20 +18,52 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import org.apache.hadoop.hive.conf.HiveConf;
+import java.util.HashMap;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 public class SemanticAnalyzerFactory {
+
+  static HashMap<Integer, String> commandType = new HashMap<Integer, String>();
+
+  static {
+    commandType.put(HiveParser.TOK_EXPLAIN, "EXPLAIN");
+    commandType.put(HiveParser.TOK_LOAD, "LOAD");
+    commandType.put(HiveParser.TOK_CREATETABLE, "CREATETABLE");
+    commandType.put(HiveParser.TOK_DROPTABLE, "DROPTABLE");
+    commandType.put(HiveParser.TOK_DESCTABLE, "DESCTABLE");
+    commandType.put(HiveParser.TOK_DESCFUNCTION, "DESCFUNCTION");
+    commandType.put(HiveParser.TOK_MSCK, "MSCK");
+    commandType.put(HiveParser.TOK_ALTERTABLE_ADDCOLS, "ALTERTABLE_ADDCOLS");
+    commandType.put(HiveParser.TOK_ALTERTABLE_REPLACECOLS, "ALTERTABLE_REPLACECOLS");
+    commandType.put(HiveParser.TOK_ALTERTABLE_RENAME, "ALTERTABLE_RENAME");
+    commandType.put(HiveParser.TOK_ALTERTABLE_DROPPARTS, "ALTERTABLE_DROPPARTS");
+    commandType.put(HiveParser.TOK_ALTERTABLE_ADDPARTS, "ALTERTABLE_ADDPARTS");
+    commandType.put(HiveParser.TOK_ALTERTABLE_PROPERTIES, "ALTERTABLE_PROPERTIES");
+    commandType.put(HiveParser.TOK_ALTERTABLE_SERIALIZER, "ALTERTABLE_SERIALIZER");
+    commandType.put(HiveParser.TOK_ALTERTABLE_SERDEPROPERTIES, "ALTERTABLE_SERDEPROPERTIES");
+    commandType.put(HiveParser.TOK_SHOWTABLES, "SHOWTABLES");
+    commandType.put(HiveParser.TOK_SHOW_TABLESTATUS, "SHOW_TABLESTATUS");
+    commandType.put(HiveParser.TOK_SHOWFUNCTIONS, "SHOWFUNCTIONS");
+    commandType.put(HiveParser.TOK_SHOWPARTITIONS, "SHOWPARTITIONS");
+    commandType.put(HiveParser.TOK_CREATEFUNCTION, "CREATEFUNCTION");
+    commandType.put(HiveParser.TOK_DROPFUNCTION, "DROPFUNCTION");
+    commandType.put(HiveParser.TOK_QUERY, "QUERY");
+  }
 
   public static BaseSemanticAnalyzer get(HiveConf conf, ASTNode tree) throws SemanticException {
     if(tree.getToken() == null) {
       throw new RuntimeException ("Empty Syntax Tree");
     } else {
+      if (SessionState.get() != null)
+        SessionState.get().setCommandType(commandType.get(tree.getToken().getType()));
+
       switch (tree.getToken().getType()) {
       case HiveParser.TOK_EXPLAIN: return new ExplainSemanticAnalyzer(conf);
       case HiveParser.TOK_LOAD: return new LoadSemanticAnalyzer(conf);
-      case HiveParser.TOK_CREATETABLE: 
-      case HiveParser.TOK_DROPTABLE: 
+      case HiveParser.TOK_CREATETABLE:
+      case HiveParser.TOK_DROPTABLE:
       case HiveParser.TOK_DESCTABLE:
       case HiveParser.TOK_DESCFUNCTION:
       case HiveParser.TOK_MSCK:
@@ -48,7 +80,7 @@ public class SemanticAnalyzerFactory {
       case HiveParser.TOK_SHOWFUNCTIONS:
       case HiveParser.TOK_SHOWPARTITIONS:
         return new DDLSemanticAnalyzer(conf);
-      case HiveParser.TOK_CREATEFUNCTION: 
+      case HiveParser.TOK_CREATEFUNCTION:
       case HiveParser.TOK_DROPFUNCTION:
         return new FunctionSemanticAnalyzer(conf);
       default: return new SemanticAnalyzer(conf);

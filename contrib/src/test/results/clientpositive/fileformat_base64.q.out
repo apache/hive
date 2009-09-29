@@ -1,8 +1,17 @@
-query: DROP TABLE base64_test
-query: EXPLAIN
+PREHOOK: query: DROP TABLE base64_test
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE base64_test
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: EXPLAIN
 CREATE TABLE base64_test(key INT, value STRING) STORED AS
   INPUTFORMAT 'org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextInputFormat'
   OUTPUTFORMAT 'org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextOutputFormat'
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: EXPLAIN
+CREATE TABLE base64_test(key INT, value STRING) STORED AS
+  INPUTFORMAT 'org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextInputFormat'
+  OUTPUTFORMAT 'org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextOutputFormat'
+POSTHOOK: type: CREATETABLE
 ABSTRACT SYNTAX TREE:
   (TOK_CREATETABLE base64_test TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL key TOK_INT) (TOK_TABCOL value TOK_STRING)) (TOK_TABLEFILEFORMAT 'org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextInputFormat' 'org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextOutputFormat'))
 
@@ -22,22 +31,43 @@ STAGE PLANS:
           isExternal: false
 
 
-query: CREATE TABLE base64_test(key INT, value STRING) STORED AS
+PREHOOK: query: CREATE TABLE base64_test(key INT, value STRING) STORED AS
   INPUTFORMAT 'org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextInputFormat'
   OUTPUTFORMAT 'org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextOutputFormat'
-query: DESCRIBE EXTENDED base64_test
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE base64_test(key INT, value STRING) STORED AS
+  INPUTFORMAT 'org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextInputFormat'
+  OUTPUTFORMAT 'org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@base64_test
+PREHOOK: query: DESCRIBE EXTENDED base64_test
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE EXTENDED base64_test
+POSTHOOK: type: DESCTABLE
 key	int	
 value	string	
 	 	 
-Detailed Table Information	Table(tableName:base64_test, dbName:default, owner:zshao, createTime:1248153315, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:file:/data/users/zshao/tools/639-trunk-apache-hive/build/ql/test/data/warehouse/base64_test, inputFormat:org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextInputFormat, outputFormat:org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{})	
-query: FROM src
+Detailed Table Information	Table(tableName:base64_test, dbName:default, owner:njain, createTime:1253817673, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:int, comment:null), FieldSchema(name:value, type:string, comment:null)], location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/base64_test, inputFormat:org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextInputFormat, outputFormat:org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{})	
+PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE base64_test
 SELECT key, value WHERE key < 10
-Input: default/src
-Output: default/base64_test
-query: SELECT * FROM base64_test
-Input: default/base64_test
-Output: file:/data/users/zshao/tools/639-trunk-apache-hive/build/ql/tmp/239011143/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@base64_test
+POSTHOOK: query: FROM src
+INSERT OVERWRITE TABLE base64_test
+SELECT key, value WHERE key < 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@base64_test
+PREHOOK: query: SELECT * FROM base64_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@base64_test
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1384563275/10000
+POSTHOOK: query: SELECT * FROM base64_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@base64_test
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1384563275/10000
 0	val_0
 4	val_4
 8	val_8
@@ -48,17 +78,32 @@ Output: file:/data/users/zshao/tools/639-trunk-apache-hive/build/ql/tmp/23901114
 2	val_2
 5	val_5
 9	val_9
-query: -- Base64TextInput/OutputFormat supports signature (a prefix to check the validity of
+PREHOOK: query: -- Base64TextInput/OutputFormat supports signature (a prefix to check the validity of
 -- the data). These queries test that prefix capabilities.
 
 FROM src
 INSERT OVERWRITE TABLE base64_test
 SELECT key, value WHERE key < 10
-Input: default/src
-Output: default/base64_test
-query: SELECT * FROM base64_test
-Input: default/base64_test
-Output: file:/data/users/zshao/tools/639-trunk-apache-hive/build/ql/tmp/494942552/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@base64_test
+POSTHOOK: query: -- Base64TextInput/OutputFormat supports signature (a prefix to check the validity of
+-- the data). These queries test that prefix capabilities.
+
+FROM src
+INSERT OVERWRITE TABLE base64_test
+SELECT key, value WHERE key < 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@base64_test
+PREHOOK: query: SELECT * FROM base64_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@base64_test
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1705395068/10000
+POSTHOOK: query: SELECT * FROM base64_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@base64_test
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1705395068/10000
 0	val_0
 4	val_4
 8	val_8
@@ -69,4 +114,8 @@ Output: file:/data/users/zshao/tools/639-trunk-apache-hive/build/ql/tmp/49494255
 2	val_2
 5	val_5
 9	val_9
-query: DROP TABLE base64_test
+PREHOOK: query: DROP TABLE base64_test
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE base64_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@base64_test

@@ -1,5 +1,8 @@
-query: DROP TABLE serde_regex
-query: EXPLAIN
+PREHOOK: query: DROP TABLE serde_regex
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE serde_regex
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: EXPLAIN
 CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
@@ -16,6 +19,25 @@ WITH SERDEPROPERTIES (
   "output.format.string" = "%1$s %2$s %3$s %4$s %5$s %6$s %7$s %8$s %9$s"
 )
 STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: EXPLAIN
+CREATE TABLE serde_regex(
+  host STRING,
+  identity STRING,
+  user STRING,
+  time STRING,
+  request STRING,
+  status INT,
+  size INT,
+  referer STRING,
+  agent STRING)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.RegexSerDe'
+WITH SERDEPROPERTIES (
+  "input.regex" = "([^ ]*) ([^ ]*) ([^ ]*) (-|\\[[^\\]]*\\]) ([^ \"]*|\"[^\"]*\") (-|[0-9]*) (-|[0-9]*)(?: ([^ \"]*|\"[^\"]*\") ([^ \"]*|\"[^\"]*\"))?",
+  "output.format.string" = "%1$s %2$s %3$s %4$s %5$s %6$s %7$s %8$s %9$s"
+)
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
 ABSTRACT SYNTAX TREE:
   (TOK_CREATETABLE serde_regex TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL host TOK_STRING) (TOK_TABCOL identity TOK_STRING) (TOK_TABCOL user TOK_STRING) (TOK_TABCOL time TOK_STRING) (TOK_TABCOL request TOK_STRING) (TOK_TABCOL status TOK_INT) (TOK_TABCOL size TOK_INT) (TOK_TABCOL referer TOK_STRING) (TOK_TABCOL agent TOK_STRING)) (TOK_TABLESERIALIZER (TOK_SERDENAME 'org.apache.hadoop.hive.contrib.serde2.RegexSerDe' (TOK_TABLEPROPERTIES (TOK_TABLEPROPLIST (TOK_TABLEPROPERTY "input.regex" "([^ ]*) ([^ ]*) ([^ ]*) (-|\\[[^\\]]*\\]) ([^ \"]*|\"[^\"]*\") (-|[0-9]*) (-|[0-9]*)(?: ([^ \"]*|\"[^\"]*\") ([^ \"]*|\"[^\"]*\"))?") (TOK_TABLEPROPERTY "output.format.string" "%1$s %2$s %3$s %4$s %5$s %6$s %7$s %8$s %9$s"))))) TOK_TBLTEXTFILE)
 
@@ -39,7 +61,7 @@ STAGE PLANS:
           isExternal: false
 
 
-query: CREATE TABLE serde_regex(
+PREHOOK: query: CREATE TABLE serde_regex(
   host STRING,
   identity STRING,
   user STRING,
@@ -55,5 +77,6 @@ WITH SERDEPROPERTIES (
   "output.format.string" = "%1$s %2$s %3$s %4$s %5$s %6$s %7$s %8$s %9$s"
 )
 STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
 FAILED: Error in metadata: org.apache.hadoop.hive.ql.metadata.HiveException: MetaException(message:org.apache.hadoop.hive.serde2.SerDeException org.apache.hadoop.hive.contrib.serde2.RegexSerDe only accepts string columns, but column[5] named status has type int)
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

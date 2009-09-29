@@ -1,12 +1,39 @@
-query: drop table tst
-query: create table tst(a string, b string) partitioned by (d string)
-query: alter table tst add partition (d='2009-01-01')
-query: insert overwrite table tst partition(d='2009-01-01')
+PREHOOK: query: drop table tst
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tst
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table tst(a string, b string) partitioned by (d string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tst(a string, b string) partitioned by (d string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tst
+PREHOOK: query: alter table tst add partition (d='2009-01-01')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: query: alter table tst add partition (d='2009-01-01')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@tst@d=2009-01-01
+PREHOOK: query: insert overwrite table tst partition(d='2009-01-01')
 select tst.a, src.value from tst join src ON (tst.a = src.key)
-Input: default/tst/d=2009-01-01
-Input: default/src
-Output: default/tst/d=2009-01-01
-query: select * from tst where tst.d='2009-01-01'
-Input: default/tst/d=2009-01-01
-Output: /data/users/njain/hive6/hive6/ql/../build/ql/tmp/29384498/467749736.10000
-query: drop table tst
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tst@d=2009-01-01
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tst@d=2009-01-01
+POSTHOOK: query: insert overwrite table tst partition(d='2009-01-01')
+select tst.a, src.value from tst join src ON (tst.a = src.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tst@d=2009-01-01
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tst@d=2009-01-01
+PREHOOK: query: select * from tst where tst.d='2009-01-01'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tst@d=2009-01-01
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/203929646/10000
+POSTHOOK: query: select * from tst where tst.d='2009-01-01'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tst@d=2009-01-01
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/203929646/10000
+PREHOOK: query: drop table tst
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tst
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@tst

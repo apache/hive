@@ -1,6 +1,11 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT TRANSFORM(src.key, src.value) USING '../data/scripts/error_script' AS (tkey, tvalue)
 FROM src
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT TRANSFORM(src.key, src.value) USING '../data/scripts/error_script' AS (tkey, tvalue)
+FROM src
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) value)) TOK_SERDE TOK_RECORDWRITER '../data/scripts/error_script' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST tkey tvalue))))))
 
@@ -39,8 +44,9 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT TRANSFORM(src.key, src.value) USING '../data/scripts/error_script' AS (tkey, tvalue)
+PREHOOK: query: SELECT TRANSFORM(src.key, src.value) USING '../data/scripts/error_script' AS (tkey, tvalue)
 FROM src
-Input: default/src
-Output: file:/data/users/njain/hive3/hive3/build/ql/tmp/1776086048/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/.ptest_3/build/ql/tmp/1662782185/10000
 FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask

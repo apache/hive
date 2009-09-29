@@ -1,49 +1,119 @@
-query: drop table alter1
-query: create table alter1(a int, b int)
-query: describe extended alter1
+PREHOOK: query: drop table alter1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table alter1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table alter1(a int, b int)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table alter1(a int, b int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@alter1
+PREHOOK: query: describe extended alter1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe extended alter1
+POSTHOOK: type: DESCTABLE
 a	int	
 b	int	
 	 	 
-Detailed Table Information	Table(tableName:alter1,dbName:default,owner:athusoo,createTime:1241277624,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:int,comment:null), FieldSchema(name:b,type:int,comment:null)],location:file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/alter1,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[],parameters:{})	
-query: alter table alter1 set tblproperties ('a'='1', 'c'='3')
-query: describe extended alter1
+Detailed Table Information	Table(tableName:alter1, dbName:default, owner:njain, createTime:1253779697, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null)], location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/alter1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{})	
+PREHOOK: query: alter table alter1 set tblproperties ('a'='1', 'c'='3')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: query: alter table alter1 set tblproperties ('a'='1', 'c'='3')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@alter1
+POSTHOOK: Output: default@alter1
+PREHOOK: query: describe extended alter1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe extended alter1
+POSTHOOK: type: DESCTABLE
 a	int	
 b	int	
 	 	 
-Detailed Table Information	Table(tableName:alter1,dbName:default,owner:athusoo,createTime:1241277624,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:int,comment:null), FieldSchema(name:b,type:int,comment:null)],location:file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/alter1,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[],parameters:{last_modified_by=athusoo,c=3,last_modified_time=1241277624,a=1})	
-query: alter table alter1 set tblproperties ('a'='1', 'c'='4', 'd'='3')
-query: describe extended alter1
+Detailed Table Information	Table(tableName:alter1, dbName:default, owner:njain, createTime:1253779697, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null)], location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/alter1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=njain,c=3,last_modified_time=1253779698,a=1})	
+PREHOOK: query: alter table alter1 set tblproperties ('a'='1', 'c'='4', 'd'='3')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: query: alter table alter1 set tblproperties ('a'='1', 'c'='4', 'd'='3')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@alter1
+POSTHOOK: Output: default@alter1
+PREHOOK: query: describe extended alter1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe extended alter1
+POSTHOOK: type: DESCTABLE
 a	int	
 b	int	
 	 	 
-Detailed Table Information	Table(tableName:alter1,dbName:default,owner:athusoo,createTime:1241277624,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:int,comment:null), FieldSchema(name:b,type:int,comment:null)],location:file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/alter1,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[],parameters:{d=3,last_modified_by=athusoo,c=4,last_modified_time=1241277625,a=1})	
-query: alter table alter1 set serdeproperties('s1'='9')
-query: describe extended alter1
+Detailed Table Information	Table(tableName:alter1, dbName:default, owner:njain, createTime:1253779697, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null)], location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/alter1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{d=3,last_modified_by=njain,c=4,last_modified_time=1253779698,a=1})	
+PREHOOK: query: alter table alter1 set serdeproperties('s1'='9')
+PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: query: alter table alter1 set serdeproperties('s1'='9')
+POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: Input: default@alter1
+POSTHOOK: Output: default@alter1
+PREHOOK: query: describe extended alter1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe extended alter1
+POSTHOOK: type: DESCTABLE
 a	int	
 b	int	
 	 	 
-Detailed Table Information	Table(tableName:alter1,dbName:default,owner:athusoo,createTime:1241277624,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:int,comment:null), FieldSchema(name:b,type:int,comment:null)],location:file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/alter1,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{s1=9,serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[],parameters:{d=3,last_modified_by=athusoo,c=4,last_modified_time=1241277625,a=1})	
-query: alter table alter1 set serdeproperties('s1'='10', 's2' ='20')
-query: describe extended alter1
+Detailed Table Information	Table(tableName:alter1, dbName:default, owner:njain, createTime:1253779697, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null)], location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/alter1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{s1=9,serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{d=3,last_modified_by=njain,c=4,last_modified_time=1253779698,a=1})	
+PREHOOK: query: alter table alter1 set serdeproperties('s1'='10', 's2' ='20')
+PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: query: alter table alter1 set serdeproperties('s1'='10', 's2' ='20')
+POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: Input: default@alter1
+POSTHOOK: Output: default@alter1
+PREHOOK: query: describe extended alter1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe extended alter1
+POSTHOOK: type: DESCTABLE
 a	int	
 b	int	
 	 	 
-Detailed Table Information	Table(tableName:alter1,dbName:default,owner:athusoo,createTime:1241277624,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:int,comment:null), FieldSchema(name:b,type:int,comment:null)],location:file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/alter1,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{s2=20,s1=10,serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[],parameters:{d=3,last_modified_by=athusoo,c=4,last_modified_time=1241277625,a=1})	
-query: alter table alter1 set serde 'org.apache.hadoop.hive.serde2.TestSerDe' with serdeproperties('s1'='9')
-query: describe extended alter1
+Detailed Table Information	Table(tableName:alter1, dbName:default, owner:njain, createTime:1253779697, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:int, comment:null), FieldSchema(name:b, type:int, comment:null)], location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/alter1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{s2=20,s1=10,serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{d=3,last_modified_by=njain,c=4,last_modified_time=1253779698,a=1})	
+PREHOOK: query: alter table alter1 set serde 'org.apache.hadoop.hive.serde2.TestSerDe' with serdeproperties('s1'='9')
+PREHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: query: alter table alter1 set serde 'org.apache.hadoop.hive.serde2.TestSerDe' with serdeproperties('s1'='9')
+POSTHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: Input: default@alter1
+POSTHOOK: Output: default@alter1
+PREHOOK: query: describe extended alter1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe extended alter1
+POSTHOOK: type: DESCTABLE
 a	string	from deserializer
 b	string	from deserializer
 	 	 
-Detailed Table Information	Table(tableName:alter1,dbName:default,owner:athusoo,createTime:1241277624,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:string,comment:from deserializer), FieldSchema(name:b,type:string,comment:from deserializer)],location:file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/alter1,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.TestSerDe,parameters:{s2=20,s1=9,serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[],parameters:{d=3,last_modified_by=athusoo,c=4,last_modified_time=1241277625,a=1})	
-query: alter table alter1 set serde 'org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe'
-query: describe extended alter1
+Detailed Table Information	Table(tableName:alter1, dbName:default, owner:njain, createTime:1253779697, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:from deserializer), FieldSchema(name:b, type:string, comment:from deserializer)], location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/alter1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.TestSerDe, parameters:{s2=20,s1=9,serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{d=3,last_modified_by=njain,c=4,last_modified_time=1253779698,a=1})	
+PREHOOK: query: alter table alter1 set serde 'org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe'
+PREHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: query: alter table alter1 set serde 'org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe'
+POSTHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: Input: default@alter1
+POSTHOOK: Output: default@alter1
+PREHOOK: query: describe extended alter1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe extended alter1
+POSTHOOK: type: DESCTABLE
 a	string	from deserializer
 b	string	from deserializer
 	 	 
-Detailed Table Information	Table(tableName:alter1,dbName:default,owner:athusoo,createTime:1241277624,lastAccessTime:0,retention:0,sd:StorageDescriptor(cols:[FieldSchema(name:a,type:string,comment:from deserializer), FieldSchema(name:b,type:string,comment:from deserializer)],location:file:/data/users/athusoo/commits/hive_trunk_ws8/build/ql/test/data/warehouse/alter1,inputFormat:org.apache.hadoop.mapred.TextInputFormat,outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat,compressed:false,numBuckets:-1,serdeInfo:SerDeInfo(name:null,serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe,parameters:{s2=20,s1=9,serialization.format=1}),bucketCols:[],sortCols:[],parameters:{}),partitionKeys:[],parameters:{d=3,last_modified_by=athusoo,c=4,last_modified_time=1241277625,a=1})	
-query: alter table alter1 replace columns (a int, b int, c string)
-query: describe alter1
+Detailed Table Information	Table(tableName:alter1, dbName:default, owner:njain, createTime:1253779697, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:from deserializer), FieldSchema(name:b, type:string, comment:from deserializer)], location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/alter1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{s2=20,s1=9,serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{d=3,last_modified_by=njain,c=4,last_modified_time=1253779698,a=1})	
+PREHOOK: query: alter table alter1 replace columns (a int, b int, c string)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: query: alter table alter1 replace columns (a int, b int, c string)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@alter1
+POSTHOOK: Output: default@alter1
+PREHOOK: query: describe alter1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe alter1
+POSTHOOK: type: DESCTABLE
 a	int	
 b	int	
 c	string	
-query: drop table alter1
+PREHOOK: query: drop table alter1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table alter1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@alter1

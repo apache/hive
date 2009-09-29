@@ -1,15 +1,25 @@
-query: DESCRIBE src_thrift
+PREHOOK: query: DESCRIBE src_thrift
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE src_thrift
+POSTHOOK: type: DESCTABLE
 aint	int	from deserializer
 astring	string	from deserializer
 lint	array<int>	from deserializer
 lstring	array<string>	from deserializer
 lintstring	array<org.apache.hadoop.hive.serde2.thrift.test.IntString>	from deserializer
 mstringstring	map<string,string>	from deserializer
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT s1.aint, s2.lintstring
 FROM src_thrift s1
 JOIN src_thrift s2
 ON s1.aint = s2.aint
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT s1.aint, s2.lintstring
+FROM src_thrift s1
+JOIN src_thrift s2
+ON s1.aint = s2.aint
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF src_thrift s1) (TOK_TABREF src_thrift s2) (= (. (TOK_TABLE_OR_COL s1) aint) (. (TOK_TABLE_OR_COL s2) aint)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s1) aint)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) lintstring)))))
 
@@ -78,12 +88,20 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT s1.aint, s2.lintstring
+PREHOOK: query: SELECT s1.aint, s2.lintstring
 FROM src_thrift s1
 JOIN src_thrift s2
 ON s1.aint = s2.aint
-Input: default/src_thrift
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/589957555/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/895447236/10000
+POSTHOOK: query: SELECT s1.aint, s2.lintstring
+FROM src_thrift s1
+JOIN src_thrift s2
+ON s1.aint = s2.aint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/895447236/10000
 -1952710710	[{"myint":25,"mystring":"125","underscore_int":5}]
 -1461153973	[{"myint":49,"mystring":"343","underscore_int":7}]
 -751827638	[{"myint":4,"mystring":"8","underscore_int":2}]

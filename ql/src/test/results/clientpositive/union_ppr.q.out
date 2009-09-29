@@ -1,4 +1,4 @@
-query: EXPLAIN EXTENDED 
+PREHOOK: query: EXPLAIN EXTENDED 
 SELECT * FROM (
   SELECT X.* FROM SRCPART X WHERE X.key < 100
   UNION ALL
@@ -6,6 +6,16 @@ SELECT * FROM (
 ) A
 WHERE A.ds = '2008-04-08'
 SORT BY A.key
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN EXTENDED 
+SELECT * FROM (
+  SELECT X.* FROM SRCPART X WHERE X.key < 100
+  UNION ALL
+  SELECT Y.* FROM SRCPART Y WHERE Y.key < 100
+) A
+WHERE A.ds = '2008-04-08'
+SORT BY A.key
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF SRCPART X)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF X))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL X) key) 100)))) (TOK_QUERY (TOK_FROM (TOK_TABREF SRCPART Y)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF Y))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL Y) key) 100))))) A)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (. (TOK_TABLE_OR_COL A) ds) '2008-04-08')) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL A) key)))))
 
@@ -131,10 +141,10 @@ STAGE PLANS:
                                 type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [null-subquery1:a-subquery1:x, null-subquery2:a-subquery2:y]
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [null-subquery1:a-subquery1:x, null-subquery2:a-subquery2:y]
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [null-subquery1:a-subquery1:x, null-subquery2:a-subquery2:y]
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [null-subquery1:a-subquery1:x, null-subquery2:a-subquery2:y]
       Path -> Partition:
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
             partition values:
               ds 2008-04-08
@@ -153,10 +163,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
             partition values:
               ds 2008-04-08
@@ -175,7 +185,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
       Reduce Operator Tree:
@@ -183,7 +193,7 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/488223267/10001
+            directory: file:/data/users/njain/hive5/hive5/build/ql/tmp/1296375167/10001
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -197,16 +207,28 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT * FROM (
+PREHOOK: query: SELECT * FROM (
   SELECT X.* FROM SRCPART X WHERE X.key < 100
   UNION ALL
   SELECT Y.* FROM SRCPART Y WHERE Y.key < 100
 ) A
 WHERE A.ds = '2008-04-08'
 SORT BY A.key
-Input: default/srcpart/ds=2008-04-08/hr=11
-Input: default/srcpart/ds=2008-04-08/hr=12
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/49836267/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1657019362/10000
+POSTHOOK: query: SELECT * FROM (
+  SELECT X.* FROM SRCPART X WHERE X.key < 100
+  UNION ALL
+  SELECT Y.* FROM SRCPART Y WHERE Y.key < 100
+) A
+WHERE A.ds = '2008-04-08'
+SORT BY A.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1657019362/10000
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11

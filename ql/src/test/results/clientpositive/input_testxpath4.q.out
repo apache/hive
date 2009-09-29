@@ -1,9 +1,17 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 FROM src_thrift
 SELECT src_thrift.mstringstring['key_9'], lintstring.myint
 WHERE src_thrift.mstringstring['key_9'] IS NOT NULL
       AND lintstring.myint IS NOT NULL
       AND lintstring IS NOT NULL
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM src_thrift
+SELECT src_thrift.mstringstring['key_9'], lintstring.myint
+WHERE src_thrift.mstringstring['key_9'] IS NOT NULL
+      AND lintstring.myint IS NOT NULL
+      AND lintstring IS NOT NULL
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src_thrift)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR ([ (. (TOK_TABLE_OR_COL src_thrift) mstringstring) 'key_9')) (TOK_SELEXPR (. (TOK_TABLE_OR_COL lintstring) myint))) (TOK_WHERE (AND (AND (TOK_FUNCTION TOK_ISNOTNULL ([ (. (TOK_TABLE_OR_COL src_thrift) mstringstring) 'key_9')) (TOK_FUNCTION TOK_ISNOTNULL (. (TOK_TABLE_OR_COL lintstring) myint))) (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL lintstring))))))
 
@@ -41,13 +49,22 @@ STAGE PLANS:
       limit: -1
 
 
-query: FROM src_thrift
+PREHOOK: query: FROM src_thrift
 SELECT src_thrift.mstringstring['key_9'], lintstring.myint
 WHERE src_thrift.mstringstring['key_9'] IS NOT NULL
       OR lintstring.myint IS NOT NULL
       OR lintstring IS NOT NULL
-Input: default/src_thrift
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/607559356/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1299842389/10000
+POSTHOOK: query: FROM src_thrift
+SELECT src_thrift.mstringstring['key_9'], lintstring.myint
+WHERE src_thrift.mstringstring['key_9'] IS NOT NULL
+      OR lintstring.myint IS NOT NULL
+      OR lintstring IS NOT NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1299842389/10000
 NULL	[0]
 NULL	[1]
 NULL	[4]
@@ -58,12 +75,20 @@ NULL	[36]
 NULL	[49]
 NULL	[64]
 value_9	[81]
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 FROM src_thrift
 SELECT src_thrift.mstringstring['key_9'], lintstring.myint
 WHERE src_thrift.mstringstring['key_9'] IS NOT NULL
       AND lintstring.myint IS NOT NULL
       AND lintstring IS NOT NULL
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM src_thrift
+SELECT src_thrift.mstringstring['key_9'], lintstring.myint
+WHERE src_thrift.mstringstring['key_9'] IS NOT NULL
+      AND lintstring.myint IS NOT NULL
+      AND lintstring IS NOT NULL
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src_thrift)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR ([ (. (TOK_TABLE_OR_COL src_thrift) mstringstring) 'key_9')) (TOK_SELEXPR (. (TOK_TABLE_OR_COL lintstring) myint))) (TOK_WHERE (AND (AND (TOK_FUNCTION TOK_ISNOTNULL ([ (. (TOK_TABLE_OR_COL src_thrift) mstringstring) 'key_9')) (TOK_FUNCTION TOK_ISNOTNULL (. (TOK_TABLE_OR_COL lintstring) myint))) (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL lintstring))))))
 
@@ -105,13 +130,22 @@ STAGE PLANS:
       limit: -1
 
 
-query: FROM src_thrift
+PREHOOK: query: FROM src_thrift
 SELECT src_thrift.mstringstring['key_9'], lintstring.myint
 WHERE src_thrift.mstringstring['key_9'] IS NOT NULL
       OR lintstring.myint IS NOT NULL
       OR lintstring IS NOT NULL
-Input: default/src_thrift
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/364349054/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/808371733/10000
+POSTHOOK: query: FROM src_thrift
+SELECT src_thrift.mstringstring['key_9'], lintstring.myint
+WHERE src_thrift.mstringstring['key_9'] IS NOT NULL
+      OR lintstring.myint IS NOT NULL
+      OR lintstring IS NOT NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/808371733/10000
 NULL	[0]
 NULL	[1]
 NULL	[4]

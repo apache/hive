@@ -1,10 +1,29 @@
-query: drop table tmp_insert_test
-query: drop table tmp_insert_test_p
-query: create table tmp_insert_test (key string, value string) stored as textfile
-query: load data local inpath '../data/files/kv1.txt' into table tmp_insert_test
-query: select * from tmp_insert_test
-Input: default/tmp_insert_test
-Output: file:/data/users/njain/hive_commit4/hive_commit4/build/ql/tmp/207650189/10000
+PREHOOK: query: drop table tmp_insert_test
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tmp_insert_test
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table tmp_insert_test_p
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tmp_insert_test_p
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table tmp_insert_test (key string, value string) stored as textfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tmp_insert_test (key string, value string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tmp_insert_test
+PREHOOK: query: load data local inpath '../data/files/kv1.txt' into table tmp_insert_test
+PREHOOK: type: LOAD
+POSTHOOK: query: load data local inpath '../data/files/kv1.txt' into table tmp_insert_test
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@tmp_insert_test
+PREHOOK: query: select * from tmp_insert_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_insert_test
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/304023366/10000
+POSTHOOK: query: select * from tmp_insert_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_insert_test
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/304023366/10000
 238	val_238
 86	val_86
 311	val_311
@@ -505,11 +524,24 @@ Output: file:/data/users/njain/hive_commit4/hive_commit4/build/ql/tmp/207650189/
 400	val_400
 200	val_200
 97	val_97
-query: create table tmp_insert_test_p (key string, value string) partitioned by (ds string) stored as textfile
-query: load data local inpath '../data/files/kv1.txt' into table tmp_insert_test_p partition (ds = '2009-08-01')
-query: select * from tmp_insert_test_p where ds= '2009-08-01'
-Input: default/tmp_insert_test_p/ds=2009-08-01
-Output: file:/data/users/njain/hive_commit4/hive_commit4/build/ql/tmp/25985999/10000
+PREHOOK: query: create table tmp_insert_test_p (key string, value string) partitioned by (ds string) stored as textfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tmp_insert_test_p (key string, value string) partitioned by (ds string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tmp_insert_test_p
+PREHOOK: query: load data local inpath '../data/files/kv1.txt' into table tmp_insert_test_p partition (ds = '2009-08-01')
+PREHOOK: type: LOAD
+POSTHOOK: query: load data local inpath '../data/files/kv1.txt' into table tmp_insert_test_p partition (ds = '2009-08-01')
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@tmp_insert_test_p@ds=2009-08-01
+PREHOOK: query: select * from tmp_insert_test_p where ds= '2009-08-01'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_insert_test_p@ds=2009-08-01
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1730852318/10000
+POSTHOOK: query: select * from tmp_insert_test_p where ds= '2009-08-01'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_insert_test_p@ds=2009-08-01
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1730852318/10000
 238	val_238	2009-08-01
 86	val_86	2009-08-01
 311	val_311	2009-08-01
@@ -1010,10 +1042,19 @@ Output: file:/data/users/njain/hive_commit4/hive_commit4/build/ql/tmp/25985999/1
 400	val_400	2009-08-01
 200	val_200	2009-08-01
 97	val_97	2009-08-01
-query: load data local inpath '../data/files/kv2.txt' into table tmp_insert_test_p partition (ds = '2009-08-01')
-query: select * from tmp_insert_test_p where ds= '2009-08-01'
-Input: default/tmp_insert_test_p/ds=2009-08-01
-Output: file:/data/users/njain/hive_commit4/hive_commit4/build/ql/tmp/461674796/10000
+PREHOOK: query: load data local inpath '../data/files/kv2.txt' into table tmp_insert_test_p partition (ds = '2009-08-01')
+PREHOOK: type: LOAD
+POSTHOOK: query: load data local inpath '../data/files/kv2.txt' into table tmp_insert_test_p partition (ds = '2009-08-01')
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@tmp_insert_test_p@ds=2009-08-01
+PREHOOK: query: select * from tmp_insert_test_p where ds= '2009-08-01'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp_insert_test_p@ds=2009-08-01
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1125925200/10000
+POSTHOOK: query: select * from tmp_insert_test_p where ds= '2009-08-01'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp_insert_test_p@ds=2009-08-01
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1125925200/10000
 238	val_238	2009-08-01
 86	val_86	2009-08-01
 311	val_311	2009-08-01
@@ -2014,5 +2055,13 @@ Output: file:/data/users/njain/hive_commit4/hive_commit4/build/ql/tmp/461674796/
 227	val_228	2009-08-01
 395	val_396	2009-08-01
 244	val_245	2009-08-01
-query: drop table tmp_insert_test
-query: drop table tmp_insert_test_p
+PREHOOK: query: drop table tmp_insert_test
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tmp_insert_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@tmp_insert_test
+PREHOOK: query: drop table tmp_insert_test_p
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tmp_insert_test_p
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@tmp_insert_test_p

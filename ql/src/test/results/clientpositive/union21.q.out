@@ -1,4 +1,4 @@
-query: -- union of constants, udf outputs, and columns from text table and thrift table
+PREHOOK: query: -- union of constants, udf outputs, and columns from text table and thrift table
 
 explain
 SELECT key, count(1)
@@ -14,6 +14,24 @@ FROM (
   SELECT lstring[0] as key from src_thrift
 ) union_output
 GROUP BY key
+PREHOOK: type: QUERY
+POSTHOOK: query: -- union of constants, udf outputs, and columns from text table and thrift table
+
+explain
+SELECT key, count(1)
+FROM (
+  SELECT '1' as key from src
+  UNION ALL
+  SELECT reverse(key) as key from src
+  UNION ALL
+  SELECT key as key from src
+  UNION ALL
+  SELECT astring as key from src_thrift
+  UNION ALL
+  SELECT lstring[0] as key from src_thrift
+) union_output
+GROUP BY key
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_UNION (TOK_UNION (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR '1' key)))) (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION reverse (TOK_TABLE_OR_COL key)) key))))) (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key) key))))) (TOK_QUERY (TOK_FROM (TOK_TABREF src_thrift)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL astring) key))))) (TOK_QUERY (TOK_FROM (TOK_TABREF src_thrift)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR ([ (TOK_TABLE_OR_COL lstring) 0) key))))) union_output)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_GROUPBY (TOK_TABLE_OR_COL key))))
 
@@ -223,7 +241,7 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT key, count(1)
+PREHOOK: query: SELECT key, count(1)
 FROM (
   SELECT '1' as key from src
   UNION ALL
@@ -236,9 +254,27 @@ FROM (
   SELECT lstring[0] as key from src_thrift
 ) union_output
 GROUP BY key
-Input: default/src_thrift
-Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1135321195/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/661760419/10000
+POSTHOOK: query: SELECT key, count(1)
+FROM (
+  SELECT '1' as key from src
+  UNION ALL
+  SELECT reverse(key) as key from src
+  UNION ALL
+  SELECT key as key from src
+  UNION ALL
+  SELECT astring as key from src_thrift
+  UNION ALL
+  SELECT lstring[0] as key from src_thrift
+) union_output
+GROUP BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/661760419/10000
 NULL	2
 0	7
 001	2

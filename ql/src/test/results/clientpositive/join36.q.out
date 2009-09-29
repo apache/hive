@@ -1,21 +1,60 @@
-query: drop table dest_j1
-query: drop table tmp1
-query: drop table tmp2
-query: CREATE TABLE tmp1(key INT, cnt INT)
-query: CREATE TABLE tmp2(key INT, cnt INT)
-query: CREATE TABLE dest_j1(key INT, value INT, val2 INT)
-query: INSERT OVERWRITE TABLE tmp1
+PREHOOK: query: drop table dest_j1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table dest_j1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table tmp1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tmp1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table tmp2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tmp2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE tmp1(key INT, cnt INT)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE tmp1(key INT, cnt INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tmp1
+PREHOOK: query: CREATE TABLE tmp2(key INT, cnt INT)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE tmp2(key INT, cnt INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tmp2
+PREHOOK: query: CREATE TABLE dest_j1(key INT, value INT, val2 INT)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest_j1(key INT, value INT, val2 INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest_j1
+PREHOOK: query: INSERT OVERWRITE TABLE tmp1
 SELECT key, count(1) from src group by key
-Input: default/src
-Output: default/tmp1
-query: INSERT OVERWRITE TABLE tmp2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tmp1
+POSTHOOK: query: INSERT OVERWRITE TABLE tmp1
 SELECT key, count(1) from src group by key
-Input: default/src
-Output: default/tmp2
-query: EXPLAIN
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tmp1
+PREHOOK: query: INSERT OVERWRITE TABLE tmp2
+SELECT key, count(1) from src group by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@tmp2
+POSTHOOK: query: INSERT OVERWRITE TABLE tmp2
+SELECT key, count(1) from src group by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@tmp2
+PREHOOK: query: EXPLAIN
 INSERT OVERWRITE TABLE dest_j1 
 SELECT /*+ MAPJOIN(x) */ x.key, x.cnt, y.cnt
 FROM tmp1 x JOIN tmp2 y ON (x.key = y.key)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+INSERT OVERWRITE TABLE dest_j1 
+SELECT /*+ MAPJOIN(x) */ x.key, x.cnt, y.cnt
+FROM tmp1 x JOIN tmp2 y ON (x.key = y.key)
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF tmp1 x) (TOK_TABREF tmp2 y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest_j1)) (TOK_SELECT (TOK_HINTLIST (TOK_HINT TOK_MAPJOIN (TOK_HINTARGLIST x))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) cnt)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) cnt)))))
 
@@ -122,10 +161,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/1012006682/10000
+                destination: file:/data/users/njain/hive5/hive5/build/ql/tmp/288849428/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/697544308/10002 
+              file:/data/users/njain/hive5/hive5/build/ql/tmp/343369089/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -161,15 +200,28 @@ STAGE PLANS:
               name: dest_j1
 
 
-query: INSERT OVERWRITE TABLE dest_j1 
+PREHOOK: query: INSERT OVERWRITE TABLE dest_j1 
 SELECT /*+ MAPJOIN(x) */ x.key, x.cnt, y.cnt
 FROM tmp1 x JOIN tmp2 y ON (x.key = y.key)
-Input: default/tmp2
-Input: default/tmp1
-Output: default/dest_j1
-query: select * from dest_j1 x order by x.key
-Input: default/dest_j1
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/1124582882/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmp2
+PREHOOK: Input: default@tmp1
+PREHOOK: Output: default@dest_j1
+POSTHOOK: query: INSERT OVERWRITE TABLE dest_j1 
+SELECT /*+ MAPJOIN(x) */ x.key, x.cnt, y.cnt
+FROM tmp1 x JOIN tmp2 y ON (x.key = y.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmp2
+POSTHOOK: Input: default@tmp1
+POSTHOOK: Output: default@dest_j1
+PREHOOK: query: select * from dest_j1 x order by x.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest_j1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1835102638/10000
+POSTHOOK: query: select * from dest_j1 x order by x.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest_j1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1835102638/10000
 0	3	3
 2	1	1
 4	1	1
@@ -479,4 +531,8 @@ Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp
 496	1	1
 497	1	1
 498	3	3
-query: drop table dest_j1
+PREHOOK: query: drop table dest_j1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table dest_j1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@dest_j1

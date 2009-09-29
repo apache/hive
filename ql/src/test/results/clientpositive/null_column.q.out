@@ -1,52 +1,119 @@
-query: drop table temp_null
-query: drop table tt
-query: drop table tt_b
-query: create table temp_null(a int) stored as textfile
-query: load data local inpath '../data/files/test.dat' overwrite into table temp_null
-query: select null, null from temp_null
-Input: default/temp_null
-Output: file:/data/users/nzhang/work/734/734-trunk-apache-hive/build/ql/tmp/2083094836/10000
+PREHOOK: query: drop table temp_null
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table temp_null
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table tt
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tt
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table tt_b
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tt_b
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table temp_null(a int) stored as textfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table temp_null(a int) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@temp_null
+PREHOOK: query: load data local inpath '../data/files/test.dat' overwrite into table temp_null
+PREHOOK: type: LOAD
+POSTHOOK: query: load data local inpath '../data/files/test.dat' overwrite into table temp_null
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@temp_null
+PREHOOK: query: select null, null from temp_null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@temp_null
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1637717703/10000
+POSTHOOK: query: select null, null from temp_null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@temp_null
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1637717703/10000
 NULL	NULL
 NULL	NULL
 NULL	NULL
 NULL	NULL
 NULL	NULL
 NULL	NULL
-query: create table tt(a int, b string)
-query: insert overwrite table tt select null, null from temp_null
-Input: default/temp_null
-Output: default/tt
-query: select * from tt
-Input: default/tt
-Output: file:/data/users/nzhang/work/734/734-trunk-apache-hive/build/ql/tmp/2090243542/10000
+PREHOOK: query: create table tt(a int, b string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tt(a int, b string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tt
+PREHOOK: query: insert overwrite table tt select null, null from temp_null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@temp_null
+PREHOOK: Output: default@tt
+POSTHOOK: query: insert overwrite table tt select null, null from temp_null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@temp_null
+POSTHOOK: Output: default@tt
+PREHOOK: query: select * from tt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tt
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/974669501/10000
+POSTHOOK: query: select * from tt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tt
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/974669501/10000
 NULL	NULL
 NULL	NULL
 NULL	NULL
 NULL	NULL
 NULL	NULL
 NULL	NULL
-query: create table tt_b(a int, b string) row format serde "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe"
-query: insert overwrite table tt_b select null, null from temp_null
-Input: default/temp_null
-Output: default/tt_b
-query: select * from tt_b
-Input: default/tt_b
-Output: file:/data/users/nzhang/work/734/734-trunk-apache-hive/build/ql/tmp/1191541403/10000
+PREHOOK: query: create table tt_b(a int, b string) row format serde "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe"
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tt_b(a int, b string) row format serde "org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe"
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tt_b
+PREHOOK: query: insert overwrite table tt_b select null, null from temp_null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@temp_null
+PREHOOK: Output: default@tt_b
+POSTHOOK: query: insert overwrite table tt_b select null, null from temp_null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@temp_null
+POSTHOOK: Output: default@tt_b
+PREHOOK: query: select * from tt_b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tt_b
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1955123010/10000
+POSTHOOK: query: select * from tt_b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tt_b
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1955123010/10000
 NULL	NULL
 NULL	NULL
 NULL	NULL
 NULL	NULL
 NULL	NULL
 NULL	NULL
-query: insert overwrite directory "../build/ql/test/data/warehouse/null_columns.out" select null, null from temp_null
-Input: default/temp_null
-Output: ../build/ql/test/data/warehouse/null_columns.out
+PREHOOK: query: insert overwrite directory "../build/ql/test/data/warehouse/null_columns.out" select null, null from temp_null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@temp_null
+PREHOOK: Output: ../build/ql/test/data/warehouse/null_columns.out
+POSTHOOK: query: insert overwrite directory "../build/ql/test/data/warehouse/null_columns.out" select null, null from temp_null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@temp_null
+POSTHOOK: Output: ../build/ql/test/data/warehouse/null_columns.out
 \N\N
 \N\N
 \N\N
 \N\N
 \N\N
 \N\N
-query: drop table tt
-query: drop table tt_b
-query: drop table temp_null
+PREHOOK: query: drop table tt
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tt
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@tt
+PREHOOK: query: drop table tt_b
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tt_b
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@tt_b
+PREHOOK: query: drop table temp_null
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table temp_null
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@temp_null

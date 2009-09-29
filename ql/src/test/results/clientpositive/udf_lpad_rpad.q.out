@@ -1,8 +1,15 @@
-query: EXPLAIN SELECT
+PREHOOK: query: EXPLAIN SELECT
   lpad('hi', 1, '?'),
   lpad('hi', 5, '.'),
   lpad('hi', 6, '123')
 FROM src LIMIT 1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT
+  lpad('hi', 1, '?'),
+  lpad('hi', 5, '.'),
+  lpad('hi', 6, '123')
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION lpad 'hi' 1 '?')) (TOK_SELEXPR (TOK_FUNCTION lpad 'hi' 5 '.')) (TOK_SELEXPR (TOK_FUNCTION lpad 'hi' 6 '123'))) (TOK_LIMIT 1)))
 
@@ -39,19 +46,35 @@ STAGE PLANS:
       limit: 1
 
 
-query: SELECT
+PREHOOK: query: SELECT
   lpad('hi', 1, '?'),
   lpad('hi', 5, '.'),
   lpad('hi', 6, '123')
 FROM src LIMIT 1
-Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/440914656/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/369345424/10000
+POSTHOOK: query: SELECT
+  lpad('hi', 1, '?'),
+  lpad('hi', 5, '.'),
+  lpad('hi', 6, '123')
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/369345424/10000
 h	...hi	1231hi
-query: EXPLAIN SELECT
+PREHOOK: query: EXPLAIN SELECT
   rpad('hi', 1, '?'),
   rpad('hi', 5, '.'),
   rpad('hi', 6, '123')
 FROM src LIMIT 1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT
+  rpad('hi', 1, '?'),
+  rpad('hi', 5, '.'),
+  rpad('hi', 6, '123')
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION rpad 'hi' 1 '?')) (TOK_SELEXPR (TOK_FUNCTION rpad 'hi' 5 '.')) (TOK_SELEXPR (TOK_FUNCTION rpad 'hi' 6 '123'))) (TOK_LIMIT 1)))
 
@@ -88,11 +111,20 @@ STAGE PLANS:
       limit: 1
 
 
-query: SELECT
+PREHOOK: query: SELECT
   rpad('hi', 1, '?'),
   rpad('hi', 5, '.'),
   rpad('hi', 6, '123')
 FROM src LIMIT 1
-Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1578755009/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/975123871/10000
+POSTHOOK: query: SELECT
+  rpad('hi', 1, '?'),
+  rpad('hi', 5, '.'),
+  rpad('hi', 6, '123')
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/975123871/10000
 h	hi...	hi1231

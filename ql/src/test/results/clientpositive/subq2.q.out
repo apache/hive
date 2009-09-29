@@ -1,7 +1,13 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT a.k, a.c
 FROM (SELECT b.key as k, count(1) as c FROM src b GROUP BY b.key) a
 WHERE a.k >= 90
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT a.k, a.c
+FROM (SELECT b.key as k, count(1) as c FROM src b GROUP BY b.key) a
+WHERE a.k >= 90
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src b)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) key) k) (TOK_SELEXPR (TOK_FUNCTION count 1) c)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL b) key)))) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) k)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) c))) (TOK_WHERE (>= (. (TOK_TABLE_OR_COL a) k) 90))))
 
@@ -84,11 +90,18 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT a.k, a.c
+PREHOOK: query: SELECT a.k, a.c
 FROM (SELECT b.key as k, count(1) as c FROM src b GROUP BY b.key) a
 WHERE a.k >= 90
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/177943872/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/632677146/10000
+POSTHOOK: query: SELECT a.k, a.c
+FROM (SELECT b.key as k, count(1) as c FROM src b GROUP BY b.key) a
+WHERE a.k >= 90
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/632677146/10000
 100	2
 103	2
 104	2

@@ -1,5 +1,9 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT * FROM src src1 LEFT OUTER JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10) RIGHT OUTER JOIN src src3 ON (src2.key = src3.key AND src3.key < 10) SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT * FROM src src1 LEFT OUTER JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10) RIGHT OUTER JOIN src src3 ON (src2.key = src3.key AND src3.key < 10) SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_LEFTOUTERJOIN (TOK_TABREF src src1) (TOK_TABREF src src2) (AND (AND (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)) (< (. (TOK_TABLE_OR_COL src1) key) 10)) (> (. (TOK_TABLE_OR_COL src2) key) 10))) (TOK_TABREF src src3) (AND (= (. (TOK_TABLE_OR_COL src2) key) (. (TOK_TABLE_OR_COL src3) key)) (< (. (TOK_TABLE_OR_COL src3) key) 10)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) value)))))
 
@@ -122,7 +126,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/448807986/10002 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/86983315/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -166,9 +170,14 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT * FROM src src1 LEFT OUTER JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10) RIGHT OUTER JOIN src src3 ON (src2.key = src3.key AND src3.key < 10) SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/219627064/10000
+PREHOOK: query: SELECT * FROM src src1 LEFT OUTER JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10) RIGHT OUTER JOIN src src3 ON (src2.key = src3.key AND src3.key < 10) SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1521125727/10000
+POSTHOOK: query: SELECT * FROM src src1 LEFT OUTER JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10) RIGHT OUTER JOIN src src3 ON (src2.key = src3.key AND src3.key < 10) SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1521125727/10000
 NULL	NULL	NULL	NULL	0	val_0
 NULL	NULL	NULL	NULL	0	val_0
 NULL	NULL	NULL	NULL	0	val_0

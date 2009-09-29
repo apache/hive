@@ -1,42 +1,97 @@
-query: drop table alter3_src
-query: drop table alter3
-query: create table alter3_src ( col1 string ) stored as textfile
-query: load data local inpath '../data/files/test.dat' overwrite into table alter3_src
-query: create table alter3 ( col1 string ) partitioned by (pcol1 string , pcol2 string) stored as sequencefile
-query: insert overwrite table alter3 partition (pCol1='test_part', pcol2='test_part') select col1 from alter3_src
-Input: default/alter3_src
-Output: default/alter3/pcol1=test_part/pcol2=test_part
-query: select * from alter3 where pcol1='test_part' and pcol2='test_part'
-Input: default/alter3/pcol1=test_part/pcol2=test_part
-Output: file:/data/users/pchakka/workspace/oshive2/build/ql/tmp/1140751313/10000
+PREHOOK: query: drop table alter3_src
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table alter3_src
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table alter3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table alter3
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table alter3_src ( col1 string ) stored as textfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table alter3_src ( col1 string ) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@alter3_src
+PREHOOK: query: load data local inpath '../data/files/test.dat' overwrite into table alter3_src
+PREHOOK: type: LOAD
+POSTHOOK: query: load data local inpath '../data/files/test.dat' overwrite into table alter3_src
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@alter3_src
+PREHOOK: query: create table alter3 ( col1 string ) partitioned by (pcol1 string , pcol2 string) stored as sequencefile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table alter3 ( col1 string ) partitioned by (pcol1 string , pcol2 string) stored as sequencefile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@alter3
+PREHOOK: query: insert overwrite table alter3 partition (pCol1='test_part', pcol2='test_part') select col1 from alter3_src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter3_src
+PREHOOK: Output: default@alter3@pcol1=test_part/pcol2=test_part
+POSTHOOK: query: insert overwrite table alter3 partition (pCol1='test_part', pcol2='test_part') select col1 from alter3_src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter3_src
+POSTHOOK: Output: default@alter3@pcol1=test_part/pcol2=test_part
+PREHOOK: query: select * from alter3 where pcol1='test_part' and pcol2='test_part'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter3@pcol1=test_part/pcol2=test_part
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1483627653/10000
+POSTHOOK: query: select * from alter3 where pcol1='test_part' and pcol2='test_part'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter3@pcol1=test_part/pcol2=test_part
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1483627653/10000
 1	test_part	test_part
 2	test_part	test_part
 3	test_part	test_part
 4	test_part	test_part
 5	test_part	test_part
 6	test_part	test_part
-query: alter table alter3 rename to alter3_renamed
-query: describe extended alter3_renamed
+PREHOOK: query: alter table alter3 rename to alter3_renamed
+PREHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: query: alter table alter3 rename to alter3_renamed
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: default@alter3
+POSTHOOK: Output: default@alter3_renamed
+PREHOOK: query: describe extended alter3_renamed
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe extended alter3_renamed
+POSTHOOK: type: DESCTABLE
 col1	string	
 pcol1	string	
 pcol2	string	
 	 	 
-Detailed Table Information	Table(tableName:alter3_renamed, dbName:default, owner:pchakka, createTime:1247544316, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:file:/data/users/pchakka/workspace/oshive2/build/ql/test/data/warehouse/alter3_renamed, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:pcol1, type:string, comment:null), FieldSchema(name:pcol2, type:string, comment:null)], parameters:{last_modified_by=pchakka,last_modified_time=1247544320})	
-query: describe extended alter3_renamed partition (pCol1='test_part', pcol2='test_part')
+Detailed Table Information	Table(tableName:alter3_renamed, dbName:default, owner:njain, createTime:1253779705, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/alter3_renamed, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:pcol1, type:string, comment:null), FieldSchema(name:pcol2, type:string, comment:null)], parameters:{last_modified_by=njain,last_modified_time=1253779709})	
+PREHOOK: query: describe extended alter3_renamed partition (pCol1='test_part', pcol2='test_part')
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe extended alter3_renamed partition (pCol1='test_part', pcol2='test_part')
+POSTHOOK: type: DESCTABLE
 col1	string	
 pcol1	string	
 pcol2	string	
 	 	 
-Detailed Partition Information	Partition(values:[test_part, test_part], dbName:default, tableName:alter3_renamed, createTime:0, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:file:/data/users/pchakka/workspace/oshive2/build/ql/test/data/warehouse/alter3_renamed/pcol1=test_part/pcol2=test_part, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{})	
-query: select * from alter3_renamed where pcol1='test_part' and pcol2='test_part'
-Input: default/alter3_renamed/pcol1=test_part/pcol2=test_part
-Output: file:/data/users/pchakka/workspace/oshive2/build/ql/tmp/862867654/10000
+Detailed Partition Information	Partition(values:[test_part, test_part], dbName:default, tableName:alter3_renamed, createTime:0, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:col1, type:string, comment:null)], location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/alter3_renamed/pcol1=test_part/pcol2=test_part, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{})	
+PREHOOK: query: select * from alter3_renamed where pcol1='test_part' and pcol2='test_part'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alter3_renamed@pcol1=test_part/pcol2=test_part
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/250127671/10000
+POSTHOOK: query: select * from alter3_renamed where pcol1='test_part' and pcol2='test_part'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alter3_renamed@pcol1=test_part/pcol2=test_part
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/250127671/10000
 1	test_part	test_part
 2	test_part	test_part
 3	test_part	test_part
 4	test_part	test_part
 5	test_part	test_part
 6	test_part	test_part
-query: drop table alter3_src
-query: drop table alter3
-query: drop table alter3_renamed
+PREHOOK: query: drop table alter3_src
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table alter3_src
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@alter3_src
+PREHOOK: query: drop table alter3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table alter3
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table alter3_renamed
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table alter3_renamed
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@alter3_renamed

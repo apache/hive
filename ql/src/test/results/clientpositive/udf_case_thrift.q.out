@@ -1,4 +1,4 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT CASE src_thrift.lint[0]
         WHEN 0 THEN src_thrift.lint[0] + 1
         WHEN 1 THEN src_thrift.lint[0] + 2
@@ -15,6 +15,25 @@ SELECT CASE src_thrift.lint[0]
         ELSE NULL
        END)[0]
 FROM src_thrift LIMIT 3
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT CASE src_thrift.lint[0]
+        WHEN 0 THEN src_thrift.lint[0] + 1
+        WHEN 1 THEN src_thrift.lint[0] + 2
+        WHEN 2 THEN 100
+        ELSE 5
+       END,
+       CASE src_thrift.lstring[0]
+        WHEN '0' THEN 'zero'
+        WHEN '10' THEN CONCAT(src_thrift.lstring[0], " is ten")
+        ELSE 'default'
+       END,
+       (CASE src_thrift.lstring[0]
+        WHEN '0' THEN src_thrift.lstring
+        ELSE NULL
+       END)[0]
+FROM src_thrift LIMIT 3
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src_thrift)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION CASE ([ (. (TOK_TABLE_OR_COL src_thrift) lint) 0) 0 (+ ([ (. (TOK_TABLE_OR_COL src_thrift) lint) 0) 1) 1 (+ ([ (. (TOK_TABLE_OR_COL src_thrift) lint) 0) 2) 2 100 5)) (TOK_SELEXPR (TOK_FUNCTION CASE ([ (. (TOK_TABLE_OR_COL src_thrift) lstring) 0) '0' 'zero' '10' (TOK_FUNCTION CONCAT ([ (. (TOK_TABLE_OR_COL src_thrift) lstring) 0) " is ten") 'default')) (TOK_SELEXPR ([ (TOK_FUNCTION CASE ([ (. (TOK_TABLE_OR_COL src_thrift) lstring) 0) '0' (. (TOK_TABLE_OR_COL src_thrift) lstring) TOK_NULL) 0))) (TOK_LIMIT 3)))
 
@@ -51,7 +70,7 @@ STAGE PLANS:
       limit: 3
 
 
-query: SELECT CASE src_thrift.lint[0]
+PREHOOK: query: SELECT CASE src_thrift.lint[0]
         WHEN 0 THEN src_thrift.lint[0] + 1
         WHEN 1 THEN src_thrift.lint[0] + 2
         WHEN 2 THEN 100
@@ -67,8 +86,28 @@ query: SELECT CASE src_thrift.lint[0]
         ELSE NULL
        END)[0]
 FROM src_thrift LIMIT 3
-Input: default/src_thrift
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/87841953/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1533247370/10000
+POSTHOOK: query: SELECT CASE src_thrift.lint[0]
+        WHEN 0 THEN src_thrift.lint[0] + 1
+        WHEN 1 THEN src_thrift.lint[0] + 2
+        WHEN 2 THEN 100
+        ELSE 5
+       END,
+       CASE src_thrift.lstring[0]
+        WHEN '0' THEN 'zero'
+        WHEN '10' THEN CONCAT(src_thrift.lstring[0], " is ten")
+        ELSE 'default'
+       END,
+       (CASE src_thrift.lstring[0]
+        WHEN '0' THEN src_thrift.lstring
+        ELSE NULL
+       END)[0]
+FROM src_thrift LIMIT 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1533247370/10000
 1	zero	0
 3	10 is ten	NULL
 100	default	NULL

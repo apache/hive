@@ -1,5 +1,9 @@
-query: EXPLAIN 
+PREHOOK: query: EXPLAIN 
 SHOW TABLE EXTENDED IN default LIKE `src`
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: EXPLAIN 
+SHOW TABLE EXTENDED IN default LIKE `src`
+POSTHOOK: type: SHOW_TABLESTATUS
 ABSTRACT SYNTAX TREE:
   (TOK_SHOW_TABLESTATUS `src` default)
 
@@ -15,10 +19,13 @@ STAGE PLANS:
       limit: -1
 
 
-query: SHOW TABLE EXTENDED IN default LIKE `src`
+PREHOOK: query: SHOW TABLE EXTENDED IN default LIKE `src`
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: SHOW TABLE EXTENDED IN default LIKE `src`
+POSTHOOK: type: SHOW_TABLESTATUS
 tableName:src
 owner:null
-location:file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/src
+location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/src
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { string key, string value}
@@ -29,12 +36,15 @@ totalFileSize:5812
 maxFileSize:5812
 minFileSize:5812
 lastAccessTime:0
-lastUpdateTime:1252656570000
+lastUpdateTime:1253759351000
 
-query: SHOW TABLE EXTENDED from default LIKE `src`
+PREHOOK: query: SHOW TABLE EXTENDED from default LIKE `src`
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: SHOW TABLE EXTENDED from default LIKE `src`
+POSTHOOK: type: SHOW_TABLESTATUS
 tableName:src
 owner:null
-location:file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/src
+location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/src
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { string key, string value}
@@ -45,12 +55,15 @@ totalFileSize:5812
 maxFileSize:5812
 minFileSize:5812
 lastAccessTime:0
-lastUpdateTime:1252656570000
+lastUpdateTime:1253759351000
 
-query: SHOW TABLE EXTENDED LIKE `src`
+PREHOOK: query: SHOW TABLE EXTENDED LIKE `src`
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: SHOW TABLE EXTENDED LIKE `src`
+POSTHOOK: type: SHOW_TABLESTATUS
 tableName:src
 owner:null
-location:file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/src
+location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/src
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { string key, string value}
@@ -61,16 +74,31 @@ totalFileSize:5812
 maxFileSize:5812
 minFileSize:5812
 lastAccessTime:0
-lastUpdateTime:1252656570000
+lastUpdateTime:1253759351000
 
-query: SHOW TABLE EXTENDED LIKE `src.?`
-query: SHOW TABLE EXTENDED from default LIKE `src.?`
-query: SHOW TABLE EXTENDED LIKE `^s.*`
-query: SHOW TABLE EXTENDED from default LIKE `^s.*`
-query: SHOW TABLE EXTENDED LIKE `srcpart` PARTITION(ds='2008-04-08', hr=11)
+PREHOOK: query: SHOW TABLE EXTENDED LIKE `src.?`
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: SHOW TABLE EXTENDED LIKE `src.?`
+POSTHOOK: type: SHOW_TABLESTATUS
+PREHOOK: query: SHOW TABLE EXTENDED from default LIKE `src.?`
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: SHOW TABLE EXTENDED from default LIKE `src.?`
+POSTHOOK: type: SHOW_TABLESTATUS
+PREHOOK: query: SHOW TABLE EXTENDED LIKE `^s.*`
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: SHOW TABLE EXTENDED LIKE `^s.*`
+POSTHOOK: type: SHOW_TABLESTATUS
+PREHOOK: query: SHOW TABLE EXTENDED from default LIKE `^s.*`
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: SHOW TABLE EXTENDED from default LIKE `^s.*`
+POSTHOOK: type: SHOW_TABLESTATUS
+PREHOOK: query: SHOW TABLE EXTENDED LIKE `srcpart` PARTITION(ds='2008-04-08', hr=11)
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: SHOW TABLE EXTENDED LIKE `srcpart` PARTITION(ds='2008-04-08', hr=11)
+POSTHOOK: type: SHOW_TABLESTATUS
 tableName:srcpart
 owner:null
-location:file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/srcpart
+location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { string key, string value}
@@ -81,12 +109,15 @@ totalFileSize:5812
 maxFileSize:5812
 minFileSize:5812
 lastAccessTime:0
-lastUpdateTime:1252656569000
+lastUpdateTime:1253759351000
 
-query: SHOW TABLE EXTENDED from default LIKE src
+PREHOOK: query: SHOW TABLE EXTENDED from default LIKE src
+PREHOOK: type: SHOW_TABLESTATUS
+POSTHOOK: query: SHOW TABLE EXTENDED from default LIKE src
+POSTHOOK: type: SHOW_TABLESTATUS
 tableName:src
 owner:null
-location:file:/Users/char/Documents/workspace/Hive/build/ql/test/data/warehouse/src
+location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/src
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { string key, string value}
@@ -97,5 +128,5 @@ totalFileSize:5812
 maxFileSize:5812
 minFileSize:5812
 lastAccessTime:0
-lastUpdateTime:1252656570000
+lastUpdateTime:1253759351000
 

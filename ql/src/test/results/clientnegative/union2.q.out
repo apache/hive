@@ -1,5 +1,20 @@
-query: drop table t1
-query: drop table t2
-query: create table if not exists t1(r string, c string, v string)
-query: create table if not exists t2(s string, c string, v string)
+PREHOOK: query: drop table t1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table t1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@t1
+PREHOOK: query: drop table t2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table t2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table if not exists t1(r string, c string, v string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table if not exists t1(r string, c string, v string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@t1
+PREHOOK: query: create table if not exists t2(s string, c string, v string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table if not exists t2(s string, c string, v string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@t2
 FAILED: Error in semantic analysis: Schema of both sides of union should match: Column v is of type string on first table and type double on second table

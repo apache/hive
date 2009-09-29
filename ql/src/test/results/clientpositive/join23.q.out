@@ -1,5 +1,9 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT *  FROM src src1 JOIN src src2 WHERE src1.key < 10 and src2.key < 10 SORT BY src1.key, src1.value, src2.key, src2.value
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT *  FROM src src1 JOIN src src2 WHERE src1.key < 10 and src2.key < 10 SORT BY src1.key, src1.value, src2.key, src2.value
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF src src1) (TOK_TABREF src src2))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (< (. (TOK_TABLE_OR_COL src1) key) 10) (< (. (TOK_TABLE_OR_COL src2) key) 10))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) value)))))
 
@@ -75,7 +79,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/250402459/10002 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/144139910/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -111,9 +115,14 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT *  FROM src src1 JOIN src src2 WHERE src1.key < 10 and src2.key < 10 SORT BY src1.key, src1.value, src2.key, src2.value
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1183870685/10000
+PREHOOK: query: SELECT *  FROM src src1 JOIN src src2 WHERE src1.key < 10 and src2.key < 10 SORT BY src1.key, src1.value, src2.key, src2.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2138360053/10000
+POSTHOOK: query: SELECT *  FROM src src1 JOIN src src2 WHERE src1.key < 10 and src2.key < 10 SORT BY src1.key, src1.value, src2.key, src2.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2138360053/10000
 0	val_0	0	val_0
 0	val_0	0	val_0
 0	val_0	0	val_0

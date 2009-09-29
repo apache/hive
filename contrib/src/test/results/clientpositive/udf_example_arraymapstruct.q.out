@@ -1,9 +1,23 @@
-query: CREATE TEMPORARY FUNCTION example_arraysum    AS 'org.apache.hadoop.hive.contrib.udf.example.UDFExampleArraySum'
-query: CREATE TEMPORARY FUNCTION example_mapconcat   AS 'org.apache.hadoop.hive.contrib.udf.example.UDFExampleMapConcat'
-query: CREATE TEMPORARY FUNCTION example_structprint AS 'org.apache.hadoop.hive.contrib.udf.example.UDFExampleStructPrint'
-query: EXPLAIN
+PREHOOK: query: CREATE TEMPORARY FUNCTION example_arraysum    AS 'org.apache.hadoop.hive.contrib.udf.example.UDFExampleArraySum'
+PREHOOK: type: CREATEFUNCTION
+POSTHOOK: query: CREATE TEMPORARY FUNCTION example_arraysum    AS 'org.apache.hadoop.hive.contrib.udf.example.UDFExampleArraySum'
+POSTHOOK: type: CREATEFUNCTION
+PREHOOK: query: CREATE TEMPORARY FUNCTION example_mapconcat   AS 'org.apache.hadoop.hive.contrib.udf.example.UDFExampleMapConcat'
+PREHOOK: type: CREATEFUNCTION
+POSTHOOK: query: CREATE TEMPORARY FUNCTION example_mapconcat   AS 'org.apache.hadoop.hive.contrib.udf.example.UDFExampleMapConcat'
+POSTHOOK: type: CREATEFUNCTION
+PREHOOK: query: CREATE TEMPORARY FUNCTION example_structprint AS 'org.apache.hadoop.hive.contrib.udf.example.UDFExampleStructPrint'
+PREHOOK: type: CREATEFUNCTION
+POSTHOOK: query: CREATE TEMPORARY FUNCTION example_structprint AS 'org.apache.hadoop.hive.contrib.udf.example.UDFExampleStructPrint'
+POSTHOOK: type: CREATEFUNCTION
+PREHOOK: query: EXPLAIN
 SELECT example_arraysum(lint), example_mapconcat(mstringstring), example_structprint(lintstring[0])
 FROM src_thrift
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT example_arraysum(lint), example_mapconcat(mstringstring), example_structprint(lintstring[0])
+FROM src_thrift
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src_thrift)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION example_arraysum (TOK_TABLE_OR_COL lint))) (TOK_SELEXPR (TOK_FUNCTION example_mapconcat (TOK_TABLE_OR_COL mstringstring))) (TOK_SELEXPR (TOK_FUNCTION example_structprint ([ (TOK_TABLE_OR_COL lintstring) 0))))))
 
@@ -39,10 +53,16 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT example_arraysum(lint), example_mapconcat(mstringstring), example_structprint(lintstring[0])
+PREHOOK: query: SELECT example_arraysum(lint), example_mapconcat(mstringstring), example_structprint(lintstring[0])
 FROM src_thrift
-Input: default/src_thrift
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/build/ql/tmp/1971586889/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/571432173/10000
+POSTHOOK: query: SELECT example_arraysum(lint), example_mapconcat(mstringstring), example_structprint(lintstring[0])
+FROM src_thrift
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/571432173/10000
 0.0	(key_0:value_0)	(0:0)(1:0)(2:0)
 6.0	(key_1:value_1)	(0:1)(1:1)(2:1)
 12.0	(key_2:value_2)	(0:4)(1:8)(2:2)
@@ -54,6 +74,15 @@ Output: file:/data/users/zshao/tools/699-trunk-apache-hive/build/ql/tmp/19715868
 48.0	(key_8:value_8)	(0:64)(1:512)(2:8)
 54.0	(key_9:value_9)	(0:81)(1:729)(2:9)
 NULL	NULL	NULL
-query: DROP TEMPORARY FUNCTION example_arraysum
-query: DROP TEMPORARY FUNCTION example_mapconcat
-query: DROP TEMPORARY FUNCTION example_structprint
+PREHOOK: query: DROP TEMPORARY FUNCTION example_arraysum
+PREHOOK: type: DROPFUNCTION
+POSTHOOK: query: DROP TEMPORARY FUNCTION example_arraysum
+POSTHOOK: type: DROPFUNCTION
+PREHOOK: query: DROP TEMPORARY FUNCTION example_mapconcat
+PREHOOK: type: DROPFUNCTION
+POSTHOOK: query: DROP TEMPORARY FUNCTION example_mapconcat
+POSTHOOK: type: DROPFUNCTION
+PREHOOK: query: DROP TEMPORARY FUNCTION example_structprint
+PREHOOK: type: DROPFUNCTION
+POSTHOOK: query: DROP TEMPORARY FUNCTION example_structprint
+POSTHOOK: type: DROPFUNCTION

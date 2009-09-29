@@ -1,9 +1,36 @@
-query: drop table insert1
-query: drop table insert2
-query: create table insert1(key int, value string) stored as textfile
-query: create table insert2(key int, value string) stored as textfile
-query: insert overwrite table insert1 select a.key, a.value from insert2 a WHERE (a.key=-1)
-Input: default/insert2
-Output: default/insert1
-query: drop table insert1
-query: drop table insert2
+PREHOOK: query: drop table insert1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table insert1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table insert2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table insert2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table insert1(key int, value string) stored as textfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table insert1(key int, value string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@insert1
+PREHOOK: query: create table insert2(key int, value string) stored as textfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table insert2(key int, value string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@insert2
+PREHOOK: query: insert overwrite table insert1 select a.key, a.value from insert2 a WHERE (a.key=-1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@insert2
+PREHOOK: Output: default@insert1
+POSTHOOK: query: insert overwrite table insert1 select a.key, a.value from insert2 a WHERE (a.key=-1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@insert2
+POSTHOOK: Output: default@insert1
+PREHOOK: query: drop table insert1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table insert1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@insert1
+PREHOOK: query: drop table insert2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table insert2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@insert2

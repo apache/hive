@@ -1,9 +1,22 @@
-query: -- scanning partitioned data
+PREHOOK: query: -- scanning partitioned data
 drop table tmptable
-query: create table tmptable(key string, value string, hr string, ds string)
-query: explain extended 
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- scanning partitioned data
+drop table tmptable
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table tmptable(key string, value string, hr string, ds string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tmptable(key string, value string, hr string, ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tmptable
+PREHOOK: query: explain extended 
 insert overwrite table tmptable
 select a.* from srcpart a where rand(1) < 0.1 and a.ds = '2008-04-08'
+PREHOOK: type: QUERY
+POSTHOOK: query: explain extended 
+insert overwrite table tmptable
+select a.* from srcpart a where rand(1) < 0.1 and a.ds = '2008-04-08'
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart a)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB tmptable)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF a))) (TOK_WHERE (and (< (TOK_FUNCTION rand 1) 0.1) (= (. (TOK_TABLE_OR_COL a) ds) '2008-04-08')))))
 
@@ -38,7 +51,7 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
-                  directory: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/226703672/10002
+                  directory: file:/data/users/njain/hive5/hive5/build/ql/tmp/1048671400/10002
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -52,15 +65,15 @@ STAGE PLANS:
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         file.inputformat org.apache.hadoop.mapred.TextInputFormat
                         file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        location file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/tmptable
+                        location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/tmptable
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [a]
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [a]
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [a]
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [a]
       Path -> Partition:
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
             partition values:
               ds 2008-04-08
@@ -79,10 +92,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
             partition values:
               ds 2008-04-08
@@ -101,7 +114,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
 
@@ -111,11 +124,11 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                source: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/226703672/10002
-                destination: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1955475674/10000
+                source: file:/data/users/njain/hive5/hive5/build/ql/tmp/1048671400/10002
+                destination: file:/data/users/njain/hive5/hive5/build/ql/tmp/2137898604/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/226703672/10002 
+              file:/data/users/njain/hive5/hive5/build/ql/tmp/1048671400/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -133,9 +146,9 @@ STAGE PLANS:
                           type: string
             Needs Tagging: false
             Path -> Alias:
-              file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/226703672/10002 [file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/226703672/10002]
+              file:/data/users/njain/hive5/hive5/build/ql/tmp/1048671400/10002 [file:/data/users/njain/hive5/hive5/build/ql/tmp/1048671400/10002]
             Path -> Partition:
-              file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/226703672/10002 
+              file:/data/users/njain/hive5/hive5/build/ql/tmp/1048671400/10002 
                 Partition
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -150,7 +163,7 @@ STAGE PLANS:
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       file.inputformat org.apache.hadoop.mapred.TextInputFormat
                       file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      location file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/tmptable
+                      location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/tmptable
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: tmptable
             Reduce Operator Tree:
@@ -158,7 +171,7 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
-                  directory: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1955475674/10000
+                  directory: file:/data/users/njain/hive5/hive5/build/ql/tmp/2137898604/10000
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -171,7 +184,7 @@ STAGE PLANS:
                         bucket_count -1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                        location file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/tmptable
+                        location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/tmptable
                         file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
@@ -180,7 +193,7 @@ STAGE PLANS:
     Move Operator
       tables:
           replace: true
-          source: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1955475674/10000
+          source: file:/data/users/njain/hive5/hive5/build/ql/tmp/2137898604/10000
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -194,20 +207,32 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/test/data/warehouse/tmptable
+                location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/tmptable
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: tmptable
-          tmp directory: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1955475674/10001
+          tmp directory: file:/data/users/njain/hive5/hive5/build/ql/tmp/2137898604/10001
 
 
-query: insert overwrite table tmptable
+PREHOOK: query: insert overwrite table tmptable
 select a.* from srcpart a where rand(1) < 0.1 and a.ds = '2008-04-08'
-Input: default/srcpart/ds=2008-04-08/hr=11
-Input: default/srcpart/ds=2008-04-08/hr=12
-Output: default/tmptable
-query: select * from tmptable x sort by x.key,x.value,x.ds,x.hr
-Input: default/tmptable
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1177751154/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: default@tmptable
+POSTHOOK: query: insert overwrite table tmptable
+select a.* from srcpart a where rand(1) < 0.1 and a.ds = '2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@tmptable
+PREHOOK: query: select * from tmptable x sort by x.key,x.value,x.ds,x.hr
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tmptable
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1971640582/10000
+POSTHOOK: query: select * from tmptable x sort by x.key,x.value,x.ds,x.hr
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tmptable
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1971640582/10000
 103	val_103	2008-04-08	11
 103	val_103	2008-04-08	12
 133	val_133	2008-04-08	11
@@ -320,4 +345,8 @@ Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp
 77	val_77	2008-04-08	12
 78	val_78	2008-04-08	11
 78	val_78	2008-04-08	12
-query: drop table tmptable
+PREHOOK: query: drop table tmptable
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tmptable
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@tmptable

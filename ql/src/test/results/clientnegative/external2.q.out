@@ -1,7 +1,16 @@
-query: drop table external2
-query: create external table external2(a int, b int) partitioned by (ds string)
-query: alter table external2 add partition (ds='2008-01-01') location 'invalidscheme://data.s3ndemo.hive/pkv/2008-01-01'
+PREHOOK: query: drop table external2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table external2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create external table external2(a int, b int) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create external table external2(a int, b int) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@external2
+PREHOOK: query: alter table external2 add partition (ds='2008-01-01') location 'invalidscheme://data.s3ndemo.hive/pkv/2008-01-01'
+PREHOOK: type: ALTERTABLE_ADDPARTS
 FAILED: Error in metadata: MetaException(message:Got exception: java.io.IOException No FileSystem for scheme: invalidscheme)
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
-query: describe external2 partition (ds='2008-01-01')
+PREHOOK: query: describe external2 partition (ds='2008-01-01')
+PREHOOK: type: DESCTABLE
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

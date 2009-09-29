@@ -1,8 +1,22 @@
-query: drop table DEST1
-query: drop table DEST2
-query: CREATE TABLE DEST1(key STRING, value STRING) STORED AS TEXTFILE
-query: CREATE TABLE DEST2(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE
-query: -- union case:map-reduce sub-queries followed by multi-table insert 
+PREHOOK: query: drop table DEST1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table DEST1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table DEST2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table DEST2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE DEST1(key STRING, value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE DEST1(key STRING, value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@DEST1
+PREHOOK: query: CREATE TABLE DEST2(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE DEST2(key STRING, val1 STRING, val2 STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@DEST2
+PREHOOK: query: -- union case:map-reduce sub-queries followed by multi-table insert 
 
 explain 
 FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
@@ -10,6 +24,16 @@ FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
       select s2.key as key, s2.value as value from src s2) unionsrc
 INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, unionsrc.value
 INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, unionsrc.value
+PREHOOK: type: QUERY
+POSTHOOK: query: -- union case:map-reduce sub-queries followed by multi-table insert 
+
+explain 
+FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
+                         UNION  ALL  
+      select s2.key as key, s2.value as value from src s2) unionsrc
+INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, unionsrc.value
+INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, unionsrc.value
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF src s1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 'tst1' key) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (TOK_FUNCTION count 1)) value)))) (TOK_QUERY (TOK_FROM (TOK_TABREF src s2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) key) key) (TOK_SELEXPR (. (TOK_TABLE_OR_COL s2) value) value))))) unionsrc)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB DEST1)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) value)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB DEST2)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL unionsrc) value)))))
 
@@ -69,7 +93,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/970285192/10004 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/1966021387/10004 
           Union
             Select Operator
               expressions:
@@ -103,7 +127,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: dest2
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/970285192/10007 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/1966021387/10007 
           Union
             Select Operator
               expressions:
@@ -144,10 +168,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1625764510/10000
+                destination: file:/data/users/njain/hive5/hive5/build/ql/tmp/1165077920/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/970285192/10005 
+              file:/data/users/njain/hive5/hive5/build/ql/tmp/1966021387/10005 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -186,10 +210,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1625764510/10002
+                destination: file:/data/users/njain/hive5/hive5/build/ql/tmp/1165077920/10002
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/970285192/10006 
+              file:/data/users/njain/hive5/hive5/build/ql/tmp/1966021387/10006 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -245,17 +269,32 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
 
-query: FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
+PREHOOK: query: FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
                          UNION  ALL  
       select s2.key as key, s2.value as value from src s2) unionsrc
 INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, unionsrc.value
 INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, unionsrc.value
-Input: default/src
-Output: default/dest1
-Output: default/dest2
-query: SELECT DEST1.* FROM DEST1 SORT BY DEST1.key, DEST1.value
-Input: default/dest1
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1040816000/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1
+PREHOOK: Output: default@dest2
+POSTHOOK: query: FROM (select 'tst1' as key, cast(count(1) as string) as value from src s1
+                         UNION  ALL  
+      select s2.key as key, s2.value as value from src s2) unionsrc
+INSERT OVERWRITE TABLE DEST1 SELECT unionsrc.key, unionsrc.value
+INSERT OVERWRITE TABLE DEST2 SELECT unionsrc.key, unionsrc.value, unionsrc.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest2
+PREHOOK: query: SELECT DEST1.* FROM DEST1 SORT BY DEST1.key, DEST1.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/896837060/10000
+POSTHOOK: query: SELECT DEST1.* FROM DEST1 SORT BY DEST1.key, DEST1.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/896837060/10000
 0	val_0
 0	val_0
 0	val_0
@@ -757,9 +796,14 @@ Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1040816000/
 98	val_98
 98	val_98
 tst1	500
-query: SELECT DEST2.* FROM DEST2 SORT BY DEST2.key, DEST2.val1, DEST2.val2
-Input: default/dest2
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/491493524/10000
+PREHOOK: query: SELECT DEST2.* FROM DEST2 SORT BY DEST2.key, DEST2.val1, DEST2.val2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest2
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1341838197/10000
+POSTHOOK: query: SELECT DEST2.* FROM DEST2 SORT BY DEST2.key, DEST2.val1, DEST2.val2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest2
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1341838197/10000
 0	val_0	val_0
 0	val_0	val_0
 0	val_0	val_0
@@ -1261,5 +1305,13 @@ Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/491493524/1
 98	val_98	val_98
 98	val_98	val_98
 tst1	500	500
-query: drop table DEST1
-query: drop table DEST2
+PREHOOK: query: drop table DEST1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table DEST1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@dest1
+PREHOOK: query: drop table DEST2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table DEST2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@dest2

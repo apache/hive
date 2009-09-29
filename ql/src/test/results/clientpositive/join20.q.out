@@ -1,6 +1,11 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
+SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_JOIN (TOK_TABREF src src1) (TOK_TABREF src src2) (AND (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)) (< (. (TOK_TABLE_OR_COL src1) key) 10))) (TOK_TABREF src src3) (AND (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src3) key)) (< (. (TOK_TABLE_OR_COL src3) key) 20)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) value)))))
 
@@ -115,7 +120,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1472766970/10002 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/1765380634/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -159,10 +164,16 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
+PREHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1159765605/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1875152381/10000
+POSTHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
+SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1875152381/10000
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	11	val_11
 NULL	NULL	NULL	NULL	12	val_12
@@ -231,9 +242,14 @@ NULL	NULL	NULL	NULL	19	val_19
 5	val_5	5	val_5	5	val_5
 8	val_8	8	val_8	8	val_8
 9	val_9	9	val_9	9	val_9
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key < 15) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key < 15) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
+SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_RIGHTOUTERJOIN (TOK_JOIN (TOK_TABREF src src1) (TOK_TABREF src src2) (AND (AND (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)) (< (. (TOK_TABLE_OR_COL src1) key) 10)) (< (. (TOK_TABLE_OR_COL src2) key) 15))) (TOK_TABREF src src3) (AND (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src3) key)) (< (. (TOK_TABLE_OR_COL src3) key) 20)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src1) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src2) value)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) key)) (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL src3) value)))))
 
@@ -356,7 +372,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/811840338/10002 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/225468980/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -400,10 +416,16 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key < 15) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
+PREHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key < 15) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1615347380/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2054907738/10000
+POSTHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key < 15) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
+SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2054907738/10000
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	11	val_11
 NULL	NULL	NULL	NULL	12	val_12

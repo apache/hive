@@ -1,5 +1,13 @@
-query: drop table altern1
-query: create table altern1(a int, b int) partitioned by (ds string)
-query: alter table altern1 replace columns(a int, b int, ds string)
+PREHOOK: query: drop table altern1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table altern1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table altern1(a int, b int) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table altern1(a int, b int) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@altern1
+PREHOOK: query: alter table altern1 replace columns(a int, b int, ds string)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
 Invalid table columns : Partition column name ds conflicts with table columns.
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

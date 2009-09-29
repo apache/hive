@@ -1,15 +1,44 @@
-query: DROP TABLE mi1
-query: DROP TABLE mi2
-query: DROP TABLE mi3
-query: CREATE TABLE mi1(key INT, value STRING) STORED AS TEXTFILE
-query: CREATE TABLE mi2(key INT, value STRING) STORED AS TEXTFILE
-query: CREATE TABLE mi3(key INT) PARTITIONED BY(ds STRING, hr STRING) STORED AS TEXTFILE
-query: EXPLAIN
+PREHOOK: query: DROP TABLE mi1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE mi1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE mi2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE mi2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE mi3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE mi3
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE mi1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE mi1(key INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@mi1
+PREHOOK: query: CREATE TABLE mi2(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE mi2(key INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@mi2
+PREHOOK: query: CREATE TABLE mi3(key INT) PARTITIONED BY(ds STRING, hr STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE mi3(key INT) PARTITIONED BY(ds STRING, hr STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@mi3
+PREHOOK: query: EXPLAIN
 FROM src a JOIN src b ON (a.key = b.key)
 INSERT OVERWRITE TABLE mi1 SELECT a.* WHERE a.key < 100
 INSERT OVERWRITE TABLE mi2 SELECT a.key, a.value WHERE a.key >= 100 and a.key < 200
 INSERT OVERWRITE TABLE mi3 PARTITION(ds='2008-04-08', hr='12') SELECT a.key WHERE a.key >= 200 and a.key < 300
 INSERT OVERWRITE DIRECTORY '../build/ql/test/data/warehouse/mi4.out' SELECT a.value WHERE a.key >= 300
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM src a JOIN src b ON (a.key = b.key)
+INSERT OVERWRITE TABLE mi1 SELECT a.* WHERE a.key < 100
+INSERT OVERWRITE TABLE mi2 SELECT a.key, a.value WHERE a.key >= 100 and a.key < 200
+INSERT OVERWRITE TABLE mi3 PARTITION(ds='2008-04-08', hr='12') SELECT a.key WHERE a.key >= 200 and a.key < 300
+INSERT OVERWRITE DIRECTORY '../build/ql/test/data/warehouse/mi4.out' SELECT a.value WHERE a.key >= 300
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF src a) (TOK_TABREF src b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB mi1)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF a))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL a) key) 100))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB mi2)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value))) (TOK_WHERE (and (>= (. (TOK_TABLE_OR_COL a) key) 100) (< (. (TOK_TABLE_OR_COL a) key) 200)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB mi3 (TOK_PARTSPEC (TOK_PARTVAL ds '2008-04-08') (TOK_PARTVAL hr '12')))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key))) (TOK_WHERE (and (>= (. (TOK_TABLE_OR_COL a) key) 200) (< (. (TOK_TABLE_OR_COL a) key) 300)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR '../build/ql/test/data/warehouse/mi4.out')) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value))) (TOK_WHERE (>= (. (TOK_TABLE_OR_COL a) key) 300))))
 
@@ -191,19 +220,36 @@ STAGE PLANS:
           destination: ../build/ql/test/data/warehouse/mi4.out
 
 
-query: FROM src a JOIN src b ON (a.key = b.key)
+PREHOOK: query: FROM src a JOIN src b ON (a.key = b.key)
 INSERT OVERWRITE TABLE mi1 SELECT a.* WHERE a.key < 100
 INSERT OVERWRITE TABLE mi2 SELECT a.key, a.value WHERE a.key >= 100 and a.key < 200
 INSERT OVERWRITE TABLE mi3 PARTITION(ds='2008-04-08', hr='12') SELECT a.key WHERE a.key >= 200 and a.key < 300
 INSERT OVERWRITE DIRECTORY '../build/ql/test/data/warehouse/mi4.out' SELECT a.value WHERE a.key >= 300
-Input: default/src
-Output: default/mi1
-Output: default/mi2
-Output: default/mi3/ds=2008-04-08/hr=12
-Output: ../build/ql/test/data/warehouse/mi4.out
-query: SELECT mi1.* FROM mi1
-Input: default/mi1
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/1064629756/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@mi1
+PREHOOK: Output: default@mi2
+PREHOOK: Output: default@mi3@ds=2008-04-08/hr=12
+PREHOOK: Output: ../build/ql/test/data/warehouse/mi4.out
+POSTHOOK: query: FROM src a JOIN src b ON (a.key = b.key)
+INSERT OVERWRITE TABLE mi1 SELECT a.* WHERE a.key < 100
+INSERT OVERWRITE TABLE mi2 SELECT a.key, a.value WHERE a.key >= 100 and a.key < 200
+INSERT OVERWRITE TABLE mi3 PARTITION(ds='2008-04-08', hr='12') SELECT a.key WHERE a.key >= 200 and a.key < 300
+INSERT OVERWRITE DIRECTORY '../build/ql/test/data/warehouse/mi4.out' SELECT a.value WHERE a.key >= 300
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@mi1
+POSTHOOK: Output: default@mi2
+POSTHOOK: Output: default@mi3@ds=2008-04-08/hr=12
+POSTHOOK: Output: ../build/ql/test/data/warehouse/mi4.out
+PREHOOK: query: SELECT mi1.* FROM mi1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mi1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/281387112/10000
+POSTHOOK: query: SELECT mi1.* FROM mi1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mi1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/281387112/10000
 0	val_0
 0	val_0
 0	val_0
@@ -352,9 +398,14 @@ Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp
 98	val_98
 98	val_98
 98	val_98
-query: SELECT mi2.* FROM mi2
-Input: default/mi2
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/1947386768/10000
+PREHOOK: query: SELECT mi2.* FROM mi2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mi2
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1168753559/10000
+POSTHOOK: query: SELECT mi2.* FROM mi2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mi2
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1168753559/10000
 100	val_100
 100	val_100
 100	val_100
@@ -566,9 +617,14 @@ Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp
 199	val_199
 199	val_199
 199	val_199
-query: SELECT mi3.* FROM mi3
-Input: default/mi3/ds=2008-04-08/hr=12
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_2/build/ql/tmp/1250417806/10000
+PREHOOK: query: SELECT mi3.* FROM mi3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mi3@ds=2008-04-08/hr=12
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1082962097/10000
+POSTHOOK: query: SELECT mi3.* FROM mi3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mi3@ds=2008-04-08/hr=12
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1082962097/10000
 200	2008-04-08	12
 200	2008-04-08	12
 200	2008-04-08	12
@@ -1238,6 +1294,18 @@ val_498
 val_498
 val_498
 val_498
-query: DROP TABLE mi1
-query: DROP TABLE mi2
-query: DROP TABLE mi3
+PREHOOK: query: DROP TABLE mi1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE mi1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@mi1
+PREHOOK: query: DROP TABLE mi2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE mi2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@mi2
+PREHOOK: query: DROP TABLE mi3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE mi3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@mi3

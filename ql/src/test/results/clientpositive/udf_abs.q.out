@@ -1,10 +1,19 @@
-query: EXPLAIN SELECT
+PREHOOK: query: EXPLAIN SELECT
   abs(0),
   abs(-1),
   abs(123),
   abs(-9223372036854775807),
   abs(9223372036854775807)
 FROM src LIMIT 1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT
+  abs(0),
+  abs(-1),
+  abs(123),
+  abs(-9223372036854775807),
+  abs(9223372036854775807)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION abs 0)) (TOK_SELEXPR (TOK_FUNCTION abs (- 1))) (TOK_SELEXPR (TOK_FUNCTION abs 123)) (TOK_SELEXPR (TOK_FUNCTION abs (- 9223372036854775807))) (TOK_SELEXPR (TOK_FUNCTION abs 9223372036854775807))) (TOK_LIMIT 1)))
 
@@ -45,21 +54,39 @@ STAGE PLANS:
       limit: 1
 
 
-query: SELECT
+PREHOOK: query: SELECT
   abs(0),
   abs(-1),
   abs(123),
   abs(-9223372036854775807),
   abs(9223372036854775807)
 FROM src LIMIT 1
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/977308324/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2094182155/10000
+POSTHOOK: query: SELECT
+  abs(0),
+  abs(-1),
+  abs(123),
+  abs(-9223372036854775807),
+  abs(9223372036854775807)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2094182155/10000
 0	1	123	9223372036854775807	9223372036854775807
-query: EXPLAIN SELECT
+PREHOOK: query: EXPLAIN SELECT
   abs(0.0),
   abs(-3.14159265),
   abs(3.14159265)
 FROM src LIMIT 1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT
+  abs(0.0),
+  abs(-3.14159265),
+  abs(3.14159265)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION abs 0.0)) (TOK_SELEXPR (TOK_FUNCTION abs (- 3.14159265))) (TOK_SELEXPR (TOK_FUNCTION abs 3.14159265))) (TOK_LIMIT 1)))
 
@@ -96,11 +123,20 @@ STAGE PLANS:
       limit: 1
 
 
-query: SELECT
+PREHOOK: query: SELECT
   abs(0.0),
   abs(-3.14159265),
   abs(3.14159265)
 FROM src LIMIT 1
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/119274499/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/108724608/10000
+POSTHOOK: query: SELECT
+  abs(0.0),
+  abs(-3.14159265),
+  abs(3.14159265)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/108724608/10000
 0.0	3.14159265	3.14159265

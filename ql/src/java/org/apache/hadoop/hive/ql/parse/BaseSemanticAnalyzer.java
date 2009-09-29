@@ -49,6 +49,15 @@ public abstract class BaseSemanticAnalyzer {
   protected Context ctx;
   protected HashMap<String, String> idToTableNameMap;
 
+  /**
+   * ReadEntitites that are passed to the hooks.
+   */
+  protected Set<ReadEntity> inputs;
+  /**
+   * List of WriteEntities that are passed to the hooks.
+   */
+  protected Set<WriteEntity> outputs;
+
 
   public BaseSemanticAnalyzer(HiveConf conf) throws SemanticException {
     try {
@@ -58,17 +67,19 @@ public abstract class BaseSemanticAnalyzer {
       LOG = LogFactory.getLog(this.getClass().getName());
       console = new LogHelper(LOG);
       this.idToTableNameMap = new  HashMap<String, String>();
+      inputs = new LinkedHashSet<ReadEntity>();
+      outputs = new LinkedHashSet<WriteEntity>();
     } catch (Exception e) {
       throw new SemanticException (e);
     }
   }
 
-  
+
   public HashMap<String, String> getIdToTableNameMap() {
     return idToTableNameMap;
   }
 
-  
+
   public abstract void analyzeInternal(ASTNode ast) throws SemanticException;
 
   public void analyze(ASTNode ast, Context ctx) throws SemanticException {
@@ -79,7 +90,7 @@ public abstract class BaseSemanticAnalyzer {
   public void validate() throws SemanticException {
     // Implementations may choose to override this
   }
-  
+
   public List<Task<? extends Serializable>> getRootTasks() {
     return rootTasks;
   }
@@ -114,11 +125,11 @@ public abstract class BaseSemanticAnalyzer {
     if ((val.charAt(0) == '\'' && val.charAt(val.length() - 1) == '\'')
         || (val.charAt(0) == '\"' && val.charAt(val.length() - 1) == '\"')) {
       val = val.substring(1, val.length() - 1);
-    } 
+    }
     return val;
   }
 
-  public static String charSetString(String charSetName, String charSetString) 
+  public static String charSetString(String charSetName, String charSetString)
     throws SemanticException {
     try
       {
@@ -131,7 +142,7 @@ public abstract class BaseSemanticAnalyzer {
             assert charSetString.charAt(0) == '0';
             assert charSetString.charAt(1) == 'x';
             charSetString = charSetString.substring(2);
-        
+
             byte[] bArray = new byte[charSetString.length()/2];
             int j = 0;
             for (int i = 0; i < charSetString.length(); i += 2)
@@ -144,7 +155,7 @@ public abstract class BaseSemanticAnalyzer {
 
             String res = new String(bArray, charSetName);
             return res;
-          } 
+          }
       } catch (UnsupportedEncodingException e) {
       throw new SemanticException(e);
     }
@@ -162,7 +173,7 @@ public abstract class BaseSemanticAnalyzer {
     }
     if (val.charAt(0) == '`' && val.charAt(val.length() - 1) == '`') {
       val = val.substring(1, val.length() - 1);
-    } 
+    }
     return val;
   }
 
@@ -172,11 +183,11 @@ public abstract class BaseSemanticAnalyzer {
     Character enclosure = null;
 
     // Some of the strings can be passed in as unicode. For example, the
-    // delimiter can be passed in as \002 - So, we first check if the 
+    // delimiter can be passed in as \002 - So, we first check if the
     // string is a unicode number, else go back to the old behavior
     StringBuilder sb = new StringBuilder(b.length());
     for (int i=0; i < b.length(); i++) {
-      
+
       char currentChar = b.charAt(i);
       if (enclosure == null) {
         if (currentChar == '\'' || b.charAt(i) == '\"') {
@@ -185,12 +196,12 @@ public abstract class BaseSemanticAnalyzer {
         // ignore all other chars outside the enclosure
         continue;
       }
-      
+
       if (enclosure.equals(currentChar)) {
         enclosure = null;
         continue;
       }
-      
+
       if (currentChar == '\\' && (i+4 < b.length())) {
         char i1 = b.charAt(i+1);
         char i2 = b.charAt(i+2);
@@ -233,15 +244,15 @@ public abstract class BaseSemanticAnalyzer {
     }
     return sb.toString();
   }
-  
+
   public Set<ReadEntity> getInputs() {
-    return new LinkedHashSet<ReadEntity>();
+    return inputs;
   }
-  
+
   public Set<WriteEntity> getOutputs() {
-    return new LinkedHashSet<WriteEntity>();
+    return outputs;
   }
-  
+
   public static class tableSpec {
     public String tableName;
     public Table tableHandle;
@@ -257,7 +268,7 @@ public abstract class BaseSemanticAnalyzer {
         // get table metadata
         tableName = unescapeIdentifier(ast.getChild(0).getText());
         boolean testMode = conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODE);
-        if (testMode) 
+        if (testMode)
           tableName = conf.getVar(HiveConf.ConfVars.HIVETESTMODEPREFIX) + tableName;
 
         tableHandle = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
@@ -287,9 +298,9 @@ public abstract class BaseSemanticAnalyzer {
 
 
     public String toString() {
-      if(partHandle != null) 
+      if(partHandle != null)
         return partHandle.toString();
-      else 
+      else
         return tableHandle.toString();
     }
   }

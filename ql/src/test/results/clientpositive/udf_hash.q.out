@@ -1,10 +1,19 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT hash(CAST(1 AS TINYINT)), hash(CAST(2 AS SMALLINT)),
        hash(3), hash(CAST('123456789012' AS BIGINT)),
        hash(CAST(1.25 AS FLOAT)), hash(CAST(16.0 AS DOUBLE)),
        hash('400'), hash('abc'), hash(TRUE), hash(FALSE),
        hash(1, 2, 3)
 FROM src LIMIT 1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT hash(CAST(1 AS TINYINT)), hash(CAST(2 AS SMALLINT)),
+       hash(3), hash(CAST('123456789012' AS BIGINT)),
+       hash(CAST(1.25 AS FLOAT)), hash(CAST(16.0 AS DOUBLE)),
+       hash('400'), hash('abc'), hash(TRUE), hash(FALSE),
+       hash(1, 2, 3)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION hash (TOK_FUNCTION TOK_TINYINT 1))) (TOK_SELEXPR (TOK_FUNCTION hash (TOK_FUNCTION TOK_SMALLINT 2))) (TOK_SELEXPR (TOK_FUNCTION hash 3)) (TOK_SELEXPR (TOK_FUNCTION hash (TOK_FUNCTION TOK_BIGINT '123456789012'))) (TOK_SELEXPR (TOK_FUNCTION hash (TOK_FUNCTION TOK_FLOAT 1.25))) (TOK_SELEXPR (TOK_FUNCTION hash (TOK_FUNCTION TOK_DOUBLE 16.0))) (TOK_SELEXPR (TOK_FUNCTION hash '400')) (TOK_SELEXPR (TOK_FUNCTION hash 'abc')) (TOK_SELEXPR (TOK_FUNCTION hash TRUE)) (TOK_SELEXPR (TOK_FUNCTION hash FALSE)) (TOK_SELEXPR (TOK_FUNCTION hash 1 2 3))) (TOK_LIMIT 1)))
 
@@ -57,12 +66,22 @@ STAGE PLANS:
       limit: 1
 
 
-query: SELECT hash(CAST(1 AS TINYINT)), hash(CAST(2 AS SMALLINT)),
+PREHOOK: query: SELECT hash(CAST(1 AS TINYINT)), hash(CAST(2 AS SMALLINT)),
        hash(3), hash(CAST('123456789012' AS BIGINT)),
        hash(CAST(1.25 AS FLOAT)), hash(CAST(16.0 AS DOUBLE)),
        hash('400'), hash('abc'), hash(TRUE), hash(FALSE),
        hash(1, 2, 3)
 FROM src LIMIT 1
-Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/378731640/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/875530574/10000
+POSTHOOK: query: SELECT hash(CAST(1 AS TINYINT)), hash(CAST(2 AS SMALLINT)),
+       hash(3), hash(CAST('123456789012' AS BIGINT)),
+       hash(CAST(1.25 AS FLOAT)), hash(CAST(16.0 AS DOUBLE)),
+       hash('400'), hash('abc'), hash(TRUE), hash(FALSE),
+       hash(1, 2, 3)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/875530574/10000
 1	2	3	-1097262584	1067450368	1076887552	51508	96354	1	0	1026

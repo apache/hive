@@ -1,9 +1,28 @@
-query: DROP TABLE nullscript
-query: CREATE TABLE nullscript(KEY STRING, VALUE STRING) STORED AS TEXTFILE
-query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE nullscript
-query: LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE nullscript
-query: explain
+PREHOOK: query: DROP TABLE nullscript
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE nullscript
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE nullscript(KEY STRING, VALUE STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE nullscript(KEY STRING, VALUE STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@nullscript
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE nullscript
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE nullscript
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@nullscript
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE nullscript
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE nullscript
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@nullscript
+PREHOOK: query: explain
 select transform(key) using '/bin/cat' as key1 from nullscript
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select transform(key) using '/bin/cat' as key1 from nullscript
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF nullscript)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (TOK_TABLE_OR_COL key)) TOK_SERDE TOK_RECORDWRITER '/bin/cat' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST key1))))))
 
@@ -40,9 +59,14 @@ STAGE PLANS:
       limit: -1
 
 
-query: select transform(key) using '/bin/cat' as key1 from nullscript
-Input: default/nullscript
-Output: file:/data/users/njain/hive3/hive3/build/ql/tmp/910302350/10000
+PREHOOK: query: select transform(key) using '/bin/cat' as key1 from nullscript
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nullscript
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/109237316/10000
+POSTHOOK: query: select transform(key) using '/bin/cat' as key1 from nullscript
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nullscript
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/109237316/10000
 238
 86
 311

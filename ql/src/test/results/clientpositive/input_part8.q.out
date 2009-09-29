@@ -1,5 +1,9 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT x.* FROM SRCPART x WHERE ds = '2008-04-08' LIMIT 10
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT x.* FROM SRCPART x WHERE ds = '2008-04-08' LIMIT 10
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF SRCPART x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF x))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '2008-04-08')) (TOK_LIMIT 10)))
 
@@ -12,10 +16,16 @@ STAGE PLANS:
       limit: 10
 
 
-query: SELECT x.* FROM SRCPART x WHERE ds = '2008-04-08' LIMIT 10
-Input: default/srcpart/ds=2008-04-08/hr=11
-Input: default/srcpart/ds=2008-04-08/hr=12
-Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/735532208/10000
+PREHOOK: query: SELECT x.* FROM SRCPART x WHERE ds = '2008-04-08' LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1227850350/10000
+POSTHOOK: query: SELECT x.* FROM SRCPART x WHERE ds = '2008-04-08' LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1227850350/10000
 238	val_238	2008-04-08	11
 86	val_86	2008-04-08	11
 311	val_311	2008-04-08	11

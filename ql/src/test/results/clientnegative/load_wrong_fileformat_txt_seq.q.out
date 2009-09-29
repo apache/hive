@@ -1,8 +1,20 @@
-query: -- test for loading into tables with the correct file format
+PREHOOK: query: -- test for loading into tables with the correct file format
 -- test for loading into partitions with the correct file format
 
 DROP TABLE T1
-query: CREATE TABLE T1(name STRING) STORED AS TEXTFILE
-query: LOAD DATA LOCAL INPATH '../data/files/kv1.seq' INTO TABLE T1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- test for loading into tables with the correct file format
+-- test for loading into partitions with the correct file format
+
+DROP TABLE T1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@t1
+PREHOOK: query: CREATE TABLE T1(name STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE T1(name STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@T1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.seq' INTO TABLE T1
+PREHOOK: type: LOAD
 Failed with exception Wrong file format. Please check the file's format.
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.MoveTask

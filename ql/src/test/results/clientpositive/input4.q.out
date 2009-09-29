@@ -1,6 +1,14 @@
-query: CREATE TABLE INPUT4(KEY STRING, VALUE STRING) STORED AS TEXTFILE
-query: EXPLAIN
+PREHOOK: query: CREATE TABLE INPUT4(KEY STRING, VALUE STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE INPUT4(KEY STRING, VALUE STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@INPUT4
+PREHOOK: query: EXPLAIN
 LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE INPUT4
+PREHOOK: type: LOAD
+POSTHOOK: query: EXPLAIN
+LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE INPUT4
+POSTHOOK: type: LOAD
 ABSTRACT SYNTAX TREE:
   (TOK_LOAD '../data/files/kv1.txt' (TOK_TAB INPUT4) LOCAL)
 
@@ -11,8 +19,8 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Copy
-      source: file:/data/users/njain/hive4/hive4/data/files/kv1.txt
-      destination: file:/data/users/njain/hive4/hive4/build/ql/tmp/1119122844/10000
+      source: file:/data/users/njain/hive5/hive5/data/files/kv1.txt
+      destination: file:/data/users/njain/hive5/hive5/build/ql/tmp/1092488123/10000
 
   Stage: Stage-1
     Move Operator
@@ -25,10 +33,19 @@ STAGE PLANS:
               name: input4
 
 
-query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE INPUT4
-query: SELECT INPUT4.VALUE, INPUT4.KEY FROM INPUT4
-Input: default/input4
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/486784140/10000
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE INPUT4
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE INPUT4
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@input4
+PREHOOK: query: SELECT INPUT4.VALUE, INPUT4.KEY FROM INPUT4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@input4
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/78834933/10000
+POSTHOOK: query: SELECT INPUT4.VALUE, INPUT4.KEY FROM INPUT4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@input4
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/78834933/10000
 val_238	238
 val_86	86
 val_311	311
@@ -529,4 +546,8 @@ val_403	403
 val_400	400
 val_200	200
 val_97	97
-query: DROP TABLE INPUT4
+PREHOOK: query: DROP TABLE INPUT4
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE INPUT4
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@input4

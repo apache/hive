@@ -1,5 +1,12 @@
-query: CREATE TABLE dest1(len INT)
-query: EXPLAIN FROM src1 INSERT OVERWRITE TABLE dest1 SELECT length(src1.value)
+PREHOOK: query: CREATE TABLE dest1(len INT)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest1(len INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest1
+PREHOOK: query: EXPLAIN FROM src1 INSERT OVERWRITE TABLE dest1 SELECT length(src1.value)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN FROM src1 INSERT OVERWRITE TABLE dest1 SELECT length(src1.value)
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src1)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION length (. (TOK_TABLE_OR_COL src1) value))))))
 
@@ -35,10 +42,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2113573167/10000
+                destination: file:/data/users/njain/hive5/hive5/build/ql/tmp/777850344/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1544905742/10002 
+              file:/data/users/njain/hive5/hive5/build/ql/tmp/1274386623/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -70,12 +77,22 @@ STAGE PLANS:
               name: dest1
 
 
-query: FROM src1 INSERT OVERWRITE TABLE dest1 SELECT length(src1.value)
-Input: default/src1
-Output: default/dest1
-query: SELECT dest1.* FROM dest1
-Input: default/dest1
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/966501876/10000
+PREHOOK: query: FROM src1 INSERT OVERWRITE TABLE dest1 SELECT length(src1.value)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@dest1
+POSTHOOK: query: FROM src1 INSERT OVERWRITE TABLE dest1 SELECT length(src1.value)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@dest1
+PREHOOK: query: SELECT dest1.* FROM dest1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/775750892/10000
+POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/775750892/10000
 7
 0
 7
@@ -101,11 +118,27 @@ Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/966501876/1
 0
 0
 0
-query: DROP TABLE dest1
-query: -- Test with non-ascii characters. 
+PREHOOK: query: DROP TABLE dest1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE dest1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@dest1
+PREHOOK: query: -- Test with non-ascii characters. 
 CREATE TABLE dest1(name STRING) STORED AS TEXTFILE
-query: LOAD DATA LOCAL INPATH '../data/files/kv4.txt' INTO TABLE dest1
-query: EXPLAIN SELECT length(dest1.name) FROM dest1
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- Test with non-ascii characters. 
+CREATE TABLE dest1(name STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv4.txt' INTO TABLE dest1
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv4.txt' INTO TABLE dest1
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@dest1
+PREHOOK: query: EXPLAIN SELECT length(dest1.name) FROM dest1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT length(dest1.name) FROM dest1
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF dest1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION length (. (TOK_TABLE_OR_COL dest1) name))))))
 
@@ -137,8 +170,17 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT length(dest1.name) FROM dest1
-Input: default/dest1
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1105559783/10000
+PREHOOK: query: SELECT length(dest1.name) FROM dest1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1564729330/10000
+POSTHOOK: query: SELECT length(dest1.name) FROM dest1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1564729330/10000
 2
-query: DROP TABLE dest1
+PREHOOK: query: DROP TABLE dest1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE dest1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@dest1

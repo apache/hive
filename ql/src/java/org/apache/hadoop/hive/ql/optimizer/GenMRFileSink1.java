@@ -183,7 +183,7 @@ public class GenMRFileSink1 implements NodeProcessor {
     cplan.getPathToPartitionInfo().put(fsConf.getDirName(), new partitionDesc(fsConf.getTableInfo(), null));
     cplan.setNumReduceTasks(-1);
     
-    moveWork dummyMv = new moveWork(null, new loadFileDesc(fsOp.getConf().getDirName(), finalName, true, null, null), false);
+    moveWork dummyMv = new moveWork(null, null, null, new loadFileDesc(fsOp.getConf().getDirName(), finalName, true, null, null), false);
     Task<? extends Serializable> dummyMergeTask = TaskFactory.get(dummyMv, ctx.getConf());
     List<Serializable> listWorks = new ArrayList<Serializable>();
     listWorks.add(dummyMv);

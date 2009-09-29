@@ -1,4 +1,4 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
  SELECT a.key, a.value, b.key, b.value
  FROM 
   (
@@ -10,6 +10,20 @@ query: EXPLAIN
   FROM src1 src2 group by src2.key
  ) b 
  ON (a.key = b.key)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+ SELECT a.key, a.value, b.key, b.value
+ FROM 
+  (
+  SELECT src1.key as key, count(src1.value) AS value FROM src src1 group by src1.key
+  ) a
+ FULL OUTER JOIN 
+ (
+  SELECT src2.key as key, count(distinct(src2.value)) AS value 
+  FROM src1 src2 group by src2.key
+ ) b 
+ ON (a.key = b.key)
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_FULLOUTERJOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src src1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) key) key) (TOK_SELEXPR (TOK_FUNCTION count (. (TOK_TABLE_OR_COL src1) value)) value)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL src1) key)))) a) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src1 src2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) key) key) (TOK_SELEXPR (TOK_FUNCTIONDI count (. (TOK_TABLE_OR_COL src2) value)) value)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL src2) key)))) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) value)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) value)))))
 
@@ -201,7 +215,7 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT a.key, a.value, b.key, b.value
+PREHOOK: query: SELECT a.key, a.value, b.key, b.value
  FROM 
   (
   SELECT src1.key as key, count(src1.value) AS value FROM src src1 group by src1.key
@@ -212,9 +226,25 @@ query: SELECT a.key, a.value, b.key, b.value
   FROM src1 src2 group by src2.key
  ) b 
  ON (a.key = b.key)
-Input: default/src1
-Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1137643842/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/18648565/10000
+POSTHOOK: query: SELECT a.key, a.value, b.key, b.value
+ FROM 
+  (
+  SELECT src1.key as key, count(src1.value) AS value FROM src src1 group by src1.key
+  ) a
+ FULL OUTER JOIN 
+ (
+  SELECT src2.key as key, count(distinct(src2.value)) AS value 
+  FROM src1 src2 group by src2.key
+ ) b 
+ ON (a.key = b.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/18648565/10000
 NULL	NULL		7
 0	3	NULL	NULL
 10	1	NULL	NULL

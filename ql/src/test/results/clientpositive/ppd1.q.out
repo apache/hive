@@ -1,5 +1,9 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT src.key as c3 from src where src.key > '2'
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT src.key as c3 from src where src.key > '2'
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key) c3)) (TOK_WHERE (> (. (TOK_TABLE_OR_COL src) key) '2'))))
 
@@ -39,9 +43,14 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT src.key as c3 from src where src.key > '2'
-Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1622609719/10000
+PREHOOK: query: SELECT src.key as c3 from src where src.key > '2'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1065673612/10000
+POSTHOOK: query: SELECT src.key as c3 from src where src.key > '2'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1065673612/10000
 238
 86
 311

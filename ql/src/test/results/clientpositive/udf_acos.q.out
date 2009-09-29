@@ -1,20 +1,44 @@
-query: SELECT acos(null)
+PREHOOK: query: SELECT acos(null)
 FROM src LIMIT 1
-Input: default/src
-Output: file:/home/kmangla/hive/build/ql/tmp/952728720/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1457812629/10000
+POSTHOOK: query: SELECT acos(null)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1457812629/10000
 NULL
-query: SELECT acos(0)
+PREHOOK: query: SELECT acos(0)
 FROM src LIMIT 1
-Input: default/src
-Output: file:/home/kmangla/hive/build/ql/tmp/1631791047/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1180311283/10000
+POSTHOOK: query: SELECT acos(0)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1180311283/10000
 1.5707963267948966
-query: SELECT acos(-0.5), asin(0.66)
+PREHOOK: query: SELECT acos(-0.5), asin(0.66)
 FROM src LIMIT 1
-Input: default/src
-Output: file:/home/kmangla/hive/build/ql/tmp/1922816852/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/804897720/10000
+POSTHOOK: query: SELECT acos(-0.5), asin(0.66)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/804897720/10000
 2.0943951023931957	0.7208187608700897
-query: SELECT acos(2)
+PREHOOK: query: SELECT acos(2)
 FROM src LIMIT 1
-Input: default/src
-Output: file:/home/kmangla/hive/build/ql/tmp/296909393/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/615514597/10000
+POSTHOOK: query: SELECT acos(2)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/615514597/10000
 NaN

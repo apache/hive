@@ -1,15 +1,42 @@
-query: -- test for internationalization
+PREHOOK: query: -- test for internationalization
 -- kv4.txt contains the utf-8 character 0xE982B5E993AE which we are verifying later on
 CREATE TABLE INPUTDDL5(name STRING) STORED AS TEXTFILE
-query: LOAD DATA LOCAL INPATH '../data/files/kv4.txt' INTO TABLE INPUTDDL5
-query: DESCRIBE INPUTDDL5
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- test for internationalization
+-- kv4.txt contains the utf-8 character 0xE982B5E993AE which we are verifying later on
+CREATE TABLE INPUTDDL5(name STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@INPUTDDL5
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv4.txt' INTO TABLE INPUTDDL5
+PREHOOK: type: LOAD
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv4.txt' INTO TABLE INPUTDDL5
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@inputddl5
+PREHOOK: query: DESCRIBE INPUTDDL5
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE INPUTDDL5
+POSTHOOK: type: DESCTABLE
 name	string	
-query: SELECT INPUTDDL5.name from INPUTDDL5
-Input: default/inputddl5
-Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/347511721/10010959.10000
+PREHOOK: query: SELECT INPUTDDL5.name from INPUTDDL5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@inputddl5
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1156409019/10000
+POSTHOOK: query: SELECT INPUTDDL5.name from INPUTDDL5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputddl5
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1156409019/10000
 邵铮
-query: SELECT count(1) FROM INPUTDDL5 WHERE INPUTDDL5.name = _UTF-8 0xE982B5E993AE
-Input: default/inputddl5
-Output: /data/users/njain/hive5/hive5/ql/../build/ql/tmp/363368800/365120763.10000
+PREHOOK: query: SELECT count(1) FROM INPUTDDL5 WHERE INPUTDDL5.name = _UTF-8 0xE982B5E993AE
+PREHOOK: type: QUERY
+PREHOOK: Input: default@inputddl5
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/609959614/10000
+POSTHOOK: query: SELECT count(1) FROM INPUTDDL5 WHERE INPUTDDL5.name = _UTF-8 0xE982B5E993AE
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputddl5
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/609959614/10000
 1
-query: DROP TABLE INPUTDDL5
+PREHOOK: query: DROP TABLE INPUTDDL5
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE INPUTDDL5
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@inputddl5

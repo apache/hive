@@ -1,5 +1,9 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT c1 FROM (select value as c1, key as c2 from src) x where c2 < 100
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT c1 FROM (select value as c1, key as c2 from src) x where c2 < 100
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL value) c1) (TOK_SELEXPR (TOK_TABLE_OR_COL key) c2)))) x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL c1))) (TOK_WHERE (< (TOK_TABLE_OR_COL c2) 100))))
 
@@ -46,9 +50,14 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT c1 FROM (select value as c1, key as c2 from src) x where c2 < 100
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1738791810/10000
+PREHOOK: query: SELECT c1 FROM (select value as c1, key as c2 from src) x where c2 < 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/991930201/10000
+POSTHOOK: query: SELECT c1 FROM (select value as c1, key as c2 from src) x where c2 < 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/991930201/10000
 val_86
 val_27
 val_98

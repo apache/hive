@@ -1,5 +1,9 @@
-query: explain
+PREHOOK: query: explain
 SELECT src5.src1_value FROM (SELECT src3.*, src4.value as src4_value, src4.key as src4_key FROM src src4 JOIN (SELECT src2.*, src1.key as src1_key, src1.value as src1_value FROM src src1 JOIN src src2 ON src1.key = src2.key) src3 ON src3.src1_key = src4.key) src5
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+SELECT src5.src1_value FROM (SELECT src3.*, src4.value as src4_value, src4.key as src4_key FROM src src4 JOIN (SELECT src2.*, src1.key as src1_key, src1.value as src1_value FROM src src1 JOIN src src2 ON src1.key = src2.key) src3 ON src3.src1_key = src4.key) src5
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF src src4) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF src src1) (TOK_TABREF src src2) (= (. (TOK_TABLE_OR_COL src1) key) (. (TOK_TABLE_OR_COL src2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF src2)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) key) src1_key) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) value) src1_value)))) src3) (= (. (TOK_TABLE_OR_COL src3) src1_key) (. (TOK_TABLE_OR_COL src4) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF src3)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src4) value) src4_value) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src4) key) src4_key)))) src5)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src5) src1_value)))))
 

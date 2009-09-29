@@ -1,7 +1,13 @@
-query: select * from (
+PREHOOK: query: select * from (
   select transform(key) using 'cat' as cola from src)s order by cola
-Input: default/src
-Output: file:/data/users/nzhang/work/790/790-trunk-apache-hive/build/ql/tmp/1290779299/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/230425942/10000
+POSTHOOK: query: select * from (
+  select transform(key) using 'cat' as cola from src)s order by cola
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/230425942/10000
 0
 0
 0
@@ -502,12 +508,20 @@ Output: file:/data/users/nzhang/work/790/790-trunk-apache-hive/build/ql/tmp/1290
 97
 98
 98
-query: select * from (
+PREHOOK: query: select * from (
   select transform(key) using 'cat' as cola from src
   union all
   select transform(key) using 'cat' as cola from src) s order by cola
-Input: default/src
-Output: file:/data/users/nzhang/work/790/790-trunk-apache-hive/build/ql/tmp/1729338552/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1673034806/10000
+POSTHOOK: query: select * from (
+  select transform(key) using 'cat' as cola from src
+  union all
+  select transform(key) using 'cat' as cola from src) s order by cola
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1673034806/10000
 0
 0
 0

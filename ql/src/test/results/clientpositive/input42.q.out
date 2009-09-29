@@ -1,5 +1,9 @@
-query: explain extended
+PREHOOK: query: explain extended
 select * from srcpart a where a.ds='2008-04-08'
+PREHOOK: type: QUERY
+POSTHOOK: query: explain extended
+select * from srcpart a where a.ds='2008-04-08'
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (. (TOK_TABLE_OR_COL a) ds) '2008-04-08'))))
 
@@ -12,10 +16,16 @@ STAGE PLANS:
       limit: -1
 
 
-query: select * from srcpart a where a.ds='2008-04-08'
-Input: default/srcpart/ds=2008-04-08/hr=11
-Input: default/srcpart/ds=2008-04-08/hr=12
-Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/2090238290/10000
+PREHOOK: query: select * from srcpart a where a.ds='2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1981400750/10000
+POSTHOOK: query: select * from srcpart a where a.ds='2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1981400750/10000
 238	val_238	2008-04-08	11
 86	val_86	2008-04-08	11
 311	val_311	2008-04-08	11
@@ -1016,8 +1026,12 @@ Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/2090238290/10000
 400	val_400	2008-04-08	12
 200	val_200	2008-04-08	12
 97	val_97	2008-04-08	12
-query: explain extended
+PREHOOK: query: explain extended
 select * from srcpart a where a.ds='2008-04-08' and key < 200
+PREHOOK: type: QUERY
+POSTHOOK: query: explain extended
+select * from srcpart a where a.ds='2008-04-08' and key < 200
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (= (. (TOK_TABLE_OR_COL a) ds) '2008-04-08') (< (TOK_TABLE_OR_COL key) 200)))))
 
@@ -1056,7 +1070,7 @@ STAGE PLANS:
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
-                    directory: file:/data/users/njain/hive1/hive1/build/ql/tmp/1636549090/10001
+                    directory: file:/data/users/njain/hive5/hive5/build/ql/tmp/1664046852/10001
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1066,10 +1080,10 @@ STAGE PLANS:
                           columns.types string:string:string:string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [a]
-        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [a]
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [a]
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [a]
       Path -> Partition:
-        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
             partition values:
               ds 2008-04-08
@@ -1088,10 +1102,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
             partition values:
               ds 2008-04-08
@@ -1110,7 +1124,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
 
@@ -1118,10 +1132,16 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-query: select * from srcpart a where a.ds='2008-04-08' and key < 200
-Input: default/srcpart/ds=2008-04-08/hr=11
-Input: default/srcpart/ds=2008-04-08/hr=12
-Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/2029733644/10000
+PREHOOK: query: select * from srcpart a where a.ds='2008-04-08' and key < 200
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/200140260/10000
+POSTHOOK: query: select * from srcpart a where a.ds='2008-04-08' and key < 200
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/200140260/10000
 86	val_86	2008-04-08	11
 27	val_27	2008-04-08	11
 165	val_165	2008-04-08	11
@@ -1500,8 +1520,12 @@ Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/2029733644/10000
 90	val_90	2008-04-08	12
 169	val_169	2008-04-08	12
 97	val_97	2008-04-08	12
-query: explain extended
+PREHOOK: query: explain extended
 select * from srcpart a where a.ds='2008-04-08' and rand(100) < 0.1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain extended
+select * from srcpart a where a.ds='2008-04-08' and rand(100) < 0.1
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (= (. (TOK_TABLE_OR_COL a) ds) '2008-04-08') (< (TOK_FUNCTION rand 100) 0.1)))))
 
@@ -1535,7 +1559,7 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
-                  directory: file:/data/users/njain/hive1/hive1/build/ql/tmp/1619555939/10001
+                  directory: file:/data/users/njain/hive5/hive5/build/ql/tmp/56577408/10001
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1545,10 +1569,10 @@ STAGE PLANS:
                         columns.types string:string:string:string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [a]
-        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [a]
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [a]
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [a]
       Path -> Partition:
-        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
             partition values:
               ds 2008-04-08
@@ -1567,10 +1591,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
             partition values:
               ds 2008-04-08
@@ -1589,7 +1613,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
 
@@ -1598,10 +1622,16 @@ STAGE PLANS:
       limit: -1
 
 
-query: select * from srcpart a where a.ds='2008-04-08' and rand(100) < 0.1
-Input: default/srcpart/ds=2008-04-08/hr=11
-Input: default/srcpart/ds=2008-04-08/hr=12
-Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/774585255/10000
+PREHOOK: query: select * from srcpart a where a.ds='2008-04-08' and rand(100) < 0.1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1684443155/10000
+POSTHOOK: query: select * from srcpart a where a.ds='2008-04-08' and rand(100) < 0.1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1684443155/10000
 145	val_145	2008-04-08	11
 417	val_417	2008-04-08	11
 292	val_292	2008-04-08	11

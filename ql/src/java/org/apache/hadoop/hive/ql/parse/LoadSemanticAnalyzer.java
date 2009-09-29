@@ -64,7 +64,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     String fromScheme = fromURI.getScheme();
     String fromAuthority = fromURI.getAuthority();
     String path = fromURI.getPath();
-    
+
     // generate absolute path relative to current directory or hdfs home directory
     if(!path.startsWith("/")) {
       if(isLocal) {
@@ -73,7 +73,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
         path = new Path(new Path("/user/"+System.getProperty("user.name")), path).toString();
       }
     }
-    
+
     // set correct scheme and authority
     if(StringUtils.isEmpty(fromScheme)) {
       if(isLocal) {
@@ -86,20 +86,20 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
         fromAuthority = defaultURI.getAuthority();
       }
     }
-    
+
     // if scheme is specified but not authority then use the default authority
     if(fromScheme.equals("hdfs") && StringUtils.isEmpty(fromAuthority)) {
       URI defaultURI = FileSystem.get(conf).getUri();
       fromAuthority = defaultURI.getAuthority();
     }
-    
+
     LOG.debug(fromScheme + "@" + fromAuthority + "@" + path);
     return new URI(fromScheme, fromAuthority, path, null, null);
   }
 
 
   private void applyConstraints(URI fromURI, URI toURI, Tree ast, boolean isLocal) throws SemanticException {
-    if(!fromURI.getScheme().equals("file") && 
+    if(!fromURI.getScheme().equals("file") &&
        !fromURI.getScheme().equals("hdfs")) {
       throw new SemanticException (ErrorMsg.INVALID_PATH.getMsg(ast, "only \"file\" or \"hdfs\" file systems accepted"));
     }
@@ -134,7 +134,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
 
-    // only in 'local' mode do we copy stuff from one place to another. 
+    // only in 'local' mode do we copy stuff from one place to another.
     // reject different scheme/authority in other cases.
     if(!isLocal && (!StringUtils.equals(fromURI.getScheme(), toURI.getScheme()) ||
                     !StringUtils.equals(fromURI.getAuthority(), toURI.getAuthority()))) {
@@ -183,7 +183,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
         && (ts.partSpec == null || ts.partSpec.size() == 0)) {
       throw new SemanticException(ErrorMsg.NEED_PARTITION_ERROR.getMsg());
     }
-    
+
     // make sure the arguments make sense
     applyConstraints(fromURI, toURI, from_t, isLocal);
 
@@ -191,14 +191,14 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // create copy work
     if(isLocal) {
-      // if the local keyword is specified - we will always make a copy. this might seem redundant in the case 
+      // if the local keyword is specified - we will always make a copy. this might seem redundant in the case
       // that the hive warehouse is also located in the local file system - but that's just a test case.
       String copyURIStr = ctx.getExternalTmpFileURI(toURI);
       URI copyURI = URI.create(copyURIStr);
       rTask = TaskFactory.get(new copyWork(fromURI.toString(), copyURIStr), this.conf);
       fromURI = copyURI;
     }
-    
+
     // create final load/move work
 
     String loadTmpPath = ctx.getExternalTmpFileURI(toURI);
@@ -209,9 +209,9 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
                                         isOverWrite);
 
     if(rTask != null) {
-      rTask.addDependentTask(TaskFactory.get(new moveWork(loadTableWork, null, true), this.conf));
+      rTask.addDependentTask(TaskFactory.get(new moveWork(getInputs(), getOutputs(), loadTableWork, null, true), this.conf));
     } else {
-      rTask = TaskFactory.get(new moveWork(loadTableWork, null, true), this.conf);
+      rTask = TaskFactory.get(new moveWork(getInputs(), getOutputs(), loadTableWork, null, true), this.conf);
     }
 
     rootTasks.add(rTask);

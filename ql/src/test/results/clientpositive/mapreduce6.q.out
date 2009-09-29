@@ -1,10 +1,22 @@
-query: CREATE TABLE dest1(key INT, ten INT, one INT, value STRING) STORED AS TEXTFILE
-query: EXPLAIN
+PREHOOK: query: CREATE TABLE dest1(key INT, ten INT, one INT, value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest1(key INT, ten INT, one INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest1
+PREHOOK: query: EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest1
 SELECT src.key, CAST(src.key / 10 AS INT) as c2, CAST(src.key % 10 AS INT) as c3, src.value
 DISTRIBUTE BY value, key
 SORT BY c2 DESC, c3 ASC
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM src
+INSERT OVERWRITE TABLE dest1
+SELECT src.key, CAST(src.key / 10 AS INT) as c2, CAST(src.key % 10 AS INT) as c3, src.value
+DISTRIBUTE BY value, key
+SORT BY c2 DESC, c3 ASC
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key)) (TOK_SELEXPR (TOK_FUNCTION TOK_INT (/ (. (TOK_TABLE_OR_COL src) key) 10)) c2) (TOK_SELEXPR (TOK_FUNCTION TOK_INT (% (. (TOK_TABLE_OR_COL src) key) 10)) c3) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value))) (TOK_DISTRIBUTEBY (TOK_TABLE_OR_COL value) (TOK_TABLE_OR_COL key)) (TOK_SORTBY (TOK_TABSORTCOLNAMEDESC (TOK_TABLE_OR_COL c2)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL c3)))))
 
@@ -85,16 +97,30 @@ STAGE PLANS:
               name: dest1
 
 
-query: FROM src
+PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE dest1
 SELECT src.key, CAST(src.key / 10 AS INT) as c2, CAST(src.key % 10 AS INT) as c3, src.value
 DISTRIBUTE BY value, key
 SORT BY c2 DESC, c3 ASC
-Input: default/src
-Output: default/dest1
-query: SELECT dest1.* FROM dest1
-Input: default/dest1
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/117785863/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1
+POSTHOOK: query: FROM src
+INSERT OVERWRITE TABLE dest1
+SELECT src.key, CAST(src.key / 10 AS INT) as c2, CAST(src.key % 10 AS INT) as c3, src.value
+DISTRIBUTE BY value, key
+SORT BY c2 DESC, c3 ASC
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1
+PREHOOK: query: SELECT dest1.* FROM dest1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/492905310/10000
+POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/492905310/10000
 490	49	0	val_490
 491	49	1	val_491
 492	49	2	val_492

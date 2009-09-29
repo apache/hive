@@ -18,7 +18,11 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+
 import java.io.Serializable;
+import java.util.Set;
 
 public class DDLWork implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -35,87 +39,125 @@ public class DDLWork implements Serializable {
   private MsckDesc msckDesc;
   private showTableStatusDesc showTblStatusDesc;
 
-  public DDLWork() { }
+  /**
+   * ReadEntitites that are passed to the hooks.
+   */
+  protected Set<ReadEntity> inputs;
+  /**
+   * List of WriteEntities that are passed to the hooks.
+   */
+  protected Set<WriteEntity> outputs;
+
+  public DDLWork() {
+  }
+
+  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs) {
+    this.inputs = inputs;
+    this.outputs = outputs;
+  }
 
   /**
    * @param alterTblDesc alter table descriptor
    */
-  public DDLWork(alterTableDesc alterTblDesc) {
+  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs, alterTableDesc alterTblDesc) {
+    this(inputs, outputs);
     this.alterTblDesc = alterTblDesc;
   }
 
   /**
    * @param createTblDesc create table descriptor
    */
-  public DDLWork(createTableDesc createTblDesc) {
+  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs, createTableDesc createTblDesc) {
+    this(inputs, outputs);
+
     this.createTblDesc = createTblDesc;
   }
 
   /**
    * @param createTblLikeDesc create table dlike escriptor
    */
-  public DDLWork(createTableLikeDesc createTblLikeDesc) {
+  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs, createTableLikeDesc createTblLikeDesc) {
+    this(inputs, outputs);
+
     this.createTblLikeDesc = createTblLikeDesc;
   }
 
   /**
    * @param dropTblDesc drop table descriptor
    */
-  public DDLWork(dropTableDesc dropTblDesc) {
+  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs, dropTableDesc dropTblDesc) {
+    this(inputs, outputs);
+
     this.dropTblDesc = dropTblDesc;
   }
 
   /**
    * @param descTblDesc
    */
-  public DDLWork(descTableDesc descTblDesc) {
+  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs, descTableDesc descTblDesc) {
+    this(inputs, outputs);
+
     this.descTblDesc = descTblDesc;
   }
 
   /**
    * @param showTblsDesc
    */
-  public DDLWork(showTablesDesc showTblsDesc) {
+  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs, showTablesDesc showTblsDesc) {
+    this(inputs, outputs);
+
     this.showTblsDesc = showTblsDesc;
   }
 
   /**
    * @param showFuncsDesc
    */
-  public DDLWork(showFunctionsDesc showFuncsDesc) {
+  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs, showFunctionsDesc showFuncsDesc) {
+    this(inputs, outputs);
+
     this.showFuncsDesc = showFuncsDesc;
   }
-  
+
   /**
    * @param descFuncDesc
    */
-  public DDLWork(descFunctionDesc descFuncDesc) {
+  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs, descFunctionDesc descFuncDesc) {
+    this(inputs, outputs);
+
     this.descFunctionDesc = descFuncDesc;
   }
 
   /**
    * @param showPartsDesc
    */
-  public DDLWork(showPartitionsDesc showPartsDesc) {
+  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs, showPartitionsDesc showPartsDesc) {
+    this(inputs, outputs);
+
     this.showPartsDesc = showPartsDesc;
   }
-  
+
   /**
    * @param addPartitionDesc information about the partitions
    * we want to add.
    */
-  public DDLWork(AddPartitionDesc addPartitionDesc) {
+  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs, AddPartitionDesc addPartitionDesc) {
+    this(inputs, outputs);
+
     this.addPartitionDesc = addPartitionDesc;
   }
 
-  public DDLWork(MsckDesc checkDesc) {
+  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs, MsckDesc checkDesc) {
+    this(inputs, outputs);
+
     this.msckDesc = checkDesc;
   }
 
   /**
    * @param showTblStatusDesc show table status descriptor
    */
-  public DDLWork(showTableStatusDesc showTblStatusDesc) {
+  public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs, showTableStatusDesc showTblStatusDesc) {
+    this(inputs, outputs);
+
     this.showTblStatusDesc = showTblStatusDesc;
   }
 
@@ -201,7 +243,7 @@ public class DDLWork implements Serializable {
   public showFunctionsDesc getShowFuncsDesc() {
     return showFuncsDesc;
   }
-  
+
   /**
    * @return the descFuncDesc
    */
@@ -216,7 +258,7 @@ public class DDLWork implements Serializable {
   public void setShowFuncsDesc(showFunctionsDesc showFuncsDesc) {
     this.showFuncsDesc = showFuncsDesc;
   }
-  
+
   /**
    * @param descFuncDesc the showFuncsDesc to set
    */
@@ -297,5 +339,21 @@ public class DDLWork implements Serializable {
   public void setShowTblStatusDesc(showTableStatusDesc showTblStatusDesc) {
     this.showTblStatusDesc = showTblStatusDesc;
   }
-  
+
+  public Set<ReadEntity> getInputs() {
+    return inputs;
+  }
+
+  public Set<WriteEntity> getOutputs() {
+    return outputs;
+  }
+
+  public void setInputs(Set<ReadEntity> inputs) {
+    this.inputs = inputs;
+  }
+
+  public void setOutputs(Set<WriteEntity> outputs) {
+    this.outputs = outputs;
+  }
+
 }

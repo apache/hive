@@ -44,6 +44,8 @@ import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.PreExecute;
+import org.apache.hadoop.hive.ql.hooks.PostExecute;
+
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.plan.tableDesc;
@@ -110,7 +112,7 @@ public class Driver implements CommandProcessor {
     LOG.info("Returning cluster status: " + cs.toString());
     return cs;
   }
-  
+
   /**
    * Get a Schema with fields represented with native Hive types
    */
@@ -139,7 +141,7 @@ public class Driver implements CommandProcessor {
         if (td == null) {
           throw new Exception("No table description found for fetch task: " + ft);
         }
- 
+
         String tableName = "result";
         List<FieldSchema> lst = MetaStoreUtils.getFieldsFromDeserializer(
             tableName, td.getDeserializer());
@@ -156,12 +158,12 @@ public class Driver implements CommandProcessor {
     LOG.info("Returning Hive schema: " + schema);
     return schema;
   }
-  
+
   /**
    * Get a Schema with fields represented with Thrift DDL types
    */
   public Schema getThriftSchema() throws Exception {
-    Schema schema;    
+    Schema schema;
     try {
       schema = this.getSchema();
       if (schema != null) {
@@ -169,8 +171,8 @@ public class Driver implements CommandProcessor {
 	    // Go over the schema and convert type to thrift type
 	    if (lst != null) {
 	      for (FieldSchema f : lst) {
-	        f.setType(MetaStoreUtils.typeToThriftType(f.getType()));  
-          }     
+	        f.setType(MetaStoreUtils.typeToThriftType(f.getType()));
+          }
 	    }
       }
     }
@@ -251,7 +253,7 @@ public class Driver implements CommandProcessor {
       // Do semantic analysis and plan generation
       sem.analyze(tree, ctx);
       LOG.info("Semantic Analysis Completed");
-      
+
       // validate the plan
       sem.validate();
 
@@ -338,7 +340,7 @@ public class Driver implements CommandProcessor {
       return pehooks;
 
     String[] peClasses = pestr.split(",");
-    
+
     for(String peClass: peClasses) {
       try {
         pehooks.add((PreExecute)Class.forName(peClass.trim(), true, JavaUtils.getClassLoader()).newInstance());
@@ -347,10 +349,31 @@ public class Driver implements CommandProcessor {
         throw e;
       }
     }
-    
+
     return pehooks;
   }
-    
+
+  private List<PostExecute> getPostExecHooks() throws Exception {
+    ArrayList<PostExecute> pehooks = new ArrayList<PostExecute>();
+    String pestr = conf.getVar(HiveConf.ConfVars.POSTEXECHOOKS);
+    pestr = pestr.trim();
+    if (pestr.equals(""))
+      return pehooks;
+
+    String[] peClasses = pestr.split(",");
+
+    for(String peClass: peClasses) {
+      try {
+        pehooks.add((PostExecute)Class.forName(peClass.trim(), true, JavaUtils.getClassLoader()).newInstance());
+      } catch (ClassNotFoundException e) {
+        console.printError("Post Exec Hook Class not found:" + e.getMessage());
+        throw e;
+      }
+    }
+
+    return pehooks;
+  }
+
   public int execute() {
     boolean noName = StringUtils.isEmpty(conf
         .getVar(HiveConf.ConfVars.HADOOPJOBNAME));
@@ -366,7 +389,7 @@ public class Driver implements CommandProcessor {
       LOG.info("Starting command: " + queryStr);
 
       plan.setStarted();
-      
+
       if (SessionState.get() != null) {
         SessionState.get().getHiveHistory().startQuery(queryStr, conf.getVar(HiveConf.ConfVars.HIVEQUERYID) );
         SessionState.get().getHiveHistory().logPlanProgress(plan);
@@ -377,11 +400,11 @@ public class Driver implements CommandProcessor {
 
       // Get all the pre execution hooks and execute them.
       for(PreExecute peh: getPreExecHooks()) {
-        peh.run(SessionState.get(), 
+        peh.run(SessionState.get(),
                 sem.getInputs(), sem.getOutputs(),
-                UserGroupInformation.getCurrentUGI());        
+                UserGroupInformation.getCurrentUGI());
       }
-      
+
       int jobs = countJobs(sem.getRootTasks());
       if (jobs > 0) {
         console.printInfo("Total MapReduce jobs = " + jobs);
@@ -441,7 +464,7 @@ public class Driver implements CommandProcessor {
           continue;
         }
 
-        for (Task<? extends Serializable> child : tsk.getChildTasks()) {          
+        for (Task<? extends Serializable> child : tsk.getChildTasks()) {
           // Check if the child is runnable
           if (!child.isRunnable()) {
             continue;
@@ -452,6 +475,14 @@ public class Driver implements CommandProcessor {
           }
         }
       }
+
+      // Get all the post execution hooks and execute them.
+      for(PostExecute peh: getPostExecHooks()) {
+        peh.run(SessionState.get(),
+                sem.getInputs(), sem.getOutputs(),
+                UserGroupInformation.getCurrentUGI());
+      }
+
       if (SessionState.get() != null){
         SessionState.get().getHiveHistory().setQueryProperty(queryId,
             Keys.QUERY_RET_CODE, String.valueOf(0));
@@ -476,6 +507,7 @@ public class Driver implements CommandProcessor {
       }
     }
     plan.setDone();
+
     if (SessionState.get() != null) {
       try {
         SessionState.get().getHiveHistory().logPlanProgress(plan);

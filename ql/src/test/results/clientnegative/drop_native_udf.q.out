@@ -1,2 +1,3 @@
-query: DROP TEMPORARY FUNCTION max
+PREHOOK: query: DROP TEMPORARY FUNCTION max
+PREHOOK: type: DROPFUNCTION
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.FunctionTask

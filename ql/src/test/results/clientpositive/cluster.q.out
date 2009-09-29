@@ -1,5 +1,9 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF SRC x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 10)) (TOK_CLUSTERBY (. (TOK_TABLE_OR_COL x) key))))
 
@@ -57,12 +61,21 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1039157739/10000
+PREHOOK: query: SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/10918634/10000
+POSTHOOK: query: SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/10918634/10000
 10	val_10
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT * FROM SRC x  where x.key = 20 CLUSTER BY key
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT * FROM SRC x  where x.key = 20 CLUSTER BY key
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF SRC x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (TOK_TABLE_OR_COL key))))
 
@@ -120,12 +133,21 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT * FROM SRC x where x.key = 20 CLUSTER BY key
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/936932129/10000
+PREHOOK: query: SELECT * FROM SRC x where x.key = 20 CLUSTER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/494894638/10000
+POSTHOOK: query: SELECT * FROM SRC x where x.key = 20 CLUSTER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/494894638/10000
 20	val_20
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT x.* FROM SRC x where x.key = 20 CLUSTER BY key
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT x.* FROM SRC x where x.key = 20 CLUSTER BY key
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF SRC x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF x))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (TOK_TABLE_OR_COL key))))
 
@@ -183,12 +205,21 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT x.* FROM SRC x where x.key = 20 CLUSTER BY key
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1777006866/10000
+PREHOOK: query: SELECT x.* FROM SRC x where x.key = 20 CLUSTER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/726529435/10000
+POSTHOOK: query: SELECT x.* FROM SRC x where x.key = 20 CLUSTER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/726529435/10000
 20	val_20
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT x.*  FROM SRC x where x.key = 20 CLUSTER BY x.key
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT x.*  FROM SRC x where x.key = 20 CLUSTER BY x.key
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF SRC x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF x))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (. (TOK_TABLE_OR_COL x) key))))
 
@@ -246,12 +277,21 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT x.*  FROM SRC x where x.key = 20 CLUSTER BY x.key
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/332012199/10000
+PREHOOK: query: SELECT x.*  FROM SRC x where x.key = 20 CLUSTER BY x.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/424130746/10000
+POSTHOOK: query: SELECT x.*  FROM SRC x where x.key = 20 CLUSTER BY x.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/424130746/10000
 20	val_20
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY key
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY key
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF SRC x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value) v1)) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (TOK_TABLE_OR_COL key))))
 
@@ -309,12 +349,21 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY key
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1467820372/10000
+PREHOOK: query: SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/252561840/10000
+POSTHOOK: query: SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/252561840/10000
 20	val_20
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY x.key
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY x.key
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF SRC x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value) v1)) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (. (TOK_TABLE_OR_COL x) key))))
 
@@ -372,12 +421,21 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY x.key
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1936271284/10000
+PREHOOK: query: SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY x.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/175842831/10000
+POSTHOOK: query: SELECT x.key, x.value as v1 FROM SRC x where x.key = 20 CLUSTER BY x.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/175842831/10000
 20	val_20
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1  FROM SRC x where x.key = 20 CLUSTER BY v1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT x.key, x.value as v1  FROM SRC x where x.key = 20 CLUSTER BY v1
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF SRC x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value) v1)) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (TOK_TABLE_OR_COL v1))))
 
@@ -435,12 +493,21 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT x.key, x.value as v1  FROM SRC x where x.key = 20 CLUSTER BY v1
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/554101432/10000
+PREHOOK: query: SELECT x.key, x.value as v1  FROM SRC x where x.key = 20 CLUSTER BY v1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2554842/10000
+POSTHOOK: query: SELECT x.key, x.value as v1  FROM SRC x where x.key = 20 CLUSTER BY v1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2554842/10000
 20	val_20
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT y.* from (SELECT x.* FROM SRC x CLUSTER BY x.key) y where y.key = 20
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT y.* from (SELECT x.* FROM SRC x CLUSTER BY x.key) y where y.key = 20
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF SRC x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF x))) (TOK_CLUSTERBY (. (TOK_TABLE_OR_COL x) key)))) y)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF y))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL y) key) 20))))
 
@@ -501,12 +568,21 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT y.* from (SELECT x.* FROM SRC x CLUSTER BY x.key) y where y.key = 20
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1032907487/10000
+PREHOOK: query: SELECT y.* from (SELECT x.* FROM SRC x CLUSTER BY x.key) y where y.key = 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/156651006/10000
+POSTHOOK: query: SELECT y.* from (SELECT x.* FROM SRC x CLUSTER BY x.key) y where y.key = 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/156651006/10000
 20	val_20
-query: EXPLAIN 
+PREHOOK: query: EXPLAIN 
 SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key)  where x.key = 20 CLUSTER BY v1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN 
+SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key)  where x.key = 20 CLUSTER BY v1
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF SRC x) (TOK_TABREF SRC y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value) v1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) key))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (TOK_TABLE_OR_COL v1))))
 
@@ -586,7 +662,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/2042815322/10002 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/213322227/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col1
@@ -617,12 +693,21 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/251237187/10000
+PREHOOK: query: SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/458771054/10000
+POSTHOOK: query: SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/458771054/10000
 20	val_20	20
-query: EXPLAIN 
+PREHOOK: query: EXPLAIN 
 SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN 
+SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF SRC x) (TOK_TABREF SRC y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value) v1) (TOK_SELEXPR (TOK_ALLCOLREF y))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (TOK_TABLE_OR_COL v1))))
 
@@ -706,7 +791,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1924216417/10002 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/1040346447/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col1
@@ -739,12 +824,21 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/328575061/10000
+PREHOOK: query: SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1866708520/10000
+POSTHOOK: query: SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1866708520/10000
 20	val_20	20	val_20
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY x.key
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY x.key
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF SRC x) (TOK_TABREF SRC y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value) v1) (TOK_SELEXPR (TOK_ALLCOLREF y))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (. (TOK_TABLE_OR_COL x) key))))
 
@@ -828,7 +922,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/745749935/10002 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/1738200454/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -861,12 +955,21 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY x.key
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/66741381/10000
+PREHOOK: query: SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY x.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/550654126/10000
+POSTHOOK: query: SELECT x.key, x.value as v1, y.*  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY x.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/550654126/10000
 20	val_20	20	val_20
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT x.key, x.value as v1, y.key as yk  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY key
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT x.key, x.value as v1, y.key as yk  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY key
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF SRC x) (TOK_TABREF SRC y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL x) value) v1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL y) key) yk)) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) key) 20)) (TOK_CLUSTERBY (TOK_TABLE_OR_COL key))))
 
@@ -946,7 +1049,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/1745977063/10002 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/1291639540/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -977,11 +1080,16 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT x.key, x.value as v1, y.key as yk  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY key
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/26281356/10000
+PREHOOK: query: SELECT x.key, x.value as v1, y.key as yk  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1737050750/10000
+POSTHOOK: query: SELECT x.key, x.value as v1, y.key as yk  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1737050750/10000
 20	val_20	20
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT unioninput.*
 FROM (
   FROM src select src.key, src.value WHERE src.key < 100
@@ -989,6 +1097,16 @@ FROM (
   FROM src SELECT src.* WHERE src.key > 100
 ) unioninput
 CLUSTER BY unioninput.key
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT unioninput.*
+FROM (
+  FROM src select src.key, src.value WHERE src.key < 100
+  UNION ALL
+  FROM src SELECT src.* WHERE src.key > 100
+) unioninput
+CLUSTER BY unioninput.key
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL src) key) 100)))) (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF src))) (TOK_WHERE (> (. (TOK_TABLE_OR_COL src) key) 100))))) unioninput)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF unioninput))) (TOK_CLUSTERBY (. (TOK_TABLE_OR_COL unioninput) key))))
 
@@ -1094,15 +1212,26 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT unioninput.*
+PREHOOK: query: SELECT unioninput.*
 FROM (
   FROM src select src.key, src.value WHERE src.key < 100
   UNION ALL
   FROM src SELECT src.* WHERE src.key > 100
 ) unioninput
 CLUSTER BY unioninput.key
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/658971317/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1695374031/10000
+POSTHOOK: query: SELECT unioninput.*
+FROM (
+  FROM src select src.key, src.value WHERE src.key < 100
+  UNION ALL
+  FROM src SELECT src.* WHERE src.key > 100
+) unioninput
+CLUSTER BY unioninput.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1695374031/10000
 0	val_0
 0	val_0
 0	val_0

@@ -1,7 +1,13 @@
-query: -- no input pruning, sample filter
+PREHOOK: query: -- no input pruning, sample filter
 EXPLAIN
 SELECT s.key
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s
+PREHOOK: type: QUERY
+POSTHOOK: query: -- no input pruning, sample filter
+EXPLAIN
+SELECT s.key
+FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF srcbucket (TOK_TABLESAMPLE 1 5 (TOK_TABLE_OR_COL key)) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL s) key)))))
 
@@ -41,10 +47,16 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT s.key
+PREHOOK: query: SELECT s.key
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s SORT BY key
-Input: default/srcbucket
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/533192725/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcbucket
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1351290542/10000
+POSTHOOK: query: SELECT s.key
+FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s SORT BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcbucket
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1351290542/10000
 0
 0
 0

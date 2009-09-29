@@ -1,8 +1,23 @@
-query: drop table tst
-query: create table tst(a int, b int) partitioned by (d string)
-query: alter table tst add partition (d='2009-01-01')
-query: explain
+PREHOOK: query: drop table tst
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tst
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table tst(a int, b int) partitioned by (d string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tst(a int, b int) partitioned by (d string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tst
+PREHOOK: query: alter table tst add partition (d='2009-01-01')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: query: alter table tst add partition (d='2009-01-01')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@tst@d=2009-01-01
+PREHOOK: query: explain
 select count(1) from tst x where x.d='2009-01-01'
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(1) from tst x where x.d='2009-01-01'
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF tst x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL x) d) '2009-01-01'))))
 
@@ -60,8 +75,17 @@ STAGE PLANS:
       limit: -1
 
 
-query: select count(1) from tst x where x.d='2009-01-01'
-Input: default/tst/d=2009-01-01
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1878605126/10000
+PREHOOK: query: select count(1) from tst x where x.d='2009-01-01'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tst@d=2009-01-01
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1710334544/10000
+POSTHOOK: query: select count(1) from tst x where x.d='2009-01-01'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tst@d=2009-01-01
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1710334544/10000
 0
-query: drop table tst
+PREHOOK: query: drop table tst
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tst
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@tst

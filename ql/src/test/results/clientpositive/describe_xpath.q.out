@@ -1,20 +1,44 @@
-query: -- Describe a list structure in a thrift table
+PREHOOK: query: -- Describe a list structure in a thrift table
 describe src_thrift.lint
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: -- Describe a list structure in a thrift table
+describe src_thrift.lint
+POSTHOOK: type: DESCTABLE
 lint	array<int>	from deserializer
-query: -- Describe the element of a list
+PREHOOK: query: -- Describe the element of a list
 describe src_thrift.lint.$elem$
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: -- Describe the element of a list
+describe src_thrift.lint.$elem$
+POSTHOOK: type: DESCTABLE
 $elem$	int	from deserializer
-query: -- Describe the key of a map
+PREHOOK: query: -- Describe the key of a map
 describe src_thrift.mStringString.$key$
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: -- Describe the key of a map
+describe src_thrift.mStringString.$key$
+POSTHOOK: type: DESCTABLE
 $key$	string	from deserializer
-query: -- Describe the value of a map
+PREHOOK: query: -- Describe the value of a map
 describe src_thrift.mStringString.$value$
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: -- Describe the value of a map
+describe src_thrift.mStringString.$value$
+POSTHOOK: type: DESCTABLE
 $value$	string	from deserializer
-query: -- Describe a complex element of a list
+PREHOOK: query: -- Describe a complex element of a list
 describe src_thrift.lintString.$elem$
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: -- Describe a complex element of a list
+describe src_thrift.lintString.$elem$
+POSTHOOK: type: DESCTABLE
 myint	int	from deserializer
 mystring	string	from deserializer
 underscore_int	int	from deserializer
-query: -- Describe a member of an element of a list
+PREHOOK: query: -- Describe a member of an element of a list
 describe src_thrift.lintString.$elem$.myint
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: -- Describe a member of an element of a list
+describe src_thrift.lintString.$elem$.myint
+POSTHOOK: type: DESCTABLE
 myint	int	from deserializer

@@ -1,8 +1,18 @@
-query: CREATE TABLE implicit_test1(a BIGINT, b STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe' WITH SERDEPROPERTIES('serialization.format'= 'org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol') STORED AS TEXTFILE
-query: EXPLAIN
+PREHOOK: query: CREATE TABLE implicit_test1(a BIGINT, b STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe' WITH SERDEPROPERTIES('serialization.format'= 'org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol') STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE implicit_test1(a BIGINT, b STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe' WITH SERDEPROPERTIES('serialization.format'= 'org.apache.hadoop.hive.serde2.thrift.TCTLSeparatedProtocol') STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@implicit_test1
+PREHOOK: query: EXPLAIN
 SELECT implicit_test1.*
 FROM implicit_test1
 WHERE implicit_test1.a <> 0
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT implicit_test1.*
+FROM implicit_test1
+WHERE implicit_test1.a <> 0
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF implicit_test1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF implicit_test1))) (TOK_WHERE (<> (. (TOK_TABLE_OR_COL implicit_test1) a) 0))))
 
@@ -44,9 +54,20 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT implicit_test1.*
+PREHOOK: query: SELECT implicit_test1.*
 FROM implicit_test1
 WHERE implicit_test1.a <> 0
-Input: default/implicit_test1
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1171789993/10000
-query: DROP TABLE implicit_test1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@implicit_test1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/439003851/10000
+POSTHOOK: query: SELECT implicit_test1.*
+FROM implicit_test1
+WHERE implicit_test1.a <> 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@implicit_test1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/439003851/10000
+PREHOOK: query: DROP TABLE implicit_test1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE implicit_test1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@implicit_test1

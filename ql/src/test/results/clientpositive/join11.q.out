@@ -1,10 +1,19 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT src1.c1, src2.c4 
 FROM
 (SELECT src.key as c1, src.value as c2 from src) src1
 JOIN
 (SELECT src.key as c3, src.value as c4 from src) src2
 ON src1.c1 = src2.c3 AND src1.c1 < 100
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT src1.c1, src2.c4 
+FROM
+(SELECT src.key as c1, src.value as c2 from src) src1
+JOIN
+(SELECT src.key as c3, src.value as c4 from src) src2
+ON src1.c1 = src2.c3 AND src1.c1 < 100
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key) c1) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value) c2)))) src1) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key) c3) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value) c4)))) src2) (AND (= (. (TOK_TABLE_OR_COL src1) c1) (. (TOK_TABLE_OR_COL src2) c3)) (< (. (TOK_TABLE_OR_COL src1) c1) 100)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) c1)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src2) c4)))))
 
@@ -93,14 +102,24 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT src1.c1, src2.c4 
+PREHOOK: query: SELECT src1.c1, src2.c4 
 FROM
 (SELECT src.key as c1, src.value as c2 from src) src1
 JOIN
 (SELECT src.key as c3, src.value as c4 from src) src2
 ON src1.c1 = src2.c3 AND src1.c1 < 100
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/210275309/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1653560335/10000
+POSTHOOK: query: SELECT src1.c1, src2.c4 
+FROM
+(SELECT src.key as c1, src.value as c2 from src) src1
+JOIN
+(SELECT src.key as c3, src.value as c4 from src) src2
+ON src1.c1 = src2.c3 AND src1.c1 < 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1653560335/10000
 0	val_0
 0	val_0
 0	val_0

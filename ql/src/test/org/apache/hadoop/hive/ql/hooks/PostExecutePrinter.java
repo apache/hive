@@ -24,10 +24,10 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 
 /**
- * Implementation of a pre execute hook that simply prints out its
+ * Implementation of a post execute hook that simply prints out its
  * parameters to standard output.
  */
-public class PreExecutePrinter implements PreExecute {
+public class PostExecutePrinter implements PostExecute {
 
   @Override
   public void run(SessionState sess, Set<ReadEntity> inputs,
@@ -40,15 +40,15 @@ public class PreExecutePrinter implements PreExecute {
       return;
 
     if (sess != null) {
-      console.printError("PREHOOK: query: " + sess.getCmd().trim());
-      console.printError("PREHOOK: type: " + sess.getCommandType());
+      console.printError("POSTHOOK: query: " + sess.getCmd().trim());
+      console.printError("POSTHOOK: type: " + sess.getCommandType());
     }
 
     for(ReadEntity re: inputs) {
-      console.printError("PREHOOK: Input: " + re.toString());
+      console.printError("POSTHOOK: Input: " + re.toString());
     }
     for(WriteEntity we: outputs) {
-      console.printError("PREHOOK: Output: " + we.toString());
+      console.printError("POSTHOOK: Output: " + we.toString());
     }
   }
 

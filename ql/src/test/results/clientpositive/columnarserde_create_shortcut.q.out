@@ -1,8 +1,20 @@
-query: drop table columnarserde_create_shortcut
-query: CREATE TABLE columnarserde_create_shortcut(a array<int>, b array<string>, c map<string,string>, d int, e string) STORED AS RCFILE
-query: EXPLAIN
+PREHOOK: query: drop table columnarserde_create_shortcut
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table columnarserde_create_shortcut
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE columnarserde_create_shortcut(a array<int>, b array<string>, c map<string,string>, d int, e string) STORED AS RCFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE columnarserde_create_shortcut(a array<int>, b array<string>, c map<string,string>, d int, e string) STORED AS RCFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@columnarserde_create_shortcut
+PREHOOK: query: EXPLAIN
 FROM src_thrift
 INSERT OVERWRITE TABLE columnarserde_create_shortcut SELECT src_thrift.lint, src_thrift.lstring, src_thrift.mstringstring, src_thrift.aint, src_thrift.astring DISTRIBUTE BY 1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM src_thrift
+INSERT OVERWRITE TABLE columnarserde_create_shortcut SELECT src_thrift.lint, src_thrift.lstring, src_thrift.mstringstring, src_thrift.aint, src_thrift.astring DISTRIBUTE BY 1
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src_thrift)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB columnarserde_create_shortcut)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src_thrift) lint)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src_thrift) lstring)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src_thrift) mstringstring)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src_thrift) aint)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src_thrift) astring))) (TOK_DISTRIBUTEBY 1)))
 
@@ -69,13 +81,24 @@ STAGE PLANS:
               name: columnarserde_create_shortcut
 
 
-query: FROM src_thrift
+PREHOOK: query: FROM src_thrift
 INSERT OVERWRITE TABLE columnarserde_create_shortcut SELECT src_thrift.lint, src_thrift.lstring, src_thrift.mstringstring, src_thrift.aint, src_thrift.astring DISTRIBUTE BY 1
-Input: default/src_thrift
-Output: default/columnarserde_create_shortcut
-query: SELECT columnarserde_create_shortcut.* FROM columnarserde_create_shortcut DISTRIBUTE BY 1
-Input: default/columnarserde_create_shortcut
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1249909626/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+PREHOOK: Output: default@columnarserde_create_shortcut
+POSTHOOK: query: FROM src_thrift
+INSERT OVERWRITE TABLE columnarserde_create_shortcut SELECT src_thrift.lint, src_thrift.lstring, src_thrift.mstringstring, src_thrift.aint, src_thrift.astring DISTRIBUTE BY 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+POSTHOOK: Output: default@columnarserde_create_shortcut
+PREHOOK: query: SELECT columnarserde_create_shortcut.* FROM columnarserde_create_shortcut DISTRIBUTE BY 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@columnarserde_create_shortcut
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1010466676/10000
+POSTHOOK: query: SELECT columnarserde_create_shortcut.* FROM columnarserde_create_shortcut DISTRIBUTE BY 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@columnarserde_create_shortcut
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1010466676/10000
 [0,0,0]	["0","0","0"]	{"key_0":"value_0"}	1712634731	record_0
 [1,2,3]	["10","100","1000"]	{"key_1":"value_1"}	465985200	record_1
 [2,4,6]	["20","200","2000"]	{"key_2":"value_2"}	-751827638	record_2
@@ -87,9 +110,14 @@ Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1249909626/
 [8,16,24]	["80","800","8000"]	{"key_8":"value_8"}	1638581578	record_8
 [9,18,27]	["90","900","9000"]	{"key_9":"value_9"}	336964413	record_9
 null	null	{}	0	NULL
-query: SELECT columnarserde_create_shortcut.a[0], columnarserde_create_shortcut.b[0], columnarserde_create_shortcut.c['key2'], columnarserde_create_shortcut.d, columnarserde_create_shortcut.e FROM columnarserde_create_shortcut DISTRIBUTE BY 1
-Input: default/columnarserde_create_shortcut
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/467882709/10000
+PREHOOK: query: SELECT columnarserde_create_shortcut.a[0], columnarserde_create_shortcut.b[0], columnarserde_create_shortcut.c['key2'], columnarserde_create_shortcut.d, columnarserde_create_shortcut.e FROM columnarserde_create_shortcut DISTRIBUTE BY 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@columnarserde_create_shortcut
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/236647428/10000
+POSTHOOK: query: SELECT columnarserde_create_shortcut.a[0], columnarserde_create_shortcut.b[0], columnarserde_create_shortcut.c['key2'], columnarserde_create_shortcut.d, columnarserde_create_shortcut.e FROM columnarserde_create_shortcut DISTRIBUTE BY 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@columnarserde_create_shortcut
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/236647428/10000
 0	0	NULL	1712634731	record_0
 1	10	NULL	465985200	record_1
 2	20	NULL	-751827638	record_2
@@ -101,19 +129,44 @@ Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/467882709/1
 8	80	NULL	1638581578	record_8
 9	90	NULL	336964413	record_9
 NULL	NULL	NULL	0	NULL
-query: drop table columnarserde_create_shortcut
-query: DROP TABLE columnShortcutTable
-query: CREATE table columnShortcutTable (key STRING, value STRING) STORED AS RCFILE
-query: FROM src
+PREHOOK: query: drop table columnarserde_create_shortcut
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table columnarserde_create_shortcut
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@columnarserde_create_shortcut
+PREHOOK: query: DROP TABLE columnShortcutTable
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE columnShortcutTable
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE table columnShortcutTable (key STRING, value STRING) STORED AS RCFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE table columnShortcutTable (key STRING, value STRING) STORED AS RCFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@columnShortcutTable
+PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE columnShortcutTable SELECT src.key, src.value LIMIT 10
-Input: default/src
-Output: default/columnshortcuttable
-query: describe columnShortcutTable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@columnshortcuttable
+POSTHOOK: query: FROM src
+INSERT OVERWRITE TABLE columnShortcutTable SELECT src.key, src.value LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@columnshortcuttable
+PREHOOK: query: describe columnShortcutTable
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe columnShortcutTable
+POSTHOOK: type: DESCTABLE
 key	string	from deserializer
 value	string	from deserializer
-query: SELECT columnShortcutTable.* FROM columnShortcutTable
-Input: default/columnshortcuttable
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2017736818/10000
+PREHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@columnshortcuttable
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/531162572/10000
+POSTHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@columnshortcuttable
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/531162572/10000
 238	val_238
 86	val_86
 311	val_311
@@ -124,10 +177,20 @@ Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/2017736818/
 278	val_278
 98	val_98
 484	val_484
-query: ALTER TABLE columnShortcutTable ADD COLUMNS (c string)
-query: SELECT columnShortcutTable.* FROM columnShortcutTable
-Input: default/columnshortcuttable
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/984890513/10000
+PREHOOK: query: ALTER TABLE columnShortcutTable ADD COLUMNS (c string)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: query: ALTER TABLE columnShortcutTable ADD COLUMNS (c string)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@columnshortcuttable
+POSTHOOK: Output: default@columnshortcuttable
+PREHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@columnshortcuttable
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1510560377/10000
+POSTHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@columnshortcuttable
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1510560377/10000
 238	val_238	NULL
 86	val_86	NULL
 311	val_311	NULL
@@ -138,10 +201,20 @@ Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/984890513/1
 278	val_278	NULL
 98	val_98	NULL
 484	val_484	NULL
-query: ALTER TABLE columnShortcutTable REPLACE COLUMNS (key int)
-query: SELECT columnShortcutTable.* FROM columnShortcutTable
-Input: default/columnshortcuttable
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1805361378/10000
+PREHOOK: query: ALTER TABLE columnShortcutTable REPLACE COLUMNS (key int)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: query: ALTER TABLE columnShortcutTable REPLACE COLUMNS (key int)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@columnshortcuttable
+POSTHOOK: Output: default@columnshortcuttable
+PREHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable
+PREHOOK: type: QUERY
+PREHOOK: Input: default@columnshortcuttable
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1833240424/10000
+POSTHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@columnshortcuttable
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1833240424/10000
 238
 86
 311
@@ -152,4 +225,8 @@ Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1805361378/
 278
 98
 484
-query: DROP TABLE columnShortcutTable
+PREHOOK: query: DROP TABLE columnShortcutTable
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE columnShortcutTable
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@columnshortcuttable

@@ -1,9 +1,17 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT max(src1.c1), src1.c2 
 FROM
 (SELECT src.value AS c1, count(src.key) AS c2 FROM src WHERE src.value > 'val_10' GROUP BY src.value) src1
 WHERE src1.c1 > 'val_200' AND (src1.c2 > 30 OR src1.c1 < 'val_400')
 GROUP BY src1.c2
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT max(src1.c1), src1.c2 
+FROM
+(SELECT src.value AS c1, count(src.key) AS c2 FROM src WHERE src.value > 'val_10' GROUP BY src.value) src1
+WHERE src1.c1 > 'val_200' AND (src1.c2 > 30 OR src1.c1 < 'val_400')
+GROUP BY src1.c2
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value) c1) (TOK_SELEXPR (TOK_FUNCTION count (. (TOK_TABLE_OR_COL src) key)) c2)) (TOK_WHERE (> (. (TOK_TABLE_OR_COL src) value) 'val_10')) (TOK_GROUPBY (. (TOK_TABLE_OR_COL src) value)))) src1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION max (. (TOK_TABLE_OR_COL src1) c1))) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src1) c2))) (TOK_WHERE (AND (> (. (TOK_TABLE_OR_COL src1) c1) 'val_200') (OR (> (. (TOK_TABLE_OR_COL src1) c2) 30) (< (. (TOK_TABLE_OR_COL src1) c1) 'val_400')))) (TOK_GROUPBY (. (TOK_TABLE_OR_COL src1) c2))))
 
@@ -99,7 +107,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1758292485/10002 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/2124762740/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -140,13 +148,22 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT max(src1.c1), src1.c2 
+PREHOOK: query: SELECT max(src1.c1), src1.c2 
 FROM
 (SELECT src.value AS c1, count(src.key) AS c2 FROM src WHERE src.value > 'val_10' GROUP BY src.value) src1
 WHERE src1.c1 > 'val_200' AND (src1.c2 > 30 OR src1.c1 < 'val_400')
 GROUP BY src1.c2
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/165114702/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2121512622/10000
+POSTHOOK: query: SELECT max(src1.c1), src1.c2 
+FROM
+(SELECT src.value AS c1, count(src.key) AS c2 FROM src WHERE src.value > 'val_10' GROUP BY src.value) src1
+WHERE src1.c1 > 'val_200' AND (src1.c2 > 30 OR src1.c1 < 'val_400')
+GROUP BY src1.c2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2121512622/10000
 val_4	1
 val_399	2
 val_396	3

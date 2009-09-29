@@ -45,6 +45,9 @@ Trunk -  Unreleased
     HIVE-843. Add UDFs for hour, minute and second
     (Zheng Shao via namit)
 
+    HIVE-854. Provide for post-execute hooks.
+    (Namit Jain via rmurthy)
+
   IMPROVEMENTS
 
     HIVE-760. Add version info to META-INF/MANIFEST.MF.

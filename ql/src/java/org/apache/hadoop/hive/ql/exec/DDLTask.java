@@ -81,10 +81,12 @@ import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 
 /**
  * DDLTask implementation
- * 
+ *
  **/
 public class DDLTask extends Task<DDLWork> implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -93,16 +95,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   transient HiveConf conf;
   static final private int separator  = Utilities.tabCode;
   static final private int terminator = Utilities.newLineCode;
-  
+
   public DDLTask() {
     super();
   }
-  
+
   public void initialize(HiveConf conf, QueryPlan queryPlan) {
     super.initialize(conf, queryPlan);
     this.conf = conf;
   }
-  
+
   public int execute() {
 
     // Create the db
@@ -129,22 +131,22 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (alterTbl != null) {
         return alterTable(db, alterTbl);
       }
-      
+
       AddPartitionDesc addPartitionDesc = work.getAddPartitionDesc();
       if (addPartitionDesc != null) {
         return addPartition(db, addPartitionDesc);
-      }      
-      
+      }
+
       MsckDesc msckDesc = work.getMsckDesc();
       if (msckDesc != null) {
         return msck(db, msckDesc);
-      }      
+      }
 
       descTableDesc descTbl = work.getDescTblDesc();
       if (descTbl != null) {
         return describeTable(db, descTbl);
       }
-      
+
       descFunctionDesc descFunc = work.getDescFunctionDesc();
       if (descFunc != null) {
         return describeFunction(descFunc);
@@ -154,7 +156,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (showTbls != null) {
         return showTables(db, showTbls);
       }
-      
+
       showTableStatusDesc showTblStatus = work.getShowTblStatusDesc();
       if (showTblStatus != null) {
         return showTableStatus(db, showTblStatus);
@@ -191,22 +193,25 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @param db Database to add the partition to.
    * @param addPartitionDesc Add this partition.
    * @return Returns 0 when execution succeeds and above 0 if it fails.
-   * @throws HiveException 
+   * @throws HiveException
    */
-  private int addPartition(Hive db, AddPartitionDesc addPartitionDesc) 
+  private int addPartition(Hive db, AddPartitionDesc addPartitionDesc)
     throws HiveException {
-    
-    Table tbl = db.getTable(addPartitionDesc.getDbName(), 
+
+    Table tbl = db.getTable(addPartitionDesc.getDbName(),
         addPartitionDesc.getTableName());
-    
+
     if(addPartitionDesc.getLocation() == null) {
       db.createPartition(tbl, addPartitionDesc.getPartSpec());
     } else {
       //set partition path relative to table
-      db.createPartition(tbl, addPartitionDesc.getPartSpec(), 
+      db.createPartition(tbl, addPartitionDesc.getPartSpec(),
           new Path(tbl.getPath(), addPartitionDesc.getLocation()));
     }
-    
+
+    Partition part = db.getPartition(tbl, addPartitionDesc.getPartSpec(), false);
+    work.getOutputs().add(new WriteEntity(part));
+
     return 0;
   }
 
@@ -215,19 +220,19 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * what is on the dfs.
    * Current version checks for tables and partitions that
    * are either missing on disk on in the metastore.
-   * 
+   *
    * @param db The database in question.
    * @param msckDesc Information about the tables and partitions
    * we want to check for.
    * @return Returns 0 when execution succeeds and above 0 if it fails.
    */
   private int msck(Hive db, MsckDesc msckDesc) {
-    
+
     CheckResult result = new CheckResult();
     try {
       HiveMetaStoreChecker checker = new HiveMetaStoreChecker(db);
       checker.checkMetastore(
-        MetaStoreUtils.DEFAULT_DATABASE_NAME, msckDesc.getTableName(), 
+        MetaStoreUtils.DEFAULT_DATABASE_NAME, msckDesc.getTableName(),
         msckDesc.getPartitionSpec(),
         result);
     } catch (HiveException e) {
@@ -237,22 +242,22 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       LOG.warn("Failed to run metacheck: ", e);
       return 1;
     } finally {
-            
+
       BufferedWriter resultOut = null;
       try {
         FileSystem fs = msckDesc.getResFile().getFileSystem(conf);
         resultOut = new BufferedWriter(
             new OutputStreamWriter(fs.create(msckDesc.getResFile())));
-        
+
         boolean firstWritten = false;
-        firstWritten |= writeMsckResult(result.getTablesNotInMs(), 
+        firstWritten |= writeMsckResult(result.getTablesNotInMs(),
             "Tables not in metastore:", resultOut, firstWritten);
-        firstWritten |= writeMsckResult(result.getTablesNotOnFs(), 
-            "Tables missing on filesystem:", resultOut, firstWritten);      
-        firstWritten |= writeMsckResult(result.getPartitionsNotInMs(), 
+        firstWritten |= writeMsckResult(result.getTablesNotOnFs(),
+            "Tables missing on filesystem:", resultOut, firstWritten);
+        firstWritten |= writeMsckResult(result.getPartitionsNotInMs(),
             "Partitions not in metastore:", resultOut, firstWritten);
-        firstWritten |= writeMsckResult(result.getPartitionsNotOnFs(), 
-            "Partitions missing from filesystem:", resultOut, firstWritten);      
+        firstWritten |= writeMsckResult(result.getPartitionsNotOnFs(),
+            "Partitions missing from filesystem:", resultOut, firstWritten);
       } catch (IOException e) {
         LOG.warn("Failed to save metacheck output: ", e);
         return 1;
@@ -267,7 +272,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
       }
     }
-    
+
     return 0;
   }
 
@@ -280,14 +285,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @return true if something was written
    * @throws IOException In case the writing fails
    */
-  private boolean writeMsckResult(List<? extends Object> result, String msg, 
+  private boolean writeMsckResult(List<? extends Object> result, String msg,
       Writer out, boolean wrote) throws IOException {
-    
-    if(!result.isEmpty()) { 
+
+    if(!result.isEmpty()) {
       if(wrote) {
         out.write(terminator);
       }
-      
+
       out.write(msg);
       for (Object entry : result) {
         out.write(separator);
@@ -295,13 +300,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
       return true;
     }
-    
+
     return false;
   }
 
   /**
    * Write a list of partitions to a file.
-   * 
+   *
    * @param db The database in question.
    * @param showParts These are the partitions we're interested in.
    * @return Returns 0 when execution succeeds and above 0 if it fails.
@@ -351,7 +356,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   /**
    * Write a list of the tables in the database to a file.
-   * 
+   *
    * @param db The database in question.
    * @param showTbls These are the tables we're interested in.
    * @return Returns 0 when execution succeeds and above 0 if it fails.
@@ -395,7 +400,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   /**
    * Write a list of the user defined functions to a file.
-   * 
+   *
    * @param showFuncs are the functions we're interested in.
    * @return Returns 0 when execution succeeds and above 0 if it fails.
    * @throws HiveException Throws this exception if an unexpected error occurs.
@@ -438,14 +443,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   /**
    * Shows a description of a function.
-   * 
+   *
    * @param descFunc is the function we are describing
    * @throws HiveException
    */
   private int describeFunction(descFunctionDesc descFunc)
       throws HiveException {
     String name = descFunc.getName();
-    
+
     // write the results in the file
     try {
       FileSystem fs = descFunc.getResFile().getFileSystem(conf);
@@ -454,18 +459,18 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       // get the function documentation
       description desc = null;
       FunctionInfo fi = FunctionRegistry.getFunctionInfo(name);
-      
+
       Class<?> funcClass = null;
       GenericUDF udf = fi.getGenericUDF();
       if (udf != null) {
-        // If it's a GenericUDFBridge, then let's use the  
+        // If it's a GenericUDFBridge, then let's use the
         if (udf instanceof GenericUDFBridge) {
           funcClass = ((GenericUDFBridge)udf).getUdfClass();
         } else {
           funcClass = udf.getClass();
         }
       }
-      
+
       if (funcClass != null) {
         desc = funcClass.getAnnotation(description.class);
       }
@@ -478,9 +483,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         outStream.writeBytes("Function " + name + " does not exist or cannot" +
         		" find documentation for it.");
       }
-      
+
       outStream.write(terminator);
-     
+
       ((FSDataOutputStream)outStream).close();
     } catch (FileNotFoundException e) {
       LOG.warn("describe function: " + StringUtils.stringifyException(e));
@@ -493,11 +498,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
     return 0;
   }
-  
-  
+
+
   /**
    * Write the status of tables to a file.
-   * 
+   *
    * @param db  The database in question.
    * @param showTblStatus tables we are interested in
    * @return Return 0 when execution succeeds and above 0 if it fails.
@@ -597,10 +602,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
     return 0;
   }
-  
+
   /**
    * Write the description of a table to a file.
-   * 
+   *
    * @param db The database in question.
    * @param descTbl This is the table we're interested in.
    * @return Returns 0 when execution succeeds and above 0 if it fails.
@@ -725,7 +730,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     return 0;
   }
-  
+
   private void writeFileSystemStats(DataOutput outStream, List<Path> locations,
       Path tabLoc, boolean partSpecified, int indent) throws IOException {
     long totalFileSize = 0;
@@ -750,7 +755,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       LOG.warn("Cannot access File System. File System status will be unknown: ", e);
       unknown = true;
     }
-    
+
     if (!unknown) {
       for (Path loc : locations) {
         try {
@@ -789,43 +794,43 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
     }
     String unknownString = "unknown";
-    
+
     for (int k = 0; k < indent; k++)
       outStream.writeBytes(Utilities.INDENT);
     outStream.writeBytes("totalNumberFiles:");
     outStream.writeBytes(unknown ? unknownString : "" + numOfFiles);
     outStream.write(terminator);
-    
+
     for (int k = 0; k < indent; k++)
       outStream.writeBytes(Utilities.INDENT);
     outStream.writeBytes("totalFileSize:");
     outStream.writeBytes(unknown ? unknownString : "" + totalFileSize);
     outStream.write(terminator);
-    
+
     for (int k = 0; k < indent; k++)
       outStream.writeBytes(Utilities.INDENT);
     outStream.writeBytes("maxFileSize:");
     outStream.writeBytes(unknown ? unknownString : "" + maxFileSize);
     outStream.write(terminator);
-    
+
     for (int k = 0; k < indent; k++)
-      outStream.writeBytes(Utilities.INDENT); 
+      outStream.writeBytes(Utilities.INDENT);
     outStream.writeBytes("minFileSize:");
     if (numOfFiles > 0)
       outStream.writeBytes(unknown ? unknownString : "" + minFileSize);
     else
       outStream.writeBytes(unknown ? unknownString : "" + 0);
     outStream.write(terminator);
-    
+
     for (int k = 0; k < indent; k++)
-      outStream.writeBytes(Utilities.INDENT); 
+      outStream.writeBytes(Utilities.INDENT);
     outStream.writeBytes("lastAccessTime:");
     outStream.writeBytes((unknown || lastAccessTime < 0) ? unknownString : ""
         + lastAccessTime);
     outStream.write(terminator);
-    
+
     for (int k = 0; k < indent; k++)
-      outStream.writeBytes(Utilities.INDENT); 
+      outStream.writeBytes(Utilities.INDENT);
     outStream.writeBytes("lastUpdateTime:");
     outStream.writeBytes(unknown ? unknownString : "" + lastUpdateTime);
     outStream.write(terminator);
@@ -834,7 +839,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   /**
    * Alter a given table.
-   * 
+   *
    * @param db The database in question.
    * @param alterTbl This is the table we're altering.
    * @return Returns 0 when execution succeeds and above 0 if it fails.
@@ -843,8 +848,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int alterTable(Hive db, alterTableDesc alterTbl) throws HiveException {
     // alter the table
     Table tbl = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, alterTbl.getOldName());
-    if (alterTbl.getOp() == alterTableDesc.alterTableTypes.RENAME)
+    Table oldTbl = tbl.copy();
+
+    if (alterTbl.getOp() == alterTableDesc.alterTableTypes.RENAME) {
       tbl.getTTable().setTableName(alterTbl.getNewName());
+    }
     else if (alterTbl.getOp() == alterTableDesc.alterTableTypes.ADDCOLS) {
       List<FieldSchema> newCols = alterTbl.getNewCols();
       List<FieldSchema> oldCols = tbl.getCols();
@@ -936,24 +944,40 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     } catch (HiveException e) {
       return 1;
     }
+
+    // This is kind of hacky - the read entity contains the old table, whereas the write entity
+    // contains the new table. This is needed for rename - both the old and the new table names are
+    // passed
+    work.getInputs().add(new ReadEntity(oldTbl));
+    work.getOutputs().add(new WriteEntity(tbl));
     return 0;
   }
 
   /**
    * Drop a given table.
-   * 
+   *
    * @param db The database in question.
    * @param dropTbl This is the table we're dropping.
    * @return Returns 0 when execution succeeds and above 0 if it fails.
    * @throws HiveException Throws this exception if an unexpected error occurs.
    */
   private int dropTable(Hive db, dropTableDesc dropTbl) throws HiveException {
+    // We need to fetch the table before it is dropped so that it can be passed to
+    // post-execution hook
+    Table tbl = null;
+    try {
+      tbl = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, dropTbl.getTableName());
+    } catch (InvalidTableException e) {
+      // drop table is idempotent
+    }
+
     if (dropTbl.getPartSpecs() == null) {
       // drop the table
       db.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, dropTbl.getTableName());
+      if (tbl != null)
+        work.getOutputs().add(new WriteEntity(tbl));
     } else {
       // drop partitions in the list
-      Table tbl = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, dropTbl.getTableName());
       List<Partition> parts = new ArrayList<Partition>();
       for (Map<String, String> partSpec : dropTbl.getPartSpecs()) {
         Partition part = db.getPartition(tbl, partSpec, false);
@@ -969,12 +993,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         db.dropPartition(MetaStoreUtils.DEFAULT_DATABASE_NAME, dropTbl
             .getTableName(), partition.getValues(), true); // drop data for the
                                                            // partition
+        work.getOutputs().add(new WriteEntity(partition));
       }
     }
+
     return 0;
   }
 
-  
+
   /**
    * Check if the given serde is valid
    */
@@ -993,7 +1019,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   /**
    * Create a new table.
-   * 
+   *
    * @param db The database in question.
    * @param crtTbl This is the table we're creating.
    * @return Returns 0 when execution succeeds and above 0 if it fails.
@@ -1033,7 +1059,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
 
       if (crtTbl.getCollItemDelim() != null)
-        tbl.setSerdeParam(Constants.COLLECTION_DELIM, 
+        tbl.setSerdeParam(Constants.COLLECTION_DELIM,
             crtTbl.getCollItemDelim());
       if (crtTbl.getMapKeyDelim() != null)
         tbl.setSerdeParam(Constants.MAPKEY_DELIM, crtTbl.getMapKeyDelim());
@@ -1043,8 +1069,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     /**
      * We use LazySimpleSerDe by default.
-     * 
-     * If the user didn't specify a SerDe, and any of the columns are not simple types, 
+     *
+     * If the user didn't specify a SerDe, and any of the columns are not simple types,
      * we will have to use DynamicSerDe instead.
      */
     if (crtTbl.getSerName() == null) {
@@ -1113,13 +1139,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     // create the table
     db.createTable(tbl, crtTbl.getIfNotExists());
+    work.getOutputs().add(new WriteEntity(tbl));
     return 0;
   }
-  
-  
+
+
   /**
    * Create a new table like an existing table.
-   * 
+   *
    * @param db The database in question.
    * @param crtTbl This is the table we're creating.
    * @return Returns 0 when execution succeeds and above 0 if it fails.
@@ -1131,27 +1158,28 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     StorageDescriptor tblStorDesc = tbl.getTTable().getSd();
 
     tbl.getTTable().setTableName(crtTbl.getTableName());
-    
+
     if (crtTbl.isExternal()) {
       tbl.setProperty("EXTERNAL", "TRUE");
     } else {
       tbl.setProperty("EXTERNAL", "FALSE");
     }
-    
+
     if (crtTbl.getLocation() != null) {
       tblStorDesc.setLocation(crtTbl.getLocation());
     } else {
       tblStorDesc.setLocation(null);
       tblStorDesc.unsetLocation();
     }
-    
+
     // create the table
     db.createTable(tbl, crtTbl.getIfNotExists());
+    work.getOutputs().add(new WriteEntity(tbl));
     return 0;
   }
-  
+
   public int getType() {
     return StageType.DDL;
   }
-  
+
 }

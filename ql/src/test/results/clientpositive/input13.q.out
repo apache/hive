@@ -1,12 +1,32 @@
-query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
-query: CREATE TABLE dest2(key INT, value STRING) STORED AS TEXTFILE
-query: CREATE TABLE dest3(key INT) PARTITIONED BY(ds STRING, hr STRING) STORED AS TEXTFILE
-query: EXPLAIN
+PREHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest1
+PREHOOK: query: CREATE TABLE dest2(key INT, value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest2(key INT, value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest2
+PREHOOK: query: CREATE TABLE dest3(key INT) PARTITIONED BY(ds STRING, hr STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest3(key INT) PARTITIONED BY(ds STRING, hr STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest3
+PREHOOK: query: EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest1 SELECT src.* WHERE src.key < 100
 INSERT OVERWRITE TABLE dest2 SELECT src.key, src.value WHERE src.key >= 100 and src.key < 200
 INSERT OVERWRITE TABLE dest3 PARTITION(ds='2008-04-08', hr='12') SELECT src.key WHERE src.key >= 200 and src.key < 300
 INSERT OVERWRITE DIRECTORY '../build/ql/test/data/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM src
+INSERT OVERWRITE TABLE dest1 SELECT src.* WHERE src.key < 100
+INSERT OVERWRITE TABLE dest2 SELECT src.key, src.value WHERE src.key >= 100 and src.key < 200
+INSERT OVERWRITE TABLE dest3 PARTITION(ds='2008-04-08', hr='12') SELECT src.key WHERE src.key >= 200 and src.key < 300
+INSERT OVERWRITE DIRECTORY '../build/ql/test/data/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF src))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL src) key) 100))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest2)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value))) (TOK_WHERE (and (>= (. (TOK_TABLE_OR_COL src) key) 100) (< (. (TOK_TABLE_OR_COL src) key) 200)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest3 (TOK_PARTSPEC (TOK_PARTVAL ds '2008-04-08') (TOK_PARTVAL hr '12')))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key))) (TOK_WHERE (and (>= (. (TOK_TABLE_OR_COL src) key) 200) (< (. (TOK_TABLE_OR_COL src) key) 300)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR '../build/ql/test/data/warehouse/dest4.out')) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value))) (TOK_WHERE (>= (. (TOK_TABLE_OR_COL src) key) 300))))
 
@@ -124,10 +144,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/2000665418/10000
+                destination: file:/data/users/njain/hive5/hive5/build/ql/tmp/1897341760/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1057074180/10007 
+              file:/data/users/njain/hive5/hive5/build/ql/tmp/265294060/10007 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -166,10 +186,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/2000665418/10002
+                destination: file:/data/users/njain/hive5/hive5/build/ql/tmp/1897341760/10002
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1057074180/10008 
+              file:/data/users/njain/hive5/hive5/build/ql/tmp/265294060/10008 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -208,10 +228,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/2000665418/10004
+                destination: file:/data/users/njain/hive5/hive5/build/ql/tmp/1897341760/10004
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1057074180/10009 
+              file:/data/users/njain/hive5/hive5/build/ql/tmp/265294060/10009 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -251,10 +271,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/2000665418/10006
+                destination: file:/data/users/njain/hive5/hive5/build/ql/tmp/1897341760/10006
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/1057074180/10010 
+              file:/data/users/njain/hive5/hive5/build/ql/tmp/265294060/10010 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -280,19 +300,36 @@ STAGE PLANS:
           destination: ../build/ql/test/data/warehouse/dest4.out
 
 
-query: FROM src
+PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE dest1 SELECT src.* WHERE src.key < 100
 INSERT OVERWRITE TABLE dest2 SELECT src.key, src.value WHERE src.key >= 100 and src.key < 200
 INSERT OVERWRITE TABLE dest3 PARTITION(ds='2008-04-08', hr='12') SELECT src.key WHERE src.key >= 200 and src.key < 300
 INSERT OVERWRITE DIRECTORY '../build/ql/test/data/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300
-Input: default/src
-Output: default/dest1
-Output: default/dest2
-Output: default/dest3/ds=2008-04-08/hr=12
-Output: ../build/ql/test/data/warehouse/dest4.out
-query: SELECT dest1.* FROM dest1
-Input: default/dest1
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/920411544/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1
+PREHOOK: Output: default@dest2
+PREHOOK: Output: default@dest3@ds=2008-04-08/hr=12
+PREHOOK: Output: ../build/ql/test/data/warehouse/dest4.out
+POSTHOOK: query: FROM src
+INSERT OVERWRITE TABLE dest1 SELECT src.* WHERE src.key < 100
+INSERT OVERWRITE TABLE dest2 SELECT src.key, src.value WHERE src.key >= 100 and src.key < 200
+INSERT OVERWRITE TABLE dest3 PARTITION(ds='2008-04-08', hr='12') SELECT src.key WHERE src.key >= 200 and src.key < 300
+INSERT OVERWRITE DIRECTORY '../build/ql/test/data/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1
+POSTHOOK: Output: default@dest2
+POSTHOOK: Output: default@dest3@ds=2008-04-08/hr=12
+POSTHOOK: Output: ../build/ql/test/data/warehouse/dest4.out
+PREHOOK: query: SELECT dest1.* FROM dest1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1117794496/10000
+POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1117794496/10000
 86	val_86
 27	val_27
 98	val_98
@@ -377,9 +414,14 @@ Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp
 37	val_37
 90	val_90
 97	val_97
-query: SELECT dest2.* FROM dest2
-Input: default/dest2
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/108447596/10000
+PREHOOK: query: SELECT dest2.* FROM dest2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest2
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1825907788/10000
+POSTHOOK: query: SELECT dest2.* FROM dest2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest2
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1825907788/10000
 165	val_165
 193	val_193
 150	val_150
@@ -485,9 +527,14 @@ Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp
 194	val_194
 126	val_126
 169	val_169
-query: SELECT dest3.* FROM dest3
-Input: default/dest3/ds=2008-04-08/hr=12
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_1/build/ql/tmp/245976793/10000
+PREHOOK: query: SELECT dest3.* FROM dest3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest3@ds=2008-04-08/hr=12
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/443750497/10000
+POSTHOOK: query: SELECT dest3.* FROM dest3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest3@ds=2008-04-08/hr=12
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/443750497/10000
 238	2008-04-08	12
 255	2008-04-08	12
 278	2008-04-08	12

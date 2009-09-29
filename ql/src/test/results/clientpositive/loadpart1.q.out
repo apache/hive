@@ -1,37 +1,95 @@
-query: drop table hive_test_src
-query: drop table hive_test_dst
-query: create table hive_test_src ( col1 string ) stored as textfile
-query: load data local inpath '../data/files/test.dat' overwrite into table hive_test_src
-query: create table hive_test_dst ( col1 string ) partitioned by ( pcol1 string , pcol2 string) stored as sequencefile
-query: insert overwrite table hive_test_dst partition ( pcol1='test_part', pCol2='test_Part') select col1 from hive_test_src
-Input: default/hive_test_src
-Output: default/hive_test_dst/pcol1=test_part/pcol2=test_Part
-query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_Part'
-Input: default/hive_test_dst/pcol1=test_part/pcol2=test_Part
-Output: /Users/pchakka/workspace/oshive/ql/../build/ql/tmp/20877141/262522507.10000
+PREHOOK: query: drop table hive_test_src
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table hive_test_src
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table hive_test_dst
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table hive_test_dst
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table hive_test_src ( col1 string ) stored as textfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table hive_test_src ( col1 string ) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@hive_test_src
+PREHOOK: query: load data local inpath '../data/files/test.dat' overwrite into table hive_test_src
+PREHOOK: type: LOAD
+POSTHOOK: query: load data local inpath '../data/files/test.dat' overwrite into table hive_test_src
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@hive_test_src
+PREHOOK: query: create table hive_test_dst ( col1 string ) partitioned by ( pcol1 string , pcol2 string) stored as sequencefile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table hive_test_dst ( col1 string ) partitioned by ( pcol1 string , pcol2 string) stored as sequencefile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@hive_test_dst
+PREHOOK: query: insert overwrite table hive_test_dst partition ( pcol1='test_part', pCol2='test_Part') select col1 from hive_test_src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_test_src
+PREHOOK: Output: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
+POSTHOOK: query: insert overwrite table hive_test_dst partition ( pcol1='test_part', pCol2='test_Part') select col1 from hive_test_src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_test_src
+POSTHOOK: Output: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
+PREHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_Part'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1322974919/10000
+POSTHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_Part'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1322974919/10000
 1	test_part	test_Part
 2	test_part	test_Part
 3	test_part	test_Part
 4	test_part	test_Part
 5	test_part	test_Part
 6	test_part	test_Part
-query: insert overwrite table hive_test_dst partition ( pCol1='test_part', pcol2='test_Part') select col1 from hive_test_src
-Input: default/hive_test_src
-Output: default/hive_test_dst/pcol1=test_part/pcol2=test_Part
-query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_part'
-Output: /Users/pchakka/workspace/oshive/ql/../build/ql/tmp/1586437457/438136405.10000
-query: select * from hive_test_dst where pcol1='test_part'
-Input: default/hive_test_dst/pcol1=test_part/pcol2=test_Part
-Output: /Users/pchakka/workspace/oshive/ql/../build/ql/tmp/991232921/143300248.10000
+PREHOOK: query: insert overwrite table hive_test_dst partition ( pCol1='test_part', pcol2='test_Part') select col1 from hive_test_src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_test_src
+PREHOOK: Output: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
+POSTHOOK: query: insert overwrite table hive_test_dst partition ( pCol1='test_part', pcol2='test_Part') select col1 from hive_test_src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_test_src
+POSTHOOK: Output: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
+PREHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_part'
+PREHOOK: type: QUERY
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/125968681/10000
+POSTHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_part'
+POSTHOOK: type: QUERY
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/125968681/10000
+PREHOOK: query: select * from hive_test_dst where pcol1='test_part'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1540188393/10000
+POSTHOOK: query: select * from hive_test_dst where pcol1='test_part'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_test_dst@pcol1=test_part/pcol2=test_Part
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1540188393/10000
 1	test_part	test_Part
 2	test_part	test_Part
 3	test_part	test_Part
 4	test_part	test_Part
 5	test_part	test_Part
 6	test_part	test_Part
-query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_part'
-Output: /Users/pchakka/workspace/oshive/ql/../build/ql/tmp/118754797/315488459.10000
-query: select * from hive_test_dst where pcol1='test_Part'
-Output: /Users/pchakka/workspace/oshive/ql/../build/ql/tmp/27905267/502654394.10000
-query: drop table hive_test_src
-query: drop table hive_test_dst
+PREHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_part'
+PREHOOK: type: QUERY
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/950500880/10000
+POSTHOOK: query: select * from hive_test_dst where pcol1='test_part' and pcol2='test_part'
+POSTHOOK: type: QUERY
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/950500880/10000
+PREHOOK: query: select * from hive_test_dst where pcol1='test_Part'
+PREHOOK: type: QUERY
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1398711311/10000
+POSTHOOK: query: select * from hive_test_dst where pcol1='test_Part'
+POSTHOOK: type: QUERY
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1398711311/10000
+PREHOOK: query: drop table hive_test_src
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table hive_test_src
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@hive_test_src
+PREHOOK: query: drop table hive_test_dst
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table hive_test_dst
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@hive_test_dst

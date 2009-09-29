@@ -1,5 +1,9 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT x.* FROM SRC x LIMIT 20
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT x.* FROM SRC x LIMIT 20
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF SRC x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF x))) (TOK_LIMIT 20)))
 
@@ -12,9 +16,14 @@ STAGE PLANS:
       limit: 20
 
 
-query: SELECT x.* FROM SRC x LIMIT 20
-Input: default/src
-Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/197174171/10000
+PREHOOK: query: SELECT x.* FROM SRC x LIMIT 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/569213864/10000
+POSTHOOK: query: SELECT x.* FROM SRC x LIMIT 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/569213864/10000
 238	val_238
 86	val_86
 311	val_311

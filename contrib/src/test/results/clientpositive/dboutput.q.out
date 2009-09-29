@@ -1,7 +1,16 @@
-query: CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput'
-query: DESCRIBE FUNCTION dboutput
+PREHOOK: query: CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput'
+PREHOOK: type: CREATEFUNCTION
+POSTHOOK: query: CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput'
+POSTHOOK: type: CREATEFUNCTION
+PREHOOK: query: DESCRIBE FUNCTION dboutput
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION dboutput
+POSTHOOK: type: DESCFUNCTION
 dboutput(jdbcstring,username,password,preparedstatement,[arguments]) - sends data to a jdbc driver
-query: DESCRIBE FUNCTION EXTENDED dboutput
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED dboutput
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED dboutput
+POSTHOOK: type: DESCFUNCTION
 dboutput(jdbcstring,username,password,preparedstatement,[arguments]) - sends data to a jdbc driver
 argument 0 is the JDBC connection string
 argument 1 is the user name
@@ -9,7 +18,7 @@ argument 2 is the password
 argument 3 is an SQL query to be used in the PreparedStatement
 argument (4-n) The remaining arguments must be primitive and are passed to the PreparedStatement object
 
-query: EXPLAIN FROM src
+PREHOOK: query: EXPLAIN FROM src
 
 SELECT dboutput ( 'jdbc:derby:../build/test_dboutput_db;create=true','','',
 'CREATE TABLE app_info ( kkey VARCHAR(255) NOT NULL, vvalue VARCHAR(255) NOT NULL, UNIQUE(kkey))' ),
@@ -21,6 +30,20 @@ dboutput('jdbc:derby:../build/test_dboutput_db','','',
 'INSERT INTO app_info (kkey,vvalue) VALUES (?,?)','20','b')
 
 limit 1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN FROM src
+
+SELECT dboutput ( 'jdbc:derby:../build/test_dboutput_db;create=true','','',
+'CREATE TABLE app_info ( kkey VARCHAR(255) NOT NULL, vvalue VARCHAR(255) NOT NULL, UNIQUE(kkey))' ),
+
+dboutput('jdbc:derby:../build/test_dboutput_db','','',
+'INSERT INTO app_info (kkey,vvalue) VALUES (?,?)','20','a'),
+
+dboutput('jdbc:derby:../build/test_dboutput_db','','',
+'INSERT INTO app_info (kkey,vvalue) VALUES (?,?)','20','b')
+
+limit 1
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION dboutput 'jdbc:derby:../build/test_dboutput_db;create=true' '' '' 'CREATE TABLE app_info ( kkey VARCHAR(255) NOT NULL, vvalue VARCHAR(255) NOT NULL, UNIQUE(kkey))')) (TOK_SELEXPR (TOK_FUNCTION dboutput 'jdbc:derby:../build/test_dboutput_db' '' '' 'INSERT INTO app_info (kkey,vvalue) VALUES (?,?)' '20' 'a')) (TOK_SELEXPR (TOK_FUNCTION dboutput 'jdbc:derby:../build/test_dboutput_db' '' '' 'INSERT INTO app_info (kkey,vvalue) VALUES (?,?)' '20' 'b'))) (TOK_LIMIT 1)))
 
@@ -57,7 +80,7 @@ STAGE PLANS:
       limit: 1
 
 
-query: FROM src 
+PREHOOK: query: FROM src 
 
 SELECT dboutput ( 'jdbc:derby:../build/test_dboutput_db;create=true','','',
 'CREATE TABLE app_info ( kkey INTEGER NOT NULL, vvalue VARCHAR(255) NOT NULL, UNIQUE(kkey))' ),
@@ -69,15 +92,39 @@ dboutput('jdbc:derby:../build/test_dboutput_db','','',
 'INSERT INTO app_info (kkey,vvalue) VALUES (?,?)','20','b')
 
 limit 1
-Input: default/src
-Output: file:/home/ecapriolo/hive-617/hive-trunk/build/ql/tmp/753506919/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/109195708/10000
+POSTHOOK: query: FROM src 
+
+SELECT dboutput ( 'jdbc:derby:../build/test_dboutput_db;create=true','','',
+'CREATE TABLE app_info ( kkey INTEGER NOT NULL, vvalue VARCHAR(255) NOT NULL, UNIQUE(kkey))' ),
+
+dboutput('jdbc:derby:../build/test_dboutput_db','','',
+'INSERT INTO app_info (kkey,vvalue) VALUES (?,?)','20','a'),
+
+dboutput('jdbc:derby:../build/test_dboutput_db','','',
+'INSERT INTO app_info (kkey,vvalue) VALUES (?,?)','20','b')
+
+limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/109195708/10000
 0	0	1
-query: EXPLAIN SELECT
+PREHOOK: query: EXPLAIN SELECT
 
 dboutput('jdbc:derby:../build/test_dboutput_db','','',
 'INSERT INTO app_info (kkey,vvalue) VALUES (?,?)',key,value)
 
 FROM src WHERE key < 10
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT
+
+dboutput('jdbc:derby:../build/test_dboutput_db','','',
+'INSERT INTO app_info (kkey,vvalue) VALUES (?,?)',key,value)
+
+FROM src WHERE key < 10
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION dboutput 'jdbc:derby:../build/test_dboutput_db' '' '' 'INSERT INTO app_info (kkey,vvalue) VALUES (?,?)' (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value)))) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 10))))
 
@@ -117,14 +164,24 @@ STAGE PLANS:
       limit: -1
 
 
-query: SELECT
+PREHOOK: query: SELECT
 
 dboutput('jdbc:derby:../build/test_dboutput_db','','',
 'INSERT INTO app_info (kkey,vvalue) VALUES (?,?)',key,value)
 
 FROM src WHERE key < 10
-Input: default/src
-Output: file:/home/ecapriolo/hive-617/hive-trunk/build/ql/tmp/1030277391/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/667407949/10000
+POSTHOOK: query: SELECT
+
+dboutput('jdbc:derby:../build/test_dboutput_db','','',
+'INSERT INTO app_info (kkey,vvalue) VALUES (?,?)',key,value)
+
+FROM src WHERE key < 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/667407949/10000
 0
 0
 0
@@ -135,6 +192,9 @@ Output: file:/home/ecapriolo/hive-617/hive-trunk/build/ql/tmp/1030277391/10000
 0
 1
 0
-Deleted file:/home/ecapriolo/hive-617/hive-trunk/build/test_dboutput_db
-Deleted file:/home/ecapriolo/hive-617/hive-trunk/contrib/derby.log
-query: DROP TEMPORARY FUNCTION dboutput
+Deleted file:/data/users/njain/hive5/hive5/build/test_dboutput_db
+Deleted file:/data/users/njain/hive5/hive5/contrib/derby.log
+PREHOOK: query: DROP TEMPORARY FUNCTION dboutput
+PREHOOK: type: DROPFUNCTION
+POSTHOOK: query: DROP TEMPORARY FUNCTION dboutput
+POSTHOOK: type: DROPFUNCTION

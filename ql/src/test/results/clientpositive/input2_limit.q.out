@@ -1,5 +1,9 @@
-query: EXPLAIN
+PREHOOK: query: EXPLAIN
 SELECT x.* FROM SRC x WHERE x.key < 300 LIMIT 5
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT x.* FROM SRC x WHERE x.key < 300 LIMIT 5
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF SRC x)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF x))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL x) key) 300)) (TOK_LIMIT 5)))
 
@@ -42,9 +46,14 @@ STAGE PLANS:
       limit: 5
 
 
-query: SELECT x.* FROM SRC x WHERE x.key < 300 LIMIT 5
-Input: default/src
-Output: file:/data/users/zshao/tools/699-trunk-apache-hive/.ptest_0/build/ql/tmp/268148023/10000
+PREHOOK: query: SELECT x.* FROM SRC x WHERE x.key < 300 LIMIT 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/535409987/10000
+POSTHOOK: query: SELECT x.* FROM SRC x WHERE x.key < 300 LIMIT 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/535409987/10000
 238	val_238
 86	val_86
 27	val_27

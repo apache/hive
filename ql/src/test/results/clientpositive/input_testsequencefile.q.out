@@ -1,7 +1,16 @@
-query: CREATE TABLE dest4_sequencefile(key INT, value STRING) STORED AS SEQUENCEFILE
-query: EXPLAIN
+PREHOOK: query: CREATE TABLE dest4_sequencefile(key INT, value STRING) STORED AS SEQUENCEFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest4_sequencefile(key INT, value STRING) STORED AS SEQUENCEFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest4_sequencefile
+PREHOOK: query: EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest4_sequencefile SELECT src.key, src.value
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM src
+INSERT OVERWRITE TABLE dest4_sequencefile SELECT src.key, src.value
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest4_sequencefile)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value)))))
 
@@ -46,10 +55,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/66296780/10000
+                destination: file:/data/users/njain/hive5/hive5/build/ql/tmp/1479501557/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/696386493/10002 
+              file:/data/users/njain/hive5/hive5/build/ql/tmp/257843671/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -83,13 +92,24 @@ STAGE PLANS:
               name: dest4_sequencefile
 
 
-query: FROM src
+PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE dest4_sequencefile SELECT src.key, src.value
-Input: default/src
-Output: default/dest4_sequencefile
-query: SELECT dest4_sequencefile.* FROM dest4_sequencefile
-Input: default/dest4_sequencefile
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1740018571/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest4_sequencefile
+POSTHOOK: query: FROM src
+INSERT OVERWRITE TABLE dest4_sequencefile SELECT src.key, src.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest4_sequencefile
+PREHOOK: query: SELECT dest4_sequencefile.* FROM dest4_sequencefile
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest4_sequencefile
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1767307335/10000
+POSTHOOK: query: SELECT dest4_sequencefile.* FROM dest4_sequencefile
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest4_sequencefile
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1767307335/10000
 238	val_238
 86	val_86
 311	val_311

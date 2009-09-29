@@ -1,4 +1,4 @@
-query: explain
+PREHOOK: query: explain
 SELECT *
 FROM (
   SELECT 1 AS id
@@ -15,6 +15,25 @@ FROM (
   SELECT 4 AS id
   FROM (SELECT * FROM src LIMIT 1) s2
 ) a
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+SELECT *
+FROM (
+  SELECT 1 AS id
+  FROM (SELECT * FROM src LIMIT 1) s1
+  CLUSTER BY id
+  UNION ALL
+  SELECT 2 AS id
+  FROM (SELECT * FROM src LIMIT 1) s1
+  CLUSTER BY id
+  UNION ALL
+  SELECT 3 AS id
+  FROM (SELECT * FROM src LIMIT 1) s2
+  UNION ALL
+  SELECT 4 AS id
+  FROM (SELECT * FROM src LIMIT 1) s2
+) a
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_UNION (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_LIMIT 1))) s1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 1 id)) (TOK_CLUSTERBY (TOK_TABLE_OR_COL id)))) (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_LIMIT 1))) s1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 2 id)) (TOK_CLUSTERBY (TOK_TABLE_OR_COL id))))) (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_LIMIT 1))) s2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 3 id))))) (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_LIMIT 1))) s2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 4 id))))) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
 
@@ -72,7 +91,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/831850354/10002 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/1712800093/10002 
           Union
             Select Operator
               expressions:
@@ -85,7 +104,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/831850354/10003 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/1712800093/10003 
           Union
             Select Operator
               expressions:
@@ -98,7 +117,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/831850354/10005 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/1712800093/10005 
           Union
             Select Operator
               expressions:
@@ -111,7 +130,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/831850354/10007 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/1712800093/10007 
           Union
             Select Operator
               expressions:
@@ -202,7 +221,7 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/831850354/10004 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/1712800093/10004 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -264,7 +283,7 @@ STAGE PLANS:
   Stage: Stage-7
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/831850354/10006 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/1712800093/10006 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -291,9 +310,16 @@ STAGE PLANS:
       limit: -1
 
 
-query: DROP TABLE union_out
-query: CREATE TABLE union_out (id int)
-query: insert overwrite table union_out 
+PREHOOK: query: DROP TABLE union_out
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE union_out
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE union_out (id int)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE union_out (id int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@union_out
+PREHOOK: query: insert overwrite table union_out 
 SELECT *
 FROM (
   SELECT 1 AS id
@@ -310,11 +336,37 @@ FROM (
   SELECT 4 AS id
   FROM (SELECT * FROM src LIMIT 1) s2
 ) a
-Input: default/src
-Output: default/union_out
-query: select * from union_out cluster by id
-Input: default/union_out
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/209669057/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@union_out
+POSTHOOK: query: insert overwrite table union_out 
+SELECT *
+FROM (
+  SELECT 1 AS id
+  FROM (SELECT * FROM src LIMIT 1) s1
+  CLUSTER BY id
+  UNION ALL
+  SELECT 2 AS id
+  FROM (SELECT * FROM src LIMIT 1) s1
+  CLUSTER BY id
+  UNION ALL
+  SELECT 3 AS id
+  FROM (SELECT * FROM src LIMIT 1) s2
+  UNION ALL
+  SELECT 4 AS id
+  FROM (SELECT * FROM src LIMIT 1) s2
+) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@union_out
+PREHOOK: query: select * from union_out cluster by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@union_out
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/532213129/10000
+POSTHOOK: query: select * from union_out cluster by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@union_out
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/532213129/10000
 1
 2
 3

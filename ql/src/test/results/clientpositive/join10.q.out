@@ -1,9 +1,17 @@
-query: EXPLAIN FROM 
+PREHOOK: query: EXPLAIN FROM 
 (SELECT src.* FROM src) x
 JOIN 
 (SELECT src.* FROM src) Y
 ON (x.key = Y.key)
 SELECT Y.*
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN FROM 
+(SELECT src.* FROM src) x
+JOIN 
+(SELECT src.* FROM src) Y
+ON (x.key = Y.key)
+SELECT Y.*
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF src))))) x) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF src))))) Y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL Y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF Y)))))
 
@@ -83,14 +91,24 @@ STAGE PLANS:
       limit: -1
 
 
-query: FROM 
+PREHOOK: query: FROM 
 (SELECT src.* FROM src) x
 JOIN 
 (SELECT src.* FROM src) Y
 ON (x.key = Y.key)
 SELECT Y.*
-Input: default/src
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1608637001/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2042178878/10000
+POSTHOOK: query: FROM 
+(SELECT src.* FROM src) x
+JOIN 
+(SELECT src.* FROM src) Y
+ON (x.key = Y.key)
+SELECT Y.*
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2042178878/10000
 0	val_0
 0	val_0
 0	val_0

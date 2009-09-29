@@ -1,15 +1,33 @@
-query: SELECT pmod(null, null)
+PREHOOK: query: SELECT pmod(null, null)
 FROM src LIMIT 1
-Input: default/src
-Output: file:/mnt/vol/devrs001.snc1/schen/hive-trunk/build/ql/tmp/770960285/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1384517913/10000
+POSTHOOK: query: SELECT pmod(null, null)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1384517913/10000
 NULL
-query: SELECT pmod(-100,9), pmod(-50,101), pmod(-1000,29)
+PREHOOK: query: SELECT pmod(-100,9), pmod(-50,101), pmod(-1000,29)
 FROM src LIMIT 1
-Input: default/src
-Output: file:/mnt/vol/devrs001.snc1/schen/hive-trunk/build/ql/tmp/1004944279/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1606180544/10000
+POSTHOOK: query: SELECT pmod(-100,9), pmod(-50,101), pmod(-1000,29)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1606180544/10000
 8	51	15
-query: SELECT pmod(100,19), pmod(50,125), pmod(300,15)
+PREHOOK: query: SELECT pmod(100,19), pmod(50,125), pmod(300,15)
 FROM src LIMIT 1
-Input: default/src
-Output: file:/mnt/vol/devrs001.snc1/schen/hive-trunk/build/ql/tmp/1063528154/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1250421811/10000
+POSTHOOK: query: SELECT pmod(100,19), pmod(50,125), pmod(300,15)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1250421811/10000
 5	50	0

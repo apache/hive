@@ -1,7 +1,16 @@
-query: CREATE TABLE dest1(key INT, value STRING, mapvalue STRING) STORED AS TEXTFILE
-query: EXPLAIN
+PREHOOK: query: CREATE TABLE dest1(key INT, value STRING, mapvalue STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest1(key INT, value STRING, mapvalue STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest1
+PREHOOK: query: EXPLAIN
 FROM src_thrift
 INSERT OVERWRITE TABLE dest1 SELECT src_thrift.lint[1], src_thrift.lintstring[0].mystring, src_thrift.mstringstring['key_2']
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM src_thrift
+INSERT OVERWRITE TABLE dest1 SELECT src_thrift.lint[1], src_thrift.lintstring[0].mystring, src_thrift.mstringstring['key_2']
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src_thrift)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR ([ (. (TOK_TABLE_OR_COL src_thrift) lint) 1)) (TOK_SELEXPR (. ([ (. (TOK_TABLE_OR_COL src_thrift) lintstring) 0) mystring)) (TOK_SELEXPR ([ (. (TOK_TABLE_OR_COL src_thrift) mstringstring) 'key_2')))))
 
@@ -41,10 +50,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/794454681/10000
+                destination: file:/data/users/njain/hive5/hive5/build/ql/tmp/196516968/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/492458082/10002 
+              file:/data/users/njain/hive5/hive5/build/ql/tmp/429907565/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -80,13 +89,24 @@ STAGE PLANS:
               name: dest1
 
 
-query: FROM src_thrift
+PREHOOK: query: FROM src_thrift
 INSERT OVERWRITE TABLE dest1 SELECT src_thrift.lint[1], src_thrift.lintstring[0].mystring, src_thrift.mstringstring['key_2']
-Input: default/src_thrift
-Output: default/dest1
-query: SELECT dest1.* FROM dest1
-Input: default/dest1
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/264689843/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+PREHOOK: Output: default@dest1
+POSTHOOK: query: FROM src_thrift
+INSERT OVERWRITE TABLE dest1 SELECT src_thrift.lint[1], src_thrift.lintstring[0].mystring, src_thrift.mstringstring['key_2']
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+POSTHOOK: Output: default@dest1
+PREHOOK: query: SELECT dest1.* FROM dest1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/110644435/10000
+POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/110644435/10000
 0	0	NULL
 2	1	NULL
 4	8	value_2

@@ -1,8 +1,26 @@
-query: create table tstnullinut(a string, b string)
-query: select x.* from tstnullinut x
-Input: default/tstnullinut
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/252572061/456825886.10000
-query: select x.a, count(1) from tstnullinut x group by x.a
-Input: default/tstnullinut
-Output: /data/users/athusoo/commits/hive_trunk_ws8/ql/../build/ql/tmp/584851051/141046837.10000
-query: drop table tstnullinut
+PREHOOK: query: create table tstnullinut(a string, b string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tstnullinut(a string, b string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tstnullinut
+PREHOOK: query: select x.* from tstnullinut x
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tstnullinut
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1976338873/10000
+POSTHOOK: query: select x.* from tstnullinut x
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstnullinut
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1976338873/10000
+PREHOOK: query: select x.a, count(1) from tstnullinut x group by x.a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tstnullinut
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1008263015/10000
+POSTHOOK: query: select x.a, count(1) from tstnullinut x group by x.a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstnullinut
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1008263015/10000
+PREHOOK: query: drop table tstnullinut
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tstnullinut
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@tstnullinut

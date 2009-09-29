@@ -20,6 +20,11 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.*;
 
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import java.util.Set;
+
+
 @explain(displayName="Move Operator")
 public class moveWork implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -28,11 +33,30 @@ public class moveWork implements Serializable {
 
   private boolean checkFileFormat;
 
-  public moveWork() { }
+  /**
+   * ReadEntitites that are passed to the hooks.
+   */
+  protected Set<ReadEntity> inputs;
+  /**
+   * List of WriteEntities that are passed to the hooks.
+   */
+  protected Set<WriteEntity> outputs;
+
+  public moveWork() {
+  }
+
+  public moveWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs) {
+    this.inputs = inputs;
+    this.outputs = outputs;
+  }
+
   public moveWork(
+    Set<ReadEntity> inputs,
+    Set<WriteEntity> outputs,
     final loadTableDesc loadTableWork,
     final loadFileDesc loadFileWork,
     boolean checkFileFormat) {
+    this(inputs, outputs);
     this.loadTableWork = loadTableWork;
     this.loadFileWork = loadFileWork;
     this.checkFileFormat = checkFileFormat;
@@ -44,7 +68,7 @@ public class moveWork implements Serializable {
   public void setLoadTableWork(final loadTableDesc loadTableWork) {
     this.loadTableWork = loadTableWork;
   }
-  
+
   @explain(displayName="files")
   public loadFileDesc getLoadFileWork() {
     return this.loadFileWork;
@@ -52,12 +76,28 @@ public class moveWork implements Serializable {
   public void setLoadFileWork(final loadFileDesc loadFileWork) {
     this.loadFileWork=loadFileWork;
   }
-  
+
   public boolean getCheckFileFormat() {
     return checkFileFormat;
   }
   public void setCheckFileFormat(boolean checkFileFormat) {
     this.checkFileFormat = checkFileFormat;
   }
-  
+
+  public Set<ReadEntity> getInputs() {
+    return inputs;
+  }
+
+  public Set<WriteEntity> getOutputs() {
+    return outputs;
+  }
+
+  public void setInputs(Set<ReadEntity> inputs) {
+    this.inputs = inputs;
+  }
+
+  public void setOutputs(Set<WriteEntity> outputs) {
+    this.outputs = outputs;
+  }
+
 }

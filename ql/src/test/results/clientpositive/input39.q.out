@@ -1,21 +1,57 @@
-query: drop table t1
-query: drop table t2
-query: create table t1(key string, value string) partitioned by (ds string)
-query: create table t2(key string, value string) partitioned by (ds string)
-query: insert overwrite table t1 partition (ds='1')
+PREHOOK: query: drop table t1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table t1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table t2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table t2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table t1(key string, value string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table t1(key string, value string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@t1
+PREHOOK: query: create table t2(key string, value string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table t2(key string, value string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@t2
+PREHOOK: query: insert overwrite table t1 partition (ds='1')
 select key, value from src
-Input: default/src
-Output: default/t1/ds=1
-query: insert overwrite table t1 partition (ds='2')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t1@ds=1
+POSTHOOK: query: insert overwrite table t1 partition (ds='1')
 select key, value from src
-Input: default/src
-Output: default/t1/ds=2
-query: insert overwrite table t2 partition (ds='1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t1@ds=1
+PREHOOK: query: insert overwrite table t1 partition (ds='2')
 select key, value from src
-Input: default/src
-Output: default/t2/ds=1
-query: explain
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t1@ds=2
+POSTHOOK: query: insert overwrite table t1 partition (ds='2')
+select key, value from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t1@ds=2
+PREHOOK: query: insert overwrite table t2 partition (ds='1')
+select key, value from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t2@ds=1
+POSTHOOK: query: insert overwrite table t2 partition (ds='1')
+select key, value from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t2@ds=1
+PREHOOK: query: explain
 select count(1) from t1 join t2 on t1.key=t2.key where t1.ds='1' and t2.ds='1'
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select count(1) from t1 join t2 on t1.key=t2.key where t1.ds='1' and t2.ds='1'
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF t1) (TOK_TABREF t2) (= (. (TOK_TABLE_OR_COL t1) key) (. (TOK_TABLE_OR_COL t2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (and (= (. (TOK_TABLE_OR_COL t1) ds) '1') (= (. (TOK_TABLE_OR_COL t2) ds) '1')))))
 
@@ -102,7 +138,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive4/hive4/build/ql/tmp/159384890/10002 
+        file:/data/users/njain/hive5/hive5/build/ql/tmp/137089550/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -132,10 +168,24 @@ STAGE PLANS:
       limit: -1
 
 
-query: select count(1) from t1 join t2 on t1.key=t2.key where t1.ds='1' and t2.ds='1'
-Input: default/t2/ds=1
-Input: default/t1/ds=1
-Output: file:/data/users/njain/hive4/hive4/build/ql/tmp/104820129/10000
+PREHOOK: query: select count(1) from t1 join t2 on t1.key=t2.key where t1.ds='1' and t2.ds='1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2@ds=1
+PREHOOK: Input: default@t1@ds=1
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1835006892/10000
+POSTHOOK: query: select count(1) from t1 join t2 on t1.key=t2.key where t1.ds='1' and t2.ds='1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2@ds=1
+POSTHOOK: Input: default@t1@ds=1
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1835006892/10000
 18
-query: drop table t1
-query: drop table t2
+PREHOOK: query: drop table t1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table t1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@t1
+PREHOOK: query: drop table t2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table t2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@t2

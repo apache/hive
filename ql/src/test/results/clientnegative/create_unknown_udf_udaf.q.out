@@ -1,2 +1,3 @@
-query: CREATE TEMPORARY FUNCTION dummy_function AS 'org.apache.hadoop.hive.ql.udf.DummyFunction'
+PREHOOK: query: CREATE TEMPORARY FUNCTION dummy_function AS 'org.apache.hadoop.hive.ql.udf.DummyFunction'
+PREHOOK: type: CREATEFUNCTION
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.FunctionTask

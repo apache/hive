@@ -1,13 +1,30 @@
-query: drop table input_columnarserde
-query: CREATE TABLE input_columnarserde(a array<int>, b array<string>, c map<string,string>, d int, e string)
+PREHOOK: query: drop table input_columnarserde
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table input_columnarserde
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE input_columnarserde(a array<int>, b array<string>, c map<string,string>, d int, e string)
 ROW FORMAT SERDE
   'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
 STORED AS
   INPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileInputFormat'
   OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
-query: EXPLAIN
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE input_columnarserde(a array<int>, b array<string>, c map<string,string>, d int, e string)
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+STORED AS
+  INPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileInputFormat'
+  OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileOutputFormat'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@input_columnarserde
+PREHOOK: query: EXPLAIN
 FROM src_thrift
 INSERT OVERWRITE TABLE input_columnarserde SELECT src_thrift.lint, src_thrift.lstring, src_thrift.mstringstring, src_thrift.aint, src_thrift.astring DISTRIBUTE BY 1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM src_thrift
+INSERT OVERWRITE TABLE input_columnarserde SELECT src_thrift.lint, src_thrift.lstring, src_thrift.mstringstring, src_thrift.aint, src_thrift.astring DISTRIBUTE BY 1
+POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF src_thrift)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB input_columnarserde)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src_thrift) lint)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src_thrift) lstring)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src_thrift) mstringstring)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src_thrift) aint)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src_thrift) astring))) (TOK_DISTRIBUTEBY 1)))
 
@@ -74,13 +91,24 @@ STAGE PLANS:
               name: input_columnarserde
 
 
-query: FROM src_thrift
+PREHOOK: query: FROM src_thrift
 INSERT OVERWRITE TABLE input_columnarserde SELECT src_thrift.lint, src_thrift.lstring, src_thrift.mstringstring, src_thrift.aint, src_thrift.astring DISTRIBUTE BY 1
-Input: default/src_thrift
-Output: default/input_columnarserde
-query: SELECT input_columnarserde.* FROM input_columnarserde DISTRIBUTE BY 1
-Input: default/input_columnarserde
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1695989715/10000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+PREHOOK: Output: default@input_columnarserde
+POSTHOOK: query: FROM src_thrift
+INSERT OVERWRITE TABLE input_columnarserde SELECT src_thrift.lint, src_thrift.lstring, src_thrift.mstringstring, src_thrift.aint, src_thrift.astring DISTRIBUTE BY 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+POSTHOOK: Output: default@input_columnarserde
+PREHOOK: query: SELECT input_columnarserde.* FROM input_columnarserde DISTRIBUTE BY 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@input_columnarserde
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/851213096/10000
+POSTHOOK: query: SELECT input_columnarserde.* FROM input_columnarserde DISTRIBUTE BY 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@input_columnarserde
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/851213096/10000
 [0,0,0]	["0","0","0"]	{"key_0":"value_0"}	1712634731	record_0
 [1,2,3]	["10","100","1000"]	{"key_1":"value_1"}	465985200	record_1
 [2,4,6]	["20","200","2000"]	{"key_2":"value_2"}	-751827638	record_2
@@ -92,9 +120,14 @@ Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1695989715/
 [8,16,24]	["80","800","8000"]	{"key_8":"value_8"}	1638581578	record_8
 [9,18,27]	["90","900","9000"]	{"key_9":"value_9"}	336964413	record_9
 null	null	{}	0	NULL
-query: SELECT input_columnarserde.a[0], input_columnarserde.b[0], input_columnarserde.c['key2'], input_columnarserde.d, input_columnarserde.e FROM input_columnarserde DISTRIBUTE BY 1
-Input: default/input_columnarserde
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1755799278/10000
+PREHOOK: query: SELECT input_columnarserde.a[0], input_columnarserde.b[0], input_columnarserde.c['key2'], input_columnarserde.d, input_columnarserde.e FROM input_columnarserde DISTRIBUTE BY 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@input_columnarserde
+PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/722662209/10000
+POSTHOOK: query: SELECT input_columnarserde.a[0], input_columnarserde.b[0], input_columnarserde.c['key2'], input_columnarserde.d, input_columnarserde.e FROM input_columnarserde DISTRIBUTE BY 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@input_columnarserde
+POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/722662209/10000
 0	0	NULL	1712634731	record_0
 1	10	NULL	465985200	record_1
 2	20	NULL	-751827638	record_2
@@ -106,4 +139,8 @@ Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/1755799278/
 8	80	NULL	1638581578	record_8
 9	90	NULL	336964413	record_9
 NULL	NULL	NULL	0	NULL
-query: drop table input_columnarserde
+PREHOOK: query: drop table input_columnarserde
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table input_columnarserde
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@input_columnarserde

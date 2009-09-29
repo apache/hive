@@ -1,12 +1,28 @@
-query: DROP TABLE INPUTDDL8
-query: CREATE TABLE INPUTDDL8 COMMENT 'This is a thrift based table'
+PREHOOK: query: DROP TABLE INPUTDDL8
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE INPUTDDL8
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE INPUTDDL8 COMMENT 'This is a thrift based table'
     PARTITIONED BY(ds DATETIME, country STRING)
     CLUSTERED BY(aint) SORTED BY(lint) INTO 32 BUCKETS
     ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer'
     WITH SERDEPROPERTIES ('serialization.class' = 'org.apache.hadoop.hive.serde2.thrift.test.Complex',
                           'serialization.format' = 'com.facebook.thrift.protocol.TBinaryProtocol')
     STORED AS SEQUENCEFILE
-query: DESCRIBE EXTENDED INPUTDDL8
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE INPUTDDL8 COMMENT 'This is a thrift based table'
+    PARTITIONED BY(ds DATETIME, country STRING)
+    CLUSTERED BY(aint) SORTED BY(lint) INTO 32 BUCKETS
+    ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer'
+    WITH SERDEPROPERTIES ('serialization.class' = 'org.apache.hadoop.hive.serde2.thrift.test.Complex',
+                          'serialization.format' = 'com.facebook.thrift.protocol.TBinaryProtocol')
+    STORED AS SEQUENCEFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@INPUTDDL8
+PREHOOK: query: DESCRIBE EXTENDED INPUTDDL8
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE EXTENDED INPUTDDL8
+POSTHOOK: type: DESCTABLE
 aint	int	from deserializer
 astring	string	from deserializer
 lint	array<int>	from deserializer
@@ -16,5 +32,9 @@ mstringstring	map<string,string>	from deserializer
 ds	datetime	
 country	string	
 	 	 
-Detailed Table Information	Table(tableName:inputddl8, dbName:default, owner:zshao, createTime:1247879869, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[], location:file:/data/users/zshao/tools/namit-trunk-apache-hive/build/ql/test/data/warehouse/inputddl8, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:32, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer, parameters:{serialization.class=org.apache.hadoop.hive.serde2.thrift.test.Complex,serialization.format=com.facebook.thrift.protocol.TBinaryProtocol}), bucketCols:[aint], sortCols:[Order(col:lint, order:1)], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:datetime, comment:null), FieldSchema(name:country, type:string, comment:null)], parameters:{comment=This is a thrift based table})	
-query: DROP TABLE INPUTDDL8
+Detailed Table Information	Table(tableName:inputddl8, dbName:default, owner:njain, createTime:1253780774, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[], location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/inputddl8, inputFormat:org.apache.hadoop.mapred.SequenceFileInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat, compressed:false, numBuckets:32, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer, parameters:{serialization.class=org.apache.hadoop.hive.serde2.thrift.test.Complex,serialization.format=com.facebook.thrift.protocol.TBinaryProtocol}), bucketCols:[aint], sortCols:[Order(col:lint, order:1)], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:datetime, comment:null), FieldSchema(name:country, type:string, comment:null)], parameters:{comment=This is a thrift based table})	
+PREHOOK: query: DROP TABLE INPUTDDL8
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE INPUTDDL8
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@inputddl8
