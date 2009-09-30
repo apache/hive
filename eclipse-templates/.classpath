@@ -25,6 +25,7 @@
 	<classpathentry exported="true" kind="lib" path="ql/lib/antlr-runtime-3.0.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="testlibs/junit-3.8.1.jar"/>
 	<classpathentry kind="src" path="build/ql/gen-java"/>
+	<classpathentry kind="src" path="build/contrib/test/src"/>
 	<classpathentry kind="src" path="build/ql/test/src"/>
 	<classpathentry kind="src" path="cli/src/java"/>
 	<classpathentry kind="src" path="common/src/java"/>

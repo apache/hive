@@ -137,6 +137,7 @@ TOK_MAPJOIN;
 TOK_HINTARGLIST;
 TOK_USERSCRIPTCOLNAMES;
 TOK_USERSCRIPTCOLSCHEMA;
+TOK_RECORDREADER;
 }
 
 
@@ -371,6 +372,14 @@ serde
 @after { msgs.pop(); }
     : serdeFormat -> ^(TOK_SERDE serdeFormat)
     | serdePropertiesFormat -> ^(TOK_SERDE serdePropertiesFormat)
+    |   -> ^(TOK_SERDE)
+    ;
+
+recordReader
+@init { msgs.push("record reader specification"); }
+@after { msgs.pop(); }
+    : KW_RECORDREADER StringLiteral -> ^(TOK_RECORDREADER StringLiteral)
+    |   -> ^(TOK_RECORDREADER)
     ;
 
 serdeFormat
@@ -730,9 +739,11 @@ trfmClause
     ( KW_SELECT KW_TRANSFORM LPAREN selectExpressionList RPAREN
       | KW_MAP    selectExpressionList
       | KW_REDUCE selectExpressionList )
-    inSerde=serde? KW_USING StringLiteral 
-    ( KW_AS ((LPAREN (aliasList | columnNameTypeList) RPAREN) | (aliasList | columnNameTypeList)) outSerde=serde?)?
-    -> ^(TOK_TRANSFORM selectExpressionList $inSerde? StringLiteral aliasList? columnNameTypeList? $outSerde?)
+    inSerde=serde 
+    KW_USING StringLiteral 
+    ( KW_AS ((LPAREN (aliasList | columnNameTypeList) RPAREN) | (aliasList | columnNameTypeList)))? 
+    outSerde=serde outRec=recordReader
+    -> ^(TOK_TRANSFORM selectExpressionList $inSerde StringLiteral $outSerde $outRec aliasList? columnNameTypeList?)
     ;
     
 selectExpression
@@ -1307,6 +1318,7 @@ KW_CROSS: 'CROSS';
 KW_CONTINUE: 'CONTINUE';
 KW_CURSOR: 'CURSOR';
 KW_TRIGGER: 'TRIGGER';
+KW_RECORDREADER: 'RECORDREADER';
 
 
 // Operators

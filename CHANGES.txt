@@ -122,7 +122,7 @@ Release 0.4.0 -  Unreleased
 
     HIVE-691. show documentation for functions. (Emil Ibrishimov via namit)
 
-    HIVE-743. Let user specify serde for custom sctipts.   
+    HIVE-743. Let user specify serde for custom sctipts.
     (Namit Jain via rmurthy)
 
     HIVE-749. add hive.optimize.pruner
@@ -131,6 +131,8 @@ Release 0.4.0 -  Unreleased
     HIVE-748. Test for extracting urls. (Namit Jain via zshao)
 
     HIVE-187. Preliminary ODBC Support. (Eric Hwang via rmurthy)
+
+    HIVE-857. Transform script should support objects of same type. (Zheng Shao via namit)
 
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
@@ -217,7 +219,7 @@ Release 0.4.0 -  Unreleased
     HIVE-737. Support having hadoop jars in HADOOP_HOME/build for running
     hive cli. (Johan Oskarsson via athusoo)
 
-    HIVE-760. Add version info to META-INF/MANIFEST.MF 
+    HIVE-760. Add version info to META-INF/MANIFEST.MF
     (Bill Graham via rmurthy)
 
     HIVE-679. Adding the basic JDBC methods to allow querying using the

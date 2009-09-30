@@ -191,7 +191,7 @@ public class TestOperators extends TestCase {
       // scriptOperator to echo the output of the select
       tableDesc scriptOutput = PlanUtils.getDefaultTableDesc("" + Utilities.tabCode, "a,b");
       tableDesc scriptInput  = PlanUtils.getDefaultTableDesc("" + Utilities.tabCode, "a,b");
-      scriptDesc sd = new scriptDesc("cat", scriptOutput, scriptInput);
+      scriptDesc sd = new scriptDesc("cat", scriptOutput, scriptInput, TextRecordReader.class);
       Operator<scriptDesc> sop = OperatorFactory.getAndMakeChild(sd, op);
 
       // Collect operator to observe the output of the script

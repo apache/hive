@@ -41,10 +41,11 @@ import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.mapred.LineRecordReader.LineReader;
 import org.apache.hadoop.util.StringUtils;
 
 
@@ -186,7 +187,7 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
 
       scriptOutputDeserializer = conf.getScriptOutputInfo().getDeserializerClass().newInstance();
       scriptOutputDeserializer.initialize(hconf, conf.getScriptOutputInfo().getProperties());
-
+      
       scriptInputSerializer = (Serializer)conf.getScriptInputInfo().getDeserializerClass().newInstance();
       scriptInputSerializer.initialize(hconf, conf.getScriptInputInfo().getProperties());
 
@@ -222,9 +223,17 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
       scriptOut = new DataOutputStream(new BufferedOutputStream(scriptPid.getOutputStream()));
       scriptIn = new DataInputStream(new BufferedInputStream(scriptPid.getInputStream()));
       scriptErr = new DataInputStream(new BufferedInputStream(scriptPid.getErrorStream()));
-      outThread = new StreamThread(scriptIn, new OutputStreamProcessor(
+      
+      RecordReader scriptOutputReader = conf.getOutRecordReaderClass().newInstance();
+      scriptOutputReader.initialize(scriptIn, hconf);
+      
+      outThread = new StreamThread(scriptOutputReader, new OutputStreamProcessor(
           scriptOutputDeserializer.getObjectInspector()), "OutputProcessor");
-      errThread = new StreamThread(scriptErr,
+      
+      RecordReader scriptErrReader = conf.getOutRecordReaderClass().newInstance();
+      scriptErrReader.initialize(scriptErr, hconf);
+      
+      errThread = new StreamThread(scriptErrReader,
                                    new ErrorStreamProcessor
                                    (HiveConf.getIntVar(hconf, HiveConf.ConfVars.SCRIPTERRORLIMIT)),
                                    "ErrorProcessor");
@@ -318,7 +327,7 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
 
 
   interface StreamProcessor {
-    public void processLine(Text line) throws HiveException;
+    public void processLine(Writable line) throws HiveException;
     public void close() throws HiveException;
   }
 
@@ -329,7 +338,7 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
     public OutputStreamProcessor(ObjectInspector rowInspector) {
       this.rowInspector = rowInspector;
     }
-    public void processLine(Text line) throws HiveException {
+    public void processLine(Writable line) throws HiveException {
       try {
         row = scriptOutputDeserializer.deserialize(line);
       } catch (SerDeException e) {
@@ -360,10 +369,16 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
       lastReportTime = 0;
     }
     
-    public void processLine(Text line) throws HiveException {
+    public void processLine(Writable line) throws HiveException {
       
       String stringLine = line.toString();
+      int len = 0;
       
+      if (line instanceof Text) 
+        len = ((Text)line).getLength();
+      else if (line instanceof BytesWritable)
+        len = ((BytesWritable)line).getSize();
+          
       // Report progress for each stderr line, but no more frequently than once per minute.
       long now = System.currentTimeMillis();
       // reporter is a member variable of the Operator class.
@@ -375,11 +390,11 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
       if((maxBytes < 0) || (bytesCopied < maxBytes)) {
         System.err.println(stringLine);
       }
-      if (bytesCopied < maxBytes && bytesCopied + line.getLength() >= maxBytes) {
+      if (bytesCopied < maxBytes && bytesCopied + len >= maxBytes) {
         System.err.println("Operator " + id + " " + getName()
             + ": exceeding stderr limit of " + maxBytes + " bytes, will truncate stderr messages.");
       }      
-      bytesCopied += line.getLength();
+      bytesCopied += len;
     }
     public void close() {
     }
@@ -389,11 +404,11 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
 
   class StreamThread extends Thread {
 
-    InputStream in;
+    RecordReader in;
     StreamProcessor proc;
     String name;
 
-    StreamThread(InputStream in, StreamProcessor proc, String name) {
+    StreamThread(RecordReader in, StreamProcessor proc, String name) {
       this.in = in;
       this.proc = proc;
       this.name = name;
@@ -401,14 +416,11 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
     }
 
     public void run() {
-      LineReader lineReader = null;
       try {
-        Text row = new Text();
-        lineReader = new LineReader((InputStream)in, hconf);
+        Writable row = in.createRow();
 
         while(true) {
-          row.clear();
-          long bytes = lineReader.readLine(row);
+          long bytes = in.next(row);
           if(bytes <= 0) {
             break;
           }
@@ -421,10 +433,9 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
         LOG.warn(StringUtils.stringifyException(th));
       } finally {
         try {
-          if(lineReader != null) {
-            lineReader.close();
+          if (in != null) {
+            in.close();
           }
-          in.close();
           proc.close();
         } catch (Exception e) {
           LOG.warn(name + ": error in closing ..");

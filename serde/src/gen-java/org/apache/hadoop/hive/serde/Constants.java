@@ -30,6 +30,8 @@ public class Constants {
 
   public static final String SERIALIZATION_SORT_ORDER = "serialization.sort.order";
 
+  public static final String SERIALIZATION_USE_JSON_OBJECTS = "serialization.use.json.object";
+
   public static final String FIELD_DELIM = "field.delim";
 
   public static final String COLLECTION_DELIM = "colelction.delim";

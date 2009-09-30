@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.hive.ql.exec.RecordReader;
+
 @explain(displayName="Transform Operator")
 public class scriptDesc implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -28,16 +30,19 @@ public class scriptDesc implements Serializable {
   private tableDesc scriptOutputInfo;
   // Describe how to serialize data out to user script
   private tableDesc scriptInputInfo;
+  private Class<? extends RecordReader> outRecordReaderClass;
 
   public scriptDesc() { }
   public scriptDesc(
     final String scriptCmd,
+    final tableDesc scriptInputInfo,
     final tableDesc scriptOutputInfo,
-    final tableDesc scriptInputInfo) {
-
+    final Class<? extends RecordReader> outRecordReaderClass) {
+    
     this.scriptCmd = scriptCmd;
-    this.scriptOutputInfo = scriptOutputInfo;
     this.scriptInputInfo = scriptInputInfo;
+    this.scriptOutputInfo = scriptOutputInfo;
+    this.outRecordReaderClass = outRecordReaderClass;
   }
   
   @explain(displayName="command")
@@ -60,5 +65,18 @@ public class scriptDesc implements Serializable {
   }
   public void setScriptInputInfo(tableDesc scriptInputInfo) {
     this.scriptInputInfo = scriptInputInfo;
+  }
+  /**
+   * @return the outRecordReaderClass
+   */
+  public Class<? extends RecordReader> getOutRecordReaderClass() {
+    return outRecordReaderClass;
+  }
+  /**
+   * @param outRecordReaderClass the outRecordReaderClass to set
+   */
+  public void setOutRecordReaderClass(
+      Class<? extends RecordReader> outRecordReaderClass) {
+    this.outRecordReaderClass = outRecordReaderClass;
   }
 }

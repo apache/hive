@@ -39,6 +39,10 @@ public class InputByteBuffer {
     this.end = end;
   }
   
+  public final byte read() throws IOException {
+    return read(false);
+  }
+  
   /**
    * Read one byte from the byte buffer.
    * Final method to help inlining.
@@ -69,6 +73,10 @@ public class InputByteBuffer {
    */
   public final void seek(int position) {
     start = position;
+  }
+  
+  public final int getEnd() {
+    return end;
   }
   
   /**

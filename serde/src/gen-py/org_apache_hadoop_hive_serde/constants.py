@@ -21,6 +21,8 @@ SERIALIZATION_LAST_COLUMN_TAKES_REST = "serialization.last.column.takes.rest"
 
 SERIALIZATION_SORT_ORDER = "serialization.sort.order"
 
+SERIALIZATION_USE_JSON_OBJECTS = "serialization.use.json.object"
+
 FIELD_DELIM = "field.delim"
 
 COLLECTION_DELIM = "colelction.delim"

@@ -12,6 +12,7 @@ const string SERIALIZATION_DDL = "serialization.ddl"
 const string SERIALIZATION_NULL_FORMAT = "serialization.null.format"
 const string SERIALIZATION_LAST_COLUMN_TAKES_REST = "serialization.last.column.takes.rest"
 const string SERIALIZATION_SORT_ORDER = "serialization.sort.order"
+const string SERIALIZATION_USE_JSON_OBJECTS = "serialization.use.json.object"
 
 const string FIELD_DELIM = "field.delim"
 const string COLLECTION_DELIM = "colelction.delim"

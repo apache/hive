@@ -8,7 +8,7 @@ FROM (
 ) tmap
 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) ds) (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) value)) '/bin/cat' (TOK_ALIASLIST ds tkey tvalue)))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL src) ds) '2008-04-08')) (TOK_CLUSTERBY (TOK_TABLE_OR_COL tkey)))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) tkey)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) tvalue))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL tmap) tkey) 100))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF srcpart src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (. (TOK_TABLE_OR_COL src) ds) (. (TOK_TABLE_OR_COL src) key) (. (TOK_TABLE_OR_COL src) value)) TOK_SERDE '/bin/cat' TOK_SERDE TOK_RECORDREADER (TOK_ALIASLIST ds tkey tvalue)))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL src) ds) '2008-04-08')) (TOK_CLUSTERBY (TOK_TABLE_OR_COL tkey)))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) tkey)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmap) tvalue))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL tmap) tkey) 100))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -48,6 +48,7 @@ STAGE PLANS:
                         properties:
                           columns ds,tkey,tvalue
                           serialization.format 9
+                          columns.types string,string,string
                     Reduce Output Operator
                       key expressions:
                             expr: tkey
@@ -66,10 +67,10 @@ STAGE PLANS:
                             type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/zshao/tools/deploy-branch-0.4-apache-hive/.ptest_0/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/zshao/tools/deploy-branch-0.4-apache-hive/.ptest_0/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
       Path -> Partition:
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/zshao/tools/deploy-branch-0.4-apache-hive/.ptest_0/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
             partition values:
               ds 2008-04-08
@@ -88,10 +89,10 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/zshao/tools/deploy-branch-0.4-apache-hive/.ptest_0/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
-        file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/zshao/tools/deploy-branch-0.4-apache-hive/.ptest_0/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
             partition values:
               ds 2008-04-08
@@ -110,7 +111,7 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/test/data/warehouse/srcpart
+                location file:/data/users/zshao/tools/deploy-branch-0.4-apache-hive/.ptest_0/build/ql/test/data/warehouse/srcpart
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
       Reduce Operator Tree:
@@ -130,7 +131,7 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
-                directory: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/76281111/10001
+                directory: file:/data/users/zshao/tools/deploy-branch-0.4-apache-hive/.ptest_0/build/ql/tmp/615186313/10001
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -154,7 +155,7 @@ query: FROM (
 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
 Input: default/srcpart/ds=2008-04-08/hr=11
 Input: default/srcpart/ds=2008-04-08/hr=12
-Output: file:/data/users/athusoo/commits/hive_trunk_ws1/build/ql/tmp/908564942/10000
+Output: file:/data/users/zshao/tools/deploy-branch-0.4-apache-hive/.ptest_0/build/ql/tmp/1620505675/10000
 0	val_0
 0	val_0
 0	val_0

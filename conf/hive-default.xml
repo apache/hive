@@ -339,4 +339,16 @@
   <description>Whether Hive Tranform/Map/Reduce Clause should automatically send progress information to TaskTracker to avoid the task getting killed because of inactivity.  Hive sends progress information when the script is outputting to stderr.  This option removes the need of periodically producing stderr messages, but users should be cautious because this may prevent infinite loops in the scripts to be killed by TaskTracker.  </description>
 </property>
 
+<property>
+  <name>hive.script.serde</name>
+  <value>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</value>
+  <description>The default serde for trasmitting input data to and reading output data from the user scripts. </description>
+</property>
+
+<property>
+  <name>hive.script.recordreader</name>
+  <value>org.apache.hadoop.hive.ql.exec.TextRecordReader</value>
+  <description>The default record reader for reading data from the user scripts. </description>
+</property>
+
 </configuration>
