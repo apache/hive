@@ -250,7 +250,12 @@ public class Hadoop20Shims implements HadoopShims {
     implements HadoopShims.CombineFileInputFormatShim<K, V> {
 
     public Path[] getInputPathsShim(JobConf conf) {
-      Path[] paths = CombineFileInputFormat.getInputPaths(conf);
+      Path[] paths;
+      try {
+        paths = CombineFileInputFormat.getInputPaths(conf);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
       Path[] newPaths = new Path[paths.length];
       // remove file:
       for (int pos = 0; pos < paths.length; pos++) 

@@ -146,6 +146,9 @@ Trunk -  Unreleased
     HIVE-831. Remove ASTPartitionPruner (missed this in HIVE-844)
     (Namit Jain via rmurthy)
 
+    HIVE-845. Shims do not build against latest hadoop
+    (Cyrus Katrak via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
