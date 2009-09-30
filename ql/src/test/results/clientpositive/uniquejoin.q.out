@@ -1,3 +1,15 @@
+PREHOOK: query: DROP TABLE T1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE T1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE T2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE T2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE T3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE T3
+POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
@@ -34,14 +46,14 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2070484228/10000
+PREHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/656661211/10000
 POSTHOOK: query: FROM UNIQUEJOIN PRESERVE T1 a (a.key), PRESERVE T2 b (b.key), PRESERVE T3 c (c.key)
 SELECT a.key, b.key, c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2070484228/10000
+POSTHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/656661211/10000
 1	NULL	NULL
 2	2	2
 3	3	NULL
@@ -59,14 +71,14 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/822915336/10000
+PREHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/952293765/10000
 POSTHOOK: query: FROM UNIQUEJOIN T1 a (a.key), T2 b (b.key), T3 c (c.key)
 SELECT a.key, b.key, c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/822915336/10000
+POSTHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/952293765/10000
 2	2	2
 PREHOOK: query: FROM UNIQUEJOIN T1 a (a.key), T2 b (b.key-1), T3 c (c.key)
 SELECT a.key, b.key, c.key
@@ -74,14 +86,14 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/373517478/10000
+PREHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/1319731262/10000
 POSTHOOK: query: FROM UNIQUEJOIN T1 a (a.key), T2 b (b.key-1), T3 c (c.key)
 SELECT a.key, b.key, c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/373517478/10000
+POSTHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/1319731262/10000
 2	3	2
 7	8	7
 7	8	7
@@ -91,14 +103,14 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1538447972/10000
+PREHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/466973827/10000
 POSTHOOK: query: FROM UNIQUEJOIN PRESERVE T1 a (a.key, a.val), PRESERVE T2 b (b.key, b.val), PRESERVE T3 c (c.key, c.val)
 SELECT a.key, a.val, b.key, b.val, c.key, c.val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1538447972/10000
+POSTHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/466973827/10000
 1	11	NULL	NULL	NULL	NULL
 2	12	NULL	NULL	2	12
 NULL	NULL	2	22	NULL	NULL
@@ -116,14 +128,14 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/349846170/10000
+PREHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/1186780299/10000
 POSTHOOK: query: FROM UNIQUEJOIN PRESERVE T1 a (a.key), T2 b (b.key), PRESERVE T3 c (c.key)
 SELECT a.key, b.key, c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/349846170/10000
+POSTHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/1186780299/10000
 1	NULL	NULL
 2	2	2
 3	3	NULL
@@ -139,13 +151,13 @@ SELECT a.key, b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 PREHOOK: Input: default@t1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1829083855/10000
+PREHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/306350125/10000
 POSTHOOK: query: FROM UNIQUEJOIN PRESERVE T1 a (a.key), T2 b(b.key)
 SELECT a.key, b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1829083855/10000
+POSTHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/306350125/10000
 1	NULL
 2	2
 3	3

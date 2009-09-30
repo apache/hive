@@ -117,7 +117,7 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
     Iterator<Map.Entry<Byte, List<exprNodeDesc>>> entryIter = inputMap.entrySet().iterator();
     while (entryIter.hasNext()) {
       Map.Entry<Byte, List<exprNodeDesc>> e = (Map.Entry<Byte, List<exprNodeDesc>>) entryIter.next();
-      Byte key = (Byte) e.getKey();
+      Byte key = order[e.getKey()];
 
       List<exprNodeDesc> expr = (List<exprNodeDesc>) e.getValue();
       int sz = expr.size();
@@ -191,9 +191,7 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
     joinValues = new HashMap<Byte, List<ExprNodeEvaluator>>();
 
     if (order == null) {
-      order = new Byte[numAliases];
-      for (int i = 0; i < numAliases; i++)
-        order[i] = (byte) i;
+      order = conf.getTagOrder();
     }
     condn = conf.getConds();
     noOuterJoin = conf.getNoOuterJoin();

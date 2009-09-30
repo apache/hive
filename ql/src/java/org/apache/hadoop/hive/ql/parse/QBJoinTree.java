@@ -46,6 +46,9 @@ public class QBJoinTree
   private  boolean        mapSideJoin;
   private  List<String>   mapAliases;
   
+  // big tables that should be streamed
+  private  List<String>   streamAliases;
+
   /**
    * constructor 
    */
@@ -171,6 +174,14 @@ public class QBJoinTree
    */
   public void setMapAliases(List<String> mapAliases) {
     this.mapAliases = mapAliases;
+  }
+  
+  public List<String> getStreamAliases() {
+    return streamAliases;
+  }
+
+  public void setStreamAliases(List<String> streamAliases) {
+    this.streamAliases = streamAliases;
   }
 }
 

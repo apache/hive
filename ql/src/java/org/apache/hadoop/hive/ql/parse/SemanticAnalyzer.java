@@ -3131,7 +3131,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private List<String> getMapSideJoinTables(QB qb) {
-    List<String> cols = null;
+    List<String> cols = new ArrayList<String>();
     ASTNode hints = qb.getParseInfo().getHints();
     for (int pos = 0; pos < hints.getChildCount(); pos++) {
       ASTNode hint = (ASTNode)hints.getChild(pos);
@@ -3140,8 +3140,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         int numCh = hintTblNames.getChildCount();
         for (int tblPos = 0; tblPos < numCh; tblPos++) {
           String tblName = ((ASTNode)hintTblNames.getChild(tblPos)).getText().toLowerCase();
-          if (cols == null)
-            cols = new ArrayList<String>();
           if (!cols.contains(tblName))
             cols.add(tblName);
         }
@@ -3234,6 +3232,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     joinTree.setJoinCond(condn);
 
+    if (qb.getParseInfo().getHints() != null) {
+      parseStreamTables(joinTree, qb);
+    }
+    
     return joinTree;
   }
 
@@ -3352,9 +3354,29 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       joinTree.setMapAliases(mapAliases);
+      
+      parseStreamTables(joinTree, qb);
     }
 
     return joinTree;
+  }
+  
+  private void parseStreamTables(QBJoinTree joinTree, QB qb) {
+    List<String> streamAliases = joinTree.getStreamAliases();
+    
+    for (Node hintNode: qb.getParseInfo().getHints().getChildren()) {
+      ASTNode hint = (ASTNode)hintNode;
+      if (hint.getChild(0).getType() == HiveParser.TOK_STREAMTABLE) {
+        for (int i = 0; i < hint.getChild(1).getChildCount(); i++) {
+          if (streamAliases == null) {
+            streamAliases = new ArrayList<String>();
+          }
+          streamAliases.add(hint.getChild(1).getChild(i).getText());
+        }
+      }
+    }
+    
+    joinTree.setStreamAliases(streamAliases);
   }
 
   private void mergeJoins(QB qb, QBJoinTree parent, QBJoinTree node,

@@ -57,6 +57,8 @@ public class joinDesc implements Serializable {
 
   protected joinCond[] conds;
   
+  protected Byte[] tagOrder;
+
   public joinDesc() { }
   
   public joinDesc(final Map<Byte, List<exprNodeDesc>> exprs, ArrayList<String> outputColumnNames, final boolean noOuterJoin, final joinCond[] conds) {
@@ -64,6 +66,12 @@ public class joinDesc implements Serializable {
     this.outputColumnNames = outputColumnNames;
     this.noOuterJoin = noOuterJoin;
     this.conds = conds;
+    
+    tagOrder = new Byte[exprs.size()];
+    for(int i = 0; i<tagOrder.length; i++)
+    {
+      tagOrder[i] = (byte)i;
+    }
   }
   
   public joinDesc(final Map<Byte, List<exprNodeDesc>> exprs, ArrayList<String> outputColumnNames) {
@@ -159,4 +167,21 @@ public class joinDesc implements Serializable {
     this.conds = conds;
   }
 
+  /**
+   * The order in which tables should be processed when joining
+   * 
+   * @return Array of tags
+   */
+  public Byte[] getTagOrder() {
+    return tagOrder;
+  }
+
+  /**
+   * The order in which tables should be processed when joining
+   * 
+   * @param tagOrder Array of tags
+   */
+  public void setTagOrder(Byte[] tagOrder) {
+    this.tagOrder = tagOrder;
+  }
 }

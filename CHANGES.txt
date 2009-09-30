@@ -48,6 +48,9 @@ Trunk -  Unreleased
     HIVE-854. Provide for post-execute hooks.
     (Namit Jain via rmurthy)
 
+    HIVE-853. Provide hints for controlling join order
+    (Emil Ibrishimov via namit)
+
   IMPROVEMENTS
 
     HIVE-760. Add version info to META-INF/MANIFEST.MF.

@@ -8,7 +8,6 @@ POSTHOOK: query: -- test for loading into tables with the correct file format
 
 DROP TABLE T1
 POSTHOOK: type: DROPTABLE
-POSTHOOK: Output: default@t1
 PREHOOK: query: CREATE TABLE T1(name STRING) STORED AS RCFILE
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE T1(name STRING) STORED AS RCFILE

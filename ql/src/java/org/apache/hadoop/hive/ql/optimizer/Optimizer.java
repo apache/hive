@@ -50,6 +50,7 @@ public class Optimizer {
     }
     transformations.add(new UnionProcessor());
     transformations.add(new MapJoinProcessor());
+    transformations.add(new JoinReorder());
   }
 
   /**
