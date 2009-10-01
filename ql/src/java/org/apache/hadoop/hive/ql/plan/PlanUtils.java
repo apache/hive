@@ -38,9 +38,15 @@ import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 
 public class PlanUtils {
-
+  
+  protected final static Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.plan.PlanUtils");
+  
   public static enum ExpressionTypes {FIELD, JEXL};
 
   @SuppressWarnings("nls")
@@ -139,6 +145,42 @@ public class PlanUtils {
       TextInputFormat.class,
       IgnoreKeyTextOutputFormat.class,
       properties);    
+  }
+  
+  /**
+   * Generate a table descriptor from a createTableDesc.
+   */
+  public static tableDesc getTableDesc(createTableDesc crtTblDesc, String cols, String colTypes) {
+    
+    Class<? extends Deserializer> serdeClass = LazySimpleSerDe.class;
+    String separatorCode                     = Integer.toString(Utilities.ctrlaCode);
+    String columns                           = cols;
+    String columnTypes                       = colTypes;
+    boolean lastColumnTakesRestOfTheLine     = false;
+    tableDesc ret;
+
+    try {
+      if ( crtTblDesc.getSerName() != null ) {
+        Class c = Class.forName(crtTblDesc.getSerName());
+        serdeClass = c;
+      }
+    
+      ret = getTableDesc(serdeClass, separatorCode, columns, columnTypes, 
+                                   lastColumnTakesRestOfTheLine, false);
+      
+      // replace the default input & output file format with those found in crtTblDesc
+      Class c1 = Class.forName(crtTblDesc.getInputFormat());
+      Class c2 = Class.forName(crtTblDesc.getOutputFormat());
+      Class<? extends InputFormat>      in_class  = c1;
+      Class<? extends HiveOutputFormat> out_class = c2;
+    
+      ret.setInputFileFormatClass(in_class);
+      ret.setOutputFileFormatClass(out_class);
+    } catch (ClassNotFoundException e) {
+      e.printStackTrace();
+      return null;
+    }
+    return ret;
   }
   
   /** 
@@ -382,6 +424,7 @@ public class PlanUtils {
     return getReduceSinkDesc(keyCols, valueCols, outputColumnNames, includeKey, tag, partitionCols, order.toString(),
          numReducers);
   }
+  
 
 }
   

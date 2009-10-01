@@ -3464,6 +3464,9 @@
                    <object class="java.util.Vector"> 
                     <void method="add"> 
                      <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                      <void property="alias"> 
+                       <string>value</string> 
+                      </void> 
                       <void property="internalName"> 
                        <string>_col0</string> 
                       </void> 

@@ -22,6 +22,7 @@ import java.util.*;
 
 import org.apache.hadoop.hive.ql.parse.QBParseInfo;
 import org.apache.hadoop.hive.ql.parse.QBMetaData;
+import org.apache.hadoop.hive.ql.plan.createTableDesc;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,6 +47,7 @@ public class QB {
   private QBJoinTree qbjoin;
   private String id;
   private boolean isQuery;
+  private createTableDesc tblDesc = null;   // table descriptor of the final results
 
   public void print(String msg) {
     LOG.info(msg + "alias=" + qbp.getAlias());
@@ -160,6 +162,21 @@ public class QB {
   }
 
   public boolean isSelectStarQuery() {
-    return qbp.isSelectStarQuery() && aliasToSubq.isEmpty();
+    return qbp.isSelectStarQuery() && aliasToSubq.isEmpty() && !isCTAS();
+  }
+  
+  public createTableDesc getTableDesc() {
+    return tblDesc;
+  }
+
+  public void setTableDesc(createTableDesc desc) {
+    tblDesc = desc;
+  }
+  
+  /**
+   * Whether this QB is for a CREATE-TABLE-AS-SELECT.
+   */
+  public boolean isCTAS() {
+    return tblDesc != null;
   }
 }

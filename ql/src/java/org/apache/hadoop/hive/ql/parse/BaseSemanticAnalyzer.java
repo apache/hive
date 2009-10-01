@@ -37,6 +37,10 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.serde.Constants;
+
 public abstract class BaseSemanticAnalyzer {
   protected final Hive db;
   protected final HiveConf conf;
@@ -253,6 +257,92 @@ public abstract class BaseSemanticAnalyzer {
     return outputs;
   }
 
+  /**
+   *  Get the list of FieldSchema out of the ASTNode. 
+   */
+  protected List<FieldSchema> getColumns(ASTNode ast) throws SemanticException
+  {
+    List<FieldSchema> colList = new ArrayList<FieldSchema>();
+    int numCh = ast.getChildCount();
+    for (int i = 0; i < numCh; i++) {
+      FieldSchema col = new FieldSchema();
+      ASTNode child = (ASTNode)ast.getChild(i);
+      
+      // child 0 is the name of the column
+      col.setName(unescapeIdentifier(child.getChild(0).getText()));
+      // child 1 is the type of the column
+      ASTNode typeChild = (ASTNode)(child.getChild(1));
+      col.setType(getTypeStringFromAST(typeChild));
+       
+      // child 2 is the optional comment of the column
+      if (child.getChildCount() == 3)
+        col.setComment(unescapeSQLString(child.getChild(2).getText()));
+      colList.add(col);
+    }
+    return colList;
+  }
+  
+  protected List<String> getColumnNames(ASTNode ast)
+  {
+    List<String> colList = new ArrayList<String>();
+    int numCh = ast.getChildCount();
+    for (int i = 0; i < numCh; i++) {
+      ASTNode child = (ASTNode)ast.getChild(i);
+      colList.add(unescapeIdentifier(child.getText()));
+    }
+    return colList;
+  }
+  
+  protected List<Order> getColumnNamesOrder(ASTNode ast)
+  {
+    List<Order> colList = new ArrayList<Order>();
+    int numCh = ast.getChildCount();
+    for (int i = 0; i < numCh; i++) {
+      ASTNode child = (ASTNode)ast.getChild(i);
+      if (child.getToken().getType() == HiveParser.TOK_TABSORTCOLNAMEASC)
+        colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()), 1));
+      else
+        colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()), 0));
+    }
+    return colList;
+  }
+  
+  protected static String getTypeStringFromAST(ASTNode typeNode) throws SemanticException {
+    switch (typeNode.getType()) {
+    case HiveParser.TOK_LIST:
+      return Constants.LIST_TYPE_NAME + "<"
+        + getTypeStringFromAST((ASTNode)typeNode.getChild(0)) + ">";
+    case HiveParser.TOK_MAP:
+      return Constants.MAP_TYPE_NAME + "<"
+        + getTypeStringFromAST((ASTNode)typeNode.getChild(0)) + ","
+        + getTypeStringFromAST((ASTNode)typeNode.getChild(1)) + ">";
+    case HiveParser.TOK_STRUCT:
+      return getStructTypeStringFromAST(typeNode);
+    default:
+      return DDLSemanticAnalyzer.getTypeName(typeNode.getType());
+    }
+  }
+  
+  private static String getStructTypeStringFromAST(ASTNode typeNode)
+      throws SemanticException {
+    String typeStr = Constants.STRUCT_TYPE_NAME + "<";
+    typeNode = (ASTNode) typeNode.getChild(0);
+    int children = typeNode.getChildCount();
+    if(children <= 0)
+      throw new SemanticException("empty struct not allowed.");
+    for (int i = 0; i < children; i++) {
+      ASTNode child = (ASTNode) typeNode.getChild(i);
+      typeStr += unescapeIdentifier(child.getChild(0).getText()) + ":";
+      typeStr += getTypeStringFromAST((ASTNode) child.getChild(1));
+      if (i < children - 1)
+        typeStr += ",";
+    }
+      
+    typeStr += ">";
+    return typeStr;
+  }
+ 
+ 
   public static class tableSpec {
     public String tableName;
     public Table tableHandle;

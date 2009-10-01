@@ -35,6 +35,8 @@ public class ColumnInfo implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private String internalName;
+  
+  private String alias = null; // [optional] alias of the column (external name as seen by the users) 
 
   /**
    * Store the alias of the table where available.
@@ -96,4 +98,13 @@ public class ColumnInfo implements Serializable {
   public String toString() {
     return internalName + ": " + type;
   }
+  
+  public void setAlias(String col_alias) {
+    alias = col_alias;
+  }
+  
+  public String getAlias() {
+    return alias;
+  }
+  
 }

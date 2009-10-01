@@ -40,17 +40,12 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
-import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
-import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.alterTableDesc;
-import org.apache.hadoop.hive.ql.plan.createTableDesc;
-import org.apache.hadoop.hive.ql.plan.createTableLikeDesc;
 import org.apache.hadoop.hive.ql.plan.descFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.descTableDesc;
 import org.apache.hadoop.hive.ql.plan.dropTableDesc;
@@ -62,11 +57,7 @@ import org.apache.hadoop.hive.ql.plan.showTablesDesc;
 import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.ql.plan.alterTableDesc.alterTableTypes;
 import org.apache.hadoop.hive.serde.Constants;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
-import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
-import org.apache.hadoop.mapred.SequenceFileInputFormat;
-import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 
 public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
@@ -85,14 +76,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     TokenToTypeName.put(HiveParser.TOK_DATETIME, Constants.DATETIME_TYPE_NAME);
     TokenToTypeName.put(HiveParser.TOK_TIMESTAMP, Constants.TIMESTAMP_TYPE_NAME);
   }
-  private static final String TEXTFILE_INPUT = TextInputFormat.class.getName();
-  private static final String TEXTFILE_OUTPUT = IgnoreKeyTextOutputFormat.class.getName();
-  private static final String SEQUENCEFILE_INPUT = SequenceFileInputFormat.class.getName();
-  private static final String SEQUENCEFILE_OUTPUT = SequenceFileOutputFormat.class.getName();
-  private static final String RCFILE_INPUT = RCFileInputFormat.class.getName();
-  private static final String RCFILE_OUTPUT = RCFileOutputFormat.class.getName();
-
-  private static final String COLUMNAR_SERDE = ColumnarSerDe.class.getName();
 
   public static String getTypeName(int token) {
     return TokenToTypeName.get(token);
@@ -104,9 +87,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public void analyzeInternal(ASTNode ast) throws SemanticException {
-    if (ast.getToken().getType() == HiveParser.TOK_CREATETABLE)
-       analyzeCreateTable(ast);
-    else if (ast.getToken().getType() == HiveParser.TOK_DROPTABLE)
+    if (ast.getToken().getType() == HiveParser.TOK_DROPTABLE)
        analyzeDropTable(ast);
     else if (ast.getToken().getType() == HiveParser.TOK_DESCTABLE)
     {
@@ -155,245 +136,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private void analyzeCreateTable(ASTNode ast)
-    throws SemanticException {
-    String            tableName     = unescapeIdentifier(ast.getChild(0).getText());
-    String            likeTableName = null;
-    List<FieldSchema> cols          = null;
-    List<FieldSchema> partCols      = null;
-    List<String>      bucketCols    = null;
-    List<Order>       sortCols      = null;
-    int               numBuckets    = -1;
-    String            fieldDelim    = null;
-    String            fieldEscape   = null;
-    String            collItemDelim = null;
-    String            mapKeyDelim   = null;
-    String            lineDelim     = null;
-    String            comment       = null;
-    String            inputFormat   = TEXTFILE_INPUT;
-    String            outputFormat  = TEXTFILE_OUTPUT;
-    String            location      = null;
-    String            serde         = null;
-    Map<String, String> mapProp     = null;
-    boolean           ifNotExists   = false;
-    boolean           isExt         = false;
-
-    if ("SequenceFile".equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.HIVEDEFAULTFILEFORMAT))) {
-      inputFormat = SEQUENCEFILE_INPUT;
-      outputFormat = SEQUENCEFILE_OUTPUT;
-    }
-
-    LOG.info("Creating table" + tableName);
-    int numCh = ast.getChildCount();
-    for (int num = 1; num < numCh; num++)
-    {
-      ASTNode child = (ASTNode)ast.getChild(num);
-      switch (child.getToken().getType()) {
-        case HiveParser.TOK_IFNOTEXISTS:
-          ifNotExists = true;
-          break;
-        case HiveParser.KW_EXTERNAL:
-          isExt = true;
-          break;
-        case HiveParser.TOK_LIKETABLE:
-          if (child.getChildCount() > 0) {
-            likeTableName = unescapeIdentifier(child.getChild(0).getText());
-          }
-          break;
-        case HiveParser.TOK_TABCOLLIST:
-          cols = getColumns(child);
-          break;
-        case HiveParser.TOK_TABLECOMMENT:
-          comment = unescapeSQLString(child.getChild(0).getText());
-          break;
-        case HiveParser.TOK_TABLEPARTCOLS:
-          partCols = getColumns((ASTNode)child.getChild(0));
-          break;
-        case HiveParser.TOK_TABLEBUCKETS:
-          bucketCols = getColumnNames((ASTNode)child.getChild(0));
-          if (child.getChildCount() == 2)
-            numBuckets = (Integer.valueOf(child.getChild(1).getText())).intValue();
-          else
-          {
-            sortCols = getColumnNamesOrder((ASTNode)child.getChild(1));
-            numBuckets = (Integer.valueOf(child.getChild(2).getText())).intValue();
-          }
-          break;
-        case HiveParser.TOK_TABLEROWFORMAT:
-
-          child = (ASTNode)child.getChild(0);
-          int numChildRowFormat = child.getChildCount();
-          for (int numC = 0; numC < numChildRowFormat; numC++)
-          {
-            ASTNode rowChild = (ASTNode)child.getChild(numC);
-            switch (rowChild.getToken().getType()) {
-              case HiveParser.TOK_TABLEROWFORMATFIELD:
-                fieldDelim = unescapeSQLString(rowChild.getChild(0).getText());
-                if (rowChild.getChildCount()>=2) {
-                  fieldEscape = unescapeSQLString(rowChild.getChild(1).getText());
-                }
-                break;
-              case HiveParser.TOK_TABLEROWFORMATCOLLITEMS:
-                collItemDelim = unescapeSQLString(rowChild.getChild(0).getText());
-                break;
-              case HiveParser.TOK_TABLEROWFORMATMAPKEYS:
-                mapKeyDelim = unescapeSQLString(rowChild.getChild(0).getText());
-                break;
-              case HiveParser.TOK_TABLEROWFORMATLINES:
-                lineDelim = unescapeSQLString(rowChild.getChild(0).getText());
-                break;
-              default: assert false;
-            }
-          }
-          break;
-        case HiveParser.TOK_TABLESERIALIZER:
-
-          child = (ASTNode)child.getChild(0);
-          serde = unescapeSQLString(child.getChild(0).getText());
-          if (child.getChildCount() == 2) {
-            mapProp = new HashMap<String, String>();
-            ASTNode prop = (ASTNode)((ASTNode)child.getChild(1)).getChild(0);
-            for (int propChild = 0; propChild < prop.getChildCount(); propChild++) {
-              String key = unescapeSQLString(prop.getChild(propChild).getChild(0).getText());
-              String value = unescapeSQLString(prop.getChild(propChild).getChild(1).getText());
-              mapProp.put(key,value);
-            }
-          }
-          break;
-        case HiveParser.TOK_TBLSEQUENCEFILE:
-          inputFormat = SEQUENCEFILE_INPUT;
-          outputFormat = SEQUENCEFILE_OUTPUT;
-          break;
-        case HiveParser.TOK_TBLTEXTFILE:
-          inputFormat = TEXTFILE_INPUT;
-          outputFormat = TEXTFILE_OUTPUT;
-          break;
-        case HiveParser.TOK_TBLRCFILE:
-          inputFormat = RCFILE_INPUT;
-          outputFormat = RCFILE_OUTPUT;
-          serde = COLUMNAR_SERDE;
-          break;
-        case HiveParser.TOK_TABLEFILEFORMAT:
-          inputFormat = unescapeSQLString(child.getChild(0).getText());
-          outputFormat = unescapeSQLString(child.getChild(1).getText());
-          break;
-        case HiveParser.TOK_TABLELOCATION:
-          location = unescapeSQLString(child.getChild(0).getText());
-          break;
-        default: assert false;
-      }
-    }
-    if (likeTableName == null) {
-      createTableDesc crtTblDesc =
-        new createTableDesc(tableName, isExt, cols, partCols, bucketCols,
-                            sortCols, numBuckets,
-                            fieldDelim, fieldEscape,
-                            collItemDelim, mapKeyDelim, lineDelim,
-                            comment, inputFormat, outputFormat, location, serde,
-                            mapProp, ifNotExists);
-
-      validateCreateTable(crtTblDesc);
-      rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), crtTblDesc), conf));
-    } else {
-      createTableLikeDesc crtTblLikeDesc =
-        new createTableLikeDesc(tableName, isExt, location, ifNotExists, likeTableName);
-      rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), crtTblLikeDesc), conf));
-    }
-
-  }
-
-  private void validateCreateTable(createTableDesc crtTblDesc) throws SemanticException {
-    // no duplicate column names
-    // currently, it is a simple n*n algorithm - this can be optimized later if need be
-    // but it should not be a major bottleneck as the number of columns are anyway not so big
-
-    if((crtTblDesc.getCols() == null) || (crtTblDesc.getCols().size() == 0)) {
-      // for now make sure that serde exists
-      if(StringUtils.isEmpty(crtTblDesc.getSerName()) || SerDeUtils.isNativeSerDe(crtTblDesc.getSerName())) {
-        throw new SemanticException(ErrorMsg.INVALID_TBL_DDL_SERDE.getMsg());
-      }
-      return;
-    }
-
-    try {
-      Class<?> origin = Class.forName(crtTblDesc.getOutputFormat(), true, JavaUtils.getClassLoader());
-      Class<? extends HiveOutputFormat> replaced = HiveFileFormatUtils.getOutputFormatSubstitute(origin);
-      if(replaced == null)
-        throw new SemanticException(ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE.getMsg());
-    } catch (ClassNotFoundException e) {
-      throw new SemanticException(ErrorMsg.INVALID_OUTPUT_FORMAT_TYPE.getMsg());
-    }
-
-    Iterator<FieldSchema> iterCols = crtTblDesc.getCols().iterator();
-    List<String> colNames = new ArrayList<String>();
-    while (iterCols.hasNext()) {
-      String colName = iterCols.next().getName();
-      Iterator<String> iter = colNames.iterator();
-      while (iter.hasNext()) {
-        String oldColName = iter.next();
-        if (colName.equalsIgnoreCase(oldColName))
-          throw new SemanticException(ErrorMsg.DUPLICATE_COLUMN_NAMES.getMsg());
-      }
-      colNames.add(colName);
-    }
-
-    if (crtTblDesc.getBucketCols() != null)
-    {
-      // all columns in cluster and sort are valid columns
-      Iterator<String> bucketCols = crtTblDesc.getBucketCols().iterator();
-      while (bucketCols.hasNext()) {
-        String bucketCol = bucketCols.next();
-        boolean found = false;
-        Iterator<String> colNamesIter = colNames.iterator();
-        while (colNamesIter.hasNext()) {
-          String colName = colNamesIter.next();
-          if (bucketCol.equalsIgnoreCase(colName)) {
-            found = true;
-            break;
-          }
-        }
-        if (!found)
-          throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg());
-      }
-    }
-
-    if (crtTblDesc.getSortCols() != null)
-    {
-      // all columns in cluster and sort are valid columns
-      Iterator<Order> sortCols = crtTblDesc.getSortCols().iterator();
-      while (sortCols.hasNext()) {
-        String sortCol = sortCols.next().getCol();
-        boolean found = false;
-        Iterator<String> colNamesIter = colNames.iterator();
-        while (colNamesIter.hasNext()) {
-          String colName = colNamesIter.next();
-          if (sortCol.equalsIgnoreCase(colName)) {
-            found = true;
-            break;
-          }
-        }
-        if (!found)
-          throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg());
-      }
-    }
-
-    if (crtTblDesc.getPartCols() != null)
-    {
-      // there is no overlap between columns and partitioning columns
-      Iterator<FieldSchema> partColsIter = crtTblDesc.getPartCols().iterator();
-      while (partColsIter.hasNext()) {
-        String partCol = partColsIter.next().getName();
-        Iterator<String> colNamesIter = colNames.iterator();
-        while (colNamesIter.hasNext()) {
-          String colName = unescapeIdentifier(colNamesIter.next());
-          if (partCol.equalsIgnoreCase(colName))
-            throw new SemanticException(ErrorMsg.COLUMN_REPEATED_IN_PARTITIONING_COLS.getMsg());
-        }
-      }
-    }
-  }
-
-  private void analyzeDropTable(ASTNode ast)
+  private void analyzeDropTable(ASTNode ast) 
     throws SemanticException {
     String tableName = unescapeIdentifier(ast.getChild(0).getText());
     dropTableDesc dropTblDesc = new dropTableDesc(tableName);
@@ -439,84 +182,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       mapProp.put(key,value);
     }
     return mapProp;
-  }
-
-  private static String getTypeStringFromAST(ASTNode typeNode) throws SemanticException {
-    switch (typeNode.getType()) {
-    case HiveParser.TOK_LIST:
-      return Constants.LIST_TYPE_NAME + "<"
-        + getTypeStringFromAST((ASTNode)typeNode.getChild(0)) + ">";
-    case HiveParser.TOK_MAP:
-      return Constants.MAP_TYPE_NAME + "<"
-        + getTypeStringFromAST((ASTNode)typeNode.getChild(0)) + ","
-        + getTypeStringFromAST((ASTNode)typeNode.getChild(1)) + ">";
-    case HiveParser.TOK_STRUCT:
-      return getStructTypeStringFromAST(typeNode);
-    default:
-      return getTypeName(typeNode.getType());
-    }
-  }
-
-  private static String getStructTypeStringFromAST(ASTNode typeNode)
-      throws SemanticException {
-    String typeStr = Constants.STRUCT_TYPE_NAME + "<";
-    typeNode = (ASTNode) typeNode.getChild(0);
-    int children = typeNode.getChildCount();
-    if(children <= 0)
-      throw new SemanticException("empty struct not allowed.");
-    for (int i = 0; i < children; i++) {
-      ASTNode child = (ASTNode) typeNode.getChild(i);
-      typeStr += unescapeIdentifier(child.getChild(0).getText()) + ":";
-      typeStr += getTypeStringFromAST((ASTNode) child.getChild(1));
-      if (i < children - 1)
-        typeStr += ",";
-    }
-
-    typeStr += ">";
-    return typeStr;
-  }
-
-  private List<FieldSchema> getColumns(ASTNode ast) throws SemanticException
-  {
-    List<FieldSchema> colList = new ArrayList<FieldSchema>();
-    int numCh = ast.getChildCount();
-    for (int i = 0; i < numCh; i++) {
-      FieldSchema col = new FieldSchema();
-      ASTNode child = (ASTNode)ast.getChild(i);
-      col.setName(unescapeIdentifier(child.getChild(0).getText()));
-      ASTNode typeChild = (ASTNode)(child.getChild(1));
-      col.setType(getTypeStringFromAST(typeChild));
-
-      if (child.getChildCount() == 3)
-        col.setComment(unescapeSQLString(child.getChild(2).getText()));
-      colList.add(col);
-    }
-    return colList;
-  }
-
-  private List<String> getColumnNames(ASTNode ast)
-  {
-    List<String> colList = new ArrayList<String>();
-    int numCh = ast.getChildCount();
-    for (int i = 0; i < numCh; i++) {
-      ASTNode child = (ASTNode)ast.getChild(i);
-      colList.add(unescapeIdentifier(child.getText()));
-    }
-    return colList;
-  }
-
-  private List<Order> getColumnNamesOrder(ASTNode ast)
-  {
-    List<Order> colList = new ArrayList<Order>();
-    int numCh = ast.getChildCount();
-    for (int i = 0; i < numCh; i++) {
-      ASTNode child = (ASTNode)ast.getChild(i);
-      if (child.getToken().getType() == HiveParser.TOK_TABSORTCOLNAMEASC)
-        colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()), 1));
-      else
-        colList.add(new Order(unescapeIdentifier(child.getChild(0).getText()), 0));
-    }
-    return colList;
   }
 
   /**

@@ -28,7 +28,7 @@ POSTHOOK: type: DESCTABLE
 a	string	
 b	string	
 	 	 
-Detailed Table Information	Table(tableName:table1, dbName:default, owner:njain, createTime:1253779841, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null), FieldSchema(name:b, type:string, comment:null)], location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/table1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{})	
+Detailed Table Information	Table(tableName:table1, dbName:default, owner:nzhang, createTime:1254243861, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null), FieldSchema(name:b, type:string, comment:null)], location:file:/data/users/nzhang/work/31/apache-hive-trunk/build/ql/test/data/warehouse/table1, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{})	
 PREHOOK: query: CREATE TABLE table2 LIKE table1
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE table2 LIKE table1
@@ -47,17 +47,15 @@ POSTHOOK: type: DESCTABLE
 a	string	
 b	string	
 	 	 
-Detailed Table Information	Table(tableName:table2, dbName:default, owner:njain, createTime:1253779841, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null), FieldSchema(name:b, type:string, comment:null)], location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/table2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{EXTERNAL=FALSE})	
+Detailed Table Information	Table(tableName:table2, dbName:default, owner:nzhang, createTime:1254243861, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null), FieldSchema(name:b, type:string, comment:null)], location:file:/data/users/nzhang/work/31/apache-hive-trunk/build/ql/test/data/warehouse/table2, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{EXTERNAL=FALSE})	
 PREHOOK: query: CREATE TABLE IF NOT EXISTS table2 LIKE table1
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE IF NOT EXISTS table2 LIKE table1
 POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: default@table2
 PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS table2 LIKE table1
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS table2 LIKE table1
 POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: default@table2
 PREHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS table3 LIKE table1
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE EXTERNAL TABLE IF NOT EXISTS table3 LIKE table1
@@ -76,7 +74,7 @@ POSTHOOK: type: DESCTABLE
 a	string	
 b	string	
 	 	 
-Detailed Table Information	Table(tableName:table3, dbName:default, owner:njain, createTime:1253779841, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null), FieldSchema(name:b, type:string, comment:null)], location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/table3, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{EXTERNAL=TRUE})	
+Detailed Table Information	Table(tableName:table3, dbName:default, owner:nzhang, createTime:1254243861, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null), FieldSchema(name:b, type:string, comment:null)], location:file:/data/users/nzhang/work/31/apache-hive-trunk/build/ql/test/data/warehouse/table3, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{EXTERNAL=TRUE})	
 PREHOOK: query: INSERT OVERWRITE TABLE table1 SELECT key, value FROM src WHERE key = 86
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -96,20 +94,20 @@ POSTHOOK: Output: default@table2
 PREHOOK: query: SELECT * FROM table1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/20199794/10000
+PREHOOK: Output: file:/data/users/nzhang/work/31/apache-hive-trunk/build/ql/tmp/1104038861/10000
 POSTHOOK: query: SELECT * FROM table1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/20199794/10000
+POSTHOOK: Output: file:/data/users/nzhang/work/31/apache-hive-trunk/build/ql/tmp/1104038861/10000
 86	val_86
 PREHOOK: query: SELECT * FROM table2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table2
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1027337637/10000
+PREHOOK: Output: file:/data/users/nzhang/work/31/apache-hive-trunk/build/ql/tmp/1673347492/10000
 POSTHOOK: query: SELECT * FROM table2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table2
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1027337637/10000
+POSTHOOK: Output: file:/data/users/nzhang/work/31/apache-hive-trunk/build/ql/tmp/1673347492/10000
 100	val_100
 100	val_100
 PREHOOK: query: DROP TABLE table1

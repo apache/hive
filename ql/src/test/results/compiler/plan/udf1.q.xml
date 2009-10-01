@@ -64,7 +64,7 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/src</string> 
+            <string>file:/data/users/nzhang/work/31/trunk/VENDOR.hive/trunk/build/ql/test/data/warehouse/src</string> 
            </void> 
           </object> 
          </void> 
@@ -100,7 +100,7 @@
                         <void property="conf"> 
                          <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                           <void property="dirName"> 
-                           <string>file:/data/users/njain/hive4/hive4/build/ql/tmp/1903343068/10001</string> 
+                           <string>file:/data/users/nzhang/work/31/trunk/VENDOR.hive/trunk/build/ql/tmp/929999119/10001</string> 
                           </void> 
                           <void property="tableInfo"> 
                            <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -1286,6 +1286,9 @@
                        <object class="java.util.Vector"> 
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                          <void property="alias"> 
+                           <string>_c0</string> 
+                          </void> 
                           <void property="internalName"> 
                            <string>_col0</string> 
                           </void> 
@@ -1296,6 +1299,9 @@
                         </void> 
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                          <void property="alias"> 
+                           <string>_c1</string> 
+                          </void> 
                           <void property="internalName"> 
                            <string>_col1</string> 
                           </void> 
@@ -1306,6 +1312,9 @@
                         </void> 
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                          <void property="alias"> 
+                           <string>_c2</string> 
+                          </void> 
                           <void property="internalName"> 
                            <string>_col2</string> 
                           </void> 
@@ -1316,6 +1325,9 @@
                         </void> 
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                          <void property="alias"> 
+                           <string>_c3</string> 
+                          </void> 
                           <void property="internalName"> 
                            <string>_col3</string> 
                           </void> 
@@ -1326,6 +1338,9 @@
                         </void> 
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                          <void property="alias"> 
+                           <string>_c4</string> 
+                          </void> 
                           <void property="internalName"> 
                            <string>_col4</string> 
                           </void> 
@@ -1336,6 +1351,9 @@
                         </void> 
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                          <void property="alias"> 
+                           <string>_c5</string> 
+                          </void> 
                           <void property="internalName"> 
                            <string>_col5</string> 
                           </void> 
@@ -1346,6 +1364,9 @@
                         </void> 
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                          <void property="alias"> 
+                           <string>_c6</string> 
+                          </void> 
                           <void property="internalName"> 
                            <string>_col6</string> 
                           </void> 
@@ -1356,6 +1377,9 @@
                         </void> 
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                          <void property="alias"> 
+                           <string>_c7</string> 
+                          </void> 
                           <void property="internalName"> 
                            <string>_col7</string> 
                           </void> 
@@ -1366,6 +1390,9 @@
                         </void> 
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                          <void property="alias"> 
+                           <string>_c8</string> 
+                          </void> 
                           <void property="internalName"> 
                            <string>_col8</string> 
                           </void> 
@@ -1376,6 +1403,9 @@
                         </void> 
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                          <void property="alias"> 
+                           <string>_c9</string> 
+                          </void> 
                           <void property="internalName"> 
                            <string>_col9</string> 
                           </void> 
@@ -1386,6 +1416,9 @@
                         </void> 
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                          <void property="alias"> 
+                           <string>_c10</string> 
+                          </void> 
                           <void property="internalName"> 
                            <string>_col10</string> 
                           </void> 
@@ -1396,6 +1429,9 @@
                         </void> 
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                          <void property="alias"> 
+                           <string>_c11</string> 
+                          </void> 
                           <void property="internalName"> 
                            <string>_col11</string> 
                           </void> 
@@ -1406,6 +1442,9 @@
                         </void> 
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                          <void property="alias"> 
+                           <string>_c12</string> 
+                          </void> 
                           <void property="internalName"> 
                            <string>_col12</string> 
                           </void> 
@@ -1416,6 +1455,9 @@
                         </void> 
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                          <void property="alias"> 
+                           <string>_c13</string> 
+                          </void> 
                           <void property="internalName"> 
                            <string>_col13</string> 
                           </void> 
@@ -1426,6 +1468,9 @@
                         </void> 
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                          <void property="alias"> 
+                           <string>_c14</string> 
+                          </void> 
                           <void property="internalName"> 
                            <string>_col14</string> 
                           </void> 
@@ -1436,6 +1481,9 @@
                         </void> 
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                          <void property="alias"> 
+                           <string>_c15</string> 
+                          </void> 
                           <void property="internalName"> 
                            <string>_col15</string> 
                           </void> 
@@ -1446,6 +1494,9 @@
                         </void> 
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                          <void property="alias"> 
+                           <string>_c16</string> 
+                          </void> 
                           <void property="internalName"> 
                            <string>_col16</string> 
                           </void> 
@@ -1701,7 +1752,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/nzhang/work/31/trunk/VENDOR.hive/trunk/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src</string> 
@@ -1713,7 +1764,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive4/hive4/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/nzhang/work/31/trunk/VENDOR.hive/trunk/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap0"/> 

@@ -96,8 +96,16 @@ public enum ErrorMsg {
   INVALID_MAPJOIN_HINT("neither table specified as map-table"),
   INVALID_MAPJOIN_TABLE("result of a union cannot be a map table"),
   NON_BUCKETED_TABLE("Sampling Expression Needed for Non-Bucketed Table"),
-  NEED_PARTITION_ERROR("need to specify partition columns because the destination table is partitioned.");
-
+  NEED_PARTITION_ERROR("need to specify partition columns because the destination table is partitioned."),
+  CTAS_CTLT_COEXISTENCE("Create table command does not allow LIKE and AS-SELECT in the same command"),
+  CTAS_COLLST_COEXISTENCE("Create table as select command cannot specify the list of columns for the target table."),
+  CTLT_COLLST_COEXISTENCE("Create table like command cannot specify the list of columns for the target table."),
+  INVALID_SELECT_SCHEMA("Cannot derive schema from the select-clause."),
+  CTAS_PARCOL_COEXISTENCE("CREATE-TABLE-AS-SELECT does not support partitioning in the target table."),
+  CTAS_MULTI_LOADFILE("CREATE-TABLE-AS-SELECT results in multiple file load."),
+  CTAS_EXTTBL_COEXISTENCE("CREATE-TABLE-AS-SELECT cannot create external table."),
+  TABLE_ALREADY_EXISTS("Table already exists:", "42S02");
+  
   private String mesg;
   private String SQLState;
 

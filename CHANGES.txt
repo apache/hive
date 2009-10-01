@@ -51,6 +51,9 @@ Trunk -  Unreleased
     HIVE-853. Provide hints for controlling join order
     (Emil Ibrishimov via namit)
 
+    HIVE-31. Support Create Table As Select
+    (Ning Zhang via namit)
+
   IMPROVEMENTS
 
     HIVE-760. Add version info to META-INF/MANIFEST.MF.

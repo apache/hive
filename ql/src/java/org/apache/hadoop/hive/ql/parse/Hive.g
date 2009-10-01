@@ -215,8 +215,28 @@ createStatement
 @init { msgs.push("create statement"); }
 @after { msgs.pop(); }
     : KW_CREATE (ext=KW_EXTERNAL)? KW_TABLE ifNotExists? name=Identifier
-      ( like=KW_LIKE likeName=Identifier | (LPAREN columnNameTypeList RPAREN)? tableComment? tablePartition? tableBuckets? tableRowFormat? tableFileFormat? ) tableLocation?
-    -> ^(TOK_CREATETABLE $name $ext? ifNotExists? ^(TOK_LIKETABLE $likeName?) columnNameTypeList? tableComment? tablePartition? tableBuckets? tableRowFormat? tableFileFormat? tableLocation?)
+      (  like=KW_LIKE likeName=Identifier
+         tableLocation?
+       | (LPAREN columnNameTypeList RPAREN)? 
+         tableComment? 
+         tablePartition? 
+         tableBuckets? 
+         tableRowFormat? 
+         tableFileFormat? 
+         tableLocation?
+         (KW_AS selectStatement)?
+      )
+    -> ^(TOK_CREATETABLE $name $ext? ifNotExists? 
+         ^(TOK_LIKETABLE $likeName?) 
+         columnNameTypeList? 
+         tableComment? 
+         tablePartition? 
+         tableBuckets? 
+         tableRowFormat? 
+         tableFileFormat? 
+         tableLocation?
+         selectStatement?
+        )
     ;
 
 dropStatement
@@ -635,6 +655,11 @@ regular_body
                      selectClause whereClause? groupByClause? orderByClause? clusterByClause?
                      distributeByClause? sortByClause? limitClause?))
    |
+   selectStatement
+   ;
+
+selectStatement
+   :
    selectClause
    fromClause
    whereClause?
