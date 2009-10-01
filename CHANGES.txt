@@ -564,6 +564,9 @@ Release 0.4.0 -  Unreleased
     HIVE-838. In strict mode, remove error if no partition is selected.
     (Namit Jain via rmurthy)
 
+    HIVE-864. Fix map-join memory-leak.
+    (Namit Jain via zshao)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES
