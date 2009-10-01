@@ -255,6 +255,8 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
           notificationInterval = 5 * 60 * 1000;
         }
   
+        LOG.info("Running ReporterTask every " + notificationInterval + " seconds.");
+        
         rpTimer = new Timer(true);
         rpTimer.scheduleAtFixedRate(new ReporterTask(reporter), 0, notificationInterval);
       }
@@ -309,14 +311,51 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
         e.printStackTrace();
         new_abort = true;
       } catch (InterruptedException e) { }
+      
+    } else {
+
+      // Error already occurred, but we still want to get the
+      // error code of the child process if possible.
+      try {
+        // Interrupt the current thread after 1 second
+        final Thread mythread = Thread.currentThread();
+        Timer timer = new Timer(true);
+        timer.schedule(new TimerTask(){  
+          @Override
+          public void run() {
+            mythread.interrupt();          
+          }},
+          1000);
+        // Wait for the child process to finish 
+        int exitVal = scriptPid.waitFor();
+        // Cancel the timer
+        timer.cancel();
+        // Output the exit code
+        LOG.error("Script exited with code " + exitVal);        
+      } catch (InterruptedException e) {
+        // Ignore
+        LOG.error("Script has not exited yet. It will be killed.");
+      }
+    }
+    
+    // try these best effort
+    try {
+      outThread.join(0);
+    } catch (Exception e) {
+      LOG.warn("Exception in closing outThread: " + StringUtils.stringifyException(e));
     }
 
     try {
-      // try these best effort
-      outThread.join(0);
       errThread.join(0);
+    } catch (Exception e) {
+      LOG.warn("Exception in closing errThread: " + StringUtils.stringifyException(e));
+    }
+
+    try {
       scriptPid.destroy();
-    } catch (Exception e) {}
+    } catch (Exception e) {
+      LOG.warn("Exception in destroying scriptPid: " + StringUtils.stringifyException(e));
+    }
 
     super.close(new_abort);
 
@@ -383,6 +422,7 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
       long now = System.currentTimeMillis();
       // reporter is a member variable of the Operator class.
       if (now - lastReportTime > 60 * 1000 && reporter != null) {
+        LOG.info("ErrorStreamProcessor calling reporter.progress()");
         lastReportTime = now;
         reporter.progress();
       }
@@ -543,6 +583,7 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
     @Override
     public void run() {
       if (rp != null) {
+        LOG.info("ReporterTask calling reporter.progress()");
         rp.progress();
       }
     }
