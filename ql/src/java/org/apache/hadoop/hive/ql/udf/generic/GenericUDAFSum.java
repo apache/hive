@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -29,6 +31,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.util.StringUtils;
 
 @description(
     name = "sum",
@@ -36,6 +39,8 @@ import org.apache.hadoop.io.LongWritable;
 )
 public class GenericUDAFSum implements GenericUDAFResolver {
 
+  static final Log LOG = LogFactory.getLog(GenericUDAFSum.class.getName());
+  
   @Override
   public GenericUDAFEvaluator getEvaluator(
       TypeInfo[] parameters) throws SemanticException {
@@ -100,10 +105,20 @@ public class GenericUDAFSum implements GenericUDAFResolver {
       myagg.sum = 0;      
     }
 
+    boolean warned = false;
+    
     @Override
     public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
       assert(parameters.length == 1);
-      merge(agg, parameters[0]);
+      try {
+        merge(agg, parameters[0]);
+      } catch (NumberFormatException e) {
+        if (!warned) {
+          warned = true;
+          LOG.warn(getClass().getSimpleName() + " " + StringUtils.stringifyException(e));
+          LOG.warn(getClass().getSimpleName() + " ignoring similar exceptions.");
+        }
+      }
     }
 
     @Override
@@ -168,10 +183,19 @@ public class GenericUDAFSum implements GenericUDAFResolver {
       myagg.sum = 0;      
     }
 
+    boolean warned = false;
+    
     @Override
     public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
       assert(parameters.length == 1);
-      merge(agg, parameters[0]);
+      try {
+        merge(agg, parameters[0]);
+      } catch (NumberFormatException e) {
+        if (!warned) {
+          warned = true;
+          LOG.warn(getClass().getSimpleName() + " " + StringUtils.stringifyException(e));
+        }
+      }
     }
 
     @Override
@@ -183,8 +207,8 @@ public class GenericUDAFSum implements GenericUDAFResolver {
     public void merge(AggregationBuffer agg, Object partial) throws HiveException {
       if (partial != null) {
         SumLongAgg myagg = (SumLongAgg)agg;
-        myagg.empty = false;
         myagg.sum += PrimitiveObjectInspectorUtils.getLong(partial, inputOI); 
+        myagg.empty = false;
       }
     }
 

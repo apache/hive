@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.util.ArrayList;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -36,6 +38,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.util.StringUtils;
 
 @description(
     name = "avg",
@@ -43,6 +46,8 @@ import org.apache.hadoop.io.LongWritable;
 )
 public class GenericUDAFAverage implements GenericUDAFResolver {
 
+  static final Log LOG = LogFactory.getLog(GenericUDAFAverage.class.getName());
+  
   @Override
   public GenericUDAFEvaluator getEvaluator(
       TypeInfo[] parameters) throws SemanticException {
@@ -148,16 +153,26 @@ public class GenericUDAFAverage implements GenericUDAFResolver {
       myagg.sum = 0;      
     }
     
+    boolean warned = false;
+    
     @Override
     public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
       assert(parameters.length == 1);
       Object p = parameters[0];
       if (p != null) {
         AverageAgg myagg = (AverageAgg)agg;
-        double v = PrimitiveObjectInspectorUtils.getDouble(p, 
+        try {
+          double v = PrimitiveObjectInspectorUtils.getDouble(p, 
             (PrimitiveObjectInspector)inputOI);
-        myagg.count ++;
-        myagg.sum += v;
+          myagg.count ++;
+          myagg.sum += v;
+        } catch (NumberFormatException e) {
+          if (!warned) {
+            warned = true;
+            LOG.warn(getClass().getSimpleName() + " " + StringUtils.stringifyException(e));
+            LOG.warn(getClass().getSimpleName() + " ignoring similar exceptions.");
+          }
+        }
       }
     }
 

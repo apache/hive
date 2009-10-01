@@ -152,6 +152,9 @@ Trunk -  Unreleased
     HIVE-858. Better logging for script operator even in case of failure
     (Zheng Shao via namit)
 
+    HIVE-861. NumberFormatException in sum and average
+    (Zheng Shao via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

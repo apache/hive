@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.util.ArrayList;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -36,6 +38,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.util.StringUtils;
 
 /**
  * Compute the variance. This class is extended by:
@@ -49,6 +52,8 @@ import org.apache.hadoop.io.LongWritable;
     value = "_FUNC_(x) - Returns the variance of a set of numbers"
 )
 public class GenericUDAFVariance implements GenericUDAFResolver {
+  
+  static final Log LOG = LogFactory.getLog(GenericUDAFVariance.class.getName());
   
   @Override
   public GenericUDAFEvaluator getEvaluator(
@@ -192,6 +197,8 @@ public class GenericUDAFVariance implements GenericUDAFResolver {
       myagg.variance = 0;
     }
     
+    boolean warned = false;
+    
     @Override
     public void iterate(AggregationBuffer agg, Object[] parameters) 
     throws HiveException {
@@ -199,21 +206,29 @@ public class GenericUDAFVariance implements GenericUDAFResolver {
       Object p = parameters[0];
       if (p != null) {
         StdAgg myagg = (StdAgg)agg;
-        double v = PrimitiveObjectInspectorUtils.getDouble(p, 
-            (PrimitiveObjectInspector)inputOI);
-       
-        if(myagg.count != 0) { // if count==0 => the variance is going to be 0
-                              // after 1 iteration
-          double alpha = (myagg.sum + v) / (myagg.count+1) 
-                          - myagg.sum / myagg.count;
-          double betha = (myagg.sum + v) / (myagg.count+1) - v;
-          
-          // variance = variance1 + variance2 + n*alpha^2 + m*betha^2
-          // => variance += n*alpha^2 + betha^2
-          myagg.variance += myagg.count*alpha*alpha + betha*betha;
+        try {
+          double v = PrimitiveObjectInspectorUtils.getDouble(p, 
+              (PrimitiveObjectInspector)inputOI);
+         
+          if(myagg.count != 0) { // if count==0 => the variance is going to be 0
+                                // after 1 iteration
+            double alpha = (myagg.sum + v) / (myagg.count+1) 
+                            - myagg.sum / myagg.count;
+            double betha = (myagg.sum + v) / (myagg.count+1) - v;
+            
+            // variance = variance1 + variance2 + n*alpha^2 + m*betha^2
+            // => variance += n*alpha^2 + betha^2
+            myagg.variance += myagg.count*alpha*alpha + betha*betha;
+          }
+          myagg.count++;
+          myagg.sum += v;
+        } catch (NumberFormatException e) {
+          if (!warned) {
+            warned = true;
+            LOG.warn(getClass().getSimpleName() + " " + StringUtils.stringifyException(e));
+            LOG.warn(getClass().getSimpleName() + " ignoring similar exceptions.");
+          }
         }
-        myagg.count++;
-        myagg.sum += v;
       }
     }
 
