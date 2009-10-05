@@ -74,6 +74,7 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
   transient int mapJoinRowsKey;            // rows for a given key
   
   transient protected Map<Byte, HTree> mapJoinTables;
+  RecordManager  recman = null;
 
   public static class MapJoinObjectCtx {
     ObjectInspector standardOI;
@@ -118,7 +119,7 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
   transient List<File> hTables;
   transient int      numMapRowsRead;
   transient int      heartbeatInterval;
-  
+
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
@@ -150,7 +151,7 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
           continue;
         
         Properties props = new Properties();
-        props.setProperty(RecordManagerOptions.CACHE_SIZE, 
+        props.setProperty(RecordManagerOptions.CACHE_SIZE,
           String.valueOf(HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEMAPJOINCACHEROWS)));
         
         Random rand = new Random();
@@ -165,7 +166,9 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
           newDir = new File("/tmp" + rand.nextInt());
         }
         
-        RecordManager recman = RecordManagerFactory.createRecordManager(newDirName + "/" + pos, props );
+        // we don't need transaction since atomicity is handled at the higher level
+        props.setProperty(RecordManagerOptions.DISABLE_TRANSACTIONS, "true" );
+        recman = RecordManagerFactory.createRecordManager(newDirName + "/" + pos, props );
         HTree hashTable = HTree.createInstance(recman);
         
         mapJoinTables.put(Byte.valueOf((byte)pos), hashTable);
@@ -271,11 +274,19 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
 
         // This may potentially increase the size of the hashmap on the mapper
         if (res.size() > mapJoinRowsKey) {
-          LOG.warn("Number of values for a given key " + keyObj + " are " + res.size());
-          LOG.warn("used memory " + Runtime.getRuntime().totalMemory());
+          if ( res.size() % 100 == 0 ) {
+            LOG.warn("Number of values for a given key " + keyObj + " are " + res.size());
+            LOG.warn("used memory " + Runtime.getRuntime().totalMemory());
+          }
         }
         
         hashTable.put(keyObj, valueObj);
+        
+        // commit every 100 rows to prevent Out-of-memory exception
+        if ( (res.size() % 100 == 0) && recman != null ) {
+          recman.commit();
+        }
+
         return;
       }
 

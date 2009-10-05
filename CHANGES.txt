@@ -167,6 +167,9 @@ Trunk -  Unreleased
     HIVE-859. Clean HWI build.xml
     (Edward Capriolo via namit)
 
+    HIVE-865. Map Join memory leak
+    (Ning Zhang via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
