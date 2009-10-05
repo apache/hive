@@ -36,7 +36,7 @@ public class TestHWIServer extends TestCase{
     JettyShims.Server webServer;
     webServer = ShimLoader.getJettyShims().startServer("0.0.0.0", 9999);
     assertNotNull(webServer);
-    webServer.addWar("../build/hive_hwi.war", "/hwi");
+    webServer.addWar("../build/hwi/hive_hwi.war", "/hwi");
     webServer.start();
  //   webServer.join();
     webServer.stop();

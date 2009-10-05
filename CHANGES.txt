@@ -164,6 +164,9 @@ Trunk -  Unreleased
     HIVE-861. NumberFormatException in sum and average
     (Zheng Shao via namit)
 
+    HIVE-859. Clean HWI build.xml
+    (Edward Capriolo via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

@@ -246,7 +246,7 @@
       <fileset file="${build.dir.hive}/common/hive_common.jar"/>
       <fileset file="${build.dir.hive}/ql/hive_exec.jar"/>
       <fileset file="${build.dir.hive}/metastore/hive_metastore.jar"/>
-      <fileset file="${build.dir.hive}/hive_hwi.war"/>
+      <fileset file="${build.dir.hive}/hwi/hive_hwi.war"/>
       <fileset file="${build.dir.hive}/contrib/hive_contrib.jar"/>
     </copy>
     <copy todir="${target.example.dir}/files" preservelastmodified="true" flatten="true">

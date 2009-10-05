@@ -1,48 +1,68 @@
-<project name="hwi" default="jar">
+<?xml version="1.0" encoding="UTF-8"?>
 
-  <property name="web.dir"  location="${basedir}/web"/>
-  <property name="src.dir" value="${basedir}/src"/>
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+<project name="hwi" default="jar">
   
+  <property name="src.dir"  location="${basedir}/src/java"/>
   <import file="../build-common.xml"/>
 
-  <target name="hwi-init">
-    <mkdir dir="${build.dir}/classes"/>
-    <mkdir dir="${build.dir}/test/classes"/>
-    <mkdir dir="${build.dir}/test/src"/>
-  </target> 
+  <!-- We include servlet jar in addition to the normal
+       Hive classpath. Some HWI components are linked
+       to the servlet libraries.  -->
+  <path id="classpath-hwi">
+    <fileset dir="${hadoop.root}/lib" includes="**/*.jar"/>
+    <path refid="classpath"/>
+  </path>
 
+  <!-- We also need the Jetty jar as HWI is a stand-alone Jetty instance. -->
   <path id="test.classpath">
     <pathelement location="${test.build.classes}" />
     <pathelement location="" />
     <pathelement location="${test.data.dir}/conf"/>
     <pathelement location="${hive.conf.dir}"/>
-    <fileset dir="${test.src.data.dir}" includes="files/*.jar"/>
+    <!-- We are running unit tests like the one inside ql -->
+    <pathelement location="${build.dir.hive}/ql/test/classes"/> 
     <fileset dir="${hive.root}" includes="testlibs/*.jar"/>
-    <pathelement location="${build.dir.hive}/ql/test/classes"/>
     <path refid="classpath-hwi"/>
   </path>
 
-  <target name="compile" depends="hwi-init">
-    <echo message="Compiling: ${name}"/>
+  <!--hive_hwi.war file contains only the JSP sources -->
+  <target name="war">
+    <jar jarfile="${build.dir.hive}/hwi/hive_hwi.war" basedir="${basedir}/web"/>
+  </target>
+
+  <!-- Compile is a clone of the build-common.xml compile, with one exception:
+       We include the war target as a dependency. In this way the war target
+       is called without changes to the upstream build infrastructure.
+  -->
+  <target name="compile" depends="init, install-hadoopcore, setup, war">
+    <echo message="Compiling: ${ant.project.name}"/>
     <javac
      encoding="${build.encoding}"
-     destdir="${build.classes}"
-     includes="**/*.java"
      srcdir="${src.dir}"
+     includes="**/*.java"
+     destdir="${build.classes}"
      debug="${javac.debug}"
      deprecation="${javac.deprecation}">
       <compilerarg line="${javac.args} ${javac.args.warnings}" />
-      <classpath refid="classpath-hwi"/> 
+      <classpath refid="classpath-hwi"/>
     </javac>
-    <jar jarfile="../build/hive_hwi.war" basedir="${basedir}/web"/>
   </target>
-
- <path id="classpath-hwi">
-     <fileset dir="${hadoop.root}/lib">
-       <include name="**/*.jar" />
-       <exclude name="**/excluded/" />
-     </fileset>
-    <path refid="classpath" />
-  </path>
 
 </project>
