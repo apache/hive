@@ -87,6 +87,9 @@ Trunk -  Unreleased
     HIVE-827. Increase hive.mapjoin.cache.numrows default value.
     (Namit Jain via zshao)
 
+    HIVE-855. UDF: Concat should accept multiple arguments.
+    (Paul Yang via zshao)
+
   OPTIMIZATIONS
 
   BUG FIXES

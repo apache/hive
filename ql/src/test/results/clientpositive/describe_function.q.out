@@ -2,7 +2,7 @@ PREHOOK: query: DESCRIBE FUNCTION concat
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION concat
 POSTHOOK: type: DESCFUNCTION
-concat(str1, str2) - returns the concatenation of str1 and str2
+concat(str1, str2, ... strN) - returns the concatenation of str1, str2, ... strN
 PREHOOK: query: DESCRIBE FUNCTION substr
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION substr
@@ -412,7 +412,7 @@ PREHOOK: query: DESCRIBE FUNCTION EXTENDED concat
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED concat
 POSTHOOK: type: DESCFUNCTION
-concat(str1, str2) - returns the concatenation of str1 and str2
+concat(str1, str2, ... strN) - returns the concatenation of str1, str2, ... strN
 Returns NULL if any argument is NULL.
 Example:
   > SELECT concat('abc', 'def') FROM src LIMIT 1;

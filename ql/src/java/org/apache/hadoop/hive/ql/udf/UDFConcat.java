@@ -24,7 +24,7 @@ import org.apache.hadoop.io.Text;
 
 @description(
     name = "concat",
-    value = "_FUNC_(str1, str2) - returns the concatenation of str1 and str2",
+    value = "_FUNC_(str1, str2, ... strN) - returns the concatenation of str1, str2, ... strN",
     extended = "Returns NULL if any argument is NULL.\n" +
     		"Example:\n" +
     		"  > SELECT _FUNC_('abc', 'def') FROM src LIMIT 1;\n" +
@@ -36,14 +36,17 @@ public class UDFConcat extends UDF {
   }
 
   Text text = new Text();
-  public Text evaluate(Text a, Text b) {
-    if (a == null || b == null) {
-      return null;
-    }
+
+
+  public Text evaluate(Text... args) {
     text.clear();
-    text.set(a);
-    text.append(b.getBytes(), 0, b.getLength());
+    for(int i=0; i<args.length; i++) {
+      if (args[i] == null) {
+        return null;
+      }
+      text.append(args[i].getBytes(), 0, args[i].getLength());
+    }
     return text;
   }
-  
+
 }

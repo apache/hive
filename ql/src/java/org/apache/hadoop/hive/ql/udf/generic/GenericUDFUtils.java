@@ -307,17 +307,10 @@ public class GenericUDFUtils {
       
       assert(parameters.length == givenParameterOIs.length);
       
-      if (!conversionNeeded) {
-        if (!isVariableLengthArgument) {
-          // no conversion needed, and not variable-length argument:
-          // just return what is passed in.
-          return parameters;
-        } else if (methodParameterTypes.length == 1) {
-          // no conversion needed, and variable-length argument with exact one argument
-          // just put the parameters in the array and return.
-          convertedParameters[0] = parameters;
-          return convertedParameters;
-        }
+      if (!conversionNeeded && !isVariableLengthArgument) {
+        // no conversion needed, and not variable-length argument:
+        // just return what is passed in.
+        return parameters;
       }
       
       if (isVariableLengthArgument) {
