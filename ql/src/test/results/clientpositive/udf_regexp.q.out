@@ -1,0 +1,26 @@
+PREHOOK: query: DESCRIBE FUNCTION regexp
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION regexp
+POSTHOOK: type: DESCFUNCTION
+str regexp regexp - Returns true if str matches regexp and false otherwise
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED regexp
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED regexp
+POSTHOOK: type: DESCFUNCTION
+str regexp regexp - Returns true if str matches regexp and false otherwise
+Example:
+  > SELECT 'fb' regexp '.*' FROM src LIMIT 1;
+  true
+PREHOOK: query: SELECT 'fofo' REGEXP '^fo', 'fo\no' REGEXP '^fo\no$', 'Bn' REGEXP '^Ba*n', 'afofo' REGEXP 'fo',
+'afofo' REGEXP '^fo', 'Baan' REGEXP '^Ba?n', 'axe' REGEXP 'pi|apa', 'pip' REGEXP '^(pi)*$'
+FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/pyang/trunk/VENDOR.hive/trunk/build/ql/tmp/852993560/10000
+POSTHOOK: query: SELECT 'fofo' REGEXP '^fo', 'fo\no' REGEXP '^fo\no$', 'Bn' REGEXP '^Ba*n', 'afofo' REGEXP 'fo',
+'afofo' REGEXP '^fo', 'Baan' REGEXP '^Ba?n', 'axe' REGEXP 'pi|apa', 'pip' REGEXP '^(pi)*$'
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/pyang/trunk/VENDOR.hive/trunk/build/ql/tmp/852993560/10000
+true	true	true	true	false	false	false	false

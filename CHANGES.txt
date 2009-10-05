@@ -4,6 +4,9 @@ Trunk -  Unreleased
 
   INCOMPATIBLE CHANGES
 
+    HIVE-236. RLIKE/REGEXP allowing matching of partial strings.
+    (Paul Yang via zshao)
+
   NEW FEATURES
 
     HIVE-743. Let user specify serde for custom scripts.

@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.io.BooleanWritable;
@@ -36,8 +38,11 @@ import java.util.regex.Matcher;
     )
 public class UDFRegExp extends UDF {
 
+  static final Log LOG = LogFactory.getLog(UDFRegExp.class.getName());
+  
   private Text lastRegex = new Text();
   private Pattern p = null;
+  boolean warned = false;
 
   BooleanWritable result = new BooleanWritable();
   public UDFRegExp() {
@@ -47,12 +52,21 @@ public class UDFRegExp extends UDF {
     if (s == null || regex == null) {
       return null;
     }
+    if(regex.getLength()==0) {
+      if(!warned) {
+        warned = true;
+        LOG.warn(getClass().getSimpleName() + " regex is empty. Additional " +
+            "warnings for an empty regex will be suppressed.");
+      }
+      result.set(false);
+      return result;
+    }
     if (!regex.equals(lastRegex) || p == null) {
       lastRegex.set(regex);
       p = Pattern.compile(regex.toString());
     }
     Matcher m = p.matcher(s.toString());
-    result.set(m.matches());
+    result.set(m.find(0));
     return result;
   }
 
