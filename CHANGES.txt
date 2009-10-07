@@ -57,6 +57,8 @@ Trunk -  Unreleased
     HIVE-31. Support Create Table As Select
     (Ning Zhang via namit)
 
+    HIVE-682. Add concat_ws (Jonathan Chang via namit)
+
   IMPROVEMENTS
 
     HIVE-760. Add version info to META-INF/MANIFEST.MF.

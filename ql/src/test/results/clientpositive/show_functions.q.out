@@ -32,6 +32,7 @@ ceil
 ceiling
 coalesce
 concat
+concat_ws
 conv
 cos
 count
@@ -129,6 +130,7 @@ ceil
 ceiling
 coalesce
 concat
+concat_ws
 conv
 cos
 count

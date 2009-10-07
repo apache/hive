@@ -210,6 +210,7 @@ public class FunctionRegistry {
     registerGenericUDF("instr", GenericUDFInstr.class);
     registerGenericUDF("locate", GenericUDFLocate.class);
     registerGenericUDF("elt", GenericUDFElt.class);
+    registerGenericUDF("concat_ws", GenericUDFConcatWS.class);
   }
 
   public static void registerTemporaryUDF(String functionName, Class<? extends UDF> UDFClass,
