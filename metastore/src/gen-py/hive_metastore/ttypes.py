@@ -1019,6 +1019,7 @@ class Index:
    - tableName
    - dbName
    - colNames
+   - partName
   """
 
   thrift_spec = (
@@ -1028,14 +1029,16 @@ class Index:
     (3, TType.STRING, 'tableName', None, None, ), # 3
     (4, TType.STRING, 'dbName', None, None, ), # 4
     (5, TType.LIST, 'colNames', (TType.STRING,None), None, ), # 5
+    (6, TType.STRING, 'partName', None, None, ), # 6
   )
 
-  def __init__(self, indexName=None, indexType=None, tableName=None, dbName=None, colNames=None,):
+  def __init__(self, indexName=None, indexType=None, tableName=None, dbName=None, colNames=None, partName=None,):
     self.indexName = indexName
     self.indexType = indexType
     self.tableName = tableName
     self.dbName = dbName
     self.colNames = colNames
+    self.partName = partName
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -1076,6 +1079,11 @@ class Index:
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.STRING:
+          self.partName = iprot.readString();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -1108,6 +1116,10 @@ class Index:
       for iter84 in self.colNames:
         oprot.writeString(iter84)
       oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.partName != None:
+      oprot.writeFieldBegin('partName', TType.STRING, 6)
+      oprot.writeString(self.partName)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()

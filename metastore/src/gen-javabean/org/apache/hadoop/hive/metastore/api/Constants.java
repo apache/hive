@@ -16,6 +16,8 @@ import org.apache.log4j.Logger;
 
 public class Constants {
 
+  public static final String DDL_TIME = "transient_lastDdlTime";
+
   public static final String META_TABLE_COLUMNS = "columns";
 
   public static final String META_TABLE_COLUMN_TYPES = "columns.types";

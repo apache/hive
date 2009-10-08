@@ -9,6 +9,8 @@ namespace java org.apache.hadoop.hive.metastore.api
 namespace php metastore
 namespace cpp Apache.Hadoop.Hive
 
+const string DDL_TIME = "transient_lastDdlTime"
+
 struct Version {
   1: string version,
   2: string comments

@@ -7,6 +7,8 @@
 from thrift.Thrift import *
 from ttypes import *
 
+DDL_TIME = "transient_lastDdlTime"
+
 META_TABLE_COLUMNS = "columns"
 
 META_TABLE_COLUMN_TYPES = "columns.types"

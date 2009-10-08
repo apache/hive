@@ -14,6 +14,7 @@ class hive_metastoreConstants {
  public:
   hive_metastoreConstants();
 
+  std::string DDL_TIME;
   std::string META_TABLE_COLUMNS;
   std::string META_TABLE_COLUMN_TYPES;
   std::string BUCKET_FIELD_NAME;

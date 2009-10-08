@@ -82,7 +82,7 @@ public class Partition {
    * @param location Location of the partition, relative to the table.
    * @throws HiveException Thrown if we could not create the partition.
    */
-  public Partition(Table tbl, Map<String, String> partSpec, 
+  public Partition(Table tbl, Map<String, String> partSpec,
       Path location) throws HiveException {
 
     List<String> pvals = new ArrayList<String>();
@@ -93,8 +93,8 @@ public class Partition {
       }
       pvals.add(val);
     }
-    
-    org.apache.hadoop.hive.metastore.api.Partition tpart = 
+
+    org.apache.hadoop.hive.metastore.api.Partition tpart =
       new org.apache.hadoop.hive.metastore.api.Partition();
     tpart.setDbName(tbl.getDbName());
     tpart.setTableName(tbl.getName());
@@ -111,7 +111,7 @@ public class Partition {
     } catch (TException e) {
       LOG.error("Could not create a copy of StorageDescription");
       throw new HiveException("Could not create a copy of StorageDescription");
-    } 
+    }
 
     tpart.setSd(sd);
     if (location != null) {
@@ -129,8 +129,8 @@ public class Partition {
    * @param tp Thrift Partition object
    * @throws HiveException Thrown if we cannot initialize the partition
    */
-  private void initialize(Table tbl, 
-      org.apache.hadoop.hive.metastore.api.Partition tp) 
+  private void initialize(Table tbl,
+      org.apache.hadoop.hive.metastore.api.Partition tp)
   throws HiveException {
 
     table = tbl;
@@ -139,7 +139,7 @@ public class Partition {
 
     if(tbl.isPartitioned()) {
       try {
-        partName = Warehouse.makePartName(tbl.getPartCols(), 
+        partName = Warehouse.makePartName(tbl.getPartCols(),
             tp.getValues());
         if (tp.getSd().getLocation() == null) {
           // set default if location is not set
@@ -153,9 +153,9 @@ public class Partition {
             e);
       }
     } else {
-      // We are in the HACK territory. 
+      // We are in the HACK territory.
       // SemanticAnalyzer expects a single partition whose schema
-      // is same as the table partition. 
+      // is same as the table partition.
       partPath = table.getPath();
     }
 
@@ -314,8 +314,8 @@ public class Partition {
 
   @SuppressWarnings("nls")
   @Override
-  public String toString() { 
-    String pn = "Invalid Partition"; 
+  public String toString() {
+    String pn = "Invalid Partition";
     try {
       pn = Warehouse.makePartName(spec);
     } catch (MetaException e) {
@@ -323,4 +323,20 @@ public class Partition {
     }
     return table.toString() + "(" + pn + ")";
   }
+
+  public void setProperty(String name, String value) {
+    getTPartition().putToParameters(name, value);
+  }
+
+  /**
+   * getProperty
+   *
+   */
+  public String getProperty(String name) {
+    Map<String,String> params = getTPartition().getParameters();
+    if (params == null)
+      return null;
+    return params.get(name);
+  }
+
 }

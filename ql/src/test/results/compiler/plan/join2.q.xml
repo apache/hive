@@ -30,7 +30,7 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/njain/hive1/hive1/build/ql/tmp/1387009906/10000</string> 
+               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/2087531770/10000</string> 
               </void> 
               <void property="table"> 
                <object id="tableDesc0" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -83,7 +83,11 @@
                   </void> 
                   <void method="put"> 
                    <string>location</string> 
-                   <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/dest1</string> 
+                   <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/dest1</string> 
+                  </void> 
+                  <void method="put"> 
+                   <string>transient_lastDdlTime</string> 
+                   <string>1254944002</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -93,7 +97,7 @@
                </object> 
               </void> 
               <void property="tmpDir"> 
-               <string>file:/data/users/njain/hive1/hive1/build/ql/tmp/1387009906/10001</string> 
+               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/2087531770/10001</string> 
               </void> 
              </object> 
             </void> 
@@ -173,7 +177,11 @@
                </void> 
                <void method="put"> 
                 <string>location</string> 
-                <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src</string> 
+                <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src</string> 
+               </void> 
+               <void method="put"> 
+                <string>transient_lastDdlTime</string> 
+                <string>1254944001</string> 
                </void> 
               </object> 
              </void> 
@@ -731,7 +739,7 @@
         <void property="pathToAliases"> 
          <object class="java.util.LinkedHashMap"> 
           <void method="put"> 
-           <string>file:/data/users/njain/hive1/hive1/build/ql/tmp/378599174/10002</string> 
+           <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1226855670/10002</string> 
            <object class="java.util.ArrayList"> 
             <void method="add"> 
              <string>$INTNAME</string> 
@@ -739,7 +747,7 @@
            </object> 
           </void> 
           <void method="put"> 
-           <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src</string> 
+           <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src</string> 
            <object class="java.util.ArrayList"> 
             <void method="add"> 
              <string>src3</string> 
@@ -751,7 +759,7 @@
         <void property="pathToPartitionInfo"> 
          <object class="java.util.LinkedHashMap"> 
           <void method="put"> 
-           <string>file:/data/users/njain/hive1/hive1/build/ql/tmp/378599174/10002</string> 
+           <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1226855670/10002</string> 
            <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
             <void property="tableDesc"> 
              <object id="tableDesc4" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -785,7 +793,7 @@
            </object> 
           </void> 
           <void method="put"> 
-           <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src</string> 
+           <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src</string> 
            <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
             <void property="partSpec"> 
              <object idref="LinkedHashMap0"/> 
@@ -829,7 +837,7 @@
                      <int>1</int> 
                     </void> 
                     <void property="dirName"> 
-                     <string>file:/data/users/njain/hive1/hive1/build/ql/tmp/1387009906/10000</string> 
+                     <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/2087531770/10000</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object idref="tableDesc0"/> 
@@ -1275,7 +1283,11 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src</string> 
+            <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src</string> 
+           </void> 
+           <void method="put"> 
+            <string>transient_lastDdlTime</string> 
+            <string>1254944001</string> 
            </void> 
           </object> 
          </void> 
@@ -1343,7 +1355,11 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src</string> 
+            <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src</string> 
+           </void> 
+           <void method="put"> 
+            <string>transient_lastDdlTime</string> 
+            <string>1254944001</string> 
            </void> 
           </object> 
          </void> 
@@ -1846,7 +1862,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src2</string> 
@@ -1861,7 +1877,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive1/hive1/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap1"/> 
@@ -1898,7 +1914,7 @@
           <void property="conf"> 
            <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
             <void property="dirName"> 
-             <string>file:/data/users/njain/hive1/hive1/build/ql/tmp/378599174/10002</string> 
+             <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1226855670/10002</string> 
             </void> 
             <void property="tableInfo"> 
              <object idref="tableDesc4"/> 

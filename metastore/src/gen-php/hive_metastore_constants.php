@@ -8,6 +8,8 @@ include_once $GLOBALS['THRIFT_ROOT'].'/packages/hive_metastore/hive_metastore_ty
 
 $GLOBALS['hive_metastore_CONSTANTS'] = array();
 
+$GLOBALS['hive_metastore_CONSTANTS']['DDL_TIME'] = "transient_lastDdlTime";
+
 $GLOBALS['hive_metastore_CONSTANTS']['META_TABLE_COLUMNS'] = "columns";
 
 $GLOBALS['hive_metastore_CONSTANTS']['META_TABLE_COLUMN_TYPES'] = "columns.types";
