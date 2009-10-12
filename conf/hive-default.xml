@@ -280,6 +280,13 @@
 </property>
 
 <property>
+  <name>hive.exec.script.allow.partial.consumption</name>
+  <value>false</value>
+  <description> When enabled, this option allows a user script to exit successfully without consuming all the data from the standard input.
+  </description>
+</property>
+
+<property>
   <name>hive.exec.compress.output</name>
   <value>false</value>
   <description> This controls whether the final outputs of a query (to a local/hdfs file or a hive table) is compressed. The compression codec and other options are determined from hadoop config variables mapred.output.compress* </description>

@@ -70,6 +70,8 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
   transient volatile Throwable scriptError = null;
   transient RecordWriter scriptOutWriter;
 
+  static final String IO_EXCEPTION_BROKEN_PIPE_STRING= "Broken pipe";
+  
   /**
    * Timer to send periodic reports back to the tracker.
    */
@@ -270,6 +272,20 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
     }
   }
 
+  boolean isBrokenPipeException(IOException e) {
+    return (e.getMessage().compareToIgnoreCase(IO_EXCEPTION_BROKEN_PIPE_STRING) == 0);
+  }
+  
+  boolean allowPartialConsumption() {
+    return HiveConf.getBoolVar(hconf, HiveConf.ConfVars.ALLOWPARTIALCONSUMP);
+  }
+  
+  void displayBrokenPipeInfo() {
+    LOG.info("The script did not consume all input data. This is considered as an error."); 
+    LOG.info("set " + HiveConf.ConfVars.ALLOWPARTIALCONSUMP.toString() + "=true; to ignore it.");
+    return;
+  }
+  
   public void processOp(Object row, int tag) throws HiveException {
 
     if(scriptError != null) {
@@ -285,9 +301,17 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
       serialize_error_count.set(serialize_error_count.get() + 1);
       throw new HiveException(e);
     } catch (IOException e) {
-      LOG.error("Error in writing to script: " + e.getMessage());
-      scriptError = e;
-      throw new HiveException(e);
+      if(isBrokenPipeException(e) && allowPartialConsumption()) {
+        setDone(true);
+        LOG.warn("Got broken pipe during write: ignoring exception and setting operator to done");
+      } else {
+        LOG.error("Error in writing to script: " + e.getMessage());
+        if(isBrokenPipeException(e)) {
+          displayBrokenPipeInfo();
+        }
+        scriptError = e;
+        throw new HiveException(e);
+      }
     }
   }
 
@@ -300,7 +324,18 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
       }
       // everything ok. try normal shutdown
       try {
-        scriptOutWriter.close();
+        try {
+          scriptOutWriter.close();
+        } catch (IOException e) {
+          if(isBrokenPipeException(e) && allowPartialConsumption()) {
+            LOG.warn("Got broken pipe: ignoring exception");
+          } else {
+            if(isBrokenPipeException(e)) {
+              displayBrokenPipeInfo();
+            }
+            throw e;
+          }
+        }
         int exitVal = scriptPid.waitFor();
         if (exitVal != 0) {
           LOG.error("Script failed with code " + exitVal);

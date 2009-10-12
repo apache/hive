@@ -62,6 +62,9 @@ Trunk -  Unreleased
     HIVE-868. Add last ddl time and dml time for table/partition.
     (Namit Jain via zshao)
 
+    HIVE-869. Allow ScriptOperator to consume not all input data.
+    (Paul Yang via zshao)
+
   IMPROVEMENTS
 
     HIVE-760. Add version info to META-INF/MANIFEST.MF.
