@@ -542,14 +542,17 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
       newEntryForHashAggr = keysCurrentGroup.add(newDefaultKeys);
     }
 
-    // based on used-specified parameters, check if the hash table needs to be flushed
+    // Update the aggs
+    updateAggregations(aggs, row, rowInspector, true, newEntryForHashAggr, null);
+
+    // We can only flush after the updateAggregations is done, or the potentially new entry "aggs"
+    // can be flushed out of the hash table.
+    
+    // Based on user-specified parameters, check if the hash table needs to be flushed.
     // If the grouping key is not the same as reduction key, flushing can only happen at boundaries
     if ((!groupKeyIsNotReduceKey || firstRowInGroup) && shouldBeFlushed(newKeys)) {
       flush(false);
     }
-
-    // Update the aggs
-    updateAggregations(aggs, row, rowInspector, true, newEntryForHashAggr, null);
   }
 
   // Non-hash aggregation

@@ -185,6 +185,9 @@ Trunk -  Unreleased
 
     HIVE-879. Fix null pointer for empty dir. (Namit Jain via zshao)
 
+    HIVE-878. Update the hash table entry before flushing in Group By
+    hash aggregation. (Zheng Shao via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
