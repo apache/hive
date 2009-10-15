@@ -178,6 +178,9 @@ Trunk -  Unreleased
     HIVE-865. Map Join memory leak
     (Ning Zhang via namit)
 
+    HIVE-876. UDFOPNegative should deal with NULL gracefully.
+    (Ning Zhang via zshao)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
