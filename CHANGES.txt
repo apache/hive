@@ -567,6 +567,9 @@ Release 0.4.0 -  Unreleased
     HIVE-864. Fix map-join memory-leak.
     (Namit Jain via zshao)
 
+    HIVE-878. Update the hash table entry before flushing in Group By
+    hash aggregation (Zheng Shao via namit)
+
 Release 0.3.1 - Unreleased
 
   INCOMPATIBLE CHANGES
