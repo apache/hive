@@ -183,6 +183,8 @@ Trunk -  Unreleased
 
     HIVE-877. More test cases for UDFOPNegative. (Ning Zhang via zshao)
 
+    HIVE-879. Fix null pointer for empty dir. (Namit Jain via zshao)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
