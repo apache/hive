@@ -1,36 +1,54 @@
 PREHOOK: query: select - null from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/124139801/10000
+PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/928832343/10000
 POSTHOOK: query: select - null from src limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/124139801/10000
+POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/928832343/10000
 NULL
 PREHOOK: query: select - cast(null as int) from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/714637476/10000
+PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1834056910/10000
 POSTHOOK: query: select - cast(null as int) from src limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/714637476/10000
+POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1834056910/10000
+NULL
+PREHOOK: query: select - cast(null as smallint) from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/677639104/10000
+POSTHOOK: query: select - cast(null as smallint) from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/677639104/10000
+NULL
+PREHOOK: query: select - cast(null as bigint) from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1891198169/10000
+POSTHOOK: query: select - cast(null as bigint) from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1891198169/10000
 NULL
 PREHOOK: query: select - cast(null as double) from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1915503679/10000
+PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/856616351/10000
 POSTHOOK: query: select - cast(null as double) from src limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1915503679/10000
+POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/856616351/10000
 NULL
 PREHOOK: query: select - cast(null as float) from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1861430940/10000
+PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/277516197/10000
 POSTHOOK: query: select - cast(null as float) from src limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1861430940/10000
+POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/277516197/10000
 NULL
