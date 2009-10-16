@@ -408,7 +408,28 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
 
 
     String hiveScratchDir = HiveConf.getVar(job, HiveConf.ConfVars.SCRATCHDIR);
-    Path jobScratchDir = new Path(hiveScratchDir + Utilities.randGen.nextInt());
+    String jobScratchDirStr = hiveScratchDir + File.separator+ Utilities.randGen.nextInt();
+    Path   jobScratchDir = new Path(jobScratchDirStr);
+    String emptyScratchDirStr = null;
+    Path   emptyScratchDir    = null;
+
+    int numTries = 3;
+    while (numTries > 0) {
+      emptyScratchDirStr = hiveScratchDir + File.separator + Utilities.randGen.nextInt();
+      emptyScratchDir = new Path(emptyScratchDirStr);
+
+      try {
+        FileSystem fs = emptyScratchDir.getFileSystem(job);
+        fs.mkdirs(emptyScratchDir);
+        break;
+      } catch (Exception e) {
+        if (numTries > 0)
+          numTries--;
+        else
+          throw new RuntimeException("Failed to make dir " + emptyScratchDir.toString() + " : " + e.getMessage());
+      }
+    }
+
     FileOutputFormat.setOutputPath(job, jobScratchDir);
     job.setMapperClass(ExecMapper.class);
 
@@ -462,7 +483,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
     boolean success = false;
 
     try {
-      addInputPaths(job, work, hiveScratchDir.toString());
+      addInputPaths(job, work, emptyScratchDirStr);
       Utilities.setMapRedWork(job, work);
 
       // remove the pwd from conf file so that job tracker doesn't show this logs
@@ -525,6 +546,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
       try {
         FileSystem fs = jobScratchDir.getFileSystem(job);
         fs.delete(jobScratchDir, true);
+        fs.delete(emptyScratchDir, true);
         if (returnVal != 0 && rj != null) {
           rj.killJob();
         }

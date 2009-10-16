@@ -190,6 +190,9 @@ Trunk -  Unreleased
     HIVE-878. Update the hash table entry before flushing in Group By
     hash aggregation. (Zheng Shao via namit)
 
+    HIVE-882. Create a new directory every time for scratch.
+    (Namit Jain via zshao)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
