@@ -65,6 +65,8 @@ Trunk -  Unreleased
     HIVE-869. Allow ScriptOperator to consume not all input data.
     (Paul Yang via zshao)
 
+    HIVE-688. UDF find_in_set (Jonathan Pythagoras Hsu via namit)
+
   IMPROVEMENTS
 
     HIVE-760. Add version info to META-INF/MANIFEST.MF.

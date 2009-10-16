@@ -1,0 +1,213 @@
+PREHOOK: query: DESCRIBE FUNCTION find_in_set
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION find_in_set
+POSTHOOK: type: DESCFUNCTION
+find_in_set(str,str_array) - Returns the first occurrence  of str in str_array where str_array is a comma-delimited string. Returns null if either argument is null. Returns 0 if the first argument has any commas.
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED find_in_set
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED find_in_set
+POSTHOOK: type: DESCFUNCTION
+find_in_set(str,str_array) - Returns the first occurrence  of str in str_array where str_array is a comma-delimited string. Returns null if either argument is null. Returns 0 if the first argument has any commas.
+Example:
+  > SELECT find_in_set('ab','abc,b,ab,c,def') FROM src LIMIT 1;
+  3
+  > SELECT * FROM src1 WHERE NOT find_in_set(key,'311,128,345,956')=0;
+  311  val_311
+  128
+PREHOOK: query: EXPLAIN
+FROM src1 SELECT find_in_set(src1.key,concat(src1.key,',',src1.value))
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM src1 SELECT find_in_set(src1.key,concat(src1.key,',',src1.value))
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION find_in_set (. (TOK_TABLE_OR_COL src1) key) (TOK_FUNCTION concat (. (TOK_TABLE_OR_COL src1) key) ',' (. (TOK_TABLE_OR_COL src1) value)))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src1 
+          TableScan
+            alias: src1
+            Select Operator
+              expressions:
+                    expr: find_in_set(key, concat(key, ',', value))
+                    type: int
+              outputColumnNames: _col0
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: FROM src1 SELECT find_in_set(src1.key,concat(src1.key,',',src1.value))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: file:/mnt/vol/devrs002.snc1/hsurreal/hive-trunk/build/ql/tmp/1586937286/10000
+POSTHOOK: query: FROM src1 SELECT find_in_set(src1.key,concat(src1.key,',',src1.value))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: file:/mnt/vol/devrs002.snc1/hsurreal/hive-trunk/build/ql/tmp/1586937286/10000
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
+PREHOOK: query: SELECT find_in_set('ab','ab,abc,abcde') FROM src1 LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: file:/mnt/vol/devrs002.snc1/hsurreal/hive-trunk/build/ql/tmp/1499102713/10000
+POSTHOOK: query: SELECT find_in_set('ab','ab,abc,abcde') FROM src1 LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: file:/mnt/vol/devrs002.snc1/hsurreal/hive-trunk/build/ql/tmp/1499102713/10000
+1
+PREHOOK: query: SELECT find_in_set('ab','abc,ab,bbb') FROM src1 LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: file:/mnt/vol/devrs002.snc1/hsurreal/hive-trunk/build/ql/tmp/2025487244/10000
+POSTHOOK: query: SELECT find_in_set('ab','abc,ab,bbb') FROM src1 LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: file:/mnt/vol/devrs002.snc1/hsurreal/hive-trunk/build/ql/tmp/2025487244/10000
+2
+PREHOOK: query: SELECT find_in_set('ab','def,abc,ab') FROM src1 LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: file:/mnt/vol/devrs002.snc1/hsurreal/hive-trunk/build/ql/tmp/1197303570/10000
+POSTHOOK: query: SELECT find_in_set('ab','def,abc,ab') FROM src1 LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: file:/mnt/vol/devrs002.snc1/hsurreal/hive-trunk/build/ql/tmp/1197303570/10000
+3
+PREHOOK: query: SELECT find_in_set('ab','abc,abd,abf') FROM src1 LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: file:/mnt/vol/devrs002.snc1/hsurreal/hive-trunk/build/ql/tmp/180430857/10000
+POSTHOOK: query: SELECT find_in_set('ab','abc,abd,abf') FROM src1 LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: file:/mnt/vol/devrs002.snc1/hsurreal/hive-trunk/build/ql/tmp/180430857/10000
+0
+PREHOOK: query: SELECT find_in_set(null,'a,b,c') FROM src1 LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: file:/mnt/vol/devrs002.snc1/hsurreal/hive-trunk/build/ql/tmp/582632662/10000
+POSTHOOK: query: SELECT find_in_set(null,'a,b,c') FROM src1 LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: file:/mnt/vol/devrs002.snc1/hsurreal/hive-trunk/build/ql/tmp/582632662/10000
+NULL
+PREHOOK: query: SELECT find_in_set('a',null) FROM src1 LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: file:/mnt/vol/devrs002.snc1/hsurreal/hive-trunk/build/ql/tmp/122073254/10000
+POSTHOOK: query: SELECT find_in_set('a',null) FROM src1 LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: file:/mnt/vol/devrs002.snc1/hsurreal/hive-trunk/build/ql/tmp/122073254/10000
+NULL
+PREHOOK: query: SELECT find_in_set('', '') FROM src1 LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: file:/mnt/vol/devrs002.snc1/hsurreal/hive-trunk/build/ql/tmp/1837381738/10000
+POSTHOOK: query: SELECT find_in_set('', '') FROM src1 LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: file:/mnt/vol/devrs002.snc1/hsurreal/hive-trunk/build/ql/tmp/1837381738/10000
+1
+PREHOOK: query: SELECT find_in_set('',',') FROM src1 LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: file:/mnt/vol/devrs002.snc1/hsurreal/hive-trunk/build/ql/tmp/984994381/10000
+POSTHOOK: query: SELECT find_in_set('',',') FROM src1 LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: file:/mnt/vol/devrs002.snc1/hsurreal/hive-trunk/build/ql/tmp/984994381/10000
+1
+PREHOOK: query: SELECT find_in_set('','a,,b') FROM src1 LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: file:/mnt/vol/devrs002.snc1/hsurreal/hive-trunk/build/ql/tmp/853818173/10000
+POSTHOOK: query: SELECT find_in_set('','a,,b') FROM src1 LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: file:/mnt/vol/devrs002.snc1/hsurreal/hive-trunk/build/ql/tmp/853818173/10000
+2
+PREHOOK: query: SELECT find_in_set('','a,b,') FROM src1 LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: file:/mnt/vol/devrs002.snc1/hsurreal/hive-trunk/build/ql/tmp/1835713486/10000
+POSTHOOK: query: SELECT find_in_set('','a,b,') FROM src1 LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: file:/mnt/vol/devrs002.snc1/hsurreal/hive-trunk/build/ql/tmp/1835713486/10000
+3
+PREHOOK: query: SELECT find_in_set(',','a,b,d,') FROM src1 LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: file:/mnt/vol/devrs002.snc1/hsurreal/hive-trunk/build/ql/tmp/268862937/10000
+POSTHOOK: query: SELECT find_in_set(',','a,b,d,') FROM src1 LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: file:/mnt/vol/devrs002.snc1/hsurreal/hive-trunk/build/ql/tmp/268862937/10000
+0
+PREHOOK: query: SELECT find_in_set('a','') FROM src1 LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: file:/mnt/vol/devrs002.snc1/hsurreal/hive-trunk/build/ql/tmp/2079852974/10000
+POSTHOOK: query: SELECT find_in_set('a','') FROM src1 LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: file:/mnt/vol/devrs002.snc1/hsurreal/hive-trunk/build/ql/tmp/2079852974/10000
+0
+PREHOOK: query: SELECT find_in_set('a,','a,b,c,d') FROM src1 LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: file:/mnt/vol/devrs002.snc1/hsurreal/hive-trunk/build/ql/tmp/982350293/10000
+POSTHOOK: query: SELECT find_in_set('a,','a,b,c,d') FROM src1 LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: file:/mnt/vol/devrs002.snc1/hsurreal/hive-trunk/build/ql/tmp/982350293/10000
+0
+PREHOOK: query: SELECT * FROM src1 WHERE NOT find_in_set(key,'311,128,345,2,956')=0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: file:/mnt/vol/devrs002.snc1/hsurreal/hive-trunk/build/ql/tmp/40028878/10000
+POSTHOOK: query: SELECT * FROM src1 WHERE NOT find_in_set(key,'311,128,345,2,956')=0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: file:/mnt/vol/devrs002.snc1/hsurreal/hive-trunk/build/ql/tmp/40028878/10000
+311	val_311
+128	

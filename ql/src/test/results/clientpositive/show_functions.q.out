@@ -45,6 +45,7 @@ div
 double
 elt
 exp
+find_in_set
 float
 floor
 from_unixtime
