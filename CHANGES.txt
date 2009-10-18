@@ -193,7 +193,7 @@ Trunk -  Unreleased
     HIVE-882. Create a new directory every time for scratch.
     (Namit Jain via zshao)
 
-    HIVE-883. Metastore Server should call System.exit() on error.
+    HIVE-884. Metastore Server should call System.exit() on error.
     (Zheng Shao via pchakka)
 
 Release 0.4.0 -  Unreleased
