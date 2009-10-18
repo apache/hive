@@ -736,8 +736,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       HMSHandler.LOG.info("Options.minWorkerThreads = " + options.minWorkerThreads);
       HMSHandler.LOG.info("Options.maxWorkerThreads = " + options.maxWorkerThreads);
       server.serve();
-    } catch (Exception x) {
+    } catch (Throwable x) {
       x.printStackTrace();
+      HMSHandler.LOG.error("Metastore Thrift Server threw an exception. Exiting...");
+      HMSHandler.LOG.error(StringUtils.stringifyException(x));
+      System.exit(1);
     }
   }
 }
