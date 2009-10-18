@@ -134,6 +134,9 @@ Release 0.4.0 -  Unreleased
 
     HIVE-857. Transform script should support objects of same type. (Zheng Shao via namit)
 
+    HIVE-884. Metastore Server should call System.exit() on error.
+    (Zheng Shao via pchakka)
+
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 
