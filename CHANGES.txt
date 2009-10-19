@@ -196,6 +196,9 @@ Trunk -  Unreleased
     HIVE-884. Metastore Server should call System.exit() on error.
     (Zheng Shao via pchakka)
 
+    HIVE-890. Fix cli.sh for detecting Hadoop versions.
+    (Paul Huff via zshao)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
