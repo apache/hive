@@ -1,6 +1,32 @@
 Hive Change Log
 
-Release 0.4.0 -  Unreleased
+Release 0.4.1 - Unreleased
+
+  INCOMPATIBLE CHANGES
+
+  NEW FEATURES
+
+    HIVE-884. Metastore Server should call System.exit() on error.
+    (Zheng Shao via pchakka)
+
+  IMPROVEMENTS
+
+  OPTIMIZATIONS
+
+  BUG FIXES
+
+    HIVE-864. Fix map-join memory-leak.
+    (Namit Jain via zshao)
+
+    HIVE-878. Update the hash table entry before flushing in Group By
+    hash aggregation (Zheng Shao via namit)
+
+    HIVE-882. Create a new directory every time for scratch.
+    (Namit Jain via zshao)
+
+    HIVE-890. Fix cli.sh for detecting Hadoop versions. (Paul Huff via zshao)
+
+Release 0.4.0
 
   INCOMPATIBLE CHANGES
 
@@ -134,9 +160,6 @@ Release 0.4.0 -  Unreleased
 
     HIVE-857. Transform script should support objects of same type. (Zheng Shao via namit)
 
-    HIVE-884. Metastore Server should call System.exit() on error.
-    (Zheng Shao via pchakka)
-
   IMPROVEMENTS
     HIVE-389. Option to build without ivy (jssarma)
 
@@ -247,7 +270,6 @@ Release 0.4.0 -  Unreleased
 
     HIVE-811. Fix Javadocs. (Namit Jain via zshao)
 
-  BUG FIXES
 
     HIVE-381. Fix JDBC HiveResultSet's next function.
     (Kim P via namit)
@@ -566,15 +588,6 @@ Release 0.4.0 -  Unreleased
 
     HIVE-838. In strict mode, remove error if no partition is selected.
     (Namit Jain via rmurthy)
-
-    HIVE-864. Fix map-join memory-leak.
-    (Namit Jain via zshao)
-
-    HIVE-878. Update the hash table entry before flushing in Group By
-    hash aggregation (Zheng Shao via namit)
-
-    HIVE-882. Create a new directory every time for scratch.
-    (Namit Jain via zshao)
 
 Release 0.3.1 - Unreleased
 
