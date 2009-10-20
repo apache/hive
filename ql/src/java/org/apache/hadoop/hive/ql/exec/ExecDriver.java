@@ -160,8 +160,10 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
             String uri = elems.next();
             try {
               System.err.println("killing job with: " + uri);
-              int retCode = ((java.net.HttpURLConnection) new java.net.URL(uri)
-                  .openConnection()).getResponseCode();
+              java.net.HttpURLConnection conn = (java.net.HttpURLConnection) 
+                new java.net.URL(uri).openConnection();
+              conn.setRequestMethod("POST");
+              int retCode = conn.getResponseCode();
               if (retCode != 200) {
                 System.err.println("Got an error trying to kill job with URI: "
                     + uri + " = " + retCode);
