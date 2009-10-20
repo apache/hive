@@ -64,11 +64,11 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src</string> 
+            <string>file:/data/users/nzhang/work/876/apache-hive/.ptest_3/build/ql/test/data/warehouse/src</string> 
            </void> 
            <void method="put"> 
             <string>transient_lastDdlTime</string> 
-            <string>1254943974</string> 
+            <string>1255671598</string> 
            </void> 
           </object> 
          </void> 
@@ -330,6 +330,10 @@
                     <void property="properties"> 
                      <object class="java.util.Properties"> 
                       <void method="put"> 
+                       <string>field.delim</string> 
+                       <string>9</string> 
+                      </void> 
+                      <void method="put"> 
                        <string>columns</string> 
                        <string>_col0,_col1</string> 
                       </void> 
@@ -362,6 +366,10 @@
                     </void> 
                     <void property="properties"> 
                      <object class="java.util.Properties"> 
+                      <void method="put"> 
+                       <string>field.delim</string> 
+                       <string>9</string> 
+                      </void> 
                       <void method="put"> 
                        <string>columns</string> 
                        <string>key,value</string> 
@@ -676,7 +684,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/nzhang/work/876/apache-hive/.ptest_3/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>tmap:src</string> 
@@ -688,7 +696,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/nzhang/work/876/apache-hive/.ptest_3/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap0"/> 
@@ -733,7 +741,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1191035427/10001</string> 
+                     <string>file:/data/users/nzhang/work/876/apache-hive/.ptest_3/build/ql/tmp/2104013641/10001</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -846,6 +854,10 @@
                   <void property="properties"> 
                    <object class="java.util.Properties"> 
                     <void method="put"> 
+                     <string>field.delim</string> 
+                     <string>9</string> 
+                    </void> 
+                    <void method="put"> 
                      <string>columns</string> 
                      <string>_col0,_col1</string> 
                     </void> 
@@ -878,6 +890,10 @@
                   </void> 
                   <void property="properties"> 
                    <object class="java.util.Properties"> 
+                    <void method="put"> 
+                     <string>field.delim</string> 
+                     <string>9</string> 
+                    </void> 
                     <void method="put"> 
                      <string>columns</string> 
                      <string>key,value</string> 

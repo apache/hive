@@ -122,6 +122,10 @@ public class PlanUtils {
     Properties properties = Utilities.makeProperties(
       Constants.SERIALIZATION_FORMAT, separatorCode,
       Constants.LIST_COLUMNS, columns);
+    
+    if ( ! separatorCode.equals(Integer.toString(Utilities.ctrlaCode)) )
+      properties.setProperty(Constants.FIELD_DELIM, separatorCode);
+    
     if (columnTypes != null)
       properties.setProperty(Constants.LIST_COLUMN_TYPES, columnTypes);
     
@@ -165,8 +169,26 @@ public class PlanUtils {
         serdeClass = c;
       }
     
+      if ( crtTblDesc.getFieldDelim() != null )
+        separatorCode = crtTblDesc.getFieldDelim();
+      
       ret = getTableDesc(serdeClass, separatorCode, columns, columnTypes, 
-                                   lastColumnTakesRestOfTheLine, false);
+                         lastColumnTakesRestOfTheLine, false);
+      
+      // set other table properties
+      Properties properties = ret.getProperties();
+      
+      if ( crtTblDesc.getCollItemDelim() != null )
+        properties.setProperty(Constants.COLLECTION_DELIM, crtTblDesc.getCollItemDelim());
+      
+      if ( crtTblDesc.getMapKeyDelim() != null )
+        properties.setProperty(Constants.MAPKEY_DELIM, crtTblDesc.getMapKeyDelim());
+      
+      if ( crtTblDesc.getFieldEscape() != null )
+        properties.setProperty(Constants.ESCAPE_CHAR, crtTblDesc.getFieldEscape());
+      
+      if ( crtTblDesc.getLineDelim() != null )
+        properties.setProperty(Constants.LINE_DELIM, crtTblDesc.getLineDelim());
       
       // replace the default input & output file format with those found in crtTblDesc
       Class c1 = Class.forName(crtTblDesc.getInputFormat());

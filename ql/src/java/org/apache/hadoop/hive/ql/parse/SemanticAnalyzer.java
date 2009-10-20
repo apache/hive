@@ -1066,7 +1066,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
           if (rowChild.getChildCount()>=2) {
             String fieldEscape = unescapeSQLString(rowChild.getChild(1).getText());
-            tblDesc.getProperties().setProperty(Constants.ESCAPE_CHAR, fieldDelim);
+            tblDesc.getProperties().setProperty(Constants.ESCAPE_CHAR, fieldEscape);
           }
           break;
         case HiveParser.TOK_TABLEROWFORMATCOLLITEMS:

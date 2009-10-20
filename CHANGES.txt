@@ -67,6 +67,8 @@ Trunk -  Unreleased
 
     HIVE-688. UDF find_in_set (Jonathan Pythagoras Hsu via namit)
 
+    HIVE-881. CTAS to work with fields terminator. (Ning Zhang via zshao)
+
   IMPROVEMENTS
 
     HIVE-760. Add version info to META-INF/MANIFEST.MF.

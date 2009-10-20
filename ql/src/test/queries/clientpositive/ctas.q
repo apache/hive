@@ -1,6 +1,8 @@
 drop table nzhang_ctas1;
 drop table nzhang_ctas2;
 drop table nzhang_ctas3;
+drop table nzhang_ctas4;
+drop table nzhang_ctas5;
 
 explain create table nzhang_ctas1 as select key k, value from src sort by k, value limit 10;
 
@@ -29,6 +31,19 @@ create table if not exists nzhang_ctas3 as select key, value from src sort by ke
 
 select * from nzhang_ctas3;
 
+
+explain create table nzhang_ctas4 row format delimited fields terminated by ',' stored as textfile as select key, value from src sort by key, value limit 10;
+
+create table nzhang_ctas4 row format delimited fields terminated by ',' stored as textfile as select key, value from src sort by key, value limit 10;
+
+select * from nzhang_ctas4;
+
+explain extended create table nzhang_ctas5 row format delimited fields terminated by ',' lines terminated by '.' stored as textfile as select key, value from src sort by key, value limit 10;
+
+create table nzhang_ctas5 row format delimited fields terminated by ',' lines terminated by '.' stored as textfile as select key, value from src sort by key, value limit 10;
+
 drop table nzhang_ctas1;
 drop table nzhang_ctas2;
 drop table nzhang_ctas3;
+drop table nzhang_ctas4;
+drop table nzhang_ctas5;

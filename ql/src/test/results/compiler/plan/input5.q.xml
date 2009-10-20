@@ -26,7 +26,7 @@
            <boolean>true</boolean> 
           </void> 
           <void property="sourceDir"> 
-           <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/228410659/10000</string> 
+           <string>file:/data/users/nzhang/work/876/apache-hive/.ptest_3/build/ql/tmp/702311970/10000</string> 
           </void> 
           <void property="table"> 
            <object id="tableDesc0" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -79,11 +79,11 @@
               </void> 
               <void method="put"> 
                <string>location</string> 
-               <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/dest1</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/.ptest_3/build/ql/test/data/warehouse/dest1</string> 
               </void> 
               <void method="put"> 
                <string>transient_lastDdlTime</string> 
-               <string>1254943981</string> 
+               <string>1255671608</string> 
               </void> 
              </object> 
             </void> 
@@ -93,7 +93,7 @@
            </object> 
           </void> 
           <void property="tmpDir"> 
-           <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/228410659/10001</string> 
+           <string>file:/data/users/nzhang/work/876/apache-hive/.ptest_3/build/ql/tmp/702311970/10001</string> 
           </void> 
          </object> 
         </void> 
@@ -170,11 +170,11 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src_thrift</string> 
+            <string>file:/data/users/nzhang/work/876/apache-hive/.ptest_3/build/ql/test/data/warehouse/src_thrift</string> 
            </void> 
            <void method="put"> 
             <string>transient_lastDdlTime</string> 
-            <string>1254943980</string> 
+            <string>1255671607</string> 
            </void> 
           </object> 
          </void> 
@@ -436,6 +436,10 @@
                     <void property="properties"> 
                      <object class="java.util.Properties"> 
                       <void method="put"> 
+                       <string>field.delim</string> 
+                       <string>9</string> 
+                      </void> 
+                      <void method="put"> 
                        <string>columns</string> 
                        <string>_col0,_col1</string> 
                       </void> 
@@ -468,6 +472,10 @@
                     </void> 
                     <void property="properties"> 
                      <object class="java.util.Properties"> 
+                      <void method="put"> 
+                       <string>field.delim</string> 
+                       <string>9</string> 
+                      </void> 
                       <void method="put"> 
                        <string>columns</string> 
                        <string>tkey,tvalue</string> 
@@ -768,7 +776,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src_thrift</string> 
+       <string>file:/data/users/nzhang/work/876/apache-hive/.ptest_3/build/ql/test/data/warehouse/src_thrift</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>tmap:src_thrift</string> 
@@ -780,7 +788,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src_thrift</string> 
+       <string>file:/data/users/nzhang/work/876/apache-hive/.ptest_3/build/ql/test/data/warehouse/src_thrift</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap0"/> 
@@ -824,7 +832,7 @@
                  <int>1</int> 
                 </void> 
                 <void property="dirName"> 
-                 <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/228410659/10000</string> 
+                 <string>file:/data/users/nzhang/work/876/apache-hive/.ptest_3/build/ql/tmp/702311970/10000</string> 
                 </void> 
                 <void property="tableInfo"> 
                  <object idref="tableDesc0"/> 
