@@ -347,8 +347,8 @@ showStatement
 metastoreCheck
 @init { msgs.push("metastore check statement"); }
 @after { msgs.pop(); }
-    : KW_MSCK (KW_TABLE table=Identifier partitionSpec? (COMMA partitionSpec)*)?
-    -> ^(TOK_MSCK ($table partitionSpec*)?)
+    : KW_MSCK (repair=KW_REPAIR)? (KW_TABLE table=Identifier partitionSpec? (COMMA partitionSpec)*)?
+    -> ^(TOK_MSCK $repair? ($table partitionSpec*)?)
     ;     
     
 createFunctionStatement
@@ -1308,6 +1308,7 @@ KW_TABLES: 'TABLES';
 KW_FUNCTIONS: 'FUNCTIONS';
 KW_SHOW: 'SHOW';
 KW_MSCK: 'MSCK';
+KW_REPAIR: 'REPAIR';
 KW_DIRECTORY: 'DIRECTORY';
 KW_LOCAL: 'LOCAL';
 KW_TRANSFORM : 'TRANSFORM';

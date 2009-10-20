@@ -434,11 +434,17 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   private void analyzeMetastoreCheck(CommonTree ast) throws SemanticException {
     String tableName = null;
+    boolean repair = false;
     if(ast.getChildCount() > 0) {
-      tableName = unescapeIdentifier(ast.getChild(0).getText());
+      repair = ast.getChild(0).getType() == HiveParser.KW_REPAIR;
+      if (!repair) {
+        tableName = unescapeIdentifier(ast.getChild(0).getText());
+      } else if (ast.getChildCount() > 1) {
+        tableName = unescapeIdentifier(ast.getChild(1).getText());
+      }
     }
     List<Map<String, String>> specs = getPartitionSpecs(ast);
-    MsckDesc checkDesc = new MsckDesc(tableName, specs, ctx.getResFile());
+    MsckDesc checkDesc = new MsckDesc(tableName, specs, ctx.getResFile(), repair);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), checkDesc), conf));
   }
 

@@ -69,6 +69,8 @@ Trunk -  Unreleased
 
     HIVE-881. CTAS to work with fields terminator. (Ning Zhang via zshao)
 
+    HIVE-874. Add 'repair' option to mack. (Cyrus Katrak via prasadc).
+
   IMPROVEMENTS
 
     HIVE-760. Add version info to META-INF/MANIFEST.MF.

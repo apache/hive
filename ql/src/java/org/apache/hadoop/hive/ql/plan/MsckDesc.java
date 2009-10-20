@@ -10,18 +10,22 @@ public class MsckDesc {
   private String tableName;
   private List<Map<String, String>> partitionSpec;
   private Path resFile;
-  
+  private boolean repairPartitions;
+
   /**
    * Description of a msck command.
    * @param tableName Table to check, can be null.
    * @param partSpecs Partition specification, can be null. 
    * @param resFile Where to save the output of the command
+   * @param repairPartitions remove stale / add new partitions found during the check
    */
-  public MsckDesc(String tableName, List<Map<String, String>> partSpecs, Path resFile) {
+  public MsckDesc(String tableName, List<Map<String, String>> partSpecs, Path resFile,
+      boolean repairPartitions) {
     super();
     this.tableName = tableName;
     this.partitionSpec = partSpecs;
     this.resFile = resFile;
+    this.repairPartitions = repairPartitions;
   }
 
   /**
@@ -65,5 +69,18 @@ public class MsckDesc {
   public void setResFile(Path resFile) {
     this.resFile = resFile;
   }
-  
+
+  /**
+   * @return remove stale / add new partitions found during the check
+   */
+  public boolean isRepairPartitions() {
+    return repairPartitions;
+  }
+
+  /**
+   * @param remove stale / add new partitions found during the check
+   */
+  public void setRepairPartitions(boolean repairPartitions) {
+    this.repairPartitions = repairPartitions;
+  }
 }

@@ -1,0 +1,34 @@
+PREHOOK: query: DROP TABLE repairtable
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE repairtable
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE repairtable(col STRING) PARTITIONED BY (p1 STRING, p2 STRING)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE repairtable(col STRING) PARTITIONED BY (p1 STRING, p2 STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@repairtable
+PREHOOK: query: MSCK TABLE repairtable
+PREHOOK: type: MSCK
+POSTHOOK: query: MSCK TABLE repairtable
+POSTHOOK: type: MSCK
+PREHOOK: query: MSCK TABLE repairtable
+PREHOOK: type: MSCK
+POSTHOOK: query: MSCK TABLE repairtable
+POSTHOOK: type: MSCK
+Partitions not in metastore:	repairtable:p1=b/p2=a	repairtable:p1=a/p2=a
+PREHOOK: query: MSCK REPAIR TABLE repairtable
+PREHOOK: type: MSCK
+POSTHOOK: query: MSCK REPAIR TABLE repairtable
+POSTHOOK: type: MSCK
+Partitions not in metastore:	repairtable:p1=b/p2=a	repairtable:p1=a/p2=a
+Repair: Added partition to metastore repairtable:p1=b/p2=a
+Repair: Added partition to metastore repairtable:p1=a/p2=a
+PREHOOK: query: MSCK TABLE repairtable
+PREHOOK: type: MSCK
+POSTHOOK: query: MSCK TABLE repairtable
+POSTHOOK: type: MSCK
+PREHOOK: query: DROP TABLE repairtable
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE repairtable
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@repairtable

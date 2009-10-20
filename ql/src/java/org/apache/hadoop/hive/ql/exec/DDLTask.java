@@ -28,6 +28,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,10 +44,15 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.CheckResult;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -80,9 +86,6 @@ import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.hadoop.hive.ql.QueryPlan;
-import org.apache.hadoop.hive.ql.hooks.ReadEntity;
-import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 
 /**
  * DDLTask implementation
@@ -227,14 +230,28 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @return Returns 0 when execution succeeds and above 0 if it fails.
    */
   private int msck(Hive db, MsckDesc msckDesc) {
-
     CheckResult result = new CheckResult();
+    List<String> repairOutput = new ArrayList<String>();
     try {
       HiveMetaStoreChecker checker = new HiveMetaStoreChecker(db);
       checker.checkMetastore(
         MetaStoreUtils.DEFAULT_DATABASE_NAME, msckDesc.getTableName(),
         msckDesc.getPartitionSpec(),
         result);
+      if(msckDesc.isRepairPartitions()) {
+        Table table = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
+            msckDesc.getTableName());
+        for (CheckResult.PartitionResult part : result.getPartitionsNotInMs()) {
+          try {
+            db.createPartition(table,
+                Warehouse.makeSpecFromName(part.getPartitionName()));
+            repairOutput.add("Repair: Added partition to metastore " + msckDesc.getTableName()
+                + ':' + part.getPartitionName());
+          } catch (Exception e) {
+            LOG.warn("Repair error, could not add partition to metastore: ", e);
+          }
+        }
+      }
     } catch (HiveException e) {
       LOG.warn("Failed to run metacheck: ", e);
       return 1;
@@ -242,7 +259,6 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       LOG.warn("Failed to run metacheck: ", e);
       return 1;
     } finally {
-
       BufferedWriter resultOut = null;
       try {
         FileSystem fs = msckDesc.getResFile().getFileSystem(conf);
@@ -258,6 +274,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             "Partitions not in metastore:", resultOut, firstWritten);
         firstWritten |= writeMsckResult(result.getPartitionsNotOnFs(),
             "Partitions missing from filesystem:", resultOut, firstWritten);
+        for (String rout : repairOutput) {
+          if (firstWritten) {
+            resultOut.write(terminator);
+          } else {
+            firstWritten = true;
+          }
+          resultOut.write(rout);
+        }
       } catch (IOException e) {
         LOG.warn("Failed to save metacheck output: ", e);
         return 1;

@@ -73,7 +73,7 @@ public class CheckResult {
    * A basic description of a partition that is 
    * missing from either the fs or the ms.
    */
-  static class PartitionResult {
+  public static class PartitionResult {
     private String partitionName;
     private String tableName;
     
