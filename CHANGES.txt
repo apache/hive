@@ -206,6 +206,9 @@ Trunk -  Unreleased
     HIVE-885. Better error messages for debugging serde problem at reducer
     input (Zheng Shao via namit)
 
+    HIVE-893. Thrift serde doesn't work with the new version of thrift.
+    (Ning Zhang via zshao)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
