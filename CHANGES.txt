@@ -26,6 +26,8 @@ Release 0.4.1 - Unreleased
 
     HIVE-890. Fix cli.sh for detecting Hadoop versions. (Paul Huff via zshao)
 
+    HIVE-892. Hive to kill hadoop jobs using POST. (Dhruba Borthakur via zshao)
+
 Release 0.4.0
 
   INCOMPATIBLE CHANGES
