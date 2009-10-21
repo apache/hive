@@ -203,6 +203,9 @@ Trunk -  Unreleased
     HIVE-890. Fix cli.sh for detecting Hadoop versions.
     (Paul Huff via zshao)
 
+    HIVE-885. Better error messages for debugging serde problem at reducer
+    input (Zheng Shao via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

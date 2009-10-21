@@ -777,4 +777,12 @@ public class Utilities {
     curThread.setContextClassLoader(loader);
   }
 
+  public static String formatBinaryString(byte[] array, int start, int length) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = start; i < start + length; i++) {
+      sb.append("x");
+      sb.append(array[i] < 0 ? array[i] + 256 : array[i] + 0);
+    }
+    return sb.toString();
+  }
 }

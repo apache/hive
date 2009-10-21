@@ -75,6 +75,9 @@ public class ExecReducer extends MapReduceBase implements Reducer {
     fieldNames = fieldNameArray.toArray(new String [0]);
   }
 
+  tableDesc keyTableDesc;
+  tableDesc[] valueTableDesc;
+  
   public void configure(JobConf job) {
     ObjectInspector[] rowObjectInspector = new ObjectInspector[Byte.MAX_VALUE];
     ObjectInspector[] valueObjectInspector = new ObjectInspector[Byte.MAX_VALUE];
@@ -98,15 +101,16 @@ public class ExecReducer extends MapReduceBase implements Reducer {
     reducer.setParentOperators(null); // clear out any parents as reducer is the root
     isTagged = gWork.getNeedsTagging();
     try {
-      tableDesc keyTableDesc = gWork.getKeyDesc();
+      keyTableDesc = gWork.getKeyDesc();
       inputKeyDeserializer = (SerDe)ReflectionUtils.newInstance(keyTableDesc.getDeserializerClass(), null);
       inputKeyDeserializer.initialize(null, keyTableDesc.getProperties());
       keyObjectInspector = inputKeyDeserializer.getObjectInspector();
+      valueTableDesc = new tableDesc[gWork.getTagToValueDesc().size()]; 
       for(int tag=0; tag<gWork.getTagToValueDesc().size(); tag++) {
         // We should initialize the SerDe with the TypeInfo when available.
-        tableDesc valueTableDesc = gWork.getTagToValueDesc().get(tag);
-        inputValueDeserializer[tag] = (SerDe)ReflectionUtils.newInstance(valueTableDesc.getDeserializerClass(), null);
-        inputValueDeserializer[tag].initialize(null, valueTableDesc.getProperties());
+        valueTableDesc[tag] = gWork.getTagToValueDesc().get(tag);
+        inputValueDeserializer[tag] = (SerDe)ReflectionUtils.newInstance(valueTableDesc[tag].getDeserializerClass(), null);
+        inputValueDeserializer[tag].initialize(null, valueTableDesc[tag].getProperties());
         valueObjectInspector[tag] = inputValueDeserializer[tag].getObjectInspector();
         
         ArrayList<ObjectInspector> ois = new ArrayList<ObjectInspector>();
@@ -180,16 +184,23 @@ public class ExecReducer extends MapReduceBase implements Reducer {
       try {
         keyObject = inputKeyDeserializer.deserialize(keyWritable);
       } catch (Exception e) {
-        throw new HiveException(e);
+        throw new HiveException("Unable to deserialize reduce input key from " + 
+            Utilities.formatBinaryString(keyWritable.get(), 0, keyWritable.getSize())
+            + " with properties " + keyTableDesc.getProperties(),
+            e);
       }
       // System.err.print(keyObject.toString());
       while (values.hasNext()) {
-        Writable valueWritable = (Writable) values.next();
+        BytesWritable valueWritable = (BytesWritable) values.next();
         //System.err.print(who.getHo().toString());
         try {
           valueObject[tag.get()] = inputValueDeserializer[tag.get()].deserialize(valueWritable);
         } catch (SerDeException e) {
-          throw new HiveException(e);
+          throw new HiveException("Unable to deserialize reduce input value (tag=" + tag.get()
+              + ") from " + 
+              Utilities.formatBinaryString(valueWritable.getBytes(), 0, valueWritable.getLength())
+              + " with properties " + valueTableDesc[tag.get()].getProperties(),
+              e);
         }
         row.clear();
         row.add(keyObject);
