@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -161,13 +162,77 @@ public class Warehouse {
     return false;
   }
 
+  // NOTE: This is for generating the internal path name for partitions. Users
+  // should always use the MetaStore API to get the path name for a partition.
+  // Users should not directly take partition values and turn it into a path 
+  // name by themselves, because the logic below may change in the future.
+  //
+  // In the future, it's OK to add new chars to the escape list, and old data
+  // won't be corrupt, because the full path name in metastore is stored.
+  // In that case, Hive will continue to read the old data, but when it creates
+  // new partitions, it will use new names.
+  static BitSet charToEscape = new BitSet(128);
+  static {
+    for (char c = 0; c < ' ' ; c++) {
+      charToEscape.set(c);
+    }
+    char[] clist = new char[] { '"', '#', '%', '\'', '*', '/', ':',
+        '=', '?', '\\', '\u00FF'
+    };
+    for (char c : clist) {
+      charToEscape.set(c);
+    }
+  }
+  static boolean needsEscaping(char c) {
+    return c >= 0 && c < charToEscape.size()
+        && charToEscape.get(c); 
+  }
+  
+  static String escapePathName(String path) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < path.length(); i++) {
+      char c = path.charAt(i);
+      if (needsEscaping(c)) {
+        sb.append('%');
+        sb.append(String.format("%1$02X", (int)c));
+      } else {
+        sb.append(c);
+      }
+    }
+    return sb.toString();
+  }
+  static String unescapePathName(String path) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < path.length(); i++) {
+      char c = path.charAt(i);
+      if (c == '%' && i + 2 < path.length()) {
+        int code = -1;
+        try {
+          code = Integer.valueOf(path.substring(i+1, i+3), 16);
+        } catch (Exception e) {
+          code = -1;
+        }
+        if (code >= 0) {
+          sb.append((char)code);
+          i += 2;
+          continue;
+        }
+      }
+      sb.append(c);
+    }    
+    return sb.toString();
+  }
+  
   public static String makePartName(Map<String, String> spec) throws MetaException {
     StringBuffer suffixBuf = new StringBuffer();
     for(Entry<String, String> e: spec.entrySet()) {
       if(e.getValue() == null  || e.getValue().length() == 0) {
         throw new MetaException("Partition spec is incorrect. " + spec);
       }
-      suffixBuf.append(e.getKey() + "=" + e.getValue() + "/");
+      suffixBuf.append(escapePathName(e.getKey()));
+      suffixBuf.append('=');
+      suffixBuf.append(escapePathName(e.getValue()));
+      suffixBuf.append(Path.SEPARATOR);
     }
     return suffixBuf.toString();
   }
@@ -184,8 +249,8 @@ public class Warehouse {
       String component = currPath.getName();
       Matcher m = pat.matcher(component);
       if (m.matches()) {
-        String k = m.group(1);
-        String v = m.group(2);
+        String k = unescapePathName(m.group(1));
+        String v = unescapePathName(m.group(2));
 
         if (partSpec.containsKey(k)) {
           throw new MetaException("Partition name is invalid. Key " + k + " defined at two levels");
@@ -241,9 +306,10 @@ public class Warehouse {
       if(i > 0) {
         name.append(Path.SEPARATOR);
       }
-      name.append((partCols.get(i)).getName().toLowerCase());
+      name.append(escapePathName((partCols.get(i)).getName().toLowerCase()));
       name.append('=');
-      name.append(vals.get(i));
+      name.append(escapePathName(vals.get(i)));
+      name.append('/');
     }
     return name.toString();
   }
