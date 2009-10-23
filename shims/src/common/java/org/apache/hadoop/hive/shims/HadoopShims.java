@@ -29,6 +29,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapred.TaskCompletionEvent;
 
 import java.io.IOException;
 import java.io.DataInput;
@@ -108,6 +109,14 @@ public interface HadoopShims {
   public CombineFileInputFormatShim getCombineFileInputFormat();
 
   public String getInputFormatClassName();
+  
+  /**
+   * getTaskJobIDs returns an array of String with two elements. The first
+   * element is a string representing the task id and the second is a string
+   * representing the job id. This is necessary as TaskID and TaskAttemptID 
+   * are not supported in Haddop 0.17
+   */
+  public String [] getTaskJobIDs(TaskCompletionEvent t);
 
   public interface InputSplitShim extends InputSplit {
     public JobConf getJob();

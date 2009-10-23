@@ -32,10 +32,15 @@ import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.io.*;
-import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.mapred.Counters;
+import org.apache.hadoop.mapred.FileOutputFormat;
+import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.FileInputFormat;
+import org.apache.hadoop.mapred.RunningJob;
+import org.apache.hadoop.mapred.TaskCompletionEvent;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -526,6 +531,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
         statusMesg += " with errors";
         returnVal = 2;
         console.printError(statusMesg);
+        showJobFailDebugInfo(job, rj);
       } else {
         console.printInfo(statusMesg);
       }
@@ -581,6 +587,84 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
     }
 
     return (returnVal);
+  }
+
+  private void showJobFailDebugInfo(JobConf conf, RunningJob rj) throws IOException {
+
+    Map<String, Integer> failures = new HashMap<String, Integer>();
+    Set<String> successes = new HashSet<String> ();
+    Map<String, String> taskToJob = new HashMap<String,String>();
+    
+    int startIndex = 0;
+    
+    while(true) {
+      TaskCompletionEvent[] taskCompletions = rj.getTaskCompletionEvents(startIndex);
+      
+      if(taskCompletions == null || taskCompletions.length == 0) {
+        break;
+      }
+
+      boolean more = true;
+      for(TaskCompletionEvent t : taskCompletions) {
+        // getTaskJobIDs return Strings for compatibility with Hadoop version without
+        // TaskID or TaskAttemptID
+        String [] taskJobIds = ShimLoader.getHadoopShims().getTaskJobIDs(t);
+
+        if(taskJobIds == null) {
+          console.printError("Task attempt info is unavailable in this Hadoop version");
+          more = false;
+          break;
+        }
+        
+        String taskId = taskJobIds[0];
+        String jobId = taskJobIds[1];
+        taskToJob.put(taskId, jobId);
+        
+        if(t.getTaskStatus() != TaskCompletionEvent.Status.SUCCEEDED) {
+          Integer failAttempts = failures.get(taskId);
+          if(failAttempts == null) {
+            failAttempts = Integer.valueOf(0);
+          }
+          failAttempts = Integer.valueOf(failAttempts.intValue() + 1);
+          failures.put(taskId, failAttempts);
+        } else {
+          successes.add(taskId);
+        }
+      }
+      if(!more) {
+        break;
+      }
+      startIndex += taskCompletions.length;      
+    }
+    // Remove failures for tasks that succeeded
+    for(String task : successes) {
+      failures.remove(task);
+    }
+ 
+    if(failures.keySet().size() == 0) {
+      return;
+    }
+    
+    // Find the highest failure count
+    int maxFailures = 0;
+    for(Integer failCount : failures.values()) {
+      if(maxFailures < failCount.intValue())
+        maxFailures = failCount.intValue();
+    }
+    
+    // Display Error Message for tasks with the highest failure count
+    console.printError("\nFailed tasks with most" + "(" + maxFailures + ")" + " failures " + ": ");
+    String jtUrl = JobTrackerURLResolver.getURL(conf);
+    
+    for(String task : failures.keySet()) {
+      if(failures.get(task).intValue() == maxFailures) {
+        String jobId = taskToJob.get(task);
+        String taskUrl = jtUrl + "/taskdetails.jsp?jobid=" + jobId + "&tipid=" + task.toString();
+        console.printError("Task URL: " + taskUrl +"\n");
+      }
+    }
+    return;
+
   }
 
   private static void printUsage() {

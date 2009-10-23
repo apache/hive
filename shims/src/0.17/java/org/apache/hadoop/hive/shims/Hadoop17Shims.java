@@ -26,6 +26,8 @@ import org.apache.hadoop.dfs.MiniDFSCluster;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.TaskCompletionEvent;
+
 import java.io.IOException;
 
 /**
@@ -102,5 +104,10 @@ public class Hadoop17Shims implements HadoopShims {
 
   public String getInputFormatClassName() {
     return "org.apache.hadoop.hive.ql.io.HiveInputFormat";
+  }
+  
+  @Override
+  public String [] getTaskJobIDs(TaskCompletionEvent t) {
+    return null;
   }
 }

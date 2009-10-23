@@ -71,6 +71,8 @@ Trunk -  Unreleased
 
     HIVE-874. Add 'repair' option to mack. (Cyrus Katrak via prasadc).
 
+    HIVE-873. Better error messages for Hive cmdline. (Paul Yang via zshao)
+
   IMPROVEMENTS
 
     HIVE-760. Add version info to META-INF/MANIFEST.MF.

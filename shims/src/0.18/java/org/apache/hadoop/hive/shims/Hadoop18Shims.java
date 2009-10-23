@@ -26,6 +26,10 @@ import org.apache.hadoop.dfs.MiniDFSCluster;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.TaskID;
+import org.apache.hadoop.mapred.TaskAttemptID;
+import org.apache.hadoop.mapred.TaskCompletionEvent;
+
 import java.io.IOException;
 
 /**
@@ -99,7 +103,16 @@ public class Hadoop18Shims implements HadoopShims {
   public String getInputFormatClassName() {
     return "org.apache.hadoop.hive.ql.io.HiveInputFormat";
   }
-
+  
+  String [] ret = new String[2];
+  @Override
+  public String [] getTaskJobIDs(TaskCompletionEvent t) {
+    TaskID tid = t.getTaskAttemptId().getTaskID();
+    ret[0] = tid.toString();
+    ret[1] = tid.getJobID().toString();
+    return ret;
+  }
+  
   @Override
   public long getAccessTime(FileStatus file) {
     return -1;

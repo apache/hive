@@ -65,18 +65,8 @@ public class Throttle {
         return;
       }
 
-      // find the http port for the jobtracker
-      String infoAddr = conf.get("mapred.job.tracker.http.address");
-      if (infoAddr == null) {
-        throw new IOException("Throttle: Unable to find job tracker info port.");
-      }
-      InetSocketAddress infoSocAddr = NetUtils.createSocketAddr(infoAddr);
-      int infoPort = infoSocAddr.getPort();
-
       // This is the Job Tracker URL
-      String tracker = "http://" +
-                       JobTracker.getAddress(conf).getHostName() + ":" +
-                       infoPort +
+      String tracker = JobTrackerURLResolver.getURL(conf) +
                        "/gc.jsp?threshold=" + threshold;
 
       while (true) {
