@@ -198,7 +198,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         } catch (SerDeException e) {
           throw new HiveException("Unable to deserialize reduce input value (tag=" + tag.get()
               + ") from " + 
-              Utilities.formatBinaryString(valueWritable.getBytes(), 0, valueWritable.getLength())
+              Utilities.formatBinaryString(valueWritable.get(), 0, valueWritable.getSize())
               + " with properties " + valueTableDesc[tag.get()].getProperties(),
               e);
         }
