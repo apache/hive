@@ -661,6 +661,8 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
         String jobId = taskToJob.get(task);
         String taskUrl = jtUrl + "/taskdetails.jsp?jobid=" + jobId + "&tipid=" + task.toString();
         console.printError("Task URL: " + taskUrl +"\n");
+        // Only print out one task because that's good enough for debugging.
+        break;
       }
     }
     return;
