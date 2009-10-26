@@ -214,6 +214,9 @@ Trunk -  Unreleased
     HIVE-880. User group information not populated for pre and post hook.
     (Namit Jain via zshao)
 
+    HIVE-883. URISyntaxException when partition value contains special chars.
+    (Zheng Shao via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
