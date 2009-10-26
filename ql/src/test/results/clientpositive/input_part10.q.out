@@ -1,0 +1,82 @@
+query: CREATE TABLE part_special (
+  a STRING,
+  b STRING
+) PARTITIONED BY (
+  ds STRING,
+  ts STRING
+)
+query: EXPLAIN
+INSERT OVERWRITE TABLE part_special PARTITION(ds='2008 04 08', ts = '10:11:12=455')
+SELECT 1, 2 FROM src LIMIT 1
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB part_special (TOK_PARTSPEC (TOK_PARTVAL ds '2008 04 08') (TOK_PARTVAL ts '10:11:12=455')))) (TOK_SELECT (TOK_SELEXPR 1) (TOK_SELEXPR 2)) (TOK_LIMIT 1)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src 
+          TableScan
+            alias: src
+            Select Operator
+              expressions:
+                    expr: 1
+                    type: int
+                    expr: 2
+                    type: int
+              outputColumnNames: _col0, _col1
+              Limit
+                Reduce Output Operator
+                  sort order: 
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: int
+                        expr: _col1
+                        type: int
+      Reduce Operator Tree:
+        Extract
+          Limit
+            File Output Operator
+              compressed: false
+              GlobalTableId: 1
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: part_special
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            ds 2008 04 08
+            ts 10:11:12=455
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: part_special
+
+
+query: INSERT OVERWRITE TABLE part_special PARTITION(ds='2008 04 08', ts = '10:11:12=455')
+SELECT 1, 2 FROM src LIMIT 1
+Input: default/src
+Output: default/part_special/ds=2008 04 08/ts=10%3A11%3A12%3D455
+query: DESCRIBE EXTENDED part_special PARTITION(ds='2008 04 08', ts = '10:11:12=455')
+a	string	
+b	string	
+ds	string	
+ts	string	
+	 	 
+Detailed Partition Information	Partition(values:[2008 04 08, 10:11:12=455], dbName:default, tableName:part_special, createTime:0, lastAccessTime:0, sd:StorageDescriptor(cols:[FieldSchema(name:a, type:string, comment:null), FieldSchema(name:b, type:string, comment:null)], location:file:/data/users/njain/hive_commit5/hive_commit5/build/ql/test/data/warehouse/part_special/ds=2008 04 08/ts=10%3A11%3A12%3D455, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), parameters:{})	
+query: SELECT * FROM part_special WHERE ds='2008 04 08' AND ts = '10:11:12=455'
+Input: default/part_special/ds=2008 04 08/ts=10%3A11%3A12%3D455
+Output: file:/data/users/njain/hive_commit5/hive_commit5/build/ql/tmp/987913037/10000
+1	2	2008 04 08	10:11:12=455
+query: DROP TABLE part_special

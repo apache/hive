@@ -28,6 +28,9 @@ Release 0.4.1 - Unreleased
 
     HIVE-892. Hive to kill hadoop jobs using POST. (Dhruba Borthakur via zshao)
 
+    HIVE-883. URISyntaxException when partition value contains special chars.
+    (Zheng Shao via namit)
+
 Release 0.4.0
 
   INCOMPATIBLE CHANGES
