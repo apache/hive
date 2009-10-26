@@ -211,6 +211,9 @@ Trunk -  Unreleased
     HIVE-893. Thrift serde doesn't work with the new version of thrift.
     (Ning Zhang via zshao)
 
+    HIVE-880. User group information not populated for pre and post hook.
+    (Namit Jain via zshao)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

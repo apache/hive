@@ -15,14 +15,14 @@ PREHOOK: query: MSCK TABLE repairtable
 PREHOOK: type: MSCK
 POSTHOOK: query: MSCK TABLE repairtable
 POSTHOOK: type: MSCK
-Partitions not in metastore:	repairtable:p1=b/p2=a	repairtable:p1=a/p2=a
+Partitions not in metastore:	repairtable:p1=a/p2=a	repairtable:p1=b/p2=a
 PREHOOK: query: MSCK REPAIR TABLE repairtable
 PREHOOK: type: MSCK
 POSTHOOK: query: MSCK REPAIR TABLE repairtable
 POSTHOOK: type: MSCK
-Partitions not in metastore:	repairtable:p1=b/p2=a	repairtable:p1=a/p2=a
-Repair: Added partition to metastore repairtable:p1=b/p2=a
+Partitions not in metastore:	repairtable:p1=a/p2=a	repairtable:p1=b/p2=a
 Repair: Added partition to metastore repairtable:p1=a/p2=a
+Repair: Added partition to metastore repairtable:p1=b/p2=a
 PREHOOK: query: MSCK TABLE repairtable
 PREHOOK: type: MSCK
 POSTHOOK: query: MSCK TABLE repairtable

@@ -55,7 +55,7 @@ import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.UnixUserGroupInformation;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -218,11 +218,21 @@ public class Driver implements CommandProcessor {
    */
   public Driver(HiveConf conf) {
     this.conf = conf;
+    try {
+      UnixUserGroupInformation.login(conf, true);
+    } catch (Exception e) {
+      LOG.warn("Ignoring " + e.getMessage());
+    }
   }
 
   public Driver() {
     if (SessionState.get() != null) {
       conf = SessionState.get().getConf();
+      try {
+        UnixUserGroupInformation.login(conf, true);
+      } catch (Exception e) {
+        LOG.warn("Ignoring " + e.getMessage());
+      }
     }
   }
 
@@ -402,7 +412,7 @@ public class Driver implements CommandProcessor {
       for(PreExecute peh: getPreExecHooks()) {
         peh.run(SessionState.get(),
                 sem.getInputs(), sem.getOutputs(),
-                UserGroupInformation.getCurrentUGI());
+                UnixUserGroupInformation.readFromConf(conf, UnixUserGroupInformation.UGI_PROPERTY_NAME));
       }
 
       int jobs = countJobs(sem.getRootTasks());
@@ -480,7 +490,7 @@ public class Driver implements CommandProcessor {
       for(PostExecute peh: getPostExecHooks()) {
         peh.run(SessionState.get(),
                 sem.getInputs(), sem.getOutputs(),
-                UserGroupInformation.getCurrentUGI());
+                UnixUserGroupInformation.readFromConf(conf, UnixUserGroupInformation.UGI_PROPERTY_NAME));
       }
 
       if (SessionState.get() != null){
