@@ -217,6 +217,9 @@ Trunk -  Unreleased
     HIVE-883. URISyntaxException when partition value contains special chars.
     (Zheng Shao via namit)
 
+    HIVE-903. msck: output not deterministic
+    (Cyrus Katrak via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

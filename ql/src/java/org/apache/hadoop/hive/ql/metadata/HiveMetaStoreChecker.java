@@ -2,6 +2,7 @@ package org.apache.hadoop.hive.ql.metadata;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -79,6 +80,10 @@ public class HiveMetaStoreChecker {
         // check the specified partitions
         checkTable(dbName, tableName, partitions, result);
       }
+      Collections.sort(result.getPartitionsNotInMs());
+      Collections.sort(result.getPartitionsNotOnFs());
+      Collections.sort(result.getTablesNotInMs());
+      Collections.sort(result.getTablesNotOnFs());
     } catch (MetaException e) {
       throw new HiveException(e);
     } catch (TException e) {

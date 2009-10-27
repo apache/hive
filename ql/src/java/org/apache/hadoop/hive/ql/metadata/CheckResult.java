@@ -73,7 +73,7 @@ public class CheckResult {
    * A basic description of a partition that is 
    * missing from either the fs or the ms.
    */
-  public static class PartitionResult {
+  public static class PartitionResult implements Comparable<PartitionResult> {
     private String partitionName;
     private String tableName;
     
@@ -107,6 +107,11 @@ public class CheckResult {
     
     public String toString() {
       return tableName + ":" + partitionName;
+    }
+    
+    public int compareTo(PartitionResult o) {
+      int ret = tableName.compareTo(o.tableName);
+      return ret != 0 ? ret : partitionName.compareTo(o.partitionName);
     }
   }
   
