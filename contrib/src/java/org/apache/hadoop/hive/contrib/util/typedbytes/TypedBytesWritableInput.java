@@ -47,7 +47,7 @@ import org.apache.hadoop.util.ReflectionUtils;
 
 /**
  * Provides functionality for reading typed bytes as Writable objects.
- * 
+ *
  * @see TypedBytesInput
  */
 public class TypedBytesWritableInput implements Configurable {
@@ -72,7 +72,7 @@ public class TypedBytesWritableInput implements Configurable {
   /**
    * Get a thread-local typed bytes writable input for the supplied
    * {@link TypedBytesInput}.
-   * 
+   *
    * @param in typed bytes input object
    * @return typed bytes writable input corresponding to the supplied
    *         {@link TypedBytesInput}.
@@ -86,7 +86,7 @@ public class TypedBytesWritableInput implements Configurable {
   /**
    * Get a thread-local typed bytes writable input for the supplied
    * {@link DataInput}.
-   * 
+   *
    * @param in data input object
    * @return typed bytes writable input corresponding to the supplied
    *         {@link DataInput}.
@@ -146,7 +146,7 @@ public class TypedBytesWritableInput implements Configurable {
   public Type readTypeCode() throws IOException {
     return in.readType();
   }
-  
+
   public Class<? extends Writable> readType() throws IOException {
     Type type = in.readType();
     if (type == null) {
@@ -165,6 +165,8 @@ public class TypedBytesWritableInput implements Configurable {
       return VLongWritable.class;
     case FLOAT:
       return FloatWritable.class;
+    case SHORT:
+      return ShortWritable.class;
     case DOUBLE:
       return DoubleWritable.class;
     case STRING:
@@ -243,7 +245,7 @@ public class TypedBytesWritableInput implements Configurable {
   public ShortWritable readShort() throws IOException {
     return readShort(null);
   }
-  
+
   public VIntWritable readVInt(VIntWritable iw) throws IOException {
     if (iw == null) {
       iw = new VIntWritable();
@@ -369,14 +371,14 @@ public class TypedBytesWritableInput implements Configurable {
   public SortedMapWritable readSortedMap() throws IOException {
     return readSortedMap(null);
   }
-  
+
   public Writable readWritable(Writable writable) throws IOException {
     ByteArrayInputStream bais = new ByteArrayInputStream(in.readBytes());
     DataInputStream dis = new DataInputStream(bais);
     String className = WritableUtils.readString(dis);
     if (writable == null) {
       try {
-        Class<? extends Writable> cls = 
+        Class<? extends Writable> cls =
           conf.getClassByName(className).asSubclass(Writable.class);
         writable = (Writable) ReflectionUtils.newInstance(cls, conf);
       } catch (ClassNotFoundException e) {
@@ -400,5 +402,5 @@ public class TypedBytesWritableInput implements Configurable {
   public void setConf(Configuration conf) {
     this.conf = conf;
   }
-  
+
 }

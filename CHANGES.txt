@@ -220,6 +220,8 @@ Trunk -  Unreleased
     HIVE-903. msck: output not deterministic
     (Cyrus Katrak via namit)
 
+    HIVE-905. Smallint not working for typedbyteserde. (Namit Jain via zshao)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
