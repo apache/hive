@@ -1089,6 +1089,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return null;
   }
 
+  private void failIfColAliasExists(Set<String> nameSet, String name) throws SemanticException {
+    if(nameSet.contains(name))
+      throw new SemanticException(ErrorMsg.COLUMN_ALIAS_ALREADY_EXISTS.getMsg(name));
+    nameSet.add(name);
+  }
+
   @SuppressWarnings("nls")
   private Operator genScriptPlan(ASTNode trfm, QB qb,
       Operator input) throws SemanticException {
@@ -1120,16 +1126,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ASTNode collist = (ASTNode) trfm.getChild(outputColsNum);
       int ccount = collist.getChildCount();
 
+      Set<String> colAliasNamesDuplicateCheck = new HashSet<String>();
       if (outputColNames) {
         for (int i=0; i < ccount; ++i) {
-          outputCols.add(new ColumnInfo(unescapeIdentifier(((ASTNode)collist.getChild(i)).getText()), TypeInfoFactory.stringTypeInfo, null, false));
+          String colAlias = unescapeIdentifier(((ASTNode)collist.getChild(i)).getText());
+          failIfColAliasExists(colAliasNamesDuplicateCheck, colAlias);
+          outputCols.add(new ColumnInfo(colAlias, TypeInfoFactory.stringTypeInfo, null, false));
         }
       }
       else {
         for (int i=0; i < ccount; ++i) {
           ASTNode child = (ASTNode) collist.getChild(i);
           assert child.getType() == HiveParser.TOK_TABCOL;
-          outputCols.add(new ColumnInfo(unescapeIdentifier(((ASTNode)child.getChild(0)).getText()),
+          String colAlias = unescapeIdentifier(((ASTNode)child.getChild(0)).getText());
+          failIfColAliasExists(colAliasNamesDuplicateCheck, colAlias);
+          outputCols.add(new ColumnInfo(colAlias,
                                         TypeInfoUtils.getTypeInfoFromTypeString(DDLSemanticAnalyzer.getTypeName(((ASTNode)child.getChild(1)).getType())), null, false));
         }
       }

@@ -104,7 +104,8 @@ public enum ErrorMsg {
   CTAS_PARCOL_COEXISTENCE("CREATE-TABLE-AS-SELECT does not support partitioning in the target table."),
   CTAS_MULTI_LOADFILE("CREATE-TABLE-AS-SELECT results in multiple file load."),
   CTAS_EXTTBL_COEXISTENCE("CREATE-TABLE-AS-SELECT cannot create external table."),
-  TABLE_ALREADY_EXISTS("Table already exists:", "42S02");
+  TABLE_ALREADY_EXISTS("Table already exists:", "42S02"),
+  COLUMN_ALIAS_ALREADY_EXISTS("Column alias already exists:", "42S02");
   
   private String mesg;
   private String SQLState;
