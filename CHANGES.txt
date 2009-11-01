@@ -1,6 +1,6 @@
 Hive Change Log
 
-Release 0.4.1 - Unreleased
+Release 0.4.1
 
   INCOMPATIBLE CHANGES
 
