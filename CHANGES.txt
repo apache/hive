@@ -31,6 +31,9 @@ Release 0.4.1
     HIVE-883. URISyntaxException when partition value contains special chars.
     (Zheng Shao via namit)
 
+    HIVE-902. Fix cli.sh to work with hadoop versions less than 20.
+    (Carl Steinbach via zshao)
+
 Release 0.4.0
 
   INCOMPATIBLE CHANGES
