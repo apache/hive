@@ -225,6 +225,9 @@ Trunk -  Unreleased
     HIVE-840. No error if user specifies multiple columns of same name as
     output (He Yongqiang via namit)
 
+    HIVE-902. Fix cli.sh to work with hadoop versions less than 20.
+    (Carl Steinbach via zshao)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
