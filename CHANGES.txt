@@ -231,6 +231,9 @@ Trunk -  Unreleased
     HIVE-796. RCFile results missing columns from UNION ALL
     (He Yongqiang via namit)
 
+    HIVE-819. Add lazy decompress abilitt to rcfile
+    (He Yongqiang via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

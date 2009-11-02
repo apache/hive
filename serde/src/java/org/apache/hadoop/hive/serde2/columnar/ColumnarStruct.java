@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.serde2.columnar;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,11 +64,14 @@ public class ColumnarStruct {
     int num = fieldRefs.size();
     fields = new LazyObject[num];
     cachedByteArrayRef = new ByteArrayRef[num];
+    rawBytesField = new BytesRefWritable[num];
     fieldIsNull = new boolean[num];
+    inited = new boolean[num];
     for (int i = 0; i < num; i++) {
       fields[i] = LazyFactory.createLazyObject(fieldRefs.get(i).getFieldObjectInspector());
       cachedByteArrayRef[i] = new ByteArrayRef();
       fieldIsNull[i] = false;
+      inited[i] = false;
     }
   }
 
@@ -98,6 +102,8 @@ public class ColumnarStruct {
    * the byte copy.
    */
   ByteArrayRef[] cachedByteArrayRef = null;
+  BytesRefWritable[] rawBytesField = null;
+  boolean[] inited = null;
   boolean[] fieldIsNull = null;
 
   /**
@@ -113,9 +119,22 @@ public class ColumnarStruct {
   protected Object uncheckedGetField(int fieldID, Text nullSequence) {
     if (fieldIsNull[fieldID])
       return null;
-    int fieldLen = cachedByteArrayRef[fieldID].getData().length;
+    if (!inited[fieldID]) {
+      BytesRefWritable passedInField = rawBytesField[fieldID];
+      try {
+        cachedByteArrayRef[fieldID].setData(passedInField.getData());
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+      fields[fieldID].init(cachedByteArrayRef[fieldID], passedInField
+          .getStart(), passedInField.getLength());
+      inited[fieldID] = true;
+    }
+    
+    byte[] data = cachedByteArrayRef[fieldID].getData();
+    int fieldLen = data.length;
     if (fieldLen == nullSequence.getLength()
-        && LazyUtils.compare(cachedByteArrayRef[fieldID].getData(), 0,
+        && LazyUtils.compare(data, 0,
             fieldLen, nullSequence.getBytes(), 0, nullSequence.getLength()) == 0) {
       return null;
     }
@@ -134,11 +153,8 @@ public class ColumnarStruct {
     if (initialized) { // short cut for non-first calls
       for (int i = 0; i < prjColIDs.length; ++i ) {
         int fieldIndex = prjColIDs[i];
-        BytesRefWritable passedInField = cols.unCheckedGet(fieldIndex);
-        cachedByteArrayRef[fieldIndex].setData(passedInField.getData());
-        fields[fieldIndex].init(cachedByteArrayRef[fieldIndex], 
-                                passedInField.getStart(), 
-                                passedInField.getLength());
+        rawBytesField[fieldIndex] = cols.unCheckedGet(fieldIndex);
+        inited[fieldIndex] = false;
       }
     } else { // first time call init()
       int fieldIndex = 0;
@@ -157,13 +173,12 @@ public class ColumnarStruct {
           // fields[fieldIndex] = LazyFactory.createLazyObject(fieldTypeInfos
           // .get(fieldIndex));
           tmp_sel_cols.add(fieldIndex);
-          cachedByteArrayRef[fieldIndex].setData(passedInField.getData());
-          fields[fieldIndex].init(cachedByteArrayRef[fieldIndex], 
-                                  passedInField.getStart(), 
-                                  passedInField.getLength());
+          rawBytesField[fieldIndex] = passedInField;
           fieldIsNull[fieldIndex] = false;
         } else
           fieldIsNull[fieldIndex] = true;
+        
+        inited[fieldIndex] = false;
       }
       for (; fieldIndex < fields.length; fieldIndex++)
         fieldIsNull[fieldIndex] = true;

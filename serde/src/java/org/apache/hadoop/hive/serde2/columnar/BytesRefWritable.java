@@ -39,6 +39,9 @@ public class BytesRefWritable implements Writable, Comparable<BytesRefWritable> 
   int start = 0;
   int length = 0;
   byte[] bytes = null;
+  
+  LazyDecompressionCallback lazyDecompressObj;
+  
 
   /**
    * Create a zero-size bytes.
@@ -75,13 +78,34 @@ public class BytesRefWritable implements Writable, Comparable<BytesRefWritable> 
     start = offset;
     length = len;
   }
+  
+  /**
+   * Create a BytesRefWritable referenced to one section of the given bytes. The
+   * argument <tt>lazyDecompressData</tt> refers to a LazyDecompressionCallback
+   * object. The arguments <tt>offset</tt> and <tt>len</tt> are referred to
+   * uncompressed bytes of <tt>lazyDecompressData</tt>. Use <tt>offset</tt> and
+   * <tt>len</tt> after uncompressing the data.
+   */
+  public BytesRefWritable(LazyDecompressionCallback lazyDecompressData, int offset, int len) {
+    lazyDecompressObj = lazyDecompressData;
+    start = offset;
+    length = len;
+  }
+
+  private void lazyDecompress() throws IOException {
+    if (bytes == null && lazyDecompressObj != null) {
+      bytes = lazyDecompressObj.decompress();
+    }
+  }
 
   /**
    * Returns a copy of the underlying bytes referenced by this instance.
    * 
    * @return a new copied byte array
+   * @throws IOException 
    */
-  public byte[] getBytesCopy() {
+  public byte[] getBytesCopy() throws IOException {
+    lazyDecompress();
     byte[] bb = new byte[length];
     System.arraycopy(bytes, start, bb, 0, length);
     return bb;
@@ -89,8 +113,10 @@ public class BytesRefWritable implements Writable, Comparable<BytesRefWritable> 
 
   /**
    * Returns the underlying bytes.
+   * @throws IOException 
    */
-  public byte[] getData() {
+  public byte[] getData() throws IOException {
+    lazyDecompress();
     return bytes;
   }
 
@@ -104,9 +130,24 @@ public class BytesRefWritable implements Writable, Comparable<BytesRefWritable> 
     bytes = newData;
     start = offset;
     length = len;
+    lazyDecompressObj = null;
+  }
+  
+  /**
+   * readFields() will corrupt the array. So use the set method whenever
+   * possible.
+   * 
+   * @see #readFields(DataInput)
+   */
+  public void set(LazyDecompressionCallback newData, int offset, int len) {
+    bytes = null;
+    start = offset;
+    length = len;
+    lazyDecompressObj = newData;
   }
 
   public void writeDataTo(DataOutput out) throws IOException {
+    lazyDecompress();
     out.write(bytes, start, length);
   }
 
@@ -129,6 +170,7 @@ public class BytesRefWritable implements Writable, Comparable<BytesRefWritable> 
 
   /** {@inheritDoc} */
   public void write(DataOutput out) throws IOException {
+    lazyDecompress();
     out.writeInt(length);
     out.write(bytes, start, length);
   }
@@ -163,8 +205,12 @@ public class BytesRefWritable implements Writable, Comparable<BytesRefWritable> 
       throw new IllegalArgumentException("Argument can not be null.");
     if (this == other)
       return 0;
-    return WritableComparator.compareBytes(getData(), start, getLength(), other
-        .getData(), other.start, other.getLength());
+    try {
+      return WritableComparator.compareBytes(getData(), start, getLength(), other
+          .getData(), other.start, other.getLength());
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /** {@inheritDoc} */
