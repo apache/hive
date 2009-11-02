@@ -1,0 +1,64 @@
+PREHOOK: query: DROP TABLE rcfile_unionTable
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE rcfile_unionTable
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE table rcfile_unionTable (b STRING, c STRING)
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+STORED AS RCFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE table rcfile_unionTable (b STRING, c STRING)
+ROW FORMAT SERDE
+  'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
+STORED AS RCFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@rcfile_unionTable
+PREHOOK: query: FROM src
+INSERT OVERWRITE TABLE rcfile_unionTable SELECT src.key, src.value LIMIT 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@rcfile_uniontable
+POSTHOOK: query: FROM src
+INSERT OVERWRITE TABLE rcfile_unionTable SELECT src.key, src.value LIMIT 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@rcfile_uniontable
+PREHOOK: query: SELECT * FROM (
+SELECT b AS cola FROM rcfile_unionTable
+UNION ALL
+SELECT c AS cola FROM rcfile_unionTable) s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@rcfile_uniontable
+PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/1325887249/10000
+POSTHOOK: query: SELECT * FROM (
+SELECT b AS cola FROM rcfile_unionTable
+UNION ALL
+SELECT c AS cola FROM rcfile_unionTable) s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@rcfile_uniontable
+POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/1325887249/10000
+val_238
+238
+val_86
+86
+val_311
+311
+val_27
+27
+val_165
+165
+val_409
+409
+val_255
+255
+val_278
+278
+val_98
+98
+val_484
+484
+PREHOOK: query: DROP TABLE rcfile_unionTable
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE rcfile_unionTable
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@rcfile_uniontable

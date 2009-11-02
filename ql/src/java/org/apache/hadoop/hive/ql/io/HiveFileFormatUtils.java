@@ -197,6 +197,35 @@ public class HiveFileFormatUtils {
    * 
    */
   public static void setReadColumnIDs(Configuration conf, ArrayList<Integer> ids) {
+    String id = toReadColumnIDString(ids);
+    setReadColumnIDConf(conf, id);
+  }
+
+  /**
+   * Sets read columns' ids(start from zero) for RCFile's Reader. Once a column
+   * is included in the list, RCFile's reader will not skip its value.
+   * 
+   */
+  public static void appendReadColumnIDs(Configuration conf, ArrayList<Integer> ids) {
+    String id = toReadColumnIDString(ids);
+    String old = conf.get(READ_COLUMN_IDS_CONF_STR, null);
+    String newConfStr = id;
+    if(old !=null )
+      newConfStr = newConfStr + StringUtils.COMMA_STR + old;
+    
+    setReadColumnIDConf(conf, newConfStr);
+  }
+  
+  private static void setReadColumnIDConf(Configuration conf, String id) {
+    if (id == null || id.length() <= 0) {
+      conf.set(READ_COLUMN_IDS_CONF_STR, "");
+      return;
+    }
+
+    conf.set(READ_COLUMN_IDS_CONF_STR, id);
+  }
+
+  private static String toReadColumnIDString(ArrayList<Integer> ids) {
     String id = null;
     if (ids != null) {
       for (int i = 0; i < ids.size(); i++) {
@@ -207,13 +236,7 @@ public class HiveFileFormatUtils {
         }
       }
     }
-
-    if (id == null || id.length() <= 0) {
-      conf.set(READ_COLUMN_IDS_CONF_STR, "");
-      return;
-    }
-
-    conf.set(READ_COLUMN_IDS_CONF_STR, id);
+    return id;
   }
 
   /**

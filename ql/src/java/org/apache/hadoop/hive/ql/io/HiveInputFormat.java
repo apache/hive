@@ -311,7 +311,7 @@ public class HiveInputFormat<K extends WritableComparable,
         TableScanOperator tableScan = (TableScanOperator) op;
         ArrayList<Integer> list = tableScan.getNeededColumnIDs();
         if (list != null)
-          HiveFileFormatUtils.setReadColumnIDs(jobConf, list);
+          HiveFileFormatUtils.appendReadColumnIDs(jobConf, list);
         else
           HiveFileFormatUtils.setFullyReadColumns(jobConf);
       }

@@ -228,6 +228,9 @@ Trunk -  Unreleased
     HIVE-902. Fix cli.sh to work with hadoop versions less than 20.
     (Carl Steinbach via zshao)
 
+    HIVE-796. RCFile results missing columns from UNION ALL
+    (He Yongqiang via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
