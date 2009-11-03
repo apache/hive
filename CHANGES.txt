@@ -234,6 +234,9 @@ Trunk -  Unreleased
     HIVE-819. Add lazy decompress abilitt to rcfile
     (He Yongqiang via namit)
 
+    HIVE-910. RCFile is not included when user specifying it as the default
+    file format (He Yongqiang via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

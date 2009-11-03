@@ -4839,6 +4839,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if ("SequenceFile".equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.HIVEDEFAULTFILEFORMAT))) {
       inputFormat = SEQUENCEFILE_INPUT;
       outputFormat = SEQUENCEFILE_OUTPUT;
+    } else if ("RCFile".equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.HIVEDEFAULTFILEFORMAT))) {
+      inputFormat = RCFILE_INPUT;
+      outputFormat = RCFILE_OUTPUT;
+      serde = COLUMNAR_SERDE;
     }
 
     LOG.info("Creating table" + tableName + " positin=" + ast.getCharPositionInLine());    
