@@ -138,6 +138,10 @@ public enum ErrorMsg {
    */
   public static String findSQLState(String mesg) {
 
+    if (mesg == null) {
+      return GENERIC_ERROR.getSQLState();
+    }
+
     //first see if there is a direct match
     ErrorMsg errorMsg = mesgToErrorMsgMap.get(mesg);
     if (errorMsg != null) {
