@@ -21,6 +21,7 @@ POSTHOOK: type: SHOWFUNCTIONS
 abs
 acos
 and
+array
 ascii
 asin
 avg
@@ -70,6 +71,7 @@ log2
 lower
 lpad
 ltrim
+map
 max
 min
 minute

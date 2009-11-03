@@ -73,6 +73,8 @@ Trunk -  Unreleased
 
     HIVE-873. Better error messages for Hive cmdline. (Paul Yang via zshao)
 
+    HIVE-554. Add GenericUDF to create arrays, maps. (Paul Yang via zshao)
+
   IMPROVEMENTS
 
     HIVE-760. Add version info to META-INF/MANIFEST.MF.

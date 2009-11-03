@@ -1015,7 +1015,7 @@ functionName
 @init { msgs.push("function name"); }
 @after { msgs.pop(); }
     : // Keyword IF is also a function name
-    Identifier | KW_IF
+    Identifier | KW_IF | KW_ARRAY | KW_MAP
     ;
 
 castExpression

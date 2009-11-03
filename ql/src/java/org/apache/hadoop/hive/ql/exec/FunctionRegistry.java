@@ -166,7 +166,7 @@ public class FunctionRegistry {
     registerGenericUDF("isnotnull", GenericUDFOPNotNull.class);
 
     registerGenericUDF("if", GenericUDFIf.class);
-
+    
     // Aliases for Java Class Names
     // These are used in getImplicitConvertUDFMethod
     registerUDF(Constants.BOOLEAN_TYPE_NAME, UDFToBoolean.class, false,
@@ -203,6 +203,9 @@ public class FunctionRegistry {
     registerUDAF("min", UDAFMin.class);
     
     // Generic UDFs
+    registerGenericUDF("array", GenericUDFArray.class);
+    registerGenericUDF("map", GenericUDFMap.class);
+
     registerGenericUDF("case", GenericUDFCase.class);
     registerGenericUDF("when", GenericUDFWhen.class);
     registerGenericUDF("hash", GenericUDFHash.class);
