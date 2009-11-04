@@ -104,11 +104,11 @@ POSTHOOK: Output: default@input_columnarserde
 PREHOOK: query: SELECT input_columnarserde.* FROM input_columnarserde DISTRIBUTE BY 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@input_columnarserde
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/851213096/10000
+PREHOOK: Output: file:/data/users/heyongqiang/trunk/VENDOR.hive/trunk/.ptest_0/build/ql/tmp/1940999347/10000
 POSTHOOK: query: SELECT input_columnarserde.* FROM input_columnarserde DISTRIBUTE BY 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@input_columnarserde
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/851213096/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/trunk/VENDOR.hive/trunk/.ptest_0/build/ql/tmp/1940999347/10000
 [0,0,0]	["0","0","0"]	{"key_0":"value_0"}	1712634731	record_0
 [1,2,3]	["10","100","1000"]	{"key_1":"value_1"}	465985200	record_1
 [2,4,6]	["20","200","2000"]	{"key_2":"value_2"}	-751827638	record_2
@@ -119,15 +119,15 @@ POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/851213096/1000
 [7,14,21]	["70","700","7000"]	{"key_7":"value_7"}	-1461153973	record_7
 [8,16,24]	["80","800","8000"]	{"key_8":"value_8"}	1638581578	record_8
 [9,18,27]	["90","900","9000"]	{"key_9":"value_9"}	336964413	record_9
-null	null	{}	0	NULL
+null	null	null	0	NULL
 PREHOOK: query: SELECT input_columnarserde.a[0], input_columnarserde.b[0], input_columnarserde.c['key2'], input_columnarserde.d, input_columnarserde.e FROM input_columnarserde DISTRIBUTE BY 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@input_columnarserde
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/722662209/10000
+PREHOOK: Output: file:/data/users/heyongqiang/trunk/VENDOR.hive/trunk/.ptest_0/build/ql/tmp/534165813/10000
 POSTHOOK: query: SELECT input_columnarserde.a[0], input_columnarserde.b[0], input_columnarserde.c['key2'], input_columnarserde.d, input_columnarserde.e FROM input_columnarserde DISTRIBUTE BY 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@input_columnarserde
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/722662209/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/trunk/VENDOR.hive/trunk/.ptest_0/build/ql/tmp/534165813/10000
 0	0	NULL	1712634731	record_0
 1	10	NULL	465985200	record_1
 2	20	NULL	-751827638	record_2

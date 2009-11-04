@@ -94,11 +94,11 @@ POSTHOOK: Output: default@columnarserde_create_shortcut
 PREHOOK: query: SELECT columnarserde_create_shortcut.* FROM columnarserde_create_shortcut DISTRIBUTE BY 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columnarserde_create_shortcut
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1010466676/10000
+PREHOOK: Output: file:/data/users/heyongqiang/trunk/VENDOR.hive/trunk/.ptest_1/build/ql/tmp/1405876765/10000
 POSTHOOK: query: SELECT columnarserde_create_shortcut.* FROM columnarserde_create_shortcut DISTRIBUTE BY 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@columnarserde_create_shortcut
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1010466676/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/trunk/VENDOR.hive/trunk/.ptest_1/build/ql/tmp/1405876765/10000
 [0,0,0]	["0","0","0"]	{"key_0":"value_0"}	1712634731	record_0
 [1,2,3]	["10","100","1000"]	{"key_1":"value_1"}	465985200	record_1
 [2,4,6]	["20","200","2000"]	{"key_2":"value_2"}	-751827638	record_2
@@ -109,15 +109,15 @@ POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1010466676/100
 [7,14,21]	["70","700","7000"]	{"key_7":"value_7"}	-1461153973	record_7
 [8,16,24]	["80","800","8000"]	{"key_8":"value_8"}	1638581578	record_8
 [9,18,27]	["90","900","9000"]	{"key_9":"value_9"}	336964413	record_9
-null	null	{}	0	NULL
+null	null	null	0	NULL
 PREHOOK: query: SELECT columnarserde_create_shortcut.a[0], columnarserde_create_shortcut.b[0], columnarserde_create_shortcut.c['key2'], columnarserde_create_shortcut.d, columnarserde_create_shortcut.e FROM columnarserde_create_shortcut DISTRIBUTE BY 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columnarserde_create_shortcut
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/236647428/10000
+PREHOOK: Output: file:/data/users/heyongqiang/trunk/VENDOR.hive/trunk/.ptest_1/build/ql/tmp/108106790/10000
 POSTHOOK: query: SELECT columnarserde_create_shortcut.a[0], columnarserde_create_shortcut.b[0], columnarserde_create_shortcut.c['key2'], columnarserde_create_shortcut.d, columnarserde_create_shortcut.e FROM columnarserde_create_shortcut DISTRIBUTE BY 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@columnarserde_create_shortcut
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/236647428/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/trunk/VENDOR.hive/trunk/.ptest_1/build/ql/tmp/108106790/10000
 0	0	NULL	1712634731	record_0
 1	10	NULL	465985200	record_1
 2	20	NULL	-751827638	record_2
@@ -162,11 +162,11 @@ value	string	from deserializer
 PREHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columnshortcuttable
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/531162572/10000
+PREHOOK: Output: file:/data/users/heyongqiang/trunk/VENDOR.hive/trunk/.ptest_1/build/ql/tmp/33712646/10000
 POSTHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@columnshortcuttable
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/531162572/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/trunk/VENDOR.hive/trunk/.ptest_1/build/ql/tmp/33712646/10000
 238	val_238
 86	val_86
 311	val_311
@@ -186,11 +186,11 @@ POSTHOOK: Output: default@columnshortcuttable
 PREHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columnshortcuttable
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1510560377/10000
+PREHOOK: Output: file:/data/users/heyongqiang/trunk/VENDOR.hive/trunk/.ptest_1/build/ql/tmp/137255855/10000
 POSTHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@columnshortcuttable
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1510560377/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/trunk/VENDOR.hive/trunk/.ptest_1/build/ql/tmp/137255855/10000
 238	val_238	NULL
 86	val_86	NULL
 311	val_311	NULL
@@ -210,11 +210,11 @@ POSTHOOK: Output: default@columnshortcuttable
 PREHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable
 PREHOOK: type: QUERY
 PREHOOK: Input: default@columnshortcuttable
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1833240424/10000
+PREHOOK: Output: file:/data/users/heyongqiang/trunk/VENDOR.hive/trunk/.ptest_1/build/ql/tmp/1910249486/10000
 POSTHOOK: query: SELECT columnShortcutTable.* FROM columnShortcutTable
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@columnshortcuttable
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1833240424/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/trunk/VENDOR.hive/trunk/.ptest_1/build/ql/tmp/1910249486/10000
 238
 86
 311

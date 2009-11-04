@@ -32,6 +32,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefArrayWritable;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefWritable;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
@@ -96,7 +97,7 @@ public class TestRCFile extends TestCase {
       bytesArray = new byte[][] { "123".getBytes("UTF-8"),
           "456".getBytes("UTF-8"), "789".getBytes("UTF-8"),
           "1000".getBytes("UTF-8"), "5.3".getBytes("UTF-8"),
-          "hive and hadoop".getBytes("UTF-8"), new byte[0], new byte[0] };
+          "hive and hadoop".getBytes("UTF-8"), new byte[0], "NULL".getBytes("UTF-8") };
       s = new BytesRefArrayWritable(bytesArray.length);
       s.set(0, new BytesRefWritable("123".getBytes("UTF-8")));
       s.set(1, new BytesRefWritable("456".getBytes("UTF-8")));
@@ -127,11 +128,11 @@ public class TestRCFile extends TestCase {
     byte[][] record_1 = { "123".getBytes("UTF-8"), "456".getBytes("UTF-8"),
         "789".getBytes("UTF-8"), "1000".getBytes("UTF-8"),
         "5.3".getBytes("UTF-8"), "hive and hadoop".getBytes("UTF-8"),
-        new byte[0], new byte[0] };
+        new byte[0], "NULL".getBytes("UTF-8") };
     byte[][] record_2 = { "100".getBytes("UTF-8"), "200".getBytes("UTF-8"),
         "123".getBytes("UTF-8"), "1000".getBytes("UTF-8"),
         "5.3".getBytes("UTF-8"), "hive and hadoop".getBytes("UTF-8"),
-        new byte[0], new byte[0] };
+        new byte[0], "NULL".getBytes("UTF-8") };
 
     RCFileOutputFormat.setColumnNumber(conf, expectedFieldsData.length);
     RCFile.Writer writer = new RCFile.Writer(fs, conf, file, null,
@@ -170,6 +171,7 @@ public class TestRCFile extends TestCase {
       reader.next(rowID);
       BytesRefArrayWritable cols = new BytesRefArrayWritable();
       reader.getCurrentRow(cols);
+      cols.resetValid(8);
       Object row = serDe.deserialize(cols);
 
       StructObjectInspector oi = (StructObjectInspector) serDe
@@ -288,7 +290,7 @@ public class TestRCFile extends TestCase {
       throws IOException, SerDeException {
     LOG.debug("reading " + count + " records");
     long start = System.currentTimeMillis();
-    HiveFileFormatUtils.setFullyReadColumns(conf);
+    ColumnProjectionUtils.setFullyReadColumns(conf);
     RCFile.Reader reader = new RCFile.Reader(fs, file, conf);
 
     LongWritable rowID = new LongWritable();
@@ -296,6 +298,7 @@ public class TestRCFile extends TestCase {
     BytesRefArrayWritable cols = new BytesRefArrayWritable();
     while (reader.next(rowID)) {
       reader.getCurrentRow(cols);
+      cols.resetValid(8);
       Object row = serDe.deserialize(cols);
 
       StructObjectInspector oi = (StructObjectInspector) serDe
@@ -329,7 +332,7 @@ public class TestRCFile extends TestCase {
     java.util.ArrayList<Integer> readCols = new java.util.ArrayList<Integer>();
     readCols.add(Integer.valueOf(2));
     readCols.add(Integer.valueOf(3));
-    HiveFileFormatUtils.setReadColumnIDs(conf, readCols);
+    ColumnProjectionUtils.setReadColumnIDs(conf, readCols);
     RCFile.Reader reader = new RCFile.Reader(fs, file, conf);
 
     LongWritable rowID = new LongWritable();
@@ -337,6 +340,7 @@ public class TestRCFile extends TestCase {
     
     while (reader.next(rowID)) {
       reader.getCurrentRow(cols);
+      cols.resetValid(8);
       Object row = serDe.deserialize(cols);
 
       StructObjectInspector oi = (StructObjectInspector) serDe

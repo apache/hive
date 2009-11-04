@@ -242,6 +242,9 @@ Trunk -  Unreleased
     HIVE-907. NullPointerException in ErrorMsg.findSQLState
     (Bill Graham via namit)
 
+    HIVE-910. NULL value is not correctly handled by ColumnarStruct
+    (He Yongqiang via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

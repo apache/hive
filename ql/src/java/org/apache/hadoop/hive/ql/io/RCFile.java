@@ -38,6 +38,7 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.CodecPool;
+import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefArrayWritable;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefWritable;
 import org.apache.hadoop.hive.serde2.columnar.LazyDecompressionCallback;
@@ -922,7 +923,7 @@ public class RCFile {
       columnNumber = Integer.parseInt(metadata.get(
           new Text(COLUMN_NUMBER_METADATA_STR)).toString());
 
-      java.util.ArrayList<Integer> notSkipIDs = HiveFileFormatUtils.getReadColumnIDs(conf);
+      java.util.ArrayList<Integer> notSkipIDs = ColumnProjectionUtils.getReadColumnIDs(conf);
       skippedColIDs = new boolean[columnNumber];
       if (notSkipIDs.size() > 0) {
         for (int i = 0; i < skippedColIDs.length; i++) {
@@ -1303,7 +1304,9 @@ public class RCFile {
 
       if (!currentValue.inited) {
         currentValueBuffer();
-        ret.resetValid(columnNumber); // do this only when not intialized 
+				// do this only when not initialized, but we may need to find a way to
+				// tell the caller how to initialize the valid size
+        ret.resetValid(columnNumber); 
       }
 
       // we do not use BytesWritable here to avoid the byte-copy from

@@ -26,6 +26,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -91,7 +92,10 @@ public class ColumnarSerDe implements SerDe {
             .getSeparators(), serdeParams.getNullSequence(), serdeParams.isEscaped(),
             serdeParams.getEscapeChar());
 
-    cachedLazyStruct = new ColumnarStruct(cachedObjectInspector);
+    
+    java.util.ArrayList<Integer> notSkipIDs = ColumnProjectionUtils.getReadColumnIDs(job);
+    
+    cachedLazyStruct = new ColumnarStruct(cachedObjectInspector, notSkipIDs);
     
     int size = serdeParams.getColumnTypes().size();
     field = new BytesRefWritable[size];

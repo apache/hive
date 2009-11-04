@@ -55,6 +55,8 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.util.ReflectionUtils;
 
+import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
+
 /**
  * HiveInputFormat is a parameterized InputFormat which looks at the path name and determine
  * the correct InputFormat for that path name from mapredPlan.pathToPartitionInfo().
@@ -201,12 +203,14 @@ public class HiveInputFormat<K extends WritableComparable,
       throw new IOException("cannot find class " + inputFormatClassName);
     }
 
-    initColumnsNeeded(job, inputFormatClass, hsplit.getPath().toString(), 
+    //clone a jobConf for setting needed columns for reading
+    JobConf cloneJobConf = new JobConf(job);
+    initColumnsNeeded(cloneJobConf, inputFormatClass, hsplit.getPath().toString(), 
                       hsplit.getPath().toUri().getPath());
 
-    InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, job);
+    InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, cloneJobConf);
     return new HiveRecordReader(inputFormat.getRecordReader(inputSplit,
-        job, reporter));
+    		cloneJobConf, reporter));
   }
 
   private Map<String, partitionDesc> pathToPartitionInfo;
@@ -311,9 +315,9 @@ public class HiveInputFormat<K extends WritableComparable,
         TableScanOperator tableScan = (TableScanOperator) op;
         ArrayList<Integer> list = tableScan.getNeededColumnIDs();
         if (list != null)
-          HiveFileFormatUtils.appendReadColumnIDs(jobConf, list);
+        	ColumnProjectionUtils.appendReadColumnIDs(jobConf, list);
         else
-          HiveFileFormatUtils.setFullyReadColumns(jobConf);
+        	ColumnProjectionUtils.setFullyReadColumns(jobConf);
       }
     }
   }

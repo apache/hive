@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.serde2.columnar;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
@@ -49,7 +50,6 @@ public class ColumnarStruct {
   
   private static final Log LOG = LogFactory.getLog(ColumnarStruct.class);
   
-  boolean initialized = false;  // init() function is called?
   int[]   prjColIDs   = null;   // list of projected column IDs
   
   /**
@@ -60,19 +60,54 @@ public class ColumnarStruct {
    *          the ObjectInspector representing the type of this LazyStruct.
    */
   public ColumnarStruct(ObjectInspector oi) {
+    this(oi, null);
+  }
+  
+  /**
+   * Construct a ColumnarStruct object with the TypeInfo. It creates the first
+   * level object at the first place
+   * 
+   * @param oi
+   *          the ObjectInspector representing the type of this LazyStruct.
+   * @param notSkippedColumnIDs
+   * 		  the column ids that should not be skipped       
+   */
+  public ColumnarStruct(ObjectInspector oi, ArrayList<Integer> notSkippedColumnIDs) {
     List<? extends StructField> fieldRefs = ((StructObjectInspector) oi).getAllStructFieldRefs();
     int num = fieldRefs.size();
     fields = new LazyObject[num];
     cachedByteArrayRef = new ByteArrayRef[num];
     rawBytesField = new BytesRefWritable[num];
-    fieldIsNull = new boolean[num];
+    fieldSkipped = new boolean[num];
     inited = new boolean[num];
+    
+    //if no columns is set to be skipped, add all columns in 'notSkippedColumnIDs'
+		if (notSkippedColumnIDs == null || notSkippedColumnIDs.size() == 0) {
+			for (int i = 0; i < num; i++)
+				notSkippedColumnIDs.add(i);
+		}
+    
     for (int i = 0; i < num; i++) {
       fields[i] = LazyFactory.createLazyObject(fieldRefs.get(i).getFieldObjectInspector());
       cachedByteArrayRef[i] = new ByteArrayRef();
-      fieldIsNull[i] = false;
-      inited[i] = false;
+      if(!notSkippedColumnIDs.contains(i)){
+      	fieldSkipped[i] = true;
+      	inited[i] = true;
+      } else
+      	inited[i] = false;
     }
+    
+		// maintain a list of non-NULL column IDs
+		int min = notSkippedColumnIDs.size() > num ? num : notSkippedColumnIDs
+		    .size();
+		prjColIDs = new int[min];
+		for (int i = 0, index = 0; i < notSkippedColumnIDs.size(); ++i) {
+			int readCol = notSkippedColumnIDs.get(i).intValue();
+			if (readCol < num) {
+				prjColIDs[index] = readCol;
+				index++;
+			}
+		}
   }
 
   /**
@@ -104,7 +139,7 @@ public class ColumnarStruct {
   ByteArrayRef[] cachedByteArrayRef = null;
   BytesRefWritable[] rawBytesField = null;
   boolean[] inited = null;
-  boolean[] fieldIsNull = null;
+  boolean[] fieldSkipped = null;
 
   /**
    * Get the field out of the row without checking parsed. This is called by
@@ -117,7 +152,7 @@ public class ColumnarStruct {
    * @return The value of the field
    */
   protected Object uncheckedGetField(int fieldID, Text nullSequence) {
-    if (fieldIsNull[fieldID])
+    if (fieldSkipped[fieldID])
       return null;
     if (!inited[fieldID]) {
       BytesRefWritable passedInField = rawBytesField[fieldID];
@@ -132,9 +167,10 @@ public class ColumnarStruct {
     }
     
     byte[] data = cachedByteArrayRef[fieldID].getData();
-    int fieldLen = data.length;
+    int fieldLen = rawBytesField[fieldID].length;
+    
     if (fieldLen == nullSequence.getLength()
-        && LazyUtils.compare(data, 0,
+        && LazyUtils.compare(data, rawBytesField[fieldID].getStart(),
             fieldLen, nullSequence.getBytes(), 0, nullSequence.getLength()) == 0) {
       return null;
     }
@@ -150,45 +186,15 @@ public class ColumnarStruct {
    *  =========================================================================
    */
   public void init(BytesRefArrayWritable cols) {
-    if (initialized) { // short cut for non-first calls
-      for (int i = 0; i < prjColIDs.length; ++i ) {
-        int fieldIndex = prjColIDs[i];
-        rawBytesField[fieldIndex] = cols.unCheckedGet(fieldIndex);
-        inited[fieldIndex] = false;
+    for (int i = 0; i < prjColIDs.length; ++i ) {
+      int fieldIndex = prjColIDs[i];
+      if(fieldIndex < cols.size()){
+      	rawBytesField[fieldIndex] = cols.unCheckedGet(fieldIndex);
+        inited[fieldIndex] = false;      	
+      } else {
+      	// select columns that actually do not exist in the file.
+      	fieldSkipped[fieldIndex] = true;
       }
-    } else { // first time call init()
-      int fieldIndex = 0;
-      int min = cols.size() < fields.length ? cols.size() : fields.length;
-      
-      ArrayList<Integer> tmp_sel_cols = new ArrayList<Integer>();
-
-      for (; fieldIndex < min; fieldIndex++) {
-        
-        // call the faster unCheckedGet() 
-        // alsert: min <= cols.size()
-        BytesRefWritable passedInField = cols.unCheckedGet(fieldIndex);
-        
-        if (passedInField.length > 0) {
-          // if (fields[fieldIndex] == null)
-          // fields[fieldIndex] = LazyFactory.createLazyObject(fieldTypeInfos
-          // .get(fieldIndex));
-          tmp_sel_cols.add(fieldIndex);
-          rawBytesField[fieldIndex] = passedInField;
-          fieldIsNull[fieldIndex] = false;
-        } else
-          fieldIsNull[fieldIndex] = true;
-        
-        inited[fieldIndex] = false;
-      }
-      for (; fieldIndex < fields.length; fieldIndex++)
-        fieldIsNull[fieldIndex] = true;
-      
-      // maintain a list of non-NULL column IDs
-      prjColIDs = new int[tmp_sel_cols.size()];
-      for (int i = 0; i < prjColIDs.length; ++i ) {
-        prjColIDs[i] = tmp_sel_cols.get(i).intValue();
-      }
-      initialized = true;
     }
   }
 

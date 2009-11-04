@@ -8,6 +8,7 @@ import junit.framework.TestCase;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefArrayWritable;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefWritable;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
@@ -276,7 +277,7 @@ public class PerformTestRCFileAndSeqFile extends TestCase {
 
     java.util.ArrayList<Integer> readCols = new java.util.ArrayList<Integer>();
     readCols.add(Integer.valueOf(0));
-    HiveFileFormatUtils.setReadColumnIDs(conf, readCols);
+    ColumnProjectionUtils.setReadColumnIDs(conf, readCols);
     RCFile.Reader reader = new RCFile.Reader(fs, file, conf);
 
     LongWritable rowID = new LongWritable();
@@ -310,7 +311,7 @@ public class PerformTestRCFileAndSeqFile extends TestCase {
     java.util.ArrayList<Integer> readCols = new java.util.ArrayList<Integer>();
     readCols.add(Integer.valueOf(0));
     readCols.add(Integer.valueOf(allColumnsNumber - 1));
-    HiveFileFormatUtils.setReadColumnIDs(conf, readCols);
+    ColumnProjectionUtils.setReadColumnIDs(conf, readCols);
     RCFile.Reader reader = new RCFile.Reader(fs, file, conf);
 
     LongWritable rowID = new LongWritable();
@@ -344,7 +345,7 @@ public class PerformTestRCFileAndSeqFile extends TestCase {
 
     int actualReadCount = 0;
 
-    HiveFileFormatUtils.setFullyReadColumns(conf);
+    ColumnProjectionUtils.setFullyReadColumns(conf);
     RCFile.Reader reader = new RCFile.Reader(fs, file, conf);
 
     LongWritable rowID = new LongWritable();
