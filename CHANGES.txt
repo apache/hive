@@ -75,6 +75,8 @@ Trunk -  Unreleased
 
     HIVE-554. Add GenericUDF to create arrays, maps. (Paul Yang via zshao)
 
+    HIVE-911. Add UDF WeekOfYear. (Paul Yang via zshao)
+
   IMPROVEMENTS
 
     HIVE-760. Add version info to META-INF/MANIFEST.MF.
