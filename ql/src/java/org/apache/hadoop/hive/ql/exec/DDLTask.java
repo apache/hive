@@ -27,6 +27,7 @@ import java.io.Serializable;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -1001,18 +1002,39 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       if (tbl != null)
         work.getOutputs().add(new WriteEntity(tbl));
     } else {
-      // drop partitions in the list
-      List<Partition> parts = new ArrayList<Partition>();
-      for (Map<String, String> partSpec : dropTbl.getPartSpecs()) {
-        Partition part = db.getPartition(tbl, partSpec, false);
-        if (part == null) {
-          console.printInfo("Partition " + partSpec + " does not exist.");
-        } else {
-          parts.add(part);
+      // get all partitions of the table
+      List<String> partitionNames = db.getPartitionNames(MetaStoreUtils.DEFAULT_DATABASE_NAME, dropTbl.getTableName(), (short)-1);
+      Set<Map<String, String>> partitions = new HashSet<Map<String, String>>();
+      for (int i = 0; i < partitionNames.size(); i++) {
+        try {
+          partitions.add(Warehouse.makeSpecFromName(partitionNames.get(i)));
+        } catch (MetaException e) {
+          LOG.warn("Unrecognized partition name from metastore: " + partitionNames.get(i)); 
         }
       }
+      // drop partitions in the list
+      List<Partition> partsToDelete = new ArrayList<Partition>();
+      for (Map<String, String> partSpec : dropTbl.getPartSpecs()) {
+        Iterator<Map<String,String>> it = partitions.iterator();
+        while (it.hasNext()) {
+          Map<String, String> part = it.next();
+          // test if partSpec matches part
+          boolean match = true;
+          for (Map.Entry<String, String> item: partSpec.entrySet()) {
+            if (!item.getValue().equals(part.get(item.getKey()))) {
+              match = false;
+              break;
+            }
+          }
+          if (match) {
+            partsToDelete.add(db.getPartition(tbl, part, false));
+            it.remove();
+          }
+        }
+      }
+      
       // drop all existing partitions from the list
-      for (Partition partition : parts) {
+      for (Partition partition : partsToDelete) {
         console.printInfo("Dropping the partition " + partition.getName());
         db.dropPartition(MetaStoreUtils.DEFAULT_DATABASE_NAME, dropTbl
             .getTableName(), partition.getValues(), true); // drop data for the

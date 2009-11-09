@@ -1,0 +1,60 @@
+PREHOOK: query: create table mp (a string) partitioned by (b string, c string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table mp (a string) partitioned by (b string, c string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@mp
+PREHOOK: query: alter table mp add partition (b='1', c='1')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: query: alter table mp add partition (b='1', c='1')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@mp@b=1/c=1
+PREHOOK: query: alter table mp add partition (b='1', c='2')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: query: alter table mp add partition (b='1', c='2')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@mp@b=1/c=2
+PREHOOK: query: alter table mp add partition (b='2', c='2')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: query: alter table mp add partition (b='2', c='2')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@mp@b=2/c=2
+PREHOOK: query: show partitions mp
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: show partitions mp
+POSTHOOK: type: SHOWPARTITIONS
+b=1/c=1
+b=1/c=2
+b=2/c=2
+PREHOOK: query: explain extended alter table mp drop partition (b='1')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: query: explain extended alter table mp drop partition (b='1')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+ABSTRACT SYNTAX TREE:
+  (TOK_ALTERTABLE_DROPPARTS mp (TOK_PARTSPEC (TOK_PARTVAL b '1')))
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+      Drop Table Operator:
+        Drop Table
+          table: mp
+
+
+PREHOOK: query: alter table mp drop partition (b='1')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: query: alter table mp drop partition (b='1')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Output: default@mp@b=1/c=1
+POSTHOOK: Output: default@mp@b=1/c=2
+PREHOOK: query: show partitions mp
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: show partitions mp
+POSTHOOK: type: SHOWPARTITIONS
+b=2/c=2
+PREHOOK: query: drop table mp
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table mp
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@mp
