@@ -135,6 +135,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
             while (true) {
               InspectableObject row = fetchOp.getNextRow();
               if (row == null) {
+                forwardOp.close(false);
                 break;
               }
               fetchOpRows++;

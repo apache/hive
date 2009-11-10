@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.Vector;
+import org.apache.hadoop.hive.ql.parse.joinType;
 
 /**
  * Join conditions Descriptor implementation.
@@ -44,19 +45,28 @@ public class joinCond implements Serializable {
     this.left       = condn.getLeft();
     this.right      = condn.getRight();
     this.preserved  = condn.getPreserved();
-    org.apache.hadoop.hive.ql.parse.joinType itype = condn.getJoinType();
-    if (itype == org.apache.hadoop.hive.ql.parse.joinType.INNER)
+    switch ( condn.getJoinType() ) {
+    case INNER:
       this.type = joinDesc.INNER_JOIN;
-    else if (itype == org.apache.hadoop.hive.ql.parse.joinType.LEFTOUTER)
+      break;
+    case LEFTOUTER:
       this.type = joinDesc.LEFT_OUTER_JOIN;
-    else if (itype == org.apache.hadoop.hive.ql.parse.joinType.RIGHTOUTER)
+      break;
+    case RIGHTOUTER:
       this.type = joinDesc.RIGHT_OUTER_JOIN;
-    else if (itype == org.apache.hadoop.hive.ql.parse.joinType.FULLOUTER)
+      break;
+    case FULLOUTER:
       this.type = joinDesc.FULL_OUTER_JOIN;
-    else if (itype == org.apache.hadoop.hive.ql.parse.joinType.UNIQUE)
+      break;
+    case UNIQUE:
       this.type = joinDesc.UNIQUE_JOIN;
-    else
+      break;
+    case LEFTSEMI:
+      this.type = joinDesc.LEFT_SEMI_JOIN;
+      break;
+    default:
       assert false;
+    }
   }
   
   /**
@@ -117,8 +127,11 @@ public class joinCond implements Serializable {
     case joinDesc.UNIQUE_JOIN:
       sb.append("Unique Join");
       break;
+    case joinDesc.LEFT_SEMI_JOIN:
+      sb.append("Left Semi Join ");
+      break;
     default:
-      sb.append("Unknow Join");
+      sb.append("Unknow Join ");
       break;
     }
     

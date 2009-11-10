@@ -426,10 +426,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private boolean isJoinToken(ASTNode node)
   {
-    if ((node.getToken().getType() == HiveParser.TOK_JOIN) ||
-        (node.getToken().getType() == HiveParser.TOK_LEFTOUTERJOIN) ||
+    if ((node.getToken().getType() == HiveParser.TOK_JOIN)           ||
+        (node.getToken().getType() == HiveParser.TOK_LEFTOUTERJOIN)  ||
         (node.getToken().getType() == HiveParser.TOK_RIGHTOUTERJOIN) ||
-        (node.getToken().getType() == HiveParser.TOK_FULLOUTERJOIN) ||
+        (node.getToken().getType() == HiveParser.TOK_FULLOUTERJOIN)  ||
+        (node.getToken().getType() == HiveParser.TOK_LEFTSEMIJOIN)   ||
         (node.getToken().getType() == HiveParser.TOK_UNIQUEJOIN))
       return true;
 
@@ -725,7 +726,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @SuppressWarnings("nls")
   private void parseJoinCondPopulateAlias(QBJoinTree joinTree,
-      ASTNode condn, Vector<String> leftAliases, Vector<String> rightAliases)
+      ASTNode condn, Vector<String> leftAliases, Vector<String> rightAliases,
+      ArrayList<String> fields)
       throws SemanticException {
     // String[] allAliases = joinTree.getAllAliases();
     switch (condn.getToken().getType()) {
@@ -744,9 +746,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       break;
 
+    case HiveParser.Identifier:
+      // it may be a field name, return the identifier and let the caller decide whether it is or not
+      if ( fields != null ) {
+        fields.add(unescapeIdentifier(condn.getToken().getText().toLowerCase()));
+      }
+      break;
     case HiveParser.Number:
     case HiveParser.StringLiteral:
-    case HiveParser.Identifier:
     case HiveParser.TOK_CHARSETLITERAL:
     case HiveParser.KW_TRUE:
     case HiveParser.KW_FALSE:
@@ -756,19 +763,42 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // check all the arguments
       for (int i = 1; i < condn.getChildCount(); i++)
         parseJoinCondPopulateAlias(joinTree, (ASTNode) condn.getChild(i),
-            leftAliases, rightAliases);
+            leftAliases, rightAliases, null);
       break;
 
     default:
       // This is an operator - so check whether it is unary or binary operator
       if (condn.getChildCount() == 1)
         parseJoinCondPopulateAlias(joinTree, (ASTNode) condn.getChild(0),
-            leftAliases, rightAliases);
-      else if (condn.getChildCount() == 2) {
-        parseJoinCondPopulateAlias(joinTree, (ASTNode) condn.getChild(0),
-            leftAliases, rightAliases);
-        parseJoinCondPopulateAlias(joinTree, (ASTNode) condn.getChild(1),
-            leftAliases, rightAliases);
+            leftAliases, rightAliases, null);
+      else if (condn.getChildCount() == 2) { 
+        
+        ArrayList<String> fields1 = null;
+        // if it is a dot operator, remember the field name of the rhs of the left semijoin
+        if (joinTree.getNoSemiJoin() == false &&
+            condn.getToken().getText().equals("." )) {
+          // get the semijoin rhs table name and field name
+          fields1 = new ArrayList<String>();
+          int rhssize = rightAliases.size();
+          parseJoinCondPopulateAlias(joinTree, (ASTNode) condn.getChild(0),
+              leftAliases, rightAliases, null);
+          String rhsAlias = null;
+          
+          if ( rightAliases.size() > rhssize ) { // the new table is rhs table
+            rhsAlias = rightAliases.get(rightAliases.size()-1);
+          }
+          
+          parseJoinCondPopulateAlias(joinTree, (ASTNode) condn.getChild(1),
+              leftAliases, rightAliases, fields1);
+          if ( rhsAlias != null && fields1.size() > 0 ) {
+            joinTree.addRHSSemijoinColumns(rhsAlias, condn);
+          }
+        } else {
+          parseJoinCondPopulateAlias(joinTree, (ASTNode) condn.getChild(0),
+              leftAliases, rightAliases, null);
+          parseJoinCondPopulateAlias(joinTree, (ASTNode) condn.getChild(1),
+              leftAliases, rightAliases, fields1);
+        }
       } else
         throw new SemanticException(condn.toStringTree() + " encountered with "
             + condn.getChildCount() + " children");
@@ -827,12 +857,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ASTNode leftCondn = (ASTNode) joinCond.getChild(0);
       Vector<String> leftCondAl1 = new Vector<String>();
       Vector<String> leftCondAl2 = new Vector<String>();
-      parseJoinCondPopulateAlias(joinTree, leftCondn, leftCondAl1, leftCondAl2);
+      parseJoinCondPopulateAlias(joinTree, leftCondn, leftCondAl1, leftCondAl2, null);
 
       ASTNode rightCondn = (ASTNode) joinCond.getChild(1);
       Vector<String> rightCondAl1 = new Vector<String>();
       Vector<String> rightCondAl2 = new Vector<String>();
-      parseJoinCondPopulateAlias(joinTree, rightCondn, rightCondAl1, rightCondAl2);
+      parseJoinCondPopulateAlias(joinTree, rightCondn, rightCondAl1, rightCondAl2, null);
 
       // is it a filter or a join condition
       if (((leftCondAl1.size() != 0) && (leftCondAl2.size() != 0)) ||
@@ -877,7 +907,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       for (int ci=childrenBegin; ci<joinCond.getChildCount(); ci++)
-        parseJoinCondPopulateAlias(joinTree, (ASTNode)joinCond.getChild(ci), leftAlias.get(ci-childrenBegin), rightAlias.get(ci-childrenBegin));
+        parseJoinCondPopulateAlias(joinTree, (ASTNode)joinCond.getChild(ci), leftAlias.get(ci-childrenBegin), rightAlias.get(ci-childrenBegin), null);
 
       boolean leftAliasNull = true;
       for (Vector<String> left : leftAlias) {
@@ -2951,61 +2981,67 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return output;
   }
 
-  private Operator genJoinOperatorChildren(QBJoinTree join, Operator left, Operator[] right)
+  private Operator genJoinOperatorChildren(QBJoinTree join, Operator left, Operator[] right, 
+                                           HashSet<Integer> omitOpts)
     throws SemanticException {
+    
     RowResolver outputRS = new RowResolver();
     ArrayList<String> outputColumnNames = new ArrayList<String>();
     // all children are base classes
     Operator<?>[] rightOps = new Operator[right.length];
-    int pos = 0;
     int outputPos = 0;
 
     Map<String, Byte> reversedExprs = new HashMap<String, Byte>();
     HashMap<Byte, List<exprNodeDesc>> exprMap = new HashMap<Byte, List<exprNodeDesc>>();
     Map<String, exprNodeDesc> colExprMap = new HashMap<String, exprNodeDesc>();
     HashMap<Integer, Set<String>> posToAliasMap = new HashMap<Integer, Set<String>>();
-    for (Operator input : right)
-    {
-      ArrayList<exprNodeDesc> keyDesc = new ArrayList<exprNodeDesc>();
+    
+    for ( int pos = 0; pos < right.length; ++pos ) {
+      
+      Operator input = right[pos];
       if (input == null)
         input = left;
+      
+      ArrayList<exprNodeDesc> keyDesc = new ArrayList<exprNodeDesc>();
       Byte tag = Byte.valueOf((byte)(((reduceSinkDesc)(input.getConf())).getTag()));
-      RowResolver inputRS = opParseCtx.get(input).getRR();
-      Iterator<String> keysIter = inputRS.getTableNames().iterator();
-      Set<String> aliases = posToAliasMap.get(pos);
-      if(aliases == null) {
-        aliases = new HashSet<String>();
-        posToAliasMap.put(pos, aliases);
-      }
-
-      while (keysIter.hasNext())
-      {
-        String key = keysIter.next();
-        aliases.add(key);
-        HashMap<String, ColumnInfo> map = inputRS.getFieldMap(key);
-        Iterator<String> fNamesIter = map.keySet().iterator();
-        while (fNamesIter.hasNext())
-        {
-          String field = fNamesIter.next();
-          ColumnInfo valueInfo = inputRS.get(key, field);
-          keyDesc.add(new exprNodeColumnDesc(valueInfo.getType(),
-                                             valueInfo.getInternalName(),
-                                             valueInfo.getTabAlias(),
-                                             valueInfo.getIsPartitionCol()));
-          if (outputRS.get(key, field) == null) {
-            String colName = getColumnInternalName(outputPos);
-            outputPos++;
-            outputColumnNames.add(colName);
-            colExprMap.put(colName, keyDesc.get(keyDesc.size() - 1));
-            outputRS.put(key, field, new ColumnInfo(colName,
-                                                    valueInfo.getType(), key, false));
-            reversedExprs.put(colName, tag);
+      
+      // check whether this input operator produces output
+      if ( omitOpts == null || !omitOpts.contains(pos) ) {
+        // prepare output descriptors for the input opt
+        RowResolver inputRS = opParseCtx.get(input).getRR();
+  	    Iterator<String> keysIter = inputRS.getTableNames().iterator();
+        Set<String> aliases = posToAliasMap.get(pos);
+    	  if(aliases == null) {
+          aliases = new HashSet<String>();
+      	  posToAliasMap.put(pos, aliases);
+      	}
+	      while (keysIter.hasNext()) {
+          String key = keysIter.next();
+          aliases.add(key);
+          HashMap<String, ColumnInfo> map = inputRS.getFieldMap(key);
+          Iterator<String> fNamesIter = map.keySet().iterator();
+      	  while (fNamesIter.hasNext()) {
+        	  String field = fNamesIter.next();
+            ColumnInfo valueInfo = inputRS.get(key, field);
+            keyDesc.add(new exprNodeColumnDesc(valueInfo.getType(),
+                                               valueInfo.getInternalName(),
+                                               valueInfo.getTabAlias(),
+                                               valueInfo.getIsPartitionCol()));
+            
+            if (outputRS.get(key, field) == null) {
+              String colName = getColumnInternalName(outputPos);
+              outputPos++;
+              outputColumnNames.add(colName);
+              colExprMap.put(colName, keyDesc.get(keyDesc.size() - 1));
+              outputRS.put(key, field, new ColumnInfo(colName,
+                                                      valueInfo.getType(), key, false));
+              reversedExprs.put(colName, tag);
+            }
           }
         }
-      }
-
+      } 
       exprMap.put(tag, keyDesc);
-      rightOps[pos++] = input;
+      rightOps[pos] = input;
     }
 
     org.apache.hadoop.hive.ql.plan.joinCond[] joinCondns = new org.apache.hadoop.hive.ql.plan.joinCond[join.getJoinCond().length];
@@ -3101,10 +3137,30 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     Operator[] srcOps = new Operator[joinTree.getBaseSrc().length];
+    
+    HashSet<Integer> omitOpts = null;    // set of input to the join that should be omitted by the output
     int pos = 0;
     for (String src : joinTree.getBaseSrc()) {
       if (src != null) {
         Operator srcOp = map.get(src);
+        
+        // for left-semi join, generate an additional selection & group-by operator before ReduceSink
+        ArrayList<ASTNode> fields = joinTree.getRHSSemijoinColumns(src);
+        if ( fields != null ) {
+          // the RHS table columns should be not be output from the join
+          if ( omitOpts == null ) {
+            omitOpts = new HashSet<Integer>();
+          }
+          omitOpts.add(pos);
+          
+          // generate a selection operator for group-by keys only
+          srcOp = insertSelectForSemijoin(fields, srcOp);
+          
+          // generate a groupby operator (HASH mode) for a map-side partial aggregation for semijoin
+          srcOp = genMapGroupByForSemijoin(qb, fields, srcOp, groupByDesc.Mode.HASH);
+        }
+        
+        // generate a ReduceSink operator for the join
         srcOps[pos] = genJoinReduceSinkChild(qb, joinTree, srcOp, src, pos);
         pos++;
       } else {
@@ -3116,9 +3172,138 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Type checking and implicit type conversion for join keys
     genJoinOperatorTypeCheck(joinSrcOp, srcOps);
 
-    JoinOperator joinOp = (JoinOperator)genJoinOperatorChildren(joinTree, joinSrcOp, srcOps);
+    JoinOperator joinOp = (JoinOperator)genJoinOperatorChildren(joinTree, joinSrcOp, srcOps, omitOpts);
     joinContext.put(joinOp, joinTree);
     return joinOp;
+  }
+  
+  /**
+   * Construct a selection operator for semijoin that filter out all fields other than the group by keys.
+   * 
+   * @param fields list of fields need to be output
+   * @param input input operator
+   * @return the selection operator.
+   * @throws SemanticException
+   */
+  private Operator insertSelectForSemijoin(ArrayList<ASTNode> fields, Operator input)
+    throws SemanticException {
+    
+    RowResolver             inputRR = opParseCtx.get(input).getRR();
+    ArrayList<exprNodeDesc> colList = new ArrayList<exprNodeDesc>();
+    ArrayList<String>   columnNames = new ArrayList<String>();
+    
+    // construct the list of columns that need to be projected 
+    for (ASTNode field: fields) {
+      exprNodeColumnDesc exprNode = (exprNodeColumnDesc) genExprNodeDesc(field, inputRR);
+      colList.add(exprNode);
+      columnNames.add(exprNode.getColumn());
+    }
+    
+    // create selection operator
+    Operator output = putOpInsertMap(
+                        OperatorFactory.getAndMakeChild(
+                          new selectDesc(colList, columnNames, false),  
+                          new RowSchema(inputRR.getColumnInfos()), 
+                          input), 
+                        inputRR);
+    
+    output.setColumnExprMap(input.getColumnExprMap());
+    return output;
+  }
+
+  private Operator genMapGroupByForSemijoin(QB qb, 
+                                            ArrayList<ASTNode> fields,   // the ASTNode of the join key "tab.col"
+                                            Operator inputOperatorInfo, 
+                                            groupByDesc.Mode mode)
+    throws SemanticException {
+    
+    RowResolver     groupByInputRowResolver = opParseCtx.get(inputOperatorInfo).getRR();
+    RowResolver    groupByOutputRowResolver = new RowResolver();
+    ArrayList<exprNodeDesc>     groupByKeys = new ArrayList<exprNodeDesc>();
+    ArrayList<String>     outputColumnNames = new ArrayList<String>();
+    ArrayList<aggregationDesc> aggregations = new ArrayList<aggregationDesc>();
+    Map<String, exprNodeDesc>    colExprMap = new HashMap<String, exprNodeDesc>();
+    QBParseInfo                   parseInfo = qb.getParseInfo();
+    
+    groupByOutputRowResolver.setIsExprResolver(true); // join keys should only be columns but not be expressions
+    
+    for (int i = 0; i < fields.size(); ++i) {
+      // get the group by keys to ColumnInfo
+      ASTNode colName = fields.get(i);
+      exprNodeDesc grpByExprNode = genExprNodeDesc(colName, groupByInputRowResolver);
+      groupByKeys.add(grpByExprNode);
+      
+      // generate output column names
+      String field = getColumnInternalName(i);
+      outputColumnNames.add(field);
+      ColumnInfo colInfo2 = new ColumnInfo(field, grpByExprNode.getTypeInfo(), "", false);
+      groupByOutputRowResolver.put("",  colName.toStringTree(), colInfo2);
+      
+      // establish mapping from the output column to the input column
+      colExprMap.put(field, grpByExprNode);
+    }
+
+    // Generate group-by operator
+    Operator op = putOpInsertMap(
+                    OperatorFactory.getAndMakeChild(
+                      new groupByDesc(mode, outputColumnNames, groupByKeys, aggregations, false),
+                      new RowSchema(groupByOutputRowResolver.getColumnInfos()),
+                      inputOperatorInfo),
+                    groupByOutputRowResolver);
+    
+    op.setColumnExprMap(colExprMap);
+    return op;
+  }
+  
+  private Operator genReduceSinkForSemijoin(QB qb, 
+                                            ArrayList<ASTNode> fields,  // semijoin key for the rhs table
+                                            Operator inputOperatorInfo) 
+    throws SemanticException {
+    
+    RowResolver  reduceSinkInputRowResolver = opParseCtx.get(inputOperatorInfo).getRR();
+    QBParseInfo                   parseInfo = qb.getParseInfo();
+    RowResolver reduceSinkOutputRowResolver = new RowResolver();
+    Map<String, exprNodeDesc>    colExprMap = new HashMap<String, exprNodeDesc>();
+    ArrayList<exprNodeDesc>      reduceKeys = new ArrayList<exprNodeDesc>();
+    List<String>          outputColumnNames = new ArrayList<String>();
+    
+    reduceSinkOutputRowResolver.setIsExprResolver(true);
+    
+    // Pre-compute group-by keys and store in reduceKeys
+    for (int i = 0; i < fields.size(); ++i) {
+      // based on the input row resolver, resolve the column names and construct expression node descriptors
+      ASTNode colName = fields.get(i);
+      exprNodeDesc inputExpr = genExprNodeDesc(colName, reduceSinkInputRowResolver);
+      
+      reduceKeys.add(inputExpr);
+      
+      // create new ColumnInfos for the groupby columns and put them into the output row resolver
+      if (reduceSinkOutputRowResolver.get("", colName.toStringTree()) == null) {
+        outputColumnNames.add(getColumnInternalName(reduceKeys.size() - 1));
+        String field = Utilities.ReduceField.KEY.toString() + "." + getColumnInternalName(reduceKeys.size() - 1);
+        ColumnInfo colInfo1 = new ColumnInfo(field,
+                                             reduceKeys.get(reduceKeys.size()-1).getTypeInfo(), 
+                                             null, false);
+        reduceSinkOutputRowResolver.put("", colName.toStringTree(), colInfo1);
+        colExprMap.put(colInfo1.getInternalName(), inputExpr);
+      } else {
+        throw new SemanticException(ErrorMsg.DUPLICATE_GROUPBY_KEY.getMsg());
+      }
+    }
+    
+    // SEMIJOIN HAS NO AGGREGATIONS, and we don't really use reduce values, so leave it as an empty list
+    ArrayList<exprNodeDesc> reduceValues = new ArrayList<exprNodeDesc>();
+    int numPartitionFields = fields.size();
+
+    // finally generate the ReduceSink operator
+    ReduceSinkOperator rsOp = (ReduceSinkOperator)  putOpInsertMap(
+        OperatorFactory.getAndMakeChild(PlanUtils.getReduceSinkDesc(reduceKeys, reduceValues, outputColumnNames, true, -1, numPartitionFields, -1),
+                                        new RowSchema(reduceSinkOutputRowResolver.getColumnInfos()),
+                                        inputOperatorInfo),
+        reduceSinkOutputRowResolver);
+    rsOp.setColumnExprMap(colExprMap);
+    
+    return rsOp;
   }
 
   private void genJoinOperatorTypeCheck(Operator left, Operator[] right) throws SemanticException {
@@ -3311,26 +3496,28 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throws SemanticException {
     QBJoinTree joinTree = new QBJoinTree();
     joinCond[] condn = new joinCond[1];
-
-    if (joinParseTree.getToken().getType() == HiveParser.TOK_LEFTOUTERJOIN)
-    {
+    
+    switch (joinParseTree.getToken().getType() ) {
+    case HiveParser.TOK_LEFTOUTERJOIN:
       joinTree.setNoOuterJoin(false);
       condn[0] = new joinCond(0, 1, joinType.LEFTOUTER);
-    }
-    else if (joinParseTree.getToken().getType() == HiveParser.TOK_RIGHTOUTERJOIN)
-    {
+      break;
+    case HiveParser.TOK_RIGHTOUTERJOIN:
       joinTree.setNoOuterJoin(false);
       condn[0] = new joinCond(0, 1, joinType.RIGHTOUTER);
-    }
-    else if (joinParseTree.getToken().getType() == HiveParser.TOK_FULLOUTERJOIN)
-    {
+      break;
+    case HiveParser.TOK_FULLOUTERJOIN:
       joinTree.setNoOuterJoin(false);
       condn[0] = new joinCond(0, 1, joinType.FULLOUTER);
-    }
-    else
-    {
+      break;
+    case HiveParser.TOK_LEFTSEMIJOIN:
+      joinTree.setNoSemiJoin(false);
+      condn[0] = new joinCond(0, 1, joinType.LEFTSEMI);
+      break;
+    default:
       condn[0] = new joinCond(0, 1, joinType.INNER);
       joinTree.setNoOuterJoin(true);
+      break;
     }
 
     joinTree.setJoinCond(condn);
@@ -3376,6 +3563,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         children = new String[2];
       children[1] = alias;
       joinTree.setBaseSrc(children);
+      // remember rhs table for semijoin
+      if (joinTree.getNoSemiJoin() == false) {
+        joinTree.addRHSSemijoin(alias);
+      }
     } else
       assert false;
 
@@ -3493,6 +3684,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     else
       target.setNoOuterJoin(false);
 
+    if (node.getNoSemiJoin() && target.getNoSemiJoin())
+      target.setNoSemiJoin(true);
+    else
+      target.setNoSemiJoin(false);
+
+    target.mergeRHSSemijoin(node);
+    
     joinCond[] nodeCondns = node.getJoinCond();
     int nodeCondnsSize = nodeCondns.length;
     joinCond[] targetCondns = target.getJoinCond();

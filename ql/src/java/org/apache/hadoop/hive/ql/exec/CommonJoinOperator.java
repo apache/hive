@@ -74,6 +74,10 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
     public void popObj() {
       curSize--;
     }
+    
+    public Object topObj() {
+      return objs[curSize-1];
+    }
   }
 
   transient protected int numAliases; // number of aliases
@@ -97,7 +101,6 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
                                        // potential nulls for the concerned
                                        // aliases
   transient private ArrayList<ArrayList<Object>>[] dummyObjVectors;
-  transient private Stack<Iterator<ArrayList<Object>>> iterators;
   transient protected int totalSz; // total size of the composite object
   
   // keys are the column names. basically this maps the position of the column in 
@@ -217,9 +220,6 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
       dummyObjVectors[pos] = values;
       pos++;
     }
-
-    iterators = new Stack<Iterator<ArrayList<Object>>>();
-    
     joinEmitInterval = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEJOINEMITINTERVAL);
     
     forwardCache = new Object[totalSz];
@@ -294,6 +294,31 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
   private ArrayList<boolean[]> joinObjectsInnerJoin(ArrayList<boolean[]> resNulls,
       ArrayList<boolean[]> inputNulls, ArrayList<Object> newObj,
       IntermediateObject intObj, int left, boolean newObjNull) {
+    if (newObjNull)
+      return resNulls;
+    Iterator<boolean[]> nullsIter = inputNulls.iterator();
+    while (nullsIter.hasNext()) {
+      boolean[] oldNulls = nullsIter.next();
+      boolean oldObjNull = oldNulls[left];
+      if (!oldObjNull) {
+        boolean[] newNulls = new boolean[intObj.getCurSize()];
+        copyOldArray(oldNulls, newNulls);
+        newNulls[oldNulls.length] = false;
+        resNulls.add(newNulls);
+      }
+    }
+    return resNulls;
+  }
+  
+  /**
+   * Implement semi join operator.
+   */
+  private ArrayList<boolean[]> joinObjectsLeftSemiJoin(ArrayList<boolean[]> resNulls,
+                                                       ArrayList<boolean[]> inputNulls, 
+                                                       ArrayList<Object> newObj,
+                                                       IntermediateObject intObj, 
+                                                       int left, 
+                                                       boolean newObjNull) {
     if (newObjNull)
       return resNulls;
     Iterator<boolean[]> nullsIter = inputNulls.iterator();
@@ -452,8 +477,8 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
    * inner join. The outer joins are processed appropriately.
    */
   private ArrayList<boolean[]> joinObjects(ArrayList<boolean[]> inputNulls,
-                                        ArrayList<Object> newObj, IntermediateObject intObj, 
-                                        int joinPos, boolean firstRow) {
+                                         ArrayList<Object> newObj, IntermediateObject intObj, 
+                                         int joinPos, boolean firstRow) {
     ArrayList<boolean[]> resNulls = new ArrayList<boolean[]>();
     boolean newObjNull = newObj == dummyObj[joinPos] ? true : false;
     if (joinPos == 0) {
@@ -491,6 +516,10 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
     else if (type == joinDesc.RIGHT_OUTER_JOIN)
       return joinObjectsRightOuterJoin(resNulls, inputNulls, newObj, intObj,
                                        left, newObjNull, firstRow);
+    else if (type == joinDesc.LEFT_SEMI_JOIN)
+      return joinObjectsLeftSemiJoin(resNulls, inputNulls, newObj, intObj, 
+                                     left, newObjNull);
+      
     assert (type == joinDesc.FULL_OUTER_JOIN);
     return joinObjectsFullOuterJoin(resNulls, inputNulls, newObj, intObj, left,
                                     newObjNull, firstRow);
@@ -506,20 +535,40 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
   private void genObject(ArrayList<boolean[]> inputNulls, int aliasNum,
                          IntermediateObject intObj, boolean firstRow) throws HiveException {
     boolean childFirstRow = firstRow;
+    boolean skipping = false;
+    
     if (aliasNum < numAliases) {
-      Iterator<ArrayList<Object>> aliasRes = storage.get(order[aliasNum])
-          .iterator();
-      iterators.push(aliasRes);
+    
+      // search for match in the rhs table
+      Iterator<ArrayList<Object>> aliasRes = storage.get(order[aliasNum]).iterator();
       while (aliasRes.hasNext()) {
+        
         ArrayList<Object> newObj = aliasRes.next();
+        
+        // check for skipping in case of left semi join
+        if (aliasNum > 0 &&
+            condn[aliasNum - 1].getType() ==  joinDesc.LEFT_SEMI_JOIN &&
+            newObj != dummyObj[aliasNum] ) { // successful match
+          skipping = true;
+        }
+        
         intObj.pushObj(newObj);
-        ArrayList<boolean[]> newNulls = joinObjects(inputNulls, newObj, intObj,
-                                                 aliasNum, childFirstRow);
+        
+        // execute the actual join algorithm
+        ArrayList<boolean[]> newNulls =  joinObjects(inputNulls, newObj, intObj,
+                                                     aliasNum, childFirstRow);
+        
+        // recursively call the join the other rhs tables
         genObject(newNulls, aliasNum + 1, intObj, firstRow);
+        
         intObj.popObj();
         firstRow = false;
+        
+        // if left-semi-join found a match, skipping the rest of the rows in the rhs table of the semijoin
+        if ( skipping ) {
+          break;
+        }
       }
-      iterators.pop();
     } else {
       if (inputNulls == null)
         return;
@@ -530,7 +579,7 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
       }
     }
   }
-
+ 
   /**
    * Forward a record of join results.
    * 
@@ -538,6 +587,8 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
    */
   public void endGroup() throws HiveException {
     LOG.trace("Join Op: endGroup called: numValues=" + numAliases);
+    
+    
     checkAndGenObject();
   }
 

@@ -18,8 +18,11 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import java.util.HashMap;
 import java.util.Vector;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Map.Entry;
 
 /**
  * Internal representation of the join tree
@@ -35,6 +38,10 @@ public class QBJoinTree
   private int           nextTag;
   private joinCond[]    joinCond;
   private boolean       noOuterJoin;
+  private boolean       noSemiJoin;
+  
+  // keeps track of the right-hand-side table name of the left-semi-join, and its list of join keys
+  private HashMap<String, ArrayList<ASTNode>> rhsSemijoin;
   
   // join conditions
   private Vector<Vector<ASTNode>> expressions;
@@ -52,7 +59,12 @@ public class QBJoinTree
   /**
    * constructor 
    */
-  public QBJoinTree() { nextTag = 0;}
+  public QBJoinTree() { 
+    nextTag = 0;
+    noOuterJoin = true;
+    noSemiJoin  = true;
+    rhsSemijoin = new HashMap<String, ArrayList<ASTNode>>();
+  }
 
   /**
    * returns left alias if any - this is used for merging later on
@@ -133,20 +145,28 @@ public class QBJoinTree
   public void setNoOuterJoin(boolean noOuterJoin) {
     this.noOuterJoin = noOuterJoin;
   }
+  
+  public boolean getNoSemiJoin() {
+    return noSemiJoin;
+  }
 
-	/**
-	 * @return the filters
-	 */
-	public Vector<Vector<ASTNode>> getFilters() {
-		return filters;
-	}
+  public void setNoSemiJoin(boolean semi) {
+    this.noSemiJoin = semi;
+  }
 
-	/**
-	 * @param filters the filters to set
-	 */
-	public void setFilters(Vector<Vector<ASTNode>> filters) {
-		this.filters = filters;
-	}
+  /**
+   * @return the filters
+   */
+  public Vector<Vector<ASTNode>> getFilters() {
+    return filters;
+  }
+
+  /**
+   * @param filters the filters to set
+   */
+  public void setFilters(Vector<Vector<ASTNode>> filters) {
+    this.filters = filters;
+  }
 
   /**
    * @return the mapSidejoin
@@ -182,6 +202,66 @@ public class QBJoinTree
 
   public void setStreamAliases(List<String> streamAliases) {
     this.streamAliases = streamAliases;
+  }
+  
+  /**
+   * Insert only a key to the semijoin table name to column names map. 
+   * @param alias table name alias.
+   */
+  public void addRHSSemijoin(String alias) {
+    if ( ! rhsSemijoin.containsKey(alias) ) {
+      rhsSemijoin.put(alias, null);
+    }
+  }
+  
+  /**
+   * Remeber the mapping of table alias to set of columns.
+   * @param alias
+   * @param columns
+   */
+  public void addRHSSemijoinColumns(String alias, ArrayList<ASTNode> columns) {
+    ArrayList<ASTNode> cols = rhsSemijoin.get(alias);
+    if ( cols == null ) {
+      rhsSemijoin.put(alias, columns);
+    } else {
+      cols.addAll(columns);
+    }
+  }
+  
+  /**
+   * Remeber the mapping of table alias to set of columns.
+   * @param alias
+   * @param columns
+   */
+  public void addRHSSemijoinColumns(String alias, ASTNode column) {
+    ArrayList<ASTNode> cols = rhsSemijoin.get(alias);
+    if ( cols == null ) {
+      cols = new ArrayList<ASTNode>();
+      cols.add(column);
+      rhsSemijoin.put(alias, cols);
+    } else {
+      cols.add(column);
+    }
+  }
+  
+  public ArrayList<ASTNode> getRHSSemijoinColumns(String alias) {
+    return rhsSemijoin.get(alias);
+  }
+  
+  /**
+   * Merge the rhs tables from another join tree.
+   * @param src the source join tree
+   */
+  public void mergeRHSSemijoin(QBJoinTree src) {
+    for (Entry<String, ArrayList<ASTNode>> e: src.rhsSemijoin.entrySet()) {
+      String key = e.getKey();
+      ArrayList<ASTNode> value = this.rhsSemijoin.get(key);
+      if ( value == null ) {
+        this.rhsSemijoin.put(key, e.getValue());
+      } else {
+        value.addAll(e.getValue());
+      }
+    }
   }
 }
 

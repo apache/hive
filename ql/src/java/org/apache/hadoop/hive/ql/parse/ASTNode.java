@@ -62,4 +62,24 @@ public class ASTNode extends CommonTree implements Node {
   public String getName() {
     return (new Integer(super.getToken().getType())).toString();
   }
+  
+  public String dump() {
+    StringBuffer sb = new StringBuffer();
+    
+    sb.append('(');
+    sb.append(this.toString());
+    Vector<Node> children = getChildren();
+    if ( children != null ) {
+      for ( Node node : getChildren() ) {
+        if ( node instanceof ASTNode ) {
+          sb.append(((ASTNode) node).dump());
+        } else {
+          sb.append("NON-ASTNODE!!");
+        }
+      }
+    }
+    sb.append(')');
+    return sb.toString();
+  }
+  
 }

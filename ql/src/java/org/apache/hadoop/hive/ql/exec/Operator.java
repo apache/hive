@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -646,16 +647,25 @@ public abstract class Operator <T extends Serializable> implements Serializable,
   }
   
   public String dump(int level) {
+    return dump(level, new HashSet<Integer>());
+  }
+  
+  public String dump(int level, HashSet<Integer> seenOpts) {
+    if ( seenOpts.contains(new Integer(id)))
+      return null;
+    seenOpts.add(new Integer(id));
+    
     StringBuilder s = new StringBuilder();
     String ls = getLevelString(level);
     s.append(ls);
     s.append("<" + getName() + ">");
     s.append("Id =" + id);
+    
     if (childOperators != null) {
       s.append(ls);
       s.append("  <Children>");
       for (Operator<? extends Serializable> o : childOperators) {
-        s.append(o.dump(level+2));
+        s.append(o.dump(level+2, seenOpts));
       }
       s.append(ls);
       s.append("  <\\Children>");
@@ -666,6 +676,7 @@ public abstract class Operator <T extends Serializable> implements Serializable,
       s.append("  <Parent>");
       for (Operator<? extends Serializable> o : parentOperators) {
         s.append("Id = " + o.id + " ");
+        s.append(o.dump(level,seenOpts));
       }
       s.append("<\\Parent>");
     }

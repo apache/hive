@@ -77,6 +77,8 @@ Trunk -  Unreleased
 
     HIVE-911. Add UDF WeekOfYear. (Paul Yang via zshao)
 
+    HIVE-870. Add left semi join. (Ning Zhang via namit)
+
   IMPROVEMENTS
 
     HIVE-760. Add version info to META-INF/MANIFEST.MF.
