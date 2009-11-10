@@ -252,6 +252,8 @@ Trunk -  Unreleased
     HIVE-804 Support deletion of partitions based on a prefix partition spefication
     (Zheng Shao via namit)
 
+    HIVE-921 MapJoin schema reordering (Ning Zhang via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

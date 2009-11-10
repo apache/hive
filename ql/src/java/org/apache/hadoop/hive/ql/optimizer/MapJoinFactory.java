@@ -199,8 +199,8 @@ public class MapJoinFactory {
       Task<? extends Serializable> mjTask = TaskFactory.get(mjPlan, parseCtx.getConf());
       
       tableDesc tt_desc = 
-        PlanUtils.getIntermediateFileTableDesc(PlanUtils.sortFieldSchemas(
-            PlanUtils.getFieldSchemasFromRowSchema(mapJoin.getSchema(), "temporarycol"))); 
+        PlanUtils.getIntermediateFileTableDesc(
+            PlanUtils.getFieldSchemasFromRowSchema(mapJoin.getSchema(), "temporarycol")); 
       
       // generate the temporary file
       Context baseCtx = parseCtx.getContext();
@@ -239,7 +239,7 @@ public class MapJoinFactory {
       return null;
     }
   }
-
+  
   /**
    * MapJoin followed by MapJoin
    */
