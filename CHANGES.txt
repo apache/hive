@@ -254,6 +254,8 @@ Trunk -  Unreleased
 
     HIVE-921 MapJoin schema reordering (Ning Zhang via namit)
 
+    HIVE-923 Use HiveInputFormat by default (Zheng Shao via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

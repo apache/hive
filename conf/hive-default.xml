@@ -372,7 +372,7 @@
 
 <property>
   <name>hive.input.format</name>
-  <value></value>
+  <value>org.apache.hadoop.hive.ql.io.HiveInputFormat</value>
   <description>The default input format, if it is not specified, the system assigns it. It is set to HiveInputFormat for hadoop versions 17, 18 and 19, whereas it is set to CombinedHiveInputFormat for hadoop 20. The user can always overwrite it - if there is a bug in CombinedHiveInputFormat, it can always be manually set to HiveInputFormat. </description>
 </property>
 
