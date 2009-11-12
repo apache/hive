@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,10 +33,19 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
+import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
+import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
+import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.WritableComparable;
+import org.apache.hadoop.mapred.InputFormat;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -51,6 +61,12 @@ public class Partition {
 
   private Table table;
   private org.apache.hadoop.hive.metastore.api.Partition tPartition;
+  
+  private Deserializer deserializer;
+  private Properties schema;
+  private Class<? extends InputFormat> inputFormatClass;
+  private Class<? extends HiveOutputFormat> outputFormatClass;
+  
   /**
    * @return the tPartition
    */
@@ -184,7 +200,84 @@ public class Partition {
   final public URI getDataLocation() {
     return partURI;
   }
+  
+  final public Deserializer getDeserializer() {
+    if(deserializer == null) {
+      try {
+        initSerDe();
+      } catch (HiveException e) {
+        LOG.error("Error in initializing serde.", e);
+      }
+    }
+    return deserializer;
+  }
+  
+  /**
+   * @param schema the schema to set
+   */
+  public void setSchema(Properties schema) {
+    this.schema = schema;
+  }
+  
+  public Properties getSchema() {
+  	if(this.schema == null)
+  		this.schema = MetaStoreUtils.getSchema(this.getTPartition(), this.getTable().getTTable());
+  	return this.schema;
+  }
+  
+  protected void initSerDe() throws HiveException {
+    if (deserializer == null) {
+      try {
+        deserializer = MetaStoreUtils.getDeserializer(Hive.get().getConf(), this.getTPartition(), this.getTable().getTTable());
+      } catch (MetaException e) {
+        throw new HiveException(e);
+      }
+    }
+  }
+  
+  /**
+   * @param inputFormatClass
+   */
+  public void setInputFormatClass(Class<? extends InputFormat > inputFormatClass) {
+    this.inputFormatClass = inputFormatClass;
+    tPartition.getSd().setInputFormat(inputFormatClass.getName());
+  }
 
+  /**
+   * @param class1
+   */
+  public void setOutputFormatClass(Class<?> class1) {
+    this.outputFormatClass = HiveFileFormatUtils.getOutputFormatSubstitute(class1);
+    tPartition.getSd().setOutputFormat(class1.getName());
+  }
+
+  final public Class<? extends InputFormat> getInputFormatClass() throws HiveException{
+  	if(inputFormatClass == null) {
+  		String clsName = getSchema().getProperty(org.apache.hadoop.hive.metastore.api.Constants.FILE_INPUT_FORMAT,
+          org.apache.hadoop.mapred.SequenceFileInputFormat.class.getName());
+  		try{
+  			setInputFormatClass((Class<? extends InputFormat>)Class.forName(clsName, true, JavaUtils.getClassLoader()));
+  		} catch (ClassNotFoundException e) {
+        throw new HiveException("Class not found: " + clsName, e);
+      }
+  	}
+    
+    return inputFormatClass;
+  }
+
+  final public Class<? extends HiveOutputFormat> getOutputFormatClass() throws HiveException {
+		if (outputFormatClass == null) {
+			String clsName = getSchema().getProperty(org.apache.hadoop.hive.metastore.api.Constants.FILE_OUTPUT_FORMAT,
+		       HiveSequenceFileOutputFormat.class.getName());
+  		try{
+  			setOutputFormatClass(Class.forName(clsName, true, JavaUtils.getClassLoader()));
+  		} catch (ClassNotFoundException e) {
+        throw new HiveException("Class not found: " + clsName, e);
+      }
+		}
+    return outputFormatClass;
+  }
+  
   /**
    * The number of buckets is a property of the partition. However - internally we are just
    * storing it as a property of the table as a short term measure.

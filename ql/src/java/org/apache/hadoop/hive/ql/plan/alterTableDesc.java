@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 public class alterTableDesc extends ddlDesc implements Serializable 
 {
   private static final long serialVersionUID = 1L;
-  public static enum alterTableTypes {RENAME, ADDCOLS, REPLACECOLS, ADDPROPS, ADDSERDE, ADDSERDEPROPS};
+  public static enum alterTableTypes {RENAME, ADDCOLS, REPLACECOLS, ADDPROPS, ADDSERDE, ADDSERDEPROPS, ADDFILEFORMAT};
     
   alterTableTypes      op;
   String               oldName;
@@ -37,6 +37,8 @@ public class alterTableDesc extends ddlDesc implements Serializable
   List<FieldSchema>    newCols;
   String               serdeName;
   Map<String, String>  props;
+  String	             inputFormat;
+	String               outputFormat;
   
   /**
    * @param oldName old name of the table
@@ -65,6 +67,21 @@ public class alterTableDesc extends ddlDesc implements Serializable
     this.op = alterType;
   }
 
+  /**
+   * 
+   * @param name name of the table
+   * @param inputFormat new table input format
+   * @param outputFormat new table output format 
+   */
+  public alterTableDesc(String name, String inputFormat, String outputFormat, String serdeName) {
+	  super();
+	  this.op = alterTableTypes.ADDFILEFORMAT;
+	  this.oldName = name;
+	  this.inputFormat = inputFormat;
+	  this.outputFormat = outputFormat;
+	  this.serdeName = serdeName;
+  }
+  
   /**
    * @return the old name of the table
    */
@@ -168,6 +185,36 @@ public class alterTableDesc extends ddlDesc implements Serializable
    */
   public void setProps(Map<String, String> props) {
     this.props = props;
+  }
+  
+  /**
+   * @return the input format
+   */
+  @explain(displayName="input format")
+	public String getInputFormat() {
+  	return inputFormat;
+  }
+
+  /**
+   * @param inputFormat the input format to set
+   */
+	public void setInputFormat(String inputFormat) {
+  	this.inputFormat = inputFormat;
+  }
+
+  /**
+   * @return the output format
+   */
+  @explain(displayName="output format")
+	public String getOutputFormat() {
+  	return outputFormat;
+  }
+
+  /**
+   * @param outputFormat the output format to set
+   */
+	public void setOutputFormat(String outputFormat) {
+  	this.outputFormat = outputFormat;
   }
 
 }

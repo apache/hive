@@ -126,6 +126,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       analyzeAlterTableSerdeProps(ast);
     else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_SERIALIZER)
       analyzeAlterTableSerde(ast);
+    else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_FILEFORMAT)
+      analyzeAlterTableFileFormat(ast);
     else if (ast.getToken().getType() == HiveParser.TOK_SHOWPARTITIONS)
     {
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
@@ -172,6 +174,44 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     alterTblDesc.setOldName(tableName);
     alterTblDesc.setSerdeName(serdeName);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc), conf));
+  }
+  
+  private void analyzeAlterTableFileFormat(ASTNode ast) throws SemanticException {
+  	String tableName = unescapeIdentifier(ast.getChild(0).getText());
+  	String  inputFormat = null;
+    String  outputFormat = null;
+    String serde = null;
+    ASTNode child = (ASTNode)ast.getChild(1);
+  	
+		switch (child.getToken().getType()) {
+		case HiveParser.TOK_TABLEFILEFORMAT:
+			inputFormat = unescapeSQLString(((ASTNode) child.getChild(0)).getToken()
+			    .getText());
+			outputFormat = unescapeSQLString(((ASTNode) child.getChild(1)).getToken()
+			    .getText());
+			try {
+				Class.forName(inputFormat);
+				Class.forName(outputFormat);
+			} catch (ClassNotFoundException e) {
+				throw new SemanticException(e);
+			}
+			break;
+		case HiveParser.TOK_TBLSEQUENCEFILE:
+			inputFormat = SEQUENCEFILE_INPUT;
+			outputFormat = SEQUENCEFILE_OUTPUT;
+			break;
+		case HiveParser.TOK_TBLTEXTFILE:
+			inputFormat = TEXTFILE_INPUT;
+			outputFormat = TEXTFILE_OUTPUT;
+			break;
+		case HiveParser.TOK_TBLRCFILE:
+			inputFormat = RCFILE_INPUT;
+			outputFormat = RCFILE_OUTPUT;
+			serde = COLUMNAR_SERDE;
+			break;
+		}
+  	alterTableDesc alterTblDesc = new alterTableDesc(tableName, inputFormat, outputFormat, serde);
+  	rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc), conf));
   }
 
   private HashMap<String, String> getProps(ASTNode prop) {

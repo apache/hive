@@ -36,10 +36,17 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
+import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
+import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
+import org.apache.hadoop.mapred.SequenceFileInputFormat;
+import org.apache.hadoop.mapred.SequenceFileOutputFormat;
+import org.apache.hadoop.mapred.TextInputFormat;
 
 public abstract class BaseSemanticAnalyzer {
   protected final Hive db;
@@ -62,6 +69,13 @@ public abstract class BaseSemanticAnalyzer {
    */
   protected Set<WriteEntity> outputs;
 
+  protected static final String TEXTFILE_INPUT = TextInputFormat.class.getName();
+  protected static final String TEXTFILE_OUTPUT = IgnoreKeyTextOutputFormat.class.getName();
+  protected static final String SEQUENCEFILE_INPUT = SequenceFileInputFormat.class.getName();
+  protected static final String SEQUENCEFILE_OUTPUT = SequenceFileOutputFormat.class.getName();
+  protected static final String RCFILE_INPUT = RCFileInputFormat.class.getName();
+  protected static final String RCFILE_OUTPUT = RCFileOutputFormat.class.getName();
+  protected static final String COLUMNAR_SERDE = ColumnarSerDe.class.getName();
 
   public BaseSemanticAnalyzer(HiveConf conf) throws SemanticException {
     try {

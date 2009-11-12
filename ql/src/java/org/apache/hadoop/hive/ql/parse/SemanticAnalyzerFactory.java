@@ -78,6 +78,7 @@ public class SemanticAnalyzerFactory {
       case HiveParser.TOK_SHOW_TABLESTATUS:
       case HiveParser.TOK_SHOWFUNCTIONS:
       case HiveParser.TOK_SHOWPARTITIONS:
+      case HiveParser.TOK_ALTERTABLE_FILEFORMAT:
         return new DDLSemanticAnalyzer(conf);
       case HiveParser.TOK_CREATEFUNCTION:
       case HiveParser.TOK_DROPFUNCTION:

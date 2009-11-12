@@ -92,17 +92,17 @@ public class CombineHiveInputFormat<K extends WritableComparable,
         // extract all the inputFormatClass names for each chunk in the CombinedSplit.
         Path[] ipaths = inputSplitShim.getPaths();
         for (int i = 0; i < ipaths.length; i++) {
-          tableDesc table = null;
+        	partitionDesc part = null;
           try {
-            table = getTableDescFromPath(pathToPartitionInfo, ipaths[i].getParent());
+          	part = getPartitionDescFromPath(pathToPartitionInfo, ipaths[i].getParent());
           } catch (IOException e) {
             // The file path may be present in case of sampling - so ignore that
-            table = null;
+          	part = null;
           }
 
-          if (table == null) {
+          if (part == null) {
             try {
-              table = getTableDescFromPath(pathToPartitionInfo, ipaths[i]);
+            	part = getPartitionDescFromPath(pathToPartitionInfo, ipaths[i]);
             } catch (IOException e) {
               LOG.warn("CombineHiveInputSplit unable to find table description for " +
                        ipaths[i].getParent());
@@ -112,9 +112,9 @@ public class CombineHiveInputFormat<K extends WritableComparable,
           
           // create a new InputFormat instance if this is the first time to see this class
           if (i == 0)
-            inputFormatClassName = table.getInputFileFormatClass().getName();
+            inputFormatClassName = part.getInputFileFormatClass().getName();
           else
-            assert inputFormatClassName.equals(table.getInputFileFormatClass().getName());
+            assert inputFormatClassName.equals(part.getInputFileFormatClass().getName());
         }
       }
     }
@@ -212,19 +212,19 @@ public class CombineHiveInputFormat<K extends WritableComparable,
           Utilities.getMapRedWork(getJob()).getPathToPartitionInfo();
         
         // extract all the inputFormatClass names for each chunk in the CombinedSplit.
-        tableDesc table = null;
+        partitionDesc part = null;
         try {
-          table = getTableDescFromPath(pathToPartitionInfo, inputSplitShim.getPath(0).getParent());
+        	part = getPartitionDescFromPath(pathToPartitionInfo, inputSplitShim.getPath(0).getParent());
         } catch (IOException e) {
           // The file path may be present in case of sampling - so ignore that
-          table = null;
+        	part = null;
         }
 
-        if (table == null)
-          table = getTableDescFromPath(pathToPartitionInfo, inputSplitShim.getPath(0));
+        if (part == null)
+        	part = getPartitionDescFromPath(pathToPartitionInfo, inputSplitShim.getPath(0));
 
         // create a new InputFormat instance if this is the first time to see this class
-        inputFormatClassName = table.getInputFileFormatClass().getName();
+        inputFormatClassName = part.getInputFileFormatClass().getName();
       }
 
       out.writeUTF(inputFormatClassName);

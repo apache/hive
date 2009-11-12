@@ -95,6 +95,7 @@ TOK_ALTERTABLE_ADDPARTS;
 TOK_ALTERTABLE_DROPPARTS;
 TOK_ALTERTABLE_SERDEPROPERTIES;
 TOK_ALTERTABLE_SERIALIZER;
+TOK_ALTERTABLE_FILEFORMAT;
 TOK_ALTERTABLE_PROPERTIES;
 TOK_MSCK;
 TOK_SHOWTABLES;
@@ -261,6 +262,7 @@ alterStatementSuffix
     | alterStatementSuffixAddPartitions
     | alterStatementSuffixProperties
     | alterStatementSuffixSerdeProperties
+    | alterStatementSuffixFileFormat
     ;
 
 alterStatementSuffixRename
@@ -313,6 +315,23 @@ alterStatementSuffixSerdeProperties
     -> ^(TOK_ALTERTABLE_SERIALIZER $name $serdeName tableProperties?)
     | name=Identifier KW_SET KW_SERDEPROPERTIES tableProperties
     -> ^(TOK_ALTERTABLE_SERDEPROPERTIES $name tableProperties)
+    ;
+
+alterStatementSuffixFileFormat
+@init {msgs.push("alter fileformat statement"); }
+@after {msgs.pop(); }
+	:name=Identifier KW_SET KW_FILEFORMAT fileFormat 
+	-> ^(TOK_ALTERTABLE_FILEFORMAT $name fileFormat)
+	;
+
+fileFormat
+@init { msgs.push("file format specification"); }
+@after { msgs.pop(); }
+    : KW_SEQUENCEFILE  -> ^(TOK_TBLSEQUENCEFILE)
+    | KW_TEXTFILE  -> ^(TOK_TBLTEXTFILE)
+    | KW_RCFILE  -> ^(TOK_TBLRCFILE)
+    | KW_INPUTFORMAT inFmt=StringLiteral KW_OUTPUTFORMAT outFmt=StringLiteral
+      -> ^(TOK_TABLEFILEFORMAT $inFmt $outFmt)
     ;
 
 tabTypeExpr
@@ -1364,6 +1383,7 @@ KW_KEYS: 'KEYS';
 KW_KEY_TYPE: '$KEY$';
 KW_LINES: 'LINES';
 KW_STORED: 'STORED';
+KW_FILEFORMAT: 'FILEFORMAT';
 KW_SEQUENCEFILE: 'SEQUENCEFILE';
 KW_TEXTFILE: 'TEXTFILE';
 KW_RCFILE: 'RCFILE';

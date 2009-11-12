@@ -568,9 +568,21 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         // create a row per table name
         Table tbl = iterTables.next();
         String tableName = tbl.getName();
-        String tblLoc = tbl.getDataLocation().toString();
-        String inputFormattCls = tbl.getInputFormatClass().getName();
-        String outputFormattCls = tbl.getOutputFormatClass().getName();
+        String tblLoc = null;
+        String inputFormattCls = null;
+				String outputFormattCls = null;
+				if (part != null) {
+					if(par !=null) {
+						tblLoc = par.getDataLocation().toString();
+						inputFormattCls = par.getTPartition().getSd().getInputFormat();
+						outputFormattCls = par.getTPartition().getSd().getOutputFormat();
+					}
+				} else {
+					tblLoc = tbl.getDataLocation().toString();
+					inputFormattCls = tbl.getInputFormatClass().getName();
+					outputFormattCls = tbl.getOutputFormatClass().getName();
+				}
+        
         String owner = tbl.getOwner();
         List<FieldSchema> cols = tbl.getCols();
         String ddlCols = MetaStoreUtils.getDDLFromFieldSchema("columns", cols);
@@ -938,6 +950,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       tbl.reinitSerDe();
       tbl.setFields(Hive.getFieldsFromDeserializer(tbl.getName(), tbl
           .getDeserializer()));
+    } else if (alterTbl.getOp() == alterTableDesc.alterTableTypes.ADDFILEFORMAT) {
+    	tbl.getTTable().getSd().setInputFormat(alterTbl.getInputFormat());
+    	tbl.getTTable().getSd().setOutputFormat(alterTbl.getOutputFormat());
+    	if (alterTbl.getSerdeName() != null) 
+    		tbl.setSerializationLib(alterTbl.getSerdeName());
     } else {
       console.printError("Unsupported Alter commnad");
       return 1;

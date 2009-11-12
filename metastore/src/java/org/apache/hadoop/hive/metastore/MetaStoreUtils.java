@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
@@ -174,6 +175,34 @@ public class MetaStoreUtils {
     try {
       Deserializer deserializer = SerDeUtils.lookupDeserializer(lib);
       deserializer.initialize(conf, MetaStoreUtils.getSchema(table));
+      return deserializer;
+    } catch (RuntimeException e) {
+      throw e;
+    } catch (Exception e) {
+      LOG.error("error in initSerDe: " + e.getClass().getName() + " " + e.getMessage());
+      MetaStoreUtils.printStackTrace(e);
+      throw new MetaException(e.getClass().getName() + " " + e.getMessage());
+    }
+  }
+  
+  /**
+   * getDeserializer
+   *
+   * Get the Deserializer for a partition.
+   *
+   * @param conf - hadoop config
+   * @param partition the partition
+   * @return the Deserializer
+   * @exception MetaException if any problems instantiating the Deserializer
+   *
+   */
+	static public Deserializer getDeserializer(Configuration conf,
+	    org.apache.hadoop.hive.metastore.api.Partition part,
+	    org.apache.hadoop.hive.metastore.api.Table table) throws MetaException {
+    String lib = part.getSd().getSerdeInfo().getSerializationLib();
+    try {
+      Deserializer deserializer = SerDeUtils.lookupDeserializer(lib);
+      deserializer.initialize(conf, MetaStoreUtils.getSchema(part, table));
       return deserializer;
     } catch (RuntimeException e) {
       throw e;
@@ -455,34 +484,43 @@ public class MetaStoreUtils {
     LOG.info("DDL: " + ddl);
     return ddl.toString();
   }
-  public static Properties getSchema(org.apache.hadoop.hive.metastore.api.Table tbl) {
+  
+  public static Properties getSchema(org.apache.hadoop.hive.metastore.api.Table table) {
+  	return MetaStoreUtils.getSchema(table.getSd(), table.getParameters(), table.getTableName(), table.getPartitionKeys());
+  }
+  
+  public static Properties getSchema(org.apache.hadoop.hive.metastore.api.Partition part, org.apache.hadoop.hive.metastore.api.Table table) {
+  	return MetaStoreUtils.getSchema(part.getSd(), part.getParameters(), table.getTableName(), table.getPartitionKeys());
+  }
+  
+  public static Properties getSchema(org.apache.hadoop.hive.metastore.api.StorageDescriptor sd, Map<String, String> parameters, String tableName, List<FieldSchema> partitionKeys) {
     Properties schema = new Properties();
-    String inputFormat = tbl.getSd().getInputFormat();
+    String inputFormat = sd.getInputFormat();
     if(inputFormat == null || inputFormat.length() == 0) {
       inputFormat = org.apache.hadoop.mapred.SequenceFileInputFormat.class.getName();
     }
     schema.setProperty(org.apache.hadoop.hive.metastore.api.Constants.FILE_INPUT_FORMAT, inputFormat);
-    String outputFormat = tbl.getSd().getOutputFormat();
+    String outputFormat = sd.getOutputFormat();
     if(outputFormat == null || outputFormat.length() == 0) {
       outputFormat = org.apache.hadoop.mapred.SequenceFileOutputFormat.class.getName();
     }
     schema.setProperty(org.apache.hadoop.hive.metastore.api.Constants.FILE_OUTPUT_FORMAT, outputFormat);
-    schema.setProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME, tbl.getTableName());
-    if(tbl.getSd().getLocation() != null) {
-      schema.setProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_LOCATION, tbl.getSd().getLocation());
+    schema.setProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_NAME, tableName);
+    if(sd.getLocation() != null) {
+      schema.setProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_LOCATION, sd.getLocation());
     }
-    schema.setProperty(org.apache.hadoop.hive.metastore.api.Constants.BUCKET_COUNT, Integer.toString(tbl.getSd().getNumBuckets()));
-    if (tbl.getSd().getBucketCols().size() > 0) {
-      schema.setProperty(org.apache.hadoop.hive.metastore.api.Constants.BUCKET_FIELD_NAME, tbl.getSd().getBucketCols().get(0));
+    schema.setProperty(org.apache.hadoop.hive.metastore.api.Constants.BUCKET_COUNT, Integer.toString(sd.getNumBuckets()));
+    if (sd.getBucketCols().size() > 0) {
+      schema.setProperty(org.apache.hadoop.hive.metastore.api.Constants.BUCKET_FIELD_NAME, sd.getBucketCols().get(0));
     }
-    schema.putAll(tbl.getSd().getSerdeInfo().getParameters());
-    if(tbl.getSd().getSerdeInfo().getSerializationLib() != null) {
-      schema.setProperty(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_LIB, tbl.getSd().getSerdeInfo().getSerializationLib());
+    schema.putAll(sd.getSerdeInfo().getParameters());
+    if(sd.getSerdeInfo().getSerializationLib() != null) {
+      schema.setProperty(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_LIB, sd.getSerdeInfo().getSerializationLib());
     }
     StringBuilder colNameBuf = new StringBuilder();
     StringBuilder colTypeBuf = new StringBuilder();
     boolean first = true;
-    for (FieldSchema col: tbl.getSd().getCols()) {
+    for (FieldSchema col: sd.getCols()) {
       if (!first) {
         colNameBuf.append(",");
         colTypeBuf.append(":");
@@ -496,11 +534,11 @@ public class MetaStoreUtils {
     schema.setProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_COLUMNS, colNames);
     schema.setProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_COLUMN_TYPES, colTypes);
     schema.setProperty(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_DDL, 
-        getDDLFromFieldSchema(tbl.getTableName(), tbl.getSd().getCols()));
+        getDDLFromFieldSchema(tableName, sd.getCols()));
     
     String partString = "";
     String partStringSep = "";
-    for (FieldSchema partKey : tbl.getPartitionKeys()) {
+    for (FieldSchema partKey : partitionKeys) {
       partString = partString.concat(partStringSep);
       partString = partString.concat(partKey.getName());
       if(partStringSep.length() == 0) {
@@ -511,9 +549,11 @@ public class MetaStoreUtils {
       schema.setProperty(org.apache.hadoop.hive.metastore.api.Constants.META_TABLE_PARTITION_COLUMNS, partString);
     }
     
-    for(Entry<String, String> e: tbl.getParameters().entrySet()) {
-      schema.setProperty(e.getKey(), e.getValue());
-    }
+		if (parameters != null) {
+			for(Entry<String, String> e: parameters.entrySet()) {
+	      schema.setProperty(e.getKey(), e.getValue());
+	    }
+		}
     
     return schema;
   }

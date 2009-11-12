@@ -413,13 +413,19 @@ public class GenMapRedUtils {
     parts = partsList.getConfirmedPartns();
     parts.addAll(partsList.getUnknownPartns());
     partitionDesc aliasPartnDesc = null;
-    if (parts.isEmpty()) {
-      if (!partsList.getDeniedPartns().isEmpty())
-        aliasPartnDesc = Utilities.getPartitionDesc(partsList.getDeniedPartns().iterator().next());
+    try{
+    	if (parts.isEmpty()) {
+  			if (!partsList.getDeniedPartns().isEmpty())
+  				aliasPartnDesc = Utilities.getPartitionDesc(partsList.getDeniedPartns()
+  				    .iterator().next());
+  		} else {
+  			aliasPartnDesc = Utilities.getPartitionDesc(parts.iterator().next());
+  		}
+    } catch (HiveException e) {
+    	LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      throw new SemanticException(e.getMessage(), e);
     }
-    else {
-      aliasPartnDesc = Utilities.getPartitionDesc(parts.iterator().next());
-    }
+		
     plan.getAliasToPartnInfo().put(alias_id, aliasPartnDesc);
     SamplePruner samplePruner = parseCtx.getAliasToSamplePruner().get(alias_id);
 
@@ -452,7 +458,12 @@ public class GenMapRedUtils {
         LOG.debug("Adding " + path + " of table" + alias_id);
 
         partDir.add(p);
-        partDesc.add(Utilities.getPartitionDesc(part));
+        try{
+        	partDesc.add(Utilities.getPartitionDesc(part));
+        } catch (HiveException e) {
+        	LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
+          throw new SemanticException(e.getMessage(), e);
+        }
       }
     }
 

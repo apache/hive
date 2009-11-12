@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_07" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_15" class="java.beans.XMLDecoder"> 
  <object id="MapRedTask0" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
   <void property="childTasks"> 
    <object class="java.util.ArrayList"> 
@@ -30,7 +30,7 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/2087531770/10000</string> 
+               <string>file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/1253948706/10000</string> 
               </void> 
               <void property="table"> 
                <object id="tableDesc0" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -83,11 +83,11 @@
                   </void> 
                   <void method="put"> 
                    <string>location</string> 
-                   <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/dest1</string> 
+                   <string>file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/dest1</string> 
                   </void> 
                   <void method="put"> 
                    <string>transient_lastDdlTime</string> 
-                   <string>1254944002</string> 
+                   <string>1258002461</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -97,7 +97,7 @@
                </object> 
               </void> 
               <void property="tmpDir"> 
-               <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/2087531770/10001</string> 
+               <string>file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/1253948706/10001</string> 
               </void> 
              </object> 
             </void> 
@@ -123,8 +123,64 @@
          <void method="put"> 
           <string>src3</string> 
           <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
+           <void property="deserializerClass"> 
+            <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
+           </void> 
+           <void property="inputFileFormatClass"> 
+            <class>org.apache.hadoop.mapred.TextInputFormat</class> 
+           </void> 
+           <void property="outputFileFormatClass"> 
+            <class>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</class> 
+           </void> 
            <void property="partSpec"> 
             <object id="LinkedHashMap0" class="java.util.LinkedHashMap"/> 
+           </void> 
+           <void property="properties"> 
+            <object id="Properties0" class="java.util.Properties"> 
+             <void method="put"> 
+              <string>name</string> 
+              <string>src</string> 
+             </void> 
+             <void method="put"> 
+              <string>columns.types</string> 
+              <string>string:string</string> 
+             </void> 
+             <void method="put"> 
+              <string>serialization.ddl</string> 
+              <string>struct src { string key, string value}</string> 
+             </void> 
+             <void method="put"> 
+              <string>serialization.format</string> 
+              <string>1</string> 
+             </void> 
+             <void method="put"> 
+              <string>columns</string> 
+              <string>key,value</string> 
+             </void> 
+             <void method="put"> 
+              <string>bucket_count</string> 
+              <string>-1</string> 
+             </void> 
+             <void method="put"> 
+              <string>serialization.lib</string> 
+              <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
+             </void> 
+             <void method="put"> 
+              <string>file.inputformat</string> 
+              <string>org.apache.hadoop.mapred.TextInputFormat</string> 
+             </void> 
+             <void method="put"> 
+              <string>file.outputformat</string> 
+              <string>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</string> 
+             </void> 
+             <void method="put"> 
+              <string>location</string> 
+              <string>file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/src</string> 
+             </void> 
+            </object> 
+           </void> 
+           <void property="serdeClassName"> 
+            <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
            </void> 
            <void property="tableDesc"> 
             <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -138,7 +194,7 @@
               <class>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</class> 
              </void> 
              <void property="properties"> 
-              <object id="Properties0" class="java.util.Properties"> 
+              <object id="Properties1" class="java.util.Properties"> 
                <void method="put"> 
                 <string>name</string> 
                 <string>src</string> 
@@ -177,11 +233,11 @@
                </void> 
                <void method="put"> 
                 <string>location</string> 
-                <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src</string> 
+                <string>file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/src</string> 
                </void> 
                <void method="put"> 
                 <string>transient_lastDdlTime</string> 
-                <string>1254944001</string> 
+                <string>1258002461</string> 
                </void> 
               </object> 
              </void> 
@@ -739,7 +795,7 @@
         <void property="pathToAliases"> 
          <object class="java.util.LinkedHashMap"> 
           <void method="put"> 
-           <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1226855670/10002</string> 
+           <string>file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/703347356/10002</string> 
            <object class="java.util.ArrayList"> 
             <void method="add"> 
              <string>$INTNAME</string> 
@@ -747,7 +803,7 @@
            </object> 
           </void> 
           <void method="put"> 
-           <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src</string> 
+           <string>file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/src</string> 
            <object class="java.util.ArrayList"> 
             <void method="add"> 
              <string>src3</string> 
@@ -759,8 +815,33 @@
         <void property="pathToPartitionInfo"> 
          <object class="java.util.LinkedHashMap"> 
           <void method="put"> 
-           <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1226855670/10002</string> 
+           <string>file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/703347356/10002</string> 
            <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
+            <void property="deserializerClass"> 
+             <class>org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe</class> 
+            </void> 
+            <void property="inputFileFormatClass"> 
+             <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
+            </void> 
+            <void property="outputFileFormatClass"> 
+             <class>org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat</class> 
+            </void> 
+            <void property="properties"> 
+             <object id="Properties2" class="java.util.Properties"> 
+              <void method="put"> 
+               <string>columns</string> 
+               <string>_col0,_col2</string> 
+              </void> 
+              <void method="put"> 
+               <string>columns.types</string> 
+               <string>string,string</string> 
+              </void> 
+              <void method="put"> 
+               <string>escape.delim</string> 
+               <string>\</string> 
+              </void> 
+             </object> 
+            </void> 
             <void property="tableDesc"> 
              <object id="tableDesc4" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
               <void property="deserializerClass"> 
@@ -773,30 +854,32 @@
                <class>org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat</class> 
               </void> 
               <void property="properties"> 
-               <object class="java.util.Properties"> 
-                <void method="put"> 
-                 <string>columns</string> 
-                 <string>_col0,_col2</string> 
-                </void> 
-                <void method="put"> 
-                 <string>columns.types</string> 
-                 <string>string,string</string> 
-                </void> 
-                <void method="put"> 
-                 <string>escape.delim</string> 
-                 <string>\</string> 
-                </void> 
-               </object> 
+               <object idref="Properties2"/> 
               </void> 
              </object> 
             </void> 
            </object> 
           </void> 
           <void method="put"> 
-           <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src</string> 
+           <string>file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/src</string> 
            <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
+            <void property="deserializerClass"> 
+             <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
+            </void> 
+            <void property="inputFileFormatClass"> 
+             <class>org.apache.hadoop.mapred.TextInputFormat</class> 
+            </void> 
+            <void property="outputFileFormatClass"> 
+             <class>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</class> 
+            </void> 
             <void property="partSpec"> 
              <object idref="LinkedHashMap0"/> 
+            </void> 
+            <void property="properties"> 
+             <object idref="Properties0"/> 
+            </void> 
+            <void property="serdeClassName"> 
+             <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
             </void> 
             <void property="tableDesc"> 
              <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -810,7 +893,7 @@
                <class>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</class> 
               </void> 
               <void property="properties"> 
-               <object idref="Properties0"/> 
+               <object idref="Properties1"/> 
               </void> 
               <void property="serdeClassName"> 
                <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
@@ -837,7 +920,7 @@
                      <int>1</int> 
                     </void> 
                     <void property="dirName"> 
-                     <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/2087531770/10000</string> 
+                     <string>file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/1253948706/10000</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object idref="tableDesc0"/> 
@@ -1229,8 +1312,64 @@
      <void method="put"> 
       <string>src2</string> 
       <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
+       <void property="deserializerClass"> 
+        <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
+       </void> 
+       <void property="inputFileFormatClass"> 
+        <class>org.apache.hadoop.mapred.TextInputFormat</class> 
+       </void> 
+       <void property="outputFileFormatClass"> 
+        <class>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</class> 
+       </void> 
        <void property="partSpec"> 
         <object class="java.util.LinkedHashMap"/> 
+       </void> 
+       <void property="properties"> 
+        <object class="java.util.Properties"> 
+         <void method="put"> 
+          <string>name</string> 
+          <string>src</string> 
+         </void> 
+         <void method="put"> 
+          <string>columns.types</string> 
+          <string>string:string</string> 
+         </void> 
+         <void method="put"> 
+          <string>serialization.ddl</string> 
+          <string>struct src { string key, string value}</string> 
+         </void> 
+         <void method="put"> 
+          <string>serialization.format</string> 
+          <string>1</string> 
+         </void> 
+         <void method="put"> 
+          <string>columns</string> 
+          <string>key,value</string> 
+         </void> 
+         <void method="put"> 
+          <string>bucket_count</string> 
+          <string>-1</string> 
+         </void> 
+         <void method="put"> 
+          <string>serialization.lib</string> 
+          <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
+         </void> 
+         <void method="put"> 
+          <string>file.inputformat</string> 
+          <string>org.apache.hadoop.mapred.TextInputFormat</string> 
+         </void> 
+         <void method="put"> 
+          <string>file.outputformat</string> 
+          <string>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</string> 
+         </void> 
+         <void method="put"> 
+          <string>location</string> 
+          <string>file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/src</string> 
+         </void> 
+        </object> 
+       </void> 
+       <void property="serdeClassName"> 
+        <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
        </void> 
        <void property="tableDesc"> 
         <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -1283,11 +1422,11 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src</string> 
+            <string>file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/src</string> 
            </void> 
            <void method="put"> 
             <string>transient_lastDdlTime</string> 
-            <string>1254944001</string> 
+            <string>1258002461</string> 
            </void> 
           </object> 
          </void> 
@@ -1301,8 +1440,64 @@
      <void method="put"> 
       <string>src1</string> 
       <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
+       <void property="deserializerClass"> 
+        <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
+       </void> 
+       <void property="inputFileFormatClass"> 
+        <class>org.apache.hadoop.mapred.TextInputFormat</class> 
+       </void> 
+       <void property="outputFileFormatClass"> 
+        <class>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</class> 
+       </void> 
        <void property="partSpec"> 
         <object id="LinkedHashMap1" class="java.util.LinkedHashMap"/> 
+       </void> 
+       <void property="properties"> 
+        <object id="Properties3" class="java.util.Properties"> 
+         <void method="put"> 
+          <string>name</string> 
+          <string>src</string> 
+         </void> 
+         <void method="put"> 
+          <string>columns.types</string> 
+          <string>string:string</string> 
+         </void> 
+         <void method="put"> 
+          <string>serialization.ddl</string> 
+          <string>struct src { string key, string value}</string> 
+         </void> 
+         <void method="put"> 
+          <string>serialization.format</string> 
+          <string>1</string> 
+         </void> 
+         <void method="put"> 
+          <string>columns</string> 
+          <string>key,value</string> 
+         </void> 
+         <void method="put"> 
+          <string>bucket_count</string> 
+          <string>-1</string> 
+         </void> 
+         <void method="put"> 
+          <string>serialization.lib</string> 
+          <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
+         </void> 
+         <void method="put"> 
+          <string>file.inputformat</string> 
+          <string>org.apache.hadoop.mapred.TextInputFormat</string> 
+         </void> 
+         <void method="put"> 
+          <string>file.outputformat</string> 
+          <string>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</string> 
+         </void> 
+         <void method="put"> 
+          <string>location</string> 
+          <string>file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/src</string> 
+         </void> 
+        </object> 
+       </void> 
+       <void property="serdeClassName"> 
+        <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
        </void> 
        <void property="tableDesc"> 
         <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -1316,7 +1511,7 @@
           <class>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</class> 
          </void> 
          <void property="properties"> 
-          <object id="Properties1" class="java.util.Properties"> 
+          <object id="Properties4" class="java.util.Properties"> 
            <void method="put"> 
             <string>name</string> 
             <string>src</string> 
@@ -1355,11 +1550,11 @@
            </void> 
            <void method="put"> 
             <string>location</string> 
-            <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src</string> 
+            <string>file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/src</string> 
            </void> 
            <void method="put"> 
             <string>transient_lastDdlTime</string> 
-            <string>1254944001</string> 
+            <string>1258002461</string> 
            </void> 
           </object> 
          </void> 
@@ -1862,7 +2057,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src</string> 
+       <string>file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src2</string> 
@@ -1877,10 +2072,25 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive3/hive3/build/ql/test/data/warehouse/src</string> 
+       <string>file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
+        <void property="deserializerClass"> 
+         <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
+        </void> 
+        <void property="inputFileFormatClass"> 
+         <class>org.apache.hadoop.mapred.TextInputFormat</class> 
+        </void> 
+        <void property="outputFileFormatClass"> 
+         <class>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</class> 
+        </void> 
         <void property="partSpec"> 
          <object idref="LinkedHashMap1"/> 
+        </void> 
+        <void property="properties"> 
+         <object idref="Properties3"/> 
+        </void> 
+        <void property="serdeClassName"> 
+         <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
         </void> 
         <void property="tableDesc"> 
          <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -1894,7 +2104,7 @@
            <class>org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</class> 
           </void> 
           <void property="properties"> 
-           <object idref="Properties1"/> 
+           <object idref="Properties4"/> 
           </void> 
           <void property="serdeClassName"> 
            <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
@@ -1914,7 +2124,7 @@
           <void property="conf"> 
            <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
             <void property="dirName"> 
-             <string>file:/data/users/njain/hive3/hive3/build/ql/tmp/1226855670/10002</string> 
+             <string>file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/703347356/10002</string> 
             </void> 
             <void property="tableInfo"> 
              <object idref="tableDesc4"/> 

@@ -57,19 +57,23 @@ public class MapOperator extends Operator <mapredWork> implements Serializable {
   public static enum Counter {DESERIALIZE_ERRORS}
   transient private LongWritable deserialize_error_count = new LongWritable ();
   transient private Deserializer deserializer;
-  
+
   transient private Object[] rowWithPart;
   transient private StructObjectInspector rowObjectInspector;
   transient private boolean isPartitioned;
   private Map<MapInputPath, MapOpCtx> opCtxMap;
-  
+
+  private Map<Operator<? extends Serializable>, java.util.ArrayList<String>> operatorToPaths;
+
+  private java.util.ArrayList<String> childrenPaths = new ArrayList<String>();
+
   private ArrayList<Operator<? extends Serializable>> extraChildrenToClose = null;
-  
+
   private static class MapInputPath {
     String path;
     String alias;
     Operator<? extends Serializable> op;
-    
+
     /**
      * @param path
      * @param alias
@@ -89,7 +93,7 @@ public class MapOperator extends Operator <mapredWork> implements Serializable {
           return false;
         return path.equals(mObj.path) && alias.equals(mObj.alias) && op.equals(mObj.op);
       }
-      
+
       return false;
     }
 
@@ -97,7 +101,7 @@ public class MapOperator extends Operator <mapredWork> implements Serializable {
       return (op == null) ? 0 : op.hashCode();
     }
   }
-  
+
   private static class MapOpCtx {
     boolean               isPartitioned;
     StructObjectInspector rowObjectInspector;
@@ -105,7 +109,7 @@ public class MapOperator extends Operator <mapredWork> implements Serializable {
     Deserializer          deserializer;
     public String tableName;
     public String partName;
-    
+
     /**
      * @param isPartitioned
      * @param rowObjectInspector
@@ -147,7 +151,7 @@ public class MapOperator extends Operator <mapredWork> implements Serializable {
       return deserializer;
     }
   }
-  
+
   /**
    * Initializes this map op as the root of the tree. It sets JobConf & MapRedWork
    * and starts initialization of the operator tree rooted at this op.
@@ -160,24 +164,23 @@ public class MapOperator extends Operator <mapredWork> implements Serializable {
     setChildren(hconf);
     initialize(hconf, null);
   }
-  
-  private static MapOpCtx initObjectInspector(mapredWork conf, Configuration hconf, String onefile) 
+
+  private static MapOpCtx initObjectInspector(mapredWork conf, Configuration hconf, String onefile)
     throws HiveException, ClassNotFoundException, InstantiationException, IllegalAccessException, SerDeException {
-    partitionDesc pd = conf.getPathToPartitionInfo().get(onefile);
-    LinkedHashMap<String, String> partSpec = pd.getPartSpec();
-    tableDesc td = pd.getTableDesc();
+    partitionDesc td = conf.getPathToPartitionInfo().get(onefile);
+    LinkedHashMap<String, String> partSpec = td.getPartSpec();
     Properties tblProps = td.getProperties();
 
     Class sdclass = td.getDeserializerClass();
     if(sdclass == null) {
       String className = td.getSerdeClassName();
       if ((className == "") || (className == null)) {
-        throw new HiveException("SerDe class or the SerDe class name is not set for table: " 
+        throw new HiveException("SerDe class or the SerDe class name is not set for table: "
             + td.getProperties().getProperty("name"));
       }
       sdclass = hconf.getClassByName(className);
     }
-    
+
     String tableName = String.valueOf(tblProps.getProperty("name"));
     String partName = String.valueOf(partSpec);
     //HiveConf.setVar(hconf, HiveConf.ConfVars.HIVETABLENAME, tableName);
@@ -205,13 +208,13 @@ public class MapOperator extends Operator <mapredWork> implements Serializable {
       }
       StructObjectInspector partObjectInspector = ObjectInspectorFactory
                   .getStandardStructObjectInspector(partNames, partObjectInspectors);
-      
+
       Object[] rowWithPart = new Object[2];
       rowWithPart[1] = partValues;
       rowObjectInspector = ObjectInspectorFactory
                                 .getUnionStructObjectInspector(
                                     Arrays.asList(new StructObjectInspector[]{
-                                                    rowObjectInspector, 
+                                                    rowObjectInspector,
                                                     partObjectInspector}));
       //LOG.info("dump " + tableName + " " + partName + " " + rowObjectInspector.getTypeName());
       opCtx = new MapOpCtx(true, rowObjectInspector, rowWithPart, deserializer);
@@ -223,15 +226,17 @@ public class MapOperator extends Operator <mapredWork> implements Serializable {
     opCtx.tableName = tableName;
     opCtx.partName = partName;
     return opCtx;
-  }  
-  
+  }
+
   public void setChildren(Configuration hconf) throws HiveException {
-    
+
     Path fpath = new Path((new Path(HiveConf.getVar(hconf,
         HiveConf.ConfVars.HADOOPMAPFILENAME))).toUri().getPath());
-    ArrayList<Operator<? extends Serializable>> children = 
+    ArrayList<Operator<? extends Serializable>> children =
         new ArrayList<Operator<? extends Serializable>>();
     opCtxMap = new HashMap<MapInputPath, MapOpCtx>();
+    operatorToPaths = new HashMap<Operator<? extends Serializable>, java.util.ArrayList<String>> ();
+
     statsMap.put(Counter.DESERIALIZE_ERRORS, deserialize_error_count);
 
     try {
@@ -247,11 +252,16 @@ public class MapOperator extends Operator <mapredWork> implements Serializable {
               + fpath.toUri().getPath());
           MapInputPath inp = new MapInputPath(onefile, onealias, op);
           opCtxMap.put(inp, opCtx);
+          if(operatorToPaths.get(op) == null)
+          	operatorToPaths.put(op, new java.util.ArrayList<String>());
+          operatorToPaths.get(op).add(onefile);
+
           op.setParentOperators(new ArrayList<Operator<? extends Serializable>>());
           op.getParentOperators().add(this);
           // check for the operators who will process rows coming to this Map Operator
           if (!onepath.toUri().relativize(fpath.toUri()).equals(fpath.toUri())) {
             children.add(op);
+            childrenPaths.add(onefile);
             LOG.info("dump " + op.getName() + " " + opCtxMap.get(inp).getRowObjectInspector().getTypeName());
             if (!done) {
               deserializer = opCtxMap.get(inp).getDeserializer();
@@ -272,12 +282,12 @@ public class MapOperator extends Operator <mapredWork> implements Serializable {
       }
 
       // we found all the operators that we are supposed to process.
-      setChildOperators(children);      
+      setChildOperators(children);
     } catch (Exception e) {
       throw new HiveException(e);
     }
   }
-  
+
 
   public void initializeOp(Configuration hconf) throws HiveException {
     // set that parent initialization is done and call initialize on children
@@ -289,8 +299,8 @@ public class MapOperator extends Operator <mapredWork> implements Serializable {
       // inherit these
       HiveConf.setVar(hconf, HiveConf.ConfVars.HIVETABLENAME, entry.getValue().tableName);
       HiveConf.setVar(hconf, HiveConf.ConfVars.HIVEPARTITIONNAME, entry.getValue().partName);
-      Operator<? extends Serializable> op = entry.getKey().op;
-      
+      MapInputPath  input = entry.getKey();
+      Operator<? extends Serializable> op = input.op;
       // op is not in the children list, so need to remember it and close it afterwards
       if ( children.indexOf(op) == -1 ) {
         if ( extraChildrenToClose == null ) {
@@ -298,10 +308,23 @@ public class MapOperator extends Operator <mapredWork> implements Serializable {
         }
         extraChildrenToClose.add(op);
       }
-      op.initialize(hconf, new ObjectInspector[]{entry.getValue().getRowObjectInspector()});
+
+			// multiple input paths may corresponding the same operator (tree). The
+			// below logic is to avoid initialize one operator multiple times if there
+			// is one input path in this mapper's input paths.
+      boolean shouldInit = true;
+      List<String> paths = operatorToPaths.get(op);
+      for(String path: paths) {
+      	if(childrenPaths.contains(path) && !path.equals(input.path)) {
+      		shouldInit = false;
+      		break;
+      	}
+      }
+      if(shouldInit)
+      	op.initialize(hconf, new ObjectInspector[]{entry.getValue().getRowObjectInspector()});
     }
   }
-  
+
   /**
    * close extra child operators that are initialized but are not executed.
    */

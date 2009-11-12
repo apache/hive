@@ -234,9 +234,9 @@ public class HiveInputFormat<K extends WritableComparable,
 
     // for each dir, get the InputFormat, and do getSplits.
     for(Path dir: dirs) {
-      tableDesc table = getTableDescFromPath(pathToPartitionInfo, dir);
+    	partitionDesc part = getPartitionDescFromPath(pathToPartitionInfo, dir);
       // create a new InputFormat instance if this is the first time to see this class
-      Class inputFormatClass = table.getInputFileFormatClass();
+      Class inputFormatClass = part.getInputFileFormatClass();
       InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, job);
 
       FileInputFormat.setInputPaths(newjob, dir);
@@ -261,9 +261,9 @@ public class HiveInputFormat<K extends WritableComparable,
 
     // for each dir, get the InputFormat, and do validateInput.
     for (Path dir: dirs) {
-      tableDesc table = getTableDescFromPath(pathToPartitionInfo, dir);
+      partitionDesc part = getPartitionDescFromPath(pathToPartitionInfo, dir);
       // create a new InputFormat instance if this is the first time to see this class
-      InputFormat inputFormat = getInputFormatFromCache(table.getInputFileFormatClass(), job);
+      InputFormat inputFormat = getInputFormatFromCache(part.getInputFileFormatClass(), job);
 
       FileInputFormat.setInputPaths(newjob, dir);
       newjob.setInputFormat(inputFormat.getClass());
@@ -271,7 +271,7 @@ public class HiveInputFormat<K extends WritableComparable,
     }
   }
 
-  protected static tableDesc getTableDescFromPath(Map<String, partitionDesc> pathToPartitionInfo,
+	protected static partitionDesc getPartitionDescFromPath(Map<String, partitionDesc> pathToPartitionInfo,
                                                   Path dir) throws IOException {
     partitionDesc partDesc = pathToPartitionInfo.get(dir.toString());
     if (partDesc == null) {
@@ -281,13 +281,7 @@ public class HiveInputFormat<K extends WritableComparable,
       throw new IOException("cannot find dir = " + dir.toString() + " in partToPartitionInfo!");
     }
 
-    tableDesc table = partDesc.getTableDesc();
-    if (table == null) {
-      throw new IOException("Input " + dir.toString() +
-          " does not have associated InputFormat in mapredWork!");
-    }
-
-    return table;
+    return partDesc;
   }
 
   protected void initColumnsNeeded(JobConf jobConf, Class inputFormatClass,

@@ -305,8 +305,8 @@ public class Utilities {
   }
 
 
-  public static partitionDesc getPartitionDesc(Partition part) {
-    return (new partitionDesc (getTableDesc(part.getTable()), part.getSpec()));
+  public static partitionDesc getPartitionDesc(Partition part) throws HiveException {
+    return (new partitionDesc (part));
   }
 
   public static void addMapWork(mapredWork mr, Table tbl, String alias, Operator<?> work) {

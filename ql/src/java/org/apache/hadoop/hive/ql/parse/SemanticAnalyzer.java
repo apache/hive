@@ -185,14 +185,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private UnionProcContext uCtx;
   List<MapJoinOperator> listMapJoinOpsNoReducer;
   
-  private static final String TEXTFILE_INPUT = TextInputFormat.class.getName();
-  private static final String TEXTFILE_OUTPUT = IgnoreKeyTextOutputFormat.class.getName();
-  private static final String SEQUENCEFILE_INPUT = SequenceFileInputFormat.class.getName();
-  private static final String SEQUENCEFILE_OUTPUT = SequenceFileOutputFormat.class.getName();
-  private static final String RCFILE_INPUT = RCFileInputFormat.class.getName();
-  private static final String RCFILE_OUTPUT = RCFileOutputFormat.class.getName();
-  private static final String COLUMNAR_SERDE = ColumnarSerDe.class.getName();
-
   private static class Phase1Ctx {
     String dest;
     int nextNum;
@@ -4549,7 +4541,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               while (iterParts.hasNext()) {
                 Partition part = iterParts.next();
                 listP.add(part.getPartitionPath().toString());
-                partP.add(Utilities.getPartitionDesc(part));
+                try{
+                	partP.add(Utilities.getPartitionDesc(part));
+                } catch (HiveException e) {
+                	throw new SemanticException(e.getMessage(), e);
+                }
                 inputs.add(new ReadEntity(part));
               }
 
