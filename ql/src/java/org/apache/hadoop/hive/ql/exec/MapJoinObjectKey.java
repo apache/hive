@@ -39,10 +39,8 @@ public class MapJoinObjectKey implements Externalizable {
 
   transient protected int     metadataTag;
   transient protected ArrayList<Object>  obj;
-  transient Writable val;
-    
+
   public MapJoinObjectKey() {
-    val = new BytesWritable();
   }
 
   /**
@@ -52,9 +50,8 @@ public class MapJoinObjectKey implements Externalizable {
   public MapJoinObjectKey(int metadataTag, ArrayList<Object> obj) {
     this.metadataTag = metadataTag;
     this.obj = obj;
-    val = new BytesWritable();
   }
-  
+
   public boolean equals(Object o) {
     if (o instanceof MapJoinObjectKey) {
       MapJoinObjectKey mObj = (MapJoinObjectKey)o;
@@ -68,11 +65,11 @@ public class MapJoinObjectKey implements Externalizable {
 
     return false;
   }
-  
+
   public int hashCode() {
     return (obj == null) ? metadataTag : obj.hashCode();
   }
-  
+
   @Override
   public void readExternal(ObjectInput in) throws IOException,
       ClassNotFoundException {
@@ -83,8 +80,8 @@ public class MapJoinObjectKey implements Externalizable {
       MapJoinObjectCtx ctx = MapJoinOperator.getMapMetadata().get(Integer.valueOf(metadataTag));
 
       Writable val = ctx.getSerDe().getSerializedClass().newInstance();
-      val.readFields(in);      
-      obj = 
+      val.readFields(in);
+      obj =
         (ArrayList<Object>)
         ObjectInspectorUtils.copyToStandardObject(
             ctx.getSerDe().deserialize(val),
@@ -95,7 +92,7 @@ public class MapJoinObjectKey implements Externalizable {
     }
 
   }
-  
+
   @Override
   public void writeExternal(ObjectOutput out) throws IOException {
     try {

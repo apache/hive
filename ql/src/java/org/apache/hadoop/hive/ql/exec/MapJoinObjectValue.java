@@ -38,11 +38,8 @@ public class MapJoinObjectValue implements Externalizable {
 
   transient protected int     metadataTag;
   transient protected ArrayList<ArrayList<Object>>  obj;
-  transient Writable val;
-
 
   public MapJoinObjectValue() {
-    val = new Text();
   }
 
   /**
@@ -50,11 +47,10 @@ public class MapJoinObjectValue implements Externalizable {
    * @param obj
    */
   public MapJoinObjectValue(int metadataTag, ArrayList<ArrayList<Object>> obj) {
-    val = new Text();
     this.metadataTag = metadataTag;
     this.obj = obj;
   }
-  
+
   public boolean equals(Object o) {
     if (o instanceof MapJoinObjectValue) {
       MapJoinObjectValue mObj = (MapJoinObjectValue)o;
@@ -68,11 +64,11 @@ public class MapJoinObjectValue implements Externalizable {
 
     return false;
   }
-  
+
   public int hashCode() {
     return (obj == null) ? 0 : obj.hashCode();
   }
-  
+
   @Override
   public void readExternal(ObjectInput in) throws IOException,
       ClassNotFoundException {
@@ -85,25 +81,28 @@ public class MapJoinObjectValue implements Externalizable {
 
       ArrayList<ArrayList<Object>> res = new ArrayList<ArrayList<Object>>();
       for (int pos = 0; pos < sz; pos++) {
+        Writable val = ctx.getSerDe().getSerializedClass().newInstance();
+        val.readFields(in);
+
         ArrayList<Object> memObj =
           (ArrayList<Object>)
           ObjectInspectorUtils.copyToStandardObject(
               ctx.getSerDe().deserialize(val),
               ctx.getSerDe().getObjectInspector(),
               ObjectInspectorCopyOption.WRITABLE);
-        
+
         res.add(memObj);
       }
       obj = res;
-    } catch (SerDeException e) {
+    } catch (Exception e) {
       throw new IOException(e);
     }
   }
-  
+
   @Override
   public void writeExternal(ObjectOutput out) throws IOException {
     try {
-      
+
       out.writeInt(metadataTag);
 
       // get the tableDesc from the map stored in the mapjoin operator
