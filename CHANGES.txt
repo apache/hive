@@ -115,6 +115,8 @@ Trunk -  Unreleased
     HIVE-855. UDF: Concat should accept multiple arguments.
     (Paul Yang via zshao)
 
+    HIVE-914. Optimize UDFJson (Paul Yang via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES

@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.udf;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -56,10 +58,40 @@ import org.apache.hadoop.io.Text;
     )
 public class UDFJson extends UDF {
   private static Log LOG = LogFactory.getLog(UDFJson.class.getName());
-  private Pattern pattern_key = Pattern.compile("^([a-zA-Z0-9_\\-]+).*");
-  private Pattern pattern_index = Pattern.compile("\\[([0-9]+|\\*)\\]");
+  private Pattern patternKey = Pattern.compile("^([a-zA-Z0-9_\\-]+).*");
+  private Pattern patternIndex = Pattern.compile("\\[([0-9]+|\\*)\\]");
 
+  // An LRU cache using a linked hash map
+  static class HashCache<K,V> extends LinkedHashMap<K,V> {
+    
+    private static final int   CACHE_SIZE  = 16;
+    private static final int   INIT_SIZE   = 32;
+    private static final float LOAD_FACTOR = 0.6f;
+    
+    HashCache() {
+      super(INIT_SIZE,LOAD_FACTOR);
+    }
+    private static final long serialVersionUID = 1;
+    @Override 
+    protected boolean removeEldestEntry (Map.Entry<K,V> eldest) {
+       return size() > CACHE_SIZE; 
+    }
+
+  }
+  
+  static Map<String, Object> extractObjectCache = 
+    new HashCache<String, Object>();
+  static Map<String, String[]> pathExprCache = 
+    new HashCache<String, String[]>();
+  static Map<String, ArrayList<String>> indexListCache = 
+    new HashCache<String, ArrayList<String>>();
+  static Map<String, String> mKeyGroup1Cache = 
+    new HashCache<String, String>();
+  static Map<String, Boolean> mKeyMatchesCache =
+    new HashCache<String, Boolean>();
+  
   Text result = new Text();
+  
   public UDFJson() {
   }
 
@@ -83,24 +115,34 @@ public class UDFJson extends UDF {
    *    [,] : Union operator
    *    [start:end:step] : array slice operator
    *
-   * @param jsonText the json string.
-   * @param pathText the json path expression.
-   * @return json string or null when error happens.
+   * @param jsonString the json string.
+   * @param pathString the json path expression.
+   * @return json string or null when an error happens.
    */
-  public Text evaluate(Text jsonText, Text pathText) {
-    if (jsonText == null || pathText == null) {
+  public Text evaluate(String jsonString, String pathString) {
+
+    if(jsonString == null || jsonString == "" ||
+       pathString == null || pathString == "") {
       return null;
     }
-
-    String jsonString = jsonText.toString();
-    String pathString = pathText.toString();
     
     try {
-      String[] pathExpr = pathString.split("\\.", -1);
+      // Cache pathExpr
+      String[] pathExpr = pathExprCache.get(pathString);
+      if (pathExpr == null) {
+        pathExpr = pathString.split("\\.", -1);
+        pathExprCache.put(pathString, pathExpr);
+      }
+      
       if (!pathExpr[0].equalsIgnoreCase("$")) {
         return null;
       }
-      Object extractObject = new JSONObject(jsonString);
+      // Cache extractObject
+      Object extractObject = extractObjectCache.get(jsonString);
+      if(extractObject == null) {
+        extractObject = new JSONObject(jsonString);
+        extractObjectCache.put(jsonString, extractObject);
+      }
       for (int i = 1; i < pathExpr.length; i++) {
         extractObject = extract(extractObject, pathExpr[i]);
       }
@@ -112,33 +154,60 @@ public class UDFJson extends UDF {
   }
 
   private Object extract(Object json, String path) throws JSONException {
-    Matcher m_key = pattern_key.matcher(path);
-    if (!m_key.matches()) {
+
+    // Cache patternkey.matcher(path).matches()
+    Matcher mKey = null;
+    Boolean mKeyMatches = mKeyMatchesCache.get(path);
+    if (mKeyMatches == null) {
+      mKey = patternKey.matcher(path);
+      mKeyMatches = mKey.matches() ? Boolean.TRUE : Boolean.FALSE;
+      mKeyMatchesCache.put(path, mKeyMatches);
+    }
+    if (!mKeyMatches.booleanValue()) {
       return null;
     }
-    json = extract_json_withkey(json, m_key.group(1));
-
-    Matcher m_index = pattern_index.matcher(path);
-    ArrayList<String> index_list = new ArrayList<String>();
-    while (m_index.find()) {
-      index_list.add(m_index.group(1));
+    
+    // Cache mkey.group(1)
+    String mKeyGroup1 = mKeyGroup1Cache.get(path);
+    if (mKeyGroup1 == null) {
+      if (mKey == null) {
+        mKey = patternKey.matcher(path);
+      }
+      mKeyGroup1 = mKey.group(1);
+      mKeyGroup1Cache.put(path, mKeyGroup1);
     }
-    if (index_list.size() > 0) {
-      json = extract_json_withindex(json, index_list);
+    json = extract_json_withkey(json, mKeyGroup1);
+    
+    // Cache indexList
+    ArrayList<String> indexList = indexListCache.get(path);
+    if(indexList == null) {
+      Matcher mIndex = patternIndex.matcher(path);
+      indexList = new ArrayList<String>();
+      while (mIndex.find()) {
+        indexList.add(mIndex.group(1));
+      }
+      indexListCache.put(path, indexList);
     }
 
+    if (indexList.size() > 0) {
+      json = extract_json_withindex(json, indexList);
+    }
+  
     return json;
   }
 
+  ArrayList<Object> jsonList = new ArrayList<Object>();
+  
   private Object extract_json_withindex(Object json, ArrayList<String> indexList)
       throws JSONException {
-    ArrayList<Object> jsonList = new ArrayList<Object>();
+    
+    jsonList.clear();
     jsonList.add(json);
     Iterator<String> itr = indexList.iterator();
     while (itr.hasNext()) {
       String index = itr.next();
+      ArrayList<Object> tmp_jsonList = new ArrayList<Object>();
       if (index.equalsIgnoreCase("*")) {
-        ArrayList<Object> tmp_jsonList = new ArrayList<Object>();
         for (int i = 0; i < ((ArrayList<Object>) jsonList).size(); i++) {
           try {
             JSONArray array = (JSONArray) ((ArrayList<Object>) jsonList).get(i);
@@ -151,7 +220,6 @@ public class UDFJson extends UDF {
         }
         jsonList = tmp_jsonList;
       } else {
-        ArrayList<Object> tmp_jsonList = new ArrayList<Object>();
         for (int i = 0; i < ((ArrayList<Object>) jsonList).size(); i++) {
           try {
             tmp_jsonList
