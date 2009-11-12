@@ -18,12 +18,25 @@ PREHOOK: query: drop table nzhang_ctas5
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table nzhang_ctas5
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: explain create table nzhang_ctas1 as select key k, value from src sort by k, value limit 10
+PREHOOK: query: create table nzhang_Tmp(a int, b string)
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: explain create table nzhang_ctas1 as select key k, value from src sort by k, value limit 10
+POSTHOOK: query: create table nzhang_Tmp(a int, b string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@nzhang_Tmp
+PREHOOK: query: select * from nzhang_Tmp
+PREHOOK: type: QUERY
+PREHOOK: Input: default@nzhang_tmp
+PREHOOK: Output: file:/data/users/nzhang/work/784/apache-hive/build/ql/tmp/536502363/10000
+POSTHOOK: query: select * from nzhang_Tmp
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@nzhang_tmp
+POSTHOOK: Output: file:/data/users/nzhang/work/784/apache-hive/build/ql/tmp/536502363/10000
+PREHOOK: query: explain create table nzhang_CTAS1 as select key k, value from src sort by k, value limit 10
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: explain create table nzhang_CTAS1 as select key k, value from src sort by k, value limit 10
 POSTHOOK: type: CREATETABLE
 ABSTRACT SYNTAX TREE:
-  (TOK_CREATETABLE nzhang_ctas1 TOK_LIKETABLE (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key) k) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL k)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value))) (TOK_LIMIT 10))))
+  (TOK_CREATETABLE nzhang_CTAS1 TOK_LIKETABLE (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key) k) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL k)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value))) (TOK_LIMIT 10))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -71,7 +84,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/551361482/10002 
+        file:/data/users/nzhang/work/784/apache-hive/build/ql/tmp/1291628611/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -99,7 +112,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:///data/users/nzhang/work/876/apache-hive/ql/../build/ql/test/data/warehouse/nzhang_ctas1
+          destination: file:///data/users/nzhang/work/784/apache-hive/ql/../build/ql/test/data/warehouse/nzhang_ctas1
 
   Stage: Stage-3
       Create Table Operator:
@@ -109,25 +122,25 @@ STAGE PLANS:
           input format: org.apache.hadoop.mapred.TextInputFormat
           # buckets: -1
           output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
-          name: nzhang_ctas1
+          name: nzhang_CTAS1
           isExternal: false
 
 
-PREHOOK: query: create table nzhang_ctas1 as select key k, value from src sort by k, value limit 10
+PREHOOK: query: create table nzhang_CTAS1 as select key k, value from src sort by k, value limit 10
 PREHOOK: type: CREATETABLE
 PREHOOK: Input: default@src
-POSTHOOK: query: create table nzhang_ctas1 as select key k, value from src sort by k, value limit 10
+POSTHOOK: query: create table nzhang_CTAS1 as select key k, value from src sort by k, value limit 10
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@nzhang_ctas1
-PREHOOK: query: select * from nzhang_ctas1
+POSTHOOK: Output: default@nzhang_CTAS1
+PREHOOK: query: select * from nzhang_CTAS1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_ctas1
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/170193651/10000
-POSTHOOK: query: select * from nzhang_ctas1
+PREHOOK: Output: file:/data/users/nzhang/work/784/apache-hive/build/ql/tmp/1370087702/10000
+POSTHOOK: query: select * from nzhang_CTAS1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_ctas1
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/170193651/10000
+POSTHOOK: Output: file:/data/users/nzhang/work/784/apache-hive/build/ql/tmp/1370087702/10000
 0	val_0
 0	val_0
 0	val_0
@@ -191,7 +204,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1299285756/10002 
+        file:/data/users/nzhang/work/784/apache-hive/build/ql/tmp/959791593/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -219,7 +232,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:///data/users/nzhang/work/876/apache-hive/ql/../build/ql/test/data/warehouse/nzhang_ctas2
+          destination: file:///data/users/nzhang/work/784/apache-hive/ql/../build/ql/test/data/warehouse/nzhang_ctas2
 
   Stage: Stage-3
       Create Table Operator:
@@ -243,11 +256,11 @@ POSTHOOK: Output: default@nzhang_ctas2
 PREHOOK: query: select * from nzhang_ctas2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_ctas2
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1593006253/10000
+PREHOOK: Output: file:/data/users/nzhang/work/784/apache-hive/build/ql/tmp/685770592/10000
 POSTHOOK: query: select * from nzhang_ctas2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_ctas2
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1593006253/10000
+POSTHOOK: Output: file:/data/users/nzhang/work/784/apache-hive/build/ql/tmp/685770592/10000
 0	val_0
 0	val_0
 0	val_0
@@ -311,7 +324,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/115382/10002 
+        file:/data/users/nzhang/work/784/apache-hive/build/ql/tmp/2060875014/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -339,7 +352,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:///data/users/nzhang/work/876/apache-hive/ql/../build/ql/test/data/warehouse/nzhang_ctas3
+          destination: file:///data/users/nzhang/work/784/apache-hive/ql/../build/ql/test/data/warehouse/nzhang_ctas3
 
   Stage: Stage-3
       Create Table Operator:
@@ -364,11 +377,11 @@ POSTHOOK: Output: default@nzhang_ctas3
 PREHOOK: query: select * from nzhang_ctas3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_ctas3
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/263363884/10000
+PREHOOK: Output: file:/data/users/nzhang/work/784/apache-hive/build/ql/tmp/1792835234/10000
 POSTHOOK: query: select * from nzhang_ctas3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_ctas3
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/263363884/10000
+POSTHOOK: Output: file:/data/users/nzhang/work/784/apache-hive/build/ql/tmp/1792835234/10000
 0.0	val_0_con
 0.0	val_0_con
 0.0	val_0_con
@@ -397,11 +410,11 @@ POSTHOOK: type: CREATETABLE
 PREHOOK: query: select * from nzhang_ctas3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_ctas3
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/103710196/10000
+PREHOOK: Output: file:/data/users/nzhang/work/784/apache-hive/build/ql/tmp/1694081788/10000
 POSTHOOK: query: select * from nzhang_ctas3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_ctas3
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/103710196/10000
+POSTHOOK: Output: file:/data/users/nzhang/work/784/apache-hive/build/ql/tmp/1694081788/10000
 0.0	val_0_con
 0.0	val_0_con
 0.0	val_0_con
@@ -465,7 +478,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/473374758/10002 
+        file:/data/users/nzhang/work/784/apache-hive/build/ql/tmp/317007592/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -493,7 +506,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:///data/users/nzhang/work/876/apache-hive/ql/../build/ql/test/data/warehouse/nzhang_ctas4
+          destination: file:///data/users/nzhang/work/784/apache-hive/ql/../build/ql/test/data/warehouse/nzhang_ctas4
 
   Stage: Stage-3
       Create Table Operator:
@@ -518,11 +531,11 @@ POSTHOOK: Output: default@nzhang_ctas4
 PREHOOK: query: select * from nzhang_ctas4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_ctas4
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1232078865/10000
+PREHOOK: Output: file:/data/users/nzhang/work/784/apache-hive/build/ql/tmp/570968637/10000
 POSTHOOK: query: select * from nzhang_ctas4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_ctas4
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1232078865/10000
+POSTHOOK: Output: file:/data/users/nzhang/work/784/apache-hive/build/ql/tmp/570968637/10000
 0	val_0
 0	val_0
 0	val_0
@@ -575,9 +588,9 @@ STAGE PLANS:
                       type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/nzhang/work/876/apache-hive/build/ql/test/data/warehouse/src [src]
+        file:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src [src]
       Path -> Partition:
-        file:/data/users/nzhang/work/876/apache-hive/build/ql/test/data/warehouse/src 
+        file:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src 
           Partition
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -592,8 +605,8 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/nzhang/work/876/apache-hive/build/ql/test/data/warehouse/src
-                transient_lastDdlTime 1255728382
+                location file:/data/users/nzhang/work/784/apache-hive/build/ql/test/data/warehouse/src
+                transient_lastDdlTime 1257916626
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
       Reduce Operator Tree:
@@ -602,7 +615,7 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/751741251/10002
+              directory: file:/data/users/nzhang/work/784/apache-hive/build/ql/tmp/876611878/10002
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -614,7 +627,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/751741251/10002 
+        file:/data/users/nzhang/work/784/apache-hive/build/ql/tmp/876611878/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -630,9 +643,9 @@ STAGE PLANS:
                     type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/751741251/10002 [file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/751741251/10002]
+        file:/data/users/nzhang/work/784/apache-hive/build/ql/tmp/876611878/10002 [file:/data/users/nzhang/work/784/apache-hive/build/ql/tmp/876611878/10002]
       Path -> Partition:
-        file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/751741251/10002 
+        file:/data/users/nzhang/work/784/apache-hive/build/ql/tmp/876611878/10002 
           Partition
           
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -647,7 +660,7 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/751741251/10001
+              directory: file:/data/users/nzhang/work/784/apache-hive/build/ql/tmp/876611878/10001
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -662,8 +675,8 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          source: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/751741251/10001
-          destination: file:///data/users/nzhang/work/876/apache-hive/ql/../build/ql/test/data/warehouse/nzhang_ctas5
+          source: file:/data/users/nzhang/work/784/apache-hive/build/ql/tmp/876611878/10001
+          destination: file:///data/users/nzhang/work/784/apache-hive/ql/../build/ql/test/data/warehouse/nzhang_ctas5
 
   Stage: Stage-3
       Create Table Operator:
@@ -711,3 +724,8 @@ PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table nzhang_ctas5
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: default@nzhang_ctas5
+PREHOOK: query: drop table nzhang_Tmp
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table nzhang_Tmp
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@nzhang_tmp

@@ -4,11 +4,14 @@ drop table nzhang_ctas3;
 drop table nzhang_ctas4;
 drop table nzhang_ctas5;
 
-explain create table nzhang_ctas1 as select key k, value from src sort by k, value limit 10;
+create table nzhang_Tmp(a int, b string);
+select * from nzhang_Tmp;
 
-create table nzhang_ctas1 as select key k, value from src sort by k, value limit 10;
+explain create table nzhang_CTAS1 as select key k, value from src sort by k, value limit 10;
 
-select * from nzhang_ctas1;
+create table nzhang_CTAS1 as select key k, value from src sort by k, value limit 10;
+
+select * from nzhang_CTAS1;
 
 
 explain create table nzhang_ctas2 as select * from src sort by key, value limit 10;
@@ -47,3 +50,4 @@ drop table nzhang_ctas2;
 drop table nzhang_ctas3;
 drop table nzhang_ctas4;
 drop table nzhang_ctas5;
+drop table nzhang_Tmp;

@@ -4608,7 +4608,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             if ( location.charAt(location.length()-1) != '/' ) {
               location += '/';
             }
-            location += qb.getTableDesc().getTableName();
+            location += qb.getTableDesc().getTableName().toLowerCase();
           }
           lfd.setTargetDir(location);
           oneLoadFile = false;

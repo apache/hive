@@ -257,7 +257,9 @@ Trunk -  Unreleased
     HIVE-923 Use HiveInputFormat by default (Zheng Shao via namit)
 
     HIVE-926 bug in mapjoin when rows are getting aged out from cache (namit via He Yongqiang)
- 
+
+    HIVE-912 ctas name should be case insensitive (Ning Zhang via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
