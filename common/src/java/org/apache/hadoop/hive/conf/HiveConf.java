@@ -158,7 +158,8 @@ public class HiveConf extends Configuration {
     HIVEMERGEMAPFILES("hive.merge.mapfiles", true),
     HIVEMERGEMAPREDFILES("hive.merge.mapredfiles", false),
     HIVEMERGEMAPFILESSIZE("hive.merge.size.per.task", (long)(256*1000*1000)),
-
+    HIVEMERGEMAPFILESAVGSIZE("hive.merge.smallfiles.avgsize", (long)(16*1000*1000)),
+    
     HIVESENDHEARTBEAT("hive.heartbeat.interval", 1000),
 
     HIVEJOBPROGRESS("hive.task.progress", false),

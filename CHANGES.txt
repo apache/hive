@@ -262,6 +262,9 @@ Trunk -  Unreleased
 
     HIVE-912 ctas name should be case insensitive (Ning Zhang via namit)
 
+    HIVE-929. Use a new parameter to check whether to merge files or not
+    (He Yongqiang via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

@@ -93,10 +93,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/njain/hive5/hive5/build/ql/tmp/1186355480/10000
+                destination: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/585401858/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/njain/hive5/hive5/build/ql/tmp/443335059/10002 
+              file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/846450529/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -143,11 +143,11 @@ POSTHOOK: Output: default@dest1
 PREHOOK: query: select * from dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1168542666/10000
+PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/730713753/10000
 POSTHOOK: query: select * from dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1168542666/10000
+POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/730713753/10000
 0	3
 10	1
 100	2
@@ -457,6 +457,214 @@ POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1168542666/100
 96	1
 97	2
 98	2
+PREHOOK: query: drop table dest1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table dest1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@dest1
+PREHOOK: query: create table test_src(key string, value string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table test_src(key string, value string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@test_src
+PREHOOK: query: create table dest1(key string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table dest1(key string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest1
+PREHOOK: query: insert overwrite table test_src partition(ds='101') select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_src@ds=101
+POSTHOOK: query: insert overwrite table test_src partition(ds='101') select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_src@ds=101
+PREHOOK: query: insert overwrite table test_src partition(ds='102') select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@test_src@ds=102
+POSTHOOK: query: insert overwrite table test_src partition(ds='102') select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@test_src@ds=102
+PREHOOK: query: explain 
+insert overwrite table dest1 select key from test_src
+PREHOOK: type: QUERY
+POSTHOOK: query: explain 
+insert overwrite table dest1 select key from test_src
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF test_src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-4 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-4
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        test_src 
+          TableScan
+            alias: test_src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              outputColumnNames: _col0
+              File Output Operator
+                compressed: false
+                GlobalTableId: 1
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: dest1
+
+  Stage: Stage-4
+    Conditional Operator
+      list of dependent Tasks:
+          Move Operator
+            files:
+                hdfs directory: true
+                destination: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/353161784/10000
+          Map Reduce
+            Alias -> Map Operator Tree:
+              file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/2091577421/10002 
+                  Reduce Output Operator
+                    sort order: 
+                    Map-reduce partition columns:
+                          expr: rand()
+                          type: double
+                    tag: -1
+                    value expressions:
+                          expr: key
+                          type: string
+            Reduce Operator Tree:
+              Extract
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: dest1
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: dest1
+
+
+PREHOOK: query: insert overwrite table dest1 select key from test_src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_src@ds=101
+PREHOOK: Input: default@test_src@ds=102
+PREHOOK: Output: default@dest1
+POSTHOOK: query: insert overwrite table dest1 select key from test_src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_src@ds=101
+POSTHOOK: Input: default@test_src@ds=102
+POSTHOOK: Output: default@dest1
+PREHOOK: query: explain
+insert overwrite table dest1 select key from test_src
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+insert overwrite table dest1 select key from test_src
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF test_src)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-4 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-4
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        test_src 
+          TableScan
+            alias: test_src
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              outputColumnNames: _col0
+              File Output Operator
+                compressed: false
+                GlobalTableId: 1
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: dest1
+
+  Stage: Stage-4
+    Conditional Operator
+      list of dependent Tasks:
+          Move Operator
+            files:
+                hdfs directory: true
+                destination: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/1533278841/10000
+          Map Reduce
+            Alias -> Map Operator Tree:
+              file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/1738586251/10002 
+                  Reduce Output Operator
+                    sort order: 
+                    Map-reduce partition columns:
+                          expr: rand()
+                          type: double
+                    tag: -1
+                    value expressions:
+                          expr: key
+                          type: string
+            Reduce Operator Tree:
+              Extract
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: dest1
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: dest1
+
+
+PREHOOK: query: insert overwrite table dest1 select key from test_src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_src@ds=101
+PREHOOK: Input: default@test_src@ds=102
+PREHOOK: Output: default@dest1
+POSTHOOK: query: insert overwrite table dest1 select key from test_src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_src@ds=101
+POSTHOOK: Input: default@test_src@ds=102
+POSTHOOK: Output: default@dest1
+PREHOOK: query: drop table test_src
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table test_src
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@test_src
 PREHOOK: query: drop table dest1
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table dest1

@@ -89,6 +89,8 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver, Seria
     // check if a map-reduce job is needed to merge the files
     // If the current size is smaller than the target, merge
     long trgtSize = conf.getLongVar(HiveConf.ConfVars.HIVEMERGEMAPFILESSIZE);
+    long avgConditionSize = conf.getLongVar(HiveConf.ConfVars.HIVEMERGEMAPFILESAVGSIZE);
+		trgtSize = trgtSize > avgConditionSize ? trgtSize : avgConditionSize;
     
     try {
       // If the input file does not exist, replace it by a empty file
@@ -101,8 +103,8 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver, Seria
         for (FileStatus fStat : fStats) 
           totalSz += fStat.getLen();
       
-        long currSz = totalSz / fStats.length;
-        if ((currSz < trgtSize) && (fStats.length > 1)) {
+        long currAvgSz = totalSz / fStats.length;
+        if ((currAvgSz < avgConditionSize) && (fStats.length > 1)) {
           // also set the number of reducers
           Task<? extends Serializable> tsk = ctx.getListTasks().get(1);
           mapredWork work = (mapredWork)tsk.getWork();
