@@ -59,6 +59,9 @@ import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMRUnionCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMRMapJoinCtx;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
+import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
+import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext.UnionParseContext;
+import org.apache.hadoop.hive.ql.parse.ParseContext;
 
 /**
  * General utility common functions for the Processor to convert operator into map-reduce tasks
@@ -425,7 +428,7 @@ public class GenMapRedUtils {
     	LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
       throw new SemanticException(e.getMessage(), e);
     }
-		
+
     plan.getAliasToPartnInfo().put(alias_id, aliasPartnDesc);
     SamplePruner samplePruner = parseCtx.getAliasToSamplePruner().get(alias_id);
 
@@ -714,5 +717,67 @@ public class GenMapRedUtils {
     opProcCtx.setCurrTopOp(currTopOp);
     opProcCtx.setCurrAliasId(currAliasId);
     opProcCtx.setCurrTask(childTask);
+  }
+
+  static public void mergeMapJoinUnion(UnionOperator union, GenMRProcContext ctx, int pos) throws SemanticException {
+    ParseContext parseCtx = ctx.getParseCtx();
+    UnionProcContext uCtx = parseCtx.getUCtx();
+
+    UnionParseContext uPrsCtx = uCtx.getUnionParseContext(union);
+    assert uPrsCtx != null;
+
+    Task<? extends Serializable> currTask = ctx.getCurrTask();
+
+    GenMRUnionCtx uCtxTask = ctx.getUnionTask(union);
+    Task<? extends Serializable> uTask = null;
+
+    Operator<? extends Serializable> parent = union.getParentOperators().get(pos);
+    mapredWork uPlan = null;
+
+    // union is encountered for the first time
+    if (uCtxTask == null) {
+      uCtxTask = new GenMRUnionCtx();
+      uPlan = GenMapRedUtils.getMapRedWork();
+      uTask = TaskFactory.get(uPlan, parseCtx.getConf());
+      uCtxTask.setUTask(uTask);
+      ctx.setUnionTask(union, uCtxTask);
+    }
+    else {
+      uTask = uCtxTask.getUTask();
+      uPlan = (mapredWork)uTask.getWork();
+    }
+
+    // If there is a mapjoin at position 'pos'
+    if (uPrsCtx.getMapJoinSubq(pos)) {
+      GenMRMapJoinCtx mjCtx = ctx.getMapJoinCtx(ctx.getCurrMapJoinOp());
+      String taskTmpDir = mjCtx.getTaskTmpDir();
+      if (uPlan.getPathToAliases().get(taskTmpDir) == null) {
+        uPlan.getPathToAliases().put(taskTmpDir, new ArrayList<String>());
+        uPlan.getPathToAliases().get(taskTmpDir).add(taskTmpDir);
+        uPlan.getPathToPartitionInfo().put(taskTmpDir, new partitionDesc(mjCtx.getTTDesc(), null));
+        uPlan.getAliasToWork().put(taskTmpDir, mjCtx.getRootMapJoinOp());
+      }
+
+      for (Task t : currTask.getParentTasks())
+        t.addDependentTask(uTask);
+      try {
+        boolean notDone = true;
+        while (notDone) {
+          for (Task t : currTask.getParentTasks())
+            t.removeDependentTask(currTask);
+          notDone = false;
+        }
+      } catch (java.util.ConcurrentModificationException e) {
+      }
+    }
+    else
+      setTaskPlan(ctx.getCurrAliasId(), ctx.getCurrTopOp(), uPlan, false, ctx);
+
+    ctx.setCurrTask(uTask);
+    ctx.setCurrAliasId(null);
+    ctx.setCurrTopOp(null);
+    ctx.setCurrMapJoinOp(null);
+
+    ctx.getMapCurrCtx().put((Operator<? extends Serializable>)union, new GenMapRedCtx(ctx.getCurrTask(), null, null));
   }
 }

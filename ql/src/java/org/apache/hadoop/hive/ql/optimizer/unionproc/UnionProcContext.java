@@ -29,35 +29,52 @@ public class UnionProcContext implements NodeProcessorCtx {
   public static class UnionParseContext {
     transient private boolean[] mapOnlySubq;
     transient private boolean[] rootTask;
-    
+    transient private boolean[] mapJoinSubq;
+
     transient private int numInputs;
+    transient private boolean mapJoinQuery;
 
     public UnionParseContext(int numInputs) {
       this.numInputs = numInputs;
       mapOnlySubq = new boolean[numInputs];
       rootTask    = new boolean[numInputs];
+      mapJoinSubq = new boolean[numInputs];
     }
-    
+
     public boolean getMapOnlySubq(int pos) {
       return mapOnlySubq[pos];
     }
-    
+
     public void setMapOnlySubq(int pos, boolean mapOnlySubq) {
       this.mapOnlySubq[pos] = mapOnlySubq;
     }
-    
+
+    public boolean getMapJoinSubq(int pos) {
+      return mapJoinSubq[pos];
+    }
+
+    public void setMapJoinSubq(int pos, boolean mapJoinSubq) {
+      this.mapJoinSubq[pos] = mapJoinSubq;
+      if (mapJoinSubq)
+        mapJoinQuery = true;
+    }
+
+    public boolean getMapJoinQuery() {
+      return mapJoinQuery;
+    }
+
     public boolean getRootTask(int pos) {
       return rootTask[pos];
     }
-    
+
     public void setRootTask(int pos, boolean rootTask) {
       this.rootTask[pos] = rootTask;
     }
-    
+
     public int getNumInputs() {
       return numInputs;
     }
-    
+
     public void setNumInputs(int numInputs) {
       this.numInputs = numInputs;
     }
@@ -87,11 +104,11 @@ public class UnionProcContext implements NodeProcessorCtx {
     mapOnlySubq = true;
   }
 
-  public void setUnionParseContext(UnionOperator u, UnionParseContext uCtx) { 
+  public void setUnionParseContext(UnionOperator u, UnionParseContext uCtx) {
     uCtxMap.put(u, uCtx);
   }
 
-  public UnionParseContext getUnionParseContext(UnionOperator u) { 
+  public UnionParseContext getUnionParseContext(UnionOperator u) {
     return uCtxMap.get(u);
   }
 }

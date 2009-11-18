@@ -41,10 +41,10 @@ public class UnionProcFactory {
     Operator<? extends Serializable> parent = (Operator<? extends Serializable>)stack.get(size - 2);
     List<Operator<? extends Serializable>> parUnion = union.getParentOperators();
     pos = parUnion.indexOf(parent);
-    assert pos < parUnion.size(); 
+    assert pos < parUnion.size();
     return pos;
   }
-  
+
   /**
    * MapRed subquery followed by Union
    */
@@ -65,7 +65,7 @@ public class UnionProcFactory {
       ctx.setMapOnlySubq(false);
       uCtx.setMapOnlySubq(pos, false);
       uCtx.setRootTask(pos, false);
-      ctx.setUnionParseContext(union, uCtx); 
+      ctx.setUnionParseContext(union, uCtx);
       return null;
     }
   }
@@ -89,7 +89,30 @@ public class UnionProcFactory {
 
       uCtx.setMapOnlySubq(pos, true);
       uCtx.setRootTask(pos, true);
-      ctx.setUnionParseContext(union, uCtx); 
+      ctx.setUnionParseContext(union, uCtx);
+      return null;
+    }
+  }
+
+  /**
+   * Map-join subquery followed by Union
+   */
+  public static class MapJoinUnion implements NodeProcessor {
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+        Object... nodeOutputs) throws SemanticException {
+      UnionOperator union = (UnionOperator)nd;
+      UnionProcContext ctx = (UnionProcContext) procCtx;
+
+      // find the branch on which this processor was invoked
+      int pos = getPositionParent(union, stack);
+      UnionParseContext uCtx = ctx.getUnionParseContext(union);
+      if (uCtx == null)
+        uCtx = new UnionParseContext(union.getConf().getNumInputs());
+
+      uCtx.setMapJoinSubq(pos, true);
+      ctx.setUnionParseContext(union, uCtx);
       return null;
     }
   }
@@ -113,11 +136,11 @@ public class UnionProcFactory {
 
       uCtx.setMapOnlySubq(pos, true);
       uCtx.setRootTask(pos, false);
-      ctx.setUnionParseContext(union, uCtx); 
+      ctx.setUnionParseContext(union, uCtx);
       return null;
     }
   }
-  
+
   /**
    * Default processor
    */
@@ -138,10 +161,14 @@ public class UnionProcFactory {
     return new MapUnion();
   }
 
+  public static NodeProcessor getMapJoinUnion() {
+    return new MapJoinUnion();
+  }
+
   public static NodeProcessor getUnknownUnion() {
     return new UnknownUnion();
   }
-  
+
   public static NodeProcessor getNoUnion() {
     return new NoUnion();
   }

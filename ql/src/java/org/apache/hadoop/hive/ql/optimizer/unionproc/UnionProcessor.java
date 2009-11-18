@@ -36,8 +36,8 @@ import org.apache.hadoop.hive.ql.optimizer.Transform;
 /**
  * Implementation of the union processor. This can be enhanced later on.
  * Currently, it does the following:
- *   Identify if both the subqueries of UNION are map-only. 
- *   Store that fact in the unionDesc/UnionOperator. 
+ *   Identify if both the subqueries of UNION are map-only.
+ *   Store that fact in the unionDesc/UnionOperator.
  *   If either of the sub-query involves a map-reduce job, a FS is introduced on top of the UNION.
  *   This can be later optimized to clone all the operators above the UNION.
 
@@ -51,7 +51,7 @@ public class UnionProcessor implements Transform {
   public UnionProcessor() { }
 
   /**
-   * Transform the query tree. For each union, store the fact whether both the 
+   * Transform the query tree. For each union, store the fact whether both the
    * sub-queries are map-only
    * @param pCtx the current parse context
    */
@@ -61,18 +61,19 @@ public class UnionProcessor implements Transform {
     opRules.put(new RuleRegExp(new String("R1"), "RS%.*UNION%"), UnionProcFactory.getMapRedUnion());
     opRules.put(new RuleRegExp(new String("R2"), "UNION%.*UNION%"), UnionProcFactory.getUnknownUnion());
     opRules.put(new RuleRegExp(new String("R3"), "TS%.*UNION%"), UnionProcFactory.getMapUnion());
+    opRules.put(new RuleRegExp(new String("R3"), "MAPJOIN%.*UNION%"), UnionProcFactory.getMapJoinUnion());
 
     // The dispatcher fires the processor for the matching rule and passes the context along
     UnionProcContext uCtx = new UnionProcContext();
     Dispatcher disp = new DefaultRuleDispatcher(UnionProcFactory.getNoUnion(), opRules, uCtx);
     GraphWalker ogw = new PreOrderWalker(disp);
-   
+
     // Create a list of topop nodes
     ArrayList<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pCtx.getTopOps().values());
     ogw.startWalking(topNodes, null);
     pCtx.setUCtx(uCtx);
-    
+
     return pCtx;
   }
 }

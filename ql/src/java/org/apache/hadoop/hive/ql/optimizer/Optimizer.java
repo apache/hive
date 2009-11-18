@@ -48,8 +48,9 @@ public class Optimizer {
       transformations.add(new PredicatePushDown());
       transformations.add(new PartitionPruner());
     }
-    transformations.add(new UnionProcessor());
+
     transformations.add(new MapJoinProcessor());
+    transformations.add(new UnionProcessor());
     transformations.add(new JoinReorder());
   }
 

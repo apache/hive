@@ -26,6 +26,8 @@ import java.io.File;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMRMapJoinCtx;
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.plan.mapredWork;
@@ -50,7 +52,7 @@ import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext.UnionParseContext;
 
 /**
- * Processor for the rule - any operator tree followed by union
+ * Processor for the rule - TableScan followed by Union
  */
 public class GenMRUnion1 implements NodeProcessor {
 
@@ -61,6 +63,7 @@ public class GenMRUnion1 implements NodeProcessor {
    * Union Operator encountered .
    * Currently, the algorithm is pretty simple:
    *   If all the sub-queries are map-only, dont do anything.
+   *   However, if there is a mapjoin followed by the union, merge at the union
    *   Otherwise, insert a FileSink on top of all the sub-queries.
    *
    * This can be optimized later on.
@@ -78,7 +81,12 @@ public class GenMRUnion1 implements NodeProcessor {
 
     // The plan needs to be broken only if one of the sub-queries involve a map-reduce job
     if (uCtx.isMapOnlySubq()) {
-      mapCurrCtx.put((Operator<? extends Serializable>)nd, new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrTopOp(), ctx.getCurrAliasId()));
+      UnionParseContext uPrsCtx = uCtx.getUnionParseContext(union);
+      if ((uPrsCtx != null) && (uPrsCtx.getMapJoinQuery())) {
+        GenMapRedUtils.mergeMapJoinUnion(union, ctx, UnionProcFactory.getPositionParent(union, stack));
+      }
+      else
+        mapCurrCtx.put((Operator<? extends Serializable>)nd, new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrTopOp(), ctx.getCurrAliasId()));
       return null;
     }
 
@@ -93,11 +101,11 @@ public class GenMRUnion1 implements NodeProcessor {
     // is the current task a root task
     if (uPrsCtx.getRootTask(pos) && (!ctx.getRootTasks().contains(currTask)))
       ctx.getRootTasks().add(currTask);
-    
+
     GenMRUnionCtx uCtxTask = ctx.getUnionTask(union);
     Task<? extends Serializable> uTask = null;
 
-    Operator<? extends Serializable> parent = union.getParentOperators().get(pos);   
+    Operator<? extends Serializable> parent = union.getParentOperators().get(pos);
     mapredWork uPlan = null;
 
     // union is encountered for the first time
@@ -113,27 +121,44 @@ public class GenMRUnion1 implements NodeProcessor {
       uPlan = (mapredWork)uTask.getWork();
     }
 
+    // If there is a mapjoin at position 'pos'
+    if (uPrsCtx.getMapJoinSubq(pos)) {
+      MapJoinOperator mjOp = ctx.getCurrMapJoinOp();
+      assert mjOp != null;
+      GenMRMapJoinCtx mjCtx = ctx.getMapJoinCtx(mjOp);
+      assert mjCtx != null;
+      mapredWork plan = (mapredWork) currTask.getWork();
+
+      String taskTmpDir = mjCtx.getTaskTmpDir();
+      tableDesc tt_desc = mjCtx.getTTDesc();
+      assert plan.getPathToAliases().get(taskTmpDir) == null;
+      plan.getPathToAliases().put(taskTmpDir, new ArrayList<String>());
+      plan.getPathToAliases().get(taskTmpDir).add(taskTmpDir);
+      plan.getPathToPartitionInfo().put(taskTmpDir, new partitionDesc(tt_desc, null));
+      plan.getAliasToWork().put(taskTmpDir, mjCtx.getRootMapJoinOp());
+    }
+
     tableDesc tt_desc = PlanUtils.getIntermediateFileTableDesc(
-          PlanUtils.getFieldSchemasFromRowSchema(parent.getSchema(), "temporarycol")); 
-    
+          PlanUtils.getFieldSchemasFromRowSchema(parent.getSchema(), "temporarycol"));
+
     // generate the temporary file
     Context baseCtx = parseCtx.getContext();
     String taskTmpDir = baseCtx.getMRTmpFileURI();
-    
+
     // Add the path to alias mapping
     uCtxTask.addTaskTmpDir(taskTmpDir);
     uCtxTask.addTTDesc(tt_desc);
 
     // The union task is empty. The files created for all the inputs are assembled in the
     // union context and later used to initialize the union plan
-    
+
     // Create a file sink operator for this file name
     Operator<? extends Serializable> fs_op =
       OperatorFactory.get
       (new fileSinkDesc(taskTmpDir, tt_desc,
                         parseCtx.getConf().getBoolVar(HiveConf.ConfVars.COMPRESSINTERMEDIATE)),
        parent.getSchema());
-    
+
     assert parent.getChildOperators().size() == 1;
     parent.getChildOperators().set(0, fs_op);
 
@@ -152,7 +177,7 @@ public class GenMRUnion1 implements NodeProcessor {
     ctx.setCurrTopOp(null);
 
     mapCurrCtx.put((Operator<? extends Serializable>)nd, new GenMapRedCtx(ctx.getCurrTask(), null, null));
-    
+
     return null;
   }
 }
