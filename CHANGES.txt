@@ -269,6 +269,9 @@ Trunk -  Unreleased
 
     HIVE-940 restrict creation of partitions with empty keys (Prasad Chakka via namit)
 
+    HIVE-941 hiveserver.sh doesn't work with Hadoop 0.20.0 or higher
+    (Ning Zhang via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
