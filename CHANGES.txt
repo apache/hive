@@ -264,8 +264,10 @@ Trunk -  Unreleased
 
     HIVE-929. Use a new parameter to check whether to merge files or not
     (He Yongqiang via namit)
-    
+
     HIVE-980 mapjoin followed by union does not work (namit via He Yongqiang)
+
+    HIVE-940 restrict creation of partitions with empty keys (Prasad Chakka via namit)
 
 Release 0.4.0 -  Unreleased
 

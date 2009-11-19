@@ -576,6 +576,13 @@ public class Hive {
 
     org.apache.hadoop.hive.metastore.api.Partition partition = null;
 
+    for (FieldSchema field : tbl.getPartCols()) {
+      String val = partSpec.get(field.getName());
+      if(val == null || val.length() == 0) {
+        throw new HiveException("add partition: Value for key " + field.getName() + " is null or empty");
+      }
+    }
+
     try {
       Partition tmpPart = new Partition(tbl, partSpec, location);
       partition = getMSC().add_partition(tmpPart.getTPartition());
@@ -604,7 +611,7 @@ public class Hive {
     for (FieldSchema field : tbl.getPartCols()) {
       String val = partSpec.get(field.getName());
       if(val == null || val.length() == 0) {
-        throw new HiveException("Value for key " + field.getName() + " is null or empty");
+        throw new HiveException("get partition: Value for key " + field.getName() + " is null or empty");
       }
       pvals.add(val);
     }
