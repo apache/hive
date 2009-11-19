@@ -79,6 +79,8 @@ Trunk -  Unreleased
 
     HIVE-870. Add left semi join. (Ning Zhang via namit)
 
+    HIVE-870. Add table functions. (Paul Yang via namit)
+
   IMPROVEMENTS
 
     HIVE-760. Add version info to META-INF/MANIFEST.MF.

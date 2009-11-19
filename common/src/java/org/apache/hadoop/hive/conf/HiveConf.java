@@ -129,6 +129,9 @@ public class HiveConf extends Configuration {
     HIVEMAPAGGRHASHMEMORY("hive.map.aggr.hash.percentmemory", (float)0.5),
     HIVEMAPAGGRHASHMINREDUCTION("hive.map.aggr.hash.min.reduction", (float)0.5),
 
+    // for hive udtf operator
+    HIVEUDTFAUTOPROGRESS("hive.udtf.auto.progress", false),
+    
     // Default file format for CREATE TABLE statement
     // Options: TextFile, SequenceFile
     HIVEDEFAULTFILEFORMAT("hive.default.fileformat", "TextFile"),

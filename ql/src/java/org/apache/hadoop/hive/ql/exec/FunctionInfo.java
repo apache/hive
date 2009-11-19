@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 
 public class FunctionInfo {
   
@@ -27,30 +28,46 @@ public class FunctionInfo {
 
   private String displayName;
 
-  private GenericUDF genericUDF;
+  private GenericUDF genericUDF = null;
 
-  private GenericUDAFResolver genericUDAFResolver;
-
+  private GenericUDTF genericUDTF = null;
+  
+  private GenericUDAFResolver genericUDAFResolver = null;
+  
   public FunctionInfo(boolean isNative, String displayName, GenericUDF genericUDF) {
     this.isNative = isNative;
     this.displayName = displayName;
     this.genericUDF = genericUDF;
-    this.genericUDAFResolver = null;
   }
 
   public FunctionInfo(boolean isNative, String displayName, GenericUDAFResolver genericUDAFResolver) {
     this.isNative = isNative;
     this.displayName = displayName;
-    this.genericUDF = null;
     this.genericUDAFResolver = genericUDAFResolver;
   }
 
+  public FunctionInfo(boolean isNative, String displayName, GenericUDTF genericUDTF) {
+    this.isNative = isNative;
+    this.displayName = displayName;
+    this.genericUDTF = genericUDTF;
+  }
+  
   /**
    * Get a new GenericUDF object for the function. 
    */
   public GenericUDF getGenericUDF() {
     // GenericUDF is stateful - we have to make a copy here
     return FunctionRegistry.cloneGenericUDF(genericUDF);
+  }
+  
+  /**
+   * Get a new GenericUDTF object for the function. 
+   */
+  public GenericUDTF getGenericUDTF() {
+    // GenericUDTF is stateful too, copy
+    if (genericUDTF == null)
+      return null;
+    return FunctionRegistry.cloneGenericUDTF(genericUDTF);
   }
   
   /**

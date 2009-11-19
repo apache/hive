@@ -46,7 +46,6 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.StringUtils;
 
 
@@ -73,9 +72,9 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
   static final String IO_EXCEPTION_BROKEN_PIPE_STRING= "Broken pipe";
   
   /**
-   * Timer to send periodic reports back to the tracker.
+   * sends periodic reports back to the tracker.
    */
-  transient Timer rpTimer;
+  transient AutoProgressor autoProgressor;
   /**
    * addJobConfToEnvironment is shamelessly copied from hadoop streaming.
    */
@@ -243,24 +242,9 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
                                    "ErrorProcessor");
       
       if (HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVESCRIPTAUTOPROGRESS)) {
-        /* Timer that reports every 5 minutes to the jobtracker. This ensures that even if
-           the user script is not returning rows for greater than that duration, a progress
-           report is sent to the tracker so that the tracker does not think that the job 
-           is dead.
-        */
-        Integer expInterval = Integer.decode(hconf.get("mapred.tasktracker.expiry.interval"));
-        int notificationInterval;
-        if (expInterval != null) {
-          notificationInterval = expInterval.intValue() / 2;
-        } else {
-          // 5 minutes
-          notificationInterval = 5 * 60 * 1000;
-        }
-  
-        LOG.info("Running ReporterTask every " + notificationInterval + " seconds.");
-        
-        rpTimer = new Timer(true);
-        rpTimer.scheduleAtFixedRate(new ReporterTask(reporter), 0, notificationInterval);
+        autoProgressor = new AutoProgressor(this.getClass().getName(), reporter, 
+            Utilities.getDefaultNotificationInterval(hconf));
+        autoProgressor.go();
       }
       
       // initialize all children before starting the script
@@ -598,30 +582,6 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
   @Override
   public String getName() {
     return "SCR";
-  }
-  
-  class ReporterTask extends TimerTask {
-    
-    /**
-     * Reporter to report progress to the jobtracker.
-     */
-    private Reporter rp;
-    
-    /**
-     * Constructor.
-     */
-    public ReporterTask(Reporter rp) {
-      if (rp != null)
-        this.rp = rp;
-    }
-    
-    @Override
-    public void run() {
-      if (rp != null) {
-        LOG.info("ReporterTask calling reporter.progress()");
-        rp.progress();
-      }
-    }
   }
   
   public int getType() {

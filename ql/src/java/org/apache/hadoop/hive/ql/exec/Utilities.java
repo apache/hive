@@ -785,4 +785,23 @@ public class Utilities {
     }
     return sb.toString();
   }
+  /**
+   * Gets the default notification interval to send progress updates to the
+   * tracker. Useful for operators that may not output data for a while.
+   * 
+   * @param hconf
+   * @return the interval in miliseconds
+   */
+  public static int getDefaultNotificationInterval(Configuration hconf) {
+    int notificationInterval;
+    Integer expInterval = Integer.decode(hconf.get("mapred.tasktracker.expiry.interval"));
+    
+    if (expInterval != null) {
+      notificationInterval = expInterval.intValue() / 2;
+    } else {
+      // 5 minutes
+      notificationInterval = 5 * 60 * 1000;
+    }
+    return notificationInterval;
+  }
 }

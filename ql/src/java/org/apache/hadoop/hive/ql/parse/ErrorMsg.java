@@ -105,7 +105,14 @@ public enum ErrorMsg {
   CTAS_MULTI_LOADFILE("CREATE-TABLE-AS-SELECT results in multiple file load."),
   CTAS_EXTTBL_COEXISTENCE("CREATE-TABLE-AS-SELECT cannot create external table."),
   TABLE_ALREADY_EXISTS("Table already exists:", "42S02"),
-  COLUMN_ALIAS_ALREADY_EXISTS("Column alias already exists:", "42S02");
+  COLUMN_ALIAS_ALREADY_EXISTS("Column alias already exists:", "42S02"),
+  UDTF_MULTIPLE_EXPR("Only a single expression in the SELECT clause is supported with UDTF's"),
+  UDTF_REQUIRE_AS("UDTF's require an AS clause"),
+  UDTF_NO_GROUP_BY("GROUP BY is not supported with a UDTF in the SELECT clause"),
+  UDTF_NO_SORT_BY("SORT BY is not supported with a UDTF in the SELECT clause"),
+  UDTF_NO_CLUSTER_BY("CLUSTER BY is not supported with a UDTF in the SELECT clause"),
+  UDTF_NO_DISTRIBUTE_BY("DISTRUBTE BY is not supported with a UDTF in the SELECT clause"),
+  UDTF_INVALID_LOCATION("UDTF's are not supported outside the SELECT clause, nor nested in expressions");
   
   private String mesg;
   private String SQLState;

@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.exec;
 import java.util.*;
 import java.io.*;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.plan.*;
 
 public class OperatorFactory {
@@ -52,6 +54,7 @@ public class OperatorFactory {
     opvec.add(new opTuple<limitDesc> (limitDesc.class, LimitOperator.class));
     opvec.add(new opTuple<tableScanDesc> (tableScanDesc.class, TableScanOperator.class));
     opvec.add(new opTuple<unionDesc> (unionDesc.class, UnionOperator.class));
+    opvec.add(new opTuple<udtfDesc> (udtfDesc.class, UDTFOperator.class));
   }
               
 

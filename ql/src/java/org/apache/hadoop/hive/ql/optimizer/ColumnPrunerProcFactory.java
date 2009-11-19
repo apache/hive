@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.ScriptOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.UDTFOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -253,7 +254,7 @@ public class ColumnPrunerProcFactory {
           // Without this break, a bug in ReduceSink to Extract edge column pruning will manifest
           // which should be fixed before remove this
           if ((child instanceof FileSinkOperator)
-              || (child instanceof ScriptOperator)
+              || (child instanceof ScriptOperator) || (child instanceof UDTFOperator)
               || (child instanceof LimitOperator) || (child instanceof UnionOperator)) {
             cppCtx.getPrunedColLists().put(op, cppCtx.getColsFromSelectExpr(op));
             return null;

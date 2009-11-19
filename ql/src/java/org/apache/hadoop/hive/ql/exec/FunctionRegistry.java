@@ -216,6 +216,9 @@ public class FunctionRegistry {
     registerGenericUDF("locate", GenericUDFLocate.class);
     registerGenericUDF("elt", GenericUDFElt.class);
     registerGenericUDF("concat_ws", GenericUDFConcatWS.class);
+    
+    // Generic UDTF's
+    registerGenericUDTF("explode", GenericUDTFExplode.class);
   }
 
   public static void registerTemporaryUDF(String functionName, Class<? extends UDF> UDFClass,
@@ -245,7 +248,7 @@ public class FunctionRegistry {
           new GenericUDFBridge(displayName, isOperator, UDFClass));
       mFunctions.put(functionName.toLowerCase(), fI);
     } else {
-      throw new RuntimeException("Registering UDF Class " + UDFClass + " which does not extends " + UDF.class);
+      throw new RuntimeException("Registering UDF Class " + UDFClass + " which does not extend " + UDF.class);
     }
   }
 
@@ -264,10 +267,25 @@ public class FunctionRegistry {
       mFunctions.put(functionName.toLowerCase(), fI);
     } else {
       throw new RuntimeException("Registering GenericUDF Class " + genericUDFClass
-          + " which does not extends " + GenericUDF.class);
+          + " which does not extend " + GenericUDF.class);
     }
   }
 
+  static void registerGenericUDTF(String functionName, Class<? extends GenericUDTF> genericUDTFClass) {
+    registerGenericUDTF(true, functionName, genericUDTFClass);
+  }
+
+  public static void registerGenericUDTF(boolean isNative, String functionName, Class<? extends GenericUDTF> genericUDTFClass) {
+    if (GenericUDTF.class.isAssignableFrom(genericUDTFClass)) {
+      FunctionInfo fI = new FunctionInfo(isNative, functionName, 
+          (GenericUDTF)ReflectionUtils.newInstance(genericUDTFClass, null));
+      mFunctions.put(functionName.toLowerCase(), fI);
+    } else {
+      throw new RuntimeException("Registering GenericUDTF Class " + genericUDTFClass
+          + " which does not extend " + GenericUDTF.class);
+    }
+  }
+  
   public static FunctionInfo getFunctionInfo(String functionName) {
     return mFunctions.get(functionName.toLowerCase());
   }
@@ -629,6 +647,13 @@ public class FunctionRegistry {
     }
   }
 
+  /**
+   * Create a copy of an existing GenericUDTF.
+   */
+  public static GenericUDTF cloneGenericUDTF(GenericUDTF genericUDTF) {
+      return (GenericUDTF)ReflectionUtils.newInstance(genericUDTF.getClass(), null);
+  }
+  
   /**
    * Get the UDF class from an exprNodeDesc.
    * Returns null if the exprNodeDesc does not contain a UDF class.  

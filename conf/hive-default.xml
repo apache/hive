@@ -376,4 +376,10 @@
   <description>The default input format, if it is not specified, the system assigns it. It is set to HiveInputFormat for hadoop versions 17, 18 and 19, whereas it is set to CombinedHiveInputFormat for hadoop 20. The user can always overwrite it - if there is a bug in CombinedHiveInputFormat, it can always be manually set to HiveInputFormat. </description>
 </property>
 
+<property>
+  <name>hive.udtf.auto.progress</name>
+  <value>false</value>
+  <description>Whether Hive should automatically send progress information to TaskTracker when using UDTF's to prevent the task getting killed because of inactivity.  Users should be cautious because this may prevent TaskTracker from killing tasks with infinte loops.  </description>
+</property>
+
 </configuration>

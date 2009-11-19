@@ -532,6 +532,10 @@ public class TypeCheckProcFactory {
           else
             throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg((ASTNode)expr));
         }
+        // Detect UDTF's in nested SELECT, GROUP BY, etc as they aren't supported
+        if (fi.getGenericUDTF() != null) {
+          throw new SemanticException(ErrorMsg.UDTF_INVALID_LOCATION.getMsg());
+        }
         
         try {
           desc = getFuncExprNodeDesc(funcText, children);

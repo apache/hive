@@ -27,6 +27,7 @@ public class OperatorType {
   public static final int FILESINK = 10;
   public static final int REDUCESINK = 11;
   public static final int UNION = 12;
+  public static final int UDTF = 13;
 
   public static final IntRangeSet VALID_VALUES = new IntRangeSet(
     JOIN, 
@@ -41,7 +42,8 @@ public class OperatorType {
     TABLESCAN, 
     FILESINK, 
     REDUCESINK, 
-    UNION );
+    UNION,
+    UDTF);
 
   public static final Map<Integer, String> VALUES_TO_NAMES = new HashMap<Integer, String>() {{
     put(JOIN, "JOIN");
@@ -57,5 +59,6 @@ public class OperatorType {
     put(FILESINK, "FILESINK");
     put(REDUCESINK, "REDUCESINK");
     put(UNION, "UNION");
+    put(UDTF, "UDTF");
   }};
 }

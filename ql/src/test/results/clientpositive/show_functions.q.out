@@ -46,6 +46,7 @@ div
 double
 elt
 exp
+explode
 find_in_set
 float
 floor
@@ -145,6 +146,7 @@ POSTHOOK: type: SHOWFUNCTIONS
 case
 coalesce
 double
+explode
 from_unixtime
 lcase
 like

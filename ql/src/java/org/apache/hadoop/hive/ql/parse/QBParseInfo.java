@@ -180,6 +180,9 @@ public class QBParseInfo {
   public ASTNode getGroupByForClause(String clause) {
     return this.destToGroupby.get(clause);
   }
+  public HashMap<String, ASTNode> getDestToGroupBy() {
+    return this.destToGroupby;
+  }
   
   public ASTNode getSelForClause(String clause) {
     return this.destToSelExpr.get(clause);

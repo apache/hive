@@ -20,13 +20,10 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Formatter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -46,6 +43,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.ExecDriver;
+import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
@@ -61,10 +59,8 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
-import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -116,17 +112,22 @@ import org.apache.hadoop.hive.ql.plan.scriptDesc;
 import org.apache.hadoop.hive.ql.plan.selectDesc;
 import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.ql.plan.tableScanDesc;
+import org.apache.hadoop.hive.ql.plan.udtfDesc;
 import org.apache.hadoop.hive.ql.plan.unionDesc;
 import org.apache.hadoop.hive.ql.ppd.PredicatePushDown;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFHash;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -136,19 +137,17 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.hive.serde.Constants;
-import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.ql.exec.TextRecordReader;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
-import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
@@ -163,7 +162,6 @@ import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
 import java.util.Collection;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 
 /**
  * Implementation of the semantic analyzer
@@ -1384,13 +1382,54 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (isInTransform) {
       trfm = (ASTNode) selExprList.getChild(posn).getChild(0);
     }
-
+    
+    // Detect a UDTF by looking up the function name in the registry. 
+    // Not as clean TRANSFORM due to the lack of a special token.
+    boolean isUDTF = false;
+    String udtfOutputColAlias = null;
+    ASTNode udtfExpr = (ASTNode) selExprList.getChild(posn).getChild(0);
+    GenericUDTF genericUDTF = null;
+    
+    if (udtfExpr.getType() == HiveParser.TOK_FUNCTION) {
+      String funcName =
+        TypeCheckProcFactory.DefaultExprProcessor.getFunctionText(udtfExpr, true);
+      FunctionInfo fi = FunctionRegistry.getFunctionInfo(funcName);
+      if (fi != null) {
+        genericUDTF = fi.getGenericUDTF();
+      }
+      isUDTF = (genericUDTF != null);
+    }
+        
+    if (isUDTF) {
+      // Only support a single expression when it's a UDTF 
+      if (selExprList.getChildCount() > 1) {
+        throw new SemanticException(ErrorMsg.UDTF_MULTIPLE_EXPR.getMsg());
+      }
+      //Require an AS for UDTFs
+      if (((ASTNode) selExprList.getChild(posn)).getChildCount() != 2 ||
+          selExprList.getChild(posn).getChild(1).getType() != HiveParser.Identifier ){        
+        throw new SemanticException(ErrorMsg.UDTF_REQUIRE_AS.getMsg());
+      }
+      udtfOutputColAlias = unescapeIdentifier(selExprList.getChild(posn).getChild(1).getText());
+    }  
+    
     // The list of expressions after SELECT or SELECT TRANSFORM.
-    ASTNode exprList = (isInTransform ? (ASTNode) trfm.getChild(0) : selExprList);
-
+    ASTNode exprList;
+    if (isInTransform) {
+      exprList = (ASTNode) trfm.getChild(0);
+    } else if (isUDTF) {
+      exprList = (ASTNode) udtfExpr;
+    } else {
+      exprList = selExprList;
+    }
+    
     LOG.debug("genSelectPlan: input = " + inputRR.toString());
+
+    // For UDTF's, skip the function name
+    int startPosn = isUDTF ? posn + 1 : posn;
+    
     // Iterate over all expression (either after SELECT, or in SELECT TRANSFORM)
-    for (int i = posn; i < exprList.getChildCount(); ++i) {
+    for (int i = startPosn; i < exprList.getChildCount(); ++i) {
 
       // child can be EXPR AS ALIAS, or EXPR.
       ASTNode child = (ASTNode) exprList.getChild(i);
@@ -1400,7 +1439,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String tabAlias;
       String colAlias;
 
-      if (isInTransform) {
+      if (isInTransform || isUDTF) {
         tabAlias = null;
         colAlias = "_C" + i;
         expr = child;
@@ -1449,6 +1488,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         out_rwsch.put(tabAlias, colAlias,
                       new ColumnInfo(getColumnInternalName(pos),
                                      exp.getTypeInfo(), tabAlias, false));
+        
         pos = Integer.valueOf(pos.intValue() + 1);
       }
     }
@@ -1475,11 +1515,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       output = genScriptPlan(trfm, qb, output);
     }
 
+    if(isUDTF) {
+      output = genUDTFPlan(genericUDTF, udtfOutputColAlias, qb, output);
+    }
     LOG.debug("Created Select Plan for clause: " + dest + " row schema: " + out_rwsch.toString());
 
     return output;
   }
-
+  
   /**
    * Class to store GenericUDAF related information.
    */
@@ -2848,7 +2891,63 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     return limitMap;
   }
+  
+  private Operator genUDTFPlan(GenericUDTF genericUDTF, String udtfOutputColumnAlias,
+      QB qb, Operator input) throws SemanticException {
+    
+    // No GROUP BY / DISTRIBUTE BY / SORT BY / CLUSTER BY
+    QBParseInfo qbp = qb.getParseInfo();
+    if (!qbp.getDestToGroupBy().isEmpty()) {
+      throw new SemanticException(ErrorMsg.UDTF_NO_GROUP_BY.getMsg());
+    }
+    if (!qbp.getDestToDistributeBy().isEmpty()) {
+      throw new SemanticException(ErrorMsg.UDTF_NO_DISTRIBUTE_BY.getMsg());
+    }
+    if (!qbp.getDestToSortBy().isEmpty()) {
+      throw new SemanticException(ErrorMsg.UDTF_NO_SORT_BY.getMsg());
+    }
+    if (!qbp.getDestToClusterBy().isEmpty()) {
+      throw new SemanticException(ErrorMsg.UDTF_NO_CLUSTER_BY.getMsg());
+    }
+    
+    // Use the RowResolver from the input operator to generate a input 
+    // ObjectInspector that can be used to initialize the UDTF. Then, the 
+    // resulting output object inspector can be used to make the RowResolver
+    // for the UDTF operator
+    RowResolver selectRR = opParseCtx.get(input).getRR();
+    Vector<ColumnInfo> inputCols = selectRR.getColumnInfos();
+   
+    // Create the object inspector for the input columns and initialize the UDTF
+    ArrayList<String> colNames = new ArrayList<String>();
+    ObjectInspector [] colOIs = new ObjectInspector[inputCols.size()];
+    for (int i=0; i<inputCols.size(); i++) {
+      colNames.add(inputCols.get(i).getInternalName());
+      colOIs[i] = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(
+          inputCols.get(i).getType());
+    }
+    ObjectInspector outputOI = genericUDTF.initialize(colOIs);
+    
+    ColumnInfo outputCol = 
+      new ColumnInfo(udtfOutputColumnAlias,
+          TypeInfoUtils.getTypeInfoFromObjectInspector(outputOI), null, false);
+    
+    // Create the row resolver for this operator from the output columns
+    RowResolver out_rwsch = new RowResolver();
 
+    out_rwsch.put(
+        null,
+        outputCol.getInternalName(),
+        outputCol);
+    
+    // Add the UDTFOperator to the operator DAG
+    Operator udtf =
+      putOpInsertMap(OperatorFactory.getAndMakeChild(
+                       new udtfDesc(genericUDTF, udtfOutputColumnAlias),  
+                       new RowSchema(out_rwsch.getColumnInfos()),
+                                     input), out_rwsch);
+    return udtf;
+  }
+  
   @SuppressWarnings("nls")
   private Operator genLimitMapRedPlan(String dest, QB qb, Operator input, int limit, boolean extraMRStep)
     throws SemanticException {
@@ -4900,8 +4999,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // create a walker which walks the tree in a DFS manner while maintaining the operator stack. The dispatcher
     // generates the plan from the operator tree
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-    StringBuilder sb = new StringBuilder();
-    Formatter fm = new Formatter(sb);
+    
     opRules.put(new RuleRegExp("R1", HiveParser.TOK_NULL + "%"), TypeCheckProcFactory.getNullExprProcessor());
     opRules.put(new RuleRegExp("R2", HiveParser.Number + "%"), TypeCheckProcFactory.getNumExprProcessor());
     opRules.put(new RuleRegExp("R3", HiveParser.Identifier + "%|" +
