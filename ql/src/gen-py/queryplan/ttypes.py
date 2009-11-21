@@ -36,6 +36,7 @@ class OperatorType:
   FILESINK = 10
   REDUCESINK = 11
   UNION = 12
+  UDTF = 13
 
 class TaskType:
   MAP = 0

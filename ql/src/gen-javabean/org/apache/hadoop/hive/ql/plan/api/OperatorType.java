@@ -42,8 +42,8 @@ public class OperatorType {
     TABLESCAN, 
     FILESINK, 
     REDUCESINK, 
-    UNION,
-    UDTF);
+    UNION, 
+    UDTF );
 
   public static final Map<Integer, String> VALUES_TO_NAMES = new HashMap<Integer, String>() {{
     put(JOIN, "JOIN");

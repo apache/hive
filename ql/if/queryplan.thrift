@@ -16,7 +16,7 @@ struct Graph {
 }
 
 #Represents a operator along with its counters
-enum OperatorType { JOIN, MAPJOIN, EXTRACT, FILTER, FORWARD, GROUPBY, LIMIT, SCRIPT, SELECT, TABLESCAN, FILESINK, REDUCESINK, UNION }
+enum OperatorType { JOIN, MAPJOIN, EXTRACT, FILTER, FORWARD, GROUPBY, LIMIT, SCRIPT, SELECT, TABLESCAN, FILESINK, REDUCESINK, UNION, UDTF }
 struct Operator {
 1: string operatorId,
 2: OperatorType operatorType,
@@ -53,7 +53,7 @@ struct Stage {
 7: bool started,
 }
 
-# Represents a query - 
+# Represents a query -
 # The graph maintains the stage dependency.In case of conditional tasks, it is represented as if only
 # one of the dependencies need to be executed
 struct Query {

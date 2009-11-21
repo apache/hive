@@ -49,6 +49,7 @@ $GLOBALS['E_OperatorType'] = array(
   'FILESINK' => 10,
   'REDUCESINK' => 11,
   'UNION' => 12,
+  'UDTF' => 13,
 );
 
 final class OperatorType {
@@ -65,6 +66,7 @@ final class OperatorType {
   const FILESINK = 10;
   const REDUCESINK = 11;
   const UNION = 12;
+  const UDTF = 13;
   static public $__names = array(
     0 => 'JOIN',
     1 => 'MAPJOIN',
@@ -79,6 +81,7 @@ final class OperatorType {
     10 => 'FILESINK',
     11 => 'REDUCESINK',
     12 => 'UNION',
+    13 => 'UDTF',
   );
 }
 

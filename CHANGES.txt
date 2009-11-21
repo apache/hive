@@ -274,6 +274,9 @@ Trunk -  Unreleased
     HIVE-941 hiveserver.sh doesn't work with Hadoop 0.20.0 or higher
     (Ning Zhang via namit)
 
+    HIVE-944 Generate thrift files in queryplan
+    (Paul Yang via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
