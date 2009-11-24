@@ -118,6 +118,8 @@ Trunk -  Unreleased
     (Paul Yang via zshao)
 
     HIVE-914. Optimize UDFJson (Paul Yang via namit)
+    
+    HIVE-945. custom mappers/reducers should not be initialized at compile time (namit via He Yongqiang)
 
   OPTIMIZATIONS
 

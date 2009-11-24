@@ -58,23 +58,28 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
   transient private LongWritable deserialize_error_count = new LongWritable ();
   transient private LongWritable serialize_error_count = new LongWritable ();
 
-  transient Thread outThread;
-  transient Thread errThread;
-  transient Process scriptPid;
+  transient Thread outThread = null;
+  transient Thread errThread = null;
+  transient Process scriptPid = null;
   transient Configuration hconf;
   // Input to the script
   transient Serializer scriptInputSerializer;
   // Output from the script
   transient Deserializer scriptOutputDeserializer;
   transient volatile Throwable scriptError = null;
-  transient RecordWriter scriptOutWriter;
+  transient RecordWriter scriptOutWriter = null;
 
   static final String IO_EXCEPTION_BROKEN_PIPE_STRING= "Broken pipe";
-  
+
   /**
    * sends periodic reports back to the tracker.
    */
   transient AutoProgressor autoProgressor;
+
+  // first row - the process should only be started if necessary, as it may conflict with some
+  // of the user assumptions.
+  transient boolean firstRow;
+
   /**
    * addJobConfToEnvironment is shamelessly copied from hadoop streaming.
    */
@@ -93,14 +98,14 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
     }
     return safe.toString();
   }
-  
+
   static void addJobConfToEnvironment(Configuration conf, Map<String, String> env) {
     Iterator<Map.Entry<String, String>> it = conf.iterator();
     while (it.hasNext()) {
       Map.Entry<String, String> en = (Map.Entry<String, String>) it.next();
       String name = (String) en.getKey();
       //String value = (String)en.getValue(); // does not apply variable expansion
-      String value = conf.get(name); // does variable expansion 
+      String value = conf.get(name); // does variable expansion
       name = safeEnvVarName(name);
       env.put(name, value);
     }
@@ -178,6 +183,7 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
   }
 
   protected void initializeOp(Configuration hconf) throws HiveException {
+    firstRow = true;
 
     statsMap.put(Counter.DESERIALIZE_ERRORS, deserialize_error_count);
     statsMap.put(Counter.SERIALIZE_ERRORS, serialize_error_count);
@@ -187,70 +193,14 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
 
       scriptOutputDeserializer = conf.getScriptOutputInfo().getDeserializerClass().newInstance();
       scriptOutputDeserializer.initialize(hconf, conf.getScriptOutputInfo().getProperties());
-      
+
       scriptInputSerializer = (Serializer)conf.getScriptInputInfo().getDeserializerClass().newInstance();
       scriptInputSerializer.initialize(hconf, conf.getScriptInputInfo().getProperties());
 
       outputObjInspector = scriptOutputDeserializer.getObjectInspector();
 
-      String [] cmdArgs = splitArgs(conf.getScriptCmd());
-
-      String prog = cmdArgs[0];
-      File currentDir = new File(".").getAbsoluteFile();
-
-      if (!new File(prog).isAbsolute()) {
-        PathFinder finder = new PathFinder("PATH");
-        finder.prependPathComponent(currentDir.toString());
-        File f = finder.getAbsolutePath(prog);
-        if (f != null) {
-          cmdArgs[0] = f.getAbsolutePath();
-        }
-        f = null;
-      }
-
-      String [] wrappedCmdArgs = addWrapper(cmdArgs);
-      LOG.info("Executing " + Arrays.asList(wrappedCmdArgs));
-      LOG.info("tablename=" + hconf.get(HiveConf.ConfVars.HIVETABLENAME.varname));
-      LOG.info("partname=" + hconf.get(HiveConf.ConfVars.HIVEPARTITIONNAME.varname));
-      LOG.info("alias=" + alias);
-
-      ProcessBuilder pb = new ProcessBuilder(wrappedCmdArgs);
-      Map<String, String> env = pb.environment();
-      addJobConfToEnvironment(hconf, env);
-      env.put(safeEnvVarName(HiveConf.ConfVars.HIVEALIAS.varname), String.valueOf(alias));
-      scriptPid = pb.start();       // Runtime.getRuntime().exec(wrappedCmdArgs);
-
-      DataOutputStream scriptOut = new DataOutputStream(new BufferedOutputStream(scriptPid.getOutputStream()));
-      DataInputStream  scriptIn = new DataInputStream(new BufferedInputStream(scriptPid.getInputStream()));
-      DataInputStream  scriptErr = new DataInputStream(new BufferedInputStream(scriptPid.getErrorStream()));
-
-      scriptOutWriter = conf.getInRecordWriterClass().newInstance();
-      scriptOutWriter.initialize(scriptOut, hconf);
-      
-      RecordReader scriptOutputReader = conf.getOutRecordReaderClass().newInstance();
-      scriptOutputReader.initialize(scriptIn, hconf);
-      
-      outThread = new StreamThread(scriptOutputReader, new OutputStreamProcessor(
-          scriptOutputDeserializer.getObjectInspector()), "OutputProcessor");
-      
-      RecordReader scriptErrReader = conf.getOutRecordReaderClass().newInstance();
-      scriptErrReader.initialize(scriptErr, hconf);
-      
-      errThread = new StreamThread(scriptErrReader,
-                                   new ErrorStreamProcessor
-                                   (HiveConf.getIntVar(hconf, HiveConf.ConfVars.SCRIPTERRORLIMIT)),
-                                   "ErrorProcessor");
-      
-      if (HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVESCRIPTAUTOPROGRESS)) {
-        autoProgressor = new AutoProgressor(this.getClass().getName(), reporter, 
-            Utilities.getDefaultNotificationInterval(hconf));
-        autoProgressor.go();
-      }
-      
       // initialize all children before starting the script
       initializeChildren(hconf);
-      outThread.start();
-      errThread.start();
     } catch (Exception e) {
       throw new HiveException ("Cannot initialize ScriptOperator", e);
     }
@@ -259,18 +209,82 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
   boolean isBrokenPipeException(IOException e) {
     return (e.getMessage().compareToIgnoreCase(IO_EXCEPTION_BROKEN_PIPE_STRING) == 0);
   }
-  
+
   boolean allowPartialConsumption() {
     return HiveConf.getBoolVar(hconf, HiveConf.ConfVars.ALLOWPARTIALCONSUMP);
   }
-  
+
   void displayBrokenPipeInfo() {
-    LOG.info("The script did not consume all input data. This is considered as an error."); 
+    LOG.info("The script did not consume all input data. This is considered as an error.");
     LOG.info("set " + HiveConf.ConfVars.ALLOWPARTIALCONSUMP.toString() + "=true; to ignore it.");
     return;
   }
-  
+
   public void processOp(Object row, int tag) throws HiveException {
+    // initialize the user's process only when you recieve the first row
+    if (firstRow) {
+      firstRow = false;
+      try {
+        String [] cmdArgs = splitArgs(conf.getScriptCmd());
+
+        String prog = cmdArgs[0];
+        File currentDir = new File(".").getAbsoluteFile();
+
+        if (!new File(prog).isAbsolute()) {
+          PathFinder finder = new PathFinder("PATH");
+          finder.prependPathComponent(currentDir.toString());
+          File f = finder.getAbsolutePath(prog);
+          if (f != null) {
+            cmdArgs[0] = f.getAbsolutePath();
+          }
+          f = null;
+        }
+
+        String [] wrappedCmdArgs = addWrapper(cmdArgs);
+        LOG.info("Executing " + Arrays.asList(wrappedCmdArgs));
+        LOG.info("tablename=" + hconf.get(HiveConf.ConfVars.HIVETABLENAME.varname));
+        LOG.info("partname=" + hconf.get(HiveConf.ConfVars.HIVEPARTITIONNAME.varname));
+        LOG.info("alias=" + alias);
+
+        ProcessBuilder pb = new ProcessBuilder(wrappedCmdArgs);
+        Map<String, String> env = pb.environment();
+        addJobConfToEnvironment(hconf, env);
+        env.put(safeEnvVarName(HiveConf.ConfVars.HIVEALIAS.varname), String.valueOf(alias));
+        scriptPid = pb.start();       // Runtime.getRuntime().exec(wrappedCmdArgs);
+
+        DataOutputStream scriptOut = new DataOutputStream(new BufferedOutputStream(scriptPid.getOutputStream()));
+        DataInputStream  scriptIn = new DataInputStream(new BufferedInputStream(scriptPid.getInputStream()));
+        DataInputStream  scriptErr = new DataInputStream(new BufferedInputStream(scriptPid.getErrorStream()));
+
+        scriptOutWriter = conf.getInRecordWriterClass().newInstance();
+        scriptOutWriter.initialize(scriptOut, hconf);
+
+        RecordReader scriptOutputReader = conf.getOutRecordReaderClass().newInstance();
+        scriptOutputReader.initialize(scriptIn, hconf);
+
+        outThread = new StreamThread(scriptOutputReader, new OutputStreamProcessor(
+                                                                                   scriptOutputDeserializer.getObjectInspector()), "OutputProcessor");
+
+        RecordReader scriptErrReader = conf.getOutRecordReaderClass().newInstance();
+        scriptErrReader.initialize(scriptErr, hconf);
+
+        errThread = new StreamThread(scriptErrReader,
+                                     new ErrorStreamProcessor
+                                     (HiveConf.getIntVar(hconf, HiveConf.ConfVars.SCRIPTERRORLIMIT)),
+                                     "ErrorProcessor");
+
+        if (HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVESCRIPTAUTOPROGRESS)) {
+          autoProgressor = new AutoProgressor(this.getClass().getName(), reporter,
+                                              Utilities.getDefaultNotificationInterval(hconf));
+          autoProgressor.go();
+        }
+
+        outThread.start();
+        errThread.start();
+      } catch (Exception e) {
+        throw new HiveException ("Cannot initialize ScriptOperator", e);
+      }
+    }
 
     if(scriptError != null) {
       throw new HiveException(scriptError);
@@ -309,7 +323,8 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
       // everything ok. try normal shutdown
       try {
         try {
-          scriptOutWriter.close();
+          if (scriptOutWriter != null)
+            scriptOutWriter.close();
         } catch (IOException e) {
           if(isBrokenPipeException(e) && allowPartialConsumption()) {
             LOG.warn("Got broken pipe: ignoring exception");
@@ -320,7 +335,9 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
             throw e;
           }
         }
-        int exitVal = scriptPid.waitFor();
+        int exitVal = 0;
+        if (scriptPid != null)
+          scriptPid.waitFor();
         if (exitVal != 0) {
           LOG.error("Script failed with code " + exitVal);
           new_abort = true;
@@ -330,7 +347,7 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
         e.printStackTrace();
         new_abort = true;
       } catch (InterruptedException e) { }
-      
+
     } else {
 
       // Error already occurred, but we still want to get the
@@ -339,39 +356,44 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
         // Interrupt the current thread after 1 second
         final Thread mythread = Thread.currentThread();
         Timer timer = new Timer(true);
-        timer.schedule(new TimerTask(){  
+        timer.schedule(new TimerTask(){
           @Override
           public void run() {
-            mythread.interrupt();          
+            mythread.interrupt();
           }},
           1000);
-        // Wait for the child process to finish 
-        int exitVal = scriptPid.waitFor();
+        // Wait for the child process to finish
+        int exitVal = 0;
+        if (scriptPid != null)
+          scriptPid.waitFor();
         // Cancel the timer
         timer.cancel();
         // Output the exit code
-        LOG.error("Script exited with code " + exitVal);        
+        LOG.error("Script exited with code " + exitVal);
       } catch (InterruptedException e) {
         // Ignore
         LOG.error("Script has not exited yet. It will be killed.");
       }
     }
-    
+
     // try these best effort
     try {
-      outThread.join(0);
+      if (outThread != null)
+        outThread.join(0);
     } catch (Exception e) {
       LOG.warn("Exception in closing outThread: " + StringUtils.stringifyException(e));
     }
 
     try {
-      errThread.join(0);
+      if (errThread != null)
+        errThread.join(0);
     } catch (Exception e) {
       LOG.warn("Exception in closing errThread: " + StringUtils.stringifyException(e));
     }
 
     try {
-      scriptPid.destroy();
+      if (scriptPid != null)
+        scriptPid.destroy();
     } catch (Exception e) {
       LOG.warn("Exception in destroying scriptPid: " + StringUtils.stringifyException(e));
     }
@@ -411,32 +433,32 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
 
   /**
    * The processor for stderr stream.
-   * 
+   *
    * TODO: In the future when we move to hadoop 0.18 and above, we should borrow the logic
    * from HadoopStreaming: PipeMapRed.java MRErrorThread to support counters and status
-   * updates. 
+   * updates.
    */
   class ErrorStreamProcessor implements StreamProcessor {
     private long bytesCopied = 0;
     private long maxBytes;
 
     private long lastReportTime;
-    
+
     public ErrorStreamProcessor (int maxBytes) {
       this.maxBytes = (long)maxBytes;
       lastReportTime = 0;
     }
-    
+
     public void processLine(Writable line) throws HiveException {
-      
+
       String stringLine = line.toString();
       int len = 0;
-      
-      if (line instanceof Text) 
+
+      if (line instanceof Text)
         len = ((Text)line).getLength();
       else if (line instanceof BytesWritable)
         len = ((BytesWritable)line).getSize();
-          
+
       // Report progress for each stderr line, but no more frequently than once per minute.
       long now = System.currentTimeMillis();
       // reporter is a member variable of the Operator class.
@@ -445,19 +467,19 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
         lastReportTime = now;
         reporter.progress();
       }
-      
+
       if((maxBytes < 0) || (bytesCopied < maxBytes)) {
         System.err.println(stringLine);
       }
       if (bytesCopied < maxBytes && bytesCopied + len >= maxBytes) {
         System.err.println("Operator " + id + " " + getName()
             + ": exceeding stderr limit of " + maxBytes + " bytes, will truncate stderr messages.");
-      }      
+      }
       bytesCopied += len;
     }
     public void close() {
     }
-    
+
   }
 
 
@@ -583,7 +605,7 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
   public String getName() {
     return "SCR";
   }
-  
+
   public int getType() {
     return OperatorType.SCRIPT;
   }
