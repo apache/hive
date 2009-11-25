@@ -519,6 +519,16 @@ public class RCFile {
       // used to store each value's length
       NonSyncDataOutputBuffer valLenBuffer;
 
+      /*
+       * use a run-length encoding. We only record run length if a same
+       * 'prevValueLen' occurs more than one time. And we negative the run
+       * length to distinguish a runLength and a normal value length. For
+       * example, if the values' lengths are 1,1,1,2, we record 1, ~2,2. And for
+       * value lengths 1,2,3 we record 1,2,3.
+       */
+      int runLength = 0;
+      int prevValueLength = -1;
+      
       ColumnBuffer() throws IOException {
         columnValBuffer = new NonSyncDataOutputBuffer();
         valLenBuffer = new NonSyncDataOutputBuffer();
@@ -526,12 +536,42 @@ public class RCFile {
 
       public void append(BytesRefWritable data) throws IOException {
         data.writeDataTo(columnValBuffer);
-        WritableUtils.writeVLong(valLenBuffer, data.getLength());
+        int currentLen = data.getLength();
+        
+        if( prevValueLength < 0) {
+          startNewGroup(currentLen);
+          return;
+        }
+        
+        if(currentLen != prevValueLength) {
+          flushGroup();
+          startNewGroup(currentLen);
+        } else {
+          runLength ++;
+        }
+      }
+
+      private void startNewGroup(int currentLen) {
+        prevValueLength = currentLen;
+        runLength = 0;
+        return;
       }
 
       public void clear() throws IOException {
         valLenBuffer.reset();
         columnValBuffer.reset();
+        prevValueLength = -1;
+        runLength = 0;
+      }
+      
+      public void flushGroup() throws IOException {
+        if (prevValueLength >= 0) {
+          WritableUtils.writeVLong(valLenBuffer, prevValueLength);
+          if (runLength > 0)
+            WritableUtils.writeVLong(valLenBuffer, ~runLength);
+          runLength = -1;
+          prevValueLength = -1;
+        }
       }
     }
 
@@ -761,7 +801,8 @@ public class RCFile {
       int valueLength = 0;
       for (int columnIndex = 0; columnIndex < columnNumber; columnIndex++) {
         ColumnBuffer currentBuf = columnBuffers[columnIndex];
-
+        currentBuf.flushGroup();
+        
         NonSyncDataOutputBuffer columnValue = currentBuf.columnValBuffer;
 
         if (isCompressed()) {
@@ -891,6 +932,8 @@ public class RCFile {
 
     private int[] columnRowReadIndex = null;
     private NonSyncDataInputBuffer[] colValLenBufferReadIn;
+    private int[] columnRunLength;
+    private int[] columnPrvLength;
     private boolean decompress = false;
 
     private Decompressor keyDecompressor;
@@ -959,11 +1002,15 @@ public class RCFile {
       }
 
       colValLenBufferReadIn = new NonSyncDataInputBuffer[columnNumber];
+      columnRunLength = new int[columnNumber];
+      columnPrvLength = new int[columnNumber];
       columnRowReadIndex = new int[columnNumber];
       for (int i = 0; i < columnNumber; i++) {
         columnRowReadIndex[i] = 0;
         if (!skippedColIDs[i])
           colValLenBufferReadIn[i] = new NonSyncDataInputBuffer();
+        columnRunLength[i] = 0;
+        columnPrvLength[i] = -1;
       }
 
       currentKey = createKeyBuffer();
@@ -1178,7 +1225,10 @@ public class RCFile {
         colValLenBufferReadIn[i].reset(currentKey.allCellValLenBuffer[i]
             .getData(), currentKey.allCellValLenBuffer[i].getLength());
         columnRowReadIndex[i] = 0;
+        columnRunLength[i] = 0;
+        columnPrvLength[i] = -1;
       }
+      
       return currentKeyLength;
     }
 
@@ -1228,7 +1278,7 @@ public class RCFile {
       fetchColumnTempBuf.reset(currentKey.allCellValLenBuffer[columnID]
           .getData(), currentKey.allCellValLenBuffer[columnID].getLength());
       for (int i = 0; i < recordsNumInValBuffer; i++) {
-        int length = WritableUtils.readVInt(fetchColumnTempBuf);
+        int length = getColumnNextValueLength(columnID);
 
         BytesRefWritable currentCell = rest.get(i);
         if (currentValue.decompressedFlag[columnID])
@@ -1318,7 +1368,7 @@ public class RCFile {
         BytesRefWritable ref = ret.unCheckedGet(i);
 
         int columnCurrentRowStart = (int) columnRowReadIndex[i];
-        int length = (int) WritableUtils.readVLong(colValLenBufferReadIn[i]);
+        int length = getColumnNextValueLength(i);
         columnRowReadIndex[i] = columnCurrentRowStart + length;
 
         if (currentValue.decompressedFlag[j])
@@ -1327,6 +1377,26 @@ public class RCFile {
           ref.set(currentValue.lazyDecompressCallbackObjs[j], columnCurrentRowStart, length);
       }
       rowFetched = true;
+    }
+
+    private int getColumnNextValueLength(int i) throws IOException {
+      if (columnRunLength[i] > 0) {
+        --columnRunLength[i];
+        return columnPrvLength[i];
+      } else {
+        int length = (int) WritableUtils.readVLong(colValLenBufferReadIn[i]);
+        if (length < 0) {
+          // we reach a runlength here, use the previous length and reset
+          // runlength
+          columnRunLength[i] = ~length;
+          columnRunLength[i]--;
+          length = columnPrvLength[i];
+        } else {
+          columnPrvLength[i] = length;
+          columnRunLength[i] = 0;
+        }
+        return length;
+      }
     }
 
     /** Returns true iff the previous call to next passed a sync mark. */
