@@ -123,6 +123,9 @@ Trunk -  Unreleased
 
     HIVE-947. runlength encding for RCFILE (He Yongqiang via namit)
 
+    HIVE-949. avoid deep copy for group by hash table lookup
+    (He Yongqiang via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES

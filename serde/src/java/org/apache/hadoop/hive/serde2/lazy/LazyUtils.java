@@ -186,4 +186,11 @@ public class LazyUtils {
     }
   }
   
+  public static int hashBytes(byte[] data, int start, int len) {
+    int hash = 1;
+    for (int i = start; i < len; i++)
+      hash = (31 * hash) + (int)data[i];
+    return hash;
+  }
+  
 }

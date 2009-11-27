@@ -61,4 +61,6 @@ public abstract class LazyBinaryObject<OI extends ObjectInspector> {
    * Otherwise (string, list, map, struct), return this. 
    */
   public abstract Object getObject();
+  
+  public abstract int hashCode();
 }

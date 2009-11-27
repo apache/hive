@@ -56,4 +56,6 @@ public abstract class LazyObject<OI extends ObjectInspector> {
    * Otherwise (array, map, struct), return this. 
    */
   public abstract Object getObject();
+  
+  public abstract int hashCode();
 }

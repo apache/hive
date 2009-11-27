@@ -58,4 +58,8 @@ T extends Writable> extends LazyBinaryObject<OI> {
   public String toString() {
     return data.toString();
   }
+  
+  public int hashCode(){
+    return data == null ? 0 : data.hashCode();
+  }
 }

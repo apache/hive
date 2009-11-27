@@ -53,4 +53,9 @@ public abstract class LazyPrimitive<OI extends ObjectInspector,
   public String toString() {
     return isNull ? null : data.toString();
   }
+  
+  public int hashCode(){
+    return isNull ? 0 : data.hashCode();
+  }
+  
 }
