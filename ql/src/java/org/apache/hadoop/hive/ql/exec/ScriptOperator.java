@@ -337,7 +337,7 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
         }
         int exitVal = 0;
         if (scriptPid != null)
-          scriptPid.waitFor();
+          exitVal = scriptPid.waitFor();
         if (exitVal != 0) {
           LOG.error("Script failed with code " + exitVal);
           new_abort = true;
