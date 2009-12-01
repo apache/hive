@@ -486,14 +486,18 @@ public class MetaStoreUtils {
   }
   
   public static Properties getSchema(org.apache.hadoop.hive.metastore.api.Table table) {
-  	return MetaStoreUtils.getSchema(table.getSd(), table.getParameters(), table.getTableName(), table.getPartitionKeys());
+  	return MetaStoreUtils.getSchema(table.getSd(),table.getSd(), table.getParameters(), table.getTableName(), table.getPartitionKeys());
   }
   
   public static Properties getSchema(org.apache.hadoop.hive.metastore.api.Partition part, org.apache.hadoop.hive.metastore.api.Table table) {
-  	return MetaStoreUtils.getSchema(part.getSd(), part.getParameters(), table.getTableName(), table.getPartitionKeys());
+  	return MetaStoreUtils.getSchema(part.getSd(), table.getSd(), table.getParameters(), table.getTableName(), table.getPartitionKeys());
   }
   
-  public static Properties getSchema(org.apache.hadoop.hive.metastore.api.StorageDescriptor sd, Map<String, String> parameters, String tableName, List<FieldSchema> partitionKeys) {
+  public static Properties getSchema(
+      org.apache.hadoop.hive.metastore.api.StorageDescriptor sd,
+      org.apache.hadoop.hive.metastore.api.StorageDescriptor tblsd,
+      Map<String, String> parameters, String tableName,
+      List<FieldSchema> partitionKeys) {
     Properties schema = new Properties();
     String inputFormat = sd.getInputFormat();
     if(inputFormat == null || inputFormat.length() == 0) {
@@ -520,7 +524,7 @@ public class MetaStoreUtils {
     StringBuilder colNameBuf = new StringBuilder();
     StringBuilder colTypeBuf = new StringBuilder();
     boolean first = true;
-    for (FieldSchema col: sd.getCols()) {
+    for (FieldSchema col: tblsd.getCols()) {
       if (!first) {
         colNameBuf.append(",");
         colTypeBuf.append(":");

@@ -287,6 +287,9 @@ Trunk -  Unreleased
     HIVE-953 Fix test script_broken_pipe3.q
     (Paul Yang via namit)
 
+    HIVE-957 Separate table and partition metadata
+    (He Yongqiang via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

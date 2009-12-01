@@ -133,8 +133,8 @@ public class partitionDesc implements Serializable, Cloneable {
   
   @explain(displayName="properties", normalExplain=false)
   public java.util.Properties getProperties() {
-  	if ( this.serdeClassName == null && this.properties == null && this.table !=null)
-  		setProperties(this.table.getProperties());
+    if(this.table !=null)
+      return this.table.getProperties();
     return this.properties;
   }
   
