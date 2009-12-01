@@ -290,6 +290,9 @@ Trunk -  Unreleased
     HIVE-957 Separate table and partition metadata
     (He Yongqiang via namit)
 
+    HIVE-961 bug in group by key wrapper
+    (He Yongqiang via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

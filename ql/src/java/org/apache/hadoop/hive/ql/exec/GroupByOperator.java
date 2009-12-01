@@ -523,14 +523,22 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
   
   class KeyWrapper{
     int hashcode;
-    ArrayList<Object> copiedKeys;
+    ArrayList<Object> keys;
+    // decide whether this is already in hashmap (keys in hashmap are deepcopied
+    // version, and we need to use 'currentKeyObjectInspector').
+    boolean copy = false; 
     
     KeyWrapper() {}
     
     public KeyWrapper(int hashcode, ArrayList<Object> copiedKeys) {
+      this(hashcode, copiedKeys, false);
+    }
+    
+    public KeyWrapper(int hashcode, ArrayList<Object> copiedKeys, boolean inHashMap) {
       super();
       this.hashcode = hashcode;
-      this.copiedKeys = copiedKeys;
+      this.keys = copiedKeys;
+      this.copy = inHashMap;
     }
     
     public int hashCode(){
@@ -538,29 +546,32 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     }
     
     public boolean equals(Object obj) {
-      ArrayList<Object> toBeCopied = ((KeyWrapper) obj).copiedKeys;
-      return ObjectInspectorUtils.compare(toBeCopied, currentKeyObjectInspector, copiedKeys, newKeyObjectInspector) == 0;
+      ArrayList<Object> copied_in_hashmap = ((KeyWrapper) obj).keys;
+      if(!copy)
+       return ObjectInspectorUtils.compare(copied_in_hashmap, currentKeyObjectInspector, keys, newKeyObjectInspector) == 0;
+      else
+       return ObjectInspectorUtils.compare(copied_in_hashmap, currentKeyObjectInspector, keys, currentKeyObjectInspector) == 0;
     }
   }
   
+  KeyWrapper keyProber = new KeyWrapper();
   private void processHashAggr(Object row, ObjectInspector rowInspector, ArrayList<Object> newKeys) throws HiveException {
     // Prepare aggs for updating
     AggregationBuffer[] aggs = null;
     boolean newEntryForHashAggr = false;
     
-    KeyWrapper keyProber = new KeyWrapper();
     keyProber.hashcode = newKeys.hashCode();
     //use this to probe the hashmap
-    keyProber.copiedKeys = newKeys;
+    keyProber.keys = newKeys;
     
     // hash-based aggregations
     aggs = hashAggregations.get(keyProber);
     ArrayList<Object> newDefaultKeys = null;
     if(aggs == null) {
       newDefaultKeys = deepCopyElements(keyObjects, keyObjectInspectors, ObjectInspectorCopyOption.WRITABLE);
-      keyProber.copiedKeys = newDefaultKeys;
+      KeyWrapper newKeyProber = new KeyWrapper(keyProber.hashcode, newDefaultKeys, true);
       aggs = newAggregations();
-      hashAggregations.put(keyProber, aggs);
+      hashAggregations.put(newKeyProber, aggs);
       newEntryForHashAggr = true;
       numRowsHashTbl++;      // new entry in the hash table
     }
@@ -684,7 +695,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
           iter = hashAggregations.entrySet().iterator();
       while (iter.hasNext()) {
         Map.Entry<KeyWrapper, AggregationBuffer[]> m = iter.next();
-        forward(m.getKey().copiedKeys, m.getValue());
+        forward(m.getKey().keys, m.getValue());
       }
       hashAggregations.clear();
       hashAggregations = null;
@@ -699,7 +710,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     int numDel = 0;
     while (iter.hasNext()) {
       Map.Entry<KeyWrapper, AggregationBuffer[]> m = iter.next();
-      forward(m.getKey().copiedKeys, m.getValue());
+      forward(m.getKey().keys, m.getValue());
       iter.remove();
       numDel++;
       if (numDel * 10 >= oldSize) {
@@ -763,7 +774,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
             Iterator iter = hashAggregations.entrySet().iterator();
             while (iter.hasNext()) {
               Map.Entry<KeyWrapper, AggregationBuffer[]> m = (Map.Entry)iter.next();
-              forward(m.getKey().copiedKeys, m.getValue());
+              forward(m.getKey().keys, m.getValue());
               iter.remove();
             }
             hashAggregations.clear();
