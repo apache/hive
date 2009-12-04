@@ -293,6 +293,9 @@ Trunk -  Unreleased
     HIVE-961 bug in group by key wrapper
     (He Yongqiang via namit)
 
+    HIVE-966 Hive should emit log messages in 24-hour format
+    (Zheng Shao via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

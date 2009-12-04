@@ -236,7 +236,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
     RunningJob rj = th.getRunningJob();
     String lastReport = "";
     SimpleDateFormat dateFormat
-        = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss,SSS");
+        = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");
     long reportTime = System.currentTimeMillis();
     long maxReportInterval = 60 * 1000; // One minute
     while (!rj.isComplete()) {
