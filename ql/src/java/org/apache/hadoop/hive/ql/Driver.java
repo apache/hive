@@ -40,6 +40,8 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.exec.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.TaskRunner;
+import org.apache.hadoop.hive.ql.exec.TaskResult;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -74,6 +76,10 @@ public class Driver implements CommandProcessor {
   private QueryPlan plan;
   private String errorMessage;
   private String SQLState;
+
+  // A limit on the number of threads that can be launched
+  private int maxthreads = 8;
+  private int sleeptime = 2000;
 
   public int countJobs(List<Task<? extends Serializable>> tasks) {
     return countJobs(tasks, new ArrayList<Task<? extends Serializable>>());
@@ -389,6 +395,8 @@ public class Driver implements CommandProcessor {
         .getVar(HiveConf.ConfVars.HADOOPJOBNAME));
     int maxlen = conf.getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
 
+    int curJobNo=0;
+
     String queryId = plan.getQueryId();
     String queryStr = plan.getQueryStr();
 
@@ -426,62 +434,58 @@ public class Driver implements CommandProcessor {
       }
       String jobname = Utilities.abbreviate(queryStr, maxlen - 6);
 
-      int curJobNo = 0;
+      // A runtime that launches runnable tasks as separate Threads through TaskRunners
+      // As soon as a task isRunnable, it is put in a queue
+      // At any time, at most maxthreads tasks can be running
+      // The main thread polls the TaskRunners to check if they have finished.
 
-      // A very simple runtime that keeps putting runnable tasks on a list and
-      // when a job completes, it puts the children at the back of the list
-      // while taking the job to run from the front of the list
       Queue<Task<? extends Serializable>> runnable = new LinkedList<Task<? extends Serializable>>();
+      Map<TaskResult, TaskRunner> running = new HashMap<TaskResult, TaskRunner> ();
 
-      for (Task<? extends Serializable> rootTask : sem.getRootTasks()) {
-        if (runnable.offer(rootTask) == false) {
-          LOG.error("Could not insert the first task into the queue");
-          return (1);
-        }
+      //Add root Tasks to runnable
+
+      for (Task<? extends Serializable> tsk : sem.getRootTasks()) {
+        addToRunnable(runnable,tsk);
       }
 
-      while (runnable.peek() != null) {
-        Task<? extends Serializable> tsk = runnable.remove();
-        if (SessionState.get() != null) {
-          SessionState.get().getHiveHistory().startTask(queryId, tsk,
-              tsk.getClass().getName());
-        }
-        if (tsk.isMapRedTask()) {
-          curJobNo++;
-          if (noName) {
-            conf.setVar(HiveConf.ConfVars.HADOOPJOBNAME, jobname + "(" + curJobNo
-                        + "/" + jobs + ")");
-          }
+      // Loop while you either have tasks running, or tasks queued up
+
+      while (running.size() != 0 || runnable.peek()!=null) {
+        // Launch upto maxthreads tasks
+        while(runnable.peek() != null && running.size() < maxthreads) {
+          Task<? extends Serializable> tsk = runnable.remove();
+          curJobNo = launchTask(tsk, queryId, noName,running, jobname, jobs, curJobNo);
         }
 
-        tsk.initialize(conf, plan);
-        int exitVal = tsk.executeTask();
-        if (SessionState.get() != null) {
-          SessionState.get().getHiveHistory().setTaskProperty(queryId,
-              tsk.getId(), Keys.TASK_RET_CODE, String.valueOf(exitVal));
-          SessionState.get().getHiveHistory().endTask(queryId, tsk);
-        }
-        if (exitVal != 0) {
+        // poll the Tasks to see which one completed
+        TaskResult tskRes = pollTasks(running.keySet());
+        TaskRunner tskRun = running.remove(tskRes);
+        Task<? extends Serializable> tsk = tskRun.getTask();
+
+        int exitVal = tskRes.getExitVal();
+        if(exitVal != 0) {
           //TODO: This error messaging is not very informative. Fix that.
           errorMessage = "FAILED: Execution Error, return code " + exitVal
                          + " from " + tsk.getClass().getName();
           SQLState = "08S01";
           console.printError(errorMessage);
+          if(running.size() !=0) {
+            taskCleanup();
+          }
           return 9;
         }
 
-        if (tsk.getChildTasks() == null) {
-          continue;
+        if (SessionState.get() != null) {
+          SessionState.get().getHiveHistory().setTaskProperty(queryId,
+              tsk.getId(), Keys.TASK_RET_CODE, String.valueOf(exitVal));
+          SessionState.get().getHiveHistory().endTask(queryId, tsk);
         }
 
-        for (Task<? extends Serializable> child : tsk.getChildTasks()) {
-          // Check if the child is runnable
-          if (!child.isRunnable()) {
-            continue;
-          }
-
-          if (runnable.offer(child) == false) {
-            LOG.error("Could not add child task to queue");
+        if (tsk.getChildTasks() != null) {
+          for (Task<? extends Serializable> child : tsk.getChildTasks()) {
+            if(isLaunchable(child)) { 
+              addToRunnable(runnable,child);
+            }
           }
         }
       }
@@ -527,6 +531,114 @@ public class Driver implements CommandProcessor {
     console.printInfo("OK");
     return (0);
   }
+
+  /**
+   * Launches a new task
+   * 
+   * @param tsk      task being launched
+   * @param queryId  Id of the query containing the task
+   * @param noName   whether the task has a name set
+   * @param running map from taskresults to taskrunners
+   * @param jobname  name of the task, if it is a map-reduce job
+   * @param jobs     number of map-reduce jobs
+   * @param curJobNo the sequential number of the next map-reduce job
+   * @return         the updated number of last the map-reduce job launched
+   */
+
+
+
+  public int launchTask(Task<? extends Serializable> tsk, String queryId, 
+    boolean noName, Map<TaskResult,TaskRunner> running, String jobname, 
+    int jobs, int curJobNo) {
+    
+    if (SessionState.get() != null) {
+      SessionState.get().getHiveHistory().startTask(queryId, tsk,
+        tsk.getClass().getName());
+    }
+    if (tsk.isMapRedTask()) {
+      if (noName) {
+        conf.setVar(HiveConf.ConfVars.HADOOPJOBNAME, jobname + "(" 
+          + tsk.getId() + ")");
+      }
+      curJobNo++;
+      console.printInfo("Launching Job " + curJobNo + " out of "+jobs);
+    }
+    tsk.initialize(conf, plan);
+    TaskResult tskRes = new TaskResult();
+    TaskRunner tskRun = new TaskRunner(tsk,tskRes);
+
+    //Launch Task
+    if(HiveConf.getBoolVar(conf, HiveConf.ConfVars.EXECPARALLEL) && tsk.isMapRedTask()) {
+      // Launch it in the parallel mode, as a separate thread only for MR tasks
+      tskRun.start();
+    }
+    else
+    {
+      tskRun.runSequential();
+    }
+    running.put(tskRes,tskRun);        
+    return curJobNo;
+  }
+
+
+  /**
+   * Cleans up remaining tasks in case of failure
+   */
+   
+  public void taskCleanup() {
+    // The currently existing Shutdown hooks will be automatically called, 
+    // killing the map-reduce processes. 
+    // The non MR processes will be killed as well.
+    System.exit(9);
+  }
+
+  /**
+   * Polls running tasks to see if a task has ended.
+   * 
+   * @param results  Set of result objects for running tasks
+   * @return         The result object for any completed/failed task
+   */
+
+  public TaskResult pollTasks(Set<TaskResult> results) {
+    Iterator<TaskResult> resultIterator = results.iterator();
+    while(true) {
+      while(resultIterator.hasNext()) {
+        TaskResult tskRes = resultIterator.next();
+        if(tskRes.isRunning() == false) {
+          return tskRes;
+        }
+      }
+
+      // In this loop, nothing was found
+      // Sleep 10 seconds and restart
+      try {
+        Thread.sleep(sleeptime);
+      }
+      catch (InterruptedException ie) {
+        //Do Nothing
+        ;
+      }
+      resultIterator = results.iterator();
+    }
+  }
+
+  /**
+   * Checks if a task can be launched
+   * 
+   * @param tsk the task to be checked 
+   * @return    true if the task is launchable, false otherwise
+   */
+
+  public boolean isLaunchable(Task<? extends Serializable> tsk) {
+    // A launchable task is one that hasn't been queued, hasn't been initialized, and is runnable.
+    return !tsk.getQueued() && !tsk.getInitialized() && tsk.isRunnable();
+  }
+
+  public void addToRunnable(Queue<Task<? extends Serializable>> runnable,
+    Task<? extends Serializable> tsk) {
+    runnable.add(tsk);
+    tsk.setQueued();
+ }
 
   public boolean getResults(Vector<String> res) throws IOException {
     if (plan != null && plan.getPlan().getFetchTask() != null) {

@@ -299,6 +299,12 @@
 </property>
 
 <property>
+  <name>hive.exec.parallel</name>
+  <value>false</value>
+  <description>Whether to execute jobs in parallel</description>
+</property>
+
+<property>
   <name>hive.hwi.listen.host</name>
   <value>0.0.0.0</value>
   <description>This is the host address the Hive Web Interface will listen on</description>

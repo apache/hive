@@ -70,7 +70,8 @@ public class Utilities {
    */
 
   public static enum ReduceField { KEY, VALUE, ALIAS };
-  private static volatile mapredWork gWork = null;
+  private static Map<String, mapredWork> gWorkMap=
+    Collections.synchronizedMap(new HashMap<String, mapredWork>());
   static final private Log LOG = LogFactory.getLog(Utilities.class.getName());
 
   public static void clearMapRedWork (Configuration job) {
@@ -88,22 +89,31 @@ public class Utilities {
     } finally {
       // where a single process works with multiple plans - we must clear
       // the cache before working with the next plan.
-      gWork = null;
+      synchronized(gWorkMap) {
+        gWorkMap.remove(getJobName(job));
+      }
     }
   }
 
   public static mapredWork getMapRedWork (Configuration job) {
+    mapredWork gWork = null;
     try {
+      synchronized(gWorkMap) {
+        gWork = gWorkMap.get(getJobName(job));
+      }
       if(gWork == null) {
         synchronized (Utilities.class) {
           if(gWork != null)
             return (gWork);
-          InputStream in = new FileInputStream("HIVE_PLAN");
+          InputStream in = new FileInputStream("HIVE_PLAN"
+            +sanitizedJobId(job));
           mapredWork ret = deserializeMapRedWork(in, job);
           gWork = ret;
+          gWork.initialize();
+          gWorkMap.put(getJobName(job), gWork);
         }
-        gWork.initialize();
       }
+      
       return (gWork);
     } catch (Exception e) {
       e.printStackTrace();
@@ -151,17 +161,38 @@ public class Utilities {
       HiveConf.setVar(job, HiveConf.ConfVars.PLAN, planPath.toString());
       // Set up distributed cache
       DistributedCache.createSymlink(job);
-      String uriWithLink = planPath.toUri().toString() + "#HIVE_PLAN";
+      String uriWithLink = planPath.toUri().toString() + "#HIVE_PLAN"
+        +sanitizedJobId(job);
       DistributedCache.addCacheFile(new URI(uriWithLink), job);
       // Cache the object in this process too so lookups don't hit the file system
       synchronized (Utilities.class) {
-        gWork = w;
-        gWork.initialize();
+        w.initialize();
+        gWorkMap.put(getJobName(job),w);
       }
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException (e);
     }
+  }
+
+  public static String getJobName( Configuration job) {
+    String s = HiveConf.getVar(job, HiveConf.ConfVars.HADOOPJOBNAME);
+    // This is just a backup case. We would like Hive to always have jobnames.
+    if(s == null) {
+      // There is no job name => we set one
+      s = "JOB"+randGen.nextInt();
+      HiveConf.setVar(job, HiveConf.ConfVars.HADOOPJOBNAME, s);
+    }
+    return s;
+  }
+
+  /**
+   * Returns a unique ID for the job.
+   */
+
+  public static int sanitizedJobId(Configuration job) {
+    String s = getJobName(job);
+    return s.hashCode();
   }
 
   public static void serializeTasks(Task<? extends Serializable> t, OutputStream out) {
@@ -785,6 +816,7 @@ public class Utilities {
     }
     return sb.toString();
   }
+  
   /**
    * Gets the default notification interval to send progress updates to the
    * tracker. Useful for operators that may not output data for a while.

@@ -81,6 +81,9 @@ Trunk -  Unreleased
 
     HIVE-870. Add table functions. (Paul Yang via namit)
 
+    HIVE-549. Run independent tasks for a query in parallel.
+    (Chaitanya Mishra via namit)
+
   IMPROVEMENTS
 
     HIVE-760. Add version info to META-INF/MANIFEST.MF.

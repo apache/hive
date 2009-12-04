@@ -40,7 +40,9 @@ public abstract class Task <T extends Serializable> implements Serializable {
 
   private static final long serialVersionUID = 1L;
   transient protected boolean started;
+  transient protected boolean initialized;
   transient protected boolean isdone;
+  transient protected boolean queued;
   transient protected HiveConf conf;
   transient protected Hive db;
   transient protected Log LOG;
@@ -57,6 +59,8 @@ public abstract class Task <T extends Serializable> implements Serializable {
   public Task() {
     isdone = false;
     started = false;
+    initialized = false;
+    queued = false;
     LOG = LogFactory.getLog(this.getClass().getName());
     this.taskCounters = new HashMap<String, Long>();
   }
@@ -65,6 +69,7 @@ public abstract class Task <T extends Serializable> implements Serializable {
     this.queryPlan = queryPlan;
     isdone = false;
     started = false;
+    setInitialized();
     this.conf = conf;
 
     try {
@@ -189,6 +194,22 @@ public abstract class Task <T extends Serializable> implements Serializable {
 
   public void setDone() {
     isdone = true;
+  }
+
+  public void setQueued() {
+    queued = true;
+  }
+
+  public boolean getQueued() {
+    return queued;
+  }
+
+  public void setInitialized() {
+    initialized = true;
+  }
+
+  public boolean getInitialized() {
+    return initialized;
   }
 
   public boolean isRunnable() {

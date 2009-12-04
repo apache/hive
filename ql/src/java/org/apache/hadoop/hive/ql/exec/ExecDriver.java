@@ -67,7 +67,8 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
   transient protected JobConf job;
   transient protected int mapProgress = 0;
   transient protected int reduceProgress = 0;
-
+  
+  public static Random randGen = new Random();
   /**
    * Constructor when invoked from QL
    */
@@ -145,7 +146,8 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
    * used to kill all running jobs in the event of an unexpected shutdown -
    * i.e., the JVM shuts down while there are still jobs running.
    */
-  public static HashMap<String, String> runningJobKillURIs = new HashMap<String, String>();
+  public static Map<String, String> runningJobKillURIs 
+    = Collections.synchronizedMap(new HashMap<String, String>());
 
   /**
    * In Hive, when the user control-c's the command line, any running jobs
@@ -160,22 +162,24 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
         "webinterface.private.actions", false)) {
       Runtime.getRuntime().addShutdownHook(new Thread() {
         public void run() {
-          for (Iterator<String> elems = runningJobKillURIs.values().iterator(); elems
-              .hasNext();) {
-            String uri = elems.next();
-            try {
-              System.err.println("killing job with: " + uri);
-              java.net.HttpURLConnection conn = (java.net.HttpURLConnection) 
-                new java.net.URL(uri).openConnection();
-              conn.setRequestMethod("POST");
-              int retCode = conn.getResponseCode();
-              if (retCode != 200) {
-                System.err.println("Got an error trying to kill job with URI: "
-                    + uri + " = " + retCode);
+          synchronized(runningJobKillURIs) {
+            for (Iterator<String> elems = runningJobKillURIs.values().iterator(); elems
+                .hasNext();) {
+              String uri = elems.next();
+              try {
+                System.err.println("killing job with: " + uri);
+                java.net.HttpURLConnection conn = (java.net.HttpURLConnection) 
+                  new java.net.URL(uri).openConnection();
+                conn.setRequestMethod("POST");
+                int retCode = conn.getResponseCode();
+                if (retCode != 200) {
+                  System.err.println("Got an error trying to kill job with URI: "
+                      + uri + " = " + retCode);
+                }
+              } catch (Exception e) {
+                System.err.println("trying to kill job, caught: " + e);
+                // do nothing
               }
-            } catch (Exception e) {
-              System.err.println("trying to kill job, caught: " + e);
-              // do nothing
             }
           }
         }
@@ -247,7 +251,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
       th.setRunningJob(jc.getJob(rj.getJobID()));
       updateCounters(th);
 
-      String report = " map = " + this.mapProgress + "%,  reduce = " + this.reduceProgress + "%";
+      String report = " "+getId()+" map = " + this.mapProgress + "%,  reduce = " + this.reduceProgress + "%";
 
       if (!report.equals(lastReport)
           || System.currentTimeMillis() >= reportTime + maxReportInterval) {
@@ -489,8 +493,17 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
     RunningJob rj = null, orig_rj = null;
     boolean success = false;
 
+    boolean noName = StringUtils.isEmpty(HiveConf.
+      getVar(job,HiveConf.ConfVars.HADOOPJOBNAME));
+
+    if(noName) {
+      // This is for a special case to ensure unit tests pass
+      HiveConf.setVar(job,HiveConf.ConfVars.HADOOPJOBNAME, "JOB"+randGen.nextInt());
+    }
+
     try {
       addInputPaths(job, work, emptyScratchDirStr);
+
       Utilities.setMapRedWork(job, work);
 
       // remove the pwd from conf file so that job tracker doesn't show this logs
@@ -536,6 +549,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
         console.printInfo(statusMesg);
       }
     } catch (Exception e) {
+      e.printStackTrace();
       String mesg = " with exception '" + Utilities.getNameMessage(e) + "'";
       if (rj != null) {
         mesg = "Ended Job = " + rj.getJobID() + mesg;
