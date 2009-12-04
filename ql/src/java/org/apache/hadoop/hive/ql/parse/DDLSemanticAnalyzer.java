@@ -128,6 +128,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       analyzeAlterTableSerde(ast);
     else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_FILEFORMAT)
       analyzeAlterTableFileFormat(ast);
+    else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_CLUSTER_SORT)
+    	analyzeAlterTableClusterSort(ast);
     else if (ast.getToken().getType() == HiveParser.TOK_SHOWPARTITIONS)
     {
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
@@ -211,6 +213,24 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 			break;
 		}
   	alterTableDesc alterTblDesc = new alterTableDesc(tableName, inputFormat, outputFormat, serde);
+  	rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc), conf));
+  }
+  
+  private void analyzeAlterTableClusterSort(ASTNode ast) throws SemanticException {
+  	String tableName = unescapeIdentifier(ast.getChild(0).getText());
+  	ASTNode buckets = (ASTNode)ast.getChild(1);
+		List<String> bucketCols = getColumnNames((ASTNode) buckets.getChild(0));
+		List<Order> sortCols = null;
+		int numBuckets = -1;
+		if (buckets.getChildCount() == 2)
+			numBuckets = (Integer.valueOf(buckets.getChild(1).getText())).intValue();
+		else {
+			sortCols = getColumnNamesOrder((ASTNode) buckets.getChild(1));
+			numBuckets = (Integer.valueOf(buckets.getChild(2).getText())).intValue();
+		}
+		if(numBuckets <=0 )
+  		throw new SemanticException(ErrorMsg.INVALID_BUCKET_NUMBER.getMsg());
+  	alterTableDesc alterTblDesc = new alterTableDesc(tableName, numBuckets, bucketCols, sortCols);
   	rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc), conf));
   }
 

@@ -42,6 +42,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: count(1)
+                bucketGroup: false
                 mode: hash
                 outputColumnNames: _col0
                 Reduce Output Operator
@@ -54,6 +55,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
+          bucketGroup: false
           mode: mergepartial
           outputColumnNames: _col0
           Select Operator
@@ -99,11 +101,11 @@ POSTHOOK: Output: default@tst_dest32
 PREHOOK: query: select * from tst_dest32
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tst_dest32
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/617724755/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1744614026/10000
 POSTHOOK: query: select * from tst_dest32
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tst_dest32
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/617724755/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1744614026/10000
 1000
 PREHOOK: query: drop table tst_dest32
 PREHOOK: type: DROPTABLE

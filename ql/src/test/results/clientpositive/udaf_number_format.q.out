@@ -33,6 +33,7 @@ STAGE PLANS:
                       expr: avg('a')
                       expr: variance('a')
                       expr: std('a')
+                bucketGroup: false
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Reduce Output Operator
@@ -54,6 +55,7 @@ STAGE PLANS:
                 expr: avg(VALUE._col1)
                 expr: variance(VALUE._col2)
                 expr: std(VALUE._col3)
+          bucketGroup: false
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2, _col3
           Select Operator
@@ -87,7 +89,7 @@ PREHOOK: query: SELECT
 FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/865310068/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/735631475/10000
 POSTHOOK: query: SELECT
   sum('a'),
   avg('a'),
@@ -96,5 +98,5 @@ POSTHOOK: query: SELECT
 FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/865310068/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/735631475/10000
 0.0	NULL	NULL	NULL

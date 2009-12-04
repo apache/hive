@@ -114,6 +114,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: count(1)
+                bucketGroup: false
                 keys:
                       expr: _col0
                       type: string
@@ -129,7 +130,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive5/hive5/build/ql/tmp/348623644/10002 
+        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/345561860/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -146,6 +147,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
+          bucketGroup: false
           keys:
                 expr: KEY._col0
                 type: string

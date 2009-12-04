@@ -75,6 +75,7 @@ STAGE PLANS:
             aggregations:
                   expr: count(KEY._col0)
                   expr: count(DISTINCT KEY._col0)
+            bucketGroup: false
             keys:
                   expr: VALUE._col0
                   type: int
@@ -90,6 +91,7 @@ STAGE PLANS:
             aggregations:
                   expr: sum(KEY._col0)
                   expr: sum(DISTINCT KEY._col0)
+            bucketGroup: false
             keys:
                   expr: VALUE._col0
                   type: int
@@ -105,7 +107,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive5/hive5/build/ql/tmp/1745933773/10004 
+        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1034721639/10004 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -125,6 +127,7 @@ STAGE PLANS:
           aggregations:
                 expr: count(VALUE._col0)
                 expr: count(VALUE._col1)
+          bucketGroup: false
           keys:
                 expr: KEY._col0
                 type: int
@@ -170,7 +173,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive5/hive5/build/ql/tmp/1745933773/10005 
+        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1034721639/10005 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -190,6 +193,7 @@ STAGE PLANS:
           aggregations:
                 expr: sum(VALUE._col0)
                 expr: sum(VALUE._col1)
+          bucketGroup: false
           keys:
                 expr: KEY._col0
                 type: int
@@ -250,11 +254,11 @@ POSTHOOK: Output: default@dest2
 PREHOOK: query: SELECT * from dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/810841334/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1454167877/10000
 POSTHOOK: query: SELECT * from dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/810841334/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1454167877/10000
 27	1	1
 66	1	1
 86	1	1
@@ -278,11 +282,11 @@ POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/810841334/1000
 PREHOOK: query: SELECT * from dest2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/566919289/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/750550239/10000
 POSTHOOK: query: SELECT * from dest2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/566919289/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/750550239/10000
 27	27	27
 66	66	66
 86	86	86

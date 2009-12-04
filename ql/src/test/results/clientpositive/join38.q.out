@@ -18,11 +18,11 @@ POSTHOOK: Output: default@tmp
 PREHOOK: query: select * from tmp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1628655450/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/513842932/10000
 POSTHOOK: query: select * from tmp
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1628655450/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/513842932/10000
 100	101	102.0	103.0	104.0	105	106.0	107.0	108.0	109.0	110.0	111
 100	101	102.0	103.0	104.0	105	106.0	107.0	108.0	109.0	110.0	111
 PREHOOK: query: explain
@@ -104,7 +104,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/2083729567/10002 
+        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1670596765/10002 
           Select Operator
             expressions:
                   expr: _col1
@@ -128,6 +128,7 @@ STAGE PLANS:
                 Group By Operator
                   aggregations:
                         expr: count(1)
+                  bucketGroup: false
                   keys:
                         expr: _col1
                         type: string
@@ -155,6 +156,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
+          bucketGroup: false
           keys:
                 expr: KEY._col0
                 type: string
@@ -190,7 +192,7 @@ group by a.value, b.col5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1273936990/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1925019467/10000
 POSTHOOK: query: FROM src a JOIN tmp b ON (a.key = b.col11)
 SELECT /*+ MAPJOIN(a) */ a.value, b.col5, count(1) as count
 where b.col11 = 111
@@ -198,7 +200,7 @@ group by a.value, b.col5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1273936990/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1925019467/10000
 val_111	105	2
 PREHOOK: query: drop table tmp
 PREHOOK: type: DROPTABLE

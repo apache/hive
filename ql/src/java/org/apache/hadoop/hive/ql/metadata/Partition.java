@@ -308,7 +308,7 @@ public class Partition {
   }
 
   public List<String> getBucketCols() {
-    return table.getBucketCols();
+    return this.tPartition.getSd().getBucketCols();
   }
 
   /**

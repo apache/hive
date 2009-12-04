@@ -41,6 +41,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: count(1)
+                bucketGroup: false
                 mode: hash
                 outputColumnNames: _col0
                 Reduce Output Operator
@@ -53,6 +54,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
+          bucketGroup: false
           mode: mergepartial
           outputColumnNames: _col0
           Select Operator
@@ -76,12 +78,12 @@ PREHOOK: query: select count(1) from tstparttbl
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstparttbl@ds=2008-04-08
 PREHOOK: Input: default@tstparttbl@ds=2008-04-09
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2074178114/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/429292939/10000
 POSTHOOK: query: select count(1) from tstparttbl
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstparttbl@ds=2008-04-08
 POSTHOOK: Input: default@tstparttbl@ds=2008-04-09
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2074178114/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/429292939/10000
 500
 PREHOOK: query: DROP TABLE tstparttbl2
 PREHOOK: type: DROPTABLE
@@ -126,6 +128,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: count(1)
+                bucketGroup: false
                 mode: hash
                 outputColumnNames: _col0
                 Reduce Output Operator
@@ -138,6 +141,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
+          bucketGroup: false
           mode: mergepartial
           outputColumnNames: _col0
           Select Operator
@@ -161,12 +165,12 @@ PREHOOK: query: select count(1) from tstparttbl2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstparttbl2@ds=2008-04-08
 PREHOOK: Input: default@tstparttbl2@ds=2008-04-09
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/743975327/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/675788842/10000
 POSTHOOK: query: select count(1) from tstparttbl2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstparttbl2@ds=2008-04-08
 POSTHOOK: Input: default@tstparttbl2@ds=2008-04-09
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/743975327/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/675788842/10000
 0
 PREHOOK: query: DROP TABLE tstparttbl
 PREHOOK: type: DROPTABLE
@@ -212,6 +216,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: count(1)
+                bucketGroup: false
                 mode: hash
                 outputColumnNames: _col0
                 Reduce Output Operator
@@ -224,6 +229,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
+          bucketGroup: false
           mode: mergepartial
           outputColumnNames: _col0
           Select Operator
@@ -247,12 +253,12 @@ PREHOOK: query: select count(1) from tstparttbl
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstparttbl@ds=2008-04-08
 PREHOOK: Input: default@tstparttbl@ds=2008-04-09
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1477820236/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1506435272/10000
 POSTHOOK: query: select count(1) from tstparttbl
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstparttbl@ds=2008-04-08
 POSTHOOK: Input: default@tstparttbl@ds=2008-04-09
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1477820236/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1506435272/10000
 500
 PREHOOK: query: DROP TABLE tstparttbl2
 PREHOOK: type: DROPTABLE
@@ -298,6 +304,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: count(1)
+                bucketGroup: false
                 mode: hash
                 outputColumnNames: _col0
                 Reduce Output Operator
@@ -310,6 +317,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
+          bucketGroup: false
           mode: mergepartial
           outputColumnNames: _col0
           Select Operator
@@ -333,12 +341,12 @@ PREHOOK: query: select count(1) from tstparttbl2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstparttbl2@ds=2008-04-08
 PREHOOK: Input: default@tstparttbl2@ds=2008-04-09
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/816722653/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1727986109/10000
 POSTHOOK: query: select count(1) from tstparttbl2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstparttbl2@ds=2008-04-08
 POSTHOOK: Input: default@tstparttbl2@ds=2008-04-09
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/816722653/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1727986109/10000
 0
 PREHOOK: query: DROP TABLE tstparttbl
 PREHOOK: type: DROPTABLE

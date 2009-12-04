@@ -47,6 +47,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: count(1)
+                bucketGroup: false
                 mode: hash
                 outputColumnNames: _col0
                 Reduce Output Operator
@@ -59,6 +60,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
+          bucketGroup: false
           mode: mergepartial
           outputColumnNames: _col0
           Select Operator
@@ -78,7 +80,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive5/hive5/build/ql/tmp/1143232613/10002 
+        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/690960491/10002 
           Union
             Select Operator
               expressions:
@@ -95,7 +97,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: tmptable
-        file:/data/users/njain/hive5/hive5/build/ql/tmp/1143232613/10004 
+        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/690960491/10004 
           Union
             Select Operator
               expressions:
@@ -119,10 +121,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/njain/hive5/hive5/build/ql/tmp/725430727/10000
+                destination: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/447670167/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/njain/hive5/hive5/build/ql/tmp/1143232613/10003 
+              file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/690960491/10003 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -195,11 +197,11 @@ POSTHOOK: Output: default@tmptable
 PREHOOK: query: select * from tmptable x sort by x.key, x.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmptable
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/991182595/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1367097606/10000
 POSTHOOK: query: select * from tmptable x sort by x.key, x.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmptable
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/991182595/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1367097606/10000
 	
 	
 	

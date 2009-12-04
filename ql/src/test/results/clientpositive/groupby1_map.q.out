@@ -33,6 +33,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: sum(substr(value, 5))
+                bucketGroup: false
                 keys:
                       expr: key
                       type: string
@@ -54,6 +55,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: sum(VALUE._col0)
+          bucketGroup: false
           keys:
                 expr: KEY._col0
                 type: string
@@ -104,11 +106,11 @@ POSTHOOK: Output: default@dest1
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/759116141/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/233901356/10000
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/759116141/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/233901356/10000
 0	0.0
 10	10.0
 100	200.0

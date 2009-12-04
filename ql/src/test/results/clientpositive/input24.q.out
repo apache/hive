@@ -44,6 +44,7 @@ STAGE PLANS:
                   Group By Operator
                     aggregations:
                           expr: count(1)
+                    bucketGroup: false
                     mode: hash
                     outputColumnNames: _col0
                     Reduce Output Operator
@@ -56,6 +57,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
+          bucketGroup: false
           mode: mergepartial
           outputColumnNames: _col0
           Select Operator
@@ -78,11 +80,11 @@ STAGE PLANS:
 PREHOOK: query: select count(1) from tst x where x.d='2009-01-01'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tst@d=2009-01-01
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1710334544/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1844534662/10000
 POSTHOOK: query: select count(1) from tst x where x.d='2009-01-01'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tst@d=2009-01-01
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1710334544/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1844534662/10000
 0
 PREHOOK: query: drop table tst
 PREHOOK: type: DROPTABLE

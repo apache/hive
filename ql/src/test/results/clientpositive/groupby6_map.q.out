@@ -31,6 +31,7 @@ STAGE PLANS:
                     type: string
               outputColumnNames: value
               Group By Operator
+                bucketGroup: false
                 keys:
                       expr: substr(value, 5, 1)
                       type: string
@@ -47,6 +48,7 @@ STAGE PLANS:
                   tag: -1
       Reduce Operator Tree:
         Group By Operator
+          bucketGroup: false
           keys:
                 expr: KEY._col0
                 type: string
@@ -90,11 +92,11 @@ POSTHOOK: Output: default@dest1
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1703166358/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/2021418754/10000
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1703166358/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/2021418754/10000
 0
 1
 2

@@ -49,6 +49,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: count(1)
+                bucketGroup: false
                 keys:
                       expr: key
                       type: string
@@ -70,6 +71,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
+          bucketGroup: false
           keys:
                 expr: KEY._col0
                 type: string
@@ -90,7 +92,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive5/hive5/build/ql/tmp/187695771/10002 
+        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/11027398/10002 
             Common Join Operator
               condition map:
                    Inner Join 0 to 1
@@ -111,11 +113,11 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
           Alias -> Map Local Tables:
-            file:/data/users/njain/hive5/hive5/build/ql/tmp/187695771/10004 
+            file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/11027398/10004 
               Fetch Operator
                 limit: -1
           Alias -> Map Local Operator Tree:
-            file:/data/users/njain/hive5/hive5/build/ql/tmp/187695771/10004 
+            file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/11027398/10004 
                 Common Join Operator
                   condition map:
                        Inner Join 0 to 1
@@ -137,7 +139,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive5/hive5/build/ql/tmp/187695771/10003 
+        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/11027398/10003 
           Select Operator
             expressions:
                   expr: _col0
@@ -151,6 +153,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: count(1)
+                bucketGroup: false
                 keys:
                       expr: _col0
                       type: string
@@ -172,6 +175,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
+          bucketGroup: false
           keys:
                 expr: KEY._col0
                 type: string
@@ -224,6 +228,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: count(1)
+                bucketGroup: false
                 keys:
                       expr: key
                       type: string
@@ -245,6 +250,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
+          bucketGroup: false
           keys:
                 expr: KEY._col0
                 type: string
@@ -284,11 +290,11 @@ POSTHOOK: Output: default@dest_j1
 PREHOOK: query: select * from dest_j1 x order by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_j1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/962005959/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/187461149/10000
 POSTHOOK: query: select * from dest_j1 x order by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest_j1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/962005959/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/187461149/10000
 128	1
 146	1
 150	1

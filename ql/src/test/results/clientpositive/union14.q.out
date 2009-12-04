@@ -48,7 +48,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive5/hive5/build/ql/tmp/29089879/10002 
+        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1040645790/10002 
           Union
             Select Operator
               expressions:
@@ -58,6 +58,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: count(1)
+                bucketGroup: false
                 keys:
                       expr: _col0
                       type: string
@@ -75,7 +76,7 @@ STAGE PLANS:
                   value expressions:
                         expr: _col1
                         type: bigint
-        file:/data/users/njain/hive5/hive5/build/ql/tmp/29089879/10003 
+        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1040645790/10003 
           Union
             Select Operator
               expressions:
@@ -85,6 +86,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: count(1)
+                bucketGroup: false
                 keys:
                       expr: _col0
                       type: string
@@ -106,6 +108,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
+          bucketGroup: false
           keys:
                 expr: KEY._col0
                 type: string
@@ -135,6 +138,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: count(1)
+                bucketGroup: false
                 mode: hash
                 outputColumnNames: _col0
                 Reduce Output Operator
@@ -147,6 +151,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
+          bucketGroup: false
           mode: mergepartial
           outputColumnNames: _col0
           Select Operator
@@ -175,7 +180,7 @@ PREHOOK: query: select unionsrc.key, count(1) FROM (select s2.key as key, s2.val
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1661700727/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1877970971/10000
 POSTHOOK: query: select unionsrc.key, count(1) FROM (select s2.key as key, s2.value as value from src1 s2
                                         UNION  ALL  
                                       select 'tst1' as key, cast(count(1) as string) as value from src s1) 
@@ -183,7 +188,7 @@ POSTHOOK: query: select unionsrc.key, count(1) FROM (select s2.key as key, s2.va
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src1
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1661700727/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1877970971/10000
 	10
 128	1
 146	1

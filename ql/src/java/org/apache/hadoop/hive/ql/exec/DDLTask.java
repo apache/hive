@@ -955,6 +955,15 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     	tbl.getTTable().getSd().setOutputFormat(alterTbl.getOutputFormat());
     	if (alterTbl.getSerdeName() != null) 
     		tbl.setSerializationLib(alterTbl.getSerdeName());
+    } else if (alterTbl.getOp() == alterTableDesc.alterTableTypes.ADDCLUSTERSORTCOLUMN) {
+     //validate sort columns and bucket columns
+     List<String> columns = Utilities.getColumnNamesFromFieldSchema(tbl.getCols());
+     Utilities.validateColumnNames(columns, alterTbl.getBucketColumns());
+     if (alterTbl.getSortColumns() != null)
+       Utilities.validateColumnNames(columns, Utilities.getColumnNamesFromSortCols(alterTbl.getSortColumns()));
+     tbl.getTTable().getSd().setBucketCols(alterTbl.getBucketColumns());
+     tbl.getTTable().getSd().setNumBuckets(alterTbl.getNumberBuckets());
+     tbl.getTTable().getSd().setSortCols(alterTbl.getSortColumns());
     } else {
       console.printError("Unsupported Alter commnad");
       return 1;

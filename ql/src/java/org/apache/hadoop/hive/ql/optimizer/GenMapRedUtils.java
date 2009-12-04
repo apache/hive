@@ -401,7 +401,7 @@ public class GenMapRedUtils {
     try {
       partsList = PartitionPruner.prune(parseCtx.getTopToTable().get(topOp),
                                         parseCtx.getOpToPartPruner().get(topOp),
-                                        opProcCtx.getConf(), alias_id);
+                                        opProcCtx.getConf(), alias_id, parseCtx.getPrunedPartitions());
     } catch (SemanticException e) {
       throw e;
     } catch (HiveException e) {

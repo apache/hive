@@ -73,6 +73,7 @@ public enum ErrorMsg {
   SELECT_DISTINCT_WITH_GROUPBY("SELECT DISTINCT and GROUP BY can not be in the same query"),
   COLUMN_REPEATED_IN_PARTITIONING_COLS("Column repeated in partitioning columns"),
   DUPLICATE_COLUMN_NAMES("Duplicate column names"),
+  INVALID_BUCKET_NUMBER("Bucket number should be bigger than zero"),
   COLUMN_REPEATED_IN_CLUSTER_SORT("Same column cannot appear in cluster and sort by"),
   SAMPLE_RESTRICTION("Cannot Sample on More Than Two Columns"),
   SAMPLE_COLUMN_NOT_FOUND("Sample Column Not Found"),

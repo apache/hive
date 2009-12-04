@@ -36,6 +36,7 @@ STAGE PLANS:
                   Group By Operator
                     aggregations:
                           expr: count(1)
+                    bucketGroup: false
                     mode: hash
                     outputColumnNames: _col0
                     Reduce Output Operator
@@ -59,6 +60,7 @@ STAGE PLANS:
                   Group By Operator
                     aggregations:
                           expr: count(1)
+                    bucketGroup: false
                     mode: hash
                     outputColumnNames: _col0
                     Reduce Output Operator
@@ -71,6 +73,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
+          bucketGroup: false
           mode: mergepartial
           outputColumnNames: _col0
           Select Operator
@@ -94,10 +97,10 @@ PREHOOK: query: select count(1) FROM (select s1.key as key, s1.value as value fr
                       select s2.key as key, s2.value as value from src s2) unionsrc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1910952008/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/750442478/10000
 POSTHOOK: query: select count(1) FROM (select s1.key as key, s1.value as value from src s1 UNION  ALL  
                       select s2.key as key, s2.value as value from src s2) unionsrc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1910952008/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/750442478/10000
 1000

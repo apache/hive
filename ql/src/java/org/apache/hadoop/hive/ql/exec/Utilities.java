@@ -49,6 +49,9 @@ import org.apache.hadoop.io.compress.DefaultCodec;
 import org.apache.hadoop.util.ReflectionUtils;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.ql.parse.ErrorMsg;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.*;
 import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
 import org.apache.hadoop.hive.ql.io.RCFile;
@@ -113,7 +116,7 @@ public class Utilities {
           gWorkMap.put(getJobName(job), gWork);
         }
       }
-      
+
       return (gWork);
     } catch (Exception e) {
       e.printStackTrace();
@@ -125,17 +128,17 @@ public class Utilities {
     if (fl == null) {
       return null;
     }
-    
+
     ArrayList<String> ret = new ArrayList<String>();
     for(FieldSchema f: fl) {
-      ret.add(f.getName() + " " + f.getType() + 
+      ret.add(f.getName() + " " + f.getType() +
               (f.getComment() != null ? (" " + f.getComment()) : ""));
     }
     return ret;
   }
-  
+
   /**
-   * Java 1.5 workaround. 
+   * Java 1.5 workaround.
    * From http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5015403
    */
   public static class EnumDelegate extends DefaultPersistenceDelegate {
@@ -244,7 +247,7 @@ public class Utilities {
     // by default we expect ^A separated strings
     // This tableDesc does not provide column names.  We should always use
     // PlanUtils.getDefaultTableDesc(String separatorCode, String columns)
-    // or getBinarySortableTableDesc(List<FieldSchema> fieldSchemas) when 
+    // or getBinarySortableTableDesc(List<FieldSchema> fieldSchemas) when
     // we know the column names.
     defaultTd = PlanUtils.getDefaultTableDesc("" + Utilities.ctrlaCode);
   }
@@ -252,21 +255,21 @@ public class Utilities {
   public final static int newLineCode = 10;
   public final static int tabCode = 9;
   public final static int ctrlaCode = 1;
-  
+
   public final static String INDENT = "  ";
-  
+
   // Note: When DDL supports specifying what string to represent null,
-  // we should specify "NULL" to represent null in the temp table, and then 
-  // we can make the following translation deprecated.  
+  // we should specify "NULL" to represent null in the temp table, and then
+  // we can make the following translation deprecated.
   public static String nullStringStorage = "\\N";
   public static String nullStringOutput = "NULL";
 
   public static Random randGen = new Random();
-  
+
   /**
    * Gets the task id if we are running as a Hadoop job.
    * Gets a random number otherwise.
-   */ 
+   */
   public static String getTaskId(Configuration hconf) {
     String taskid = (hconf == null) ? null : hconf.get("mapred.task.id");
     if((taskid == null) || taskid.equals("")) {
@@ -306,13 +309,13 @@ public class Utilities {
     InputStream is;
     String type;
     PrintStream os;
-    
+
     public StreamPrinter(InputStream is, String type, PrintStream os) {
       this.is = is;
       this.type = type;
       this.os = os;
     }
-    
+
     public void run() {
       try {
         InputStreamReader isr = new InputStreamReader(is);
@@ -326,7 +329,7 @@ public class Utilities {
             os.println(line);
         }
       } catch (IOException ioe) {
-        ioe.printStackTrace();  
+        ioe.printStackTrace();
       }
     }
   }
@@ -341,14 +344,14 @@ public class Utilities {
   }
 
   public static void addMapWork(mapredWork mr, Table tbl, String alias, Operator<?> work) {
-    mr.addMapWork(tbl.getDataLocation().getPath(), alias, work, 
+    mr.addMapWork(tbl.getDataLocation().getPath(), alias, work,
                   new partitionDesc(getTableDesc(tbl), null));
   }
 
   private static String getOpTreeSkel_helper(Operator<?> op, String indent) {
     if (op == null)
       return "";
-  
+
     StringBuffer sb = new StringBuffer();
     sb.append(indent);
     sb.append(op.toString());
@@ -375,10 +378,10 @@ public class Utilities {
     try {
       if((is1 == is2) || (is1 == null && is2 == null))
           return true;
- 
+
       if(is1 == null || is2 == null)
         return false;
- 
+
       while( true ) {
         int c1 = is1.read();
         while( ignoreWhitespace && isWhitespace( c1 ) )
@@ -413,8 +416,8 @@ public class Utilities {
 
     suffixlength = Math.min(suffixlength, (max-3)/2);
     String rev = StringUtils.reverse(str);
-    
-    // get the last few words 
+
+    // get the last few words
     String suffix = WordUtils.abbreviate(rev, 0, suffixlength, "");
     suffix = StringUtils.reverse(suffix);
 
@@ -446,7 +449,7 @@ public class Utilities {
   }
 
   /**
-   * Convert an output stream to a compressed output stream based on codecs 
+   * Convert an output stream to a compressed output stream based on codecs
    * and compression options specified in the Job Configuration.
    * @param jc Job Configuration
    * @param out Output Stream to be converted into compressed output stream
@@ -458,10 +461,10 @@ public class Utilities {
     boolean isCompressed = FileOutputFormat.getCompressOutput(jc);
     return createCompressedStream(jc, out, isCompressed);
   }
-  
+
   /**
    * Convert an output stream to a compressed output stream based on codecs
-   * codecs in the Job Configuration. Caller specifies directly whether file is 
+   * codecs in the Job Configuration. Caller specifies directly whether file is
    * compressed or not
    * @param jc Job Configuration
    * @param out Output Stream to be converted into compressed output stream
@@ -540,18 +543,18 @@ public class Utilities {
     if (isCompressed) {
       compressionType = SequenceFileOutputFormat.getOutputCompressionType(jc);
       codecClass = SequenceFileOutputFormat.getOutputCompressorClass(jc, DefaultCodec.class);
-      codec = (CompressionCodec) 
+      codec = (CompressionCodec)
         ReflectionUtils.newInstance(codecClass, jc);
     }
     return (SequenceFile.createWriter(fs, jc, file,
                                       keyClass, valClass, compressionType, codec));
 
   }
-  
+
   /**
    * Create a RCFile output stream based on job configuration Uses user supplied
    * compression flag (rather than obtaining it from the Job Configuration)
-   * 
+   *
    * @param jc
    *          Job configuration
    * @param fs
@@ -595,7 +598,7 @@ public class Utilities {
     } catch(IOException e){};
 
     String file = path.makeQualified(fs).toString();
-    // For compatibility with hadoop 0.17, change file:/a/b/c to file:///a/b/c 
+    // For compatibility with hadoop 0.17, change file:/a/b/c to file:///a/b/c
     if (StringUtils.startsWith(file, "file:/")
         && !StringUtils.startsWith(file, "file:///")) {
       file = "file:///" + file.substring("file:/".length());
@@ -631,7 +634,7 @@ public class Utilities {
   public static Path toTempPath(String orig) {
     return toTempPath(new Path(orig));
   }
-  
+
   /**
    * Detect if the supplied file is a temporary path
    */
@@ -643,28 +646,28 @@ public class Utilities {
   }
 
   /**
-   * Rename src to dst, or in the case dst already exists, move files in src 
-   * to dst.  If there is an existing file with the same name, the new file's 
+   * Rename src to dst, or in the case dst already exists, move files in src
+   * to dst.  If there is an existing file with the same name, the new file's
    * name will be appended with "_1", "_2", etc.
-   * @param fs the FileSystem where src and dst are on.  
+   * @param fs the FileSystem where src and dst are on.
    * @param src the src directory
    * @param dst the target directory
-   * @throws IOException 
+   * @throws IOException
    */
   static public void rename(FileSystem fs, Path src, Path dst)
     throws IOException, HiveException {
     if (!fs.rename(src, dst)) {
       throw new HiveException ("Unable to move: " + src + " to: " + dst);
     }
-  }  
+  }
   /**
-   * Rename src to dst, or in the case dst already exists, move files in src 
-   * to dst.  If there is an existing file with the same name, the new file's 
+   * Rename src to dst, or in the case dst already exists, move files in src
+   * to dst.  If there is an existing file with the same name, the new file's
    * name will be appended with "_1", "_2", etc.
-   * @param fs the FileSystem where src and dst are on.  
+   * @param fs the FileSystem where src and dst are on.
    * @param src the src directory
    * @param dst the target directory
-   * @throws IOException 
+   * @throws IOException
    */
   static public void renameOrMoveFiles(FileSystem fs, Path src, Path dst)
     throws IOException, HiveException {
@@ -692,13 +695,13 @@ public class Utilities {
       }
     }
   }
-  
+
   /** The first group will contain the task id.
    *  The second group is the optional extension.
    *  The file name looks like: "24931_r_000000_0" or "24931_r_000000_0.gz"
    */
   static Pattern fileNameTaskIdRegex = Pattern.compile("^.*_([0-9]*)_[0-9](\\..*)?$");
-  
+
   /**
    * Get the task id from the filename.
    * E.g., get "000000" out of "24931_r_000000_0" or "24931_r_000000_0.gz"
@@ -741,7 +744,7 @@ public class Utilities {
             throw new IOException ("Unable to delete duplicate file: "
                 + one.getPath() + ". Existing file: " + otherFile.getPath());
           } else {
-            LOG.warn("Duplicate taskid file removed: " + one.getPath() 
+            LOG.warn("Duplicate taskid file removed: " + one.getPath()
                 + ". Existing file: " + otherFile.getPath());
           }
         }
@@ -755,7 +758,7 @@ public class Utilities {
 
   /**
    * Add new elements to the classpath
-   * 
+   *
    * @param newPaths
    *          Array of classpath elements
    */
@@ -786,7 +789,7 @@ public class Utilities {
 
   /**
    * remove elements from the classpath
-   * 
+   *
    * @param pathsToRemove
    *          Array of classpath elements
    */
@@ -816,18 +819,53 @@ public class Utilities {
     }
     return sb.toString();
   }
-  
+
+  public static List<String> getColumnNamesFromSortCols(List<Order> sortCols) {
+    List<String> names = new ArrayList<String>();
+    for (Order o : sortCols) {
+      names.add(o.getCol());
+    }
+    return names;
+  }
+
+  public static List<String> getColumnNamesFromFieldSchema(List<FieldSchema> partCols) {
+    List<String> names = new ArrayList<String>();
+    for (FieldSchema o : partCols) {
+      names.add(o.getName());
+    }
+    return names;
+  }
+
+  public static void validateColumnNames(List<String> colNames,
+      List<String> checkCols) throws SemanticException {
+    Iterator<String> checkColsIter = checkCols.iterator();
+    while (checkColsIter.hasNext()) {
+      String toCheck = checkColsIter.next();
+      boolean found = false;
+      Iterator<String> colNamesIter = colNames.iterator();
+      while (colNamesIter.hasNext()) {
+        String colName = colNamesIter.next();
+        if (toCheck.equalsIgnoreCase(colName)) {
+          found = true;
+          break;
+        }
+      }
+      if (!found)
+        throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg());
+    }
+  }
+
   /**
    * Gets the default notification interval to send progress updates to the
    * tracker. Useful for operators that may not output data for a while.
-   * 
+   *
    * @param hconf
    * @return the interval in miliseconds
    */
   public static int getDefaultNotificationInterval(Configuration hconf) {
     int notificationInterval;
     Integer expInterval = Integer.decode(hconf.get("mapred.tasktracker.expiry.interval"));
-    
+
     if (expInterval != null) {
       notificationInterval = expInterval.intValue() / 2;
     } else {

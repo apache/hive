@@ -182,6 +182,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private int destTableId;
   private UnionProcContext uCtx;
   List<MapJoinOperator> listMapJoinOpsNoReducer;
+  Map<GroupByOperator, Set<String>> groupOpToInputTables;
+  Map<String, PrunedPartitionList> prunedPartitions;
 
   private static class Phase1Ctx {
     String dest;
@@ -204,6 +206,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     this.destTableId = 1;
     this.uCtx = null;
     this.listMapJoinOpsNoReducer = new ArrayList<MapJoinOperator>();
+    this.groupOpToInputTables = new HashMap<GroupByOperator, Set<String>>();
+    prunedPartitions = new HashMap<String, PrunedPartitionList> ();
   }
 
   @Override
@@ -221,6 +225,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     this.aliasToSamplePruner.clear();
     this.joinContext.clear();
     this.opParseCtx.clear();
+    this.groupOpToInputTables.clear();
+    this.prunedPartitions.clear();
   }
 
   public void init(ParseContext pctx) {
@@ -238,13 +244,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     this.uCtx = pctx.getUCtx();
     this.listMapJoinOpsNoReducer = pctx.getListMapJoinOpsNoReducer();
     qb = pctx.getQB();
+    this.groupOpToInputTables = pctx.getGroupOpToInputTables();
+    this.prunedPartitions = pctx.getPrunedPartitions();
   }
 
   public ParseContext getParseContext() {
     return new ParseContext(conf, qb, ast, opToPartPruner, aliasToSamplePruner, topOps,
                             topSelOps, opParseCtx, joinContext, topToTable, loadTableWork,
                             loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
-                            listMapJoinOpsNoReducer);
+                            listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions);
   }
 
   @SuppressWarnings("nls")
@@ -2459,6 +2467,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     GroupByOperator groupByOperatorInfo = (GroupByOperator)genGroupByPlanMapGroupByOperator(qb,
       dest, inputOperatorInfo, groupByDesc.Mode.HASH, genericUDAFEvaluators);
 
+    this.groupOpToInputTables.put(groupByOperatorInfo, this.opParseCtx.get(
+        inputOperatorInfo).getRR().getTableNames());
     int numReducers = -1;
 
     // Optimize the scenario when there are no grouping keys - only 1 reducer is needed
@@ -2530,7 +2540,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       new LinkedHashMap<String, GenericUDAFEvaluator>();
     GroupByOperator groupByOperatorInfo = (GroupByOperator)genGroupByPlanMapGroupByOperator(qb,
       dest, inputOperatorInfo, groupByDesc.Mode.HASH, genericUDAFEvaluators);
-
+    
+    this.groupOpToInputTables.put(groupByOperatorInfo, this.opParseCtx.get(
+        inputOperatorInfo).getRR().getTableNames());
     // Optimize the scenario when there are no grouping keys and no distinct - 2 map-reduce jobs are not needed
     // For eg: select count(1) from T where t.ds = ....
     if (!optimizeMapAggrGroupBy(dest, qb)) {
@@ -4623,7 +4635,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
             PrunedPartitionList partsList = null;
             try {
-              partsList = PartitionPruner.prune(topToTable.get(ts), opToPartPruner.get(ts), conf, (String)topOps.keySet().toArray()[0]);
+              partsList = PartitionPruner.prune(topToTable.get(ts), opToPartPruner.get(ts), conf, (String)topOps.keySet().toArray()[0], prunedPartitions);
             } catch (HiveException e) {
               // Has to use full name to make sure it does not conflict with org.apache.commons.lang.StringUtils
               LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
@@ -4947,7 +4959,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     ParseContext pCtx = new ParseContext(conf, qb, child, opToPartPruner, aliasToSamplePruner, topOps,
                                          topSelOps, opParseCtx, joinContext, topToTable, loadTableWork, loadFileWork,
-                                         ctx, idToTableNameMap, destTableId, uCtx, listMapJoinOpsNoReducer);
+                                         ctx, idToTableNameMap, destTableId, uCtx, listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions);
 
     Optimizer optm = new Optimizer();
     optm.setPctx(pCtx);

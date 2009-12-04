@@ -138,11 +138,18 @@ public class PartitionPruner implements Transform {
    * @throws HiveException
    */
   public static PrunedPartitionList prune(Table tab, exprNodeDesc prunerExpr,
-      HiveConf conf, String alias) throws HiveException {
+      HiveConf conf, String alias, Map<String, PrunedPartitionList> prunedPartitionsMap) throws HiveException {
     LOG.trace("Started pruning partiton");
     LOG.trace("tabname = " + tab.getName());
     LOG.trace("prune Expression = " + prunerExpr);
-
+    
+    String key = tab.getName() + ";";
+    if (prunerExpr != null)
+      key = key + prunerExpr.getExprString();
+    PrunedPartitionList ret = prunedPartitionsMap.get(key);
+    if(ret !=null)
+      return ret;
+    
     LinkedHashSet<Partition> true_parts = new LinkedHashSet<Partition>();
     LinkedHashSet<Partition> unkn_parts = new LinkedHashSet<Partition>();
     LinkedHashSet<Partition> denied_parts = new LinkedHashSet<Partition>();
@@ -218,7 +225,9 @@ public class PartitionPruner implements Transform {
     }
 
     // Now return the set of partitions
-    return new PrunedPartitionList(true_parts, unkn_parts, denied_parts);
+    ret = new PrunedPartitionList(true_parts, unkn_parts, denied_parts);
+    prunedPartitionsMap.put(key, ret);
+    return ret;
   }
 
   /**

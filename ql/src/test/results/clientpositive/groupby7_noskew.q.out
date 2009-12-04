@@ -70,6 +70,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: sum(VALUE._col0)
+          bucketGroup: false
           keys:
                 expr: KEY._col0
                 type: string
@@ -111,7 +112,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive5/hive5/build/ql/tmp/141625475/10004 
+        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/951314625/10004 
             Reduce Output Operator
               key expressions:
                     expr: key
@@ -128,6 +129,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: sum(VALUE._col0)
+          bucketGroup: false
           keys:
                 expr: KEY._col0
                 type: string
@@ -184,11 +186,11 @@ POSTHOOK: Output: default@dest2
 PREHOOK: query: SELECT DEST1.* FROM DEST1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1186012864/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1116174045/10000
 POSTHOOK: query: SELECT DEST1.* FROM DEST1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1186012864/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1116174045/10000
 0	0.0
 10	10.0
 100	200.0
@@ -501,11 +503,11 @@ POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1186012864/100
 PREHOOK: query: SELECT DEST2.* FROM DEST2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/958932012/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1736231197/10000
 POSTHOOK: query: SELECT DEST2.* FROM DEST2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/958932012/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1736231197/10000
 0	0.0
 10	10.0
 100	200.0

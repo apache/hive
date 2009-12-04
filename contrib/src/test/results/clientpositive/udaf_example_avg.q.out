@@ -35,6 +35,7 @@ STAGE PLANS:
                 aggregations:
                       expr: example_avg(substr(value, 5))
                       expr: example_avg(if((substr(value, 5) > 250), null, substr(value, 5)))
+                bucketGroup: false
                 mode: hash
                 outputColumnNames: _col0, _col1
                 Reduce Output Operator
@@ -50,6 +51,7 @@ STAGE PLANS:
           aggregations:
                 expr: example_avg(VALUE._col0)
                 expr: example_avg(VALUE._col1)
+          bucketGroup: false
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Select Operator
@@ -76,13 +78,13 @@ PREHOOK: query: SELECT example_avg(substr(value,5)),
 FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1148096071/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/611794302/10000
 POSTHOOK: query: SELECT example_avg(substr(value,5)),
        example_avg(IF(substr(value,5) > 250, NULL, substr(value,5)))
 FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1148096071/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/611794302/10000
 260.182	134.82926829268294
 PREHOOK: query: DROP TEMPORARY FUNCTION example_avg
 PREHOOK: type: DROPFUNCTION

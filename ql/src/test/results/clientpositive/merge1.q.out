@@ -38,6 +38,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: count(1)
+                bucketGroup: false
                 keys:
                       expr: key
                       type: string
@@ -59,6 +60,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
+          bucketGroup: false
           keys:
                 expr: KEY._col0
                 type: string
@@ -93,10 +95,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/585401858/10000
+                destination: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1162512532/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/846450529/10002 
+              file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/548599869/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -143,11 +145,11 @@ POSTHOOK: Output: default@dest1
 PREHOOK: query: select * from dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/730713753/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/498103088/10000
 POSTHOOK: query: select * from dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/730713753/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/498103088/10000
 0	3
 10	1
 100	2
@@ -529,10 +531,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/353161784/10000
+                destination: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/866633278/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/2091577421/10002 
+              file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/971651244/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -615,10 +617,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/1533278841/10000
+                destination: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/446507348/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/1738586251/10002 
+              file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1911673641/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:

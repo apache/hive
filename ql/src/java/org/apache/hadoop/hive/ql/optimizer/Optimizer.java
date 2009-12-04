@@ -48,6 +48,10 @@ public class Optimizer {
       transformations.add(new PredicatePushDown());
       transformations.add(new PartitionPruner());
     }
+    
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTGROUPBY)) {
+      transformations.add(new GroupByOptimizer());
+    }
 
     transformations.add(new MapJoinProcessor());
     transformations.add(new UnionProcessor());

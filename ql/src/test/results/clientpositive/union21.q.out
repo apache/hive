@@ -60,6 +60,7 @@ STAGE PLANS:
                   Group By Operator
                     aggregations:
                           expr: count(1)
+                    bucketGroup: false
                     keys:
                           expr: _col0
                           type: string
@@ -94,6 +95,7 @@ STAGE PLANS:
                   Group By Operator
                     aggregations:
                           expr: count(1)
+                    bucketGroup: false
                     keys:
                           expr: _col0
                           type: string
@@ -128,6 +130,7 @@ STAGE PLANS:
                   Group By Operator
                     aggregations:
                           expr: count(1)
+                    bucketGroup: false
                     keys:
                           expr: _col0
                           type: string
@@ -162,6 +165,7 @@ STAGE PLANS:
                   Group By Operator
                     aggregations:
                           expr: count(1)
+                    bucketGroup: false
                     keys:
                           expr: _col0
                           type: string
@@ -196,6 +200,7 @@ STAGE PLANS:
                   Group By Operator
                     aggregations:
                           expr: count(1)
+                    bucketGroup: false
                     keys:
                           expr: _col0
                           type: string
@@ -217,6 +222,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
+          bucketGroup: false
           keys:
                 expr: KEY._col0
                 type: string
@@ -257,7 +263,7 @@ GROUP BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_thrift
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/661760419/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/507855090/10000
 POSTHOOK: query: SELECT key, count(1)
 FROM (
   SELECT '1' as key from src
@@ -274,7 +280,7 @@ GROUP BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_thrift
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/661760419/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/507855090/10000
 NULL	2
 0	7
 001	2

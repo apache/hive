@@ -55,6 +55,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: count(1)
+                bucketGroup: false
                 mode: hash
                 outputColumnNames: _col0
                 Reduce Output Operator
@@ -67,6 +68,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
+          bucketGroup: false
           mode: mergepartial
           outputColumnNames: _col0
           Select Operator
@@ -86,7 +88,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive5/hive5/build/ql/tmp/1143376812/10002 
+        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1780852426/10002 
           Union
             Select Operator
               expressions:
@@ -110,7 +112,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
-        file:/data/users/njain/hive5/hive5/build/ql/tmp/1143376812/10004 
+        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1780852426/10004 
           Union
             Select Operator
               expressions:
@@ -134,7 +136,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: tmptable
-        file:/data/users/njain/hive5/hive5/build/ql/tmp/1143376812/10005 
+        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1780852426/10005 
           Union
             Select Operator
               expressions:
@@ -165,10 +167,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/njain/hive5/hive5/build/ql/tmp/21983870/10000
+                destination: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/478382549/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/njain/hive5/hive5/build/ql/tmp/1143376812/10003 
+              file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1780852426/10003 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -211,6 +213,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: count(1)
+                bucketGroup: false
                 mode: hash
                 outputColumnNames: _col0
                 Reduce Output Operator
@@ -223,6 +226,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
+          bucketGroup: false
           mode: mergepartial
           outputColumnNames: _col0
           Select Operator
@@ -249,6 +253,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: count(1)
+                bucketGroup: false
                 mode: hash
                 outputColumnNames: _col0
                 Reduce Output Operator
@@ -261,6 +266,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
+          bucketGroup: false
           mode: mergepartial
           outputColumnNames: _col0
           Select Operator
@@ -299,11 +305,11 @@ POSTHOOK: Output: default@tmptable
 PREHOOK: query: select * from tmptable x sort by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmptable
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1366944384/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/330519049/10000
 POSTHOOK: query: select * from tmptable x sort by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmptable
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1366944384/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/330519049/10000
 tst1	500
 tst2	500
 tst3	500

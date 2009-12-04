@@ -23,7 +23,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -64,6 +66,8 @@ public class ParseContext {
   private int destTableId;
   private UnionProcContext uCtx;
   private List<MapJoinOperator> listMapJoinOpsNoReducer;  // list of map join operators with no reducer
+  private Map<GroupByOperator, Set<String>> groupOpToInputTables;
+  private Map<String, PrunedPartitionList> prunedPartitions;
 
   // is set to true if the expression only contains partitioning columns and not any other column reference.
   // This is used to optimize select * from table where ... scenario, when the where condition only references
@@ -113,7 +117,9 @@ public class ParseContext {
       HashMap<TableScanOperator, Table> topToTable,
       List<loadTableDesc> loadTableWork, List<loadFileDesc> loadFileWork,
       Context ctx, HashMap<String, String> idToTableNameMap, int destTableId, UnionProcContext uCtx,
-      List<MapJoinOperator> listMapJoinOpsNoReducer) {
+      List<MapJoinOperator> listMapJoinOpsNoReducer, 
+      Map<GroupByOperator, Set<String>> groupOpToInputTables,
+      Map<String, PrunedPartitionList> prunedPartitions) {
     this.conf = conf;
     this.qb = qb;
     this.ast = ast;
@@ -132,6 +138,9 @@ public class ParseContext {
     this.uCtx = uCtx;
     this.listMapJoinOpsNoReducer = listMapJoinOpsNoReducer;
     this.hasNonPartCols = false;
+    this.groupOpToInputTables = new HashMap<GroupByOperator, Set<String>>();
+    this.groupOpToInputTables = groupOpToInputTables;
+    this.prunedPartitions = prunedPartitions;
   }
 
   /**
@@ -382,5 +391,35 @@ public class ParseContext {
    */
   public boolean getHasNonPartCols() {
     return this.hasNonPartCols;
+  }
+
+  /**
+   * @return the groupOpToInputTables
+   */
+  public Map<GroupByOperator, Set<String>> getGroupOpToInputTables() {
+    return groupOpToInputTables;
+  }
+
+  /**
+   * @param groupOpToInputTables
+   */
+  public void setGroupOpToInputTables(
+      Map<GroupByOperator, Set<String>> groupOpToInputTables) {
+    this.groupOpToInputTables = groupOpToInputTables;
+  }
+
+  /**
+   * @return pruned partition map
+   */
+  public Map<String, PrunedPartitionList> getPrunedPartitions() {
+    return prunedPartitions;
+  }
+
+  /**
+   * @param prunedPartitions 
+   */
+  public void setPrunedPartitions(
+      Map<String, PrunedPartitionList> prunedPartitions) {
+    this.prunedPartitions = prunedPartitions;
   }
 }

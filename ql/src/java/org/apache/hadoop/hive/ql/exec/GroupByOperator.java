@@ -90,6 +90,8 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
   // Used by hash distinct aggregations when hashGrpKeyNotRedKey is true
   transient protected HashSet<ArrayList<Object>> keysCurrentGroup;
   
+  transient boolean bucketGroup;
+  
   transient boolean firstRow;
   transient long    totalMemory;
   transient boolean hashAggr;
@@ -209,8 +211,9 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
       objectInspectors.add(roi);
     }
     
+    bucketGroup = conf.getBucketGroup();
     aggregationsParametersLastInvoke = new Object[conf.getAggregators().size()][];
-    if (conf.getMode() != groupByDesc.Mode.HASH) {
+    if (conf.getMode() != groupByDesc.Mode.HASH || bucketGroup) {
       aggregations = newAggregations();
       hashAggr = false;
     } else {
@@ -251,7 +254,7 @@ public class GroupByOperator extends Operator <groupByDesc> implements Serializa
     firstRow = true;
     // estimate the number of hash table entries based on the size of each entry. Since the size of a entry
     // is not known, estimate that based on the number of entries
-    if (conf.getMode() == groupByDesc.Mode.HASH)
+    if (hashAggr)
       computeMaxEntriesHashAggr(hconf);
     initializeChildren(hconf);
   }

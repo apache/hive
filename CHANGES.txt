@@ -129,6 +129,9 @@ Trunk -  Unreleased
     HIVE-949. avoid deep copy for group by hash table lookup
     (He Yongqiang via namit)
 
+    HIVE-931. optimize group by to use sorting and grouping properties
+    (He Yongqiang via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES

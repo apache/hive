@@ -49,6 +49,7 @@ STAGE PLANS:
                       expr: avg(c1)
                       expr: sum(c1)
                       expr: count(c1)
+                bucketGroup: false
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
                 Reduce Output Operator
@@ -67,6 +68,7 @@ STAGE PLANS:
                 expr: avg(VALUE._col0)
                 expr: sum(VALUE._col1)
                 expr: count(VALUE._col2)
+          bucketGroup: false
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
           Select Operator
@@ -93,9 +95,9 @@ STAGE PLANS:
 PREHOOK: query: SELECT avg(c1), sum(c1), count(c1) FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/265711441/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1261922644/10000
 POSTHOOK: query: SELECT avg(c1), sum(c1), count(c1) FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/265711441/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1261922644/10000
 1.0	1.0	1

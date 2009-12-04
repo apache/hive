@@ -36,6 +36,7 @@ STAGE PLANS:
                 aggregations:
                       expr: count(DISTINCT substr(value, 5))
                       expr: sum(substr(value, 5))
+                bucketGroup: false
                 keys:
                       expr: substr(key, 1, 1)
                       type: string
@@ -64,6 +65,7 @@ STAGE PLANS:
           aggregations:
                 expr: count(DISTINCT KEY._col1)
                 expr: sum(VALUE._col1)
+          bucketGroup: false
           keys:
                 expr: KEY._col0
                 type: string
@@ -120,11 +122,11 @@ POSTHOOK: Output: default@dest1
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1046632747/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/615915015/10000
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1046632747/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/615915015/10000
 0	1	00.0
 1	71	116414.0
 2	69	225571.0

@@ -28,7 +28,7 @@ STAGE PLANS:
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
-                    directory: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/1030905471/10001
+                    directory: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/2089365960/10001
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -38,9 +38,9 @@ STAGE PLANS:
                           columns.types int
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/src [src]
+        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/test/data/warehouse/src [src]
       Path -> Partition:
-        file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/src 
+        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/test/data/warehouse/src 
           Partition
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -54,7 +54,7 @@ STAGE PLANS:
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/src
+              location file:/data/users/heyongqiang/hive-trunk-commit/build/ql/test/data/warehouse/src
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -69,8 +69,8 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/src
-                transient_lastDdlTime 1258608973
+                location file:/data/users/heyongqiang/hive-trunk-commit/build/ql/test/data/warehouse/src
+                transient_lastDdlTime 1258713613
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
             name: src
@@ -116,9 +116,9 @@ STAGE PLANS:
                           type: int
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/src [a:src]
+        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/test/data/warehouse/src [a:src]
       Path -> Partition:
-        file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/src 
+        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/test/data/warehouse/src 
           Partition
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -132,7 +132,7 @@ STAGE PLANS:
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/src
+              location file:/data/users/heyongqiang/hive-trunk-commit/build/ql/test/data/warehouse/src
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -147,8 +147,8 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/src
-                transient_lastDdlTime 1258608973
+                location file:/data/users/heyongqiang/hive-trunk-commit/build/ql/test/data/warehouse/src
+                transient_lastDdlTime 1258713613
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
             name: src
@@ -163,6 +163,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: count(1)
+                bucketGroup: false
                 keys:
                       expr: _col0
                       type: int
@@ -171,7 +172,7 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
-                  directory: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/38030994/10002
+                  directory: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1309593257/10002
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -183,7 +184,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/38030994/10002 
+        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1309593257/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -198,9 +199,9 @@ STAGE PLANS:
                     type: bigint
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/38030994/10002 [file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/38030994/10002]
+        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1309593257/10002 [file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1309593257/10002]
       Path -> Partition:
-        file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/38030994/10002 
+        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1309593257/10002 
           Partition
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -219,6 +220,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
+          bucketGroup: false
           keys:
                 expr: KEY._col0
                 type: int
@@ -234,7 +236,7 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/38030994/10001
+              directory: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1309593257/10001
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -251,22 +253,22 @@ STAGE PLANS:
 PREHOOK: query: SELECT explode(array(1,2,3)) AS myCol FROM src LIMIT 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/1652852305/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/99085211/10000
 POSTHOOK: query: SELECT explode(array(1,2,3)) AS myCol FROM src LIMIT 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/1652852305/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/99085211/10000
 1
 2
 3
 PREHOOK: query: SELECT myCol, count(1) FROM (SELECT explode(array(1,2,3)) AS myCol FROM src LIMIT 3) a GROUP BY myCol
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/734444296/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1717351634/10000
 POSTHOOK: query: SELECT myCol, count(1) FROM (SELECT explode(array(1,2,3)) AS myCol FROM src LIMIT 3) a GROUP BY myCol
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/734444296/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1717351634/10000
 1	1
 2	1
 3	1

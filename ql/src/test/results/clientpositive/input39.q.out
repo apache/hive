@@ -126,6 +126,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: count(1)
+                bucketGroup: false
                 mode: hash
                 outputColumnNames: _col0
                 File Output Operator
@@ -138,7 +139,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive5/hive5/build/ql/tmp/137089550/10002 
+        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1926555271/10002 
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -149,6 +150,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
+          bucketGroup: false
           mode: mergepartial
           outputColumnNames: _col0
           Select Operator
@@ -172,12 +174,12 @@ PREHOOK: query: select count(1) from t1 join t2 on t1.key=t2.key where t1.ds='1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2@ds=1
 PREHOOK: Input: default@t1@ds=1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1835006892/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/605214215/10000
 POSTHOOK: query: select count(1) from t1 join t2 on t1.key=t2.key where t1.ds='1' and t2.ds='1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2@ds=1
 POSTHOOK: Input: default@t1@ds=1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1835006892/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/605214215/10000
 18
 PREHOOK: query: drop table t1
 PREHOOK: type: DROPTABLE

@@ -1,0 +1,1728 @@
+PREHOOK: query: drop table clustergroupby
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table clustergroupby
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table clustergroupby(key string, value string) partitioned by(ds string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table clustergroupby(key string, value string) partitioned by(ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@clustergroupby
+PREHOOK: query: describe extended clustergroupby
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe extended clustergroupby
+POSTHOOK: type: DESCTABLE
+key	string	
+value	string	
+ds	string	
+	 	 
+Detailed Table Information	Table(tableName:clustergroupby, dbName:default, owner:heyongqiang, createTime:1259868796, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:file:/Users/heyongqiang/Documents/workspace/Hive-trunk/build/ql/test/data/warehouse/clustergroupby, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{transient_lastDdlTime=1259868796})	
+PREHOOK: query: insert overwrite table clustergroupby partition (ds='100') select key, value from src sort by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@clustergroupby@ds=100
+POSTHOOK: query: insert overwrite table clustergroupby partition (ds='100') select key, value from src sort by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@clustergroupby@ds=100
+PREHOOK: query: explain
+select key, count(1) from clustergroupby where ds='100' group by key limit 10
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select key, count(1) from clustergroupby where ds='100' group by key limit 10
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF clustergroupby)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '100')) (TOK_GROUPBY (TOK_TABLE_OR_COL key)) (TOK_LIMIT 10)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        clustergroupby 
+          TableScan
+            alias: clustergroupby
+            Filter Operator
+              predicate:
+                  expr: (ds = '100')
+                  type: boolean
+              Filter Operator
+                predicate:
+                    expr: (ds = '100')
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
+                        type: string
+                  outputColumnNames: key
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: false
+                    keys:
+                          expr: key
+                          type: string
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col0
+                            type: string
+                      sort order: +
+                      Map-reduce partition columns:
+                            expr: _col0
+                            type: string
+                      tag: -1
+                      value expressions:
+                            expr: _col1
+                            type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: bigint
+            outputColumnNames: _col0, _col1
+            Limit
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+
+
+PREHOOK: query: select key, count(1) from clustergroupby where ds='100' group by key limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby@ds=100
+PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-trunk/build/ql/tmp/1923424614/10000
+POSTHOOK: query: select key, count(1) from clustergroupby where ds='100' group by key limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby@ds=100
+POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-trunk/build/ql/tmp/1923424614/10000
+0	3
+10	1
+100	2
+103	2
+104	2
+105	1
+11	1
+111	1
+113	2
+114	1
+PREHOOK: query: alter table clustergroupby clustered by (key) into 1 buckets
+PREHOOK: type: null
+POSTHOOK: query: alter table clustergroupby clustered by (key) into 1 buckets
+POSTHOOK: type: null
+POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Output: default@clustergroupby
+PREHOOK: query: describe extended clustergroupby
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe extended clustergroupby
+POSTHOOK: type: DESCTABLE
+key	string	
+value	string	
+ds	string	
+	 	 
+Detailed Table Information	Table(tableName:clustergroupby, dbName:default, owner:heyongqiang, createTime:1259868796, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:file:/Users/heyongqiang/Documents/workspace/Hive-trunk/build/ql/test/data/warehouse/clustergroupby, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[key], sortCols:[], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{last_modified_by=heyongqiang,last_modified_time=1259868817,transient_lastDdlTime=1259868817})	
+PREHOOK: query: insert overwrite table clustergroupby partition (ds='101') select key, value from src distribute by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@clustergroupby@ds=101
+POSTHOOK: query: insert overwrite table clustergroupby partition (ds='101') select key, value from src distribute by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@clustergroupby@ds=101
+PREHOOK: query: --normal--
+explain
+select key, count(1) from clustergroupby  where ds='101'  group by key limit 10
+PREHOOK: type: QUERY
+POSTHOOK: query: --normal--
+explain
+select key, count(1) from clustergroupby  where ds='101'  group by key limit 10
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF clustergroupby)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '101')) (TOK_GROUPBY (TOK_TABLE_OR_COL key)) (TOK_LIMIT 10)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        clustergroupby 
+          TableScan
+            alias: clustergroupby
+            Filter Operator
+              predicate:
+                  expr: (ds = '101')
+                  type: boolean
+              Filter Operator
+                predicate:
+                    expr: (ds = '101')
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
+                        type: string
+                  outputColumnNames: key
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: true
+                    keys:
+                          expr: key
+                          type: string
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col0
+                            type: string
+                      sort order: +
+                      Map-reduce partition columns:
+                            expr: _col0
+                            type: string
+                      tag: -1
+                      value expressions:
+                            expr: _col1
+                            type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: bigint
+            outputColumnNames: _col0, _col1
+            Limit
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+
+
+PREHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby@ds=101
+PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-trunk/build/ql/tmp/1926882001/10000
+POSTHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby@ds=101
+POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-trunk/build/ql/tmp/1926882001/10000
+0	3
+10	1
+100	2
+103	2
+104	2
+105	1
+11	1
+111	1
+113	2
+114	1
+PREHOOK: query: --function--
+explain
+select length(key), count(1) from clustergroupby  where ds='101'  group by length(key) limit 10
+PREHOOK: type: QUERY
+POSTHOOK: query: --function--
+explain
+select length(key), count(1) from clustergroupby  where ds='101'  group by length(key) limit 10
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF clustergroupby)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION length (TOK_TABLE_OR_COL key))) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '101')) (TOK_GROUPBY (TOK_FUNCTION length (TOK_TABLE_OR_COL key))) (TOK_LIMIT 10)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        clustergroupby 
+          TableScan
+            alias: clustergroupby
+            Filter Operator
+              predicate:
+                  expr: (ds = '101')
+                  type: boolean
+              Filter Operator
+                predicate:
+                    expr: (ds = '101')
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
+                        type: string
+                  outputColumnNames: key
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: true
+                    keys:
+                          expr: length(key)
+                          type: int
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col0
+                            type: int
+                      sort order: +
+                      Map-reduce partition columns:
+                            expr: _col0
+                            type: int
+                      tag: -1
+                      value expressions:
+                            expr: _col1
+                            type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: int
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: int
+                  expr: _col1
+                  type: bigint
+            outputColumnNames: _col0, _col1
+            Limit
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+
+
+PREHOOK: query: select length(key), count(1) from clustergroupby  where ds='101' group by length(key) limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby@ds=101
+PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-trunk/build/ql/tmp/695955681/10000
+POSTHOOK: query: select length(key), count(1) from clustergroupby  where ds='101' group by length(key) limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby@ds=101
+POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-trunk/build/ql/tmp/695955681/10000
+1	10
+2	74
+3	416
+PREHOOK: query: explain
+select abs(length(key)), count(1) from clustergroupby  where ds='101'  group by abs(length(key)) limit 10
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select abs(length(key)), count(1) from clustergroupby  where ds='101'  group by abs(length(key)) limit 10
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF clustergroupby)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION abs (TOK_FUNCTION length (TOK_TABLE_OR_COL key)))) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '101')) (TOK_GROUPBY (TOK_FUNCTION abs (TOK_FUNCTION length (TOK_TABLE_OR_COL key)))) (TOK_LIMIT 10)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        clustergroupby 
+          TableScan
+            alias: clustergroupby
+            Filter Operator
+              predicate:
+                  expr: (ds = '101')
+                  type: boolean
+              Filter Operator
+                predicate:
+                    expr: (ds = '101')
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
+                        type: string
+                  outputColumnNames: key
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: true
+                    keys:
+                          expr: abs(length(key))
+                          type: int
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col0
+                            type: int
+                      sort order: +
+                      Map-reduce partition columns:
+                            expr: _col0
+                            type: int
+                      tag: -1
+                      value expressions:
+                            expr: _col1
+                            type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: int
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: int
+                  expr: _col1
+                  type: bigint
+            outputColumnNames: _col0, _col1
+            Limit
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+
+
+PREHOOK: query: select abs(length(key)), count(1) from clustergroupby  where ds='101' group by abs(length(key)) limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby@ds=101
+PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-trunk/build/ql/tmp/1888922671/10000
+POSTHOOK: query: select abs(length(key)), count(1) from clustergroupby  where ds='101' group by abs(length(key)) limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby@ds=101
+POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-trunk/build/ql/tmp/1888922671/10000
+1	10
+2	74
+3	416
+PREHOOK: query: --constant--
+explain
+select key, count(1) from clustergroupby  where ds='101'  group by key,3 limit 10
+PREHOOK: type: QUERY
+POSTHOOK: query: --constant--
+explain
+select key, count(1) from clustergroupby  where ds='101'  group by key,3 limit 10
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF clustergroupby)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '101')) (TOK_GROUPBY (TOK_TABLE_OR_COL key) 3) (TOK_LIMIT 10)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        clustergroupby 
+          TableScan
+            alias: clustergroupby
+            Filter Operator
+              predicate:
+                  expr: (ds = '101')
+                  type: boolean
+              Filter Operator
+                predicate:
+                    expr: (ds = '101')
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
+                        type: string
+                  outputColumnNames: key
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: true
+                    keys:
+                          expr: key
+                          type: string
+                          expr: 3
+                          type: int
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: int
+                      sort order: ++
+                      Map-reduce partition columns:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: int
+                      tag: -1
+                      value expressions:
+                            expr: _col2
+                            type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+                expr: KEY._col1
+                type: int
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col2
+                  type: bigint
+            outputColumnNames: _col0, _col1
+            Limit
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+
+
+PREHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key,3 limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby@ds=101
+PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-trunk/build/ql/tmp/297590608/10000
+POSTHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key,3 limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby@ds=101
+POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-trunk/build/ql/tmp/297590608/10000
+0	3
+10	1
+100	2
+103	2
+104	2
+105	1
+11	1
+111	1
+113	2
+114	1
+PREHOOK: query: --subquery--
+explain
+select key, count(1) from (select value as key, key as value from clustergroupby where ds='101')subq group by key limit 10
+PREHOOK: type: QUERY
+POSTHOOK: query: --subquery--
+explain
+select key, count(1) from (select value as key, key as value from clustergroupby where ds='101')subq group by key limit 10
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF clustergroupby)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL value) key) (TOK_SELEXPR (TOK_TABLE_OR_COL key) value)) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '101')))) subq)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_GROUPBY (TOK_TABLE_OR_COL key)) (TOK_LIMIT 10)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        subq:clustergroupby 
+          TableScan
+            alias: clustergroupby
+            Filter Operator
+              predicate:
+                  expr: (ds = '101')
+                  type: boolean
+              Filter Operator
+                predicate:
+                    expr: (ds = '101')
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: value
+                        type: string
+                  outputColumnNames: _col0
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                    outputColumnNames: _col0
+                    Group By Operator
+                      aggregations:
+                            expr: count(1)
+                      bucketGroup: false
+                      keys:
+                            expr: _col0
+                            type: string
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Reduce Output Operator
+                        key expressions:
+                              expr: _col0
+                              type: string
+                        sort order: +
+                        Map-reduce partition columns:
+                              expr: _col0
+                              type: string
+                        tag: -1
+                        value expressions:
+                              expr: _col1
+                              type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: bigint
+            outputColumnNames: _col0, _col1
+            Limit
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+
+
+PREHOOK: query: select key, count(1) from (select value as key, key as value from clustergroupby where ds='101')subq group by key limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby@ds=101
+PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-trunk/build/ql/tmp/1523288366/10000
+POSTHOOK: query: select key, count(1) from (select value as key, key as value from clustergroupby where ds='101')subq group by key limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby@ds=101
+POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-trunk/build/ql/tmp/1523288366/10000
+val_0	3
+val_10	1
+val_100	2
+val_103	2
+val_104	2
+val_105	1
+val_11	1
+val_111	1
+val_113	2
+val_114	1
+PREHOOK: query: explain
+select key, count(1) from clustergroupby  group by key
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select key, count(1) from clustergroupby  group by key
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF clustergroupby)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_GROUPBY (TOK_TABLE_OR_COL key))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        clustergroupby 
+          TableScan
+            alias: clustergroupby
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              outputColumnNames: key
+              Group By Operator
+                aggregations:
+                      expr: count(1)
+                bucketGroup: false
+                keys:
+                      expr: key
+                      type: string
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: -1
+                  value expressions:
+                        expr: _col1
+                        type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: bigint
+            outputColumnNames: _col0, _col1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: select key, count(1) from clustergroupby  group by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby@ds=100
+PREHOOK: Input: default@clustergroupby@ds=101
+PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-trunk/build/ql/tmp/1435163727/10000
+POSTHOOK: query: select key, count(1) from clustergroupby  group by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby@ds=100
+POSTHOOK: Input: default@clustergroupby@ds=101
+POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-trunk/build/ql/tmp/1435163727/10000
+0	6
+10	2
+100	4
+103	4
+104	4
+105	2
+11	2
+111	2
+113	4
+114	2
+116	2
+118	4
+119	6
+12	4
+120	4
+125	4
+126	2
+128	6
+129	4
+131	2
+133	2
+134	4
+136	2
+137	4
+138	8
+143	2
+145	2
+146	4
+149	4
+15	4
+150	2
+152	4
+153	2
+155	2
+156	2
+157	2
+158	2
+160	2
+162	2
+163	2
+164	4
+165	4
+166	2
+167	6
+168	2
+169	8
+17	2
+170	2
+172	4
+174	4
+175	4
+176	4
+177	2
+178	2
+179	4
+18	4
+180	2
+181	2
+183	2
+186	2
+187	6
+189	2
+19	2
+190	2
+191	4
+192	2
+193	6
+194	2
+195	4
+196	2
+197	4
+199	6
+2	2
+20	2
+200	4
+201	2
+202	2
+203	4
+205	4
+207	4
+208	6
+209	4
+213	4
+214	2
+216	4
+217	4
+218	2
+219	4
+221	4
+222	2
+223	4
+224	4
+226	2
+228	2
+229	4
+230	10
+233	4
+235	2
+237	4
+238	4
+239	4
+24	4
+241	2
+242	4
+244	2
+247	2
+248	2
+249	2
+252	2
+255	4
+256	4
+257	2
+258	2
+26	4
+260	2
+262	2
+263	2
+265	4
+266	2
+27	2
+272	4
+273	6
+274	2
+275	2
+277	8
+278	4
+28	2
+280	4
+281	4
+282	4
+283	2
+284	2
+285	2
+286	2
+287	2
+288	4
+289	2
+291	2
+292	2
+296	2
+298	6
+30	2
+302	2
+305	2
+306	2
+307	4
+308	2
+309	4
+310	2
+311	6
+315	2
+316	6
+317	4
+318	6
+321	4
+322	4
+323	2
+325	4
+327	6
+33	2
+331	4
+332	2
+333	4
+335	2
+336	2
+338	2
+339	2
+34	2
+341	2
+342	4
+344	4
+345	2
+348	10
+35	6
+351	2
+353	4
+356	2
+360	2
+362	2
+364	2
+365	2
+366	2
+367	4
+368	2
+369	6
+37	4
+373	2
+374	2
+375	2
+377	2
+378	2
+379	2
+382	4
+384	6
+386	2
+389	2
+392	2
+393	2
+394	2
+395	4
+396	6
+397	4
+399	4
+4	2
+400	2
+401	10
+402	2
+403	6
+404	4
+406	8
+407	2
+409	6
+41	2
+411	2
+413	4
+414	4
+417	6
+418	2
+419	2
+42	4
+421	2
+424	4
+427	2
+429	4
+43	2
+430	6
+431	6
+432	2
+435	2
+436	2
+437	2
+438	6
+439	4
+44	2
+443	2
+444	2
+446	2
+448	2
+449	2
+452	2
+453	2
+454	6
+455	2
+457	2
+458	4
+459	4
+460	2
+462	4
+463	4
+466	6
+467	2
+468	8
+469	10
+47	2
+470	2
+472	2
+475	2
+477	2
+478	4
+479	2
+480	6
+481	2
+482	2
+483	2
+484	2
+485	2
+487	2
+489	8
+490	2
+491	2
+492	4
+493	2
+494	2
+495	2
+496	2
+497	2
+498	6
+5	6
+51	4
+53	2
+54	2
+57	2
+58	4
+64	2
+65	2
+66	2
+67	4
+69	2
+70	6
+72	4
+74	2
+76	4
+77	2
+78	2
+8	2
+80	2
+82	2
+83	4
+84	4
+85	2
+86	2
+87	2
+9	2
+90	6
+92	2
+95	4
+96	2
+97	4
+98	4
+PREHOOK: query: explain
+select key, count(1) from clustergroupby  group by key, 3
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select key, count(1) from clustergroupby  group by key, 3
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF clustergroupby)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_GROUPBY (TOK_TABLE_OR_COL key) 3)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        clustergroupby 
+          TableScan
+            alias: clustergroupby
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              outputColumnNames: key
+              Group By Operator
+                aggregations:
+                      expr: count(1)
+                bucketGroup: false
+                keys:
+                      expr: key
+                      type: string
+                      expr: 3
+                      type: int
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: int
+                  sort order: ++
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: int
+                  tag: -1
+                  value expressions:
+                        expr: _col2
+                        type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+                expr: KEY._col1
+                type: int
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col2
+                  type: bigint
+            outputColumnNames: _col0, _col1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: --sort columns--
+alter table clustergroupby clustered by (value) sorted by (key, value) into 1 buckets
+PREHOOK: type: null
+POSTHOOK: query: --sort columns--
+alter table clustergroupby clustered by (value) sorted by (key, value) into 1 buckets
+POSTHOOK: type: null
+POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Output: default@clustergroupby
+PREHOOK: query: describe extended clustergroupby
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe extended clustergroupby
+POSTHOOK: type: DESCTABLE
+key	string	
+value	string	
+ds	string	
+	 	 
+Detailed Table Information	Table(tableName:clustergroupby, dbName:default, owner:heyongqiang, createTime:1259868796, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:file:/Users/heyongqiang/Documents/workspace/Hive-trunk/build/ql/test/data/warehouse/clustergroupby, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[value], sortCols:[Order(col:key, order:1), Order(col:value, order:1)], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{last_modified_by=heyongqiang,last_modified_time=1259868863,transient_lastDdlTime=1259868863})	
+PREHOOK: query: insert overwrite table clustergroupby partition (ds='102') select key, value from src distribute by value sort by key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@clustergroupby@ds=102
+POSTHOOK: query: insert overwrite table clustergroupby partition (ds='102') select key, value from src distribute by value sort by key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@clustergroupby@ds=102
+PREHOOK: query: explain
+select key, count(1) from clustergroupby  where ds='102'  group by key limit 10
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select key, count(1) from clustergroupby  where ds='102'  group by key limit 10
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF clustergroupby)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '102')) (TOK_GROUPBY (TOK_TABLE_OR_COL key)) (TOK_LIMIT 10)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        clustergroupby 
+          TableScan
+            alias: clustergroupby
+            Filter Operator
+              predicate:
+                  expr: (ds = '102')
+                  type: boolean
+              Filter Operator
+                predicate:
+                    expr: (ds = '102')
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
+                        type: string
+                  outputColumnNames: key
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: true
+                    keys:
+                          expr: key
+                          type: string
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col0
+                            type: string
+                      sort order: +
+                      Map-reduce partition columns:
+                            expr: _col0
+                            type: string
+                      tag: -1
+                      value expressions:
+                            expr: _col1
+                            type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: bigint
+            outputColumnNames: _col0, _col1
+            Limit
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+
+
+PREHOOK: query: select key, count(1) from clustergroupby  where ds='102' group by key limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby@ds=102
+PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-trunk/build/ql/tmp/1143276036/10000
+POSTHOOK: query: select key, count(1) from clustergroupby  where ds='102' group by key limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby@ds=102
+POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-trunk/build/ql/tmp/1143276036/10000
+0	3
+10	1
+100	2
+103	2
+104	2
+105	1
+11	1
+111	1
+113	2
+114	1
+PREHOOK: query: explain
+select value, count(1) from clustergroupby  where ds='102'  group by value limit 10
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select value, count(1) from clustergroupby  where ds='102'  group by value limit 10
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF clustergroupby)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL value)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '102')) (TOK_GROUPBY (TOK_TABLE_OR_COL value)) (TOK_LIMIT 10)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        clustergroupby 
+          TableScan
+            alias: clustergroupby
+            Filter Operator
+              predicate:
+                  expr: (ds = '102')
+                  type: boolean
+              Filter Operator
+                predicate:
+                    expr: (ds = '102')
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: value
+                        type: string
+                  outputColumnNames: value
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: false
+                    keys:
+                          expr: value
+                          type: string
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col0
+                            type: string
+                      sort order: +
+                      Map-reduce partition columns:
+                            expr: _col0
+                            type: string
+                      tag: -1
+                      value expressions:
+                            expr: _col1
+                            type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: bigint
+            outputColumnNames: _col0, _col1
+            Limit
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+
+
+PREHOOK: query: select value, count(1) from clustergroupby  where ds='102'  group by value limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby@ds=102
+PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-trunk/build/ql/tmp/177035338/10000
+POSTHOOK: query: select value, count(1) from clustergroupby  where ds='102'  group by value limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby@ds=102
+POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-trunk/build/ql/tmp/177035338/10000
+val_0	3
+val_10	1
+val_100	2
+val_103	2
+val_104	2
+val_105	1
+val_11	1
+val_111	1
+val_113	2
+val_114	1
+PREHOOK: query: explain
+select key, count(1) from clustergroupby  where ds='102'  group by key, value limit 10
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select key, count(1) from clustergroupby  where ds='102'  group by key, value limit 10
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF clustergroupby)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '102')) (TOK_GROUPBY (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value)) (TOK_LIMIT 10)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        clustergroupby 
+          TableScan
+            alias: clustergroupby
+            Filter Operator
+              predicate:
+                  expr: (ds = '102')
+                  type: boolean
+              Filter Operator
+                predicate:
+                    expr: (ds = '102')
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
+                        type: string
+                        expr: value
+                        type: string
+                  outputColumnNames: key, value
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: true
+                    keys:
+                          expr: key
+                          type: string
+                          expr: value
+                          type: string
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: string
+                      sort order: ++
+                      Map-reduce partition columns:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: string
+                      tag: -1
+                      value expressions:
+                            expr: _col2
+                            type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+                expr: KEY._col1
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col2
+                  type: bigint
+            outputColumnNames: _col0, _col1
+            Limit
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+
+
+PREHOOK: query: select key, count(1) from clustergroupby  where ds='102'  group by key, value limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby@ds=102
+PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-trunk/build/ql/tmp/971850477/10000
+POSTHOOK: query: select key, count(1) from clustergroupby  where ds='102'  group by key, value limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby@ds=102
+POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-trunk/build/ql/tmp/971850477/10000
+0	3
+10	1
+100	2
+103	2
+104	2
+105	1
+11	1
+111	1
+113	2
+114	1
+PREHOOK: query: alter table clustergroupby clustered by (value, key) sorted by (key) into 1 buckets
+PREHOOK: type: null
+POSTHOOK: query: alter table clustergroupby clustered by (value, key) sorted by (key) into 1 buckets
+POSTHOOK: type: null
+POSTHOOK: Input: default@clustergroupby
+POSTHOOK: Output: default@clustergroupby
+PREHOOK: query: describe extended clustergroupby
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe extended clustergroupby
+POSTHOOK: type: DESCTABLE
+key	string	
+value	string	
+ds	string	
+	 	 
+Detailed Table Information	Table(tableName:clustergroupby, dbName:default, owner:heyongqiang, createTime:1259868796, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:key, type:string, comment:null), FieldSchema(name:value, type:string, comment:null)], location:file:/Users/heyongqiang/Documents/workspace/Hive-trunk/build/ql/test/data/warehouse/clustergroupby, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[value, key], sortCols:[Order(col:key, order:1)], parameters:{}), partitionKeys:[FieldSchema(name:ds, type:string, comment:null)], parameters:{last_modified_by=heyongqiang,last_modified_time=1259868885,transient_lastDdlTime=1259868885})	
+PREHOOK: query: insert overwrite table clustergroupby partition (ds='103') select key, value from src distribute by value, key sort by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@clustergroupby@ds=103
+POSTHOOK: query: insert overwrite table clustergroupby partition (ds='103') select key, value from src distribute by value, key sort by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@clustergroupby@ds=103
+PREHOOK: query: explain
+select key, count(1) from clustergroupby  where ds='103'  group by key limit 10
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select key, count(1) from clustergroupby  where ds='103'  group by key limit 10
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF clustergroupby)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '103')) (TOK_GROUPBY (TOK_TABLE_OR_COL key)) (TOK_LIMIT 10)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        clustergroupby 
+          TableScan
+            alias: clustergroupby
+            Filter Operator
+              predicate:
+                  expr: (ds = '103')
+                  type: boolean
+              Filter Operator
+                predicate:
+                    expr: (ds = '103')
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: key
+                        type: string
+                  outputColumnNames: key
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: true
+                    keys:
+                          expr: key
+                          type: string
+                    mode: hash
+                    outputColumnNames: _col0, _col1
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col0
+                            type: string
+                      sort order: +
+                      Map-reduce partition columns:
+                            expr: _col0
+                            type: string
+                      tag: -1
+                      value expressions:
+                            expr: _col1
+                            type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: bigint
+            outputColumnNames: _col0, _col1
+            Limit
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+
+
+PREHOOK: query: select key, count(1) from clustergroupby  where ds='103' group by key limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby@ds=103
+PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-trunk/build/ql/tmp/116849772/10000
+POSTHOOK: query: select key, count(1) from clustergroupby  where ds='103' group by key limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby@ds=103
+POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-trunk/build/ql/tmp/116849772/10000
+0	3
+10	1
+100	2
+103	2
+104	2
+105	1
+11	1
+111	1
+113	2
+114	1
+PREHOOK: query: explain
+select key, count(1) from clustergroupby  where ds='103'  group by value, key limit 10
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select key, count(1) from clustergroupby  where ds='103'  group by value, key limit 10
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF clustergroupby)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_FUNCTION count 1))) (TOK_WHERE (= (TOK_TABLE_OR_COL ds) '103')) (TOK_GROUPBY (TOK_TABLE_OR_COL value) (TOK_TABLE_OR_COL key)) (TOK_LIMIT 10)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        clustergroupby 
+          TableScan
+            alias: clustergroupby
+            Filter Operator
+              predicate:
+                  expr: (ds = '103')
+                  type: boolean
+              Filter Operator
+                predicate:
+                    expr: (ds = '103')
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: value
+                        type: string
+                        expr: key
+                        type: string
+                  outputColumnNames: value, key
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: false
+                    keys:
+                          expr: value
+                          type: string
+                          expr: key
+                          type: string
+                    mode: hash
+                    outputColumnNames: _col0, _col1, _col2
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: string
+                      sort order: ++
+                      Map-reduce partition columns:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: string
+                      tag: -1
+                      value expressions:
+                            expr: _col2
+                            type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+                expr: KEY._col1
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Select Operator
+            expressions:
+                  expr: _col1
+                  type: string
+                  expr: _col2
+                  type: bigint
+            outputColumnNames: _col0, _col1
+            Limit
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+
+
+PREHOOK: query: select key, count(1) from clustergroupby  where ds='103' group by  value, key limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@clustergroupby@ds=103
+PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-trunk/build/ql/tmp/881916878/10000
+POSTHOOK: query: select key, count(1) from clustergroupby  where ds='103' group by  value, key limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@clustergroupby@ds=103
+POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-trunk/build/ql/tmp/881916878/10000
+0	3
+10	1
+100	2
+103	2
+104	2
+105	1
+11	1
+111	1
+113	2
+114	1
+PREHOOK: query: drop table clustergroupby
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table clustergroupby
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@clustergroupby

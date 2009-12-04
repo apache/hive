@@ -117,6 +117,7 @@ TOK_TBLSEQUENCEFILE;
 TOK_TBLTEXTFILE;
 TOK_TBLRCFILE;
 TOK_TABLEFILEFORMAT;
+TOK_ALTERTABLE_CLUSTER_SORT;
 TOK_TABCOLNAME;
 TOK_TABLELOCATION;
 TOK_PARTITIONLOCATION;
@@ -263,6 +264,7 @@ alterStatementSuffix
     | alterStatementSuffixProperties
     | alterStatementSuffixSerdeProperties
     | alterStatementSuffixFileFormat
+    | alterStatementSuffixClusterbySortby
     ;
 
 alterStatementSuffixRename
@@ -323,7 +325,14 @@ alterStatementSuffixFileFormat
 	:name=Identifier KW_SET KW_FILEFORMAT fileFormat 
 	-> ^(TOK_ALTERTABLE_FILEFORMAT $name fileFormat)
 	;
-
+	
+alterStatementSuffixClusterbySortby
+@init {msgs.push("alter cluster by sort by statement");}
+@after{msgs.pop();}
+	:name=Identifier tableBuckets
+	->^(TOK_ALTERTABLE_CLUSTER_SORT $name tableBuckets)
+	;
+	
 fileFormat
 @init { msgs.push("file format specification"); }
 @after { msgs.pop(); }

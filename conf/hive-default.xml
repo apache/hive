@@ -256,6 +256,12 @@
 </property>
 
 <property>
+  <name>hive.optimize.groupby</name>
+  <value>true</value>
+  <description>Whether to enable the bucketed group by from bucketed partitions/tables.</description>
+</property>
+
+<property>
   <name>hive.join.emit.interval</name>
   <value>1000</value>
   <description>How many rows in the right-most join operand Hive should buffer before emitting the join result. </description>

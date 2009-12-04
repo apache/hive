@@ -33,6 +33,7 @@ public class groupByDesc implements java.io.Serializable {
   public static enum Mode { COMPLETE, PARTIAL1, PARTIAL2, PARTIALS, FINAL, HASH, MERGEPARTIAL };
   private Mode mode;
   private boolean groupKeyNotReductionKey;
+  private boolean bucketGroup;
 
   private java.util.ArrayList<exprNodeDesc> keys;
   private java.util.ArrayList<org.apache.hadoop.hive.ql.plan.aggregationDesc> aggregators;
@@ -44,12 +45,23 @@ public class groupByDesc implements java.io.Serializable {
     final java.util.ArrayList<exprNodeDesc> keys,
     final java.util.ArrayList<org.apache.hadoop.hive.ql.plan.aggregationDesc> aggregators,
     final boolean groupKeyNotReductionKey) {
-    this.mode = mode;
-    this.outputColumnNames = outputColumnNames;
-    this.keys = keys;
-    this.aggregators = aggregators;
-    this.groupKeyNotReductionKey = groupKeyNotReductionKey;
+  	this(mode, outputColumnNames, keys, aggregators, groupKeyNotReductionKey, false);
   }
+  
+  public groupByDesc(
+      final Mode mode,
+      final java.util.ArrayList<java.lang.String> outputColumnNames,
+      final java.util.ArrayList<exprNodeDesc> keys,
+      final java.util.ArrayList<org.apache.hadoop.hive.ql.plan.aggregationDesc> aggregators,
+	    final boolean groupKeyNotReductionKey, final boolean bucketGroup) {
+		this.mode = mode;
+		this.outputColumnNames = outputColumnNames;
+		this.keys = keys;
+		this.aggregators = aggregators;
+		this.groupKeyNotReductionKey = groupKeyNotReductionKey;
+		this.bucketGroup = bucketGroup;
+	}
+  
   public Mode getMode() {
     return this.mode;
   }
@@ -102,11 +114,17 @@ public class groupByDesc implements java.io.Serializable {
     this.aggregators = aggregators;
   }
 
-
   public boolean getGroupKeyNotReductionKey() {
     return this.groupKeyNotReductionKey;
   }
   public void setGroupKeyNotReductionKey(final boolean groupKeyNotReductionKey) {
     this.groupKeyNotReductionKey = groupKeyNotReductionKey;
+  }
+  @explain(displayName="bucketGroup")
+	public boolean getBucketGroup() {
+  	return bucketGroup;
+  }
+	public void setBucketGroup(boolean dataSorted) {
+  	this.bucketGroup = dataSorted;
   }
 }

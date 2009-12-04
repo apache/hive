@@ -172,8 +172,9 @@ public class HiveConf extends Configuration {
 
     // Optimizer
     HIVEOPTCP("hive.optimize.cp", true), // column pruner
-    HIVEOPTPPD("hive.optimize.ppd", true); // predicate pushdown
-
+    HIVEOPTPPD("hive.optimize.ppd", true), // predicate pushdown
+    HIVEOPTGROUPBY("hive.optimize.groupby", true); // optimize group by
+    
     public final String varname;
     public final String defaultVal;
     public final int defaultIntVal;

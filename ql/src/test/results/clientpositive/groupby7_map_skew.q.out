@@ -46,6 +46,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: sum(substr(value, 5))
+                bucketGroup: false
                 keys:
                       expr: key
                       type: string
@@ -73,6 +74,7 @@ STAGE PLANS:
               Group By Operator
                 aggregations:
                       expr: sum(substr(value, 5))
+                bucketGroup: false
                 keys:
                       expr: key
                       type: string
@@ -88,6 +90,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: sum(VALUE._col0)
+          bucketGroup: false
           keys:
                 expr: KEY._col0
                 type: string
@@ -103,7 +106,7 @@ STAGE PLANS:
   Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive5/hive5/build/ql/tmp/144907003/10004 
+        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/480812745/10004 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -120,6 +123,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: sum(VALUE._col0)
+          bucketGroup: false
           keys:
                 expr: KEY._col0
                 type: string
@@ -161,7 +165,7 @@ STAGE PLANS:
   Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive5/hive5/build/ql/tmp/144907003/10005 
+        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/480812745/10005 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -178,6 +182,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: sum(VALUE._col0)
+          bucketGroup: false
           keys:
                 expr: KEY._col0
                 type: string
@@ -193,7 +198,7 @@ STAGE PLANS:
   Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive5/hive5/build/ql/tmp/144907003/10006 
+        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/480812745/10006 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -210,6 +215,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: sum(VALUE._col0)
+          bucketGroup: false
           keys:
                 expr: KEY._col0
                 type: string
@@ -266,11 +272,11 @@ POSTHOOK: Output: default@dest2
 PREHOOK: query: SELECT DEST1.* FROM DEST1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1146138446/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1654745587/10000
 POSTHOOK: query: SELECT DEST1.* FROM DEST1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1146138446/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1654745587/10000
 0	0.0
 10	10.0
 100	200.0
@@ -583,11 +589,11 @@ POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1146138446/100
 PREHOOK: query: SELECT DEST2.* FROM DEST2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest2
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/202732703/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1604193796/10000
 POSTHOOK: query: SELECT DEST2.* FROM DEST2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest2
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/202732703/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1604193796/10000
 0	0.0
 10	10.0
 100	200.0

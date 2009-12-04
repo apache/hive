@@ -35,6 +35,7 @@ STAGE PLANS:
                   Group By Operator
                     aggregations:
                           expr: count(1)
+                    bucketGroup: false
                     keys:
                           expr: key
                           type: string
@@ -56,6 +57,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
+          bucketGroup: false
           keys:
                 expr: KEY._col0
                 type: string
@@ -71,7 +73,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive5/hive5/build/ql/tmp/189886980/10002 
+        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/891593089/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -88,6 +90,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
+          bucketGroup: false
           keys:
                 expr: KEY._col0
                 type: string
@@ -115,11 +118,11 @@ STAGE PLANS:
 PREHOOK: query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2132690107/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1142408144/10000
 POSTHOOK: query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/2132690107/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1142408144/10000
 PREHOOK: query: explain
 select x.key, count(1) from src x where x.key > 9999 group by x.key
 PREHOOK: type: QUERY
@@ -156,6 +159,7 @@ STAGE PLANS:
                   Group By Operator
                     aggregations:
                           expr: count(1)
+                    bucketGroup: false
                     keys:
                           expr: key
                           type: string
@@ -177,6 +181,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
+          bucketGroup: false
           keys:
                 expr: KEY._col0
                 type: string
@@ -204,11 +209,11 @@ STAGE PLANS:
 PREHOOK: query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/974062609/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/337069177/10000
 POSTHOOK: query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/974062609/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/337069177/10000
 PREHOOK: query: explain
 select x.key, count(1) from src x where x.key > 9999 group by x.key
 PREHOOK: type: QUERY
@@ -259,6 +264,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
+          bucketGroup: false
           keys:
                 expr: KEY._col0
                 type: string
@@ -274,7 +280,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/njain/hive5/hive5/build/ql/tmp/410784102/10002 
+        file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1010606542/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -291,6 +297,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
+          bucketGroup: false
           keys:
                 expr: KEY._col0
                 type: string
@@ -318,11 +325,11 @@ STAGE PLANS:
 PREHOOK: query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1309754539/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1970002416/10000
 POSTHOOK: query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1309754539/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1970002416/10000
 PREHOOK: query: explain
 select x.key, count(1) from src x where x.key > 9999 group by x.key
 PREHOOK: type: QUERY
@@ -372,6 +379,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(VALUE._col0)
+          bucketGroup: false
           keys:
                 expr: KEY._col0
                 type: string
@@ -399,8 +407,8 @@ STAGE PLANS:
 PREHOOK: query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/308930337/10000
+PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1471005828/10000
 POSTHOOK: query: select x.key, count(1) from src x where x.key > 9999 group by x.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/308930337/10000
+POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1471005828/10000

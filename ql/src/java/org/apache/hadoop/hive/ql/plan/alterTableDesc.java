@@ -23,13 +23,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 
 @explain(displayName="Alter Table")
 public class alterTableDesc extends ddlDesc implements Serializable 
 {
   private static final long serialVersionUID = 1L;
-  public static enum alterTableTypes {RENAME, ADDCOLS, REPLACECOLS, ADDPROPS, ADDSERDE, ADDSERDEPROPS, ADDFILEFORMAT};
+  public static enum alterTableTypes {RENAME, ADDCOLS, REPLACECOLS, ADDPROPS, ADDSERDE, ADDSERDEPROPS, ADDFILEFORMAT, ADDCLUSTERSORTCOLUMN};
     
   alterTableTypes      op;
   String               oldName;
@@ -39,7 +40,10 @@ public class alterTableDesc extends ddlDesc implements Serializable
   Map<String, String>  props;
   String	             inputFormat;
 	String               outputFormat;
-  
+	int                  numberBuckets;
+	List<String>         bucketColumns;
+	List<Order>          sortColumns;
+	
   /**
    * @param oldName old name of the table
    * @param newName new name of the table
@@ -82,7 +86,16 @@ public class alterTableDesc extends ddlDesc implements Serializable
 	  this.serdeName = serdeName;
   }
   
-  /**
+  public alterTableDesc(String tableName, int numBuckets,
+      List<String> bucketCols, List<Order> sortCols) {
+  	this.oldName = tableName;
+  	this.op = alterTableTypes.ADDCLUSTERSORTCOLUMN;
+  	this.numberBuckets = numBuckets;
+  	this.bucketColumns = bucketCols;
+  	this.sortColumns = sortCols;
+  }
+
+	/**
    * @return the old name of the table
    */
   @explain(displayName="old name")
@@ -215,6 +228,48 @@ public class alterTableDesc extends ddlDesc implements Serializable
    */
 	public void setOutputFormat(String outputFormat) {
   	this.outputFormat = outputFormat;
+  }
+
+	/**
+	 * @return the number of buckets
+	 */
+	public int getNumberBuckets() {
+  	return numberBuckets;
+  }
+
+	/**
+	 * @param numberBuckets the number of buckets to set
+	 */
+	public void setNumberBuckets(int numberBuckets) {
+  	this.numberBuckets = numberBuckets;
+  }
+
+	/**
+	 * @return the bucket columns
+	 */
+	public List<String> getBucketColumns() {
+  	return bucketColumns;
+  }
+
+	/**
+	 * @param bucketColumns the bucket columns to set
+	 */
+	public void setBucketColumns(List<String> bucketColumns) {
+  	this.bucketColumns = bucketColumns;
+  }
+
+	/**
+	 * @return the sort columns
+	 */
+	public List<Order> getSortColumns() {
+  	return sortColumns;
+  }
+
+	/**
+	 * @param sortColumns the sort columns to set
+	 */
+	public void setSortColumns(List<Order> sortColumns) {
+  	this.sortColumns = sortColumns;
   }
 
 }
