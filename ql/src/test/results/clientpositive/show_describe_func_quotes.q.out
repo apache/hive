@@ -1,0 +1,20 @@
+PREHOOK: query: SHOW FUNCTIONS 'concat'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS 'concat'
+POSTHOOK: type: SHOWFUNCTIONS
+concat
+PREHOOK: query: SHOW FUNCTIONS concat
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS concat
+POSTHOOK: type: SHOWFUNCTIONS
+concat
+PREHOOK: query: DESCRIBE FUNCTION 'concat'
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION 'concat'
+POSTHOOK: type: DESCFUNCTION
+concat(str1, str2, ... strN) - returns the concatenation of str1, str2, ... strN
+PREHOOK: query: DESCRIBE FUNCTION concat
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION concat
+POSTHOOK: type: DESCFUNCTION
+concat(str1, str2, ... strN) - returns the concatenation of str1, str2, ... strN

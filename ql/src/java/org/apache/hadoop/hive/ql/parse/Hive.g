@@ -1296,6 +1296,7 @@ sysFuncNames
 descFuncNames
     : 
       sysFuncNames
+    | StringLiteral
     | Identifier 
     ;
 

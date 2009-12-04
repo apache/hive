@@ -373,7 +373,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   throws SemanticException {
     showFunctionsDesc showFuncsDesc;
     if (ast.getChildCount() == 1) {
-      String funcNames = unescapeSQLString(ast.getChild(0).getText());
+      String funcNames = stripQuotes(ast.getChild(0).getText());
       showFuncsDesc = new showFunctionsDesc(ctx.getResFile(), funcNames);
     }
     else {
@@ -395,10 +395,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean isExtended;
 
     if(ast.getChildCount() == 1) {
-      funcName = ast.getChild(0).getText();
+      funcName = stripQuotes(ast.getChild(0).getText());
       isExtended = false;
     } else if(ast.getChildCount() == 2) {
-      funcName = ast.getChild(0).getText();
+      funcName = stripQuotes(ast.getChild(0).getText());
       isExtended = true;
     } else {
       throw new SemanticException("Unexpected Tokens at DESCRIBE FUNCTION");

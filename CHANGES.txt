@@ -302,6 +302,9 @@ Trunk -  Unreleased
     HIVE-966 Hive should emit log messages in 24-hour format
     (Zheng Shao via namit)
 
+    HIVE-962 "show functions" should work with unquoted string.
+    (Paul Yang via zshao)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
