@@ -38,19 +38,27 @@ STAGE PLANS:
         srcbucket 
           TableScan
             alias: srcbucket
-            Select Operator
-              Group By Operator
-                aggregations:
-                      expr: count(1)
-                bucketGroup: false
-                mode: hash
-                outputColumnNames: _col0
-                Reduce Output Operator
-                  sort order: 
-                  tag: -1
-                  value expressions:
-                        expr: _col0
-                        type: bigint
+            Filter Operator
+              predicate:
+                  expr: (((hash(key) & 2147483647) % 2) = 0)
+                  type: boolean
+              Filter Operator
+                predicate:
+                    expr: (((hash(key) & 2147483647) % 2) = 0)
+                    type: boolean
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count(1)
+                    bucketGroup: false
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -101,11 +109,11 @@ POSTHOOK: Output: default@tst_dest31
 PREHOOK: query: select * from tst_dest31
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tst_dest31
-PREHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1418882127/10000
+PREHOOK: Output: file:/data/users/njain/hive3/hive3/build/ql/tmp/305456482/10000
 POSTHOOK: query: select * from tst_dest31
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tst_dest31
-POSTHOOK: Output: file:/data/users/heyongqiang/hive-trunk-commit/build/ql/tmp/1418882127/10000
+POSTHOOK: Output: file:/data/users/njain/hive3/hive3/build/ql/tmp/305456482/10000
 493
 PREHOOK: query: drop table tst_dest31
 PREHOOK: type: DROPTABLE

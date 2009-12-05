@@ -53,6 +53,7 @@ public class Optimizer {
       transformations.add(new GroupByOptimizer());
     }
 
+    transformations.add(new SamplePruner());
     transformations.add(new MapJoinProcessor());
     transformations.add(new UnionProcessor());
     transformations.add(new JoinReorder());

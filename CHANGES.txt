@@ -305,6 +305,9 @@ Trunk -  Unreleased
     HIVE-962 "show functions" should work with unquoted string.
     (Paul Yang via zshao)
 
+    HIVE-638 fix sampling in subquery for real
+    (namit via He Yongqiang)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

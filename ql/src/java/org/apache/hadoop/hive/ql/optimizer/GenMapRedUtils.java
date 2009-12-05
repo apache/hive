@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.ql.plan.partitionDesc;
 import org.apache.hadoop.hive.ql.plan.fileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.tableScanDesc;
+import org.apache.hadoop.hive.ql.plan.filterDesc.sampleDesc;
 import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.ql.parse.*;
 import org.apache.hadoop.hive.ql.Context;
@@ -430,7 +431,6 @@ public class GenMapRedUtils {
     }
 
     plan.getAliasToPartnInfo().put(alias_id, aliasPartnDesc);
-    SamplePruner samplePruner = parseCtx.getAliasToSamplePruner().get(alias_id);
 
     for (Partition part : parts) {
       if (part.getTable().isPartitioned())
@@ -441,8 +441,10 @@ public class GenMapRedUtils {
       // Later the properties have to come from the partition as opposed
       // to from the table in order to support versioning.
       Path paths[];
-      if (samplePruner != null) {
-        paths = samplePruner.prune(part);
+      sampleDesc sampleDescr = parseCtx.getOpToSamplePruner().get(topOp);
+
+      if (sampleDescr != null) {
+        paths = SamplePruner.prune(part, sampleDescr);
       }
       else {
         paths = part.getPath();

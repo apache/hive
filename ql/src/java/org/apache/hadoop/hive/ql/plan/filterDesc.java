@@ -19,18 +19,70 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+import java.util.List;
 
 @explain(displayName="Filter Operator")
 public class filterDesc implements Serializable {
+
+  /**
+   * sampleDesc is used to keep track of the sampling descriptor
+   */
+  public static class sampleDesc {
+    // The numerator of the TABLESAMPLE clause
+    private int numerator;
+
+    // The denominator of the TABLESAMPLE clause
+    private int denominator;
+
+    // buckets columns for the table
+    private List<String> tabBucketCols;
+
+    // Input files can be pruned
+    private boolean inputPruning;
+
+    public sampleDesc() {
+    }
+
+    public sampleDesc(int numerator, int denominator, List<String> tabBucketCols, boolean inputPruning) {
+      this.numerator = numerator;
+      this.denominator = denominator;
+      this.tabBucketCols = tabBucketCols;
+      this.inputPruning = inputPruning;
+    }
+
+    public int getNumerator() {
+      return this.numerator;
+    }
+
+    public int getDenominator() {
+      return this.denominator;
+    }
+
+    public boolean getInputPruning() {
+      return inputPruning;
+    }
+  }
+
   private static final long serialVersionUID = 1L;
   private org.apache.hadoop.hive.ql.plan.exprNodeDesc predicate;
   private boolean isSamplingPred;
+  private transient sampleDesc sampleDescr;
+
   public filterDesc() { }
   public filterDesc(
     final org.apache.hadoop.hive.ql.plan.exprNodeDesc predicate, boolean isSamplingPred) {
     this.predicate = predicate;
     this.isSamplingPred = isSamplingPred;
+    this.sampleDescr = null;
   }
+
+  public filterDesc(
+    final org.apache.hadoop.hive.ql.plan.exprNodeDesc predicate, boolean isSamplingPred, final sampleDesc sampleDescr) {
+    this.predicate = predicate;
+    this.isSamplingPred = isSamplingPred;
+    this.sampleDescr = sampleDescr;
+  }
+
   @explain(displayName="predicate")
   public org.apache.hadoop.hive.ql.plan.exprNodeDesc getPredicate() {
     return this.predicate;
@@ -38,6 +90,7 @@ public class filterDesc implements Serializable {
   public void setPredicate(final org.apache.hadoop.hive.ql.plan.exprNodeDesc predicate) {
     this.predicate = predicate;
   }
+
   @explain(displayName="isSamplingPred", normalExplain=false)
   public boolean getIsSamplingPred() {
     return this.isSamplingPred;
@@ -45,4 +98,13 @@ public class filterDesc implements Serializable {
   public void setIsSamplingPred(final boolean isSamplingPred) {
     this.isSamplingPred = isSamplingPred;
   }
+
+  @explain(displayName="sampleDesc", normalExplain=false)
+  public sampleDesc getSampleDescr() {
+    return this.sampleDescr;
+  }
+  public void setSampleDescr(final sampleDesc sampleDescr) {
+    this.sampleDescr = sampleDescr;
+  }
+
 }

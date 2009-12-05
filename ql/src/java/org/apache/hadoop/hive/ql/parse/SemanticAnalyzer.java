@@ -98,6 +98,7 @@ import org.apache.hadoop.hive.ql.plan.extractDesc;
 import org.apache.hadoop.hive.ql.plan.fetchWork;
 import org.apache.hadoop.hive.ql.plan.fileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.filterDesc;
+import org.apache.hadoop.hive.ql.plan.filterDesc.sampleDesc;
 import org.apache.hadoop.hive.ql.plan.forwardDesc;
 import org.apache.hadoop.hive.ql.plan.groupByDesc;
 import org.apache.hadoop.hive.ql.plan.joinDesc;
@@ -169,7 +170,6 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 
 public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private HashMap<TableScanOperator, exprNodeDesc> opToPartPruner;
-  private HashMap<String, SamplePruner> aliasToSamplePruner;
   private HashMap<String, Operator<? extends Serializable>> topOps;
   private HashMap<String, Operator<? extends Serializable>> topSelOps;
   private LinkedHashMap<Operator<? extends Serializable>, OpParseContext> opParseCtx;
@@ -182,6 +182,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private int destTableId;
   private UnionProcContext uCtx;
   List<MapJoinOperator> listMapJoinOpsNoReducer;
+  private HashMap<TableScanOperator, sampleDesc> opToSamplePruner;
   Map<GroupByOperator, Set<String>> groupOpToInputTables;
   Map<String, PrunedPartitionList> prunedPartitions;
 
@@ -195,7 +196,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     super(conf);
 
     this.opToPartPruner = new HashMap<TableScanOperator, exprNodeDesc>();
-    this.aliasToSamplePruner = new HashMap<String, SamplePruner>();
+    this.opToSamplePruner = new HashMap<TableScanOperator, sampleDesc>();
     this.topOps = new HashMap<String, Operator<? extends Serializable>>();
     this.topSelOps = new HashMap<String, Operator<? extends Serializable>>();
     this.loadTableWork = new ArrayList<loadTableDesc>();
@@ -222,7 +223,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     qb = null;
     ast = null;
     uCtx = null;
-    this.aliasToSamplePruner.clear();
     this.joinContext.clear();
     this.opParseCtx.clear();
     this.groupOpToInputTables.clear();
@@ -231,7 +231,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   public void init(ParseContext pctx) {
     opToPartPruner = pctx.getOpToPartPruner();
-    aliasToSamplePruner = pctx.getAliasToSamplePruner();
+    opToSamplePruner = pctx.getOpToSamplePruner();
     topOps = pctx.getTopOps();
     topSelOps = pctx.getTopSelOps();
     opParseCtx = pctx.getOpParseCtx();
@@ -249,10 +249,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   public ParseContext getParseContext() {
-    return new ParseContext(conf, qb, ast, opToPartPruner, aliasToSamplePruner, topOps,
+    return new ParseContext(conf, qb, ast, opToPartPruner, topOps,
                             topSelOps, opParseCtx, joinContext, topToTable, loadTableWork,
                             loadFileWork, ctx, idToTableNameMap, destTableId, uCtx,
-                            listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions);
+                            listMapJoinOpsNoReducer,
+                            groupOpToInputTables, prunedPartitions, opToSamplePruner);
   }
 
   @SuppressWarnings("nls")
@@ -589,33 +590,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
         // Recurse
         doPhase1((ASTNode) ast.getChild(child_pos), qb, ctx_1);
-      }
-    }
-  }
-
-  private void genSamplePruners(QBExpr qbexpr) throws SemanticException {
-    if (qbexpr.getOpcode() == QBExpr.Opcode.NULLOP) {
-      genSamplePruners(qbexpr.getQB());
-    } else {
-      genSamplePruners(qbexpr.getQBExpr1());
-      genSamplePruners(qbexpr.getQBExpr2());
-    }
-  }
-
-  @SuppressWarnings("nls")
-  private void genSamplePruners(QB qb) throws SemanticException {
-    // Recursively prune subqueries
-    for (String alias : qb.getSubqAliases()) {
-      QBExpr qbexpr = qb.getSubqForAlias(alias);
-      genSamplePruners(qbexpr);
-    }
-    for (String alias : qb.getTabAliases()) {
-      String alias_id = (qb.getId() == null ? alias : qb.getId() + ":" + alias);
-      QBParseInfo qbp = qb.getParseInfo();
-      TableSample tableSample = qbp.getTabSample(alias_id);
-      if (tableSample != null) {
-        SamplePruner pruner = new SamplePruner(alias, tableSample);
-        this.aliasToSamplePruner.put(alias_id, pruner);
       }
     }
   }
@@ -1390,14 +1364,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (isInTransform) {
       trfm = (ASTNode) selExprList.getChild(posn).getChild(0);
     }
-    
-    // Detect a UDTF by looking up the function name in the registry. 
+
+    // Detect a UDTF by looking up the function name in the registry.
     // Not as clean TRANSFORM due to the lack of a special token.
     boolean isUDTF = false;
     String udtfOutputColAlias = null;
     ASTNode udtfExpr = (ASTNode) selExprList.getChild(posn).getChild(0);
     GenericUDTF genericUDTF = null;
-    
+
     if (udtfExpr.getType() == HiveParser.TOK_FUNCTION) {
       String funcName =
         TypeCheckProcFactory.DefaultExprProcessor.getFunctionText(udtfExpr, true);
@@ -1407,20 +1381,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       isUDTF = (genericUDTF != null);
     }
-        
+
     if (isUDTF) {
-      // Only support a single expression when it's a UDTF 
+      // Only support a single expression when it's a UDTF
       if (selExprList.getChildCount() > 1) {
         throw new SemanticException(ErrorMsg.UDTF_MULTIPLE_EXPR.getMsg());
       }
       //Require an AS for UDTFs
       if (((ASTNode) selExprList.getChild(posn)).getChildCount() != 2 ||
-          selExprList.getChild(posn).getChild(1).getType() != HiveParser.Identifier ){        
+          selExprList.getChild(posn).getChild(1).getType() != HiveParser.Identifier ){
         throw new SemanticException(ErrorMsg.UDTF_REQUIRE_AS.getMsg());
       }
       udtfOutputColAlias = unescapeIdentifier(selExprList.getChild(posn).getChild(1).getText());
-    }  
-    
+    }
+
     // The list of expressions after SELECT or SELECT TRANSFORM.
     ASTNode exprList;
     if (isInTransform) {
@@ -1430,12 +1404,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     } else {
       exprList = selExprList;
     }
-    
+
     LOG.debug("genSelectPlan: input = " + inputRR.toString());
 
     // For UDTF's, skip the function name
     int startPosn = isUDTF ? posn + 1 : posn;
-    
+
     // Iterate over all expression (either after SELECT, or in SELECT TRANSFORM)
     for (int i = startPosn; i < exprList.getChildCount(); ++i) {
 
@@ -1496,7 +1470,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         out_rwsch.put(tabAlias, colAlias,
                       new ColumnInfo(getColumnInternalName(pos),
                                      exp.getTypeInfo(), tabAlias, false));
-        
+
         pos = Integer.valueOf(pos.intValue() + 1);
       }
     }
@@ -1530,7 +1504,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     return output;
   }
-  
+
   /**
    * Class to store GenericUDAF related information.
    */
@@ -2540,7 +2514,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       new LinkedHashMap<String, GenericUDAFEvaluator>();
     GroupByOperator groupByOperatorInfo = (GroupByOperator)genGroupByPlanMapGroupByOperator(qb,
       dest, inputOperatorInfo, groupByDesc.Mode.HASH, genericUDAFEvaluators);
-    
+
     this.groupOpToInputTables.put(groupByOperatorInfo, this.opParseCtx.get(
         inputOperatorInfo).getRR().getTableNames());
     // Optimize the scenario when there are no grouping keys and no distinct - 2 map-reduce jobs are not needed
@@ -2903,10 +2877,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     return limitMap;
   }
-  
+
   private Operator genUDTFPlan(GenericUDTF genericUDTF, String udtfOutputColumnAlias,
       QB qb, Operator input) throws SemanticException {
-    
+
     // No GROUP BY / DISTRIBUTE BY / SORT BY / CLUSTER BY
     QBParseInfo qbp = qb.getParseInfo();
     if (!qbp.getDestToGroupBy().isEmpty()) {
@@ -2921,14 +2895,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (!qbp.getDestToClusterBy().isEmpty()) {
       throw new SemanticException(ErrorMsg.UDTF_NO_CLUSTER_BY.getMsg());
     }
-    
-    // Use the RowResolver from the input operator to generate a input 
-    // ObjectInspector that can be used to initialize the UDTF. Then, the 
+
+    // Use the RowResolver from the input operator to generate a input
+    // ObjectInspector that can be used to initialize the UDTF. Then, the
     // resulting output object inspector can be used to make the RowResolver
     // for the UDTF operator
     RowResolver selectRR = opParseCtx.get(input).getRR();
     Vector<ColumnInfo> inputCols = selectRR.getColumnInfos();
-   
+
     // Create the object inspector for the input columns and initialize the UDTF
     ArrayList<String> colNames = new ArrayList<String>();
     ObjectInspector [] colOIs = new ObjectInspector[inputCols.size()];
@@ -2938,11 +2912,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           inputCols.get(i).getType());
     }
     ObjectInspector outputOI = genericUDTF.initialize(colOIs);
-    
-    ColumnInfo outputCol = 
+
+    ColumnInfo outputCol =
       new ColumnInfo(udtfOutputColumnAlias,
           TypeInfoUtils.getTypeInfoFromObjectInspector(outputOI), null, false);
-    
+
     // Create the row resolver for this operator from the output columns
     RowResolver out_rwsch = new RowResolver();
 
@@ -2950,16 +2924,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         null,
         outputCol.getInternalName(),
         outputCol);
-    
+
     // Add the UDTFOperator to the operator DAG
     Operator udtf =
       putOpInsertMap(OperatorFactory.getAndMakeChild(
-                       new udtfDesc(genericUDTF, udtfOutputColumnAlias),  
+                       new udtfDesc(genericUDTF, udtfOutputColumnAlias),
                        new RowSchema(out_rwsch.getColumnInfos()),
                                      input), out_rwsch);
     return udtf;
   }
-  
+
   @SuppressWarnings("nls")
   private Operator genLimitMapRedPlan(String dest, QB qb, Operator input, int limit, boolean extraMRStep)
     throws SemanticException {
@@ -4450,15 +4424,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // check if input pruning is enough
       if ((sampleExprs == null || sampleExprs.size() == 0 || colsEqual)
           && (num == den || den <= numBuckets && numBuckets % den == 0)) {
-        // input pruning is enough; no need for filter
+
+        // input pruning is enough; add the filter for the optimizer to use it later
         LOG.info("No need for sample filter");
-        // TODO sample predicate is not needed, but we are adding it anyway since
-        // input pruning is broken for subqueries. will remove this once we move
-        // compilation of sampling to use the operator tree
         exprNodeDesc samplePredicate = genSamplePredicate(ts, tabBucketCols, colsEqual, alias, rwsch, qb.getMetaData(), null);
         tableOp = OperatorFactory.getAndMakeChild(
-            new filterDesc(samplePredicate, true),
-            top);
+          new filterDesc(samplePredicate, true, new sampleDesc(ts.getNumerator(), ts.getDenominator(), tabBucketCols, true)),
+          top);
       }
       else {
         // need to add filter
@@ -4491,6 +4463,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             TableSample tsSample = new TableSample(1, numBuckets);
             tsSample.setInputPruning(true);
             qb.getParseInfo().setTabSample(alias, tsSample);
+            exprNodeDesc samplePred = genSamplePredicate(tsSample, tab.getBucketCols(), true, alias, rwsch, qb.getMetaData(), null);
+            tableOp = OperatorFactory.getAndMakeChild(
+              new filterDesc(samplePred, true,
+                             new sampleDesc(tsSample.getNumerator(), tsSample.getDenominator(), tab.getBucketCols(), true)),
+              top);
             LOG.info("No need for sample filter");
           }
           // The table is not bucketed, add a dummy filter :: rand()
@@ -4957,9 +4934,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     genPlan(qb);
 
 
-    ParseContext pCtx = new ParseContext(conf, qb, child, opToPartPruner, aliasToSamplePruner, topOps,
-                                         topSelOps, opParseCtx, joinContext, topToTable, loadTableWork, loadFileWork,
-                                         ctx, idToTableNameMap, destTableId, uCtx, listMapJoinOpsNoReducer, groupOpToInputTables, prunedPartitions);
+    ParseContext pCtx = new ParseContext(conf, qb, child, opToPartPruner, topOps,
+                                         topSelOps, opParseCtx, joinContext, topToTable,
+                                         loadTableWork, loadFileWork,
+                                         ctx, idToTableNameMap, destTableId, uCtx,
+                                         listMapJoinOpsNoReducer,
+                                         groupOpToInputTables,
+                                         prunedPartitions,
+                                         opToSamplePruner);
 
     Optimizer optm = new Optimizer();
     optm.setPctx(pCtx);
@@ -4967,10 +4949,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     pCtx = optm.optimize();
     init(pCtx);
     qb = pCtx.getQB();
-
-    // Do any sample pruning
-    genSamplePruners(qb);
-    LOG.info("Completed sample pruning");
 
     // At this point we have the complete operator tree
     // from which we want to find the reduce operator
@@ -5011,7 +4989,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // create a walker which walks the tree in a DFS manner while maintaining the operator stack. The dispatcher
     // generates the plan from the operator tree
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-    
+
     opRules.put(new RuleRegExp("R1", HiveParser.TOK_NULL + "%"), TypeCheckProcFactory.getNullExprProcessor());
     opRules.put(new RuleRegExp("R2", HiveParser.Number + "%"), TypeCheckProcFactory.getNumExprProcessor());
     opRules.put(new RuleRegExp("R3", HiveParser.Identifier + "%|" +
