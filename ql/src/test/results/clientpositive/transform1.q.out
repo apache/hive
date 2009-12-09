@@ -1,0 +1,141 @@
+PREHOOK: query: drop table transform1_t1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table transform1_t1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table transform1_t1(a string, b string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table transform1_t1(a string, b string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@transform1_t1
+PREHOOK: query: EXPLAIN
+SELECT transform(*) USING 'cat' AS (col array<bigint>) FROM transform1_t1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT transform(*) USING 'cat' AS (col array<bigint>) FROM transform1_t1
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF transform1_t1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST TOK_ALLCOLREF) TOK_SERDE TOK_RECORDWRITER 'cat' TOK_SERDE TOK_RECORDREADER (TOK_TABCOLLIST (TOK_TABCOL col (TOK_LIST TOK_BIGINT))))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        transform1_t1 
+          TableScan
+            alias: transform1_t1
+            Select Operator
+              expressions:
+                    expr: a
+                    type: string
+                    expr: b
+                    type: string
+              outputColumnNames: _col0, _col1
+              Transform Operator
+                command: cat
+                output info:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT transform(*) USING 'cat' AS (col array<bigint>) FROM transform1_t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@transform1_t1
+PREHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/1737132015/10000
+POSTHOOK: query: SELECT transform(*) USING 'cat' AS (col array<bigint>) FROM transform1_t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@transform1_t1
+POSTHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/1737132015/10000
+PREHOOK: query: drop table transform1_t1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table transform1_t1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@transform1_t1
+PREHOOK: query: drop table transform1_t2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table transform1_t2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table transform1_t2(col array<int>)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table transform1_t2(col array<int>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@transform1_t2
+PREHOOK: query: insert overwrite table transform1_t2
+select array(1,2,3) from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@transform1_t2
+POSTHOOK: query: insert overwrite table transform1_t2
+select array(1,2,3) from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@transform1_t2
+PREHOOK: query: EXPLAIN
+SELECT transform('0\0021\0022') USING 'cat' AS (col array<int>) FROM transform1_t2
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT transform('0\0021\0022') USING 'cat' AS (col array<int>) FROM transform1_t2
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF transform1_t2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST '0\0021\0022') TOK_SERDE TOK_RECORDWRITER 'cat' TOK_SERDE TOK_RECORDREADER (TOK_TABCOLLIST (TOK_TABCOL col (TOK_LIST TOK_INT))))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        transform1_t2 
+          TableScan
+            alias: transform1_t2
+            Select Operator
+              expressions:
+                    expr: '012'
+                    type: string
+              outputColumnNames: _col0
+              Transform Operator
+                command: cat
+                output info:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT transform('0\0021\0022') USING 'cat' AS (col array<int>) FROM transform1_t2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@transform1_t2
+PREHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/389439457/10000
+POSTHOOK: query: SELECT transform('0\0021\0022') USING 'cat' AS (col array<int>) FROM transform1_t2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@transform1_t2
+POSTHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/389439457/10000
+[0,1,2]
+PREHOOK: query: drop table transform1_t2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table transform1_t2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@transform1_t2

@@ -308,6 +308,8 @@ Trunk -  Unreleased
     HIVE-638 fix sampling in subquery for real
     (namit via He Yongqiang)
 
+    HIVE-973. Support nested types in custom scripts. (Namit Jain via zshao)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

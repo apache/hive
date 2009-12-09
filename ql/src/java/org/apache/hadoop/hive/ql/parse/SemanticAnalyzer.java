@@ -1142,8 +1142,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           assert child.getType() == HiveParser.TOK_TABCOL;
           String colAlias = unescapeIdentifier(((ASTNode)child.getChild(0)).getText());
           failIfColAliasExists(colAliasNamesDuplicateCheck, colAlias);
-          outputCols.add(new ColumnInfo(colAlias,
-                                        TypeInfoUtils.getTypeInfoFromTypeString(DDLSemanticAnalyzer.getTypeName(((ASTNode)child.getChild(1)).getType())), null, false));
+          outputCols.add(new ColumnInfo(colAlias, TypeInfoUtils.getTypeInfoFromTypeString(getTypeStringFromAST((ASTNode)child.getChild(1))), null, false));
         }
       }
     }
