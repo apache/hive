@@ -67,6 +67,7 @@
 package org.apache.hadoop.hive.ql.util.jdbm.recman;
 
 import java.io.IOException;
+import java.io.File;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -160,6 +161,23 @@ public final class BaseRecordManager
         _physMgr = new PhysicalRowIdManager( _file, _pageman );
         _logMgr = new LogicalRowIdManager( _file, _pageman );
     }
+    
+     /**
+     *  Creates a record manager for the indicated file
+     *
+     *  @throws IOException when the file cannot be opened or is not
+     *          a valid file content-wise.
+     */
+    public BaseRecordManager( File file )
+        throws IOException
+    {
+        _file = new RecordFile( file );
+        _pageman = new PageManager( _file );
+        _physMgr = new PhysicalRowIdManager( _file, _pageman );
+        _logMgr = new LogicalRowIdManager( _file, _pageman );
+    }
+    
+    
 
 
     /**

@@ -67,6 +67,7 @@
 package org.apache.hadoop.hive.ql.util.jdbm;
 
 import java.io.IOException;
+import java.io.File;
 import java.util.Properties;
 
 /**
@@ -91,6 +92,10 @@ public interface RecordManagerProvider
      * @throws IllegalArgumentException if some options are invalid.
      */
     public RecordManager createRecordManager( String filename,
+                                              Properties options )
+        throws IOException;
+    
+    public RecordManager createRecordManager( File file,
                                               Properties options )
         throws IOException;
 }

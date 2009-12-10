@@ -67,6 +67,7 @@
 package org.apache.hadoop.hive.ql.util.jdbm;
 
 import java.io.IOException;
+import java.io.File;
 import java.util.Properties;
 
 /**
@@ -112,6 +113,18 @@ public final class RecordManagerFactory
                                                      Properties options )
         throws IOException
     {
+      RecordManagerProvider factory = getFactory(options);
+      return factory.createRecordManager( name, options );
+    }
+    
+    public static RecordManager createRecordManager( File file, Properties options)
+        throws IOException
+    {
+      RecordManagerProvider factory = getFactory(options);
+      return factory.createRecordManager( file, options );
+    }
+      
+    private static RecordManagerProvider getFactory(Properties options)  {
         String                 provider;
         Class                  clazz;
         RecordManagerProvider  factory;
@@ -129,7 +142,6 @@ public final class RecordManagerFactory
                                                 + ": " + except.getMessage()
                                                 + "]" );
         }
-        return factory.createRecordManager( name, options );
+        return factory;
     }
-
 }

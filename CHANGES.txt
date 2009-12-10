@@ -132,6 +132,9 @@ Trunk -  Unreleased
     HIVE-931. optimize group by to use sorting and grouping properties
     (He Yongqiang via namit)
 
+    HIVE-968. remove mapjoin files and use a MRU cache to optimize lookups
+    (Ning Zhang via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES

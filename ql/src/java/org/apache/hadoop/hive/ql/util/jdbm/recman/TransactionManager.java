@@ -111,6 +111,9 @@ public final class TransactionManager {
 
     /** Extension of a log file. */
     static final String extension = ".lg";
+    
+    /** log file name */
+    private String logFileName;
 
     /**
      *  Instantiates a transaction manager instance. If recovery
@@ -120,6 +123,7 @@ public final class TransactionManager {
      */
     TransactionManager(RecordFile owner) throws IOException {
         this.owner = owner;
+        logFileName = null;
         recover();
         open();
     }
@@ -206,7 +210,8 @@ public final class TransactionManager {
 
     /** Opens the log file */
     private void open() throws IOException {
-        fos = new FileOutputStream(makeLogName());
+        logFileName = makeLogName(); 
+        fos = new FileOutputStream(logFileName);
         oos = new ObjectOutputStream(fos);
         oos.writeShort(Magic.LOGFILE_HEADER);
         oos.flush();
@@ -361,6 +366,17 @@ public final class TransactionManager {
         fos.close();
         oos = null;
         fos = null;
+    }
+    
+    public void removeLogFile() {
+      // if file is not closed yet, just return
+      if ( oos != null ) 
+        return;
+      if ( logFileName != null ) {
+        File file = new File(logFileName) ;
+      	file.delete();
+      	logFileName = null; 
+      }
     }
 
     /**

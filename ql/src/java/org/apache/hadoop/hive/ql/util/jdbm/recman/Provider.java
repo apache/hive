@@ -67,6 +67,7 @@
 package org.apache.hadoop.hive.ql.util.jdbm.recman;
 
 import java.io.IOException;
+import java.io.File;
 import java.util.Properties;
 
 import org.apache.hadoop.hive.ql.util.jdbm.RecordManager;
@@ -101,11 +102,17 @@ public final class Provider
         throws IOException
     {
         RecordManager  recman;
-        String         value;
-        int            cacheSize;
 
         recman = new BaseRecordManager( name );
-
+        recman = getCachedRecordManager(recman, options);
+        return recman;
+    }
+    
+    private RecordManager getCachedRecordManager(RecordManager recman, Properties options)
+    {
+        String         value;
+        int            cacheSize;
+        
         value = options.getProperty( RecordManagerOptions.DISABLE_TRANSACTIONS, "false" );
         if ( value.equalsIgnoreCase( "TRUE" ) ) {
             ( (BaseRecordManager) recman ).disableTransactions();
@@ -123,12 +130,22 @@ public final class Provider
             throw new IllegalArgumentException( "Soft reference cache not implemented" );
         } else if ( value.equalsIgnoreCase( RecordManagerOptions.WEAK_REF_CACHE ) ) {
             throw new IllegalArgumentException( "Weak reference cache not implemented" );
+        } else if ( value.equalsIgnoreCase(RecordManagerOptions.NO_CACHE) ){
+          // do nothing
         } else {
             throw new IllegalArgumentException( "Invalid cache type: " + value );
-        }
+        } 
 
         return recman;
     }
 
+    public RecordManager createRecordManager ( File file, 
+                                              Properties options )
+        throws IOException
+    {
+      RecordManager recman = new BaseRecordManager(file);
+      recman = getCachedRecordManager(recman, options);
+      return recman;
+    }
 
 }

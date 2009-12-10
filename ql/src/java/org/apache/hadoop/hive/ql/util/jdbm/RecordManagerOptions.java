@@ -137,5 +137,10 @@ public class RecordManagerOptions
      * finalizable, finalized, and then reclaimed.
      */
     public static final String WEAK_REF_CACHE = "weak";
+    
+    /**
+     * Disable cache.
+     */
+    public static final String NO_CACHE = "nocache";
 
 }

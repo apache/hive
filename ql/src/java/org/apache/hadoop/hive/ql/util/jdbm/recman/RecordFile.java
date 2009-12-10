@@ -116,6 +116,21 @@ public final class RecordFile {
         file = new RandomAccessFile(fileName + extension, "rw");
         txnMgr = new TransactionManager(this);
     }
+    
+    /**
+     *  Creates a new object on the indicated filename. The file is
+     *  opened in read/write mode.
+     *
+     *  @param fileName the name of the file to open or create, without
+     *         an extension.
+     *  @throws IOException whenever the creation of the underlying
+     *          RandomAccessFile throws it.
+     */
+    RecordFile(File file) throws IOException {
+        this.fileName = file.getName();
+        this.file = new RandomAccessFile(file, "rw");
+        txnMgr = new TransactionManager(this);
+    }
 
     /**
      *  Returns the file name.
@@ -308,6 +323,9 @@ public final class RecordFile {
             commit();
         }
         txnMgr.shutdown();
+        if ( transactionsDisabled ) {
+          txnMgr.removeLogFile();
+        }
 
         if (!inTxn.isEmpty()) {
             showList(inTxn.values().iterator());
