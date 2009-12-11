@@ -305,80 +305,110 @@ ant -Dhadoop.version='0.17.0' -logfile test.log test"
 4. Create an empty java project in Eclipse and close it.
 
 5. Add the following section to Eclipse project's .project file:
-	<linkedResources>
-		<link>
-			<name>cli_src_java</name>
-			<type>2</type>
-			<location>/xxx/hive_trunk/cli/src/java</location>
-		</link>
-		<link>
-			<name>common_src_java</name>
-			<type>2</type>
-			<location>/xxx/hive_trunk/common/src/java</location>
-		</link>
-		<link>
-			<name>metastore_src_gen-javabean</name>
-			<type>2</type>
-			<location>/xxx/hive_trunk/metastore/src/gen-javabean</location>
-		</link>
-		<link>
-			<name>metastore_src_java</name>
-			<type>2</type>
-			<location>/xxx/hive_trunk/metastore/src/java</location>
-		</link>
-		<link>
-			<name>metastore_src_model</name>
-			<type>2</type>
-			<location>/xxx/hive_trunk/metastore/src/model</location>
-		</link>
-		<link>
-			<name>ql_src_java</name>
-			<type>2</type>
-			<location>/xxx/hive_trunk/ql/src/java</location>
-		</link>
-		<link>
-			<name>serde_src_gen-java</name>
-			<type>2</type>
-			<location>/xxx/hive_trunk/serde/src/gen-java</location>
-		</link>
-		<link>
-			<name>serde_src_java</name>
-			<type>2</type>
-			<location>/xxx/hive_trunk/serde/src/java</location>
-		</link>
-	</linkedResources>
+
+        <linkedResources>
+                <link>
+                        <name>cli_src_java</name>
+                        <type>2</type>
+                        <location>/path_to_hive_trunk/cli/src/java</location>
+                </link>
+                <link>
+                        <name>common_src_java</name>
+                        <type>2</type>
+                        <location>/path_to_hive_trunk/common/src/java</location>
+                </link>
+                <link>
+                        <name>java</name>
+                        <type>2</type>
+                        <location>/path_to_hive_trunk/shims/src/0.20/java</location>
+                </link>
+                <link>
+                        <name>metastore_src_gen-javabean</name>
+                        <type>2</type>
+                        <location>/path_to_hive_trunk/metastore/src/gen-javabean</location>
+                </link>
+                <link>
+                        <name>metastore_src_java</name>
+                        <type>2</type>
+                        <location>/path_to_hive_trunk/metastore/src/java</location>
+                </link>
+                <link>
+                        <name>metastore_src_model</name>
+                        <type>2</type>
+                        <location>/path_to_hive_trunk/metastore/src/model</location>
+                </link>
+                <link>
+                        <name>ql_src_java</name>
+                        <type>2</type>
+                        <location>/path_to_hive_trunk/ql/src/java</location>
+                </link>
+                <link>
+                        <name>ql_src_gen-javabean</name>
+                        <type>2</type>
+                        <location>/path_to_hive_trunk/ql/src/gen-javabean</location>
+                </link>
+                <link>
+                        <name>ql_src_gen-java</name>
+                        <type>2</type>
+                        <location>/path_to_hive_trunk/build/ql/gen-java</location>
+                </link>
+                <link>
+                        <name>serde_src_gen-java</name>
+                        <type>2</type>
+                        <location>/path_to_hive_trunk/serde/src/gen-java</location>
+                </link>
+                <link>
+                        <name>serde_src_java</name>
+                        <type>2</type>
+                        <location>/path_to_hive_trunk/serde/src/java</location>
+                </link>
+                <link>
+                        <name>shims_src_common_java</name>
+                        <type>2</type>
+                        <location>/path_to_hive_trunk/shims/src/common/java</location>
+                </link>
+                <link>
+                        <name>shims_src_0.20_java</name>
+                        <type>2</type>
+                        <location>/path_to_hive_trunk/shims/src/0.20/java</location>
+                </link>
+        </linkedResources>
+
 
 6. Add the following list to the Eclipse project's .classpath file:
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="metastore_src_model"/>
-	<classpathentry kind="src" path="metastore_src_gen-javabean"/>
-	<classpathentry kind="src" path="serde_src_gen-java"/>
-	<classpathentry kind="src" path="cli_src_java"/>
-	<classpathentry kind="src" path="ql_src_java"/>
-	<classpathentry kind="src" path="metastore_src_java"/>
-	<classpathentry kind="src" path="serde_src_java"/>
-	<classpathentry kind="src" path="common_src_java"/>
-	<classpathentry kind="lib" path="/xxx/hive_trunk/lib/asm-3.1.jar"/>
-	<classpathentry kind="lib" path="/xxx/hive_trunk/lib/commons-cli-2.0-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="/xxx/hive_trunk/lib/commons-collections-3.2.1.jar"/>
-	<classpathentry kind="lib" path="/xxx/hive_trunk/lib/commons-lang-2.4.jar"/>
-	<classpathentry kind="lib" path="/xxx/hive_trunk/lib/commons-logging-1.0.4.jar"/>
-	<classpathentry kind="lib" path="/xxx/hive_trunk/lib/commons-logging-api-1.0.4.jar"/>
-	<classpathentry kind="lib" path="/xxx/hive_trunk/lib/derby.jar"/>
-	<classpathentry kind="lib" path="/xxx/hive_trunk/lib/jdo2-api-2.1.jar"/>
-	<classpathentry kind="lib" path="/xxx/hive_trunk/lib/jpox-core-1.2.2.jar"/>
-	<classpathentry kind="lib" path="/xxx/hive_trunk/lib/jpox-enhancer-1.2.2.jar"/>
-	<classpathentry kind="lib" path="/xxx/hive_trunk/lib/jpox-rdbms-1.2.2.jar"/>
-	<classpathentry kind="lib" path="/xxx/hive_trunk/lib/libfb303.jar"/>
-	<classpathentry kind="lib" path="/xxx/hive_trunk/lib/libthrift.jar"/>
-	<classpathentry kind="lib" path="/xxx/hive_trunk/lib/log4j-1.2.15.jar"/>
-	<classpathentry kind="lib" path="/xxx/hive_trunk/lib/velocity-1.5.jar"/>
-	<classpathentry kind="lib" path="/xxx/hive_trunk/ql/lib/antlr-3.0.1.jar"/>
-	<classpathentry kind="lib" path="/xxx/hive_trunk/ql/lib/antlr-runtime-3.0.1.jar"/>
-	<classpathentry kind="lib" path="/xxx/hive_trunk/ql/lib/commons-jexl-1.1.jar"/>
-	<classpathentry kind="lib" path="/xxx/hive_trunk/ql/lib/stringtemplate-3.1b1.jar"/>
-	<classpathentry kind="lib" path="/xxx/hive_trunk/cli/lib/jline-0.9.94.jar"/>
-	<classpathentry kind="lib" path="/xxx/hive_trunk/build/hadoopcore/hadoop-0.19.0/hadoop-0.19.0-core.jar"/>
+        <classpathentry kind="src" path="metastore_src_model"/>
+        <classpathentry kind="src" path="metastore_src_gen-javabean"/>
+        <classpathentry kind="src" path="serde_src_gen-java"/>
+        <classpathentry kind="src" path="cli_src_java"/>
+        <classpathentry kind="src" path="ql_src_java"/>
+        <classpathentry kind="src" path="ql_src_gen-java"/>
+        <classpathentry kind="src" path="ql_src_gen-javabean"/>
+        <classpathentry kind="src" path="metastore_src_java"/>
+        <classpathentry kind="src" path="serde_src_java"/>
+        <classpathentry kind="src" path="common_src_java"/>
+        <classpathentry kind="src" path="shims_src_common_java"/>
+        <classpathentry kind="src" path="shims_src_0.20_java"/>
+        <classpathentry kind="lib" path="/path_to_hive_trunk/lib/asm-3.1.jar"/>
+        <classpathentry kind="lib" path="/path_to_hive_trunk/lib/commons-cli-2.0-SNAPSHOT.jar"/>
+        <classpathentry kind="lib" path="/path_to_hive_trunk/lib/commons-collections-3.2.1.jar"/>
+        <classpathentry kind="lib" path="/path_to_hive_trunk/lib/commons-lang-2.4.jar"/>
+        <classpathentry kind="lib" path="/path_to_hive_trunk/lib/commons-logging-1.0.4.jar"/>
+        <classpathentry kind="lib" path="/path_to_hive_trunk/lib/commons-logging-api-1.0.4.jar"/>
+        <classpathentry kind="lib" path="/path_to_hive_trunk/lib/derby.jar"/>
+        <classpathentry kind="lib" path="/path_to_hive_trunk/lib/jdo2-api-2.3-SNAPSHOT.jar"/>
+        <classpathentry kind="lib" path="/path_to_hive_trunk/lib/json.jar"/>
+        <classpathentry kind="lib" path="/path_to_hive_trunk/lib/libfb303.jar"/>
+        <classpathentry kind="lib" path="/path_to_hive_trunk/lib/libthrift.jar"/>
+        <classpathentry kind="lib" path="/path_to_hive_trunk/lib/log4j-1.2.15.jar"/>
+        <classpathentry kind="lib" path="/path_to_hive_trunk/lib/velocity-1.5.jar"/>
+        <classpathentry kind="lib" path="/path_to_hive_trunk/ql/lib/antlr-3.0.1.jar"/>
+        <classpathentry kind="lib" path="/path_to_hive_trunk/ql/lib/antlr-runtime-3.0.1.jar"/>
+        <classpathentry kind="lib" path="/path_to_hive_trunk/ql/lib/stringtemplate-3.1b1.jar"/>
+        <classpathentry kind="lib" path="/path_to_hive_trunk/cli/lib/jline-0.9.94.jar"/>
+        <classpathentry kind="lib" path="/path_to_hive_trunk/build/hadoopcore/hadoop-0.20.0/hadoop-0.20.0-core.jar"/>
+        <classpathentry kind="lib" path="/path_to_hive_trunk/build/hadoopcore/hadoop-0.20.0/hadoop-0.20.0-test.jar"/>
+        <classpathentry kind="lib" path="/path_to_hive_trunk/build/hadoopcore/hadoop-0.20.0/lib/jetty-6.1.14.jar"/>
+        <classpathentry kind="lib" path="/path_to_hive_trunk/build/hadoopcore/hadoop-0.20.0/lib/jetty-util-6.1.14.jar"/>
 
 7. Try building hive inside Eclipse, and develop using Eclipse.
 

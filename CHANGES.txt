@@ -140,6 +140,9 @@ Trunk -  Unreleased
     HIVE-968. remove mapjoin files and use a MRU cache to optimize lookups
     (Ning Zhang via namit)
 
+    HIVE-980. update readme.txt to build hive using eclipse
+    (Patrick Angeles via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES
