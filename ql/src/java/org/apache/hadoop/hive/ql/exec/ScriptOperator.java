@@ -250,6 +250,12 @@ public class ScriptOperator extends Operator<scriptDesc> implements Serializable
         Map<String, String> env = pb.environment();
         addJobConfToEnvironment(hconf, env);
         env.put(safeEnvVarName(HiveConf.ConfVars.HIVEALIAS.varname), String.valueOf(alias));
+        
+        // Create an environment variable that uniquely identifies this script operator
+        String idEnvVarName = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVESCRIPTIDENVVAR);
+        String idEnvVarVal = this.getOperatorId();
+        env.put(safeEnvVarName(idEnvVarName), idEnvVarVal);
+        
         scriptPid = pb.start();       // Runtime.getRuntime().exec(wrappedCmdArgs);
 
         DataOutputStream scriptOut = new DataOutputStream(new BufferedOutputStream(scriptPid.getOutputStream()));

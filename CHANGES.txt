@@ -84,6 +84,9 @@ Trunk -  Unreleased
     HIVE-549. Run independent tasks for a query in parallel.
     (Chaitanya Mishra via namit)
 
+    HIVE-946. Pass context to custom mapper/reducer
+    (Paul Yang via namit)
+
   IMPROVEMENTS
 
     HIVE-760. Add version info to META-INF/MANIFEST.MF.

@@ -293,6 +293,13 @@
 </property>
 
 <property>
+  <name>hive.script.operator.id.env.var</name>
+  <value>HIVE_SCRIPT_OPERATOR_ID</value>
+  <description> Name of the environment variable that holds the unique script operator ID in the user's transform function (the custom mapper/reducer that the user has specified in the query)
+  </description>
+</property>
+
+<property>
   <name>hive.exec.compress.output</name>
   <value>false</value>
   <description> This controls whether the final outputs of a query (to a local/hdfs file or a hive table) is compressed. The compression codec and other options are determined from hadoop config variables mapred.output.compress* </description>
