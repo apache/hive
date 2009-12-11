@@ -271,6 +271,9 @@ public class FunctionRegistry {
     }
   }
 
+  public static void registerTemporaryGenericUDTF(String functionName, Class<? extends GenericUDTF> genericUDTFClass) {
+    registerGenericUDTF(false, functionName, genericUDTFClass);
+  }
   static void registerGenericUDTF(String functionName, Class<? extends GenericUDTF> genericUDTFClass) {
     registerGenericUDTF(true, functionName, genericUDTFClass);
   }

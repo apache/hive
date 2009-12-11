@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.plan.dropFunctionDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 
@@ -72,6 +73,10 @@ public class FunctionTask extends Task<FunctionWork> {
       } else if(GenericUDF.class.isAssignableFrom(udfClass)) {
         FunctionRegistry.registerTemporaryGenericUDF(createFunctionDesc.getFunctionName(), 
                                             (Class<? extends GenericUDF>) udfClass);
+        return 0;
+      } else if(GenericUDTF.class.isAssignableFrom(udfClass)) {
+        FunctionRegistry.registerTemporaryGenericUDTF(createFunctionDesc.getFunctionName(), 
+            (Class<? extends GenericUDTF>) udfClass);
         return 0;
       } else if(UDAF.class.isAssignableFrom(udfClass)) {
         FunctionRegistry.registerTemporaryUDAF(createFunctionDesc.getFunctionName(),

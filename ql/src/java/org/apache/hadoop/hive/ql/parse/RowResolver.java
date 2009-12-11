@@ -127,7 +127,11 @@ public class RowResolver {
   }
  
   public HashMap<String, ColumnInfo> getFieldMap(String tab_alias) {
-    return rslvMap.get(tab_alias.toLowerCase());
+    if (tab_alias == null) {
+      return rslvMap.get(null);
+    } else {
+      return rslvMap.get(tab_alias.toLowerCase());
+    }
   }
 
   public int getPosition(String internalName) {

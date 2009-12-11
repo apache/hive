@@ -1,0 +1,5 @@
+PREHOOK: query: CREATE TEMPORARY FUNCTION explode2 AS 'org.apache.hadoop.hive.contrib.udtf.example.GenericUDTFExplode2'
+PREHOOK: type: CREATEFUNCTION
+POSTHOOK: query: CREATE TEMPORARY FUNCTION explode2 AS 'org.apache.hadoop.hive.contrib.udtf.example.GenericUDTFExplode2'
+POSTHOOK: type: CREATEFUNCTION
+FAILED: Error in semantic analysis: The number of aliases supplied in the AS clause does not match the number of columns output by the UDTF expected 2 aliases but got 1

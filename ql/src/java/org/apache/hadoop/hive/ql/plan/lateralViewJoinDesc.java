@@ -20,35 +20,23 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
-
-/**
- * All member variables should have a setters and getters of the form
- * get<member name> and set<member name> or else they won't be recreated
- * properly at run time.
- * 
- */
-@explain(displayName="UDTF Operator")
-public class udtfDesc implements Serializable {
+@explain(displayName="Lateral View Join Operator")
+public class lateralViewJoinDesc implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  private GenericUDTF genericUDTF;
-  
-  public udtfDesc() { }
-  public udtfDesc(final GenericUDTF genericUDTF) {
-    this.genericUDTF = genericUDTF;
+  private ArrayList<String> outputInternalColNames;
+  public lateralViewJoinDesc() { 
   }
-
-  public GenericUDTF getGenericUDTF() {
-    return this.genericUDTF;
+  public lateralViewJoinDesc(ArrayList<String> outputInternalColNames) {
+    this.outputInternalColNames = outputInternalColNames;
   }
-  public void setGenericUDTF(final GenericUDTF genericUDTF) {
-    this.genericUDTF=genericUDTF;
+  public void setOutputInternalColNames(
+      ArrayList<String> outputInternalColNames) {
+    this.outputInternalColNames = outputInternalColNames;
   }
-  @explain(displayName="function name")
-  public String getUDTFName() {
-    return this.genericUDTF.toString();
+  @explain(displayName="outputColumnNames")
+  public ArrayList<String> getOutputInternalColNames() {
+    return this.outputInternalColNames;
   }
 }

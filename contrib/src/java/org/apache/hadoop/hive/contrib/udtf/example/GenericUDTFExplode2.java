@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.udf.generic;
+package org.apache.hadoop.hive.contrib.udtf.example;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,16 +24,18 @@ import java.util.List;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 @description(
-    name = "explode",
-    value = "_FUNC_(a) - separates the elements of array a into multiple rows "
+    name = "explode2",
+    value = "_FUNC_(a) - like explode, but outputs two identical columns (for "+
+            "testing purposes)"
 )
-public class GenericUDTFExplode extends GenericUDTF {
+public class GenericUDTFExplode2 extends GenericUDTF {
 
   ListObjectInspector listOI = null;
   
@@ -56,19 +58,22 @@ public class GenericUDTFExplode extends GenericUDTF {
     
     ArrayList<String> fieldNames = new ArrayList<String>();
     ArrayList<ObjectInspector> fieldOIs = new ArrayList<ObjectInspector>();
-    fieldNames.add("col");
+    fieldNames.add("col1");
+    fieldNames.add("col2");
+    fieldOIs.add(listOI.getListElementObjectInspector());
     fieldOIs.add(listOI.getListElementObjectInspector());
     return ObjectInspectorFactory.getStandardStructObjectInspector(
         fieldNames, fieldOIs);
   }
 
-  Object forwardObj[] = new Object[1];
+  Object forwardObj[] = new Object[2];
   @Override
   public void process(Object [] o) throws HiveException {
    
     List<?> list = listOI.getList(o[0]);
     for (Object r : list) {
       forwardObj[0] = r;
+      forwardObj[1] = r;
       this.forward(forwardObj);
     }
   }

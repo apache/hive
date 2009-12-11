@@ -37,6 +37,7 @@ class OperatorType:
   REDUCESINK = 11
   UNION = 12
   UDTF = 13
+  LATERALVIEWJOIN = 14
 
 class TaskType:
   MAP = 0

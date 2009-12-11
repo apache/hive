@@ -29,9 +29,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
+import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import java.lang.ClassNotFoundException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.Path;
@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.ExecDriver;
@@ -60,7 +61,11 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
+import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -73,22 +78,26 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.optimizer.MapJoinFactory;
 import org.apache.hadoop.hive.ql.optimizer.GenMRFileSink1;
-import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.optimizer.GenMROperator;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink1;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink2;
-import org.apache.hadoop.hive.ql.optimizer.GenMRTableScan1;
-import org.apache.hadoop.hive.ql.optimizer.GenMRUnion1;
-import org.apache.hadoop.hive.ql.optimizer.Optimizer;
-import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
-import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink3;
 import org.apache.hadoop.hive.ql.optimizer.GenMRRedSink4;
+import org.apache.hadoop.hive.ql.optimizer.GenMRTableScan1;
+import org.apache.hadoop.hive.ql.optimizer.GenMRUnion1;
+import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
+import org.apache.hadoop.hive.ql.optimizer.MapJoinFactory;
+import org.apache.hadoop.hive.ql.optimizer.Optimizer;
+import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
+import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
+import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
+import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.aggregationDesc;
+import org.apache.hadoop.hive.ql.plan.createTableDesc;
+import org.apache.hadoop.hive.ql.plan.createTableLikeDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
@@ -102,6 +111,7 @@ import org.apache.hadoop.hive.ql.plan.filterDesc.sampleDesc;
 import org.apache.hadoop.hive.ql.plan.forwardDesc;
 import org.apache.hadoop.hive.ql.plan.groupByDesc;
 import org.apache.hadoop.hive.ql.plan.joinDesc;
+import org.apache.hadoop.hive.ql.plan.lateralViewJoinDesc;
 import org.apache.hadoop.hive.ql.plan.limitDesc;
 import org.apache.hadoop.hive.ql.plan.loadFileDesc;
 import org.apache.hadoop.hive.ql.plan.loadTableDesc;
@@ -115,20 +125,18 @@ import org.apache.hadoop.hive.ql.plan.tableDesc;
 import org.apache.hadoop.hive.ql.plan.tableScanDesc;
 import org.apache.hadoop.hive.ql.plan.udtfDesc;
 import org.apache.hadoop.hive.ql.plan.unionDesc;
-import org.apache.hadoop.hive.ql.ppd.PredicatePushDown;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFHash;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
+import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -137,32 +145,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
-import org.apache.hadoop.hive.serde.Constants;
-import org.apache.hadoop.hive.ql.exec.TextRecordReader;
-import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
-
-import org.apache.hadoop.hive.ql.hooks.ReadEntity;
-import org.apache.hadoop.hive.ql.hooks.WriteEntity;
-
-import java.util.regex.Matcher;
-import org.apache.hadoop.hive.metastore.api.Order;
-import org.apache.hadoop.mapred.SequenceFileInputFormat;
-import org.apache.hadoop.mapred.SequenceFileOutputFormat;
-import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
-import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
-import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
-import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
-import org.apache.hadoop.hive.ql.plan.DDLWork;
-import org.apache.hadoop.hive.ql.plan.createTableDesc;
-import org.apache.hadoop.hive.ql.plan.createTableLikeDesc;
-import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.Driver;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
-import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
-import org.apache.hadoop.hive.ql.exec.FetchOperator;
-import java.util.Collection;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 
 /**
  * Implementation of the semantic analyzer
@@ -346,7 +328,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return expr;
   }
 
-  private void processTable(QB qb, ASTNode tabref) throws SemanticException {
+  /**
+   * Goes though the tabref tree and finds the alias for the table. Once found,
+   * it records the table name-> alias association in aliasToTabs. It also makes
+   * an association from the alias to the table AST in parse info.
+   * 
+   * @return the alias of the table
+   */
+  private String processTable(QB qb, ASTNode tabref) throws SemanticException {
     // For each table reference get the table name
     // and the alias (if alias is not present, the table name
     // is used as an alias)
@@ -399,9 +388,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     qb.setTabAlias(alias, table_name);
 
     qb.getParseInfo().setSrcForAlias(alias, tableTree);
+    
+    return alias;
   }
 
-  private void processSubQuery(QB qb, ASTNode subq) throws SemanticException {
+  private String processSubQuery(QB qb, ASTNode subq) throws SemanticException {
 
     // This is a subquery and must have an alias
     if (subq.getChildCount() != 2) {
@@ -421,6 +412,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     // Insert this map into the stats
     qb.setSubqAlias(alias, qbexpr);
+    
+    return alias;
   }
 
   private boolean isJoinToken(ASTNode node)
@@ -436,6 +429,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return false;
   }
 
+  /**
+   * Given the AST with TOK_JOIN as the root, get all the aliases for the tables
+   * or subqueries in the join.
+   * 
+   * @param qb
+   * @param join
+   * @throws SemanticException
+   */
   @SuppressWarnings("nls")
   private void processJoin(QB qb, ASTNode join) throws SemanticException {
     int numChildren = join.getChildCount();
@@ -445,15 +446,79 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     for (int num = 0; num < numChildren; num++) {
       ASTNode child = (ASTNode) join.getChild(num);
-      if (child.getToken().getType() == HiveParser.TOK_TABREF)
+      if (child.getToken().getType() == HiveParser.TOK_TABREF) {
         processTable(qb, child);
-      else if (child.getToken().getType() == HiveParser.TOK_SUBQUERY)
+      } else if (child.getToken().getType() == HiveParser.TOK_SUBQUERY) {
         processSubQuery(qb, child);
-      else if (isJoinToken(child))
+      } else if (child.getToken().getType() == HiveParser.TOK_LATERAL_VIEW) {
+        // SELECT * FROM src1 LATERAL VIEW udtf() AS myTable JOIN src2 ...
+        // is not supported. Instead, the lateral view must be in a subquery
+        // SELECT * FROM (SELECT * FROM src1 LATERAL VIEW udtf() AS myTable) a
+        // JOIN src2 ...
+        throw new 
+          SemanticException(ErrorMsg.LATERAL_VIEW_WITH_JOIN.getMsg(join));
+      } else if (isJoinToken(child)) {
         processJoin(qb, child);
+      }
     }
   }
+  
+  /**
+   * Given the AST with TOK_LATERAL_VIEW as the root, get the alias for the
+   * table or subquery in the lateral view and also make a mapping from the
+   * alias to all the lateral view AST's
+   * 
+   * @param qb
+   * @param lateralView
+   * @return the alias for the table/subquery
+   * @throws SemanticException
+   */
+  
+  private String processLateralView(QB qb, ASTNode lateralView) 
+  throws SemanticException {
+    int numChildren = lateralView.getChildCount();
+    
+    assert(numChildren == 2);
+    ASTNode next = (ASTNode) lateralView.getChild(1);
+    
+    String alias = null;
+    
+    switch(next.getToken().getType()) {
+    case HiveParser.TOK_TABREF:
+      alias = processTable(qb, next);
+      break;
+    case HiveParser.TOK_SUBQUERY:
+      alias = processSubQuery(qb, next);
+      break;
+    case HiveParser.TOK_LATERAL_VIEW:
+      alias = processLateralView(qb, next);
+      break;
+    default:
+      throw new SemanticException(
+          ErrorMsg.LATERAL_VIEW_INVALID_CHILD.getMsg(lateralView));
+    }
+    qb.getParseInfo().addLateralViewForAlias(alias, lateralView);
+    return alias;
+  }
 
+  /**
+   * Phase 1: (including, but not limited to):
+   * 
+   * 1. Gets all the aliases for all the tables / subqueries and makes the
+   *    appropriate mapping in aliasToTabs, aliasToSubq
+   * 2. Gets the location of the destination and names the clase "inclause" + i
+   * 3. Creates a map from a string representation of an aggregation tree to the
+   *    actual aggregation AST
+   * 4. Creates a mapping from the clause name to the select expression AST in
+   *    destToSelExpr
+   * 5. Creates a mapping from a table alias to the lateral view AST's in 
+   *    aliasToLateralViews
+   *    
+   * @param ast
+   * @param qb
+   * @param ctx_1
+   * @throws SemanticException
+   */
   @SuppressWarnings({"fallthrough", "nls"})
   public void doPhase1(ASTNode ast, QB qb, Phase1Ctx ctx_1)
       throws SemanticException {
@@ -504,14 +569,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (child_count != 1)
           throw new SemanticException("Multiple Children " + child_count);
 
-        // Check if this is a subquery
+        // Check if this is a subquery / lateral view
         ASTNode frm = (ASTNode) ast.getChild(0);
-        if (frm.getToken().getType() == HiveParser.TOK_TABREF)
+        if (frm.getToken().getType() == HiveParser.TOK_TABREF) {
           processTable(qb, frm);
-        else if (frm.getToken().getType() == HiveParser.TOK_SUBQUERY)
+        } else if (frm.getToken().getType() == HiveParser.TOK_SUBQUERY) {
           processSubQuery(qb, frm);
-        else if (isJoinToken(frm))
-        {
+        } else if (frm.getToken().getType() == HiveParser.TOK_LATERAL_VIEW) {
+          processLateralView(qb, frm);
+        } else if (isJoinToken(frm)) {
           processJoin(qb, frm);
           qbp.setJoinExpr(frm);
         }
@@ -695,7 +761,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     return false;
   }
-
+  
   @SuppressWarnings("nls")
   private void parseJoinCondPopulateAlias(QBJoinTree joinTree,
       ASTNode condn, Vector<String> leftAliases, Vector<String> rightAliases,
@@ -748,7 +814,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ArrayList<String> fields1 = null;
         // if it is a dot operator, remember the field name of the rhs of the left semijoin
         if (joinTree.getNoSemiJoin() == false &&
-            condn.getToken().getText().equals("." )) {
+            condn.getToken().getType() == HiveParser.DOT) {
           // get the semijoin rhs table name and field name
           fields1 = new ArrayList<String>();
           int rhssize = rightAliases.size();
@@ -1338,12 +1404,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return false;
   }
 
-  @SuppressWarnings("nls")
-  private Operator genSelectPlan(String dest, QB qb,
-    Operator input) throws SemanticException {
-
+  private Operator<?> genSelectPlan(String dest, QB qb,
+      Operator<?> input) throws SemanticException {
     ASTNode selExprList = qb.getParseInfo().getSelForClause(dest);
-
+    
+    Operator<?> op = genSelectPlan(selExprList, qb, input);
+    LOG.debug("Created Select Plan for clause: " + dest);
+    return op;
+  }
+  @SuppressWarnings("nls")
+  private Operator<?> genSelectPlan(ASTNode selExprList, QB qb,
+    Operator<?> input) throws SemanticException { 
+    LOG.debug("tree: " + selExprList.toStringTree());
+    
     ArrayList<exprNodeDesc> col_list = new ArrayList<exprNodeDesc>();
     RowResolver out_rwsch = new RowResolver();
     ASTNode trfm = null;
@@ -1363,17 +1436,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (isInTransform) {
       trfm = (ASTNode) selExprList.getChild(posn).getChild(0);
     }
-
-    // Detect a UDTF by looking up the function name in the registry.
-    // Not as clean TRANSFORM due to the lack of a special token.
+    
+    // Detect queries of the form SELECT udtf(col) AS ...
+    // by looking for a function as the first child, and then checking to see 
+    // if the function is a Generic UDTF. It's not as clean as TRANSFORM due to
+    // the lack of a special token.
     boolean isUDTF = false;
-    String udtfOutputColAlias = null;
+    String udtfTableAlias = null;
+    ArrayList<String> udtfColAliases = new ArrayList<String>();
     ASTNode udtfExpr = (ASTNode) selExprList.getChild(posn).getChild(0);
     GenericUDTF genericUDTF = null;
 
     if (udtfExpr.getType() == HiveParser.TOK_FUNCTION) {
       String funcName =
-        TypeCheckProcFactory.DefaultExprProcessor.getFunctionText(udtfExpr, true);
+        TypeCheckProcFactory.DefaultExprProcessor.getFunctionText(
+            udtfExpr, true);
       FunctionInfo fi = FunctionRegistry.getFunctionInfo(funcName);
       if (fi != null) {
         genericUDTF = fi.getGenericUDTF();
@@ -1386,14 +1463,32 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (selExprList.getChildCount() > 1) {
         throw new SemanticException(ErrorMsg.UDTF_MULTIPLE_EXPR.getMsg());
       }
-      //Require an AS for UDTFs
-      if (((ASTNode) selExprList.getChild(posn)).getChildCount() != 2 ||
-          selExprList.getChild(posn).getChild(1).getType() != HiveParser.Identifier ){
+      // Require an AS for UDTFs for column aliases
+      ASTNode selExpr = (ASTNode) selExprList.getChild(posn);
+      if (selExpr.getChildCount() < 2) {        
         throw new SemanticException(ErrorMsg.UDTF_REQUIRE_AS.getMsg());
       }
-      udtfOutputColAlias = unescapeIdentifier(selExprList.getChild(posn).getChild(1).getText());
+      // Get the column / table aliases from the expression. Start from 1 as
+      // 0 is the TOK_FUNCTION
+      for (int i=1; i<selExpr.getChildCount(); i++) {
+        ASTNode selExprChild = (ASTNode) selExpr.getChild(i);
+        switch (selExprChild.getType()) {
+        case HiveParser.Identifier:
+          udtfColAliases.add(unescapeIdentifier(selExprChild.getText()));
+          break;
+        case HiveParser.TOK_TABALIAS:
+          assert(selExprChild.getChildCount() == 1);
+          udtfTableAlias = 
+            unescapeIdentifier(selExprChild.getChild(0).getText());
+          break;
+        default:
+          assert(false);
+        }
+      }
+      LOG.debug("UDTF table alias is " + udtfTableAlias);
+      LOG.debug("UDTF col aliases are " + udtfColAliases);
     }
-
+    
     // The list of expressions after SELECT or SELECT TRANSFORM.
     ASTNode exprList;
     if (isInTransform) {
@@ -1406,7 +1501,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     LOG.debug("genSelectPlan: input = " + inputRR.toString());
 
-    // For UDTF's, skip the function name
+    // For UDTF's, skip the function name to get the expressions
     int startPosn = isUDTF ? posn + 1 : posn;
 
     // Iterate over all expression (either after SELECT, or in SELECT TRANSFORM)
@@ -1415,6 +1510,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // child can be EXPR AS ALIAS, or EXPR.
       ASTNode child = (ASTNode) exprList.getChild(i);
       boolean hasAsClause = (!isInTransform) && (child.getChildCount() == 2);
+
+      // EXPR AS (ALIAS,...) parses, but is only allowed for UDTF's
+      if (!isUDTF && child.getChildCount() > 2) {
+        throw new SemanticException(ErrorMsg.INVALID_AS.getMsg());
+      }
+      
       // The real expression
       ASTNode expr;
       String tabAlias;
@@ -1431,7 +1532,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // Get rid of TOK_SELEXPR
         expr = (ASTNode)child.getChild(0);
       }
-
+      
       if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
         pos = genColListRegex(".*",
             expr.getChildCount() == 0 ? null : unescapeIdentifier(expr.getChild(0).getText().toLowerCase()),
@@ -1496,11 +1597,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       output = genScriptPlan(trfm, qb, output);
     }
 
-    if(isUDTF) {
-      output = genUDTFPlan(genericUDTF, udtfOutputColAlias, qb, output);
+    if (isUDTF) {
+      output = genUDTFPlan(genericUDTF, udtfTableAlias, udtfColAliases, qb, 
+                           output);
     }
-    LOG.debug("Created Select Plan for clause: " + dest + " row schema: " + out_rwsch.toString());
-
+    LOG.debug("Created Select Plan row schema: " + out_rwsch.toString());
     return output;
   }
 
@@ -2877,8 +2978,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return limitMap;
   }
 
-  private Operator genUDTFPlan(GenericUDTF genericUDTF, String udtfOutputColumnAlias,
-      QB qb, Operator input) throws SemanticException {
+  private Operator genUDTFPlan(GenericUDTF genericUDTF, String outputTableAlias,
+      ArrayList<String> colAliases, QB qb, Operator input) 
+      throws SemanticException {
 
     // No GROUP BY / DISTRIBUTE BY / SORT BY / CLUSTER BY
     QBParseInfo qbp = qb.getParseInfo();
@@ -2894,9 +2996,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (!qbp.getDestToClusterBy().isEmpty()) {
       throw new SemanticException(ErrorMsg.UDTF_NO_CLUSTER_BY.getMsg());
     }
+    if (!qbp.getAliasToLateralViews().isEmpty()) {
+      throw new SemanticException(ErrorMsg.UDTF_LATERAL_VIEW.getMsg());
+    }
+    
+    LOG.debug("Table alias: " + outputTableAlias + " Col aliases: " + colAliases);
+    
+    // Use the RowResolver from the input operator to generate a input 
+    // ObjectInspector that can be used to initialize the UDTF. Then, the 
 
-    // Use the RowResolver from the input operator to generate a input
-    // ObjectInspector that can be used to initialize the UDTF. Then, the
     // resulting output object inspector can be used to make the RowResolver
     // for the UDTF operator
     RowResolver selectRR = opParseCtx.get(input).getRR();
@@ -2910,24 +3018,47 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       colOIs[i] = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(
           inputCols.get(i).getType());
     }
-    ObjectInspector outputOI = genericUDTF.initialize(colOIs);
+    StructObjectInspector outputOI = genericUDTF.initialize(colOIs);
+   
+    // Make sure that the number of column aliases in the AS clause matches
+    // the number of columns output by the UDTF
+    int numUdtfCols = outputOI.getAllStructFieldRefs().size();
+    int numSuppliedAliases = colAliases.size();
+    if (numUdtfCols != numSuppliedAliases) {
+      throw new SemanticException(ErrorMsg.UDTF_ALIAS_MISMATCH.getMsg(
+          "expected " + numUdtfCols + " aliases " +
+          "but got " + numSuppliedAliases));
+    }
+   
+    // Generate the output column info's / row resolver using internal names.
+    ArrayList<ColumnInfo> udtfCols = new ArrayList<ColumnInfo>();
 
-    ColumnInfo outputCol =
-      new ColumnInfo(udtfOutputColumnAlias,
-          TypeInfoUtils.getTypeInfoFromObjectInspector(outputOI), null, false);
-
+    Iterator<String> colAliasesIter = colAliases.iterator();
+    for (StructField sf : outputOI.getAllStructFieldRefs()) {
+      
+      String colAlias = colAliasesIter.next();
+      assert(colAlias != null);
+      
+      // Since the UDTF operator feeds into a LVJ operator that will rename
+      // all the internal names, we can just use field name from the UDTF's OI
+      // as the internal name
+      ColumnInfo col = new ColumnInfo(sf.getFieldName(), 
+          TypeInfoUtils.getTypeInfoFromObjectInspector(
+              sf.getFieldObjectInspector()),
+          outputTableAlias, false);
+      udtfCols.add(col);
+    }
+    
     // Create the row resolver for this operator from the output columns
     RowResolver out_rwsch = new RowResolver();
-
-    out_rwsch.put(
-        null,
-        outputCol.getInternalName(),
-        outputCol);
+    for (int i=0; i<udtfCols.size(); i++) {
+      out_rwsch.put(outputTableAlias, colAliases.get(i), udtfCols.get(i));
+    }
 
     // Add the UDTFOperator to the operator DAG
-    Operator udtf =
+    Operator<?> udtf =
       putOpInsertMap(OperatorFactory.getAndMakeChild(
-                       new udtfDesc(genericUDTF, udtfOutputColumnAlias),
+                       new udtfDesc(genericUDTF),  
                        new RowSchema(out_rwsch.getColumnInfos()),
                                      input), out_rwsch);
     return udtf;
@@ -3656,7 +3787,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     filters.add(new Vector<ASTNode>());
     joinTree.setFilters(filters);
 
-    ASTNode joinCond = (ASTNode) joinParseTree.getChild(2);
+    ASTNode joinCond = (ASTNode) joinParseTree.getChild(2); 
     Vector<String> leftSrc = new Vector<String>();
     parseJoinCondition(joinTree, joinCond, leftSrc);
     if (leftSrc.size() == 1)
@@ -4521,6 +4652,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (String alias : qb.getTabAliases()) {
       aliasToOpInfo.put(alias, genTablePlan(alias, qb));
     }
+    
+    // For all the source tables that have a lateral view, attach the
+    // appropriate operators to the TS
+    genLateralViewPlans(aliasToOpInfo, qb);
 
     Operator srcOpInfo = null;
 
@@ -4553,6 +4688,110 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return bodyOpInfo;
   }
 
+  /**
+   * Generates the operator DAG needed to implement lateral views and attaches
+   * it to the TS operator.
+   * 
+   * @param aliasToOpInfo A mapping from a table alias to the TS operator. This
+   *                      function replaces the operator mapping as necessary
+   * @param qb
+   * @throws SemanticException
+   */
+ 
+  void genLateralViewPlans(HashMap<String, Operator> aliasToOpInfo, QB qb) 
+  throws SemanticException {
+    Map<String, ArrayList<ASTNode>> aliasToLateralViews =
+      qb.getParseInfo().getAliasToLateralViews();
+    for (Entry<String, Operator> e : aliasToOpInfo.entrySet()) {
+      String alias = e.getKey();
+      // See if the alias has a lateral view. If so, chain the lateral view
+      // operator on
+      ArrayList<ASTNode> lateralViews = aliasToLateralViews.get(alias);
+      if (lateralViews != null) {
+        Operator op = e.getValue();
+        
+        for (ASTNode lateralViewTree : aliasToLateralViews.get(alias)) {
+          // There are 2 paths from the TS operator (or a previous LVJ operator)
+          // to the same LateralViewJoinOperator.
+          // TS -> SelectOperator(*) -> LateralViewJoinOperator
+          // TS -> SelectOperator (gets cols for UDTF) -> UDTFOperator0
+          //    -> LateralViewJoinOperator
+
+          // The order in which the two paths are added is important. The
+          // lateral view join operator depends on having the select operator
+          // give it the row first.
+
+          // Get the all path by making a select(*)
+          RowResolver allPathRR = opParseCtx.get(op).getRR();
+          Operator allPath =
+            putOpInsertMap(OperatorFactory.getAndMakeChild(
+                new selectDesc(true),
+                new RowSchema(allPathRR.getColumnInfos()),
+                op), allPathRR); 
+
+          // Get the UDTF Path
+          QB blankQb = new QB(null, null, false);
+          Operator udtfPath = 
+            genSelectPlan((ASTNode)lateralViewTree.getChild(0), blankQb, op);
+          RowResolver udtfPathRR = opParseCtx.get(udtfPath).getRR();
+
+
+          // Merge the two into the lateral view join 
+          // The cols of the merged result will be the combination of both the
+          // cols of the UDTF path and the cols of the all path. The internal
+          // names have to be changed to avoid conflicts
+
+          RowResolver lateralViewRR = new RowResolver();
+          ArrayList<String> outputInternalColNames = new ArrayList<String>();
+          
+          LVmergeRowResolvers(allPathRR, lateralViewRR, 
+              outputInternalColNames);
+          LVmergeRowResolvers(udtfPathRR, lateralViewRR, 
+              outputInternalColNames);
+
+          Operator lateralViewJoin =
+            putOpInsertMap(OperatorFactory.getAndMakeChild(
+                new lateralViewJoinDesc(outputInternalColNames),
+                new RowSchema(lateralViewRR.getColumnInfos()),
+                allPath, udtfPath), lateralViewRR); 
+          op = lateralViewJoin;
+        }
+        e.setValue(op);
+      }
+    }
+  }
+  
+  /**
+   * A helper function that gets all the columns and respective aliases in the
+   * source and puts them into dest. It renames the internal names of the 
+   * columns based on getColumnInternalName(position).
+   * 
+   * Note that this helper method relies on RowResolver.getColumnInfos()
+   * returning the columns in the same order as they will be passed in the 
+   * operator DAG.
+   * 
+   * @param source
+   * @param dest
+   * @param outputColNames - a list to which the new internal column names will
+   *                         be added, in the same order as in the dest row
+   *                         resolver
+   */
+  private void LVmergeRowResolvers(RowResolver source, RowResolver dest,
+      ArrayList<String> outputInternalColNames) {   
+    Vector<ColumnInfo> cols = source.getColumnInfos();
+    for (ColumnInfo c : cols) {
+      String internalName = 
+        getColumnInternalName(outputInternalColNames.size());
+      outputInternalColNames.add(internalName);
+      ColumnInfo newCol = new ColumnInfo(internalName, c.getType(),
+          c.getTabAlias(), c.getIsPartitionCol());
+      String [] tableCol = source.reverseLookup(c.getInternalName());
+      String tableAlias = tableCol[0];
+      String colAlias = tableCol[1];
+      dest.put(tableAlias, colAlias, newCol);
+    }
+  }
+  
   private Operator<? extends Serializable> getReduceSink(Operator<? extends Serializable> top) {
     if (top.getClass() == ReduceSinkOperator.class) {
       // Get the operator following the reduce sink
@@ -4968,7 +5207,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @throws SemanticException
    */
   @SuppressWarnings("nls")
-  public static exprNodeDesc genExprNodeDesc(ASTNode expr, RowResolver input)
+  public exprNodeDesc genExprNodeDesc(ASTNode expr, RowResolver input)
   throws SemanticException {
     //  We recursively create the exprNodeDesc.  Base cases:  when we encounter
     //  a column ref, we convert that into an exprNodeColumnDesc;  when we encounter

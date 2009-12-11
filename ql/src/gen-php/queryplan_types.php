@@ -50,6 +50,7 @@ $GLOBALS['E_OperatorType'] = array(
   'REDUCESINK' => 11,
   'UNION' => 12,
   'UDTF' => 13,
+  'LATERALVIEWJOIN' => 14,
 );
 
 final class OperatorType {
@@ -67,6 +68,7 @@ final class OperatorType {
   const REDUCESINK = 11;
   const UNION = 12;
   const UDTF = 13;
+  const LATERALVIEWJOIN = 14;
   static public $__names = array(
     0 => 'JOIN',
     1 => 'MAPJOIN',
@@ -82,6 +84,7 @@ final class OperatorType {
     11 => 'REDUCESINK',
     12 => 'UNION',
     13 => 'UDTF',
+    14 => 'LATERALVIEWJOIN',
   );
 }
 

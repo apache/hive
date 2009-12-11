@@ -113,8 +113,12 @@ public enum ErrorMsg {
   UDTF_NO_SORT_BY("SORT BY is not supported with a UDTF in the SELECT clause"),
   UDTF_NO_CLUSTER_BY("CLUSTER BY is not supported with a UDTF in the SELECT clause"),
   UDTF_NO_DISTRIBUTE_BY("DISTRUBTE BY is not supported with a UDTF in the SELECT clause"),
-  UDTF_INVALID_LOCATION("UDTF's are not supported outside the SELECT clause, nor nested in expressions");
-  
+  UDTF_INVALID_LOCATION("UDTF's are not supported outside the SELECT clause, nor nested in expressions"),
+  UDTF_LATERAL_VIEW("UDTF's cannot be in a select expression when there is a lateral view"),
+  UDTF_ALIAS_MISMATCH("The number of aliases supplied in the AS clause does not match the number of columns output by the UDTF"),
+  LATERAL_VIEW_WITH_JOIN("Join with a lateral view is not supported"),
+  LATERAL_VIEW_INVALID_CHILD("Lateral view AST with invalid child"),
+  INVALID_AS("AS clause has an invalid number of aliases");
   private String mesg;
   private String SQLState;
 

@@ -55,6 +55,7 @@ public class OperatorFactory {
     opvec.add(new opTuple<tableScanDesc> (tableScanDesc.class, TableScanOperator.class));
     opvec.add(new opTuple<unionDesc> (unionDesc.class, UnionOperator.class));
     opvec.add(new opTuple<udtfDesc> (udtfDesc.class, UDTFOperator.class));
+    opvec.add(new opTuple<lateralViewJoinDesc>(lateralViewJoinDesc.class, LateralViewJoinOperator.class));
   }
               
 

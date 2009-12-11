@@ -57,6 +57,12 @@ public class QBParseInfo {
 
   private HashMap<String, ASTNode> destToSortby;
 
+  /**
+   * Maping from table/subquery aliases to all the associated lateral view
+   * nodes
+   */
+  private HashMap<String, ArrayList<ASTNode>> aliasToLateralViews;
+  
   /* Order by clause */
   private HashMap<String, ASTNode> destToOrderby;
   private HashMap<String, Integer>    destToLimit;
@@ -88,6 +94,8 @@ public class QBParseInfo {
     this.alias = alias;
     this.isSubQ = isSubQ;
     this.outerQueryLimit = -1;
+    
+    this.aliasToLateralViews = new HashMap<String, ArrayList<ASTNode>>();
   }
 
   public void setAggregationExprsForClause(String clause, LinkedHashMap<String, ASTNode> aggregationTrees) {
@@ -290,7 +298,8 @@ public class QBParseInfo {
        (joinExpr != null) ||
        (!nameToSample.isEmpty()) ||
        (!destToGroupby.isEmpty()) ||
-       (!destToClusterby.isEmpty()))
+       (!destToClusterby.isEmpty()) ||
+       (!aliasToLateralViews.isEmpty()))
       return false;
     
     Iterator<Map.Entry<String, LinkedHashMap<String, ASTNode>>> aggrIter = destToAggregationExprs.entrySet().iterator();
@@ -342,5 +351,22 @@ public class QBParseInfo {
 
   public ASTNode getHints() {
     return hints;
+  }
+  
+  public Map<String, ArrayList<ASTNode>> getAliasToLateralViews() {
+    return this.aliasToLateralViews;
+  }
+  public List<ASTNode> getLateralViewsForAlias(String alias) {
+    return aliasToLateralViews.get(alias.toLowerCase());
+  }
+  
+  public void addLateralViewForAlias(String alias, ASTNode lateralView) {
+    String lowerAlias = alias.toLowerCase();
+    ArrayList<ASTNode> lateralViews = aliasToLateralViews.get(lowerAlias);
+    if (lateralViews == null) {
+      lateralViews = new ArrayList<ASTNode>();
+      aliasToLateralViews.put(alias, lateralViews);
+    }
+    lateralViews.add(lateralView);
   }
 }

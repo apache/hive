@@ -21,12 +21,13 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 /**
  * A Generic User-defined Table Generating Function (UDTF)
  * 
- * Generates a variable number of output rows for a variable number of input
- * rows. Useful for explode(array()), histograms, etc
+ * Generates a variable number of output rows for a single input row. Useful for
+ * explode(array)...
  */
 
 public abstract class GenericUDTF {
@@ -37,20 +38,25 @@ public abstract class GenericUDTF {
    * instance.
    * 
    * @param args    An array of ObjectInspectors for the arguments
-   * @return        ObjectInspector for the output
+   * @return        A StructObjectInspector for output. The output struct
+   *                represents a row of the table where the fields of the stuct
+   *                are the columns. The field names are unimportant as they
+   *                will be overridden by user supplied column aliases. 
    */
-  public abstract ObjectInspector initialize(ObjectInspector [] argOIs) 
+  public abstract StructObjectInspector initialize(ObjectInspector [] argOIs) 
   throws UDFArgumentException;
   
   /**
-   * Give a a set of arguments for the UDTF to process.
+   * Give a set of arguments for the UDTF to process.
    * 
    * @param o       object array of arguments
    */
   public abstract void process(Object [] args) throws HiveException;
   
   /**
-   * Notify the UDTF that there are no more rows to process.
+   * Called to notify the UDTF that there are no more rows to process. Note
+   * that forward() should not be called in this function. Only clean up code
+   * should be run.
    */
   public abstract void close() throws HiveException;
   
@@ -66,12 +72,12 @@ public abstract class GenericUDTF {
   }
   
   /**
-   * Passes output data to collector
+   * Passes an output row to the collector
    * 
    * @param o
    * @throws HiveException
    */
-  final void forward(Object o) throws HiveException {
+  protected final void forward(Object o) throws HiveException {
     collector.collect(o);
   }
 

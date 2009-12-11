@@ -146,6 +146,8 @@ TOK_USERSCRIPTCOLSCHEMA;
 TOK_RECORDREADER;
 TOK_RECORDWRITER;
 TOK_LEFTSEMIJOIN;
+TOK_LATERAL_VIEW;
+TOK_TABALIAS;
 }
 
 
@@ -819,7 +821,7 @@ selectItem
 @init { msgs.push("selection target"); }
 @after { msgs.pop(); }
     :
-    ( selectExpression  (KW_AS? Identifier)?) -> ^(TOK_SELEXPR selectExpression Identifier?)
+    ( selectExpression  ((KW_AS? Identifier) | (KW_AS LPAREN Identifier (COMMA Identifier)* RPAREN))?) -> ^(TOK_SELEXPR selectExpression Identifier*) 
     ;
 
 trfmClause
@@ -835,7 +837,7 @@ trfmClause
     outSerde=rowFormat outRec=recordReader
     -> ^(TOK_TRANSFORM selectExpressionList $inSerde $inRec StringLiteral $outSerde $outRec aliasList? columnNameTypeList?)
     ;
-    
+
 selectExpression
 @init { msgs.push("select expression"); }
 @after { msgs.pop(); }
@@ -926,11 +928,25 @@ joinToken
     | KW_LEFT  KW_SEMI  KW_JOIN   -> TOK_LEFTSEMIJOIN
     ;
 
+lateralView
+@init {msgs.push("lateral view"); }
+@after {msgs.pop(); }
+	:
+	KW_LATERAL KW_VIEW function tableAlias KW_AS Identifier (COMMA Identifier)* -> ^(TOK_LATERAL_VIEW ^(TOK_SELECT ^(TOK_SELEXPR function Identifier+ tableAlias)))
+	;
+
+tableAlias
+@init {msgs.push("table alias"); }
+@after {msgs.pop(); }
+    :
+    Identifier -> ^(TOK_TABALIAS Identifier)
+    ;
+
 fromSource
 @init { msgs.push("from source"); }
 @after { msgs.pop(); }
     :
-    (tableSource | subQuerySource)
+    (tableSource | subQuerySource) (lateralView^)*
     ;
     
 tableSample
@@ -1469,7 +1485,7 @@ KW_TRIGGER: 'TRIGGER';
 KW_RECORDREADER: 'RECORDREADER';
 KW_RECORDWRITER: 'RECORDWRITER';
 KW_SEMI: 'SEMI';
-
+KW_LATERAL: 'LATERAL';
 
 // Operators
 // NOTE: if you add a new function/operator, add it to sysFuncNames so that describe function _FUNC_ will work.
