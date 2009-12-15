@@ -321,6 +321,9 @@ Trunk -  Unreleased
 
     HIVE-973. Support nested types in custom scripts. (Namit Jain via zshao)
 
+    HIVE-991 union with 200 kids fail
+    (namit via He Yongqiang)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
