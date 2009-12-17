@@ -324,6 +324,9 @@ Trunk -  Unreleased
     HIVE-991 union with 200 kids fail
     (namit via He Yongqiang)
 
+    HIVE-993 Remove duplicate conversion for MapJoin
+    (He Yongqiang via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

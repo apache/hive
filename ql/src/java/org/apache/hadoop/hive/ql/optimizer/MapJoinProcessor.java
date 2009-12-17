@@ -145,8 +145,6 @@ public class MapJoinProcessor implements Transform {
       pos++;
     }
 
-    int keyLength = 0;
-    
     //get the join keys from old parent ReduceSink operators
     for (pos = 0; pos < newParentOps.size(); pos++) {
       ReduceSinkOperator oldPar = (ReduceSinkOperator)oldReduceSinkParentOps.get(pos);
@@ -191,27 +189,6 @@ public class MapJoinProcessor implements Transform {
       valueExprMap.put(new Byte((byte)pos), values);      
     }
 
-    // implicit type conversion hierarchy
-    for (int k = 0; k < keyLength; k++) {
-      // Find the common class for type conversion
-      TypeInfo commonType = keyExprMap.get(new Byte((byte)0)).get(k).getTypeInfo();
-      for (int i=1; i < newParentOps.size(); i++) {
-        TypeInfo a = commonType;
-        TypeInfo b = keyExprMap.get(new Byte((byte)i)).get(k).getTypeInfo(); 
-        commonType = FunctionRegistry.getCommonClassForComparison(a, b);
-        if (commonType == null) {
-          throw new SemanticException("Cannot do equality join on different types: " + a.getTypeName() + " and " + b.getTypeName());
-        }
-      }
-      
-      // Add implicit type conversion if necessary
-      for (int i=0; i < newParentOps.size(); i++) {
-        if (!commonType.equals(keyExprMap.get(new Byte((byte)i)).get(k).getTypeInfo())) {
-          keyExprMap.get(new Byte((byte)i)).set(k, TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc(commonType.getTypeName(), keyExprMap.get(new Byte((byte)i)).get(k)));
-        }
-      }
-    }
-    
     org.apache.hadoop.hive.ql.plan.joinCond[] joinCondns = op.getConf().getConds();
 
     Operator[] newPar = new Operator[newParentOps.size()];
