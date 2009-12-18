@@ -742,7 +742,11 @@ public class Hive {
       for(int i=0; i<srcs.length; i++) {
         FileStatus [] items = fs.listStatus(srcs[i].getPath());
         for(int j=0; j<items.length; j++) {
-          fs.rename(items[j].getPath(), new Path(destf, items[j].getPath().getName()));
+          Path source = items[j].getPath();
+          Path target = new Path(destf, items[j].getPath().getName());
+          if (!fs.rename(source, target)) {
+            throw new IOException("Cannot move " + source + " to " + target);
+          }
         }
       }
     } catch (IOException e) {

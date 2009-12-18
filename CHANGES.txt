@@ -330,6 +330,9 @@ Trunk -  Unreleased
     HIVE-993 commons-dhcp not working
     (Bennie Schut via namit)
 
+    HIVE-595 throw error if rename fails
+    (Zheng Shao via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
