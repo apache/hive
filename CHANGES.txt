@@ -327,6 +327,9 @@ Trunk -  Unreleased
     HIVE-993 Remove duplicate conversion for MapJoin
     (He Yongqiang via namit)
 
+    HIVE-993 commons-dhcp not working
+    (Bennie Schut via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

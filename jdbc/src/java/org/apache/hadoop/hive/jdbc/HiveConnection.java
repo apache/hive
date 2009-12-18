@@ -233,8 +233,7 @@ public class HiveConnection implements java.sql.Connection {
    */
 
   public boolean getAutoCommit() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return true;
   }
 
   /* (non-Javadoc)

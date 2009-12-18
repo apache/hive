@@ -100,7 +100,7 @@ public class HiveDriver implements java.sql.Driver {
    */
 
   public boolean acceptsURL(String url) throws SQLException {
-    return Pattern.matches(URL_PREFIX, url);
+    return Pattern.matches(URL_PREFIX+".*", url);
   }
 
 

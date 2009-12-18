@@ -39,8 +39,7 @@ public class HiveDataSource implements DataSource {
    */
 
   public Connection getConnection() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return getConnection("","");
   }
 
   /* (non-Javadoc)
