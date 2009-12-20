@@ -4523,6 +4523,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (tabBucketCols.size() == 0 && sampleExprs.size() == 0) {
           throw new SemanticException(ErrorMsg.NON_BUCKETED_TABLE.getMsg() + " " + tab.getName());
       }
+      
+      if (num > den) {
+        throw new SemanticException(ErrorMsg.BUCKETED_NUMBERATOR_BIGGER_DENOMINATOR.getMsg()  + " " + tab.getName());
+      }
 
       // check if a predicate is needed
       // predicate is needed if either input pruning is not enough
@@ -4553,7 +4557,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // check if input pruning is enough
       if ((sampleExprs == null || sampleExprs.size() == 0 || colsEqual)
-          && (num == den || den <= numBuckets && numBuckets % den == 0)) {
+          && (num == den || (den % numBuckets == 0 || numBuckets % den == 0))) {
 
         // input pruning is enough; add the filter for the optimizer to use it later
         LOG.info("No need for sample filter");

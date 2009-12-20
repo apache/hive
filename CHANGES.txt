@@ -327,11 +327,14 @@ Trunk -  Unreleased
     HIVE-993 Remove duplicate conversion for MapJoin
     (He Yongqiang via namit)
 
-    HIVE-993 commons-dhcp not working
+    HIVE-992 commons-dhcp not working
     (Bennie Schut via namit)
 
     HIVE-595 throw error if rename fails
     (Zheng Shao via namit)
+
+    HIVE-999 bug in sampling if denominator != numBuckets
+    (He Yongqiang via namit)
 
 Release 0.4.0 -  Unreleased
 

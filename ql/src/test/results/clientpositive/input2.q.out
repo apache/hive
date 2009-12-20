@@ -39,6 +39,7 @@ src_json
 src_sequencefile
 src_thrift
 srcbucket
+srcbucket2
 srcpart
 test2a
 test2b
@@ -57,6 +58,7 @@ src_json
 src_sequencefile
 src_thrift
 srcbucket
+srcbucket2
 srcpart
 test2b
 PREHOOK: query: DROP TABLE TEST2b

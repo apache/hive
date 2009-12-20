@@ -238,7 +238,7 @@ public class QTestUtil {
     String warehousePath = ((new URI(testWarehouse)).getPath());
     // Drop any tables that remain due to unsuccessful runs
     for(String s: new String [] {"src", "src1", "src_json", "src_thrift", "src_sequencefile",
-                                 "srcpart", "srcbucket", "dest1", "dest2",
+                                 "srcpart", "srcbucket","srcbucket2", "dest1", "dest2",
                                  "dest3", "dest4", "dest4_sequencefile",
                                  "dest_j1", "dest_j2", "dest_g1", "dest_g2",
                                  "fetchtask_ioexception"}) {
@@ -312,6 +312,16 @@ public class QTestUtil {
       newfpath = new Path(tmppath, fname);
       fs.copyFromLocalFile(false, true, fpath, newfpath);
       runLoadCmd("LOAD DATA INPATH '" +  newfpath.toString() + "' INTO TABLE srcbucket");
+    }
+    
+    runCreateTableCmd("CREATE TABLE srcbucket2(key int, value string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE");
+    //db.createTable("srcbucket", cols, null, TextInputFormat.class, IgnoreKeyTextOutputFormat.class, 2, bucketCols);
+    srcTables.add("srcbucket2");
+    for (String fname: new String [] {"srcbucket20.txt", "srcbucket21.txt", "srcbucket22.txt", "srcbucket23.txt"}) {
+      fpath = new Path(testFiles, fname);
+      newfpath = new Path(tmppath, fname);
+      fs.copyFromLocalFile(false, true, fpath, newfpath);
+      runLoadCmd("LOAD DATA INPATH '" +  newfpath.toString() + "' INTO TABLE srcbucket2");
     }
 
     for (String tname: new String [] {"src", "src1"}) {

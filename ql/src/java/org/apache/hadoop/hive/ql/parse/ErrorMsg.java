@@ -97,6 +97,7 @@ public enum ErrorMsg {
   INVALID_MAPJOIN_HINT("neither table specified as map-table"),
   INVALID_MAPJOIN_TABLE("result of a union cannot be a map table"),
   NON_BUCKETED_TABLE("Sampling Expression Needed for Non-Bucketed Table"),
+  BUCKETED_NUMBERATOR_BIGGER_DENOMINATOR("Numberator should not be bigger than denaminator in sample clause for Table"),
   NEED_PARTITION_ERROR("need to specify partition columns because the destination table is partitioned."),
   CTAS_CTLT_COEXISTENCE("Create table command does not allow LIKE and AS-SELECT in the same command"),
   CTAS_COLLST_COEXISTENCE("Create table as select command cannot specify the list of columns for the target table."),

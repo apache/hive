@@ -43,6 +43,7 @@ src_json
 src_sequencefile
 src_thrift
 srcbucket
+srcbucket2
 srcpart
 test3a
 test3b
@@ -126,6 +127,7 @@ src_json
 src_sequencefile
 src_thrift
 srcbucket
+srcbucket2
 srcpart
 test3a
 test3c
@@ -163,7 +165,7 @@ POSTHOOK: type: DESCTABLE
 r1	int	
 r2	double	
 	 	 
-Detailed Table Information	Table(tableName:test3c, dbName:default, owner:njain, createTime:1253780443, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:r1, type:int, comment:null), FieldSchema(name:r2, type:double, comment:null)], location:file:/data/users/njain/hive5/hive5/build/ql/test/data/warehouse/test3c, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=njain,last_modified_time=1253780444})	
+Detailed Table Information	Table(tableName:test3c, dbName:default, owner:njain, createTime:1261267074, lastAccessTime:0, retention:0, sd:StorageDescriptor(cols:[FieldSchema(name:r1, type:int, comment:null), FieldSchema(name:r2, type:double, comment:null)], location:file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/test3c, inputFormat:org.apache.hadoop.mapred.TextInputFormat, outputFormat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat, compressed:false, numBuckets:-1, serdeInfo:SerDeInfo(name:null, serializationLib:org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, parameters:{serialization.format=1}), bucketCols:[], sortCols:[], parameters:{}), partitionKeys:[], parameters:{last_modified_by=njain,last_modified_time=1261267075,transient_lastDdlTime=1261267075})	
 PREHOOK: query: DROP TABLE TEST3a
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE TEST3a
