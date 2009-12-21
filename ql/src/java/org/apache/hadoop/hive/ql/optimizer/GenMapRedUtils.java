@@ -459,6 +459,8 @@ public class GenMapRedUtils {
       }
 
       for (Path p: paths) {
+        if(p == null)
+          continue;
         String path = p.toString();
         LOG.debug("Adding " + path + " of table" + alias_id);
 

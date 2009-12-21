@@ -329,6 +329,8 @@ public class Partition {
       for (FileStatus src: srcs) {
         LOG.info("Got file: " + src.getPath());
       }
+      if(srcs.length == 0)
+        return null;
       return srcs[bucketNum].getPath();
     }
     catch (Exception e) {

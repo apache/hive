@@ -336,6 +336,9 @@ Trunk -  Unreleased
     HIVE-999 bug in sampling if denominator != numBuckets
     (He Yongqiang via namit)
 
+    HIVE-1000 bug in sampling if buckted table is empty
+    (He Yongqiang via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
