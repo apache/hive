@@ -339,6 +339,9 @@ Trunk -  Unreleased
     HIVE-1000 bug in sampling if buckted table is empty
     (He Yongqiang via namit)
 
+    HIVE-1001 CombinedHiveInputFormat should parse the inputpath correctly
+    (namit via He Yongqiang)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
