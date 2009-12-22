@@ -4303,6 +4303,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     HashMap<String, ColumnInfo> leftmap = leftRR.getFieldMap(leftalias);
     HashMap<String, ColumnInfo> rightmap = rightRR.getFieldMap(rightalias);
     // make sure the schemas of both sides are the same
+    if (leftmap.size() != rightmap.size())
+      throw new SemanticException("Schema of both sides of union should match.");
     for (Map.Entry<String, ColumnInfo> lEntry: leftmap.entrySet()) {
       String field = lEntry.getKey();
       ColumnInfo lInfo = lEntry.getValue();

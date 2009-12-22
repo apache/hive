@@ -354,6 +354,9 @@ Trunk -  Unreleased
     HIVE-1006 getPartitionDescFromPath failing from CombineHiveInputFormat
     (Dave Lerman via namit)
 
+    HIVE-927 Check the schema for both inputs of union
+    (He Yongqiang via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
