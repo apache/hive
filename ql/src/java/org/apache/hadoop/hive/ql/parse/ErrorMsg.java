@@ -119,6 +119,7 @@ public enum ErrorMsg {
   UDTF_ALIAS_MISMATCH("The number of aliases supplied in the AS clause does not match the number of columns output by the UDTF"),
   LATERAL_VIEW_WITH_JOIN("Join with a lateral view is not supported"),
   LATERAL_VIEW_INVALID_CHILD("Lateral view AST with invalid child"),
+  OUTPUT_SPECIFIED_MULTIPLE_TIMES("The same output cannot be present multiple times: "),
   INVALID_AS("AS clause has an invalid number of aliases");
   private String mesg;
   private String SQLState;

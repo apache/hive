@@ -332,7 +332,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * Goes though the tabref tree and finds the alias for the table. Once found,
    * it records the table name-> alias association in aliasToTabs. It also makes
    * an association from the alias to the table AST in parse info.
-   * 
+   *
    * @return the alias of the table
    */
   private String processTable(QB qb, ASTNode tabref) throws SemanticException {
@@ -388,7 +388,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     qb.setTabAlias(alias, table_name);
 
     qb.getParseInfo().setSrcForAlias(alias, tableTree);
-    
+
     return alias;
   }
 
@@ -412,7 +412,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     // Insert this map into the stats
     qb.setSubqAlias(alias, qbexpr);
-    
+
     return alias;
   }
 
@@ -432,7 +432,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   /**
    * Given the AST with TOK_JOIN as the root, get all the aliases for the tables
    * or subqueries in the join.
-   * 
+   *
    * @param qb
    * @param join
    * @throws SemanticException
@@ -455,34 +455,34 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // is not supported. Instead, the lateral view must be in a subquery
         // SELECT * FROM (SELECT * FROM src1 LATERAL VIEW udtf() AS myTable) a
         // JOIN src2 ...
-        throw new 
+        throw new
           SemanticException(ErrorMsg.LATERAL_VIEW_WITH_JOIN.getMsg(join));
       } else if (isJoinToken(child)) {
         processJoin(qb, child);
       }
     }
   }
-  
+
   /**
    * Given the AST with TOK_LATERAL_VIEW as the root, get the alias for the
    * table or subquery in the lateral view and also make a mapping from the
    * alias to all the lateral view AST's
-   * 
+   *
    * @param qb
    * @param lateralView
    * @return the alias for the table/subquery
    * @throws SemanticException
    */
-  
-  private String processLateralView(QB qb, ASTNode lateralView) 
+
+  private String processLateralView(QB qb, ASTNode lateralView)
   throws SemanticException {
     int numChildren = lateralView.getChildCount();
-    
+
     assert(numChildren == 2);
     ASTNode next = (ASTNode) lateralView.getChild(1);
-    
+
     String alias = null;
-    
+
     switch(next.getToken().getType()) {
     case HiveParser.TOK_TABREF:
       alias = processTable(qb, next);
@@ -503,7 +503,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   /**
    * Phase 1: (including, but not limited to):
-   * 
+   *
    * 1. Gets all the aliases for all the tables / subqueries and makes the
    *    appropriate mapping in aliasToTabs, aliasToSubq
    * 2. Gets the location of the destination and names the clase "inclause" + i
@@ -511,9 +511,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    *    actual aggregation AST
    * 4. Creates a mapping from the clause name to the select expression AST in
    *    destToSelExpr
-   * 5. Creates a mapping from a table alias to the lateral view AST's in 
+   * 5. Creates a mapping from a table alias to the lateral view AST's in
    *    aliasToLateralViews
-   *    
+   *
    * @param ast
    * @param qb
    * @param ctx_1
@@ -761,7 +761,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     return false;
   }
-  
+
   @SuppressWarnings("nls")
   private void parseJoinCondPopulateAlias(QBJoinTree joinTree,
       ASTNode condn, Vector<String> leftAliases, Vector<String> rightAliases,
@@ -1407,16 +1407,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private Operator<?> genSelectPlan(String dest, QB qb,
       Operator<?> input) throws SemanticException {
     ASTNode selExprList = qb.getParseInfo().getSelForClause(dest);
-    
+
     Operator<?> op = genSelectPlan(selExprList, qb, input);
     LOG.debug("Created Select Plan for clause: " + dest);
     return op;
   }
   @SuppressWarnings("nls")
   private Operator<?> genSelectPlan(ASTNode selExprList, QB qb,
-    Operator<?> input) throws SemanticException { 
+    Operator<?> input) throws SemanticException {
     LOG.debug("tree: " + selExprList.toStringTree());
-    
+
     ArrayList<exprNodeDesc> col_list = new ArrayList<exprNodeDesc>();
     RowResolver out_rwsch = new RowResolver();
     ASTNode trfm = null;
@@ -1436,9 +1436,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (isInTransform) {
       trfm = (ASTNode) selExprList.getChild(posn).getChild(0);
     }
-    
+
     // Detect queries of the form SELECT udtf(col) AS ...
-    // by looking for a function as the first child, and then checking to see 
+    // by looking for a function as the first child, and then checking to see
     // if the function is a Generic UDTF. It's not as clean as TRANSFORM due to
     // the lack of a special token.
     boolean isUDTF = false;
@@ -1465,7 +1465,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       // Require an AS for UDTFs for column aliases
       ASTNode selExpr = (ASTNode) selExprList.getChild(posn);
-      if (selExpr.getChildCount() < 2) {        
+      if (selExpr.getChildCount() < 2) {
         throw new SemanticException(ErrorMsg.UDTF_REQUIRE_AS.getMsg());
       }
       // Get the column / table aliases from the expression. Start from 1 as
@@ -1478,7 +1478,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           break;
         case HiveParser.TOK_TABALIAS:
           assert(selExprChild.getChildCount() == 1);
-          udtfTableAlias = 
+          udtfTableAlias =
             unescapeIdentifier(selExprChild.getChild(0).getText());
           break;
         default:
@@ -1488,7 +1488,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       LOG.debug("UDTF table alias is " + udtfTableAlias);
       LOG.debug("UDTF col aliases are " + udtfColAliases);
     }
-    
+
     // The list of expressions after SELECT or SELECT TRANSFORM.
     ASTNode exprList;
     if (isInTransform) {
@@ -1515,7 +1515,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (!isUDTF && child.getChildCount() > 2) {
         throw new SemanticException(ErrorMsg.INVALID_AS.getMsg());
       }
-      
+
       // The real expression
       ASTNode expr;
       String tabAlias;
@@ -1532,7 +1532,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // Get rid of TOK_SELEXPR
         expr = (ASTNode)child.getChild(0);
       }
-      
+
       if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
         pos = genColListRegex(".*",
             expr.getChildCount() == 0 ? null : unescapeIdentifier(expr.getChild(0).getText().toLowerCase()),
@@ -1598,7 +1598,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (isUDTF) {
-      output = genUDTFPlan(genericUDTF, udtfTableAlias, udtfColAliases, qb, 
+      output = genUDTFPlan(genericUDTF, udtfTableAlias, udtfColAliases, qb,
                            output);
     }
     LOG.debug("Created Select Plan row schema: " + out_rwsch.toString());
@@ -2717,7 +2717,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                              ctx.getExternalTmpFileURI(dest_path.toUri()),
                              table_desc,
                              new HashMap<String, String>()));
-        outputs.add(new WriteEntity(dest_tab));
+        if (!outputs.add(new WriteEntity(dest_tab))) {
+          throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES.getMsg(dest_tab.getName()));
+        }
         break;
       }
     case QBMetaData.DEST_PARTITION: {
@@ -2736,7 +2738,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           (new loadTableDesc(queryTmpdir,
                              ctx.getExternalTmpFileURI(dest_path.toUri()),
                              table_desc, dest_part.getSpec()));
-        outputs.add(new WriteEntity(dest_part));
+        if (!outputs.add(new WriteEntity(dest_part))) {
+          throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES.getMsg(dest_tab.getName() + "@" + dest_part.getName()));
+        }
         break;
       }
     case QBMetaData.DEST_LOCAL_FILE:
@@ -2837,7 +2841,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           table_desc = PlanUtils.getTableDesc(tblDesc, cols, colTypes);
         }
 
-        outputs.add(new WriteEntity(destStr, !isDfsDir));
+        if (!outputs.add(new WriteEntity(destStr, !isDfsDir))) {
+          throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES.getMsg(destStr));
+        }
         break;
     }
     default:
@@ -2979,7 +2985,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private Operator genUDTFPlan(GenericUDTF genericUDTF, String outputTableAlias,
-      ArrayList<String> colAliases, QB qb, Operator input) 
+      ArrayList<String> colAliases, QB qb, Operator input)
       throws SemanticException {
 
     // No GROUP BY / DISTRIBUTE BY / SORT BY / CLUSTER BY
@@ -2999,11 +3005,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (!qbp.getAliasToLateralViews().isEmpty()) {
       throw new SemanticException(ErrorMsg.UDTF_LATERAL_VIEW.getMsg());
     }
-    
+
     LOG.debug("Table alias: " + outputTableAlias + " Col aliases: " + colAliases);
-    
-    // Use the RowResolver from the input operator to generate a input 
-    // ObjectInspector that can be used to initialize the UDTF. Then, the 
+
+    // Use the RowResolver from the input operator to generate a input
+    // ObjectInspector that can be used to initialize the UDTF. Then, the
 
     // resulting output object inspector can be used to make the RowResolver
     // for the UDTF operator
@@ -3019,7 +3025,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           inputCols.get(i).getType());
     }
     StructObjectInspector outputOI = genericUDTF.initialize(colOIs);
-   
+
     // Make sure that the number of column aliases in the AS clause matches
     // the number of columns output by the UDTF
     int numUdtfCols = outputOI.getAllStructFieldRefs().size();
@@ -3029,26 +3035,26 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           "expected " + numUdtfCols + " aliases " +
           "but got " + numSuppliedAliases));
     }
-   
+
     // Generate the output column info's / row resolver using internal names.
     ArrayList<ColumnInfo> udtfCols = new ArrayList<ColumnInfo>();
 
     Iterator<String> colAliasesIter = colAliases.iterator();
     for (StructField sf : outputOI.getAllStructFieldRefs()) {
-      
+
       String colAlias = colAliasesIter.next();
       assert(colAlias != null);
-      
+
       // Since the UDTF operator feeds into a LVJ operator that will rename
       // all the internal names, we can just use field name from the UDTF's OI
       // as the internal name
-      ColumnInfo col = new ColumnInfo(sf.getFieldName(), 
+      ColumnInfo col = new ColumnInfo(sf.getFieldName(),
           TypeInfoUtils.getTypeInfoFromObjectInspector(
               sf.getFieldObjectInspector()),
           outputTableAlias, false);
       udtfCols.add(col);
     }
-    
+
     // Create the row resolver for this operator from the output columns
     RowResolver out_rwsch = new RowResolver();
     for (int i=0; i<udtfCols.size(); i++) {
@@ -3058,7 +3064,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // Add the UDTFOperator to the operator DAG
     Operator<?> udtf =
       putOpInsertMap(OperatorFactory.getAndMakeChild(
-                       new udtfDesc(genericUDTF),  
+                       new udtfDesc(genericUDTF),
                        new RowSchema(out_rwsch.getColumnInfos()),
                                      input), out_rwsch);
     return udtf;
@@ -3787,7 +3793,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     filters.add(new Vector<ASTNode>());
     joinTree.setFilters(filters);
 
-    ASTNode joinCond = (ASTNode) joinParseTree.getChild(2); 
+    ASTNode joinCond = (ASTNode) joinParseTree.getChild(2);
     Vector<String> leftSrc = new Vector<String>();
     parseJoinCondition(joinTree, joinCond, leftSrc);
     if (leftSrc.size() == 1)
@@ -4523,7 +4529,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (tabBucketCols.size() == 0 && sampleExprs.size() == 0) {
           throw new SemanticException(ErrorMsg.NON_BUCKETED_TABLE.getMsg() + " " + tab.getName());
       }
-      
+
       if (num > den) {
         throw new SemanticException(ErrorMsg.BUCKETED_NUMBERATOR_BIGGER_DENOMINATOR.getMsg()  + " " + tab.getName());
       }
@@ -4656,7 +4662,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (String alias : qb.getTabAliases()) {
       aliasToOpInfo.put(alias, genTablePlan(alias, qb));
     }
-    
+
     // For all the source tables that have a lateral view, attach the
     // appropriate operators to the TS
     genLateralViewPlans(aliasToOpInfo, qb);
@@ -4695,14 +4701,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   /**
    * Generates the operator DAG needed to implement lateral views and attaches
    * it to the TS operator.
-   * 
+   *
    * @param aliasToOpInfo A mapping from a table alias to the TS operator. This
    *                      function replaces the operator mapping as necessary
    * @param qb
    * @throws SemanticException
    */
- 
-  void genLateralViewPlans(HashMap<String, Operator> aliasToOpInfo, QB qb) 
+
+  void genLateralViewPlans(HashMap<String, Operator> aliasToOpInfo, QB qb)
   throws SemanticException {
     Map<String, ArrayList<ASTNode>> aliasToLateralViews =
       qb.getParseInfo().getAliasToLateralViews();
@@ -4713,7 +4719,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ArrayList<ASTNode> lateralViews = aliasToLateralViews.get(alias);
       if (lateralViews != null) {
         Operator op = e.getValue();
-        
+
         for (ASTNode lateralViewTree : aliasToLateralViews.get(alias)) {
           // There are 2 paths from the TS operator (or a previous LVJ operator)
           // to the same LateralViewJoinOperator.
@@ -4731,49 +4737,49 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             putOpInsertMap(OperatorFactory.getAndMakeChild(
                 new selectDesc(true),
                 new RowSchema(allPathRR.getColumnInfos()),
-                op), allPathRR); 
+                op), allPathRR);
 
           // Get the UDTF Path
           QB blankQb = new QB(null, null, false);
-          Operator udtfPath = 
+          Operator udtfPath =
             genSelectPlan((ASTNode)lateralViewTree.getChild(0), blankQb, op);
           RowResolver udtfPathRR = opParseCtx.get(udtfPath).getRR();
 
 
-          // Merge the two into the lateral view join 
+          // Merge the two into the lateral view join
           // The cols of the merged result will be the combination of both the
           // cols of the UDTF path and the cols of the all path. The internal
           // names have to be changed to avoid conflicts
 
           RowResolver lateralViewRR = new RowResolver();
           ArrayList<String> outputInternalColNames = new ArrayList<String>();
-          
-          LVmergeRowResolvers(allPathRR, lateralViewRR, 
+
+          LVmergeRowResolvers(allPathRR, lateralViewRR,
               outputInternalColNames);
-          LVmergeRowResolvers(udtfPathRR, lateralViewRR, 
+          LVmergeRowResolvers(udtfPathRR, lateralViewRR,
               outputInternalColNames);
 
           Operator lateralViewJoin =
             putOpInsertMap(OperatorFactory.getAndMakeChild(
                 new lateralViewJoinDesc(outputInternalColNames),
                 new RowSchema(lateralViewRR.getColumnInfos()),
-                allPath, udtfPath), lateralViewRR); 
+                allPath, udtfPath), lateralViewRR);
           op = lateralViewJoin;
         }
         e.setValue(op);
       }
     }
   }
-  
+
   /**
    * A helper function that gets all the columns and respective aliases in the
-   * source and puts them into dest. It renames the internal names of the 
+   * source and puts them into dest. It renames the internal names of the
    * columns based on getColumnInternalName(position).
-   * 
+   *
    * Note that this helper method relies on RowResolver.getColumnInfos()
-   * returning the columns in the same order as they will be passed in the 
+   * returning the columns in the same order as they will be passed in the
    * operator DAG.
-   * 
+   *
    * @param source
    * @param dest
    * @param outputColNames - a list to which the new internal column names will
@@ -4781,10 +4787,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    *                         resolver
    */
   private void LVmergeRowResolvers(RowResolver source, RowResolver dest,
-      ArrayList<String> outputInternalColNames) {   
+      ArrayList<String> outputInternalColNames) {
     Vector<ColumnInfo> cols = source.getColumnInfos();
     for (ColumnInfo c : cols) {
-      String internalName = 
+      String internalName =
         getColumnInternalName(outputInternalColNames.size());
       outputInternalColNames.add(internalName);
       ColumnInfo newCol = new ColumnInfo(internalName, c.getType(),
@@ -4795,7 +4801,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       dest.put(tableAlias, colAlias, newCol);
     }
   }
-  
+
   private Operator<? extends Serializable> getReduceSink(Operator<? extends Serializable> top) {
     if (top.getClass() == ReduceSinkOperator.class) {
       // Get the operator following the reduce sink
