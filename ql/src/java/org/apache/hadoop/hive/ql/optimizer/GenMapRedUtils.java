@@ -430,6 +430,10 @@ public class GenMapRedUtils {
       throw new SemanticException(e.getMessage(), e);
     }
 
+    // The table does not have any partitions
+    if (aliasPartnDesc == null)
+      aliasPartnDesc = new partitionDesc(Utilities.getTableDesc(parseCtx.getTopToTable().get(topOp)), null);
+
     plan.getAliasToPartnInfo().put(alias_id, aliasPartnDesc);
 
     for (Partition part : parts) {

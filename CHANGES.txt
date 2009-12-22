@@ -345,6 +345,9 @@ Trunk -  Unreleased
     HIVE-913 no error if user specifies same output table mutliple times
     (namit via He Yongqiang)
 
+    HIVE-977 NullPointerException when operating on a non-existing partition
+    (namit via He Yongqiang)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

@@ -203,7 +203,11 @@ public class MapOperator extends Operator <mapredWork> implements Serializable {
       for(int i = 0; i < partKeys.length; i++ ) {
         String key = partKeys[i];
         partNames.add(key);
-        partValues[i] = new Text(partSpec.get(key));
+        // Partitions do not exist for this table
+        if (partSpec == null)
+          partValues[i] = new Text();
+        else
+          partValues[i] = new Text(partSpec.get(key));
         partObjectInspectors.add(PrimitiveObjectInspectorFactory.writableStringObjectInspector);
       }
       StructObjectInspector partObjectInspector = ObjectInspectorFactory
