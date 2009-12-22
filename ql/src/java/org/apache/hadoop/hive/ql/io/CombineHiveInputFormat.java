@@ -22,6 +22,8 @@ import java.io.File;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -285,6 +287,22 @@ public class CombineHiveInputFormat<K extends WritableComparable,
       ShimLoader.getHadoopShims().getCombineFileInputFormat().getRecordReader(job, 
         ((CombineHiveInputSplit)split).getInputSplitShim(), 
         reporter, CombineHiveRecordReader.class);
+  }
+
+  protected static partitionDesc getPartitionDescFromPath(
+      Map<String, partitionDesc> pathToPartitionInfo, Path dir) throws IOException {
+	// The format of the keys in pathToPartitionInfo sometimes contains a port
+	// and sometimes doesn't, so we just compare paths.
+    for (Map.Entry<String, partitionDesc> entry : pathToPartitionInfo.entrySet()) {
+      try {
+        if (new URI(entry.getKey()).getPath().equals(dir.toUri().getPath())) {			
+          return entry.getValue();
+        }
+      }
+      catch (URISyntaxException e2) {}
+    }
+    throw new IOException("cannot find dir = " + dir.toString()
+      + " in partToPartitionInfo!");
   }
 
   static class CombineFilter implements PathFilter {

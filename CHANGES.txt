@@ -351,6 +351,9 @@ Trunk -  Unreleased
     HIVE-1004 Change default memory for Hive client to 256M
     (Zheng Shao via namit)
 
+    HIVE-1006 getPartitionDescFromPath failing from CombineHiveInputFormat
+    (Dave Lerman via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
