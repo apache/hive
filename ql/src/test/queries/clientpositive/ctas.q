@@ -41,9 +41,9 @@ create table nzhang_ctas4 row format delimited fields terminated by ',' stored a
 
 select * from nzhang_ctas4;
 
-explain extended create table nzhang_ctas5 row format delimited fields terminated by ',' lines terminated by '.' stored as textfile as select key, value from src sort by key, value limit 10;
+explain extended create table nzhang_ctas5 row format delimited fields terminated by ',' lines terminated by '\012' stored as textfile as select key, value from src sort by key, value limit 10;
 
-create table nzhang_ctas5 row format delimited fields terminated by ',' lines terminated by '.' stored as textfile as select key, value from src sort by key, value limit 10;
+create table nzhang_ctas5 row format delimited fields terminated by ',' lines terminated by '\012' stored as textfile as select key, value from src sort by key, value limit 10;
 
 drop table nzhang_ctas1;
 drop table nzhang_ctas2;

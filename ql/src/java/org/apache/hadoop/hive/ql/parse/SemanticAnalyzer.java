@@ -321,7 +321,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (expr == null) {
           expr = value;
         } else {
-          throw new SemanticException(ErrorMsg.UNSUPPORTED_MULTIPLE_DISTINCTS.getMsg(expr));
+          throw new SemanticException(ErrorMsg.UNSUPPORTED_MULTIPLE_DISTINCTS.getMsg());
         }
       }
     }
@@ -1144,7 +1144,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           tblDesc.getProperties().setProperty(Constants.MAPKEY_DELIM, unescapeSQLString(rowChild.getChild(0).getText()));
           break;
         case HiveParser.TOK_TABLEROWFORMATLINES:
-          tblDesc.getProperties().setProperty(Constants.LINE_DELIM, unescapeSQLString(rowChild.getChild(0).getText()));
+          String lineDelim = unescapeSQLString(rowChild.getChild(0).getText());
+          tblDesc.getProperties().setProperty(Constants.LINE_DELIM, lineDelim);
+          if (!lineDelim.equals("\n") && !lineDelim.equals("10")) {
+            throw new SemanticException(ErrorMsg.LINES_TERMINATED_BY_NON_NEWLINE.getMsg());
+          }
           break;
         default: assert false;
         }
@@ -5467,6 +5471,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 break;
               case HiveParser.TOK_TABLEROWFORMATLINES:
                 lineDelim = unescapeSQLString(rowChild.getChild(0).getText());
+                if (!lineDelim.equals("\n") && !lineDelim.equals("10")) {
+                  throw new SemanticException(ErrorMsg.LINES_TERMINATED_BY_NON_NEWLINE.getMsg());
+                }
                 break;
               default: assert false;
             }

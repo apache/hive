@@ -357,6 +357,9 @@ Trunk -  Unreleased
     HIVE-927 Check the schema for both inputs of union
     (He Yongqiang via namit)
 
+    HIVE-302 Check that lines terminated by can only be "\n"
+    (Zheng Shao via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

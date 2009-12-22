@@ -100,6 +100,7 @@ public enum ErrorMsg {
   BUCKETED_NUMBERATOR_BIGGER_DENOMINATOR("Numberator should not be bigger than denaminator in sample clause for Table"),
   NEED_PARTITION_ERROR("need to specify partition columns because the destination table is partitioned."),
   CTAS_CTLT_COEXISTENCE("Create table command does not allow LIKE and AS-SELECT in the same command"),
+  LINES_TERMINATED_BY_NON_NEWLINE("LINES TERMINATED BY only supports newline '\\n' right now"),
   CTAS_COLLST_COEXISTENCE("Create table as select command cannot specify the list of columns for the target table."),
   CTLT_COLLST_COEXISTENCE("Create table like command cannot specify the list of columns for the target table."),
   INVALID_SELECT_SCHEMA("Cannot derive schema from the select-clause."),
