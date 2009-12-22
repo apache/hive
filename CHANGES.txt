@@ -348,6 +348,9 @@ Trunk -  Unreleased
     HIVE-977 NullPointerException when operating on a non-existing partition
     (namit via He Yongqiang)
 
+    HIVE-1004 Change default memory for Hive client to 256M
+    (Zheng Shao via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
