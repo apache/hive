@@ -1,0 +1,4 @@
+PREHOOK: query: alter table src change src_not_exist key_value string
+PREHOOK: type: ALTERTABLE_RENAMECOL
+Column 'src_not_exist' does not exist
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

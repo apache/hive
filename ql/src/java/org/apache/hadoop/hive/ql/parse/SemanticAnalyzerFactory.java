@@ -37,6 +37,7 @@ public class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_MSCK, "MSCK");
     commandType.put(HiveParser.TOK_ALTERTABLE_ADDCOLS, "ALTERTABLE_ADDCOLS");
     commandType.put(HiveParser.TOK_ALTERTABLE_REPLACECOLS, "ALTERTABLE_REPLACECOLS");
+    commandType.put(HiveParser.TOK_ALTERTABLE_RENAMECOL, "ALTERTABLE_RENAMECOL");
     commandType.put(HiveParser.TOK_ALTERTABLE_RENAME, "ALTERTABLE_RENAME");
     commandType.put(HiveParser.TOK_ALTERTABLE_DROPPARTS, "ALTERTABLE_DROPPARTS");
     commandType.put(HiveParser.TOK_ALTERTABLE_ADDPARTS, "ALTERTABLE_ADDPARTS");
@@ -67,6 +68,7 @@ public class SemanticAnalyzerFactory {
       case HiveParser.TOK_DESCFUNCTION:
       case HiveParser.TOK_MSCK:
       case HiveParser.TOK_ALTERTABLE_ADDCOLS:
+      case HiveParser.TOK_ALTERTABLE_RENAMECOL:
       case HiveParser.TOK_ALTERTABLE_REPLACECOLS:
       case HiveParser.TOK_ALTERTABLE_RENAME:
       case HiveParser.TOK_ALTERTABLE_DROPPARTS:

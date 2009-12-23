@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 public class alterTableDesc extends ddlDesc implements Serializable 
 {
   private static final long serialVersionUID = 1L;
-  public static enum alterTableTypes {RENAME, ADDCOLS, REPLACECOLS, ADDPROPS, ADDSERDE, ADDSERDEPROPS, ADDFILEFORMAT, ADDCLUSTERSORTCOLUMN};
+  public static enum alterTableTypes {RENAME, ADDCOLS, REPLACECOLS, ADDPROPS, ADDSERDE, ADDSERDEPROPS, ADDFILEFORMAT, ADDCLUSTERSORTCOLUMN, RENAMECOLUMN};
     
   alterTableTypes      op;
   String               oldName;
@@ -43,7 +43,34 @@ public class alterTableDesc extends ddlDesc implements Serializable
 	int                  numberBuckets;
 	List<String>         bucketColumns;
 	List<Order>          sortColumns;
-	
+
+
+  String              oldColName;
+  String              newColName;
+  String              newColType;
+  String              newColComment;
+  boolean             first;
+  String              afterCol;
+  
+  /**
+   * @param tblName table name
+   * @param oldColName  old column name
+   * @param newColName  new column name
+   * @param newComment 
+   * @param newType 
+   */
+  public alterTableDesc(String tblName, String oldColName, String newColName, String newType, String newComment, boolean first, String afterCol) {
+    super();
+    this.oldName = tblName;
+    this.oldColName = oldColName;
+    this.newColName = newColName;
+    this.newColType = newType;
+    this.newColComment = newComment;
+    this.first = first;
+    this.afterCol = afterCol;
+    this.op = alterTableTypes.RENAMECOLUMN;
+  }
+
   /**
    * @param oldName old name of the table
    * @param newName new name of the table
@@ -270,6 +297,90 @@ public class alterTableDesc extends ddlDesc implements Serializable
 	 */
 	public void setSortColumns(List<Order> sortColumns) {
   	this.sortColumns = sortColumns;
+  }
+
+/**
+ * @return old column name
+ */
+  public String getOldColName() {
+    return oldColName;
+  }
+
+  /**
+   * @param oldColName the old column name
+   */
+  public void setOldColName(String oldColName) {
+    this.oldColName = oldColName;
+  }
+
+  /**
+   * @return new column name
+   */
+  public String getNewColName() {
+    return newColName;
+  }
+
+  /**
+   * @param newColName the new column name
+   */
+  public void setNewColName(String newColName) {
+    this.newColName = newColName;
+  }
+
+  /**
+   * @return new column type
+   */
+  public String getNewColType() {
+    return newColType;
+  }
+
+  /**
+   * @param newType new column's type
+   */
+  public void setNewColType(String newType) {
+    this.newColType = newType;
+  }
+
+  /**
+   * @return new column's comment
+   */
+  public String getNewColComment() {
+    return newColComment;
+  }
+
+  /**
+   * @param newComment new column's comment
+   */
+  public void setNewColComment(String newComment) {
+    this.newColComment = newComment;
+  }
+
+  /**
+   * @return if the column should be changed to position 0
+   */
+  public boolean getFirst() {
+    return first;
+  }
+
+  /**
+   * @param first set the column to position 0
+   */
+  public void setFirst(boolean first) {
+    this.first = first;
+  }
+
+  /**
+   * @return the column's after position
+   */
+  public String getAfterCol() {
+    return afterCol;
+  }
+
+  /**
+   * @param afterCol set the column's after position
+   */
+  public void setAfterCol(String afterCol) {
+    this.afterCol = afterCol;
   }
 
 }

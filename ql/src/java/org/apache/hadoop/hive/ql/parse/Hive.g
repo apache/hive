@@ -90,6 +90,7 @@ TOK_DESCTABLE;
 TOK_DESCFUNCTION;
 TOK_ALTERTABLE_RENAME;
 TOK_ALTERTABLE_ADDCOLS;
+TOK_ALTERTABLE_RENAMECOL;
 TOK_ALTERTABLE_REPLACECOLS;
 TOK_ALTERTABLE_ADDPARTS;
 TOK_ALTERTABLE_DROPPARTS;
@@ -97,6 +98,7 @@ TOK_ALTERTABLE_SERDEPROPERTIES;
 TOK_ALTERTABLE_SERIALIZER;
 TOK_ALTERTABLE_FILEFORMAT;
 TOK_ALTERTABLE_PROPERTIES;
+TOK_ALTERTABLE_CHANGECOL_AFTER_POSITION;
 TOK_MSCK;
 TOK_SHOWTABLES;
 TOK_SHOWFUNCTIONS;
@@ -261,6 +263,7 @@ alterStatementSuffix
 @after { msgs.pop(); }
     : alterStatementSuffixRename
     | alterStatementSuffixAddCol
+    | alterStatementSuffixRenameCol
     | alterStatementSuffixDropPartitions
     | alterStatementSuffixAddPartitions
     | alterStatementSuffixProperties
@@ -283,7 +286,20 @@ alterStatementSuffixAddCol
     -> {$add != null}? ^(TOK_ALTERTABLE_ADDCOLS Identifier columnNameTypeList)
     ->                 ^(TOK_ALTERTABLE_REPLACECOLS Identifier columnNameTypeList)
     ;
+    
+alterStatementSuffixRenameCol
+@init { msgs.push("rename column name"); }
+@after { msgs.pop(); }
+    : Identifier KW_CHANGE KW_COLUMN? oldName=Identifier newName=Identifier colType (KW_COMMENT comment=StringLiteral)? alterStatementChangeColPosition?
+    ->^(TOK_ALTERTABLE_RENAMECOL Identifier $oldName $newName colType $comment? alterStatementChangeColPosition?)
+    ;
 
+alterStatementChangeColPosition
+    : first=KW_FIRST|KW_AFTER afterCol=Identifier
+    ->{$first != null}? ^(TOK_ALTERTABLE_CHANGECOL_AFTER_POSITION )
+    -> ^(TOK_ALTERTABLE_CHANGECOL_AFTER_POSITION $afterCol)
+    ;
+    
 alterStatementSuffixAddPartitions
 @init { msgs.push("add partition statement"); }
 @after { msgs.pop(); }
@@ -1372,6 +1388,10 @@ KW_NULL: 'NULL';
 KW_CREATE: 'CREATE';
 KW_EXTERNAL: 'EXTERNAL';
 KW_ALTER: 'ALTER';
+KW_CHANGE: 'CHANGE';
+KW_COLUMN: 'COLUMN';
+KW_FIRST: 'FIRST';
+KW_AFTER: 'AFTER';
 KW_DESCRIBE: 'DESCRIBE';
 KW_DROP: 'DROP';
 KW_RENAME: 'RENAME';

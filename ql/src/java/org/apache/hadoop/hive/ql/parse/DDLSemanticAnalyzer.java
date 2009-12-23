@@ -116,6 +116,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       analyzeAlterTableModifyCols(ast, alterTableTypes.ADDCOLS);
     else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_REPLACECOLS)
       analyzeAlterTableModifyCols(ast, alterTableTypes.REPLACECOLS);
+    else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_RENAMECOL)
+      analyzeAlterTableRenameCol(ast);
     else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_ADDPARTS) {
       analyzeAlterTableAddParts(ast);
     } else if (ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_DROPPARTS)
@@ -415,6 +417,38 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     alterTableDesc alterTblDesc = new alterTableDesc(
         unescapeIdentifier(ast.getChild(0).getText()),
         unescapeIdentifier(ast.getChild(1).getText()));
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc), conf));
+  }
+  
+  private void analyzeAlterTableRenameCol(ASTNode ast)
+  throws SemanticException {
+    String tblName = unescapeIdentifier(ast.getChild(0).getText());
+    String newComment =null;
+    String newType =null;
+    newType = getTypeStringFromAST((ASTNode) ast.getChild(3));
+    boolean first =false;
+    String flagCol = null;
+    ASTNode positionNode = null;
+    if(ast.getChildCount() == 6) {
+      newComment = unescapeSQLString(ast.getChild(4).getText());
+      positionNode = (ASTNode) ast.getChild(5);
+    } else if (ast.getChildCount() == 5) {
+      if(ast.getChild(4).getType()==HiveParser.StringLiteral)
+        newComment = unescapeSQLString(ast.getChild(4).getText());
+      else
+        positionNode = (ASTNode) ast.getChild(4);
+    }
+    
+    if(positionNode!= null) {
+      if (positionNode.getChildCount() == 0)
+        first = true;
+      else
+        flagCol = unescapeIdentifier(positionNode.getChild(0).getText());
+    }
+    
+    alterTableDesc alterTblDesc = new alterTableDesc(tblName,
+        unescapeIdentifier(ast.getChild(1).getText()),
+        unescapeIdentifier(ast.getChild(2).getText()), newType, newComment, first, flagCol);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc), conf));
   }
 

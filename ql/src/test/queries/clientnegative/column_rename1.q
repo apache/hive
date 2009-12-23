@@ -1,0 +1,1 @@
+alter table src change src_not_exist key_value string;

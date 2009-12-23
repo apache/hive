@@ -916,6 +916,69 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         }
         tbl.getTTable().getSd().setCols(oldCols);
       }
+    } else if (alterTbl.getOp() == alterTableDesc.alterTableTypes.RENAMECOLUMN) {
+      List<FieldSchema> oldCols = tbl.getCols();
+      List<FieldSchema> newCols = new ArrayList<FieldSchema>();
+      Iterator<FieldSchema> iterOldCols = oldCols.iterator();
+      String oldName = alterTbl.getOldColName();
+      String newName = alterTbl.getNewColName();
+      String type = alterTbl.getNewColType();
+      String comment = alterTbl.getNewColComment();
+      boolean first = alterTbl.getFirst();
+      String afterCol = alterTbl.getAfterCol();
+      FieldSchema column = null;
+      
+      boolean found = false;
+      int position = -1;
+      if(first)
+        position = 0;
+      
+      int i = 1;
+      while(iterOldCols.hasNext()) {
+        FieldSchema col = iterOldCols.next();
+        String oldColName = col.getName();
+        if (oldColName.equalsIgnoreCase(newName)
+            && !oldColName.equalsIgnoreCase(oldName)) {
+          console.printError("Column '" + newName + "' exists");
+          return 1;
+        }  else if (oldColName.equalsIgnoreCase(oldName)) {
+          col.setName(newName);
+          if (type != null && !type.trim().equals("")) {
+            col.setType(type);
+          }
+          if(comment != null)
+            col.setComment(comment);
+          found = true;
+          if(first || (afterCol!=null&& !afterCol.trim().equals(""))) {
+            column = col;
+            continue;
+          }
+        }  
+        
+        if (afterCol != null && !afterCol.trim().equals("")
+            && oldColName.equalsIgnoreCase(afterCol)) {
+          position = i;
+        }
+        
+        i++;
+        newCols.add(col);
+      }
+      
+      //did not find the column
+      if(!found) {
+        console.printError("Column '" + oldName + "' does not exist");
+        return 1;
+      }
+      //after column is not null, but we did not find it.
+      if ((afterCol != null && !afterCol.trim().equals("")) && position < 0) {
+        console.printError("Column '" + afterCol + "' does not exist");
+        return 1;
+      }
+      
+      if (position >= 0)
+        newCols.add(position, column);
+       
+      tbl.getTTable().getSd().setCols(newCols);
     } else if (alterTbl.getOp() == alterTableDesc.alterTableTypes.REPLACECOLS) {
       // change SerDe to LazySimpleSerDe if it is columnsetSerDe
       if (tbl.getSerializationLib().equals("org.apache.hadoop.hive.serde.thrift.columnsetSerDe")) {

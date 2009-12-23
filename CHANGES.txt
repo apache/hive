@@ -89,6 +89,9 @@ Trunk -  Unreleased
 
     HIVE-935. Add lateral view (Paul Yang via namit)
 
+    HIVE-571 Add rename column in a table
+    (He Yongqiang via namit)
+
   IMPROVEMENTS
 
     HIVE-760. Add version info to META-INF/MANIFEST.MF.
