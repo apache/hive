@@ -1190,8 +1190,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // If column type is not specified, use a string
     if (!outputColNames && !outputColSchemas) {
-      outputCols.add(new ColumnInfo("key", TypeInfoFactory.stringTypeInfo, null, false));
-      outputCols.add(new ColumnInfo("value", TypeInfoFactory.stringTypeInfo, null, false));
+      String intName = getColumnInternalName(0);
+      ColumnInfo colInfo = new ColumnInfo(intName, TypeInfoFactory.stringTypeInfo, null, false);
+      colInfo.setAlias("key");
+      outputCols.add(colInfo);
+      intName = getColumnInternalName(1);
+      colInfo = new ColumnInfo(intName, TypeInfoFactory.stringTypeInfo, null, false);
+      colInfo.setAlias("value");
+      outputCols.add(colInfo);
       defaultOutputCols = true;
     }
     else {
@@ -1203,7 +1209,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         for (int i=0; i < ccount; ++i) {
           String colAlias = unescapeIdentifier(((ASTNode)collist.getChild(i)).getText());
           failIfColAliasExists(colAliasNamesDuplicateCheck, colAlias);
-          outputCols.add(new ColumnInfo(colAlias, TypeInfoFactory.stringTypeInfo, null, false));
+          String intName = getColumnInternalName(i);
+          ColumnInfo colInfo = new ColumnInfo(intName, TypeInfoFactory.stringTypeInfo, null, false);
+          colInfo.setAlias(colAlias);
+          outputCols.add(colInfo);
         }
       }
       else {
@@ -1212,7 +1221,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           assert child.getType() == HiveParser.TOK_TABCOL;
           String colAlias = unescapeIdentifier(((ASTNode)child.getChild(0)).getText());
           failIfColAliasExists(colAliasNamesDuplicateCheck, colAlias);
-          outputCols.add(new ColumnInfo(colAlias, TypeInfoUtils.getTypeInfoFromTypeString(getTypeStringFromAST((ASTNode)child.getChild(1))), null, false));
+          String intName = getColumnInternalName(i);
+          ColumnInfo colInfo = new ColumnInfo(intName, TypeInfoUtils.getTypeInfoFromTypeString(getTypeStringFromAST((ASTNode)child.getChild(1))), null, false);
+          colInfo.setAlias(colAlias);
+          outputCols.add(colInfo);
         }
       }
     }
@@ -1232,7 +1244,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       out_rwsch.put(
         qb.getParseInfo().getAlias(),
-        outputCols.get(i).getInternalName(),
+        outputCols.get(i).getAlias(),
         outputCols.get(i));
     }
 

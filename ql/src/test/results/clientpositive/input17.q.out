@@ -49,17 +49,17 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                 Reduce Output Operator
                   key expressions:
-                        expr: tkey
+                        expr: _col0
                         type: string
                   sort order: +
                   Map-reduce partition columns:
-                        expr: tkey
+                        expr: _col0
                         type: string
                   tag: -1
                   value expressions:
-                        expr: tkey
+                        expr: _col0
                         type: string
-                        expr: tvalue
+                        expr: _col1
                         type: string
       Reduce Operator Tree:
         Extract
@@ -120,11 +120,11 @@ POSTHOOK: Output: default@dest1
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/622897498/10000
+PREHOOK: Output: file:/data/users/nzhang/work/870/apache-hive/build/ql/tmp/1351757908/10000
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/622897498/10000
+POSTHOOK: Output: file:/data/users/nzhang/work/870/apache-hive/build/ql/tmp/1351757908/10000
 NULL	null
 -1461153966	{"myint":49,"mystring":"343","underscore_int":7}
 -1952710705	{"myint":25,"mystring":"125","underscore_int":5}

@@ -44,17 +44,17 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                 Reduce Output Operator
                   key expressions:
-                        expr: tkey
+                        expr: _col0
                         type: string
                   sort order: +
                   Map-reduce partition columns:
-                        expr: tkey
+                        expr: _col0
                         type: string
                   tag: -1
                   value expressions:
-                        expr: tkey
+                        expr: _col0
                         type: string
-                        expr: tvalue
+                        expr: _col1
                         type: string
       Reduce Operator Tree:
         Extract
@@ -90,7 +90,7 @@ PREHOOK: query: FROM (
 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/932734239/10000
+PREHOOK: Output: file:/data/users/nzhang/work/870/apache-hive/build/ql/tmp/275911490/10000
 POSTHOOK: query: FROM (
   FROM src
   SELECT TRANSFORM(src.key, src.value)
@@ -100,7 +100,7 @@ POSTHOOK: query: FROM (
 SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/932734239/10000
+POSTHOOK: Output: file:/data/users/nzhang/work/870/apache-hive/build/ql/tmp/275911490/10000
 0	val_0
 0	val_0
 0	val_0

@@ -58,31 +58,31 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                         properties:
                           field.delim 9
-                          columns ds,tkey,tvalue
+                          columns _col0,_col1,_col2
                           serialization.format 9
                           columns.types string,string,string
                     Reduce Output Operator
                       key expressions:
-                            expr: tkey
+                            expr: _col1
                             type: string
                       sort order: +
                       Map-reduce partition columns:
-                            expr: tkey
+                            expr: _col1
                             type: string
                       tag: -1
                       value expressions:
-                            expr: ds
+                            expr: _col0
                             type: string
-                            expr: tkey
+                            expr: _col1
                             type: string
-                            expr: tvalue
+                            expr: _col2
                             type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [tmap:src]
-        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [tmap:src]
+        file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [tmap:src]
+        file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [tmap:src]
       Path -> Partition:
-        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -100,8 +100,8 @@ STAGE PLANS:
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11
-              transient_lastDdlTime 1258007160
+              location file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/srcpart
+              transient_lastDdlTime 1261528598
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -117,12 +117,12 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart
-                transient_lastDdlTime 1258007160
+                location file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/srcpart
+                transient_lastDdlTime 1261528598
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
             name: srcpart
-        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -140,8 +140,8 @@ STAGE PLANS:
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12
-              transient_lastDdlTime 1258007160
+              location file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/srcpart
+              transient_lastDdlTime 1261528598
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -157,8 +157,8 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart
-                transient_lastDdlTime 1258007160
+                location file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/srcpart
+                transient_lastDdlTime 1261528598
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
             name: srcpart
@@ -179,7 +179,7 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
-                directory: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/702285141/10001
+                directory: file:/data/users/nzhang/work/870/apache-hive/build/ql/tmp/1043205594/10001
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -204,7 +204,7 @@ SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/1466929820/10000
+PREHOOK: Output: file:/data/users/nzhang/work/870/apache-hive/build/ql/tmp/974320187/10000
 POSTHOOK: query: FROM (
   FROM srcpart src
   SELECT TRANSFORM(src.ds, src.key, src.value)
@@ -216,7 +216,7 @@ SELECT tmap.tkey, tmap.tvalue WHERE tmap.tkey < 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/1466929820/10000
+POSTHOOK: Output: file:/data/users/nzhang/work/870/apache-hive/build/ql/tmp/974320187/10000
 0	val_0
 0	val_0
 0	val_0

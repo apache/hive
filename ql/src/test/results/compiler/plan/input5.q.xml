@@ -26,7 +26,7 @@
            <boolean>true</boolean> 
           </void> 
           <void property="sourceDir"> 
-           <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/144127138/10000</string> 
+           <string>file:/data/users/nzhang/work/870/apache-hive/build/ql/tmp/1890559483/10000</string> 
           </void> 
           <void property="table"> 
            <object id="tableDesc0" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -79,11 +79,11 @@
               </void> 
               <void method="put"> 
                <string>location</string> 
-               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/dest1</string> 
+               <string>file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/dest1</string> 
               </void> 
               <void method="put"> 
                <string>transient_lastDdlTime</string> 
-               <string>1259648307</string> 
+               <string>1261529242</string> 
               </void> 
              </object> 
             </void> 
@@ -93,7 +93,7 @@
            </object> 
           </void> 
           <void property="tmpDir"> 
-           <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/144127138/10001</string> 
+           <string>file:/data/users/nzhang/work/870/apache-hive/build/ql/tmp/1890559483/10001</string> 
           </void> 
          </object> 
         </void> 
@@ -168,11 +168,11 @@
          </void> 
          <void method="put"> 
           <string>location</string> 
-          <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/src_thrift</string> 
+          <string>file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/src_thrift</string> 
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1259648307</string> 
+          <string>1261529242</string> 
          </void> 
         </object> 
        </void> 
@@ -221,10 +221,10 @@
                     <void property="columnExprMap"> 
                      <object class="java.util.HashMap"> 
                       <void method="put"> 
-                       <string>tvalue</string> 
+                       <string>_col1</string> 
                        <object id="exprNodeColumnDesc0" class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
                         <void property="column"> 
-                         <string>tvalue</string> 
+                         <string>_col1</string> 
                         </void> 
                         <void property="typeInfo"> 
                          <object id="PrimitiveTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
@@ -236,10 +236,10 @@
                        </object> 
                       </void> 
                       <void method="put"> 
-                       <string>tkey</string> 
+                       <string>_col0</string> 
                        <object id="exprNodeColumnDesc1" class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
                         <void property="column"> 
-                         <string>tkey</string> 
+                         <string>_col0</string> 
                         </void> 
                         <void property="typeInfo"> 
                          <object idref="PrimitiveTypeInfo0"/> 
@@ -255,7 +255,7 @@
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
                           <void property="column"> 
-                           <string>tkey</string> 
+                           <string>_col0</string> 
                           </void> 
                           <void property="typeInfo"> 
                            <object idref="PrimitiveTypeInfo0"/> 
@@ -318,7 +318,7 @@
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.plan.exprNodeColumnDesc"> 
                           <void property="column"> 
-                           <string>tkey</string> 
+                           <string>_col0</string> 
                           </void> 
                           <void property="typeInfo"> 
                            <object idref="PrimitiveTypeInfo0"/> 
@@ -400,8 +400,11 @@
                        <object id="Vector0" class="java.util.Vector"> 
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                          <void property="internalName"> 
+                          <void property="alias"> 
                            <string>tkey</string> 
+                          </void> 
+                          <void property="internalName"> 
+                           <string>_col0</string> 
                           </void> 
                           <void property="type"> 
                            <object idref="PrimitiveTypeInfo0"/> 
@@ -410,8 +413,11 @@
                         </void> 
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                          <void property="internalName"> 
+                          <void property="alias"> 
                            <string>tvalue</string> 
+                          </void> 
+                          <void property="internalName"> 
+                           <string>_col1</string> 
                           </void> 
                           <void property="type"> 
                            <object idref="PrimitiveTypeInfo0"/> 
@@ -493,7 +499,7 @@
                       </void> 
                       <void method="put"> 
                        <string>columns</string> 
-                       <string>tkey,tvalue</string> 
+                       <string>_col0,_col1</string> 
                       </void> 
                       <void method="put"> 
                        <string>serialization.format</string> 
@@ -791,7 +797,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/src_thrift</string> 
+       <string>file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/src_thrift</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>tmap:src_thrift</string> 
@@ -803,7 +809,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/src_thrift</string> 
+       <string>file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/src_thrift</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="deserializerClass"> 
          <class>org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer</class> 
@@ -862,7 +868,7 @@
                  <int>1</int> 
                 </void> 
                 <void property="dirName"> 
-                 <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/144127138/10000</string> 
+                 <string>file:/data/users/nzhang/work/870/apache-hive/build/ql/tmp/1890559483/10000</string> 
                 </void> 
                 <void property="tableInfo"> 
                  <object idref="tableDesc0"/> 

@@ -366,6 +366,9 @@ Trunk -  Unreleased
     HIVE-979 selectNoStar is a part of explainPlan
     (Paul Yang via namit)
 
+    HIVE-1009 bug in union along with transform
+    (Ning Zhang via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

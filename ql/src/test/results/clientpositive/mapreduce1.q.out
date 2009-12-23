@@ -51,25 +51,25 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                 Reduce Output Operator
                   key expressions:
-                        expr: ten
+                        expr: _col1
                         type: string
-                        expr: one
+                        expr: _col2
                         type: string
                   sort order: ++
                   Map-reduce partition columns:
-                        expr: tvalue
+                        expr: _col3
                         type: string
-                        expr: tkey
+                        expr: _col0
                         type: string
                   tag: -1
                   value expressions:
-                        expr: tkey
+                        expr: _col0
                         type: string
-                        expr: ten
+                        expr: _col1
                         type: string
-                        expr: one
+                        expr: _col2
                         type: string
-                        expr: tvalue
+                        expr: _col3
                         type: string
       Reduce Operator Tree:
         Extract
@@ -125,11 +125,11 @@ POSTHOOK: Output: default@dest1
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/39861038/10000
+PREHOOK: Output: file:/data/users/nzhang/work/870/apache-hive/build/ql/tmp/337545490/10000
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/39861038/10000
+POSTHOOK: Output: file:/data/users/nzhang/work/870/apache-hive/build/ql/tmp/337545490/10000
 0	0	0	val_0
 0	0	0	val_0
 0	0	0	val_0
