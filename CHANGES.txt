@@ -360,6 +360,9 @@ Trunk -  Unreleased
     HIVE-302 Check that lines terminated by can only be "\n"
     (Zheng Shao via namit)
 
+    HIVE-979 selectNoStar is a part of explainPlan
+    (Paul Yang via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

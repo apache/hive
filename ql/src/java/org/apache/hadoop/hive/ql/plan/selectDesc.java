@@ -69,6 +69,15 @@ public class selectDesc implements Serializable {
     this.outputColumnNames = outputColumnNames;
   }
   
+  @explain(displayName="SELECT * ")
+  public String explainNoCompute() {
+    if(isSelStarNoCompute()) {
+      return "(no compute)";
+    } else {
+      return null;
+    }
+  }
+  
   /**
    * @return the selectStar
    */
