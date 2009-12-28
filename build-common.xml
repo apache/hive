@@ -236,6 +236,12 @@
       </not>
     </condition>
 
+    <condition property="qfile_regex" value="">
+      <not>
+        <isset property="qfile_regex"/>
+      </not>
+    </condition>
+
     <condition property="overwrite" value="false">
       <not>
         <isset property="overwrite"/>

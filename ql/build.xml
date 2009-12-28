@@ -66,6 +66,7 @@
               templatePath="${ql.test.template.dir}" template="TestParse.vm" 
               queryDirectory="${ql.test.query.dir}/positive"
               queryFile="${qfile}"
+              queryFileRegex="${qfile_regex}"
               resultsDirectory="${ql.test.results.dir}/compiler" className="TestParse"
               logFile="${test.log.dir}/testparsegen.log"
               logDirectory="${test.log.dir}/positive"/>
@@ -74,6 +75,7 @@
               templatePath="${ql.test.template.dir}" template="TestParseNegative.vm" 
               queryDirectory="${ql.test.query.dir}/negative" 
               queryFile="${qfile}"
+              queryFileRegex="${qfile_regex}"
               resultsDirectory="${ql.test.results.dir}/compiler/errors" className="TestParseNegative"
               logFile="${test.log.dir}/testparseneggen.log"
               logDirectory="${test.log.dir}/negative"/>
@@ -82,6 +84,7 @@
               templatePath="${ql.test.template.dir}" template="TestCliDriver.vm" 
               queryDirectory="${ql.test.query.clientpositive.dir}" 
               queryFile="${qfile}"
+              queryFileRegex="${qfile_regex}"
               clusterMode="${clustermode}"
               resultsDirectory="${ql.test.results.clientpositive.dir}" className="TestCliDriver"
               logFile="${test.log.dir}/testclidrivergen.log"
@@ -91,6 +94,7 @@
               templatePath="${ql.test.template.dir}" template="TestNegativeCliDriver.vm" 
               queryDirectory="${ql.test.query.dir}/clientnegative" 
               queryFile="${qfile}"
+              queryFileRegex="${qfile_regex}"
               resultsDirectory="${ql.test.results.dir}/clientnegative" className="TestNegativeCliDriver"
               logFile="${test.log.dir}/testnegclidrivergen.log"
               logDirectory="${test.log.dir}/clientnegative"/>

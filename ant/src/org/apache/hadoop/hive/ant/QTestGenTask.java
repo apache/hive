@@ -18,10 +18,19 @@
 
 package org.apache.hadoop.hive.ant;
 
-import java.io.*;
+
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.StringTokenizer;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
@@ -48,26 +57,44 @@ public class QTestGenTask extends Task {
     }
     
   }
+  
+  public class QFileRegexFilter extends QFileFilter {
+    Pattern filterPattern;
+    
+    public QFileRegexFilter(String filter) {
+      filterPattern = Pattern.compile(filter);
+    }
+    
+    public boolean accept(File filePath) {
+      if (!super.accept(filePath)) {
+        return false;
+      }
+      String testName = StringUtils.chomp(filePath.getName(), ".q");
+      return filterPattern.matcher(testName).matches();
+    }
+  }
 
-  protected String templatePath;
-
-  protected String outputDirectory;
+  private List<String> templatePaths = new ArrayList<String>();
+  
+  private String outputDirectory;
  
-  protected String queryDirectory;
+  private String queryDirectory;
  
-  protected String queryFile;
+  private String queryFile;
+  
+  private String queryFileRegex;
 
-  protected String resultsDirectory;
+  private String resultsDirectory;
 
-  protected String logDirectory;
+  private String logDirectory;
 
-  protected String template;
+  private String template;
 
-  protected String className;
+  private String className;
 
-  protected String logFile;
+  private String logFile;
 
-  protected String clusterMode;
+  private String clusterMode;
 
   public void setClusterMode(String clusterMode) {
     this.clusterMode = clusterMode;
@@ -102,30 +129,21 @@ public class QTestGenTask extends Task {
   }
 
   public void setTemplatePath(String templatePath) throws Exception {
-    StringBuffer resolvedPath = new StringBuffer();
-    StringTokenizer st = new StringTokenizer(templatePath, ",");
-    while (st.hasMoreTokens()) {
-      // resolve relative path from basedir and leave
-      // absolute path untouched.
-      File fullPath = project.resolveFile(st.nextToken());
-      resolvedPath.append(fullPath.getCanonicalPath());
-      if (st.hasMoreTokens()) {
-        resolvedPath.append(",");
-      }
+    templatePaths.clear();
+    for (String relativePath : templatePath.split(",")) {
+      templatePaths.add(project.resolveFile(relativePath).getCanonicalPath());
     }
-    this.templatePath = resolvedPath.toString();
-    System.out.println("Template Path:" + this.templatePath);
+    System.out.println("Template Path:" + getTemplatePath());
   }
 
   public String getTemplatePath() {
-    return templatePath;
+    return StringUtils.join(templatePaths, ",");
   }
 
   public void setOutputDirectory(File outputDirectory) {
     try {
       this.outputDirectory = outputDirectory.getCanonicalPath();
-    }
-    catch (IOException ioe) {
+    } catch (IOException ioe) {
       throw new BuildException(ioe);
     }
   }
@@ -139,7 +157,7 @@ public class QTestGenTask extends Task {
   }
 
   public String getLogDirectory() {
-    return this.logDirectory;
+    return logDirectory;
   }
 
   public void setResultsDirectory(String resultsDirectory) {
@@ -147,7 +165,7 @@ public class QTestGenTask extends Task {
   }
 
   public String getResultsDirectory() {
-    return this.resultsDirectory;
+    return resultsDirectory;
   }
 
   public void setQueryDirectory(String queryDirectory) {
@@ -155,7 +173,7 @@ public class QTestGenTask extends Task {
   }
 
   public String getQueryDirectory() {
-    return this.queryDirectory;
+    return queryDirectory;
   }
 
   public void setQueryFile(String queryFile) {
@@ -163,12 +181,20 @@ public class QTestGenTask extends Task {
   }
 
   public String getQueryFile() {
-    return this.queryFile;
+    return queryFile;
+  }
+  
+  public void setQueryFileRegex(String queryFileRegex) {
+    this.queryFileRegex = queryFileRegex;
+  }
+  
+  public String getQueryFileRegex() {
+    return queryFileRegex;
   }
 
   public void execute() throws BuildException {
 
-    if (templatePath == null) {
+    if (getTemplatePath().equals("")) {
       throw new BuildException("No templatePath attribute specified");
     }
 
@@ -196,7 +222,7 @@ public class QTestGenTask extends Task {
       throw new BuildException("No className specified");
     }
 
-    File [] qFiles = null;
+    List<File> qFiles = new ArrayList<File>();
     File outDir = null;
     File resultsDir = null;
     File logDir = null;
@@ -209,17 +235,20 @@ public class QTestGenTask extends Task {
 
       if (queryFile != null && !queryFile.equals("")) {
         // The user may have passed a list of files - comma seperated
-        String[] queryFiles = queryFile.split(",");
-        qFiles = new File[queryFiles.length];
-
-        for (int i = 0; i < queryFiles.length; i++) {
-          qFiles[i] = inpDir != null ? new File(inpDir, queryFiles[i]) : new File(queryFiles[i]);
+        for (String qFile : queryFile.split(",")) {
+          if (null != inpDir) {
+            qFiles.add(new File(inpDir, qFile));
+          } else {
+            qFiles.add(new File(qFile));
+          }
         }
+      } else if (queryFileRegex != null && !queryFileRegex.equals("")) {
+        qFiles.addAll(Arrays.asList(inpDir.listFiles(new QFileRegexFilter(queryFileRegex))));
+      } else {
+        qFiles.addAll(Arrays.asList(inpDir.listFiles(new QFileFilter())));
       }
-      else {
-        qFiles = inpDir.listFiles(new QFileFilter());
-        Arrays.sort(qFiles);
-      }
+      
+      Collections.sort(qFiles);
 
       // Make sure the output directory exists, if it doesn't
       // then create it.
@@ -237,15 +266,14 @@ public class QTestGenTask extends Task {
       if (!resultsDir.exists()) {
         throw new BuildException("Results Directory " + resultsDir.getCanonicalPath() + " does not exist");
       }
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       throw new BuildException(e);
     }
     
     VelocityEngine ve = new VelocityEngine();
 
     try {
-      ve.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_PATH, templatePath);
+      ve.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_PATH, getTemplatePath());
       if (logFile != null) {
         File lf = new File(logFile);
         if (lf.exists()) {
@@ -260,8 +288,9 @@ public class QTestGenTask extends Task {
       ve.init();
       Template t = ve.getTemplate(template);
 
-      if (clusterMode == null) 
+      if (clusterMode == null) {
         clusterMode = new String("");
+      }
 
       // For each of the qFiles generate the test
       VelocityContext ctx = new VelocityContext();
@@ -277,22 +306,17 @@ public class QTestGenTask extends Task {
       writer.close();
 
       System.out.println("Generated " + outFile.getCanonicalPath() + " from template " + template);
-    }
-    catch(BuildException e) {
+    } catch(BuildException e) {
       throw e;
-    }
-    catch(MethodInvocationException e) {
+    } catch(MethodInvocationException e) {
       throw new BuildException("Exception thrown by '" + e.getReferenceName() + "." +
                                e.getMethodName() +"'",
                                e.getWrappedThrowable());
-    }
-    catch(ParseErrorException e) {
+    } catch(ParseErrorException e) {
       throw new BuildException("Velocity syntax error", e);
-    }
-    catch(ResourceNotFoundException e) {
+    } catch(ResourceNotFoundException e) {
       throw new BuildException("Resource not found", e);
-    }
-    catch(Exception e) {
+    } catch(Exception e) {
       throw new BuildException("Generation failed", e);
     }
   }

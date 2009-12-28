@@ -146,6 +146,9 @@ Trunk -  Unreleased
     HIVE-980. update readme.txt to build hive using eclipse
     (Patrick Angeles via namit)
 
+    HIVE-1012. Ability to run testcases via regular expression
+    (Carl Steinbach via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES
