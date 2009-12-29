@@ -149,6 +149,9 @@ Trunk -  Unreleased
     HIVE-1012. Ability to run testcases via regular expression
     (Carl Steinbach via namit)
 
+    HIVE-963. No out of memory errors for skew join
+    (Ning Zhang via namit)
+
   OPTIMIZATIONS
 
   BUG FIXES

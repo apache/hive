@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec;
+package org.apache.hadoop.hive.ql.exec.persistence;
 
-import org.apache.hadoop.hive.ql.exec.DCLLItem;
+import org.apache.hadoop.hive.ql.exec.persistence.DCLLItem;
 
 /**
  *  An MRU (Most Recently Used) cache implementation.
@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.ql.exec.DCLLItem;
  *  with an auxiliary data structure such as a HashMap to locate the item quickly.
  */
 public class MRU<T extends DCLLItem> {
-
+  
   T head;   // head of the linked list -- MRU; tail (head.prev) will be the LRU
   
   public MRU() {

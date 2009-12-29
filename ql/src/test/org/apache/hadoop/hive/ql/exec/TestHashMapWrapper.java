@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.Random;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.exec.HashMapWrapper;
+import org.apache.hadoop.hive.ql.exec.persistence.HashMapWrapper;
 
 public class TestHashMapWrapper extends TestCase {
 

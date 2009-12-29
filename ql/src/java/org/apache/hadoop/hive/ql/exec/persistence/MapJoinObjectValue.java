@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec;
+package org.apache.hadoop.hive.ql.exec.persistence;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -24,6 +24,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
 
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator.MapJoinObjectCtx;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -37,7 +38,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.Object
 public class MapJoinObjectValue implements Externalizable {
 
   transient protected int     metadataTag;
-  transient protected ArrayList<ArrayList<Object>>  obj;
+  transient protected RowContainer obj;
 
   public MapJoinObjectValue() {
   }
@@ -46,16 +47,16 @@ public class MapJoinObjectValue implements Externalizable {
    * @param metadataTag
    * @param obj
    */
-  public MapJoinObjectValue(int metadataTag, ArrayList<ArrayList<Object>> obj) {
+  public MapJoinObjectValue(int metadataTag, RowContainer obj) {
     this.metadataTag = metadataTag;
     this.obj = obj;
   }
-
+  
   public boolean equals(Object o) {
     if (o instanceof MapJoinObjectValue) {
       MapJoinObjectValue mObj = (MapJoinObjectValue)o;
       if (mObj.getMetadataTag() == metadataTag) {
-        if ((obj == null) && (mObj.getObj() == null))
+        if ((this.obj == null) && (mObj.getObj() == null))
           return true;
         if ((obj != null) && (mObj.getObj() != null) && (mObj.getObj().equals(obj)))
           return true;
@@ -79,13 +80,12 @@ public class MapJoinObjectValue implements Externalizable {
       MapJoinObjectCtx ctx = MapJoinOperator.getMapMetadata().get(Integer.valueOf(metadataTag));
       int sz = in.readInt();
 
-      ArrayList<ArrayList<Object>> res = new ArrayList<ArrayList<Object>>();
+      RowContainer res = new RowContainer();
       for (int pos = 0; pos < sz; pos++) {
         Writable val = ctx.getSerDe().getSerializedClass().newInstance();
         val.readFields(in);
 
-        ArrayList<Object> memObj =
-          (ArrayList<Object>)
+        ArrayList<Object> memObj = (ArrayList<Object>)
           ObjectInspectorUtils.copyToStandardObject(
               ctx.getSerDe().deserialize(val),
               ctx.getSerDe().getObjectInspector(),
@@ -109,11 +109,13 @@ public class MapJoinObjectValue implements Externalizable {
       MapJoinObjectCtx ctx = MapJoinOperator.getMapMetadata().get(Integer.valueOf(metadataTag));
 
       // Different processing for key and value
-      ArrayList<ArrayList<Object>> v = (ArrayList<ArrayList<Object>>) obj;
+      RowContainer<ArrayList<Object>> v = obj;
       out.writeInt(v.size());
 
-      for (int pos = 0; pos < v.size(); pos++) {
-        Writable outVal = ctx.getSerDe().serialize(v.get(pos), ctx.getStandardOI());
+      for (ArrayList<Object> row = v.first();
+           row != null;
+           row = v.next() ) {
+        Writable outVal = ctx.getSerDe().serialize(row, ctx.getStandardOI());
         outVal.write(out);
       }
     }
@@ -139,14 +141,14 @@ public class MapJoinObjectValue implements Externalizable {
   /**
    * @return the obj
    */
-  public ArrayList<ArrayList<Object>> getObj() {
+  public RowContainer getObj() {
     return obj;
   }
 
   /**
    * @param obj the obj to set
    */
-  public void setObj(ArrayList<ArrayList<Object>> obj) {
+  public void setObj(RowContainer obj) {
     this.obj = obj;
   }
 

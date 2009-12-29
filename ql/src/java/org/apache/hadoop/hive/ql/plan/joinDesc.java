@@ -20,15 +20,17 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
+import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.mapred.SequenceFileInputFormat;
+
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
 
 /**
  * Join operator Descriptor implementation.
@@ -59,7 +61,9 @@ public class joinDesc implements Serializable {
   protected joinCond[] conds;
   
   protected Byte[] tagOrder;
-
+  
+  protected tableDesc[] spillTableDesc; // spill tables are used if the join input is too large to fit in memory
+  
   public joinDesc() { }
   
   public joinDesc(final Map<Byte, List<exprNodeDesc>> exprs, ArrayList<String> outputColumnNames, final boolean noOuterJoin, final joinCond[] conds) {
@@ -73,6 +77,7 @@ public class joinDesc implements Serializable {
     {
       tagOrder[i] = (byte)i;
     }
+    initSpillTables();
   }
   
   public joinDesc(final Map<Byte, List<exprNodeDesc>> exprs, ArrayList<String> outputColumnNames) {
@@ -184,5 +189,50 @@ public class joinDesc implements Serializable {
    */
   public void setTagOrder(Byte[] tagOrder) {
     this.tagOrder = tagOrder;
+  }
+  
+  public void initSpillTables() {
+    spillTableDesc = new tableDesc[exprs.size()];
+    for (int tag = 0; tag < exprs.size(); tag++) {
+      List<exprNodeDesc> valueCols = exprs.get((byte)tag);
+      int columnSize = valueCols.size();
+      StringBuffer colNames = new StringBuffer();
+      StringBuffer colTypes = new StringBuffer();
+      List<exprNodeDesc> newValueExpr = new ArrayList<exprNodeDesc>();
+      if ( columnSize <= 0 ) {
+        spillTableDesc[tag] = null;
+        continue;
+      }
+      for (int k = 0; k < columnSize; k++) {
+        TypeInfo type = valueCols.get(k).getTypeInfo();
+	      String newColName = tag + "_VALUE_" + k; // any name, it does not matter.
+  	    colNames.append(newColName);
+  	    colNames.append(',');
+   	    colTypes.append(valueCols.get(k).getTypeString());
+   	    colTypes.append(',');
+      }
+      // remove the last ','
+      colNames.setLength(colNames.length()-1);
+      colTypes.setLength(colTypes.length()-1);
+      spillTableDesc[tag] = 
+         new tableDesc(LazyBinarySerDe.class,
+          SequenceFileInputFormat.class,
+          HiveSequenceFileOutputFormat.class, 
+          Utilities.makeProperties(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, "" + Utilities.ctrlaCode,
+                org.apache.hadoop.hive.serde.Constants.LIST_COLUMNS, colNames.toString(),
+                org.apache.hadoop.hive.serde.Constants.LIST_COLUMN_TYPES, colTypes.toString()));
+    }
+  }
+  
+  public tableDesc getSpillTableDesc(int i) {
+    return spillTableDesc[i];
+  }
+  
+  public tableDesc[] getSpillTableDesc() {
+    return spillTableDesc;
+  }
+  
+  public void setSpillTableDesc(tableDesc[] std) {
+    spillTableDesc = std;
   }
 }

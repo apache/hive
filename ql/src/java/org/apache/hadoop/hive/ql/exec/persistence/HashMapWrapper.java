@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec;
+package org.apache.hadoop.hive.ql.exec.persistence;
 
 import java.io.File;
 import java.util.HashMap;
@@ -29,8 +29,8 @@ import org.apache.hadoop.hive.ql.util.jdbm.RecordManagerFactory;
 import org.apache.hadoop.hive.ql.util.jdbm.RecordManagerOptions;
 import org.apache.hadoop.hive.ql.util.jdbm.htree.HTree;
 import org.apache.hadoop.hive.ql.util.jdbm.helper.FastIterator;
-import org.apache.hadoop.hive.ql.exec.MRU;
-import org.apache.hadoop.hive.ql.exec.DCLLItem;
+import org.apache.hadoop.hive.ql.exec.persistence.MRU;
+import org.apache.hadoop.hive.ql.exec.persistence.DCLLItem;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -77,6 +77,7 @@ public class HashMapWrapper<K,V> {
     this.threshold = threshold;
     this.pHash = null;
     this.recman = null;
+    this.tmpFile = null;
     mHash = new HashMap<K,MRUItem>();
     MRUList = new MRU<MRUItem>();
   }
@@ -113,13 +114,13 @@ public class HashMapWrapper<K,V> {
 	          pHash.put(tail.key, tail.value);
  	     	    pHash.remove(key);
  	     	    recman.commit();
- 	     	    
+            
   	        // update mHash -- reuse MRUItem
    	    	  item = mHash.remove(tail.key);
     	      item.key = key;
      	      item.value = value;
       	    mHash.put(key, item);
-          
+            
             // update MRU -- reusing MRUItem
       	    tail.key = key;
 	          tail.value = value;
@@ -182,31 +183,48 @@ public class HashMapWrapper<K,V> {
 	      assert(mHash.get(key).value.equals(value));
       } else {
         // for items inserted into persistent hash table, we don't put it into MRU
+        if (pHash == null) {
+          pHash = getPersistentHash();
+        }
         try {
-          if (pHash == null) {
-            // Create a temporary file for the page manager to hold persistent data. 
-            // Delete it if the JVM terminate normally. 
-            // Caveat: it won't be deleted if JVM is killed by 'kill -9'.
-            if ( tmpFile != null )
-         	  tmpFile.delete();
-            tmpFile = File.createTempFile("HashMapWrapper", ".tmp");
-	          tmpFile.deleteOnExit(); 
-	        
-  	        Properties props = new Properties();
-    	      props.setProperty(RecordManagerOptions.CACHE_TYPE, RecordManagerOptions.NO_CACHE);
-  	        props.setProperty(RecordManagerOptions.DISABLE_TRANSACTIONS, "true" );
-          
-    	      recman = RecordManagerFactory.createRecordManager(tmpFile, props );
-        	  pHash = HTree.createInstance(recman);
-          }
           pHash.put(key, value);
           recman.commit();
         } catch (Exception e) {
           LOG.warn(e.toString());
           throw new HiveException(e);
-        } 
+        }
       }
     }
+  }
+  
+  /**
+   * Get the persistent hash table.
+   * @return persistent hash table
+   * @throws HiveException
+   */
+  private HTree getPersistentHash() throws HiveException {
+    try {
+      // Create a temporary file for the page manager to hold persistent data. 
+    	if ( tmpFile != null ) {
+    	  tmpFile.delete();
+      }
+      tmpFile = File.createTempFile("HashMapWrapper", ".tmp", new File("/tmp"));
+      LOG.info("HashMapWrapper created temp file " + tmpFile.getAbsolutePath());
+      // Delete the temp file if the JVM terminate normally through Hadoop job kill command.
+      // Caveat: it won't be deleted if JVM is killed by 'kill -9'.
+      tmpFile.deleteOnExit(); 
+      
+      Properties props = new Properties();
+      props.setProperty(RecordManagerOptions.CACHE_TYPE, RecordManagerOptions.NO_CACHE);
+    	props.setProperty(RecordManagerOptions.DISABLE_TRANSACTIONS, "true" );
+      
+      recman = RecordManagerFactory.createRecordManager(tmpFile, props );
+      pHash = HTree.createInstance(recman);
+    } catch (Exception e) {
+      LOG.warn(e.toString());
+      throw new HiveException(e);
+    } 
+    return pHash;
   }
   
   /**
@@ -244,15 +262,6 @@ public class HashMapWrapper<K,V> {
   }
   
   /**
-   * There will be no more put to the hash map before it is destroyed or cleared. 
-   * This is used to optimize MRU list maintenance cost.
-   */
-  public void noMorePut() {
-    if ( pHash == null ) { // all data in main memory, no need MRU
-    }
-  }
-  
-  /**
    * Get a list of all keys in the hash map.
    * @return
    */
@@ -271,7 +280,7 @@ public class HashMapWrapper<K,V> {
    	        ret.add(k);
     	  }
    	  } catch (Exception e) {
-      e.printStackTrace();
+        e.printStackTrace();
    	  }
     }
     return ret;

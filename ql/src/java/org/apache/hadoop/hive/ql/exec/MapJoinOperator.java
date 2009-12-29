@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,7 +42,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.hadoop.hive.ql.exec.HashMapWrapper;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectKey;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectValue;
+import org.apache.hadoop.hive.ql.exec.persistence.HashMapWrapper;
+import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
 
 /**
  * Map side Join operator implementation.
@@ -150,7 +152,7 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
       mapJoinTables.put(Byte.valueOf((byte)pos), hashTable);
     }
     
-    storage.put((byte)posBigTable, new ArrayList<ArrayList<Object>>());
+    storage.put((byte)posBigTable, new RowContainer());
     
     mapJoinRowsKey = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEMAPJOINROWSIZE);
     
@@ -213,11 +215,11 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
         HashMapWrapper<MapJoinObjectKey, MapJoinObjectValue> hashTable =  mapJoinTables.get(alias);
         MapJoinObjectKey keyMap = new MapJoinObjectKey(metadataKeyTag, key);
         MapJoinObjectValue o = hashTable.get(keyMap);
-        ArrayList<ArrayList<Object>> res = null;
+        RowContainer res = null;
 
         boolean needNewKey = true;
         if (o == null) {
-          res = new ArrayList<ArrayList<Object>>();
+          res = new RowContainer();
         	res.add(value);
         } else {
           res = o.getObj();
