@@ -372,6 +372,9 @@ Trunk -  Unreleased
     HIVE-1009 bug in union along with transform
     (Ning Zhang via namit)
 
+    HIVE-986 Ant "eclipse-files" target is broken for Hadoop 0.20
+    (Zheng Shao via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
