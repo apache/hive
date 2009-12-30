@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.io.BooleanWritable;
 
 @description(
-    name = "or,||",
+    name = "or",
     value = "a _FUNC_ b - Logical or"
 )
 public class UDFOPOr extends UDF {

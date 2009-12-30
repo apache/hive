@@ -157,9 +157,7 @@ public class FunctionRegistry {
     registerUDF(">=", UDFOPEqualOrGreaterThan.class, true);
 
     registerUDF("and", UDFOPAnd.class, true);
-    registerUDF("&&", UDFOPAnd.class, true, "and");
     registerUDF("or", UDFOPOr.class, true);
-    registerUDF("||", UDFOPOr.class, true, "or");
     registerUDF("not", UDFOPNot.class, true);
     registerUDF("!", UDFOPNot.class, true, "not");
 

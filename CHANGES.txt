@@ -381,6 +381,9 @@ Trunk -  Unreleased
     HIVE-986 Ant "eclipse-files" target is broken for Hadoop 0.20
     (Zheng Shao via namit)
 
+    HIVE-1017 || and && are not supported currently
+    (Ning Zhang via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

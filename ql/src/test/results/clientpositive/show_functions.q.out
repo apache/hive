@@ -5,7 +5,6 @@ POSTHOOK: type: SHOWFUNCTIONS
 !
 %
 &
-&&
 *
 +
 -
@@ -124,7 +123,6 @@ weekofyear
 when
 year
 |
-||
 ~
 PREHOOK: query: SHOW FUNCTIONS '^c.*'
 PREHOOK: type: SHOWFUNCTIONS

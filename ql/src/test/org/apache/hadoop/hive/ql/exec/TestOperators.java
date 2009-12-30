@@ -88,7 +88,7 @@ public class TestOperators extends TestCase {
       exprNodeDesc zero = new exprNodeConstantDesc("0");
       exprNodeDesc func1 = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc(">", col2, col1);
       exprNodeDesc func2 = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("==", col0, zero);
-      exprNodeDesc func3 = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("&&", func1, func2); 
+      exprNodeDesc func3 = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc("and", func1, func2);
       assert(func3 != null);
       filterDesc filterCtx = new filterDesc(func3, false);
 
@@ -148,7 +148,7 @@ public class TestOperators extends TestCase {
       //fileSinkDesc fsd = new fileSinkDesc ("file:///tmp" + File.separator + System.getProperty("user.name") + File.separator + "TestFileSinkOperator",
       //                                     Utilities.defaultTd, false);
       //Operator<fileSinkDesc> flop = OperatorFactory.getAndMakeChild(fsd, op);
-      
+
       op.initialize(new JobConf(TestOperators.class), new ObjectInspector[]{r[0].oi});
 
       // evaluate on row
@@ -244,7 +244,7 @@ public class TestOperators extends TestCase {
       pathToAliases.put("/testDir", aliases);
 
       // initialize pathToTableInfo
-      // Default: treat the table as a single column "col" 
+      // Default: treat the table as a single column "col"
       tableDesc td = Utilities.defaultTd;
       partitionDesc pd = new partitionDesc(td, null);
       LinkedHashMap<String,org.apache.hadoop.hive.ql.plan.partitionDesc> pathToPartitionInfo = new
@@ -276,7 +276,7 @@ public class TestOperators extends TestCase {
       InspectableObject io2 = new InspectableObject();
       for(int i=0; i<5; i++) {
         String answer = "[[" + i + ", " + (i+1) + ", " + (i+2) + "]]";
-        
+
         tw.set("" + i + "\u0001" + (i+1) + "\u0001"+ (i+2));
         mo.process((Writable)tw);
         cdop1.retrieve(io1);

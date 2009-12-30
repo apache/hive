@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.io.BooleanWritable;
 
 @description(
-    name = "and,&&",
+    name = "and",
     value = "a _FUNC_ b - Logical and",
     extended = "Example:\n" +
         "  > SELECT * FROM srcpart WHERE src.hr=12 _FUNC_ " +
