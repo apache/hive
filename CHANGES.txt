@@ -92,6 +92,9 @@ Trunk -  Unreleased
     HIVE-571 Add rename column in a table
     (He Yongqiang via namit)
 
+    HIVE-1020 Create a confifuration variable to control speculative execution for reducers in hive
+    (namit via He Yongqiang)
+
   IMPROVEMENTS
 
     HIVE-760. Add version info to META-INF/MANIFEST.MF.

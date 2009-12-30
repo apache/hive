@@ -67,7 +67,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
   transient protected JobConf job;
   transient protected int mapProgress = 0;
   transient protected int reduceProgress = 0;
-  
+
   public static Random randGen = new Random();
   /**
    * Constructor when invoked from QL
@@ -146,7 +146,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
    * used to kill all running jobs in the event of an unexpected shutdown -
    * i.e., the JVM shuts down while there are still jobs running.
    */
-  public static Map<String, String> runningJobKillURIs 
+  public static Map<String, String> runningJobKillURIs
     = Collections.synchronizedMap(new HashMap<String, String>());
 
   /**
@@ -168,7 +168,7 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
               String uri = elems.next();
               try {
                 System.err.println("killing job with: " + uri);
-                java.net.HttpURLConnection conn = (java.net.HttpURLConnection) 
+                java.net.HttpURLConnection conn = (java.net.HttpURLConnection)
                   new java.net.URL(uri).openConnection();
                 conn.setRequestMethod("POST");
                 int retCode = conn.getResponseCode();
@@ -450,6 +450,10 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
     job.setNumReduceTasks(work.getNumReduceTasks().intValue());
     job.setReducerClass(ExecReducer.class);
 
+    // Turn on speculative execution for reducers
+    HiveConf.setVar(job,HiveConf.ConfVars.HADOOPSPECULATIVEEXECREDUCERS,
+                    HiveConf.getVar(job, HiveConf.ConfVars.HIVESPECULATIVEEXECREDUCERS));
+
     String inpFormat = HiveConf.getVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT);
     if ((inpFormat == null) || (!StringUtils.isNotBlank(inpFormat)))
       inpFormat = ShimLoader.getHadoopShims().getInputFormatClassName();
@@ -608,12 +612,12 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
     Map<String, Integer> failures = new HashMap<String, Integer>();
     Set<String> successes = new HashSet<String> ();
     Map<String, String> taskToJob = new HashMap<String,String>();
-    
+
     int startIndex = 0;
-    
+
     while(true) {
       TaskCompletionEvent[] taskCompletions = rj.getTaskCompletionEvents(startIndex);
-      
+
       if(taskCompletions == null || taskCompletions.length == 0) {
         break;
       }
@@ -629,11 +633,11 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
           more = false;
           break;
         }
-        
+
         String taskId = taskJobIds[0];
         String jobId = taskJobIds[1];
         taskToJob.put(taskId, jobId);
-        
+
         if(t.getTaskStatus() != TaskCompletionEvent.Status.SUCCEEDED) {
           Integer failAttempts = failures.get(taskId);
           if(failAttempts == null) {
@@ -648,28 +652,28 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
       if(!more) {
         break;
       }
-      startIndex += taskCompletions.length;      
+      startIndex += taskCompletions.length;
     }
     // Remove failures for tasks that succeeded
     for(String task : successes) {
       failures.remove(task);
     }
- 
+
     if(failures.keySet().size() == 0) {
       return;
     }
-    
+
     // Find the highest failure count
     int maxFailures = 0;
     for(Integer failCount : failures.values()) {
       if(maxFailures < failCount.intValue())
         maxFailures = failCount.intValue();
     }
-    
+
     // Display Error Message for tasks with the highest failure count
     console.printError("\nFailed tasks with most" + "(" + maxFailures + ")" + " failures " + ": ");
     String jtUrl = JobTrackerURLResolver.getURL(conf);
-    
+
     for(String task : failures.keySet()) {
       if(failures.get(task).intValue() == maxFailures) {
         String jobId = taskToJob.get(task);

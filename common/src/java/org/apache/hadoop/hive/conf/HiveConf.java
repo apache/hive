@@ -71,7 +71,8 @@ public class HiveConf extends Configuration {
     PREEXECHOOKS("hive.exec.pre.hooks", ""),
     POSTEXECHOOKS("hive.exec.post.hooks", ""),
     EXECPARALLEL("hive.exec.parallel",false), // parallel query launching
-    
+    HIVESPECULATIVEEXECREDUCERS("hive.mapred.reduce.tasks.speculative.execution",true),
+
     // hadoop stuff
     HADOOPBIN("hadoop.bin.path", System.getenv("HADOOP_HOME") + "/bin/hadoop"),
     HADOOPCONF("hadoop.config.dir", System.getenv("HADOOP_HOME") + "/conf"),
@@ -80,6 +81,7 @@ public class HiveConf extends Configuration {
     HADOOPJT("mapred.job.tracker", "local"),
     HADOOPNUMREDUCERS("mapred.reduce.tasks", 1),
     HADOOPJOBNAME("mapred.job.name", null),
+    HADOOPSPECULATIVEEXECREDUCERS("mapred.reduce.tasks.speculative.execution", false),
 
     // MetaStore stuff.
     METASTOREDIRECTORY("hive.metastore.metadb.dir", ""),
@@ -131,10 +133,10 @@ public class HiveConf extends Configuration {
     HIVEGROUPBYMAPINTERVAL("hive.groupby.mapaggr.checkinterval", 100000),
     HIVEMAPAGGRHASHMEMORY("hive.map.aggr.hash.percentmemory", (float)0.5),
     HIVEMAPAGGRHASHMINREDUCTION("hive.map.aggr.hash.min.reduction", (float)0.5),
-    
+
     // for hive udtf operator
     HIVEUDTFAUTOPROGRESS("hive.udtf.auto.progress", false),
-    
+
     // Default file format for CREATE TABLE statement
     // Options: TextFile, SequenceFile
     HIVEDEFAULTFILEFORMAT("hive.default.fileformat", "TextFile"),
@@ -165,7 +167,7 @@ public class HiveConf extends Configuration {
     HIVEMERGEMAPREDFILES("hive.merge.mapredfiles", false),
     HIVEMERGEMAPFILESSIZE("hive.merge.size.per.task", (long)(256*1000*1000)),
     HIVEMERGEMAPFILESAVGSIZE("hive.merge.smallfiles.avgsize", (long)(16*1000*1000)),
-    
+
     HIVESENDHEARTBEAT("hive.heartbeat.interval", 1000),
 
     HIVEJOBPROGRESS("hive.task.progress", false),
@@ -176,7 +178,7 @@ public class HiveConf extends Configuration {
     HIVEOPTCP("hive.optimize.cp", true), // column pruner
     HIVEOPTPPD("hive.optimize.ppd", true), // predicate pushdown
     HIVEOPTGROUPBY("hive.optimize.groupby", true); // optimize group by
-    
+
     public final String varname;
     public final String defaultVal;
     public final int defaultIntVal;

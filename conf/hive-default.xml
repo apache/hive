@@ -401,4 +401,10 @@
   <description>Whether Hive should automatically send progress information to TaskTracker when using UDTF's to prevent the task getting killed because of inactivity.  Users should be cautious because this may prevent TaskTracker from killing tasks with infinte loops.  </description>
 </property>
 
+<property>
+  <name>hive.mapred.reduce.tasks.speculative.execution</name>
+  <value>true</value>
+  <description>Whether speculative execution for reducers should be turned on. </description>
+</property>
+
 </configuration>
