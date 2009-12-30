@@ -36,12 +36,12 @@ public enum Type {
   LIST(9),
   MAP(10),
   SHORT(11),
-  
+
   // application-specific codes (50-200):
   WRITABLE(50),
-  
-  ENDOFRECORD(100),
-  
+
+  ENDOFRECORD(177),
+
   // low-level codes (> 200):
   MARKER(255);
 
