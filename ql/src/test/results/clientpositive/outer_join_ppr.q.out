@@ -73,12 +73,13 @@ STAGE PLANS:
                     type: string
       Needs Tagging: true
       Path -> Alias:
-        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [b]
-        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [b]
-        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/src [a]
+        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [b]
+        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [b]
+        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/src [a]
       Path -> Partition:
-        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
+            base file name: hr=11
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             partition values:
@@ -95,8 +96,8 @@ STAGE PLANS:
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11
-              transient_lastDdlTime 1258006182
+              location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart
+              transient_lastDdlTime 1262137126
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -112,13 +113,14 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart
-                transient_lastDdlTime 1258006182
+                location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart
+                transient_lastDdlTime 1262137126
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
             name: srcpart
-        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
+            base file name: hr=12
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             partition values:
@@ -135,8 +137,8 @@ STAGE PLANS:
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12
-              transient_lastDdlTime 1258006182
+              location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart
+              transient_lastDdlTime 1262137126
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -152,13 +154,14 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart
-                transient_lastDdlTime 1258006182
+                location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart
+                transient_lastDdlTime 1262137126
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
             name: srcpart
-        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/src 
+        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/src 
           Partition
+            base file name: src
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -171,7 +174,8 @@ STAGE PLANS:
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/src
+              location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/src
+              transient_lastDdlTime 1262137127
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -186,8 +190,8 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/src
-                transient_lastDdlTime 1258006183
+                location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/src
+                transient_lastDdlTime 1262137127
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
             name: src
@@ -218,7 +222,7 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
-                directory: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/1334596037/10001
+                directory: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/565780770/10001
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -243,7 +247,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/1310288143/10000
+PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/891786455/10000
 POSTHOOK: query: FROM 
   src a
  FULL OUTER JOIN 
@@ -255,7 +259,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/1310288143/10000
+POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/891786455/10000
 17	val_17	17	val_17
 17	val_17	17	val_17
 18	val_18	18	val_18
@@ -335,14 +339,15 @@ STAGE PLANS:
                     type: string
       Needs Tagging: true
       Path -> Alias:
-        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [b]
-        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [b]
-        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 [b]
-        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 [b]
-        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/src [a]
+        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [b]
+        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [b]
+        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 [b]
+        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 [b]
+        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/src [a]
       Path -> Partition:
-        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
+            base file name: hr=11
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             partition values:
@@ -359,8 +364,8 @@ STAGE PLANS:
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11
-              transient_lastDdlTime 1258006182
+              location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart
+              transient_lastDdlTime 1262137126
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -376,13 +381,14 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart
-                transient_lastDdlTime 1258006182
+                location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart
+                transient_lastDdlTime 1262137126
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
             name: srcpart
-        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
+            base file name: hr=12
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             partition values:
@@ -399,8 +405,8 @@ STAGE PLANS:
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12
-              transient_lastDdlTime 1258006182
+              location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart
+              transient_lastDdlTime 1262137126
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -416,13 +422,14 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart
-                transient_lastDdlTime 1258006182
+                location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart
+                transient_lastDdlTime 1262137126
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
             name: srcpart
-        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 
+        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11 
           Partition
+            base file name: hr=11
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             partition values:
@@ -439,8 +446,8 @@ STAGE PLANS:
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=11
-              transient_lastDdlTime 1258006182
+              location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart
+              transient_lastDdlTime 1262137126
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -456,13 +463,14 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart
-                transient_lastDdlTime 1258006182
+                location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart
+                transient_lastDdlTime 1262137126
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
             name: srcpart
-        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
+        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12 
           Partition
+            base file name: hr=12
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             partition values:
@@ -479,8 +487,8 @@ STAGE PLANS:
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart/ds=2008-04-09/hr=12
-              transient_lastDdlTime 1258006182
+              location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart
+              transient_lastDdlTime 1262137126
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -496,13 +504,14 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/srcpart
-                transient_lastDdlTime 1258006182
+                location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart
+                transient_lastDdlTime 1262137126
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
             name: srcpart
-        file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/src 
+        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/src 
           Partition
+            base file name: src
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -515,7 +524,8 @@ STAGE PLANS:
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/src
+              location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/src
+              transient_lastDdlTime 1262137127
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -530,8 +540,8 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/test/data/warehouse/src
-                transient_lastDdlTime 1258006183
+                location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/src
+                transient_lastDdlTime 1262137127
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
             name: src
@@ -562,7 +572,7 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
-                directory: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/95540091/10001
+                directory: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/354390874/10001
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -589,7 +599,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/202105136/10000
+PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/187422782/10000
 POSTHOOK: query: FROM 
   src a
  FULL OUTER JOIN 
@@ -603,7 +613,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/heyongqiang/Documents/workspace/Hive-Test/build/ql/tmp/202105136/10000
+POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/187422782/10000
 17	val_17	17	val_17
 17	val_17	17	val_17
 18	val_18	18	val_18

@@ -26,11 +26,11 @@ POSTHOOK: Output: default@nzhang_Tmp
 PREHOOK: query: select * from nzhang_Tmp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_tmp
-PREHOOK: Output: file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/1149102583/10000
+PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/817024620/10000
 POSTHOOK: query: select * from nzhang_Tmp
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_tmp
-POSTHOOK: Output: file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/1149102583/10000
+POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/817024620/10000
 PREHOOK: query: explain create table nzhang_CTAS1 as select key k, value from src sort by k, value limit 10
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: explain create table nzhang_CTAS1 as select key k, value from src sort by k, value limit 10
@@ -84,7 +84,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/317200131/10002 
+        file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/2138410252/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -112,7 +112,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:///data/users/zshao/tools/deploy-trunk-apache-hive/ql/../build/ql/test/data/warehouse/nzhang_ctas1
+          destination: file:///data/users/jsichi/open/hive-trunk/ql/../build/ql/test/data/warehouse/nzhang_ctas1
 
   Stage: Stage-3
       Create Table Operator:
@@ -136,11 +136,11 @@ POSTHOOK: Output: default@nzhang_CTAS1
 PREHOOK: query: select * from nzhang_CTAS1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_ctas1
-PREHOOK: Output: file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/1963223053/10000
+PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/710958471/10000
 POSTHOOK: query: select * from nzhang_CTAS1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_ctas1
-POSTHOOK: Output: file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/1963223053/10000
+POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/710958471/10000
 0	val_0
 0	val_0
 0	val_0
@@ -204,7 +204,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/88035336/10002 
+        file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/305880921/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -232,7 +232,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:///data/users/zshao/tools/deploy-trunk-apache-hive/ql/../build/ql/test/data/warehouse/nzhang_ctas2
+          destination: file:///data/users/jsichi/open/hive-trunk/ql/../build/ql/test/data/warehouse/nzhang_ctas2
 
   Stage: Stage-3
       Create Table Operator:
@@ -256,11 +256,11 @@ POSTHOOK: Output: default@nzhang_ctas2
 PREHOOK: query: select * from nzhang_ctas2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_ctas2
-PREHOOK: Output: file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/16284527/10000
+PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1731188757/10000
 POSTHOOK: query: select * from nzhang_ctas2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_ctas2
-POSTHOOK: Output: file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/16284527/10000
+POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1731188757/10000
 0	val_0
 0	val_0
 0	val_0
@@ -324,7 +324,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/1798106048/10002 
+        file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/564962024/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -352,7 +352,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:///data/users/zshao/tools/deploy-trunk-apache-hive/ql/../build/ql/test/data/warehouse/nzhang_ctas3
+          destination: file:///data/users/jsichi/open/hive-trunk/ql/../build/ql/test/data/warehouse/nzhang_ctas3
 
   Stage: Stage-3
       Create Table Operator:
@@ -377,11 +377,11 @@ POSTHOOK: Output: default@nzhang_ctas3
 PREHOOK: query: select * from nzhang_ctas3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_ctas3
-PREHOOK: Output: file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/1146556976/10000
+PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/535377929/10000
 POSTHOOK: query: select * from nzhang_ctas3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_ctas3
-POSTHOOK: Output: file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/1146556976/10000
+POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/535377929/10000
 0.0	val_0_con
 0.0	val_0_con
 0.0	val_0_con
@@ -410,11 +410,11 @@ POSTHOOK: type: CREATETABLE
 PREHOOK: query: select * from nzhang_ctas3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_ctas3
-PREHOOK: Output: file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/424511027/10000
+PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1725800016/10000
 POSTHOOK: query: select * from nzhang_ctas3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_ctas3
-POSTHOOK: Output: file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/424511027/10000
+POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1725800016/10000
 0.0	val_0_con
 0.0	val_0_con
 0.0	val_0_con
@@ -478,7 +478,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/257132629/10002 
+        file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/633210786/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -506,7 +506,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: file:///data/users/zshao/tools/deploy-trunk-apache-hive/ql/../build/ql/test/data/warehouse/nzhang_ctas4
+          destination: file:///data/users/jsichi/open/hive-trunk/ql/../build/ql/test/data/warehouse/nzhang_ctas4
 
   Stage: Stage-3
       Create Table Operator:
@@ -531,11 +531,11 @@ POSTHOOK: Output: default@nzhang_ctas4
 PREHOOK: query: select * from nzhang_ctas4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_ctas4
-PREHOOK: Output: file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/466331584/10000
+PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1216389488/10000
 POSTHOOK: query: select * from nzhang_ctas4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nzhang_ctas4
-POSTHOOK: Output: file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/466331584/10000
+POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1216389488/10000
 0	val_0
 0	val_0
 0	val_0
@@ -588,10 +588,11 @@ STAGE PLANS:
                       type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/test/data/warehouse/src [src]
+        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/src [src]
       Path -> Partition:
-        file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/test/data/warehouse/src 
+        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/src 
           Partition
+            base file name: src
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -604,8 +605,8 @@ STAGE PLANS:
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/test/data/warehouse/src
-              transient_lastDdlTime 1261508605
+              location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/src
+              transient_lastDdlTime 1262135512
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -620,8 +621,8 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/test/data/warehouse/src
-                transient_lastDdlTime 1261508605
+                location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/src
+                transient_lastDdlTime 1262135512
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
             name: src
@@ -631,7 +632,7 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/603500118/10002
+              directory: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1017044863/10002
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -643,7 +644,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/603500118/10002 
+        file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1017044863/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -659,10 +660,11 @@ STAGE PLANS:
                     type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/603500118/10002 [file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/603500118/10002]
+        file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1017044863/10002 [file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1017044863/10002]
       Path -> Partition:
-        file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/603500118/10002 
+        file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1017044863/10002 
           Partition
+            base file name: 10002
             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
             properties:
@@ -682,7 +684,7 @@ STAGE PLANS:
             File Output Operator
               compressed: false
               GlobalTableId: 0
-              directory: file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/603500118/10001
+              directory: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1017044863/10001
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -698,8 +700,8 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          source: file:/data/users/zshao/tools/deploy-trunk-apache-hive/build/ql/tmp/603500118/10001
-          destination: file:///data/users/zshao/tools/deploy-trunk-apache-hive/ql/../build/ql/test/data/warehouse/nzhang_ctas5
+          source: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1017044863/10001
+          destination: file:///data/users/jsichi/open/hive-trunk/ql/../build/ql/test/data/warehouse/nzhang_ctas5
 
   Stage: Stage-3
       Create Table Operator:

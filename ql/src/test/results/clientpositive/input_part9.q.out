@@ -58,11 +58,12 @@ STAGE PLANS:
                           type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/cmishra/apachehive/hive-trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [x]
-        file:/data/users/cmishra/apachehive/hive-trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [x]
+        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 [x]
+        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 [x]
       Path -> Partition:
-        file:/data/users/cmishra/apachehive/hive-trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
+        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11 
           Partition
+            base file name: hr=11
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             partition values:
@@ -79,8 +80,8 @@ STAGE PLANS:
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/cmishra/apachehive/hive-trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=11
-              transient_lastDdlTime 1259219821
+              location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart
+              transient_lastDdlTime 1262136311
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -96,13 +97,14 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/cmishra/apachehive/hive-trunk/build/ql/test/data/warehouse/srcpart
-                transient_lastDdlTime 1259219820
+                location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart
+                transient_lastDdlTime 1262136311
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
             name: srcpart
-        file:/data/users/cmishra/apachehive/hive-trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
+        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12 
           Partition
+            base file name: hr=12
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             partition values:
@@ -119,8 +121,8 @@ STAGE PLANS:
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/cmishra/apachehive/hive-trunk/build/ql/test/data/warehouse/srcpart/ds=2008-04-08/hr=12
-              transient_lastDdlTime 1259219821
+              location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart
+              transient_lastDdlTime 1262136311
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -136,8 +138,8 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/cmishra/apachehive/hive-trunk/build/ql/test/data/warehouse/srcpart
-                transient_lastDdlTime 1259219820
+                location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcpart
+                transient_lastDdlTime 1262136311
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcpart
             name: srcpart
@@ -146,7 +148,7 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/data/users/cmishra/apachehive/hive-trunk/build/ql/tmp/1754076544/10001
+            directory: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1850835970/10001
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -164,12 +166,12 @@ PREHOOK: query: SELECT x.* FROM SRCPART x WHERE key IS NOT NULL AND ds = '2008-0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-PREHOOK: Output: file:/data/users/cmishra/apachehive/hive-trunk/build/ql/tmp/774808080/10000
+PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/830534543/10000
 POSTHOOK: query: SELECT x.* FROM SRCPART x WHERE key IS NOT NULL AND ds = '2008-04-08' order by x.key, x.hr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-POSTHOOK: Output: file:/data/users/cmishra/apachehive/hive-trunk/build/ql/tmp/774808080/10000
+POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/830534543/10000
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11
 0	val_0	2008-04-08	11

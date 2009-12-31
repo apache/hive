@@ -387,6 +387,9 @@ Trunk -  Unreleased
     HIVE-916 typedbytes: changes
     (namit via He Yongqiang)
 
+    HIVE-976 Compare the path in unit tests for sampling
+    (John Sichi via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

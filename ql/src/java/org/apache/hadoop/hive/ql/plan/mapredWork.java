@@ -98,6 +98,7 @@ public class mapredWork implements Serializable {
   public LinkedHashMap<String,partitionDesc> getPathToPartitionInfo() {
     return this.pathToPartitionInfo;
   }
+
   public void setPathToPartitionInfo(final LinkedHashMap<String,partitionDesc> pathToPartitionInfo) {
     this.pathToPartitionInfo = pathToPartitionInfo;
   }
@@ -232,6 +233,19 @@ public class mapredWork implements Serializable {
   private void setAliases () {
     for(String oneAlias: this.aliasToWork.keySet()) {
       this.aliasToWork.get(oneAlias).setAlias(oneAlias);
+    }
+  }
+
+  /**
+   * Derive additional attributes to be rendered by EXPLAIN.
+   */
+  public void deriveExplainAttributes() {
+    if (this.pathToPartitionInfo == null) {
+      return;
+    }
+    for (Map.Entry<String,partitionDesc> entry
+           : this.pathToPartitionInfo.entrySet()) {
+      entry.getValue().deriveBaseFileName(entry.getKey());
     }
   }
 

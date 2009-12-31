@@ -68,10 +68,11 @@ STAGE PLANS:
                         type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/src [tmap:src]
+        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/src [tmap:src]
       Path -> Partition:
-        file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/src 
+        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/src 
           Partition
+            base file name: src
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -84,8 +85,8 @@ STAGE PLANS:
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/src
-              transient_lastDdlTime 1261529841
+              location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/src
+              transient_lastDdlTime 1262137436
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -100,8 +101,8 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/src
-                transient_lastDdlTime 1261529841
+                location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/src
+                transient_lastDdlTime 1262137436
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
             name: src
@@ -122,7 +123,7 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
-                directory: file:/data/users/nzhang/work/870/apache-hive/build/ql/tmp/1967522222/10001
+                directory: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/237484840/10001
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -145,7 +146,7 @@ PREHOOK: query: FROM (
 SELECT tmap.key, regexp_extract(tmap.value, 'val_(\\d+\\t\\d+)',1) WHERE tmap.key < 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/nzhang/work/870/apache-hive/build/ql/tmp/1689304784/10000
+PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/687662347/10000
 POSTHOOK: query: FROM (
   FROM src
   SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
@@ -155,7 +156,7 @@ POSTHOOK: query: FROM (
 SELECT tmap.key, regexp_extract(tmap.value, 'val_(\\d+\\t\\d+)',1) WHERE tmap.key < 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/nzhang/work/870/apache-hive/build/ql/tmp/1689304784/10000
+POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/687662347/10000
 0	0	3
 0	0	3
 0	0	3
@@ -310,10 +311,11 @@ STAGE PLANS:
                         type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/src [tmap:src]
+        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/src [tmap:src]
       Path -> Partition:
-        file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/src 
+        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/src 
           Partition
+            base file name: src
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
@@ -326,8 +328,8 @@ STAGE PLANS:
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/src
-              transient_lastDdlTime 1261529841
+              location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/src
+              transient_lastDdlTime 1262137436
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -342,8 +344,8 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/nzhang/work/870/apache-hive/build/ql/test/data/warehouse/src
-                transient_lastDdlTime 1261529841
+                location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/src
+                transient_lastDdlTime 1262137436
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: src
             name: src
@@ -364,7 +366,7 @@ STAGE PLANS:
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
-                directory: file:/data/users/nzhang/work/870/apache-hive/build/ql/tmp/837479572/10001
+                directory: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1239765305/10001
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -387,7 +389,7 @@ PREHOOK: query: FROM (
 SELECT tmap.key, regexp_extract(tmap.value, 'val_(\\d+\\t\\d+)') WHERE tmap.key < 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/nzhang/work/870/apache-hive/build/ql/tmp/209947857/10000
+PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1514486187/10000
 POSTHOOK: query: FROM (
   FROM src
   SELECT TRANSFORM(src.key, src.value, 1+2, 3+4)
@@ -397,7 +399,7 @@ POSTHOOK: query: FROM (
 SELECT tmap.key, regexp_extract(tmap.value, 'val_(\\d+\\t\\d+)') WHERE tmap.key < 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/nzhang/work/870/apache-hive/build/ql/tmp/209947857/10000
+POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1514486187/10000
 0	0	3
 0	0	3
 0	0	3

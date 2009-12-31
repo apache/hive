@@ -18,7 +18,9 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import java.io.File;
 import java.io.Serializable;
+import java.net.URI;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -39,6 +41,7 @@ public class partitionDesc implements Serializable, Cloneable {
   private Class<? extends HiveOutputFormat> outputFileFormatClass;
   private java.util.Properties properties;
   private String serdeClassName;
+  private transient String baseFileName;
 
   public partitionDesc() { }
 
@@ -172,6 +175,11 @@ public class partitionDesc implements Serializable, Cloneable {
     return getOutputFileFormatClass().getName();
   }
 
+  @explain(displayName="base file name", normalExplain=false)
+  public String getBaseFileName() {
+    return this.baseFileName;
+  }
+
   public partitionDesc clone() {
   	partitionDesc ret = new partitionDesc();
 
@@ -195,5 +203,27 @@ public class partitionDesc implements Serializable, Cloneable {
       ret.partSpec.putAll(this.partSpec);
     }
   	return ret;
+  }
+
+  /**
+   * Attempt to derive a virtual <code>base file name</code> property from the
+   * path.  If path format is unrecognized, just use the full path.
+   *
+   * @param path URI to the partition file
+   */
+  void deriveBaseFileName(String path)
+  {
+    if (path == null) {
+      return;
+    }
+    try {
+      URI uri = new URI(path);
+      File file = new File(uri);
+      baseFileName = file.getName();
+    } catch (Exception ex) {
+      // This could be due to either URI syntax error or File constructor
+      // illegal arg; we don't really care which one it is.
+      baseFileName = path;
+    }
   }
 }

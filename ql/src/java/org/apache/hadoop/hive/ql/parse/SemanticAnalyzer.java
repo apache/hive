@@ -5143,6 +5143,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if ((task instanceof MapRedTask) || (task instanceof ExecDriver)) {
       mapredWork work = (mapredWork)task.getWork();
+      work.deriveExplainAttributes();
       HashMap<String, Operator<? extends Serializable>> opMap = work.getAliasToWork();
       if (!opMap.isEmpty())
         for (Operator<? extends Serializable> op: opMap.values())
