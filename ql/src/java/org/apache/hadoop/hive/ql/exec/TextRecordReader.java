@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Properties;
 
 import org.apache.hadoop.mapred.LineRecordReader.LineReader;
 
@@ -34,7 +35,7 @@ public class TextRecordReader implements RecordReader {
   private InputStream in;
   private Text        row;
 
-  public void initialize(InputStream in, Configuration conf) throws IOException {
+  public void initialize(InputStream in, Configuration conf, Properties tbl) throws IOException {
     lineReader = new LineReader(in, conf);
     this.in = in;
   }
@@ -50,7 +51,7 @@ public class TextRecordReader implements RecordReader {
 
     return lineReader.readLine((Text)row);
   }
-  
+
   public void close() throws IOException {
     if (in != null)
       in.close();

@@ -155,6 +155,9 @@ Trunk -  Unreleased
     HIVE-963. No out of memory errors for skew join
     (Ning Zhang via namit)
 
+    HIVE-1023. typedbytes: datatypes should be derived from data
+    (namit via He Yongqiang) 
+
   OPTIMIZATIONS
 
   BUG FIXES

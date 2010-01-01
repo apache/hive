@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Writable;
@@ -27,11 +28,11 @@ import org.apache.hadoop.io.Writable;
 
 public interface RecordReader {
 
-  public void initialize(InputStream in, Configuration conf) throws IOException;
+  public void initialize(InputStream in, Configuration conf, Properties tbl) throws IOException;
 
   public Writable createRow() throws IOException;
 
   public int next(Writable row) throws IOException;
-  
+
   public void close() throws IOException;
 }

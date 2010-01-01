@@ -22,6 +22,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.DataInputStream;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Arrays;
+import java.util.Properties;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
@@ -36,6 +41,13 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.hive.ql.io.NonSyncDataOutputBuffer;
 import org.apache.hadoop.hive.ql.exec.RecordReader;
+import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 public class TypedBytesRecordReader implements RecordReader {
 
@@ -43,13 +55,38 @@ public class TypedBytesRecordReader implements RecordReader {
   private TypedBytesWritableInput tbIn;
 
   NonSyncDataOutputBuffer barrStr = new NonSyncDataOutputBuffer();
-  TypedBytesWritableOutput tbOut = new TypedBytesWritableOutput(barrStr);
+  TypedBytesWritableOutput tbOut;
 
   ArrayList<Writable> row = new ArrayList<Writable>(0);
+  ArrayList<String>   rowTypeName = new ArrayList<String>(0);
+  List<String>        columnTypes;
 
-  public void initialize(InputStream in, Configuration conf) throws IOException {
+  ArrayList<ObjectInspector> srcOIns = new ArrayList<ObjectInspector>();
+  ArrayList<ObjectInspector> dstOIns = new ArrayList<ObjectInspector>();
+  ArrayList<Converter>       converters = new ArrayList<Converter>();
+
+  static private Map<Type, String> typedBytesToTypeName = new HashMap<Type, String>();
+  static {
+    typedBytesToTypeName.put(getType(1), Constants.TINYINT_TYPE_NAME);
+    typedBytesToTypeName.put(getType(2), Constants.BOOLEAN_TYPE_NAME);
+    typedBytesToTypeName.put(getType(3), Constants.INT_TYPE_NAME);
+    typedBytesToTypeName.put(getType(4), Constants.BIGINT_TYPE_NAME);
+    typedBytesToTypeName.put(getType(5), Constants.FLOAT_TYPE_NAME);
+    typedBytesToTypeName.put(getType(6), Constants.DOUBLE_TYPE_NAME);
+    typedBytesToTypeName.put(getType(7), Constants.STRING_TYPE_NAME);
+    typedBytesToTypeName.put(getType(11), Constants.SMALLINT_TYPE_NAME);
+  }
+
+  public void initialize(InputStream in, Configuration conf, Properties tbl) throws IOException {
     din = new DataInputStream(in);
     tbIn = new TypedBytesWritableInput(din);
+    tbOut = new TypedBytesWritableOutput(barrStr);
+    String columnTypeProperty = tbl.getProperty(Constants.LIST_COLUMN_TYPES);
+    columnTypes = Arrays.asList(columnTypeProperty.split(","));
+    for (String columnType:columnTypes) {
+      PrimitiveTypeEntry dstTypeEntry = PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(columnType);
+      dstOIns.add(PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(dstTypeEntry.primitiveCategory));
+    }
   }
 
   public Writable createRow() throws IOException {
@@ -80,90 +117,121 @@ public class TypedBytesRecordReader implements RecordReader {
     }
     return null;
   }
-  
+
   public int next(Writable data) throws IOException {
     int pos = 0;
     barrStr.reset();
 
     while (true) {
       Type type = tbIn.readTypeCode();
-      
+
       // it was a empty stream
       if (type == null)
         return -1;
-      
+
       if (type == Type.ENDOFRECORD) {
         tbOut.writeEndOfRecord();
         if (barrStr.getLength() > 0)
           ((BytesWritable)data).set(barrStr.getData(), 0, barrStr.getLength());
         return barrStr.getLength();
       }
-    
+
       if (pos >= row.size()) {
         Writable wrt = allocateWritable(type);
         assert pos == row.size();
+        assert pos == rowTypeName.size();
         row.add(wrt);
+        rowTypeName.add(type.name());
+        String typeName = typedBytesToTypeName.get(type);
+        PrimitiveTypeEntry srcTypeEntry = PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(typeName);
+        srcOIns.add(PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(srcTypeEntry.primitiveCategory));
+        converters.add(ObjectInspectorConverters.getConverter(srcOIns.get(pos), dstOIns.get(pos)));
       }
-     
+      else {
+        if (!rowTypeName.get(pos).equals(type.name()))
+          throw new RuntimeException("datatype of row changed from " +
+                                     rowTypeName.get(pos) + " to " + type.name());
+      }
+
+      Writable w  = row.get(pos);
       switch (type) {
         case BYTE: {
-          ByteWritable bw = (ByteWritable)row.get(pos);
-          tbIn.readByte(bw);
-          tbOut.writeByte(bw);
+          tbIn.readByte((ByteWritable)w);
           break;
         }
         case BOOL: {
-          BooleanWritable bw = (BooleanWritable)row.get(pos);
-          tbIn.readBoolean(bw);
-          tbOut.writeBoolean(bw);
+          tbIn.readBoolean((BooleanWritable)w);
           break;
         }
         case INT: {
-          IntWritable iw = (IntWritable)row.get(pos);
-          tbIn.readInt(iw);
-          tbOut.writeInt(iw);
+          tbIn.readInt((IntWritable)w);
           break;
         }
         case SHORT: {
-          ShortWritable sw = (ShortWritable)row.get(pos);
-          tbIn.readShort(sw);
-          tbOut.writeShort(sw);
+          tbIn.readShort((ShortWritable)w);
           break;
-        }        
+        }
         case LONG: {
-          LongWritable lw = (LongWritable)row.get(pos);
-          tbIn.readLong(lw);
-          tbOut.writeLong(lw);
+          tbIn.readLong((LongWritable)w);
           break;
         }
         case FLOAT: {
-          FloatWritable fw = (FloatWritable)row.get(pos);
-          tbIn.readFloat(fw);
-          tbOut.writeFloat(fw);
+          tbIn.readFloat((FloatWritable)w);
           break;
         }
         case DOUBLE: {
-          DoubleWritable dw = (DoubleWritable)row.get(pos);
-          tbIn.readDouble(dw);
-          tbOut.writeDouble(dw);
+          tbIn.readDouble((DoubleWritable)w);
           break;
         }
         case STRING: {
-          Text txt = (Text)row.get(pos);
-          tbIn.readText(txt);
-          tbOut.writeText(txt);
+          tbIn.readText((Text)w);
           break;
         }
         default:
           assert false;  // should never come here
       }
-    
+
+      write(pos, w);
       pos++;
     }
   }
-  
+
+  private void write(int pos, Writable inpw) throws IOException {
+    String typ = columnTypes.get(pos);
+
+    Writable w = (Writable)converters.get(pos).convert(inpw);
+
+    if (typ.equalsIgnoreCase(Constants.BOOLEAN_TYPE_NAME))
+      tbOut.writeBoolean((BooleanWritable)w);
+    else if (typ.equalsIgnoreCase(Constants.TINYINT_TYPE_NAME))
+      tbOut.writeByte((ByteWritable)w);
+    else if (typ.equalsIgnoreCase(Constants.SMALLINT_TYPE_NAME))
+      tbOut.writeShort((ShortWritable)w);
+    else if (typ.equalsIgnoreCase(Constants.INT_TYPE_NAME))
+      tbOut.writeInt((IntWritable)w);
+    else if (typ.equalsIgnoreCase(Constants.BIGINT_TYPE_NAME))
+      tbOut.writeLong((LongWritable)w);
+    else if (typ.equalsIgnoreCase(Constants.FLOAT_TYPE_NAME))
+      tbOut.writeFloat((FloatWritable)w);
+    else if (typ.equalsIgnoreCase(Constants.DOUBLE_TYPE_NAME))
+      tbOut.writeDouble((DoubleWritable)w);
+    else if (typ.equalsIgnoreCase(Constants.STRING_TYPE_NAME))
+      tbOut.writeText((Text)w);
+    else
+      assert false;
+  }
+
   public void close() throws IOException {
     if (din != null)
       din.close();
+  }
+
+  static public Type getType(int code) {
+    for (Type type : Type.values()) {
+      if (type.code == code) {
+        return type;
+      }
+    }
+    return null;
   }
 }
