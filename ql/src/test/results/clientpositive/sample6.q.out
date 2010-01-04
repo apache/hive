@@ -48,7 +48,7 @@ STAGE PLANS:
                   File Output Operator
                     compressed: false
                     GlobalTableId: 1
-                    directory: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/984381603/10002
+                    directory: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/1613424286/10002
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -62,15 +62,15 @@ STAGE PLANS:
                           serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                           file.inputformat org.apache.hadoop.mapred.TextInputFormat
                           file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                          location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/dest1
-                          transient_lastDdlTime 1262221813
+                          location file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/dest1
+                          transient_lastDdlTime 1262631938
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         name: dest1
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket/srcbucket0.txt [s]
+        file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket/srcbucket0.txt [s]
       Path -> Partition:
-        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket/srcbucket0.txt 
+        file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket/srcbucket0.txt 
           Partition
             base file name: srcbucket0.txt
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -86,8 +86,8 @@ STAGE PLANS:
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket
-              transient_lastDdlTime 1262221811
+              location file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket
+              transient_lastDdlTime 1262631936
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -103,8 +103,8 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket
-                transient_lastDdlTime 1262221811
+                location file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket
+                transient_lastDdlTime 1262631936
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcbucket
             name: srcbucket
@@ -115,11 +115,11 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                source: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/984381603/10002
-                destination: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/935713816/10000
+                source: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/1613424286/10002
+                destination: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/718363187/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/984381603/10002 
+              file:/Users/jsichi/open/hive-trunk/build/ql/tmp/1613424286/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -133,9 +133,9 @@ STAGE PLANS:
                           type: string
             Needs Tagging: false
             Path -> Alias:
-              file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/984381603/10002 [file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/984381603/10002]
+              file:/Users/jsichi/open/hive-trunk/build/ql/tmp/1613424286/10002 [file:/Users/jsichi/open/hive-trunk/build/ql/tmp/1613424286/10002]
             Path -> Partition:
-              file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/984381603/10002 
+              file:/Users/jsichi/open/hive-trunk/build/ql/tmp/1613424286/10002 
                 Partition
                   base file name: 10002
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -150,8 +150,8 @@ STAGE PLANS:
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     file.inputformat org.apache.hadoop.mapred.TextInputFormat
                     file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/dest1
-                    transient_lastDdlTime 1262221813
+                    location file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/dest1
+                    transient_lastDdlTime 1262631938
                   serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -166,8 +166,8 @@ STAGE PLANS:
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       file.inputformat org.apache.hadoop.mapred.TextInputFormat
                       file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/dest1
-                      transient_lastDdlTime 1262221813
+                      location file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/dest1
+                      transient_lastDdlTime 1262631938
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: dest1
                   name: dest1
@@ -176,7 +176,7 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
-                  directory: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/935713816/10000
+                  directory: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/718363187/10000
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -189,9 +189,9 @@ STAGE PLANS:
                         bucket_count -1
                         serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         file.inputformat org.apache.hadoop.mapred.TextInputFormat
-                        location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/dest1
+                        location file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/dest1
                         file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                        transient_lastDdlTime 1262221813
+                        transient_lastDdlTime 1262631938
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       name: dest1
 
@@ -199,7 +199,7 @@ STAGE PLANS:
     Move Operator
       tables:
           replace: true
-          source: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/935713816/10000
+          source: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/718363187/10000
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -213,11 +213,11 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/dest1
-                transient_lastDdlTime 1262221813
+                location file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/dest1
+                transient_lastDdlTime 1262631938
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: dest1
-          tmp directory: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/935713816/10001
+          tmp directory: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/718363187/10001
 
 
 PREHOOK: query: INSERT OVERWRITE TABLE dest1 SELECT s.*
@@ -233,11 +233,11 @@ POSTHOOK: Output: default@dest1
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/775851946/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/1329398856/10000
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/775851946/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/1329398856/10000
 468	val_469
 272	val_273
 448	val_449
@@ -488,13 +488,13 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/775851946
 400	val_400
 200	val_200
 PREHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 4 OUT OF 4 on key) s
-ORDER BY key
+ORDER BY key, value
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 4 OUT OF 4 on key) s
-ORDER BY key
+ORDER BY key, value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF srcbucket (TOK_TABLESAMPLE 4 4 (TOK_TABLE_OR_COL key)) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF s))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF srcbucket (TOK_TABLESAMPLE 4 4 (TOK_TABLE_OR_COL key)) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF s))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -528,7 +528,9 @@ STAGE PLANS:
                     key expressions:
                           expr: _col0
                           type: int
-                    sort order: +
+                          expr: _col1
+                          type: string
+                    sort order: ++
                     tag: -1
                     value expressions:
                           expr: _col0
@@ -537,9 +539,9 @@ STAGE PLANS:
                           type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket/srcbucket1.txt [s]
+        file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket/srcbucket1.txt [s]
       Path -> Partition:
-        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket/srcbucket1.txt 
+        file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket/srcbucket1.txt 
           Partition
             base file name: srcbucket1.txt
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -555,8 +557,8 @@ STAGE PLANS:
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket
-              transient_lastDdlTime 1262221811
+              location file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket
+              transient_lastDdlTime 1262631936
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -572,8 +574,8 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket
-                transient_lastDdlTime 1262221811
+                location file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket
+                transient_lastDdlTime 1262631936
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcbucket
             name: srcbucket
@@ -582,7 +584,7 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/297831582/10001
+            directory: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/788645860/10001
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -597,33 +599,33 @@ STAGE PLANS:
 
 
 PREHOOK: query: SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 4 OUT OF 4 on key) s
-ORDER BY key
+ORDER BY key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/413101710/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/737314144/10000
 POSTHOOK: query: SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 4 OUT OF 4 on key) s
-ORDER BY key
+ORDER BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/413101710/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/737314144/10000
 3	val_4
-11	val_12
 11	val_11
 11	val_12
 11	val_12
+11	val_12
 15	val_15
 15	val_15
 15	val_16
 15	val_16
-19	val_20
 19	val_19
+19	val_20
 23	val_24
 27	val_27
 31	val_32
 35	val_35
 35	val_35
-35	val_36
 35	val_35
+35	val_36
 35	val_36
 35	val_36
 43	val_43
@@ -650,11 +652,11 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/413101710
 103	val_103
 103	val_103
 111	val_111
+119	val_119
+119	val_119
+119	val_119
 119	val_120
-119	val_119
-119	val_119
 119	val_120
-119	val_119
 119	val_120
 123	val_124
 123	val_124
@@ -662,8 +664,8 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/413101710
 135	val_136
 135	val_136
 135	val_136
-143	val_144
 143	val_143
+143	val_144
 147	val_148
 147	val_148
 151	val_152
@@ -671,18 +673,18 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/413101710
 155	val_155
 163	val_163
 167	val_167
+167	val_167
+167	val_167
 167	val_168
-167	val_167
-167	val_167
+175	val_175
 175	val_175
 175	val_176
-175	val_175
 175	val_176
+179	val_179
+179	val_179
 179	val_180
-179	val_179
-179	val_179
-183	val_184
 183	val_183
+183	val_184
 187	val_187
 187	val_187
 187	val_187
@@ -691,10 +693,10 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/413101710
 191	val_192
 195	val_195
 195	val_195
+199	val_199
+199	val_199
+199	val_199
 199	val_200
-199	val_199
-199	val_199
-199	val_199
 203	val_203
 203	val_203
 207	val_207
@@ -706,11 +708,11 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/413101710
 223	val_223
 227	val_228
 231	val_232
-235	val_236
 235	val_235
+235	val_236
+239	val_239
 239	val_239
 239	val_240
-239	val_239
 239	val_240
 243	val_244
 243	val_244
@@ -722,15 +724,15 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/413101710
 263	val_263
 267	val_268
 271	val_272
-275	val_276
 275	val_275
 275	val_276
+275	val_276
 283	val_283
-287	val_288
-287	val_288
 287	val_287
-291	val_292
+287	val_288
+287	val_288
 291	val_291
+291	val_292
 291	val_292
 295	val_296
 295	val_296
@@ -747,9 +749,9 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/413101710
 327	val_327
 327	val_327
 327	val_327
+331	val_331
+331	val_331
 331	val_332
-331	val_331
-331	val_331
 331	val_332
 335	val_335
 335	val_336
@@ -758,45 +760,45 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/413101710
 343	val_344
 347	val_348
 347	val_348
-351	val_352
-351	val_352
 351	val_351
+351	val_352
+351	val_352
 355	val_356
 355	val_356
 363	val_364
 363	val_364
 363	val_364
-367	val_368
-367	val_368
 367	val_367
 367	val_367
+367	val_368
+367	val_368
 371	val_372
 371	val_372
 371	val_372
 371	val_372
-375	val_376
-375	val_376
 375	val_375
 375	val_376
 375	val_376
 375	val_376
-379	val_380
+375	val_376
+375	val_376
 379	val_379
+379	val_380
 391	val_392
 391	val_392
-395	val_396
 395	val_395
 395	val_395
 395	val_396
-399	val_400
-399	val_400
+395	val_396
 399	val_399
 399	val_399
+399	val_400
+399	val_400
 403	val_403
 403	val_403
 403	val_403
-407	val_408
 407	val_407
+407	val_408
 407	val_408
 407	val_408
 411	val_411
@@ -808,23 +810,23 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/413101710
 427	val_428
 427	val_428
 431	val_431
+431	val_431
+431	val_431
 431	val_432
-431	val_431
-431	val_431
 435	val_435
 435	val_436
-439	val_440
 439	val_439
 439	val_439
 439	val_440
-443	val_444
+439	val_440
 443	val_443
+443	val_444
 443	val_444
 443	val_444
 447	val_448
 451	val_452
-455	val_456
 455	val_455
+455	val_456
 455	val_456
 459	val_459
 459	val_459
@@ -832,8 +834,8 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/413101710
 463	val_463
 463	val_463
 463	val_464
-467	val_468
 467	val_467
+467	val_468
 475	val_475
 475	val_476
 479	val_479
@@ -846,13 +848,13 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/413101710
 495	val_495
 495	val_496
 PREHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
-ORDER BY key
+ORDER BY key, value
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
-ORDER BY key
+ORDER BY key, value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF srcbucket (TOK_TABLESAMPLE 1 2 (TOK_TABLE_OR_COL key)) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF s))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF srcbucket (TOK_TABLESAMPLE 1 2 (TOK_TABLE_OR_COL key)) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF s))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -886,7 +888,9 @@ STAGE PLANS:
                     key expressions:
                           expr: _col0
                           type: int
-                    sort order: +
+                          expr: _col1
+                          type: string
+                    sort order: ++
                     tag: -1
                     value expressions:
                           expr: _col0
@@ -895,9 +899,9 @@ STAGE PLANS:
                           type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket/srcbucket0.txt [s]
+        file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket/srcbucket0.txt [s]
       Path -> Partition:
-        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket/srcbucket0.txt 
+        file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket/srcbucket0.txt 
           Partition
             base file name: srcbucket0.txt
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -913,8 +917,8 @@ STAGE PLANS:
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket
-              transient_lastDdlTime 1262221811
+              location file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket
+              transient_lastDdlTime 1262631936
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -930,8 +934,8 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket
-                transient_lastDdlTime 1262221811
+                location file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket
+                transient_lastDdlTime 1262631936
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcbucket
             name: srcbucket
@@ -940,7 +944,7 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/548735831/10001
+            directory: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/1066584880/10001
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -955,28 +959,28 @@ STAGE PLANS:
 
 
 PREHOOK: query: SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
-ORDER BY key
+ORDER BY key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1184313958/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/1343979992/10000
 POSTHOOK: query: SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
-ORDER BY key
+ORDER BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1184313958/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/1343979992/10000
+0	val_0
+0	val_0
+0	val_0
 0	val_1
 0	val_1
-0	val_0
-0	val_0
-0	val_0
-2	val_3
 2	val_2
+2	val_3
 4	val_4
 4	val_5
 6	val_7
 6	val_7
-8	val_9
 8	val_8
+8	val_9
 10	val_10
 10	val_11
 12	val_12
@@ -986,8 +990,8 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/118431395
 16	val_17
 18	val_18
 18	val_18
-20	val_21
 20	val_20
+20	val_21
 20	val_21
 22	val_23
 24	val_24
@@ -995,17 +999,17 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/118431395
 26	val_26
 26	val_26
 28	val_28
-30	val_31
 30	val_30
+30	val_31
 32	val_33
 34	val_34
 40	val_41
 40	val_41
 42	val_42
-42	val_43
-42	val_43
-42	val_43
 42	val_42
+42	val_43
+42	val_43
+42	val_43
 44	val_44
 46	val_47
 48	val_49
@@ -1028,21 +1032,21 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/118431395
 66	val_66
 68	val_69
 70	val_70
+70	val_70
+70	val_70
 70	val_71
-70	val_70
-70	val_70
 72	val_72
 72	val_72
 74	val_74
-76	val_77
+76	val_76
 76	val_76
 76	val_77
-76	val_76
 76	val_77
-78	val_79
+76	val_77
 78	val_78
-80	val_81
+78	val_79
 80	val_80
+80	val_81
 82	val_82
 82	val_83
 82	val_83
@@ -1059,54 +1063,54 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/118431395
 98	val_98
 98	val_98
 100	val_100
-100	val_101
-100	val_101
 100	val_100
+100	val_101
+100	val_101
 102	val_103
-104	val_105
+104	val_104
 104	val_104
 104	val_105
-104	val_104
+104	val_105
 104	val_105
 106	val_107
 110	val_111
-114	val_115
 114	val_114
 114	val_115
 114	val_115
-116	val_117
+114	val_115
 116	val_116
-118	val_119
+116	val_117
+118	val_118
 118	val_118
 118	val_119
 118	val_119
-118	val_118
+118	val_119
+120	val_120
+120	val_120
 120	val_121
-120	val_120
-120	val_120
 122	val_123
 122	val_123
 122	val_123
-126	val_127
 126	val_126
 126	val_127
+126	val_127
+128	val_128
+128	val_128
+128	val_128
 128	val_129
-128	val_128
-128	val_128
 128	val_129
-128	val_128
 132	val_133
 132	val_133
+134	val_134
+134	val_134
 134	val_135
-134	val_134
-134	val_134
-136	val_137
 136	val_136
+136	val_137
+138	val_138
+138	val_138
+138	val_138
 138	val_138
 138	val_139
-138	val_138
-138	val_138
-138	val_138
 138	val_139
 140	val_141
 144	val_145
@@ -1114,49 +1118,49 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/118431395
 146	val_146
 150	val_150
 152	val_152
-152	val_153
-152	val_153
 152	val_152
 152	val_153
-156	val_157
+152	val_153
+152	val_153
 156	val_156
 156	val_157
+156	val_157
 158	val_158
-160	val_161
 160	val_160
-162	val_163
+160	val_161
 162	val_162
+162	val_163
+164	val_164
+164	val_164
 164	val_165
-164	val_164
-164	val_164
 164	val_165
 166	val_166
-168	val_169
 168	val_168
+168	val_169
 170	val_170
 170	val_171
 172	val_172
-172	val_173
 172	val_172
-174	val_175
-174	val_175
+172	val_173
 174	val_174
 174	val_174
+174	val_175
+174	val_175
 176	val_176
 176	val_176
-178	val_179
-178	val_179
 178	val_178
+178	val_179
+178	val_179
 180	val_180
 182	val_183
 184	val_185
 186	val_186
 190	val_190
-192	val_193
 192	val_192
+192	val_193
 194	val_194
-196	val_197
 196	val_196
+196	val_197
 196	val_197
 196	val_197
 200	val_200
@@ -1175,14 +1179,14 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/118431395
 216	val_216
 216	val_217
 218	val_218
-222	val_223
 222	val_222
+222	val_223
+224	val_224
+224	val_224
 224	val_225
-224	val_224
-224	val_224
-226	val_227
-226	val_227
 226	val_226
+226	val_227
+226	val_227
 226	val_227
 226	val_227
 228	val_228
@@ -1193,22 +1197,22 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/118431395
 230	val_230
 230	val_230
 238	val_238
-238	val_239
 238	val_238
+238	val_239
 240	val_241
 242	val_242
-242	val_243
 242	val_242
-244	val_245
-244	val_245
+242	val_243
 244	val_244
+244	val_245
+244	val_245
 244	val_245
 246	val_247
 246	val_247
 248	val_248
 248	val_249
-252	val_253
 252	val_252
+252	val_253
 254	val_255
 256	val_256
 256	val_256
@@ -1218,9 +1222,9 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/118431395
 260	val_260
 260	val_261
 260	val_261
-262	val_263
-262	val_263
 262	val_262
+262	val_263
+262	val_263
 264	val_265
 264	val_265
 266	val_266
@@ -1245,9 +1249,9 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/118431395
 286	val_287
 288	val_288
 288	val_288
-292	val_293
-292	val_293
 292	val_292
+292	val_293
+292	val_293
 296	val_296
 296	val_297
 298	val_298
@@ -1258,14 +1262,14 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/118431395
 302	val_302
 302	val_303
 304	val_305
-306	val_307
 306	val_306
-308	val_309
+306	val_307
 308	val_308
 308	val_309
-310	val_311
-310	val_311
+308	val_309
 310	val_310
+310	val_311
+310	val_311
 310	val_311
 314	val_315
 316	val_316
@@ -1273,11 +1277,11 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/118431395
 316	val_316
 318	val_318
 318	val_318
-318	val_319
 318	val_318
+318	val_319
+322	val_322
+322	val_322
 322	val_323
-322	val_322
-322	val_322
 324	val_325
 326	val_327
 328	val_329
@@ -1285,38 +1289,38 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/118431395
 330	val_331
 332	val_332
 334	val_335
-336	val_337
 336	val_336
+336	val_337
 338	val_338
 338	val_339
 340	val_341
 342	val_342
 342	val_342
 342	val_343
+344	val_344
+344	val_344
 344	val_345
-344	val_344
-344	val_344
+348	val_348
+348	val_348
+348	val_348
 348	val_348
 348	val_348
 348	val_349
-348	val_348
-348	val_348
-348	val_348
 352	val_353
 352	val_353
 356	val_356
 356	val_357
 356	val_357
 358	val_359
-360	val_361
 360	val_360
+360	val_361
 362	val_362
-364	val_365
 364	val_364
+364	val_365
 366	val_366
 368	val_368
-374	val_375
 374	val_374
+374	val_375
 376	val_377
 378	val_378
 378	val_379
@@ -1326,13 +1330,13 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/118431395
 382	val_383
 384	val_384
 384	val_384
-384	val_385
 384	val_384
 384	val_385
 384	val_385
-386	val_387
-386	val_387
+384	val_385
 386	val_386
+386	val_387
+386	val_387
 388	val_389
 390	val_391
 390	val_391
@@ -1351,43 +1355,43 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/118431395
 402	val_403
 402	val_403
 404	val_404
-404	val_405
 404	val_404
 404	val_405
 404	val_405
+404	val_405
+406	val_406
+406	val_406
 406	val_406
 406	val_406
 406	val_407
-406	val_406
-406	val_406
 408	val_409
 408	val_409
 410	val_411
 412	val_413
 412	val_413
+414	val_414
+414	val_414
 414	val_415
-414	val_414
-414	val_414
 416	val_417
 418	val_418
+424	val_424
+424	val_424
 424	val_425
-424	val_424
-424	val_424
 426	val_427
 428	val_429
 430	val_430
+430	val_430
+430	val_430
 430	val_431
-430	val_430
-430	val_430
-432	val_433
 432	val_432
+432	val_433
 436	val_436
 436	val_437
 438	val_438
-438	val_439
+438	val_438
 438	val_438
 438	val_439
-438	val_438
+438	val_439
 440	val_441
 440	val_441
 442	val_443
@@ -1395,31 +1399,31 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/118431395
 446	val_446
 446	val_447
 446	val_447
-448	val_449
 448	val_448
+448	val_449
 450	val_451
 450	val_451
 452	val_452
+454	val_454
+454	val_454
+454	val_454
 454	val_455
-454	val_454
-454	val_454
 454	val_455
-454	val_454
 458	val_458
 458	val_458
 460	val_460
+462	val_462
+462	val_462
 462	val_463
-462	val_462
-462	val_462
 466	val_466
 466	val_466
 466	val_466
+468	val_468
+468	val_468
+468	val_468
 468	val_468
 468	val_469
 468	val_469
-468	val_468
-468	val_468
-468	val_468
 468	val_469
 470	val_470
 470	val_471
@@ -1432,13 +1436,13 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/118431395
 478	val_478
 478	val_479
 478	val_479
+480	val_480
+480	val_480
+480	val_480
 480	val_481
-480	val_480
-480	val_480
 480	val_481
-480	val_480
-482	val_483
 482	val_482
+482	val_483
 484	val_484
 484	val_485
 486	val_487
@@ -1446,8 +1450,8 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/118431395
 490	val_490
 490	val_491
 492	val_492
-492	val_493
 492	val_492
+492	val_493
 492	val_493
 494	val_494
 494	val_495
@@ -1458,13 +1462,13 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/118431395
 498	val_498
 498	val_498
 PREHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 3 on key) s
-ORDER BY key
+ORDER BY key, value
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 3 on key) s
-ORDER BY key
+ORDER BY key, value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF srcbucket (TOK_TABLESAMPLE 1 3 (TOK_TABLE_OR_COL key)) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF s))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF srcbucket (TOK_TABLESAMPLE 1 3 (TOK_TABLE_OR_COL key)) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF s))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1498,7 +1502,9 @@ STAGE PLANS:
                     key expressions:
                           expr: _col0
                           type: int
-                    sort order: +
+                          expr: _col1
+                          type: string
+                    sort order: ++
                     tag: -1
                     value expressions:
                           expr: _col0
@@ -1507,9 +1513,9 @@ STAGE PLANS:
                           type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket [s]
+        file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket [s]
       Path -> Partition:
-        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket 
+        file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket 
           Partition
             base file name: srcbucket
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1525,8 +1531,8 @@ STAGE PLANS:
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket
-              transient_lastDdlTime 1262221811
+              location file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket
+              transient_lastDdlTime 1262631936
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1542,8 +1548,8 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket
-                transient_lastDdlTime 1262221811
+                location file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket
+                transient_lastDdlTime 1262631936
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcbucket
             name: srcbucket
@@ -1552,7 +1558,7 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/454798569/10001
+            directory: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/1597219553/10001
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -1567,19 +1573,19 @@ STAGE PLANS:
 
 
 PREHOOK: query: SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 3 on key) s
-ORDER BY key
+ORDER BY key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/562253929/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/564079933/10000
 POSTHOOK: query: SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 3 on key) s
-ORDER BY key
+ORDER BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/562253929/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/564079933/10000
+0	val_0
+0	val_0
+0	val_0
 0	val_1
-0	val_0
-0	val_0
-0	val_0
 0	val_1
 3	val_4
 6	val_7
@@ -1589,8 +1595,8 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/562253929
 12	val_12
 12	val_13
 15	val_15
-15	val_16
 15	val_15
+15	val_16
 15	val_16
 18	val_18
 18	val_18
@@ -1601,8 +1607,8 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/562253929
 24	val_24
 24	val_24
 27	val_27
-30	val_31
 30	val_30
+30	val_31
 33	val_33
 33	val_34
 42	val_42
@@ -1613,8 +1619,8 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/562253929
 48	val_49
 48	val_49
 51	val_51
-51	val_52
 51	val_51
+51	val_52
 54	val_54
 57	val_57
 60	val_61
@@ -1645,62 +1651,62 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/562253929
 105	val_106
 105	val_106
 111	val_111
-114	val_115
 114	val_114
 114	val_115
 114	val_115
+114	val_115
 117	val_118
 117	val_118
+120	val_120
+120	val_120
 120	val_121
-120	val_120
-120	val_120
 123	val_124
 123	val_124
-126	val_127
 126	val_126
 126	val_127
+126	val_127
+129	val_129
 129	val_129
 129	val_130
-129	val_129
 129	val_130
 132	val_133
 132	val_133
 135	val_136
 135	val_136
 135	val_136
-138	val_139
+138	val_138
+138	val_138
 138	val_138
 138	val_138
 138	val_139
-138	val_138
-138	val_138
+138	val_139
 144	val_145
 147	val_148
 147	val_148
 150	val_150
-153	val_154
-153	val_154
 153	val_153
-156	val_157
-156	val_157
+153	val_154
+153	val_154
 156	val_156
+156	val_157
+156	val_157
 162	val_162
 162	val_163
+165	val_165
+165	val_165
 165	val_166
-165	val_165
-165	val_165
-168	val_169
 168	val_168
+168	val_169
+174	val_174
 174	val_174
 174	val_175
 174	val_175
-174	val_174
-177	val_178
-177	val_178
 177	val_177
+177	val_178
+177	val_178
 180	val_180
-183	val_184
 183	val_183
+183	val_184
 186	val_186
 189	val_189
 189	val_190
@@ -1715,9 +1721,9 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/562253929
 213	val_213
 213	val_213
 213	val_214
+216	val_216
+216	val_216
 216	val_217
-216	val_216
-216	val_216
 219	val_219
 219	val_219
 222	val_222
@@ -1732,28 +1738,28 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/562253929
 243	val_244
 246	val_247
 246	val_247
-249	val_250
 249	val_249
 249	val_250
-252	val_253
+249	val_250
 252	val_252
+252	val_253
 255	val_255
 255	val_255
-258	val_259
 258	val_258
+258	val_259
 261	val_262
 264	val_265
 264	val_265
 267	val_268
 273	val_273
+273	val_273
+273	val_273
 273	val_274
-273	val_273
-273	val_273
 276	val_277
 282	val_282
 282	val_282
-285	val_286
 285	val_285
+285	val_286
 288	val_288
 288	val_288
 291	val_291
@@ -1769,10 +1775,10 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/562253929
 309	val_309
 309	val_310
 315	val_315
+318	val_318
+318	val_318
+318	val_318
 318	val_319
-318	val_318
-318	val_318
-318	val_318
 321	val_321
 321	val_321
 324	val_325
@@ -1781,91 +1787,91 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/562253929
 327	val_327
 330	val_331
 333	val_333
-333	val_334
 333	val_333
-336	val_337
+333	val_334
 336	val_336
+336	val_337
 339	val_339
+342	val_342
+342	val_342
 342	val_343
-342	val_342
-342	val_342
 345	val_345
 348	val_348
+348	val_348
+348	val_348
+348	val_348
+348	val_348
 348	val_349
-348	val_348
-348	val_348
-348	val_348
-348	val_348
-351	val_352
-351	val_352
 351	val_351
-360	val_361
+351	val_352
+351	val_352
 360	val_360
+360	val_361
 363	val_364
 363	val_364
 363	val_364
 366	val_366
 369	val_369
+369	val_369
+369	val_369
 369	val_370
-369	val_369
-369	val_369
-375	val_376
-375	val_376
-375	val_376
-375	val_376
 375	val_375
+375	val_376
+375	val_376
+375	val_376
+375	val_376
 375	val_376
 378	val_378
 378	val_379
 381	val_382
-384	val_385
 384	val_384
 384	val_384
 384	val_384
 384	val_385
 384	val_385
+384	val_385
 390	val_391
 390	val_391
 390	val_391
-393	val_394
 393	val_393
 393	val_394
+393	val_394
 396	val_396
 396	val_396
 396	val_396
 399	val_399
-399	val_400
 399	val_399
 399	val_400
-402	val_403
+399	val_400
 402	val_402
+402	val_403
 402	val_403
 402	val_403
 405	val_406
 408	val_409
 408	val_409
-411	val_412
 411	val_411
+411	val_412
+414	val_414
+414	val_414
 414	val_415
-414	val_414
-414	val_414
 417	val_417
 417	val_417
 417	val_417
 423	val_424
 426	val_427
-429	val_430
 429	val_429
 429	val_429
 429	val_430
-432	val_433
+429	val_430
 432	val_432
-435	val_436
+432	val_433
 435	val_435
+435	val_436
+438	val_438
 438	val_438
 438	val_438
 438	val_439
-438	val_438
 438	val_439
 441	val_442
 444	val_444
@@ -1874,28 +1880,28 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/562253929
 450	val_451
 453	val_453
 453	val_454
+459	val_459
+459	val_459
 459	val_460
-459	val_459
-459	val_459
+462	val_462
+462	val_462
 462	val_463
-462	val_462
-462	val_462
 468	val_468
-468	val_469
+468	val_468
 468	val_468
 468	val_468
 468	val_469
-468	val_468
+468	val_469
 468	val_469
 474	val_475
 474	val_475
-477	val_478
 477	val_477
-480	val_481
+477	val_478
+480	val_480
+480	val_480
 480	val_480
 480	val_481
-480	val_480
-480	val_480
+480	val_481
 483	val_483
 486	val_487
 489	val_489
@@ -1913,13 +1919,13 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/562253929
 498	val_498
 498	val_498
 PREHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 2 OUT OF 3 on key) s
-ORDER BY key
+ORDER BY key, value
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 2 OUT OF 3 on key) s
-ORDER BY key
+ORDER BY key, value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF srcbucket (TOK_TABLESAMPLE 2 3 (TOK_TABLE_OR_COL key)) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF s))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF srcbucket (TOK_TABLESAMPLE 2 3 (TOK_TABLE_OR_COL key)) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF s))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1953,7 +1959,9 @@ STAGE PLANS:
                     key expressions:
                           expr: _col0
                           type: int
-                    sort order: +
+                          expr: _col1
+                          type: string
+                    sort order: ++
                     tag: -1
                     value expressions:
                           expr: _col0
@@ -1962,9 +1970,9 @@ STAGE PLANS:
                           type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket [s]
+        file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket [s]
       Path -> Partition:
-        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket 
+        file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket 
           Partition
             base file name: srcbucket
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1980,8 +1988,8 @@ STAGE PLANS:
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket
-              transient_lastDdlTime 1262221811
+              location file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket
+              transient_lastDdlTime 1262631936
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1997,8 +2005,8 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket
-                transient_lastDdlTime 1262221811
+                location file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket
+                transient_lastDdlTime 1262631936
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcbucket
             name: srcbucket
@@ -2007,7 +2015,7 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1549496895/10001
+            directory: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/705079319/10001
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -2022,24 +2030,24 @@ STAGE PLANS:
 
 
 PREHOOK: query: SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 2 OUT OF 3 on key) s
-ORDER BY key
+ORDER BY key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/111722653/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/1832972983/10000
 POSTHOOK: query: SELECT s.* FROM srcbucket TABLESAMPLE (BUCKET 2 OUT OF 3 on key) s
-ORDER BY key
+ORDER BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/111722653/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/1832972983/10000
 1	val_2
-4	val_5
 4	val_4
-10	val_11
+4	val_5
 10	val_10
+10	val_11
 16	val_17
 16	val_17
-19	val_20
 19	val_19
+19	val_20
 22	val_23
 28	val_28
 31	val_32
@@ -2065,51 +2073,51 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/111722653
 67	val_67
 67	val_67
 70	val_70
+70	val_70
+70	val_70
 70	val_71
-70	val_70
-70	val_70
+76	val_76
 76	val_76
 76	val_77
 76	val_77
-76	val_76
 76	val_77
-82	val_83
-82	val_83
 82	val_82
-85	val_86
+82	val_83
+82	val_83
 85	val_85
+85	val_86
 91	val_92
 94	val_95
 97	val_97
-97	val_98
-97	val_98
 97	val_97
-100	val_101
+97	val_98
+97	val_98
+100	val_100
 100	val_100
 100	val_101
-100	val_100
+100	val_101
 103	val_103
 103	val_103
 106	val_107
-118	val_119
-118	val_119
+118	val_118
 118	val_118
 118	val_119
-118	val_118
+118	val_119
+118	val_119
 121	val_122
 121	val_122
-133	val_134
 133	val_133
-136	val_137
+133	val_134
 136	val_136
+136	val_137
 145	val_145
 151	val_152
 151	val_152
-157	val_158
-157	val_158
 157	val_157
-160	val_161
+157	val_158
+157	val_158
 160	val_160
+160	val_161
 163	val_163
 166	val_166
 169	val_169
@@ -2119,12 +2127,12 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/111722653
 172	val_172
 172	val_172
 172	val_173
-175	val_176
 175	val_175
 175	val_175
 175	val_176
-178	val_179
+175	val_176
 178	val_178
+178	val_179
 178	val_179
 181	val_181
 184	val_185
@@ -2140,43 +2148,43 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/111722653
 196	val_197
 196	val_197
 199	val_199
+199	val_199
+199	val_199
 199	val_200
-199	val_199
-199	val_199
 202	val_202
+205	val_205
+205	val_205
 205	val_206
-205	val_205
-205	val_205
 208	val_208
 208	val_208
 208	val_208
 214	val_214
 217	val_217
-217	val_218
-217	val_218
 217	val_217
+217	val_218
+217	val_218
 223	val_223
 223	val_223
-226	val_227
-226	val_227
 226	val_226
 226	val_227
 226	val_227
+226	val_227
+226	val_227
 229	val_229
 229	val_229
-235	val_236
 235	val_235
+235	val_236
+238	val_238
+238	val_238
 238	val_239
-238	val_238
-238	val_238
-241	val_242
-241	val_242
 241	val_241
 241	val_242
 241	val_242
-244	val_245
-244	val_245
+241	val_242
+241	val_242
 244	val_244
+244	val_245
+244	val_245
 244	val_245
 247	val_247
 256	val_256
@@ -2184,32 +2192,32 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/111722653
 256	val_257
 259	val_260
 259	val_260
-262	val_263
-262	val_263
 262	val_262
+262	val_263
+262	val_263
 265	val_265
 265	val_265
 265	val_266
 268	val_269
 271	val_272
-274	val_275
 274	val_274
+274	val_275
+277	val_277
+277	val_277
+277	val_277
 277	val_277
 277	val_278
-277	val_277
 277	val_278
-277	val_277
-277	val_277
 280	val_280
 280	val_280
 283	val_283
-286	val_287
 286	val_286
+286	val_287
 289	val_289
 289	val_290
-292	val_293
-292	val_293
 292	val_292
+292	val_293
+292	val_293
 295	val_296
 295	val_296
 298	val_298
@@ -2233,10 +2241,10 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/111722653
 325	val_325
 328	val_329
 328	val_329
-331	val_332
-331	val_332
 331	val_331
 331	val_331
+331	val_332
+331	val_332
 334	val_335
 337	val_338
 340	val_341
@@ -2250,21 +2258,21 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/111722653
 355	val_356
 355	val_356
 358	val_359
-364	val_365
 364	val_364
+364	val_365
+367	val_367
 367	val_367
 367	val_368
 367	val_368
-367	val_367
-373	val_374
 373	val_373
+373	val_374
 376	val_377
-379	val_380
 379	val_379
+379	val_380
+382	val_382
 382	val_382
 382	val_383
 382	val_383
-382	val_382
 385	val_386
 385	val_386
 388	val_389
@@ -2282,11 +2290,11 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/111722653
 406	val_406
 406	val_406
 406	val_407
+409	val_409
+409	val_409
+409	val_409
 409	val_410
-409	val_409
-409	val_409
 409	val_410
-409	val_409
 412	val_413
 412	val_413
 415	val_416
@@ -2294,73 +2302,73 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/111722653
 421	val_421
 421	val_422
 421	val_422
+424	val_424
+424	val_424
 424	val_425
-424	val_424
-424	val_424
 427	val_427
 427	val_428
 427	val_428
+430	val_430
+430	val_430
+430	val_430
 430	val_431
-430	val_430
-430	val_430
-430	val_430
-436	val_437
 436	val_436
+436	val_437
 439	val_439
 439	val_439
 439	val_440
 439	val_440
 442	val_443
-448	val_449
 448	val_448
+448	val_449
 451	val_452
 454	val_454
-454	val_455
 454	val_454
 454	val_454
 454	val_455
-457	val_458
+454	val_455
 457	val_457
+457	val_458
 457	val_458
 460	val_460
 463	val_463
-463	val_464
 463	val_463
+463	val_464
 466	val_466
 466	val_466
 466	val_466
+469	val_469
+469	val_469
+469	val_469
+469	val_469
+469	val_469
 469	val_470
-469	val_469
-469	val_469
-469	val_469
-469	val_469
-469	val_469
 472	val_472
 475	val_475
 475	val_476
-478	val_479
-478	val_479
 478	val_478
 478	val_478
-481	val_482
+478	val_479
+478	val_479
 481	val_481
+481	val_482
 484	val_484
 484	val_485
 487	val_487
 487	val_488
-490	val_491
 490	val_490
+490	val_491
 493	val_493
 496	val_496
 496	val_497
 PREHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket2 TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
-ORDER BY key
+ORDER BY key, value
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket2 TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
-ORDER BY key
+ORDER BY key, value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF srcbucket2 (TOK_TABLESAMPLE 1 2 (TOK_TABLE_OR_COL key)) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF s))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF srcbucket2 (TOK_TABLESAMPLE 1 2 (TOK_TABLE_OR_COL key)) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF s))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2394,7 +2402,9 @@ STAGE PLANS:
                     key expressions:
                           expr: _col0
                           type: int
-                    sort order: +
+                          expr: _col1
+                          type: string
+                    sort order: ++
                     tag: -1
                     value expressions:
                           expr: _col0
@@ -2403,10 +2413,10 @@ STAGE PLANS:
                           type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket2/srcbucket20.txt [s]
-        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket2/srcbucket22.txt [s]
+        file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket2/srcbucket20.txt [s]
+        file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket2/srcbucket22.txt [s]
       Path -> Partition:
-        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket2/srcbucket20.txt 
+        file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket2/srcbucket20.txt 
           Partition
             base file name: srcbucket20.txt
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2422,8 +2432,8 @@ STAGE PLANS:
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket2
-              transient_lastDdlTime 1262221811
+              location file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket2
+              transient_lastDdlTime 1262631937
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2439,12 +2449,12 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket2
-                transient_lastDdlTime 1262221811
+                location file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket2
+                transient_lastDdlTime 1262631937
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcbucket2
             name: srcbucket2
-        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket2/srcbucket22.txt 
+        file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket2/srcbucket22.txt 
           Partition
             base file name: srcbucket22.txt
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2460,8 +2470,8 @@ STAGE PLANS:
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket2
-              transient_lastDdlTime 1262221811
+              location file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket2
+              transient_lastDdlTime 1262631937
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2477,8 +2487,8 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket2
-                transient_lastDdlTime 1262221811
+                location file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket2
+                transient_lastDdlTime 1262631937
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcbucket2
             name: srcbucket2
@@ -2487,7 +2497,7 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/2057711177/10001
+            directory: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/843556551/10001
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -2502,15 +2512,15 @@ STAGE PLANS:
 
 
 PREHOOK: query: SELECT s.* FROM srcbucket2 TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
-ORDER BY key
+ORDER BY key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket2
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1141265451/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/983063864/10000
 POSTHOOK: query: SELECT s.* FROM srcbucket2 TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
-ORDER BY key
+ORDER BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket2
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1141265451/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/983063864/10000
 0	val_0
 0	val_0
 0	val_0
@@ -2634,13 +2644,13 @@ POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/114126545
 482	val_482
 484	val_484
 PREHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket2 TABLESAMPLE (BUCKET 2 OUT OF 4 on key) s
-ORDER BY key
+ORDER BY key, value
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM srcbucket2 TABLESAMPLE (BUCKET 2 OUT OF 4 on key) s
-ORDER BY key
+ORDER BY key, value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF srcbucket2 (TOK_TABLESAMPLE 2 4 (TOK_TABLE_OR_COL key)) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF s))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF srcbucket2 (TOK_TABLESAMPLE 2 4 (TOK_TABLE_OR_COL key)) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF s))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2674,7 +2684,9 @@ STAGE PLANS:
                     key expressions:
                           expr: _col0
                           type: int
-                    sort order: +
+                          expr: _col1
+                          type: string
+                    sort order: ++
                     tag: -1
                     value expressions:
                           expr: _col0
@@ -2683,9 +2695,9 @@ STAGE PLANS:
                           type: string
       Needs Tagging: false
       Path -> Alias:
-        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket2/srcbucket21.txt [s]
+        file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket2/srcbucket21.txt [s]
       Path -> Partition:
-        file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket2/srcbucket21.txt 
+        file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket2/srcbucket21.txt 
           Partition
             base file name: srcbucket21.txt
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2701,8 +2713,8 @@ STAGE PLANS:
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               file.inputformat org.apache.hadoop.mapred.TextInputFormat
               file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket2
-              transient_lastDdlTime 1262221811
+              location file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket2
+              transient_lastDdlTime 1262631937
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2718,8 +2730,8 @@ STAGE PLANS:
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 file.inputformat org.apache.hadoop.mapred.TextInputFormat
                 file.outputformat org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                location file:/data/users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket2
-                transient_lastDdlTime 1262221811
+                location file:/Users/jsichi/open/hive-trunk/build/ql/test/data/warehouse/srcbucket2
+                transient_lastDdlTime 1262631937
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: srcbucket2
             name: srcbucket2
@@ -2728,7 +2740,7 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/380504830/10001
+            directory: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/1983948247/10001
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -2743,15 +2755,15 @@ STAGE PLANS:
 
 
 PREHOOK: query: SELECT s.* FROM srcbucket2 TABLESAMPLE (BUCKET 2 OUT OF 4 on key) s
-ORDER BY key
+ORDER BY key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket2
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1524009811/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/1572560879/10000
 POSTHOOK: query: SELECT s.* FROM srcbucket2 TABLESAMPLE (BUCKET 2 OUT OF 4 on key) s
-ORDER BY key
+ORDER BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket2
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/1524009811/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/1572560879/10000
 5	val_5
 5	val_5
 5	val_5
@@ -2796,13 +2808,13 @@ POSTHOOK: query: CREATE TABLE empty_bucket (key int, value string) CLUSTERED BY 
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@empty_bucket
 PREHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM empty_bucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
-ORDER BY key
+ORDER BY key, value
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED SELECT s.* FROM empty_bucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
-ORDER BY key
+ORDER BY key, value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF empty_bucket (TOK_TABLESAMPLE 1 2 (TOK_TABLE_OR_COL key)) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF s))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF empty_bucket (TOK_TABLESAMPLE 1 2 (TOK_TABLE_OR_COL key)) s)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF s))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2836,7 +2848,9 @@ STAGE PLANS:
                     key expressions:
                           expr: _col0
                           type: int
-                    sort order: +
+                          expr: _col1
+                          type: string
+                    sort order: ++
                     tag: -1
                     value expressions:
                           expr: _col0
@@ -2849,7 +2863,7 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-            directory: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/561218927/10001
+            directory: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/776607112/10001
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -2864,15 +2878,15 @@ STAGE PLANS:
 
 
 PREHOOK: query: SELECT s.* FROM empty_bucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
-ORDER BY key
+ORDER BY key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@empty_bucket
-PREHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/380584002/10000
+PREHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/1019472718/10000
 POSTHOOK: query: SELECT s.* FROM empty_bucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
-ORDER BY key
+ORDER BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@empty_bucket
-POSTHOOK: Output: file:/data/users/jsichi/open/hive-trunk/build/ql/tmp/380584002/10000
+POSTHOOK: Output: file:/Users/jsichi/open/hive-trunk/build/ql/tmp/1019472718/10000
 PREHOOK: query: drop table empty_bucket
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table empty_bucket
