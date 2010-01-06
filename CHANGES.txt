@@ -396,6 +396,8 @@ Trunk -  Unreleased
     HIVE-1026 Fix test sample6.q to make it deterministic
     (John Sichi via namit)
 
+    HIVE-1028. Fix tinyint in TypedBytes. (Namit Jain via zshao)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

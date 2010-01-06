@@ -65,30 +65,30 @@ import org.apache.hadoop.hive.ql.io.NonSyncDataInputBuffer;
 
 /**
  * TypedBytesSerDe uses typed bytes to serialize/deserialize.
- * 
+ *
  * More info on the typedbytes stuff that Dumbo uses.
- * http://issues.apache.org/jira/browse/HADOOP-1722 
+ * http://issues.apache.org/jira/browse/HADOOP-1722
  * A fast python decoder for this, which is apparently 25% faster than the python version is available at
- * http://github.com/klbostee/ctypedbytes/tree/master 
+ * http://github.com/klbostee/ctypedbytes/tree/master
  */
 public class TypedBytesSerDe implements SerDe {
 
   public static final Log LOG = LogFactory.getLog(TypedBytesSerDe.class.getName());
-  
+
   int numColumns;
   StructObjectInspector rowOI;
   ArrayList<Object> row;
- 
+
   BytesWritable serializeBytesWritable;
   NonSyncDataOutputBuffer barrStr;
   TypedBytesWritableOutput tbOut;
-  
+
   NonSyncDataInputBuffer inBarrStr;
   TypedBytesWritableInput tbIn;
-  
+
   List<String>   columnNames;
   List<TypeInfo> columnTypes;
-  
+
   @Override
   public void initialize(Configuration conf, Properties tbl)
       throws SerDeException {
@@ -97,10 +97,10 @@ public class TypedBytesSerDe implements SerDe {
     serializeBytesWritable = new BytesWritable();
     barrStr = new NonSyncDataOutputBuffer();
     tbOut = new TypedBytesWritableOutput(barrStr);
-    
+
     inBarrStr = new NonSyncDataInputBuffer();
     tbIn = new TypedBytesWritableInput(inBarrStr);
-    
+
     // Read the configuration parameters
     String columnNameProperty = tbl.getProperty(Constants.LIST_COLUMNS);
     String columnTypeProperty = tbl.getProperty(Constants.LIST_COLUMN_TYPES);
@@ -115,29 +115,29 @@ public class TypedBytesSerDe implements SerDe {
     }
 
     assert columnNames.size() == columnTypes.size();
-    numColumns = columnNames.size(); 
-    
+    numColumns = columnNames.size();
+
     // All columns have to be primitive.
     for (int c = 0; c < numColumns; c++) {
       if (columnTypes.get(c).getCategory() != Category.PRIMITIVE) {
-        throw new SerDeException(getClass().getName() 
-            + " only accepts primitive columns, but column[" + c 
+        throw new SerDeException(getClass().getName()
+            + " only accepts primitive columns, but column[" + c
             + "] named " + columnNames.get(c) + " has category "
             + columnTypes.get(c).getCategory());
       }
     }
-    
+
     // Constructing the row ObjectInspector:
-    // The row consists of some string columns, each column will be a java 
+    // The row consists of some string columns, each column will be a java
     // String object.
     List<ObjectInspector> columnOIs = new ArrayList<ObjectInspector>(columnNames.size());
     for (int c = 0; c < numColumns; c++) {
       columnOIs.add(TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(columnTypes.get(c)));
     }
-    
-    // StandardStruct uses ArrayList to store the row. 
+
+    // StandardStruct uses ArrayList to store the row.
     rowOI = ObjectInspectorFactory.getStandardStructObjectInspector(columnNames, columnOIs);
-    
+
     // Constructing the row object, etc, which will be reused for all rows.
     row = new ArrayList<Object>(numColumns);
     for (int c = 0; c < numColumns; c++) {
@@ -154,12 +154,12 @@ public class TypedBytesSerDe implements SerDe {
   public Class<? extends Writable> getSerializedClass() {
     return BytesWritable.class;
   }
-  
+
   @Override
   public Object deserialize(Writable blob) throws SerDeException {
 
     BytesWritable data = (BytesWritable)blob;
-    inBarrStr.reset(data.get(), 0, data.getSize());   
+    inBarrStr.reset(data.get(), 0, data.getSize());
 
     try {
 
@@ -169,11 +169,11 @@ public class TypedBytesSerDe implements SerDe {
 
       // The next byte should be the marker
       assert tbIn.readTypeCode() == Type.ENDOFRECORD;
-      
+
     } catch (IOException e) {
       throw new SerDeException(e);
     }
-    
+
     return row;
   }
 
@@ -237,9 +237,9 @@ public class TypedBytesSerDe implements SerDe {
         }
       }
       // Currently, deserialization of complex types is not supported
-      case LIST: 
+      case LIST:
       case MAP:
-      case STRUCT: 
+      case STRUCT:
       default: {
         throw new RuntimeException("Unsupported category: " + type.getCategory());
       }
@@ -247,7 +247,7 @@ public class TypedBytesSerDe implements SerDe {
   }
 
 
-  
+
   @Override
   public Writable serialize(Object obj, ObjectInspector objInspector)
       throws SerDeException {
@@ -255,25 +255,23 @@ public class TypedBytesSerDe implements SerDe {
       barrStr.reset();
       StructObjectInspector soi = (StructObjectInspector)objInspector;
       List<? extends StructField> fields = soi.getAllStructFieldRefs();
-    
+
       for (int i = 0; i < numColumns; i++) {
         Object o = soi.getStructFieldData(obj, fields.get(i));
-        ObjectInspector oi = fields.get(i).getFieldObjectInspector(); 
+        ObjectInspector oi = fields.get(i).getFieldObjectInspector();
         serializeField(o, oi, row.get(i));
       }
-    
+
       // End of the record is part of the data
       tbOut.writeEndOfRecord();
-      
+
       serializeBytesWritable.set(barrStr.getData(), 0, barrStr.getLength());
     } catch (IOException e) {
       throw new SerDeException(e.getMessage());
     }
     return serializeBytesWritable;
   }
-   
-  private byte[] tmpByteArr = new byte[1];
-  
+
   private void serializeField(Object o, ObjectInspector oi, Object reuse) throws IOException {
     switch (oi.getCategory()) {
       case PRIMITIVE: {
@@ -291,9 +289,8 @@ public class TypedBytesSerDe implements SerDe {
           }
           case BYTE: {
             ByteObjectInspector boi = (ByteObjectInspector)poi;
-            BytesWritable r = reuse == null ? new BytesWritable() : (BytesWritable)reuse;
-            tmpByteArr[0] = boi.get(o);
-            r.set(tmpByteArr, 0, 1);
+            ByteWritable r = reuse == null ? new ByteWritable() : (ByteWritable)reuse;
+            r.set(boi.get(o));
             tbOut.write(r);
             return;
           }
@@ -343,13 +340,13 @@ public class TypedBytesSerDe implements SerDe {
           }
         }
       }
-      case LIST: 
+      case LIST:
       case MAP:
       case STRUCT: {
         // For complex object, serialize to JSON format
         String s = SerDeUtils.getJSONString(o, oi);
         Text t = reuse == null ? new Text() : (Text)reuse;
-        
+
         // convert to Text and write it
         t.set(s);
         tbOut.write(t);

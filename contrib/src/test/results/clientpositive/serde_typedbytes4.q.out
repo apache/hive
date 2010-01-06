@@ -1,0 +1,232 @@
+PREHOOK: query: drop table dest1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table dest1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE dest1(key STRING, value STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE dest1(key STRING, value STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dest1
+PREHOOK: query: EXPLAIN
+FROM (
+  FROM src
+  SELECT TRANSFORM(cast(src.key as tinyint), src.value) ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.TypedBytesSerDe'
+  RECORDWRITER 'org.apache.hadoop.hive.contrib.util.typedbytes.TypedBytesRecordWriter'
+  USING '/bin/cat'
+  AS (tkey, tvalue) ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.TypedBytesSerDe'
+  RECORDREADER 'org.apache.hadoop.hive.contrib.util.typedbytes.TypedBytesRecordReader'
+  WHERE key < 100
+) tmap
+INSERT OVERWRITE TABLE dest1 SELECT tkey, tvalue ORDER by tkey, tvalue
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+FROM (
+  FROM src
+  SELECT TRANSFORM(cast(src.key as tinyint), src.value) ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.TypedBytesSerDe'
+  RECORDWRITER 'org.apache.hadoop.hive.contrib.util.typedbytes.TypedBytesRecordWriter'
+  USING '/bin/cat'
+  AS (tkey, tvalue) ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.TypedBytesSerDe'
+  RECORDREADER 'org.apache.hadoop.hive.contrib.util.typedbytes.TypedBytesRecordReader'
+  WHERE key < 100
+) tmap
+INSERT OVERWRITE TABLE dest1 SELECT tkey, tvalue ORDER by tkey, tvalue
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TRANSFORM (TOK_EXPLIST (TOK_FUNCTION TOK_TINYINT (. (TOK_TABLE_OR_COL src) key)) (. (TOK_TABLE_OR_COL src) value)) (TOK_SERDE (TOK_SERDENAME 'org.apache.hadoop.hive.contrib.serde2.TypedBytesSerDe')) (TOK_RECORDWRITER 'org.apache.hadoop.hive.contrib.util.typedbytes.TypedBytesRecordWriter') '/bin/cat' (TOK_SERDE (TOK_SERDENAME 'org.apache.hadoop.hive.contrib.serde2.TypedBytesSerDe')) (TOK_RECORDREADER 'org.apache.hadoop.hive.contrib.util.typedbytes.TypedBytesRecordReader') (TOK_ALIASLIST tkey tvalue)))) (TOK_WHERE (< (TOK_TABLE_OR_COL key) 100)))) tmap)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB dest1)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL tkey)) (TOK_SELEXPR (TOK_TABLE_OR_COL tvalue))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL tkey)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL tvalue)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        tmap:src 
+          TableScan
+            alias: src
+            Filter Operator
+              predicate:
+                  expr: (key < 100)
+                  type: boolean
+              Filter Operator
+                predicate:
+                    expr: (key < 100)
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: UDFToByte(key)
+                        type: tinyint
+                        expr: value
+                        type: string
+                  outputColumnNames: _col0, _col1
+                  Transform Operator
+                    command: /bin/cat
+                    output info:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    Select Operator
+                      expressions:
+                            expr: _col0
+                            type: string
+                            expr: _col1
+                            type: string
+                      outputColumnNames: _col0, _col1
+                      Reduce Output Operator
+                        key expressions:
+                              expr: _col0
+                              type: string
+                              expr: _col1
+                              type: string
+                        sort order: ++
+                        tag: -1
+                        value expressions:
+                              expr: _col0
+                              type: string
+                              expr: _col1
+                              type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 1
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                name: dest1
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: dest1
+
+
+PREHOOK: query: FROM (
+  FROM src
+  SELECT TRANSFORM(cast(src.key as tinyint), src.value) ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.TypedBytesSerDe'
+  RECORDWRITER 'org.apache.hadoop.hive.contrib.util.typedbytes.TypedBytesRecordWriter'
+  USING '/bin/cat'
+  AS (tkey, tvalue) ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.TypedBytesSerDe'
+  RECORDREADER 'org.apache.hadoop.hive.contrib.util.typedbytes.TypedBytesRecordReader'
+  WHERE key < 100
+) tmap
+INSERT OVERWRITE TABLE dest1 SELECT tkey, tvalue ORDER by tkey, tvalue
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@dest1
+POSTHOOK: query: FROM (
+  FROM src
+  SELECT TRANSFORM(cast(src.key as tinyint), src.value) ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.TypedBytesSerDe'
+  RECORDWRITER 'org.apache.hadoop.hive.contrib.util.typedbytes.TypedBytesRecordWriter'
+  USING '/bin/cat'
+  AS (tkey, tvalue) ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.TypedBytesSerDe'
+  RECORDREADER 'org.apache.hadoop.hive.contrib.util.typedbytes.TypedBytesRecordReader'
+  WHERE key < 100
+) tmap
+INSERT OVERWRITE TABLE dest1 SELECT tkey, tvalue ORDER by tkey, tvalue
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@dest1
+PREHOOK: query: SELECT dest1.* FROM dest1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+PREHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/1776839815/10000
+POSTHOOK: query: SELECT dest1.* FROM dest1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+POSTHOOK: Output: file:/data/users/njain/hive1/hive1/build/ql/tmp/1776839815/10000
+0	val_0
+0	val_0
+0	val_0
+10	val_10
+11	val_11
+12	val_12
+12	val_12
+15	val_15
+15	val_15
+17	val_17
+18	val_18
+18	val_18
+19	val_19
+2	val_2
+20	val_20
+24	val_24
+24	val_24
+26	val_26
+26	val_26
+27	val_27
+28	val_28
+30	val_30
+33	val_33
+34	val_34
+35	val_35
+35	val_35
+35	val_35
+37	val_37
+37	val_37
+4	val_4
+41	val_41
+42	val_42
+42	val_42
+43	val_43
+44	val_44
+47	val_47
+5	val_5
+5	val_5
+5	val_5
+51	val_51
+51	val_51
+53	val_53
+54	val_54
+57	val_57
+58	val_58
+58	val_58
+64	val_64
+65	val_65
+66	val_66
+67	val_67
+67	val_67
+69	val_69
+70	val_70
+70	val_70
+70	val_70
+72	val_72
+72	val_72
+74	val_74
+76	val_76
+76	val_76
+77	val_77
+78	val_78
+8	val_8
+80	val_80
+82	val_82
+83	val_83
+83	val_83
+84	val_84
+84	val_84
+85	val_85
+86	val_86
+87	val_87
+9	val_9
+90	val_90
+90	val_90
+90	val_90
+92	val_92
+95	val_95
+95	val_95
+96	val_96
+97	val_97
+97	val_97
+98	val_98
+98	val_98
+PREHOOK: query: drop table dest1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table dest1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: default@dest1
