@@ -30,6 +30,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities.StreamPrinter;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
@@ -457,7 +458,9 @@ public class TestExecDriver extends TestCase {
   }
 
   private File generatePlanFile() throws Exception {
-    File planFile = File.createTempFile("plan", ".xml");
+    File scratchDir = new File(
+        (new HiveConf(TestExecDriver.class)).getVar(ConfVars.SCRATCHDIR));
+    File planFile = File.createTempFile("plan", ".xml", scratchDir);
     System.out.println("Generating plan file " + planFile.toString());
     FileOutputStream out = new FileOutputStream(planFile);
     Utilities.serializeMapRedWork(mr, out);
