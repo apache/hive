@@ -1,0 +1,70 @@
+PREHOOK: query: DESCRIBE FUNCTION field
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION field
+POSTHOOK: type: DESCFUNCTION
+field(str, str1, str2, ...) - returns the index of str in the str1,str2,... list or 0 if not found
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED field
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED field
+POSTHOOK: type: DESCFUNCTION
+field(str, str1, str2, ...) - returns the index of str in the str1,str2,... list or 0 if not found
+All primitive types are supported, arguments are compared using str.equals(x). If str is NULL, the return value is 0.
+PREHOOK: query: SELECT
+  field("x", "a", "b", "c", "d"),
+  field(NULL, "a", "b", "c", "d"),
+  field(0, 1, 2, 3, 4)
+FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/Users/larry/src/hive-trunk/build/ql/tmp/487027103/10000
+POSTHOOK: query: SELECT
+  field("x", "a", "b", "c", "d"),
+  field(NULL, "a", "b", "c", "d"),
+  field(0, 1, 2, 3, 4)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/Users/larry/src/hive-trunk/build/ql/tmp/487027103/10000
+0	0	0
+PREHOOK: query: SELECT
+  field("a", "a", "b", "c", "d"),
+  field("b", "a", "b", "c", "d"),
+  field("c", "a", "b", "c", "d"),
+  field("d", "a", "b", "c", "d"),
+  field("d", "a", "b", NULL, "d")
+FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/Users/larry/src/hive-trunk/build/ql/tmp/1943111859/10000
+POSTHOOK: query: SELECT
+  field("a", "a", "b", "c", "d"),
+  field("b", "a", "b", "c", "d"),
+  field("c", "a", "b", "c", "d"),
+  field("d", "a", "b", "c", "d"),
+  field("d", "a", "b", NULL, "d")
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/Users/larry/src/hive-trunk/build/ql/tmp/1943111859/10000
+1	2	3	4	4
+PREHOOK: query: SELECT
+  field(1, 1, 2, 3, 4),
+  field(2, 1, 2, 3, 4),
+  field(3, 1, 2, 3, 4),
+  field(4, 1, 2, 3, 4),
+  field(4, 1, 2, NULL, 4)
+FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/Users/larry/src/hive-trunk/build/ql/tmp/533348342/10000
+POSTHOOK: query: SELECT
+  field(1, 1, 2, 3, 4),
+  field(2, 1, 2, 3, 4),
+  field(3, 1, 2, 3, 4),
+  field(4, 1, 2, 3, 4),
+  field(4, 1, 2, NULL, 4)
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/Users/larry/src/hive-trunk/build/ql/tmp/533348342/10000
+1	2	3	4	4

@@ -46,6 +46,7 @@ double
 elt
 exp
 explode
+field
 find_in_set
 float
 floor

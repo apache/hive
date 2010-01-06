@@ -105,6 +105,7 @@ public class FunctionRegistry {
     registerUDF("rtrim", UDFRTrim.class, false);
     registerUDF("length", UDFLength.class, false);
     registerUDF("reverse", UDFReverse.class, false);
+    registerGenericUDF("field", GenericUDFField.class);
     registerUDF("find_in_set", UDFFindInSet.class, false);
     
     registerUDF("like", UDFLike.class, true);

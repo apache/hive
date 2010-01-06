@@ -95,6 +95,9 @@ Trunk -  Unreleased
     HIVE-1020 Create a confifuration variable to control speculative execution for reducers in hive
     (namit via He Yongqiang)
 
+    HIVE-683 Add UDF field
+    (Larry Odrognek via namit)
+
   IMPROVEMENTS
 
     HIVE-760. Add version info to META-INF/MANIFEST.MF.
