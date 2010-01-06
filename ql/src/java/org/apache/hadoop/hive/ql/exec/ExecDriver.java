@@ -67,7 +67,8 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
   transient protected JobConf job;
   transient protected int mapProgress = 0;
   transient protected int reduceProgress = 0;
-
+  transient protected boolean success = false; // if job execution is successful
+  
   public static Random randGen = new Random();
   /**
    * Constructor when invoked from QL
@@ -233,7 +234,35 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
       return rj.getCounters();
     }
   }
-
+  
+  /**
+   * Fatal errors are those errors that cannot be recovered by retries. These
+   * are application dependent. Examples of fatal errors include:
+   *  - the small table in the map-side joins is too large to be feasible to be
+   *    handled by one mapper. The job should fail and the user should be warned
+   *    to use regular joins rather than map-side joins.
+   * Fatal errors are indicated by counters that are set at execution time. 
+   * If the counter is non-zero, a fatal error occurred. The value of the counter
+   * indicates the error type. 
+   * @return true if fatal errors happened during job execution, false otherwise.
+   */
+  protected boolean checkFatalErrors(TaskHandle t, StringBuffer errMsg) {
+    ExecDriverTaskHandle th = (ExecDriverTaskHandle) t;
+    RunningJob rj = th.getRunningJob();
+    try {
+      Counters ctrs = th.getCounters();
+      for (Operator<? extends Serializable> op: work.getAliasToWork().values()) {
+        if (op.checkFatalErrors(ctrs, errMsg))
+          return true;
+      }
+      return false;
+     } catch (IOException e) {
+      // this exception can be tolerated
+      e.printStackTrace();
+      return false;
+    }
+  }
+  
   public void progress(TaskHandle taskHandle) throws IOException {
     ExecDriverTaskHandle th = (ExecDriverTaskHandle)taskHandle;
     JobClient jc = th.getJobClient();
@@ -243,16 +272,31 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
         = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");
     long reportTime = System.currentTimeMillis();
     long maxReportInterval = 60 * 1000; // One minute
+    boolean fatal = false;
+    StringBuffer errMsg = new StringBuffer();
     while (!rj.isComplete()) {
       try {
         Thread.sleep(1000);
       } catch (InterruptedException e) {
       }
       th.setRunningJob(jc.getJob(rj.getJobID()));
+      
+      // If fatal errors happen we should kill the job immediately rather than
+      // let the job retry several times, which eventually lead to failure.
+      if (fatal)
+        continue;  // wait until rj.isComplete
+      if ( fatal = checkFatalErrors(th, errMsg)) {
+        success = false;
+        console.printError("[Fatal Error] " + errMsg.toString() + ". Killing the job.");
+        rj.killJob();
+        continue;
+      }
+      errMsg.setLength(0);
+      
       updateCounters(th);
 
       String report = " "+getId()+" map = " + this.mapProgress + "%,  reduce = " + this.reduceProgress + "%";
-
+      
       if (!report.equals(lastReport)
           || System.currentTimeMillis() >= reportTime + maxReportInterval) {
 
@@ -275,6 +319,13 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
         reportTime = System.currentTimeMillis();
       }
     }
+    // check for fatal error again in case it occurred after the last check before the job is completed
+    if ( !fatal && (fatal = checkFatalErrors(th, errMsg))) {
+      console.printError("[Fatal Error] " + errMsg.toString());
+      success = false;
+    } else 
+      success = rj.isSuccessful();
+ 
     setDone();
     th.setRunningJob(jc.getJob(rj.getJobID()));
     updateCounters(th);
@@ -495,7 +546,6 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
 
     int returnVal = 0;
     RunningJob rj = null, orig_rj = null;
-    boolean success = false;
 
     boolean noName = StringUtils.isEmpty(HiveConf.
       getVar(job,HiveConf.ConfVars.HADOOPJOBNAME));
@@ -532,16 +582,14 @@ public class ExecDriver extends Task<mapredWork> implements Serializable {
 
       TaskHandle th = new ExecDriverTaskHandle(jc, rj);
       jobInfo(rj);
-      progress(th);
+      progress(th); // success status will be setup inside progress
 
       if (rj == null) {
         // in the corner case where the running job has disappeared from JT memory
         // remember that we did actually submit the job.
         rj = orig_rj;
         success = false;
-      } else {
-        success = rj.isSuccessful();
-      }
+      } 
 
       String statusMesg = "Ended Job = " + rj.getJobID();
       if (!success) {

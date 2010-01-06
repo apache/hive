@@ -1,0 +1,8 @@
+PREHOOK: query: select /*+ mapjoin(b) */ * from src a join src b on (a.key=b.key)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1224835023/10000
+POSTHOOK: query: select /*+ mapjoin(b) */ * from src a join src b on (a.key=b.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1224835023/10000

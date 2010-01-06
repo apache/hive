@@ -140,6 +140,11 @@ public class ExecMapper extends MapReduceBase implements Mapper {
               }
               fetchOpRows++;
               forwardOp.process(row.o, 0);
+              // check if any operator had a fatal error or early exit during execution
+              if ( forwardOp.getDone() ) {
+                done = true;
+                break;
+              }
             }
             
             if (l4j.isInfoEnabled()) {

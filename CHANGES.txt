@@ -409,6 +409,9 @@ Trunk -  Unreleased
     HIVE-1030 Hive should use scratchDir instead of system temporary directory
     for storing plans (Zheng Shao via namit)
 
+    HIVE-1030 mapjoin should throw an error if the input is too large
+    (Ning Zhang via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

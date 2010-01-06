@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_07" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_16" class="java.beans.XMLDecoder"> 
  <object class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
   <void property="id"> 
    <string>Stage-2</string> 
@@ -62,11 +62,11 @@
          </void> 
          <void method="put"> 
           <string>location</string> 
-          <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/src</string> 
+          <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/test/data/warehouse/src</string> 
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1259648276</string> 
+          <string>1262739149</string> 
          </void> 
         </object> 
        </void> 
@@ -119,7 +119,7 @@
                         <void property="conf"> 
                          <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                           <void property="dirName"> 
-                           <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/859934066/10001</string> 
+                           <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/21599662/10001</string> 
                           </void> 
                           <void property="tableInfo"> 
                            <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -162,6 +162,9 @@
                           </void> 
                           <void method="add"> 
                            <string>CNTR_NAME_FS_21_TIME_TAKEN</string> 
+                          </void> 
+                          <void method="add"> 
+                           <string>CNTR_NAME_FS_21_FATAL_ERROR</string> 
                           </void> 
                          </object> 
                         </void> 
@@ -648,6 +651,9 @@
                       <void method="add"> 
                        <string>CNTR_NAME_SEL_20_TIME_TAKEN</string> 
                       </void> 
+                      <void method="add"> 
+                       <string>CNTR_NAME_SEL_20_FATAL_ERROR</string> 
+                      </void> 
                      </object> 
                     </void> 
                     <void property="operatorId"> 
@@ -829,6 +835,9 @@
                   <void method="add"> 
                    <string>CNTR_NAME_FIL_19_TIME_TAKEN</string> 
                   </void> 
+                  <void method="add"> 
+                   <string>CNTR_NAME_FIL_19_FATAL_ERROR</string> 
+                  </void> 
                  </object> 
                 </void> 
                 <void property="operatorId"> 
@@ -935,6 +944,9 @@
               <void method="add"> 
                <string>CNTR_NAME_FIL_22_TIME_TAKEN</string> 
               </void> 
+              <void method="add"> 
+               <string>CNTR_NAME_FIL_22_FATAL_ERROR</string> 
+              </void> 
              </object> 
             </void> 
             <void property="operatorId"> 
@@ -976,6 +988,9 @@
           <void method="add"> 
            <string>CNTR_NAME_TS_18_TIME_TAKEN</string> 
           </void> 
+          <void method="add"> 
+           <string>CNTR_NAME_TS_18_FATAL_ERROR</string> 
+          </void> 
          </object> 
         </void> 
         <void property="neededColumnIDs"> 
@@ -1002,7 +1017,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src</string> 
@@ -1014,7 +1029,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="deserializerClass"> 
          <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 

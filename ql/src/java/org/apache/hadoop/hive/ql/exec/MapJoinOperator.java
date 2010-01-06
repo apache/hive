@@ -72,6 +72,11 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
 
   transient protected Map<Byte, HashMapWrapper<MapJoinObjectKey, MapJoinObjectValue>> mapJoinTables;
   
+  transient static final private String[] fatalErrMsg = { 
+    null,  // counter value 0 means no error
+    "Mapside join size exceeds hive.mapjoin.maxsize. Please increase that or remove the mapjoin hint." // counter value 1
+  };
+  
   public static class MapJoinObjectCtx {
     ObjectInspector standardOI;
     SerDe      serde;
@@ -115,6 +120,7 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
   transient List<File> hTables;
   transient int      numMapRowsRead;
   transient int      heartbeatInterval;
+  transient int      maxMapJoinSize;
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
@@ -123,6 +129,7 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
 
     firstRow = true;
     heartbeatInterval = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVESENDHEARTBEAT);
+    maxMapJoinSize = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEMAXMAPJOINSIZE);
     
     joinKeys  = new HashMap<Byte, List<ExprNodeEvaluator>>();
     
@@ -176,9 +183,14 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
   }
   
   @Override
+  protected void fatalErrorMessage(StringBuffer errMsg, long counterCode) {
+    errMsg.append("Operator " + getOperatorId() + " (id=" + id + "): " + 
+        fatalErrMsg[(int)counterCode]);
+  }
+  
+  @Override
   public void processOp(Object row, int tag) throws HiveException {
     try {
-      
       // get alias
       alias = (byte)tag;
       
@@ -207,10 +219,19 @@ public class MapJoinOperator extends CommonJoinOperator<mapJoinDesc> implements 
           firstRow = false;
         }
 
-        // Send some status perodically
+        // Send some status periodically
         numMapRowsRead++;
         if (((numMapRowsRead % heartbeatInterval) == 0) && (reporter != null))
           reporter.progress();
+        
+        if ( (numMapRowsRead > maxMapJoinSize) && (reporter != null) && (counterNameToEnum != null)) {
+          // update counter
+          LOG.warn("Too many rows in map join tables. Fatal error counter will be incremented!!");
+          incrCounter(fatalErrorCntr, 1);
+          fatalError = true;
+          return;
+        }
+          
 
         HashMapWrapper<MapJoinObjectKey, MapJoinObjectValue> hashTable =  mapJoinTables.get(alias);
         MapJoinObjectKey keyMap = new MapJoinObjectKey(metadataKeyTag, key);

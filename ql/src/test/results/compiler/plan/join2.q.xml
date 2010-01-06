@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_07" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_16" class="java.beans.XMLDecoder"> 
  <object id="MapRedTask0" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
   <void property="childTasks"> 
    <object class="java.util.ArrayList"> 
@@ -30,7 +30,7 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/562650186/10000</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1369275629/10000</string> 
               </void> 
               <void property="table"> 
                <object id="tableDesc0" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -87,7 +87,7 @@
                   </void> 
                   <void method="put"> 
                    <string>transient_lastDdlTime</string> 
-                   <string>1261600924</string> 
+                   <string>1262739216</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -97,7 +97,7 @@
                </object> 
               </void> 
               <void property="tmpDir"> 
-               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/562650186/10001</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1369275629/10001</string> 
               </void> 
              </object> 
             </void> 
@@ -179,7 +179,7 @@
              </void> 
              <void method="put"> 
               <string>transient_lastDdlTime</string> 
-              <string>1261600923</string> 
+              <string>1262739216</string> 
              </void> 
             </object> 
            </void> 
@@ -397,6 +397,9 @@
                   <void method="add"> 
                    <string>CNTR_NAME_RS_394_TIME_TAKEN</string> 
                   </void> 
+                  <void method="add"> 
+                   <string>CNTR_NAME_RS_394_FATAL_ERROR</string> 
+                  </void> 
                  </object> 
                 </void> 
                 <void property="operatorId"> 
@@ -441,6 +444,9 @@
               </void> 
               <void method="add"> 
                <string>CNTR_NAME_TS_400_TIME_TAKEN</string> 
+              </void> 
+              <void method="add"> 
+               <string>CNTR_NAME_TS_400_FATAL_ERROR</string> 
               </void> 
              </object> 
             </void> 
@@ -643,6 +649,9 @@
                   <void method="add"> 
                    <string>CNTR_NAME_RS_395_TIME_TAKEN</string> 
                   </void> 
+                  <void method="add"> 
+                   <string>CNTR_NAME_RS_395_FATAL_ERROR</string> 
+                  </void> 
                  </object> 
                 </void> 
                 <void property="operatorId"> 
@@ -694,6 +703,9 @@
               </void> 
               <void method="add"> 
                <string>CNTR_NAME_TS_389_TIME_TAKEN</string> 
+              </void> 
+              <void method="add"> 
+               <string>CNTR_NAME_TS_389_FATAL_ERROR</string> 
               </void> 
              </object> 
             </void> 
@@ -754,7 +766,7 @@
         <void property="pathToAliases"> 
          <object class="java.util.LinkedHashMap"> 
           <void method="put"> 
-           <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/920551975/10002</string> 
+           <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/569065061/10002</string> 
            <object class="java.util.ArrayList"> 
             <void method="add"> 
              <string>$INTNAME</string> 
@@ -774,7 +786,7 @@
         <void property="pathToPartitionInfo"> 
          <object class="java.util.LinkedHashMap"> 
           <void method="put"> 
-           <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/920551975/10002</string> 
+           <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/569065061/10002</string> 
            <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
             <void property="deserializerClass"> 
              <class>org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe</class> 
@@ -879,7 +891,7 @@
                      <int>1</int> 
                     </void> 
                     <void property="dirName"> 
-                     <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/562650186/10000</string> 
+                     <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1369275629/10000</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object idref="tableDesc0"/> 
@@ -896,6 +908,9 @@
                     </void> 
                     <void method="add"> 
                      <string>CNTR_NAME_FS_398_TIME_TAKEN</string> 
+                    </void> 
+                    <void method="add"> 
+                     <string>CNTR_NAME_FS_398_FATAL_ERROR</string> 
                     </void> 
                    </object> 
                   </void> 
@@ -1007,6 +1022,9 @@
                 </void> 
                 <void method="add"> 
                  <string>CNTR_NAME_SEL_397_TIME_TAKEN</string> 
+                </void> 
+                <void method="add"> 
+                 <string>CNTR_NAME_SEL_397_FATAL_ERROR</string> 
                 </void> 
                </object> 
               </void> 
@@ -1239,6 +1257,9 @@
             </void> 
             <void method="add"> 
              <string>CNTR_NAME_JOIN_396_TIME_TAKEN</string> 
+            </void> 
+            <void method="add"> 
+             <string>CNTR_NAME_JOIN_396_FATAL_ERROR</string> 
             </void> 
            </object> 
           </void> 
@@ -1562,6 +1583,9 @@
               <void method="add"> 
                <string>CNTR_NAME_RS_392_TIME_TAKEN</string> 
               </void> 
+              <void method="add"> 
+               <string>CNTR_NAME_RS_392_FATAL_ERROR</string> 
+              </void> 
              </object> 
             </void> 
             <void property="operatorId"> 
@@ -1613,6 +1637,9 @@
           </void> 
           <void method="add"> 
            <string>CNTR_NAME_TS_388_TIME_TAKEN</string> 
+          </void> 
+          <void method="add"> 
+           <string>CNTR_NAME_TS_388_FATAL_ERROR</string> 
           </void> 
          </object> 
         </void> 
@@ -1798,6 +1825,9 @@
               <void method="add"> 
                <string>CNTR_NAME_RS_391_TIME_TAKEN</string> 
               </void> 
+              <void method="add"> 
+               <string>CNTR_NAME_RS_391_FATAL_ERROR</string> 
+              </void> 
              </object> 
             </void> 
             <void property="operatorId"> 
@@ -1849,6 +1879,9 @@
           </void> 
           <void method="add"> 
            <string>CNTR_NAME_TS_390_TIME_TAKEN</string> 
+          </void> 
+          <void method="add"> 
+           <string>CNTR_NAME_TS_390_FATAL_ERROR</string> 
           </void> 
          </object> 
         </void> 
@@ -1973,7 +2006,7 @@
           <void property="conf"> 
            <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
             <void property="dirName"> 
-             <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/920551975/10002</string> 
+             <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/569065061/10002</string> 
             </void> 
             <void property="tableInfo"> 
              <object idref="tableDesc4"/> 
@@ -1990,6 +2023,9 @@
             </void> 
             <void method="add"> 
              <string>CNTR_NAME_FS_399_TIME_TAKEN</string> 
+            </void> 
+            <void method="add"> 
+             <string>CNTR_NAME_FS_399_FATAL_ERROR</string> 
             </void> 
            </object> 
           </void> 
@@ -2189,6 +2225,9 @@
         </void> 
         <void method="add"> 
          <string>CNTR_NAME_JOIN_393_TIME_TAKEN</string> 
+        </void> 
+        <void method="add"> 
+         <string>CNTR_NAME_JOIN_393_FATAL_ERROR</string> 
         </void> 
        </object> 
       </void> 

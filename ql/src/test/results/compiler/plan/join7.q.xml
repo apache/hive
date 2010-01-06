@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_07" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_16" class="java.beans.XMLDecoder"> 
  <object class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
   <void property="id"> 
    <string>Stage-2</string> 
@@ -66,7 +66,7 @@
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1261600937</string> 
+          <string>1262739230</string> 
          </void> 
         </object> 
        </void> 
@@ -350,6 +350,9 @@
                           <void method="add"> 
                            <string>CNTR_NAME_RS_525_TIME_TAKEN</string> 
                           </void> 
+                          <void method="add"> 
+                           <string>CNTR_NAME_RS_525_FATAL_ERROR</string> 
+                          </void> 
                          </object> 
                         </void> 
                         <void property="operatorId"> 
@@ -460,6 +463,9 @@
                       </void> 
                       <void method="add"> 
                        <string>CNTR_NAME_SEL_524_TIME_TAKEN</string> 
+                      </void> 
+                      <void method="add"> 
+                       <string>CNTR_NAME_SEL_524_FATAL_ERROR</string> 
                       </void> 
                      </object> 
                     </void> 
@@ -646,6 +652,9 @@
                   <void method="add"> 
                    <string>CNTR_NAME_FIL_523_TIME_TAKEN</string> 
                   </void> 
+                  <void method="add"> 
+                   <string>CNTR_NAME_FIL_523_FATAL_ERROR</string> 
+                  </void> 
                  </object> 
                 </void> 
                 <void property="operatorId"> 
@@ -823,6 +832,9 @@
               <void method="add"> 
                <string>CNTR_NAME_FIL_532_TIME_TAKEN</string> 
               </void> 
+              <void method="add"> 
+               <string>CNTR_NAME_FIL_532_FATAL_ERROR</string> 
+              </void> 
              </object> 
             </void> 
             <void property="operatorId"> 
@@ -863,6 +875,9 @@
           </void> 
           <void method="add"> 
            <string>CNTR_NAME_TS_522_TIME_TAKEN</string> 
+          </void> 
+          <void method="add"> 
+           <string>CNTR_NAME_TS_522_FATAL_ERROR</string> 
           </void> 
          </object> 
         </void> 
@@ -1056,6 +1071,9 @@
                           <void method="add"> 
                            <string>CNTR_NAME_RS_526_TIME_TAKEN</string> 
                           </void> 
+                          <void method="add"> 
+                           <string>CNTR_NAME_RS_526_FATAL_ERROR</string> 
+                          </void> 
                          </object> 
                         </void> 
                         <void property="operatorId"> 
@@ -1166,6 +1184,9 @@
                       </void> 
                       <void method="add"> 
                        <string>CNTR_NAME_SEL_518_TIME_TAKEN</string> 
+                      </void> 
+                      <void method="add"> 
+                       <string>CNTR_NAME_SEL_518_FATAL_ERROR</string> 
                       </void> 
                      </object> 
                     </void> 
@@ -1344,6 +1365,9 @@
                   <void method="add"> 
                    <string>CNTR_NAME_FIL_517_TIME_TAKEN</string> 
                   </void> 
+                  <void method="add"> 
+                   <string>CNTR_NAME_FIL_517_FATAL_ERROR</string> 
+                  </void> 
                  </object> 
                 </void> 
                 <void property="operatorId"> 
@@ -1521,6 +1545,9 @@
               <void method="add"> 
                <string>CNTR_NAME_FIL_533_TIME_TAKEN</string> 
               </void> 
+              <void method="add"> 
+               <string>CNTR_NAME_FIL_533_FATAL_ERROR</string> 
+              </void> 
              </object> 
             </void> 
             <void property="operatorId"> 
@@ -1561,6 +1588,9 @@
           </void> 
           <void method="add"> 
            <string>CNTR_NAME_TS_516_TIME_TAKEN</string> 
+          </void> 
+          <void method="add"> 
+           <string>CNTR_NAME_TS_516_FATAL_ERROR</string> 
           </void> 
          </object> 
         </void> 
@@ -1754,6 +1784,9 @@
                           <void method="add"> 
                            <string>CNTR_NAME_RS_527_TIME_TAKEN</string> 
                           </void> 
+                          <void method="add"> 
+                           <string>CNTR_NAME_RS_527_FATAL_ERROR</string> 
+                          </void> 
                          </object> 
                         </void> 
                         <void property="operatorId"> 
@@ -1864,6 +1897,9 @@
                       </void> 
                       <void method="add"> 
                        <string>CNTR_NAME_SEL_521_TIME_TAKEN</string> 
+                      </void> 
+                      <void method="add"> 
+                       <string>CNTR_NAME_SEL_521_FATAL_ERROR</string> 
                       </void> 
                      </object> 
                     </void> 
@@ -2042,6 +2078,9 @@
                   <void method="add"> 
                    <string>CNTR_NAME_FIL_520_TIME_TAKEN</string> 
                   </void> 
+                  <void method="add"> 
+                   <string>CNTR_NAME_FIL_520_FATAL_ERROR</string> 
+                  </void> 
                  </object> 
                 </void> 
                 <void property="operatorId"> 
@@ -2219,6 +2258,9 @@
               <void method="add"> 
                <string>CNTR_NAME_FIL_534_TIME_TAKEN</string> 
               </void> 
+              <void method="add"> 
+               <string>CNTR_NAME_FIL_534_FATAL_ERROR</string> 
+              </void> 
              </object> 
             </void> 
             <void property="operatorId"> 
@@ -2259,6 +2301,9 @@
           </void> 
           <void method="add"> 
            <string>CNTR_NAME_TS_519_TIME_TAKEN</string> 
+          </void> 
+          <void method="add"> 
+           <string>CNTR_NAME_TS_519_FATAL_ERROR</string> 
           </void> 
          </object> 
         </void> 
@@ -2376,7 +2421,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1746075699/10001</string> 
+                     <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1962019108/10001</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -2419,6 +2464,9 @@
                     </void> 
                     <void method="add"> 
                      <string>CNTR_NAME_FS_531_TIME_TAKEN</string> 
+                    </void> 
+                    <void method="add"> 
+                     <string>CNTR_NAME_FS_531_FATAL_ERROR</string> 
                     </void> 
                    </object> 
                   </void> 
@@ -2632,6 +2680,9 @@
                 </void> 
                 <void method="add"> 
                  <string>CNTR_NAME_SEL_530_TIME_TAKEN</string> 
+                </void> 
+                <void method="add"> 
+                 <string>CNTR_NAME_SEL_530_FATAL_ERROR</string> 
                 </void> 
                </object> 
               </void> 
@@ -2881,6 +2932,9 @@
             </void> 
             <void method="add"> 
              <string>CNTR_NAME_SEL_529_TIME_TAKEN</string> 
+            </void> 
+            <void method="add"> 
+             <string>CNTR_NAME_SEL_529_FATAL_ERROR</string> 
             </void> 
            </object> 
           </void> 
@@ -3283,6 +3337,9 @@
         </void> 
         <void method="add"> 
          <string>CNTR_NAME_JOIN_528_TIME_TAKEN</string> 
+        </void> 
+        <void method="add"> 
+         <string>CNTR_NAME_JOIN_528_FATAL_ERROR</string> 
         </void> 
        </object> 
       </void> 

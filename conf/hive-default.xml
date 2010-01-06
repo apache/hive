@@ -268,6 +268,12 @@
 </property>
 
 <property>
+  <name>hive.mapjoin.maxsize</name>
+  <value>100000</value>
+  <description>Maximum # of rows of the small table that can be handled by map-side join. If the size is reached and hive.task.progress is set, a fatal error counter is set and the job will be killed.</description>
+</property>
+
+<property>
   <name>hive.mapjoin.cache.numrows</name>
   <value>25000</value>
   <description>How many rows should be cached by jdbm for map join. </description>

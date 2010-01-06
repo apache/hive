@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_07" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_16" class="java.beans.XMLDecoder"> 
  <object id="MapRedTask0" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
   <void property="childTasks"> 
    <object class="java.util.ArrayList"> 
@@ -30,7 +30,7 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/700699010/10000</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1640897559/10000</string> 
               </void> 
               <void property="table"> 
                <object id="tableDesc0" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -83,11 +83,11 @@
                   </void> 
                   <void method="put"> 
                    <string>location</string> 
-                   <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/dest1</string> 
+                   <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/test/data/warehouse/dest1</string> 
                   </void> 
                   <void method="put"> 
                    <string>transient_lastDdlTime</string> 
-                   <string>1259648302</string> 
+                   <string>1262739180</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -97,7 +97,7 @@
                </object> 
               </void> 
               <void property="tmpDir"> 
-               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/700699010/10001</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1640897559/10001</string> 
               </void> 
              </object> 
             </void> 
@@ -125,10 +125,10 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/610378101/10007</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/797933420/10007</string> 
               </void> 
               <void property="targetDir"> 
-               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/700699010/10000</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1640897559/10000</string> 
               </void> 
              </object> 
             </void> 
@@ -146,7 +146,7 @@
             <void property="aliasToWork"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/610378101/10007</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/797933420/10007</string> 
                <object id="TableScanOperator0" class="org.apache.hadoop.hive.ql.exec.TableScanOperator"> 
                 <void property="childOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -309,6 +309,9 @@
                       <void method="add"> 
                        <string>CNTR_NAME_RS_204_TIME_TAKEN</string> 
                       </void> 
+                      <void method="add"> 
+                       <string>CNTR_NAME_RS_204_FATAL_ERROR</string> 
+                      </void> 
                      </object> 
                     </void> 
                     <void property="operatorId"> 
@@ -364,6 +367,9 @@
                   <void method="add"> 
                    <string>CNTR_NAME_TS_203_TIME_TAKEN</string> 
                   </void> 
+                  <void method="add"> 
+                   <string>CNTR_NAME_TS_203_FATAL_ERROR</string> 
+                  </void> 
                  </object> 
                 </void> 
                 <void property="operatorId"> 
@@ -385,10 +391,10 @@
             <void property="pathToAliases"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/610378101/10007</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/797933420/10007</string> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/610378101/10007</string> 
+                 <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/797933420/10007</string> 
                 </void> 
                </object> 
               </void> 
@@ -397,7 +403,7 @@
             <void property="pathToPartitionInfo"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/610378101/10007</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/797933420/10007</string> 
                <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
                 <void property="deserializerClass"> 
                  <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
@@ -430,7 +436,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/700699010/10000</string> 
+                     <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1640897559/10000</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -479,7 +485,7 @@
                         </void> 
                         <void method="put"> 
                          <string>location</string> 
-                         <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/dest1</string> 
+                         <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/test/data/warehouse/dest1</string> 
                         </void> 
                         <void method="put"> 
                          <string>file.outputformat</string> 
@@ -487,7 +493,7 @@
                         </void> 
                         <void method="put"> 
                          <string>transient_lastDdlTime</string> 
-                         <string>1259648302</string> 
+                         <string>1262739180</string> 
                         </void> 
                        </object> 
                       </void> 
@@ -508,6 +514,9 @@
                     </void> 
                     <void method="add"> 
                      <string>CNTR_NAME_FS_206_TIME_TAKEN</string> 
+                    </void> 
+                    <void method="add"> 
+                     <string>CNTR_NAME_FS_206_FATAL_ERROR</string> 
                     </void> 
                    </object> 
                   </void> 
@@ -555,6 +564,9 @@
                 </void> 
                 <void method="add"> 
                  <string>CNTR_NAME_OP_205_TIME_TAKEN</string> 
+                </void> 
+                <void method="add"> 
+                 <string>CNTR_NAME_OP_205_FATAL_ERROR</string> 
                 </void> 
                </object> 
               </void> 
@@ -617,7 +629,7 @@
       <void property="resolverCtx"> 
        <object class="org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles$ConditionalResolverMergeFilesCtx"> 
         <void property="dir"> 
-         <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/610378101/10007</string> 
+         <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/797933420/10007</string> 
         </void> 
         <void property="listTasks"> 
          <object idref="ArrayList0"/> 
@@ -667,7 +679,7 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/700699010/10002</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1640897559/10002</string> 
               </void> 
               <void property="table"> 
                <object id="tableDesc3" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -720,11 +732,11 @@
                   </void> 
                   <void method="put"> 
                    <string>location</string> 
-                   <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/dest2</string> 
+                   <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/test/data/warehouse/dest2</string> 
                   </void> 
                   <void method="put"> 
                    <string>transient_lastDdlTime</string> 
-                   <string>1259648302</string> 
+                   <string>1262739180</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -734,7 +746,7 @@
                </object> 
               </void> 
               <void property="tmpDir"> 
-               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/700699010/10003</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1640897559/10003</string> 
               </void> 
              </object> 
             </void> 
@@ -762,10 +774,10 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/610378101/10008</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/797933420/10008</string> 
               </void> 
               <void property="targetDir"> 
-               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/700699010/10002</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1640897559/10002</string> 
               </void> 
              </object> 
             </void> 
@@ -783,7 +795,7 @@
             <void property="aliasToWork"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/610378101/10008</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/797933420/10008</string> 
                <object id="TableScanOperator1" class="org.apache.hadoop.hive.ql.exec.TableScanOperator"> 
                 <void property="childOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -938,6 +950,9 @@
                       <void method="add"> 
                        <string>CNTR_NAME_RS_208_TIME_TAKEN</string> 
                       </void> 
+                      <void method="add"> 
+                       <string>CNTR_NAME_RS_208_FATAL_ERROR</string> 
+                      </void> 
                      </object> 
                     </void> 
                     <void property="operatorId"> 
@@ -993,6 +1008,9 @@
                   <void method="add"> 
                    <string>CNTR_NAME_TS_207_TIME_TAKEN</string> 
                   </void> 
+                  <void method="add"> 
+                   <string>CNTR_NAME_TS_207_FATAL_ERROR</string> 
+                  </void> 
                  </object> 
                 </void> 
                 <void property="operatorId"> 
@@ -1014,10 +1032,10 @@
             <void property="pathToAliases"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/610378101/10008</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/797933420/10008</string> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/610378101/10008</string> 
+                 <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/797933420/10008</string> 
                 </void> 
                </object> 
               </void> 
@@ -1026,7 +1044,7 @@
             <void property="pathToPartitionInfo"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/610378101/10008</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/797933420/10008</string> 
                <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
                 <void property="deserializerClass"> 
                  <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
@@ -1059,7 +1077,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/700699010/10002</string> 
+                     <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1640897559/10002</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -1108,7 +1126,7 @@
                         </void> 
                         <void method="put"> 
                          <string>location</string> 
-                         <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/dest2</string> 
+                         <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/test/data/warehouse/dest2</string> 
                         </void> 
                         <void method="put"> 
                          <string>file.outputformat</string> 
@@ -1116,7 +1134,7 @@
                         </void> 
                         <void method="put"> 
                          <string>transient_lastDdlTime</string> 
-                         <string>1259648302</string> 
+                         <string>1262739180</string> 
                         </void> 
                        </object> 
                       </void> 
@@ -1137,6 +1155,9 @@
                     </void> 
                     <void method="add"> 
                      <string>CNTR_NAME_FS_210_TIME_TAKEN</string> 
+                    </void> 
+                    <void method="add"> 
+                     <string>CNTR_NAME_FS_210_FATAL_ERROR</string> 
                     </void> 
                    </object> 
                   </void> 
@@ -1184,6 +1205,9 @@
                 </void> 
                 <void method="add"> 
                  <string>CNTR_NAME_OP_209_TIME_TAKEN</string> 
+                </void> 
+                <void method="add"> 
+                 <string>CNTR_NAME_OP_209_FATAL_ERROR</string> 
                 </void> 
                </object> 
               </void> 
@@ -1246,7 +1270,7 @@
       <void property="resolverCtx"> 
        <object class="org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles$ConditionalResolverMergeFilesCtx"> 
         <void property="dir"> 
-         <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/610378101/10008</string> 
+         <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/797933420/10008</string> 
         </void> 
         <void property="listTasks"> 
          <object idref="ArrayList1"/> 
@@ -1305,7 +1329,7 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/700699010/10004</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1640897559/10004</string> 
               </void> 
               <void property="table"> 
                <object id="tableDesc6" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -1358,11 +1382,11 @@
                   </void> 
                   <void method="put"> 
                    <string>location</string> 
-                   <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/dest3</string> 
+                   <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/test/data/warehouse/dest3</string> 
                   </void> 
                   <void method="put"> 
                    <string>transient_lastDdlTime</string> 
-                   <string>1259648302</string> 
+                   <string>1262739180</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -1372,7 +1396,7 @@
                </object> 
               </void> 
               <void property="tmpDir"> 
-               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/700699010/10005</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1640897559/10005</string> 
               </void> 
              </object> 
             </void> 
@@ -1400,10 +1424,10 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/610378101/10009</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/797933420/10009</string> 
               </void> 
               <void property="targetDir"> 
-               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/700699010/10004</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1640897559/10004</string> 
               </void> 
              </object> 
             </void> 
@@ -1421,7 +1445,7 @@
             <void property="aliasToWork"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/610378101/10009</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/797933420/10009</string> 
                <object id="TableScanOperator2" class="org.apache.hadoop.hive.ql.exec.TableScanOperator"> 
                 <void property="childOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -1576,6 +1600,9 @@
                       <void method="add"> 
                        <string>CNTR_NAME_RS_212_TIME_TAKEN</string> 
                       </void> 
+                      <void method="add"> 
+                       <string>CNTR_NAME_RS_212_FATAL_ERROR</string> 
+                      </void> 
                      </object> 
                     </void> 
                     <void property="operatorId"> 
@@ -1631,6 +1658,9 @@
                   <void method="add"> 
                    <string>CNTR_NAME_TS_211_TIME_TAKEN</string> 
                   </void> 
+                  <void method="add"> 
+                   <string>CNTR_NAME_TS_211_FATAL_ERROR</string> 
+                  </void> 
                  </object> 
                 </void> 
                 <void property="operatorId"> 
@@ -1652,10 +1682,10 @@
             <void property="pathToAliases"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/610378101/10009</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/797933420/10009</string> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/610378101/10009</string> 
+                 <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/797933420/10009</string> 
                 </void> 
                </object> 
               </void> 
@@ -1664,7 +1694,7 @@
             <void property="pathToPartitionInfo"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/610378101/10009</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/797933420/10009</string> 
                <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
                 <void property="deserializerClass"> 
                  <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
@@ -1697,7 +1727,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/700699010/10004</string> 
+                     <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1640897559/10004</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -1750,7 +1780,7 @@
                         </void> 
                         <void method="put"> 
                          <string>location</string> 
-                         <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/dest3</string> 
+                         <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/test/data/warehouse/dest3</string> 
                         </void> 
                         <void method="put"> 
                          <string>file.outputformat</string> 
@@ -1758,7 +1788,7 @@
                         </void> 
                         <void method="put"> 
                          <string>transient_lastDdlTime</string> 
-                         <string>1259648302</string> 
+                         <string>1262739180</string> 
                         </void> 
                        </object> 
                       </void> 
@@ -1779,6 +1809,9 @@
                     </void> 
                     <void method="add"> 
                      <string>CNTR_NAME_FS_214_TIME_TAKEN</string> 
+                    </void> 
+                    <void method="add"> 
+                     <string>CNTR_NAME_FS_214_FATAL_ERROR</string> 
                     </void> 
                    </object> 
                   </void> 
@@ -1826,6 +1859,9 @@
                 </void> 
                 <void method="add"> 
                  <string>CNTR_NAME_OP_213_TIME_TAKEN</string> 
+                </void> 
+                <void method="add"> 
+                 <string>CNTR_NAME_OP_213_FATAL_ERROR</string> 
                 </void> 
                </object> 
               </void> 
@@ -1892,7 +1928,7 @@
       <void property="resolverCtx"> 
        <object class="org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles$ConditionalResolverMergeFilesCtx"> 
         <void property="dir"> 
-         <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/610378101/10009</string> 
+         <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/797933420/10009</string> 
         </void> 
         <void property="listTasks"> 
          <object idref="ArrayList2"/> 
@@ -1945,7 +1981,7 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/700699010/10006</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1640897559/10006</string> 
               </void> 
               <void property="targetDir"> 
                <string>../../../../build/contrib/hive/ql/test/data/warehouse/dest4.out</string> 
@@ -1976,10 +2012,10 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/610378101/10010</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/797933420/10010</string> 
               </void> 
               <void property="targetDir"> 
-               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/700699010/10006</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1640897559/10006</string> 
               </void> 
              </object> 
             </void> 
@@ -1997,7 +2033,7 @@
             <void property="aliasToWork"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/610378101/10010</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/797933420/10010</string> 
                <object id="TableScanOperator3" class="org.apache.hadoop.hive.ql.exec.TableScanOperator"> 
                 <void property="childOperators"> 
                  <object class="java.util.ArrayList"> 
@@ -2136,6 +2172,9 @@
                       <void method="add"> 
                        <string>CNTR_NAME_RS_216_TIME_TAKEN</string> 
                       </void> 
+                      <void method="add"> 
+                       <string>CNTR_NAME_RS_216_FATAL_ERROR</string> 
+                      </void> 
                      </object> 
                     </void> 
                     <void property="operatorId"> 
@@ -2181,6 +2220,9 @@
                   <void method="add"> 
                    <string>CNTR_NAME_TS_215_TIME_TAKEN</string> 
                   </void> 
+                  <void method="add"> 
+                   <string>CNTR_NAME_TS_215_FATAL_ERROR</string> 
+                  </void> 
                  </object> 
                 </void> 
                 <void property="operatorId"> 
@@ -2202,10 +2244,10 @@
             <void property="pathToAliases"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/610378101/10010</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/797933420/10010</string> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/610378101/10010</string> 
+                 <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/797933420/10010</string> 
                 </void> 
                </object> 
               </void> 
@@ -2214,7 +2256,7 @@
             <void property="pathToPartitionInfo"> 
              <object class="java.util.LinkedHashMap"> 
               <void method="put"> 
-               <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/610378101/10010</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/797933420/10010</string> 
                <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
                 <void property="deserializerClass"> 
                  <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
@@ -2270,7 +2312,7 @@
                   <void property="conf"> 
                    <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                     <void property="dirName"> 
-                     <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/700699010/10006</string> 
+                     <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1640897559/10006</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -2313,6 +2355,9 @@
                     </void> 
                     <void method="add"> 
                      <string>CNTR_NAME_FS_218_TIME_TAKEN</string> 
+                    </void> 
+                    <void method="add"> 
+                     <string>CNTR_NAME_FS_218_FATAL_ERROR</string> 
                     </void> 
                    </object> 
                   </void> 
@@ -2360,6 +2405,9 @@
                 </void> 
                 <void method="add"> 
                  <string>CNTR_NAME_OP_217_TIME_TAKEN</string> 
+                </void> 
+                <void method="add"> 
+                 <string>CNTR_NAME_OP_217_FATAL_ERROR</string> 
                 </void> 
                </object> 
               </void> 
@@ -2412,7 +2460,7 @@
       <void property="resolverCtx"> 
        <object class="org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles$ConditionalResolverMergeFilesCtx"> 
         <void property="dir"> 
-         <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/610378101/10010</string> 
+         <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/797933420/10010</string> 
         </void> 
         <void property="listTasks"> 
          <object idref="ArrayList3"/> 
@@ -2498,11 +2546,11 @@
          </void> 
          <void method="put"> 
           <string>location</string> 
-          <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/src</string> 
+          <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/test/data/warehouse/src</string> 
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1259648302</string> 
+          <string>1262739179</string> 
          </void> 
         </object> 
        </void> 
@@ -2554,7 +2602,7 @@
                        <int>1</int> 
                       </void> 
                       <void property="dirName"> 
-                       <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/610378101/10007</string> 
+                       <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/797933420/10007</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object idref="tableDesc0"/> 
@@ -2571,6 +2619,9 @@
                       </void> 
                       <void method="add"> 
                        <string>CNTR_NAME_FS_193_TIME_TAKEN</string> 
+                      </void> 
+                      <void method="add"> 
+                       <string>CNTR_NAME_FS_193_FATAL_ERROR</string> 
                       </void> 
                      </object> 
                     </void> 
@@ -2660,6 +2711,9 @@
                   </void> 
                   <void method="add"> 
                    <string>CNTR_NAME_SEL_192_TIME_TAKEN</string> 
+                  </void> 
+                  <void method="add"> 
+                   <string>CNTR_NAME_SEL_192_FATAL_ERROR</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -2771,6 +2825,9 @@
               <void method="add"> 
                <string>CNTR_NAME_FIL_191_TIME_TAKEN</string> 
               </void> 
+              <void method="add"> 
+               <string>CNTR_NAME_FIL_191_FATAL_ERROR</string> 
+              </void> 
              </object> 
             </void> 
             <void property="operatorId"> 
@@ -2829,7 +2886,7 @@
                        <int>2</int> 
                       </void> 
                       <void property="dirName"> 
-                       <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/610378101/10008</string> 
+                       <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/797933420/10008</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object idref="tableDesc3"/> 
@@ -2846,6 +2903,9 @@
                       </void> 
                       <void method="add"> 
                        <string>CNTR_NAME_FS_196_TIME_TAKEN</string> 
+                      </void> 
+                      <void method="add"> 
+                       <string>CNTR_NAME_FS_196_FATAL_ERROR</string> 
                       </void> 
                      </object> 
                     </void> 
@@ -2932,6 +2992,9 @@
                   </void> 
                   <void method="add"> 
                    <string>CNTR_NAME_SEL_195_TIME_TAKEN</string> 
+                  </void> 
+                  <void method="add"> 
+                   <string>CNTR_NAME_SEL_195_FATAL_ERROR</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -3110,6 +3173,9 @@
               <void method="add"> 
                <string>CNTR_NAME_FIL_194_TIME_TAKEN</string> 
               </void> 
+              <void method="add"> 
+               <string>CNTR_NAME_FIL_194_FATAL_ERROR</string> 
+              </void> 
              </object> 
             </void> 
             <void property="operatorId"> 
@@ -3147,7 +3213,7 @@
                        <int>3</int> 
                       </void> 
                       <void property="dirName"> 
-                       <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/610378101/10009</string> 
+                       <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/797933420/10009</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object idref="tableDesc6"/> 
@@ -3164,6 +3230,9 @@
                       </void> 
                       <void method="add"> 
                        <string>CNTR_NAME_FS_199_TIME_TAKEN</string> 
+                      </void> 
+                      <void method="add"> 
+                       <string>CNTR_NAME_FS_199_FATAL_ERROR</string> 
                       </void> 
                      </object> 
                     </void> 
@@ -3247,6 +3316,9 @@
                   </void> 
                   <void method="add"> 
                    <string>CNTR_NAME_SEL_198_TIME_TAKEN</string> 
+                  </void> 
+                  <void method="add"> 
+                   <string>CNTR_NAME_SEL_198_FATAL_ERROR</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -3425,6 +3497,9 @@
               <void method="add"> 
                <string>CNTR_NAME_FIL_197_TIME_TAKEN</string> 
               </void> 
+              <void method="add"> 
+               <string>CNTR_NAME_FIL_197_FATAL_ERROR</string> 
+              </void> 
              </object> 
             </void> 
             <void property="operatorId"> 
@@ -3462,7 +3537,7 @@
                        <int>4</int> 
                       </void> 
                       <void property="dirName"> 
-                       <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/tmp/610378101/10010</string> 
+                       <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/797933420/10010</string> 
                       </void> 
                       <void property="tableInfo"> 
                        <object idref="tableDesc11"/> 
@@ -3479,6 +3554,9 @@
                       </void> 
                       <void method="add"> 
                        <string>CNTR_NAME_FS_202_TIME_TAKEN</string> 
+                      </void> 
+                      <void method="add"> 
+                       <string>CNTR_NAME_FS_202_FATAL_ERROR</string> 
                       </void> 
                      </object> 
                     </void> 
@@ -3545,6 +3623,9 @@
                   </void> 
                   <void method="add"> 
                    <string>CNTR_NAME_SEL_201_TIME_TAKEN</string> 
+                  </void> 
+                  <void method="add"> 
+                   <string>CNTR_NAME_SEL_201_FATAL_ERROR</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -3645,6 +3726,9 @@
               <void method="add"> 
                <string>CNTR_NAME_FIL_200_TIME_TAKEN</string> 
               </void> 
+              <void method="add"> 
+               <string>CNTR_NAME_FIL_200_FATAL_ERROR</string> 
+              </void> 
              </object> 
             </void> 
             <void property="operatorId"> 
@@ -3686,6 +3770,9 @@
           <void method="add"> 
            <string>CNTR_NAME_TS_190_TIME_TAKEN</string> 
           </void> 
+          <void method="add"> 
+           <string>CNTR_NAME_TS_190_FATAL_ERROR</string> 
+          </void> 
          </object> 
         </void> 
         <void property="neededColumnIDs"> 
@@ -3715,7 +3802,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/test/data/warehouse/src</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src</string> 
@@ -3727,7 +3814,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/njain/hive_commit1/hive_commit1/build/ql/test/data/warehouse/src</string> 
+       <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/test/data/warehouse/src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="deserializerClass"> 
          <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
