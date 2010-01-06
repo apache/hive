@@ -398,6 +398,8 @@ Trunk -  Unreleased
 
     HIVE-1028. Fix tinyint in TypedBytes. (Namit Jain via zshao)
 
+    HIVE-458. Better error messages for fs.default.name. (Paul Yang via zshao)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

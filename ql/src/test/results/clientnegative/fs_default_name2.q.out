@@ -1,0 +1,1 @@
+FAILED: Unknown exception: Error while making MR scratch directory - check filesystem config (java.net.URISyntaxException: Illegal character in scheme name at index 0: 'http://www.example.com)

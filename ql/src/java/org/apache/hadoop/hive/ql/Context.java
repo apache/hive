@@ -180,6 +180,9 @@ public class Context {
         makeMRScratchDir();
       } catch (IOException e) {
         throw new RuntimeException (e);
+      } catch (IllegalArgumentException e) {
+        throw new RuntimeException("Error while making MR scratch " + 
+            "directory - check filesystem config (" + e.getCause() + ")", e);
       }
     }
     return MRScratchDir.toString();
@@ -194,6 +197,9 @@ public class Context {
         makeLocalScratchDir();
       } catch (IOException e) {
         throw new RuntimeException(e);
+      } catch (IllegalArgumentException e) {
+        throw new RuntimeException("Error while making local scratch " + 
+            "directory - check filesystem config (" + e.getCause() + ")", e);
       }
     }
     return localScratchDir.toString();
