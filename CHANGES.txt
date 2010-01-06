@@ -406,6 +406,9 @@ Trunk -  Unreleased
 
     HIVE-458. Better error messages for fs.default.name. (Paul Yang via zshao)
 
+    HIVE-1030 Hive should use scratchDir instead of system temporary directory
+    for storing plans (Zheng Shao via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

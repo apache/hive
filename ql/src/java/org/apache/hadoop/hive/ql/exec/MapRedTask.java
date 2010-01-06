@@ -76,10 +76,11 @@ public class MapRedTask extends Task<mapredWork> implements Serializable {
 
       // Generate the hiveConfArgs after potentially adding the jars
       String hiveConfArgs = ExecDriver.generateCmdLine(conf);
+      File scratchDir = new File(conf.getVar(HiveConf.ConfVars.SCRATCHDIR));
       
       mapredWork plan = getWork();
 
-      File planFile = File.createTempFile("plan", ".xml");
+      File planFile = File.createTempFile("plan", ".xml", scratchDir);
       LOG.info("Generating plan file " + planFile.toString());
       FileOutputStream out = new FileOutputStream(planFile);
       Utilities.serializeMapRedWork(plan, out);
