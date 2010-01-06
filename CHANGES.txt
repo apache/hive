@@ -98,6 +98,9 @@ Trunk -  Unreleased
     HIVE-683 Add UDF field
     (Larry Odrognek via namit)
 
+    HIVE-1015 Java MapReduce wrapper for TRANSFORM/MAP/REDUCE scripts
+    (Larry Odrognek via namit)
+
   IMPROVEMENTS
 
     HIVE-760. Add version info to META-INF/MANIFEST.MF.
