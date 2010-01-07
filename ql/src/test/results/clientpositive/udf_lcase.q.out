@@ -1,0 +1,14 @@
+PREHOOK: query: DESCRIBE FUNCTION lcase
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION lcase
+POSTHOOK: type: DESCFUNCTION
+lcase(str) - Returns str with all characters changed to lowercase
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED lcase
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED lcase
+POSTHOOK: type: DESCFUNCTION
+lcase(str) - Returns str with all characters changed to lowercase
+Synonyms: lower
+Example:
+  > SELECT lcase('Facebook') FROM src LIMIT 1;
+  'facebook'

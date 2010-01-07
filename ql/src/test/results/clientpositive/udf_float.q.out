@@ -1,0 +1,10 @@
+PREHOOK: query: DESCRIBE FUNCTION float
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION float
+POSTHOOK: type: DESCFUNCTION
+There is no documentation for function 'float'
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED float
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED float
+POSTHOOK: type: DESCFUNCTION
+There is no documentation for function 'float'

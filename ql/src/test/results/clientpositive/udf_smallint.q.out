@@ -1,0 +1,10 @@
+PREHOOK: query: DESCRIBE FUNCTION smallint
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION smallint
+POSTHOOK: type: DESCFUNCTION
+There is no documentation for function 'smallint'
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED smallint
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED smallint
+POSTHOOK: type: DESCFUNCTION
+There is no documentation for function 'smallint'

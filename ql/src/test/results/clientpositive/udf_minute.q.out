@@ -1,0 +1,78 @@
+PREHOOK: query: DESCRIBE FUNCTION minute
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION minute
+POSTHOOK: type: DESCFUNCTION
+minute(date) - Returns the minute of date
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED minute
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED minute
+POSTHOOK: type: DESCFUNCTION
+minute(date) - Returns the minute of date
+date is a string in the format of 'yyyy-MM-dd HH:mm:ss' or 'HH:mm:ss'.
+Example:
+   > SELECT minute('2009-07-30 12:58:59') FROM src LIMIT 1;
+  58
+  > SELECT minute('12:58:59') FROM src LIMIT 1;
+  58
+PREHOOK: query: EXPLAIN
+SELECT minute('2009-08-07 13:14:15'), minute('13:14:15'), minute('2009-08-07')
+FROM src WHERE key = 86
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT minute('2009-08-07 13:14:15'), minute('13:14:15'), minute('2009-08-07')
+FROM src WHERE key = 86
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF src)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION minute '2009-08-07 13:14:15')) (TOK_SELEXPR (TOK_FUNCTION minute '13:14:15')) (TOK_SELEXPR (TOK_FUNCTION minute '2009-08-07'))) (TOK_WHERE (= (TOK_TABLE_OR_COL key) 86))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src 
+          TableScan
+            alias: src
+            Filter Operator
+              predicate:
+                  expr: (key = 86)
+                  type: boolean
+              Filter Operator
+                predicate:
+                    expr: (key = 86)
+                    type: boolean
+                Select Operator
+                  expressions:
+                        expr: minute('2009-08-07 13:14:15')
+                        type: int
+                        expr: minute('13:14:15')
+                        type: int
+                        expr: minute('2009-08-07')
+                        type: int
+                  outputColumnNames: _col0, _col1, _col2
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.TextInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT minute('2009-08-07 13:14:15'), minute('13:14:15'), minute('2009-08-07')
+FROM src WHERE key = 86
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/113919951/10000
+POSTHOOK: query: SELECT minute('2009-08-07 13:14:15'), minute('13:14:15'), minute('2009-08-07')
+FROM src WHERE key = 86
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/113919951/10000
+14	14	NULL

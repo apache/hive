@@ -1,0 +1,22 @@
+PREHOOK: query: DESCRIBE FUNCTION /
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION /
+POSTHOOK: type: DESCFUNCTION
+a / b - Divide a by b
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED /
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED /
+POSTHOOK: type: DESCFUNCTION
+a / b - Divide a by b
+Example:
+  > SELECT 3 / 2 FROM src LIMIT 1;
+  1.5
+PREHOOK: query: SELECT 3 / 2 FROM SRC LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/1123393035/10000
+POSTHOOK: query: SELECT 3 / 2 FROM SRC LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/1123393035/10000
+1.5

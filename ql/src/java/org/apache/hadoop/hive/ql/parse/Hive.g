@@ -1305,6 +1305,18 @@ sysFuncNames
     | KW_NOT
     | KW_LIKE
     | KW_IF
+    | KW_CASE
+    | KW_WHEN
+    | KW_TINYINT
+    | KW_SMALLINT
+    | KW_INT
+    | KW_BIGINT
+    | KW_FLOAT
+    | KW_DOUBLE
+    | KW_BOOLEAN
+    | KW_STRING
+    | KW_ARRAY
+    | KW_MAP
     | EQUAL
     | NOTEQUAL
     | LESSTHANOREQUALTO
@@ -1338,7 +1350,7 @@ KW_FALSE : 'FALSE';
 KW_ALL : 'ALL';
 KW_AND : 'AND';
 KW_OR : 'OR';
-KW_NOT : 'NOT';
+KW_NOT : 'NOT' | '!';
 KW_LIKE : 'LIKE';
 
 KW_IF : 'IF';
@@ -1522,8 +1534,8 @@ RSQUARE : ']' ;
 LCURLY : '{';
 RCURLY : '}';
 
-EQUAL : '=';
-NOTEQUAL : '<>';
+EQUAL : '=' | '==';
+NOTEQUAL : '<>' | '!=';
 LESSTHANOREQUALTO : '<=';
 LESSTHAN : '<';
 GREATERTHANOREQUALTO : '>=';

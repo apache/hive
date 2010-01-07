@@ -1,13 +1,11 @@
-PREHOOK: query: -- Parsing bug requires us to quote array
-DESCRIBE FUNCTION 'array'
+PREHOOK: query: DESCRIBE FUNCTION array
 PREHOOK: type: DESCFUNCTION
-POSTHOOK: query: -- Parsing bug requires us to quote array
-DESCRIBE FUNCTION 'array'
+POSTHOOK: query: DESCRIBE FUNCTION array
 POSTHOOK: type: DESCFUNCTION
 array(n0, n1...) - Creates an array with the given elements 
-PREHOOK: query: DESCRIBE FUNCTION EXTENDED 'array'
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED array
 PREHOOK: type: DESCFUNCTION
-POSTHOOK: query: DESCRIBE FUNCTION EXTENDED 'array'
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED array
 POSTHOOK: type: DESCFUNCTION
 array(n0, n1...) - Creates an array with the given elements 
 PREHOOK: query: EXPLAIN SELECT array(), array()[1], array(1, 2, 3), array(1, 2, 3)[2], array(1,"a", 2, 3), array(1,"a", 2, 3)[2],
@@ -64,10 +62,10 @@ PREHOOK: query: SELECT array(), array()[1], array(1, 2, 3), array(1, 2, 3)[2], a
 array(array(1), array(2), array(3), array(4))[1][0] FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1972672782/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/1915910537/10000
 POSTHOOK: query: SELECT array(), array()[1], array(1, 2, 3), array(1, 2, 3)[2], array(1,"a", 2, 3), array(1,"a", 2, 3)[2],
 array(array(1), array(2), array(3), array(4))[1][0] FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1972672782/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/1915910537/10000
 []	NULL	[1,2,3]	3	["1","a","2","3"]	2	2

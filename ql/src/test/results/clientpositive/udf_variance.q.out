@@ -1,0 +1,44 @@
+PREHOOK: query: DESCRIBE FUNCTION variance
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION variance
+POSTHOOK: type: DESCFUNCTION
+variance(x) - Returns the variance of a set of numbers
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED variance
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED variance
+POSTHOOK: type: DESCFUNCTION
+variance(x) - Returns the variance of a set of numbers
+Synonyms: var_pop
+PREHOOK: query: DESCRIBE FUNCTION var_pop
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION var_pop
+POSTHOOK: type: DESCFUNCTION
+var_pop(x) - Returns the variance of a set of numbers
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED var_pop
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED var_pop
+POSTHOOK: type: DESCFUNCTION
+var_pop(x) - Returns the variance of a set of numbers
+Synonyms: variance
+PREHOOK: query: DESCRIBE FUNCTION variance
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION variance
+POSTHOOK: type: DESCFUNCTION
+variance(x) - Returns the variance of a set of numbers
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED variance
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED variance
+POSTHOOK: type: DESCFUNCTION
+variance(x) - Returns the variance of a set of numbers
+Synonyms: var_pop
+PREHOOK: query: DESCRIBE FUNCTION var_pop
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION var_pop
+POSTHOOK: type: DESCFUNCTION
+var_pop(x) - Returns the variance of a set of numbers
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED var_pop
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED var_pop
+POSTHOOK: type: DESCFUNCTION
+var_pop(x) - Returns the variance of a set of numbers
+Synonyms: variance

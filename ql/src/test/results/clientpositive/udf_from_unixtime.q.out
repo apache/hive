@@ -1,0 +1,13 @@
+PREHOOK: query: DESCRIBE FUNCTION from_unixtime
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION from_unixtime
+POSTHOOK: type: DESCFUNCTION
+from_unixtime(unix_time, format) - returns unix_time in the specified format
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED from_unixtime
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED from_unixtime
+POSTHOOK: type: DESCFUNCTION
+from_unixtime(unix_time, format) - returns unix_time in the specified format
+Example:
+  > SELECT from_unixtime(0, 'yyyy-MM-dd HH:mm:ss') FROM src LIMIT 1;
+  '1970-01-01 00:00:00'

@@ -1,0 +1,10 @@
+PREHOOK: query: DESCRIBE FUNCTION min
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION min
+POSTHOOK: type: DESCFUNCTION
+min(expr) - Returns the minimum value of expr
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED min
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED min
+POSTHOOK: type: DESCFUNCTION
+min(expr) - Returns the minimum value of expr

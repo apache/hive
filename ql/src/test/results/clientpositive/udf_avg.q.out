@@ -1,0 +1,10 @@
+PREHOOK: query: DESCRIBE FUNCTION avg
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION avg
+POSTHOOK: type: DESCFUNCTION
+avg(x) - Returns the mean of a set of numbers
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED avg
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED avg
+POSTHOOK: type: DESCFUNCTION
+avg(x) - Returns the mean of a set of numbers

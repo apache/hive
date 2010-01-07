@@ -1,3 +1,13 @@
+PREHOOK: query: DESCRIBE FUNCTION when
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION when
+POSTHOOK: type: DESCFUNCTION
+There is no documentation for function 'when'
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED when
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED when
+POSTHOOK: type: DESCFUNCTION
+There is no documentation for function 'when'
 PREHOOK: query: EXPLAIN
 SELECT CASE
         WHEN 1=1 THEN 2
@@ -124,7 +134,7 @@ PREHOOK: query: SELECT CASE
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1103797531/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/260148553/10000
 POSTHOOK: query: SELECT CASE
         WHEN 1=1 THEN 2
         WHEN 1=3 THEN 4
@@ -153,5 +163,5 @@ POSTHOOK: query: SELECT CASE
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1103797531/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/260148553/10000
 2	9	14	NULL	24	NULL

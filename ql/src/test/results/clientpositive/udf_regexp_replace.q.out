@@ -1,0 +1,13 @@
+PREHOOK: query: DESCRIBE FUNCTION regexp_replace
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION regexp_replace
+POSTHOOK: type: DESCFUNCTION
+regexp_replace(str, regexp, rep) - replace all substrings of str that match regexp with rep
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED regexp_replace
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED regexp_replace
+POSTHOOK: type: DESCFUNCTION
+regexp_replace(str, regexp, rep) - replace all substrings of str that match regexp with rep
+Example:
+  > SELECT regexp_replace('100-200', '(\d+)', 'num') FROM src LIMIT 1;
+  'num-num'

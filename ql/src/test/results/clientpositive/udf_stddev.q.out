@@ -1,0 +1,11 @@
+PREHOOK: query: DESCRIBE FUNCTION stddev
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION stddev
+POSTHOOK: type: DESCFUNCTION
+stddev(x) - Returns the standard deviation of a set of numbers
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED stddev
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED stddev
+POSTHOOK: type: DESCFUNCTION
+stddev(x) - Returns the standard deviation of a set of numbers
+Synonyms: stddev_pop, std

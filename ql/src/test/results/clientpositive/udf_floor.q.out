@@ -1,0 +1,15 @@
+PREHOOK: query: DESCRIBE FUNCTION floor
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION floor
+POSTHOOK: type: DESCFUNCTION
+floor(x) - Find the largest integer not greater than x
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED floor
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED floor
+POSTHOOK: type: DESCFUNCTION
+floor(x) - Find the largest integer not greater than x
+Example:
+  > SELECT floor(-0.1) FROM src LIMIT 1;
+  -1
+  > SELECT floor(5) FROM src LIMIT 1;
+  5

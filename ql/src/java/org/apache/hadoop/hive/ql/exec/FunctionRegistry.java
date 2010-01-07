@@ -25,6 +25,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,9 +38,124 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.exprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.groupByDesc;
-import org.apache.hadoop.hive.ql.udf.*;
-import org.apache.hadoop.hive.ql.udf.generic.*;
+import org.apache.hadoop.hive.ql.udf.UDAFMax;
+import org.apache.hadoop.hive.ql.udf.UDAFMin;
+import org.apache.hadoop.hive.ql.udf.UDFAbs;
+import org.apache.hadoop.hive.ql.udf.UDFAcos;
+import org.apache.hadoop.hive.ql.udf.UDFAscii;
+import org.apache.hadoop.hive.ql.udf.UDFAsin;
+import org.apache.hadoop.hive.ql.udf.UDFBin;
+import org.apache.hadoop.hive.ql.udf.UDFCeil;
+import org.apache.hadoop.hive.ql.udf.UDFConcat;
+import org.apache.hadoop.hive.ql.udf.UDFConv;
+import org.apache.hadoop.hive.ql.udf.UDFCos;
+import org.apache.hadoop.hive.ql.udf.UDFDate;
+import org.apache.hadoop.hive.ql.udf.UDFDateAdd;
+import org.apache.hadoop.hive.ql.udf.UDFDateDiff;
+import org.apache.hadoop.hive.ql.udf.UDFDateSub;
+import org.apache.hadoop.hive.ql.udf.UDFDayOfMonth;
+import org.apache.hadoop.hive.ql.udf.UDFExp;
+import org.apache.hadoop.hive.ql.udf.UDFFindInSet;
+import org.apache.hadoop.hive.ql.udf.UDFFloor;
+import org.apache.hadoop.hive.ql.udf.UDFFromUnixTime;
+import org.apache.hadoop.hive.ql.udf.UDFHex;
+import org.apache.hadoop.hive.ql.udf.UDFHour;
+import org.apache.hadoop.hive.ql.udf.UDFJson;
+import org.apache.hadoop.hive.ql.udf.UDFLTrim;
+import org.apache.hadoop.hive.ql.udf.UDFLength;
+import org.apache.hadoop.hive.ql.udf.UDFLike;
+import org.apache.hadoop.hive.ql.udf.UDFLn;
+import org.apache.hadoop.hive.ql.udf.UDFLog;
+import org.apache.hadoop.hive.ql.udf.UDFLog10;
+import org.apache.hadoop.hive.ql.udf.UDFLog2;
+import org.apache.hadoop.hive.ql.udf.UDFLower;
+import org.apache.hadoop.hive.ql.udf.UDFLpad;
+import org.apache.hadoop.hive.ql.udf.UDFMinute;
+import org.apache.hadoop.hive.ql.udf.UDFMonth;
+import org.apache.hadoop.hive.ql.udf.UDFOPAnd;
+import org.apache.hadoop.hive.ql.udf.UDFOPBitAnd;
+import org.apache.hadoop.hive.ql.udf.UDFOPBitNot;
+import org.apache.hadoop.hive.ql.udf.UDFOPBitOr;
+import org.apache.hadoop.hive.ql.udf.UDFOPBitXor;
+import org.apache.hadoop.hive.ql.udf.UDFOPDivide;
+import org.apache.hadoop.hive.ql.udf.UDFOPEqual;
+import org.apache.hadoop.hive.ql.udf.UDFOPEqualOrGreaterThan;
+import org.apache.hadoop.hive.ql.udf.UDFOPEqualOrLessThan;
+import org.apache.hadoop.hive.ql.udf.UDFOPGreaterThan;
+import org.apache.hadoop.hive.ql.udf.UDFOPLessThan;
+import org.apache.hadoop.hive.ql.udf.UDFOPLongDivide;
+import org.apache.hadoop.hive.ql.udf.UDFOPMinus;
+import org.apache.hadoop.hive.ql.udf.UDFOPMod;
+import org.apache.hadoop.hive.ql.udf.UDFOPMultiply;
+import org.apache.hadoop.hive.ql.udf.UDFOPNegative;
+import org.apache.hadoop.hive.ql.udf.UDFOPNot;
+import org.apache.hadoop.hive.ql.udf.UDFOPNotEqual;
+import org.apache.hadoop.hive.ql.udf.UDFOPOr;
+import org.apache.hadoop.hive.ql.udf.UDFOPPlus;
+import org.apache.hadoop.hive.ql.udf.UDFOPPositive;
+import org.apache.hadoop.hive.ql.udf.UDFParseUrl;
+import org.apache.hadoop.hive.ql.udf.UDFPosMod;
+import org.apache.hadoop.hive.ql.udf.UDFPower;
+import org.apache.hadoop.hive.ql.udf.UDFRTrim;
+import org.apache.hadoop.hive.ql.udf.UDFRand;
+import org.apache.hadoop.hive.ql.udf.UDFRegExp;
+import org.apache.hadoop.hive.ql.udf.UDFRegExpExtract;
+import org.apache.hadoop.hive.ql.udf.UDFRegExpReplace;
+import org.apache.hadoop.hive.ql.udf.UDFRepeat;
+import org.apache.hadoop.hive.ql.udf.UDFReverse;
+import org.apache.hadoop.hive.ql.udf.UDFRound;
+import org.apache.hadoop.hive.ql.udf.UDFRpad;
+import org.apache.hadoop.hive.ql.udf.UDFSecond;
+import org.apache.hadoop.hive.ql.udf.UDFSin;
+import org.apache.hadoop.hive.ql.udf.UDFSpace;
+import org.apache.hadoop.hive.ql.udf.UDFSqrt;
+import org.apache.hadoop.hive.ql.udf.UDFSubstr;
+import org.apache.hadoop.hive.ql.udf.UDFToBoolean;
+import org.apache.hadoop.hive.ql.udf.UDFToByte;
+import org.apache.hadoop.hive.ql.udf.UDFToDouble;
+import org.apache.hadoop.hive.ql.udf.UDFToFloat;
+import org.apache.hadoop.hive.ql.udf.UDFToInteger;
+import org.apache.hadoop.hive.ql.udf.UDFToLong;
+import org.apache.hadoop.hive.ql.udf.UDFToShort;
+import org.apache.hadoop.hive.ql.udf.UDFToString;
+import org.apache.hadoop.hive.ql.udf.UDFTrim;
+import org.apache.hadoop.hive.ql.udf.UDFType;
+import org.apache.hadoop.hive.ql.udf.UDFUnhex;
+import org.apache.hadoop.hive.ql.udf.UDFUnixTimeStamp;
+import org.apache.hadoop.hive.ql.udf.UDFUpper;
+import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
+import org.apache.hadoop.hive.ql.udf.UDFYear;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStd;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFStdSample;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSum;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFVariance;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFVarianceSample;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFArray;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCase;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCoalesce;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFConcatWS;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFElt;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFField;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFHash;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIf;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIndex;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFInstr;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLocate;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFMap;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFSize;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFSplit;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDTFExplode;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
@@ -151,6 +267,7 @@ public class FunctionRegistry {
     registerUDF("=", UDFOPEqual.class, true);
     registerUDF("==", UDFOPEqual.class, true, "=");
     registerUDF("<>", UDFOPNotEqual.class, true);
+    registerUDF("!=", UDFOPNotEqual.class, true, "<>");
     registerUDF("<", UDFOPLessThan.class, true);
     registerUDF("<=", UDFOPEqualOrLessThan.class, true);
     registerUDF(">", UDFOPGreaterThan.class, true);
@@ -304,11 +421,11 @@ public class FunctionRegistry {
    * Returns a set of registered function names.
    * This is used for the CLI command "SHOW FUNCTIONS 'regular expression';"
    * Returns an empty set when the regular expression is not valid.
-   * @param  funcPatternStr  regular expression of the intersted function names
+   * @param  funcPatternStr  regular expression of the interested function names
    * @return                 set of strings contains function names
    */
   public static Set<String> getFunctionNames(String funcPatternStr) {
-    TreeSet<String> funcNames = new TreeSet<String>();
+    Set<String> funcNames = new TreeSet<String>();
     Pattern funcPattern = null;
     try {
       funcPattern = Pattern.compile(funcPatternStr);
@@ -323,6 +440,33 @@ public class FunctionRegistry {
     return funcNames;
   }
 
+  /**
+   * Returns the set of synonyms of the supplied function.
+   * @param funcName the name of the function
+   * @return Set of synonyms for funcName
+   */
+  public static Set<String> getFunctionSynonyms(String funcName) {
+    Set<String> synonyms = new HashSet<String>();
+    
+    FunctionInfo funcInfo = getFunctionInfo(funcName);
+    if (null == funcInfo) {
+      return synonyms;
+    }
+    
+    Class<?> funcClass = funcInfo.getFunctionClass();
+    for (String name : mFunctions.keySet()) {
+      if (name.equals(funcName)) {
+        continue;
+      }
+      if (mFunctions.get(name).getFunctionClass().equals(funcClass)) {
+        synonyms.add(name);
+      }
+    }
+    
+    return synonyms;
+  }
+
+  
   static Map<TypeInfo, Integer> numericTypes = new HashMap<TypeInfo, Integer>();
   static List<TypeInfo> numericTypeList = new ArrayList<TypeInfo>();
   static void registerNumericType(String typeName, int level) {
@@ -429,7 +573,7 @@ public class FunctionRegistry {
   public static <T> Method getMethodInternal(Class<? extends T> udfClass, String methodName, boolean exact, 
       List<TypeInfo> argumentClasses) {
 
-    ArrayList<Method> mlist = new ArrayList<Method>();
+    List<Method> mlist = new ArrayList<Method>();
 
     for(Method m: Arrays.asList(udfClass.getMethods())) {
       if (m.getName().equals(methodName)) {
@@ -574,7 +718,7 @@ public class FunctionRegistry {
    * @param argumentsPassed The classes for the argument.
    * @return The matching method.
    */
-  public static Method getMethodInternal(ArrayList<Method> mlist, boolean exact,
+  public static Method getMethodInternal(List<Method> mlist, boolean exact,
       List<TypeInfo> argumentsPassed) {
     int leastConversionCost = Integer.MAX_VALUE;
     Method udfMethod = null;

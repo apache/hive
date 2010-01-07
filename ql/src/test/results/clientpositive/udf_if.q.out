@@ -2,12 +2,12 @@ PREHOOK: query: DESCRIBE FUNCTION if
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION if
 POSTHOOK: type: DESCFUNCTION
-There is no documentation for function if
+There is no documentation for function 'if'
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED if
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED if
 POSTHOOK: type: DESCFUNCTION
-There is no documentation for function if
+There is no documentation for function 'if'
 PREHOOK: query: EXPLAIN
 SELECT IF(TRUE, 1, 2) AS COL1,
        IF(FALSE, CAST(NULL AS STRING), CAST(1 AS STRING)) AS COL2,
@@ -77,7 +77,7 @@ PREHOOK: query: SELECT IF(TRUE, 1, 2) AS COL1,
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1635207375/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/1694401467/10000
 POSTHOOK: query: SELECT IF(TRUE, 1, 2) AS COL1,
        IF(FALSE, CAST(NULL AS STRING), CAST(1 AS STRING)) AS COL2,
        IF(1=1, IF(2=2, 1, 2), IF(3=3, 3, 4)) AS COL3,
@@ -87,7 +87,7 @@ POSTHOOK: query: SELECT IF(TRUE, 1, 2) AS COL1,
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1635207375/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/1694401467/10000
 1	1	1	1	NULL	2
 PREHOOK: query: -- Type conversions
 EXPLAIN
@@ -150,7 +150,7 @@ PREHOOK: query: SELECT IF(TRUE, CAST(128 AS SMALLINT), CAST(1 AS TINYINT)) AS CO
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1478265880/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/984666042/10000
 POSTHOOK: query: SELECT IF(TRUE, CAST(128 AS SMALLINT), CAST(1 AS TINYINT)) AS COL1,
        IF(FALSE, 1, 1.1) AS COL2,
        IF(FALSE, 1, 'ABC') AS COL3,
@@ -158,5 +158,5 @@ POSTHOOK: query: SELECT IF(TRUE, CAST(128 AS SMALLINT), CAST(1 AS TINYINT)) AS C
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1478265880/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd8/hive-trunk/build/ql/tmp/984666042/10000
 128	1.1	ABC	12.3

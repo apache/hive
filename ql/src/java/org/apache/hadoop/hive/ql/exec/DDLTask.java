@@ -82,7 +82,9 @@ import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.util.StringUtils;
+
+import static org.apache.hadoop.util.StringUtils.stringifyException;
+import static org.apache.commons.lang.StringUtils.join;
 
 /**
  * DDLTask implementation
@@ -174,14 +176,14 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     } catch (InvalidTableException e) {
       console.printError("Table " + e.getTableName() + " does not exist");
-      LOG.debug(StringUtils.stringifyException(e));
+      LOG.debug(stringifyException(e));
       return 1;
     } catch (HiveException e) {
-      console.printError("FAILED: Error in metadata: " + e.getMessage(), "\n" + StringUtils.stringifyException(e));
-      LOG.debug(StringUtils.stringifyException(e));
+      console.printError("FAILED: Error in metadata: " + e.getMessage(), "\n" + stringifyException(e));
+      LOG.debug(stringifyException(e));
       return 1;
     } catch (Exception e) {
-      console.printError("Failed with exception " +   e.getMessage(), "\n" + StringUtils.stringifyException(e));
+      console.printError("Failed with exception " +   e.getMessage(), "\n" + stringifyException(e));
       return (1);
     }
     assert false;
@@ -363,10 +365,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
       ((FSDataOutputStream)outStream).close();
     } catch (FileNotFoundException e) {
-      LOG.info("show partitions: " + StringUtils.stringifyException(e));
+      LOG.info("show partitions: " + stringifyException(e));
       throw new HiveException(e.toString());
     } catch (IOException e) {
-      LOG.info("show partitions: " + StringUtils.stringifyException(e));
+      LOG.info("show partitions: " + stringifyException(e));
       throw new HiveException(e.toString());
     } catch (Exception e) {
       throw new HiveException(e.toString());
@@ -408,10 +410,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
       ((FSDataOutputStream)outStream).close();
     } catch (FileNotFoundException e) {
-      LOG.warn("show table: " + StringUtils.stringifyException(e));
+      LOG.warn("show table: " + stringifyException(e));
       return 1;
     } catch (IOException e) {
-      LOG.warn("show table: " + StringUtils.stringifyException(e));
+      LOG.warn("show table: " + stringifyException(e));
       return 1;
     } catch (Exception e) {
       throw new HiveException(e.toString());
@@ -451,10 +453,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
       ((FSDataOutputStream)outStream).close();
     } catch (FileNotFoundException e) {
-      LOG.warn("show function: " + StringUtils.stringifyException(e));
+      LOG.warn("show function: " + stringifyException(e));
       return 1;
     } catch (IOException e) {
-      LOG.warn("show function: " + StringUtils.stringifyException(e));
+      LOG.warn("show function: " + stringifyException(e));
       return 1;
     } catch (Exception e) {
       throw new HiveException(e.toString());
@@ -489,14 +491,20 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
       if (desc != null) {
         outStream.writeBytes(desc.value().replace("_FUNC_", funcName));
-        if(descFunc.isExtended() && desc.extended().length() > 0) {
-          outStream.writeBytes("\n"+desc.extended().replace("_FUNC_", funcName));
+        if(descFunc.isExtended()) {
+          Set<String> synonyms = FunctionRegistry.getFunctionSynonyms(funcName);
+          if (synonyms.size() > 0) {
+            outStream.writeBytes("\nSynonyms: " + join(synonyms, ", "));
+          }
+          if (desc.extended().length() > 0) {
+            outStream.writeBytes("\n"+desc.extended().replace("_FUNC_", funcName));
+          }
         }
       } else {
         if (funcClass != null) {
-          outStream.writeBytes("There is no documentation for function " + funcName);
+          outStream.writeBytes("There is no documentation for function '" + funcName + "'");
         } else {
-          outStream.writeBytes("Function " + funcName + " does not exist.");
+          outStream.writeBytes("Function '" + funcName + "' does not exist.");
         }
       }
 
@@ -504,10 +512,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       ((FSDataOutputStream)outStream).close();
     } catch (FileNotFoundException e) {
-      LOG.warn("describe function: " + StringUtils.stringifyException(e));
+      LOG.warn("describe function: " + stringifyException(e));
       return 1;
     } catch (IOException e) {
-      LOG.warn("describe function: " + StringUtils.stringifyException(e));
+      LOG.warn("describe function: " + stringifyException(e));
       return 1;
     } catch (Exception e) {
       throw new HiveException(e.toString());
@@ -619,10 +627,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       }
       ((FSDataOutputStream) outStream).close();
     } catch (FileNotFoundException e) {
-      LOG.info("show table status: " + StringUtils.stringifyException(e));
+      LOG.info("show table status: " + stringifyException(e));
       return 1;
     } catch (IOException e) {
-      LOG.info("show table status: " + StringUtils.stringifyException(e));
+      LOG.info("show table status: " + stringifyException(e));
       return 1;
     } catch (Exception e) {
       throw new HiveException(e.toString());
@@ -670,10 +678,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         tbl = part.getTable();
       }
     } catch (FileNotFoundException e) {
-      LOG.info("describe table: " + StringUtils.stringifyException(e));
+      LOG.info("describe table: " + stringifyException(e));
       return 1;
     } catch (IOException e) {
-      LOG.info("describe table: " + StringUtils.stringifyException(e));
+      LOG.info("describe table: " + stringifyException(e));
       return 1;
     }
 
@@ -746,10 +754,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       ((FSDataOutputStream) outStream).close();
 
     } catch (FileNotFoundException e) {
-      LOG.info("describe table: " + StringUtils.stringifyException(e));
+      LOG.info("describe table: " + stringifyException(e));
       return 1;
     } catch (IOException e) {
-      LOG.info("describe table: " + StringUtils.stringifyException(e));
+      LOG.info("describe table: " + stringifyException(e));
       return 1;
     } catch (Exception e) {
       throw new HiveException(e.toString());
@@ -1026,7 +1034,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     try {
       tbl.setProperty("last_modified_by", conf.getUser());
     } catch (IOException e) {
-      console.printError("Unable to get current user: " + e.getMessage(), StringUtils.stringifyException(e));
+      console.printError("Unable to get current user: " + e.getMessage(), stringifyException(e));
       return 1;
     }
     tbl.setProperty("last_modified_time", Long.toString(System
@@ -1035,7 +1043,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     try {
       tbl.checkValidity();
     } catch (HiveException e) {
-      console.printError("Invalid table columns : " + e.getMessage(), StringUtils.stringifyException(e));
+      console.printError("Invalid table columns : " + e.getMessage(), stringifyException(e));
       return 1;
     }
 
@@ -1043,7 +1051,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       db.alterTable(alterTbl.getOldName(), tbl);
     } catch (InvalidOperationException e) {
       console.printError("Invalid alter operation: " + e.getMessage());
-      LOG.info("alter table: " + StringUtils.stringifyException(e));
+      LOG.info("alter table: " + stringifyException(e));
       return 1;
     } catch (HiveException e) {
       return 1;
@@ -1252,7 +1260,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     try {
       tbl.setOwner(conf.getUser());
     } catch (IOException e) {
-      console.printError("Unable to get current user: " + e.getMessage(), StringUtils.stringifyException(e));
+      console.printError("Unable to get current user: " + e.getMessage(), stringifyException(e));
       return 1;
     }
     // set create time

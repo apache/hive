@@ -1,0 +1,14 @@
+PREHOOK: query: DESCRIBE FUNCTION power
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION power
+POSTHOOK: type: DESCFUNCTION
+power(x1, x2) - raise x1 to the power of x2
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED power
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED power
+POSTHOOK: type: DESCFUNCTION
+power(x1, x2) - raise x1 to the power of x2
+Synonyms: pow
+Example:
+  > SELECT power(2, 3) FROM src LIMIT 1;
+  8

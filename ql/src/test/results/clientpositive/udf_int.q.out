@@ -1,0 +1,10 @@
+PREHOOK: query: DESCRIBE FUNCTION int
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION int
+POSTHOOK: type: DESCFUNCTION
+There is no documentation for function 'int'
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED int
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED int
+POSTHOOK: type: DESCFUNCTION
+There is no documentation for function 'int'

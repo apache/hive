@@ -1,0 +1,10 @@
+PREHOOK: query: DESCRIBE FUNCTION tinyint
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION tinyint
+POSTHOOK: type: DESCFUNCTION
+There is no documentation for function 'tinyint'
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED tinyint
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED tinyint
+POSTHOOK: type: DESCFUNCTION
+There is no documentation for function 'tinyint'

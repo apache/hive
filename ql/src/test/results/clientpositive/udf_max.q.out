@@ -1,0 +1,10 @@
+PREHOOK: query: DESCRIBE FUNCTION max
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION max
+POSTHOOK: type: DESCFUNCTION
+max(expr) - Returns the maximum value of expr
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED max
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED max
+POSTHOOK: type: DESCFUNCTION
+max(expr) - Returns the maximum value of expr

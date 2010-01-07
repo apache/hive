@@ -1,0 +1,14 @@
+PREHOOK: query: DESCRIBE FUNCTION rlike
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION rlike
+POSTHOOK: type: DESCFUNCTION
+str rlike regexp - Returns true if str matches regexp and false otherwise
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED rlike
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED rlike
+POSTHOOK: type: DESCFUNCTION
+str rlike regexp - Returns true if str matches regexp and false otherwise
+Synonyms: regexp
+Example:
+  > SELECT 'fb' rlike '.*' FROM src LIMIT 1;
+  true

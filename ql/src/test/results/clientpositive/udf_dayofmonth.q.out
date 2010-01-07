@@ -1,0 +1,15 @@
+PREHOOK: query: DESCRIBE FUNCTION dayofmonth
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION dayofmonth
+POSTHOOK: type: DESCFUNCTION
+dayofmonth(date) - Returns the date of the month of date
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED dayofmonth
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED dayofmonth
+POSTHOOK: type: DESCFUNCTION
+dayofmonth(date) - Returns the date of the month of date
+Synonyms: day
+date is a string in the format of 'yyyy-MM-dd HH:mm:ss' or 'yyyy-MM-dd'.
+Example:
+   > SELECT dayofmonth('2009-30-07', 1) FROM src LIMIT 1;
+  30

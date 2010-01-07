@@ -1,0 +1,10 @@
+PREHOOK: query: DESCRIBE FUNCTION double
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION double
+POSTHOOK: type: DESCFUNCTION
+There is no documentation for function 'double'
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED double
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED double
+POSTHOOK: type: DESCFUNCTION
+There is no documentation for function 'double'

@@ -1,0 +1,13 @@
+PREHOOK: query: DESCRIBE FUNCTION log10
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION log10
+POSTHOOK: type: DESCFUNCTION
+log10(x) - Returns the logarithm of x with base 10
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED log10
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED log10
+POSTHOOK: type: DESCFUNCTION
+log10(x) - Returns the logarithm of x with base 10
+Example:
+  > SELECT log10(10) FROM src LIMIT 1;
+  1

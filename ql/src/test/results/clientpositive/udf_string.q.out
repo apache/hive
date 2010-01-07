@@ -1,0 +1,10 @@
+PREHOOK: query: DESCRIBE FUNCTION string
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION string
+POSTHOOK: type: DESCFUNCTION
+There is no documentation for function 'string'
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED string
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED string
+POSTHOOK: type: DESCFUNCTION
+There is no documentation for function 'string'
