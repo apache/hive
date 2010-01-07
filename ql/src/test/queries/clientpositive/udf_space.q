@@ -1,3 +1,6 @@
+DESCRIBE FUNCTION space;
+DESCRIBE FUNCTION EXTENDED space;
+
 EXPLAIN SELECT
   space(10),
   space(0),

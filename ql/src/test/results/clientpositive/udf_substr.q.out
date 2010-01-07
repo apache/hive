@@ -1,3 +1,21 @@
+PREHOOK: query: DESCRIBE FUNCTION substr
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION substr
+POSTHOOK: type: DESCFUNCTION
+substr(str, pos[, len]) - returns the substring of str that starts at pos and is of length len
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED substr
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED substr
+POSTHOOK: type: DESCFUNCTION
+substr(str, pos[, len]) - returns the substring of str that starts at pos and is of length len
+pos is a 1-based index. If pos<0 the starting position is determined by counting backwards from the end of str.
+Example:
+   > SELECT substr('Facebook', 5) FROM src LIMIT 1;
+  'book'
+  > SELECT substr('Facebook', -5) FROM src LIMIT 1;
+  'ebook'
+  > SELECT substr('Facebook', 5, 1) FROM src LIMIT 1;
+  'b'
 PREHOOK: query: SELECT
   substr(null, 1), substr(null, 1, 1),
   substr('ABC', null), substr('ABC', null, 1),
@@ -5,7 +23,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1163670295/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/385391222/10000
 POSTHOOK: query: SELECT
   substr(null, 1), substr(null, 1, 1),
   substr('ABC', null), substr('ABC', null, 1),
@@ -13,7 +31,7 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1163670295/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/385391222/10000
 NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: SELECT
   substr('ABC', 1, 0), substr('ABC', 1, -1), substr('ABC', 2, -100),
@@ -25,7 +43,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1047004193/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1555439693/10000
 POSTHOOK: query: SELECT
   substr('ABC', 1, 0), substr('ABC', 1, -1), substr('ABC', 2, -100),
   substr('ABC', 4), substr('ABC', 4, 100),
@@ -36,7 +54,7 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1047004193/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1555439693/10000
 												
 PREHOOK: query: SELECT
   substr('ABCDEFG', 3, 4), substr('ABCDEFG', -5, 4),
@@ -47,7 +65,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/633389211/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1351450825/10000
 POSTHOOK: query: SELECT
   substr('ABCDEFG', 3, 4), substr('ABCDEFG', -5, 4),
   substr('ABCDEFG', 3), substr('ABCDEFG', -5),
@@ -57,7 +75,7 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/633389211/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1351450825/10000
 CDEF	CDEF	CDEFG	CDEFG	ABC	ABC	BC	C	ABC	BC	A	A	A
 PREHOOK: query: SELECT
   substr('ABC', 0, 1), substr('ABC', 0, 2), substr('ABC', 0, 3), substr('ABC', 0, 4),
@@ -68,7 +86,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1247257569/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1909380959/10000
 POSTHOOK: query: SELECT
   substr('ABC', 0, 1), substr('ABC', 0, 2), substr('ABC', 0, 3), substr('ABC', 0, 4),
   substr('ABC', 1, 1), substr('ABC', 1, 2), substr('ABC', 1, 3), substr('ABC', 1, 4),
@@ -78,7 +96,7 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1247257569/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1909380959/10000
 A	AB	ABC	ABC	A	AB	ABC	ABC	B	BC	BC	BC	C	C	C	C	
 PREHOOK: query: SELECT
   substr('ABC', -1, 1), substr('ABC', -1, 2), substr('ABC', -1, 3), substr('ABC', -1, 4),
@@ -88,7 +106,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1569190573/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/606649550/10000
 POSTHOOK: query: SELECT
   substr('ABC', -1, 1), substr('ABC', -1, 2), substr('ABC', -1, 3), substr('ABC', -1, 4),
   substr('ABC', -2, 1), substr('ABC', -2, 2), substr('ABC', -2, 3), substr('ABC', -2, 4),
@@ -97,7 +115,7 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1569190573/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/606649550/10000
 C	C	C	C	B	BC	BC	BC	A	AB	ABC	ABC	
 PREHOOK: query: -- substring() is a synonim of substr(), so just perform some basic tests
 SELECT
@@ -109,7 +127,7 @@ SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1899515229/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1053388822/10000
 POSTHOOK: query: -- substring() is a synonim of substr(), so just perform some basic tests
 SELECT
   substring('ABCDEFG', 3, 4), substring('ABCDEFG', -5, 4),
@@ -120,5 +138,5 @@ SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1899515229/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1053388822/10000
 CDEF	CDEF	CDEFG	CDEFG	ABC	ABC	BC	C	ABC	BC	A	A	A

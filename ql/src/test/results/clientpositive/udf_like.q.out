@@ -1,3 +1,16 @@
+PREHOOK: query: DESCRIBE FUNCTION like
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION like
+POSTHOOK: type: DESCFUNCTION
+like(str, pattern) - Checks if str matches pattern
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED like
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED like
+POSTHOOK: type: DESCFUNCTION
+like(str, pattern) - Checks if str matches pattern
+Example:
+  > SELECT a.* FROM srcpart a WHERE a.hr like '%2' LIMIT 1;
+  27      val_27  2008-04-08      12
 PREHOOK: query: EXPLAIN
 SELECT '_%_' LIKE '%\_\%\_%', '__' LIKE '%\_\%\_%', '%%_%_' LIKE '%\_\%\_%', '%_%_%' LIKE '%\%\_\%',
   '_%_' LIKE '\%\_%', '%__' LIKE '__\%%', '_%' LIKE '\_\%\_\%%', '_%' LIKE '\_\%_%',
@@ -77,12 +90,12 @@ PREHOOK: query: SELECT '_%_' LIKE '%\_\%\_%', '__' LIKE '%\_\%\_%', '%%_%_' LIKE
 FROM src WHERE src.key = 86
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/148481666/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1557896001/10000
 POSTHOOK: query: SELECT '_%_' LIKE '%\_\%\_%', '__' LIKE '%\_\%\_%', '%%_%_' LIKE '%\_\%\_%', '%_%_%' LIKE '%\%\_\%',
   '_%_' LIKE '\%\_%', '%__' LIKE '__\%%', '_%' LIKE '\_\%\_\%%', '_%' LIKE '\_\%_%',
   '%_' LIKE '\%\_', 'ab' LIKE '\%\_', 'ab' LIKE '_a%', 'ab' LIKE 'a'
 FROM src WHERE src.key = 86
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/148481666/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1557896001/10000
 true	false	true	true	false	false	false	false	true	false	false	false

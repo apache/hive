@@ -1,3 +1,16 @@
+PREHOOK: query: DESCRIBE FUNCTION elt
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION elt
+POSTHOOK: type: DESCFUNCTION
+elt(n, str1, str2, ...) - returns the n-th string
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED elt
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED elt
+POSTHOOK: type: DESCFUNCTION
+elt(n, str1, str2, ...) - returns the n-th string
+Example:
+  > SELECT elt(1, 'face', 'book') FROM src LIMIT 1;
+  'face'
 PREHOOK: query: EXPLAIN
 SELECT elt(2, 'abc', 'defg'),
        elt(3, 'aa', 'bb', 'cc', 'dd', 'ee', 'ff', 'gg'),
@@ -92,7 +105,7 @@ PREHOOK: query: SELECT elt(2, 'abc', 'defg'),
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1564252056/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1020024876/10000
 POSTHOOK: query: SELECT elt(2, 'abc', 'defg'),
        elt(3, 'aa', 'bb', 'cc', 'dd', 'ee', 'ff', 'gg'),
        elt('1', 'abc', 'defg'),
@@ -107,5 +120,5 @@ POSTHOOK: query: SELECT elt(2, 'abc', 'defg'),
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1564252056/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1020024876/10000
 defg	cc	abc	2	12345	123456789012	1.25	16.0	NULL	NULL	NULL

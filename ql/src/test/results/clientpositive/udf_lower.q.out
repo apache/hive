@@ -1,3 +1,16 @@
+PREHOOK: query: DESCRIBE FUNCTION lower
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION lower
+POSTHOOK: type: DESCFUNCTION
+lower(str) - Returns str with all characters changed to lowercase
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED lower
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED lower
+POSTHOOK: type: DESCFUNCTION
+lower(str) - Returns str with all characters changed to lowercase
+Example:
+  > SELECT lower('Facebook') FROM src LIMIT 1;
+  'facebook'
 PREHOOK: query: EXPLAIN
 SELECT lower('AbC 123'), upper('AbC 123') FROM src WHERE key = 86
 PREHOOK: type: QUERY
@@ -48,9 +61,9 @@ STAGE PLANS:
 PREHOOK: query: SELECT lower('AbC 123'), upper('AbC 123') FROM src WHERE key = 86
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/655858125/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1887044838/10000
 POSTHOOK: query: SELECT lower('AbC 123'), upper('AbC 123') FROM src WHERE key = 86
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/655858125/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1887044838/10000
 abc 123	ABC 123

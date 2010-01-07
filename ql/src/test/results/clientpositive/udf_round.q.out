@@ -1,13 +1,26 @@
+PREHOOK: query: DESCRIBE FUNCTION round
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION round
+POSTHOOK: type: DESCFUNCTION
+round(x[, d]) - round x to d decimal places
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED round
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED round
+POSTHOOK: type: DESCFUNCTION
+round(x[, d]) - round x to d decimal places
+Example:
+  > SELECT round(12.3456, 1) FROM src LIMIT 1;
+  12.3'
 PREHOOK: query: SELECT round(null), round(null, 0), round(125, null)
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1931880581/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1736987523/10000
 POSTHOOK: query: SELECT round(null), round(null, 0), round(125, null)
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1931880581/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1736987523/10000
 NULL	NULL	NULL
 PREHOOK: query: SELECT
   round(55555), round(55555, 0), round(55555, 1), round(55555, 2), round(55555, 3),
@@ -16,7 +29,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1954748857/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1549949974/10000
 POSTHOOK: query: SELECT
   round(55555), round(55555, 0), round(55555, 1), round(55555, 2), round(55555, 3),
   round(55555, -1), round(55555, -2), round(55555, -3), round(55555, -4),
@@ -24,7 +37,7 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1954748857/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1549949974/10000
 55555	55555.0	55555.0	55555.0	55555.0	55560.0	55600.0	56000.0	60000.0	100000.0	0.0	0.0	0.0
 PREHOOK: query: SELECT
   round(125.315), round(125.315, 0),
@@ -36,7 +49,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/372474214/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/148858111/10000
 POSTHOOK: query: SELECT
   round(125.315), round(125.315, 0),
   round(125.315, 1), round(125.315, 2), round(125.315, 3), round(125.315, 4),
@@ -47,7 +60,7 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/372474214/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/148858111/10000
 125	125.0	125.3	125.32	125.315	125.315	130.0	100.0	0.0	0.0	-125	-125.0	-125.3	-125.32	-125.315	-125.315	-130.0	-100.0	0.0	0.0
 PREHOOK: query: SELECT
   round(3.141592653589793, -15), round(3.141592653589793, -16),
@@ -70,7 +83,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/412153419/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/624837434/10000
 POSTHOOK: query: SELECT
   round(3.141592653589793, -15), round(3.141592653589793, -16),
   round(3.141592653589793, -13), round(3.141592653589793, -14),
@@ -92,16 +105,16 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/412153419/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/624837434/10000
 0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	3.0	3.1	3.14	3.142	3.1416	3.14159	3.141593	3.1415927	3.14159265	3.141592654	3.1415926536	3.14159265359	3.14159265359	3.1415926535898	3.1415926535898	3.14159265358979	3.141592653589793	3.141592653589793
 PREHOOK: query: SELECT round(1809242.3151111344, 9), round(-1809242.3151111344, 9)
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/667136403/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/599098185/10000
 POSTHOOK: query: SELECT round(1809242.3151111344, 9), round(-1809242.3151111344, 9)
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/667136403/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/599098185/10000
 1809242.315111134	-1809242.315111134

@@ -1,3 +1,9 @@
+DESCRIBE FUNCTION lpad;
+DESCRIBE FUNCTION EXTENDED lpad;
+
+DESCRIBE FUNCTION rpad;
+DESCRIBE FUNCTION EXTENDED rpad;
+
 EXPLAIN SELECT
   lpad('hi', 1, '?'),
   lpad('hi', 5, '.'),

@@ -1,3 +1,16 @@
+PREHOOK: query: DESCRIBE FUNCTION repeat
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION repeat
+POSTHOOK: type: DESCFUNCTION
+repeat(str, n) - repeat str n times 
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED repeat
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED repeat
+POSTHOOK: type: DESCFUNCTION
+repeat(str, n) - repeat str n times 
+Example:
+  > SELECT repeat('123', 2) FROM src LIMIT 1;
+  '123123'
 PREHOOK: query: EXPLAIN SELECT
   repeat("Facebook", 3),
   repeat("", 4),
@@ -58,7 +71,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/208533019/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1513627133/10000
 POSTHOOK: query: SELECT
   repeat("Facebook", 3),
   repeat("", 4),
@@ -67,5 +80,5 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/208533019/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1513627133/10000
 FacebookFacebookFacebook			

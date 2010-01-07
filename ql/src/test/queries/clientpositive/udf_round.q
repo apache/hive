@@ -1,3 +1,6 @@
+DESCRIBE FUNCTION round;
+DESCRIBE FUNCTION EXTENDED round;
+
 SELECT round(null), round(null, 0), round(125, null)
 FROM src LIMIT 1;
 

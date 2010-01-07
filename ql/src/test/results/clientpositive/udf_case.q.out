@@ -1,3 +1,15 @@
+PREHOOK: query: -- Parsing bug requires us to quote case
+DESCRIBE FUNCTION 'case'
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: -- Parsing bug requires us to quote case
+DESCRIBE FUNCTION 'case'
+POSTHOOK: type: DESCFUNCTION
+There is no documentation for function case
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED 'case'
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED 'case'
+POSTHOOK: type: DESCFUNCTION
+There is no documentation for function case
 PREHOOK: query: EXPLAIN
 SELECT CASE 1
         WHEN 1 THEN 2
@@ -124,7 +136,7 @@ PREHOOK: query: SELECT CASE 1
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/606727511/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/908511377/10000
 POSTHOOK: query: SELECT CASE 1
         WHEN 1 THEN 2
         WHEN 3 THEN 4
@@ -153,5 +165,5 @@ POSTHOOK: query: SELECT CASE 1
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/606727511/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/908511377/10000
 2	5	15	NULL	20	24

@@ -1,3 +1,6 @@
+DESCRIBE FUNCTION instr;
+DESCRIBE FUNCTION EXTENDED instr;
+
 EXPLAIN
 SELECT instr('abcd', 'abc'),
        instr('abcabc', 'ccc'),

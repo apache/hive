@@ -412,6 +412,9 @@ Trunk -  Unreleased
     HIVE-1030 mapjoin should throw an error if the input is too large
     (Ning Zhang via namit)
 
+    HIVE-996 describe function" throws NPE when when called on UDTF or UDAF
+    (Carl Steinbach via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

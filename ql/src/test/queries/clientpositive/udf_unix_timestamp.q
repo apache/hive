@@ -1,3 +1,6 @@
+DESCRIBE FUNCTION unix_timestamp;
+DESCRIBE FUNCTION EXTENDED unix_timestamp;
+
 SELECT
   '2009-03-20 11:30:01',
   unix_timestamp('2009-03-20 11:30:01')

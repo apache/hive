@@ -1,3 +1,6 @@
+DESCRIBE FUNCTION pmod;
+DESCRIBE FUNCTION EXTENDED pmod;
+
 SELECT pmod(null, null)
 FROM src LIMIT 1;
 

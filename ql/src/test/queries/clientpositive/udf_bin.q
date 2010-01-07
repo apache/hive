@@ -1,3 +1,6 @@
+DESCRIBE FUNCTION bin;
+DESCRIBE FUNCTION EXTENDED bin;
+
 SELECT
   bin(1),
   bin(0),

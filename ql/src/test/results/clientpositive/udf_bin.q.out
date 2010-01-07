@@ -1,3 +1,17 @@
+PREHOOK: query: DESCRIBE FUNCTION bin
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION bin
+POSTHOOK: type: DESCFUNCTION
+bin(n) - returns n in binary
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED bin
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED bin
+POSTHOOK: type: DESCFUNCTION
+bin(n) - returns n in binary
+n is a BIGINT. Returns NULL if n is NULL.
+Example:
+  > SELECT bin(13) FROM src LIMIT 1
+  '1101'
 PREHOOK: query: SELECT
   bin(1),
   bin(0),
@@ -5,7 +19,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/359409613/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/888920394/10000
 POSTHOOK: query: SELECT
   bin(1),
   bin(0),
@@ -13,16 +27,16 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/359409613/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/888920394/10000
 1	0	101111101011100001101100101
 PREHOOK: query: -- Negative numbers should be treated as two's complement (64 bit).
 SELECT bin(-5) FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/991182455/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1468739151/10000
 POSTHOOK: query: -- Negative numbers should be treated as two's complement (64 bit).
 SELECT bin(-5) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/991182455/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1468739151/10000
 1111111111111111111111111111111111111111111111111111111111111011

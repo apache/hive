@@ -1,3 +1,6 @@
+DESCRIBE FUNCTION conv;
+DESCRIBE FUNCTION EXTENDED conv;
+
 -- conv must work on both strings and integers up to 64-bit precision
 
 -- Some simple conversions to test different bases

@@ -1,3 +1,6 @@
+DESCRIBE FUNCTION locate;
+DESCRIBE FUNCTION EXTENDED locate;
+
 EXPLAIN
 SELECT locate('abc', 'abcd'),
        locate('ccc', 'abcabc'),

@@ -1,3 +1,15 @@
+PREHOOK: query: -- Parsing bug requires us to quote map
+DESCRIBE FUNCTION 'map'
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: -- Parsing bug requires us to quote map
+DESCRIBE FUNCTION 'map'
+POSTHOOK: type: DESCFUNCTION
+map(key0, value0, key1, value1...) - Creates a map with the given key/value pairs 
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED 'map'
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED 'map'
+POSTHOOK: type: DESCFUNCTION
+map(key0, value0, key1, value1...) - Creates a map with the given key/value pairs 
 PREHOOK: query: EXPLAIN SELECT map(), map(1, "a", 2, "b", 3, "c"), map(1, 2, "a", "b"), 
 map(1, "a", 2, "b", 3, "c")[2],  map(1, 2, "a", "b")["a"], map(1, array("a"))[1][0] FROM src LIMIT 1
 PREHOOK: type: QUERY
@@ -50,10 +62,10 @@ PREHOOK: query: SELECT map(), map(1, "a", 2, "b", 3, "c"), map(1, 2, "a", "b"),
 map(1, "a", 2, "b", 3, "c")[2],  map(1, 2, "a", "b")["a"], map(1, array("a"))[1][0] FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/pyang/trunk-HIVE-554/VENDOR.hive/trunk/build/ql/tmp/802535376/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1878909043/10000
 POSTHOOK: query: SELECT map(), map(1, "a", 2, "b", 3, "c"), map(1, 2, "a", "b"), 
 map(1, "a", 2, "b", 3, "c")[2],  map(1, 2, "a", "b")["a"], map(1, array("a"))[1][0] FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/pyang/trunk-HIVE-554/VENDOR.hive/trunk/build/ql/tmp/802535376/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1878909043/10000
 {}	{1:"a",2:"b",3:"c"}	{"1":"2","a":"b"}	b	b	a

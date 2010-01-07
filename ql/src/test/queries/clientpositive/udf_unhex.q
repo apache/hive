@@ -1,3 +1,6 @@
+DESCRIBE FUNCTION unhex;
+DESCRIBE FUNCTION EXTENDED unhex;
+
 -- Good inputs
 
 SELECT

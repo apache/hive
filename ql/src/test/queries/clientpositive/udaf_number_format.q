@@ -1,3 +1,4 @@
+
 EXPLAIN SELECT
   sum('a'),
   avg('a'),

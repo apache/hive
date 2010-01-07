@@ -1,3 +1,13 @@
+PREHOOK: query: DESCRIBE FUNCTION hash
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION hash
+POSTHOOK: type: DESCFUNCTION
+hash(a1, a2, ...) - Returns a hash value of the arguments
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED hash
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED hash
+POSTHOOK: type: DESCFUNCTION
+hash(a1, a2, ...) - Returns a hash value of the arguments
 PREHOOK: query: EXPLAIN
 SELECT hash(CAST(1 AS TINYINT)), hash(CAST(2 AS SMALLINT)),
        hash(3), hash(CAST('123456789012' AS BIGINT)),
@@ -74,7 +84,7 @@ PREHOOK: query: SELECT hash(CAST(1 AS TINYINT)), hash(CAST(2 AS SMALLINT)),
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/875530574/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/697748715/10000
 POSTHOOK: query: SELECT hash(CAST(1 AS TINYINT)), hash(CAST(2 AS SMALLINT)),
        hash(3), hash(CAST('123456789012' AS BIGINT)),
        hash(CAST(1.25 AS FLOAT)), hash(CAST(16.0 AS DOUBLE)),
@@ -83,5 +93,5 @@ POSTHOOK: query: SELECT hash(CAST(1 AS TINYINT)), hash(CAST(2 AS SMALLINT)),
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/875530574/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/697748715/10000
 1	2	3	-1097262584	1067450368	1076887552	51508	96354	1	0	1026

@@ -18,8 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 
 public class FunctionInfo {
@@ -28,11 +30,11 @@ public class FunctionInfo {
 
   private String displayName;
 
-  private GenericUDF genericUDF = null;
+  private GenericUDF genericUDF;
 
-  private GenericUDTF genericUDTF = null;
+  private GenericUDTF genericUDTF;
   
-  private GenericUDAFResolver genericUDAFResolver = null;
+  private GenericUDAFResolver genericUDAFResolver;
   
   public FunctionInfo(boolean isNative, String displayName, GenericUDF genericUDF) {
     this.isNative = isNative;
@@ -57,6 +59,9 @@ public class FunctionInfo {
    */
   public GenericUDF getGenericUDF() {
     // GenericUDF is stateful - we have to make a copy here
+    if (genericUDF == null) {
+      return null;
+    }
     return FunctionRegistry.cloneGenericUDF(genericUDF);
   }
   
@@ -65,8 +70,9 @@ public class FunctionInfo {
    */
   public GenericUDTF getGenericUDTF() {
     // GenericUDTF is stateful too, copy
-    if (genericUDTF == null)
+    if (genericUDTF == null) {
       return null;
+    }
     return FunctionRegistry.cloneGenericUDTF(genericUDTF);
   }
   
@@ -75,6 +81,28 @@ public class FunctionInfo {
    */
   public GenericUDAFResolver getGenericUDAFResolver() {
     return genericUDAFResolver;
+  }
+  
+  /**
+   * Get the Class of the UDF
+   */
+  public Class<?> getFunctionClass() {
+    if (isGenericUDF()) {
+      if (genericUDF instanceof GenericUDFBridge) {
+        return ((GenericUDFBridge)genericUDF).getUdfClass();
+      } else {
+        return genericUDF.getClass();
+      }
+    } else if (isGenericUDAF()) {
+      if (genericUDAFResolver instanceof GenericUDAFBridge) {
+        return ((GenericUDAFBridge)genericUDAFResolver).getUDAFClass();
+      } else {
+        return genericUDAFResolver.getClass();
+      }
+    } else if (isGenericUDTF()) {
+      return genericUDTF.getClass();
+    }
+    return null;
   }
   
   /**
@@ -93,5 +121,26 @@ public class FunctionInfo {
    */
   public boolean isNative() {
     return isNative;
+  }
+  
+  /**
+   * @return TRUE if the function is a GenericUDF
+   */
+  public boolean isGenericUDF() {
+    return null != genericUDF;
+  }
+  
+  /**
+   * @return TRUE if the function is a GenericUDAF
+   */
+  public boolean isGenericUDAF() {
+    return null != genericUDAFResolver;
+  }
+  
+  /**
+   * @return TRUE if the function is a GenericUDTF
+   */
+  public boolean isGenericUDTF() {
+    return null != genericUDTF;
   }
 }

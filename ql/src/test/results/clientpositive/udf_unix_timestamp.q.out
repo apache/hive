@@ -1,17 +1,28 @@
+PREHOOK: query: DESCRIBE FUNCTION unix_timestamp
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION unix_timestamp
+POSTHOOK: type: DESCFUNCTION
+unix_timestamp([date[, pattern]]) - Returns the UNIX timestamp
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED unix_timestamp
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED unix_timestamp
+POSTHOOK: type: DESCFUNCTION
+unix_timestamp([date[, pattern]]) - Returns the UNIX timestamp
+Converts the current or specified time to number of seconds since 1970-01-01.
 PREHOOK: query: SELECT
   '2009-03-20 11:30:01',
   unix_timestamp('2009-03-20 11:30:01')
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/490859379/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1659161710/10000
 POSTHOOK: query: SELECT
   '2009-03-20 11:30:01',
   unix_timestamp('2009-03-20 11:30:01')
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/490859379/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1659161710/10000
 2009-03-20 11:30:01	1237573801
 PREHOOK: query: SELECT
   '2009-03-20',
@@ -19,14 +30,14 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1674908517/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1103088265/10000
 POSTHOOK: query: SELECT
   '2009-03-20',
   unix_timestamp('2009-03-20', 'yyyy-MM-dd')
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1674908517/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1103088265/10000
 2009-03-20	1237532400
 PREHOOK: query: SELECT
   '2009 Mar 20 11:30:01 am',
@@ -34,14 +45,14 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/265278879/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1519095937/10000
 POSTHOOK: query: SELECT
   '2009 Mar 20 11:30:01 am',
   unix_timestamp('2009 Mar 20 11:30:01 am', 'yyyy MMM dd h:mm:ss a')
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/265278879/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1519095937/10000
 2009 Mar 20 11:30:01 am	1237573801
 PREHOOK: query: SELECT
   'random_string',
@@ -49,12 +60,12 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/568226360/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1021450138/10000
 POSTHOOK: query: SELECT
   'random_string',
   unix_timestamp('random_string')
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/568226360/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1021450138/10000
 random_string	NULL

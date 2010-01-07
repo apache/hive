@@ -1,3 +1,16 @@
+PREHOOK: query: DESCRIBE FUNCTION space
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION space
+POSTHOOK: type: DESCFUNCTION
+space(n) - returns n spaces
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED space
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED space
+POSTHOOK: type: DESCFUNCTION
+space(n) - returns n spaces
+Example:
+   > SELECT space(2) FROM src LIMIT 1;
+  '  '
 PREHOOK: query: EXPLAIN SELECT
   space(10),
   space(0),
@@ -63,7 +76,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/228561399/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1208254968/10000
 POSTHOOK: query: SELECT
   length(space(10)),
   length(space(0)),
@@ -73,7 +86,7 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/228561399/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1208254968/10000
 10	0	1	0	0
 PREHOOK: query: SELECT
   space(10),
@@ -84,7 +97,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/201745127/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/888230107/10000
 POSTHOOK: query: SELECT
   space(10),
   space(0),
@@ -94,5 +107,5 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/201745127/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/888230107/10000
           		 		

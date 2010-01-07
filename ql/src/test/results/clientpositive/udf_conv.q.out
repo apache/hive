@@ -1,3 +1,19 @@
+PREHOOK: query: DESCRIBE FUNCTION conv
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION conv
+POSTHOOK: type: DESCFUNCTION
+conv(num, from_base, to_base) - convert num from from_base to to_base
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED conv
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED conv
+POSTHOOK: type: DESCFUNCTION
+conv(num, from_base, to_base) - convert num from from_base to to_base
+If to_base is negative, treat num as a signed integer,otherwise, treat it as an unsigned integer.
+Example:
+  > SELECT conv('100', 2, 10) FROM src LIMIT 1;
+  '4'
+  > SELECT conv(-10, 16, -10) FROM src LIMIT 1;
+  '16'
 PREHOOK: query: -- conv must work on both strings and integers up to 64-bit precision
 
 -- Some simple conversions to test different bases
@@ -9,7 +25,7 @@ SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1394785532/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/502953018/10000
 POSTHOOK: query: -- conv must work on both strings and integers up to 64-bit precision
 
 -- Some simple conversions to test different bases
@@ -21,7 +37,7 @@ SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1394785532/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/502953018/10000
 3HL	22	33	116ED2B2FB4
 PREHOOK: query: -- Test negative numbers. If to_base is positive, the number should be handled
 -- as a two's complement (64-bit)
@@ -33,7 +49,7 @@ SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/297144160/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1045444731/10000
 POSTHOOK: query: -- Test negative numbers. If to_base is positive, the number should be handled
 -- as a two's complement (64-bit)
 SELECT
@@ -44,7 +60,7 @@ SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/297144160/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1045444731/10000
 -641	B	FFFFFFFFFFFFFFFF	FFFFFFFFFFFFFFF1
 PREHOOK: query: -- Test overflow. If a number is two large, the result should be -1 (if signed)
 -- or MAX_LONG (if unsigned)
@@ -56,7 +72,7 @@ SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/311355603/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/901682273/10000
 POSTHOOK: query: -- Test overflow. If a number is two large, the result should be -1 (if signed)
 -- or MAX_LONG (if unsigned)
 SELECT
@@ -67,7 +83,7 @@ SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/311355603/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/901682273/10000
 FFFFFFFFFFFFFFFF	-1	FFFFFFFFFFFFFFFF	-1
 PREHOOK: query: -- Test with invalid input. If one of the bases is invalid, the result should
 -- be NULL. If there is an invalid digit in the number, the longest valid
@@ -80,7 +96,7 @@ SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1893103412/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1068643579/10000
 POSTHOOK: query: -- Test with invalid input. If one of the bases is invalid, the result should
 -- be NULL. If there is an invalid digit in the number, the longest valid
 -- prefix should be converted.
@@ -92,7 +108,7 @@ SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1893103412/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1068643579/10000
 5	NULL	NULL	NULL
 PREHOOK: query: -- Perform the same tests with number arguments.
 
@@ -103,7 +119,7 @@ SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/374689536/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/877878753/10000
 POSTHOOK: query: -- Perform the same tests with number arguments.
 
 SELECT
@@ -113,7 +129,7 @@ SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/374689536/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/877878753/10000
 3HL	22	33
 PREHOOK: query: SELECT
   conv(-641, 10, -10),
@@ -123,7 +139,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/117827629/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1990388663/10000
 POSTHOOK: query: SELECT
   conv(-641, 10, -10),
   conv(1011, 2, -16),
@@ -132,7 +148,7 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/117827629/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1990388663/10000
 -641	B	FFFFFFFFFFFFFFFF	FFFFFFFFFFFFFFF1
 PREHOOK: query: SELECT
   conv(9223372036854775807, 36, 16),
@@ -142,7 +158,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/638334947/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1540368732/10000
 POSTHOOK: query: SELECT
   conv(9223372036854775807, 36, 16),
   conv(9223372036854775807, 36, -16),
@@ -151,7 +167,7 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/638334947/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1540368732/10000
 FFFFFFFFFFFFFFFF	-1	FFFFFFFFFFFFFFFF	-1
 PREHOOK: query: SELECT
   conv(123455, 3, 10),
@@ -161,7 +177,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/315464649/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1788821246/10000
 POSTHOOK: query: SELECT
   conv(123455, 3, 10),
   conv(131, 1, 5),
@@ -170,5 +186,5 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/315464649/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1788821246/10000
 5	NULL	NULL	NULL

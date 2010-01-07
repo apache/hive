@@ -1,3 +1,6 @@
+DESCRIBE FUNCTION parse_url;
+DESCRIBE FUNCTION EXTENDED parse_url;
+
 EXPLAIN
 SELECT parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'HOST'), 
 parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'PATH'), 

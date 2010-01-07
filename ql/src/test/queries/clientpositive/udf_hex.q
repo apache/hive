@@ -1,3 +1,6 @@
+DESCRIBE FUNCTION hex;
+DESCRIBE FUNCTION EXTENDED hex;
+
 -- If the argument is a string, hex should return a string containing two hex
 -- digits for every character in the input.
 SELECT

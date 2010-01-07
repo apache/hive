@@ -17,6 +17,8 @@
  */
 
 package org.apache.hadoop.hive.ql.exec;
+
+import org.apache.hadoop.hive.ql.udf.UDFType;
 //import org.apache.hadoop.hive.serde.ReflectionSerDe;
 
 /**

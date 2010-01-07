@@ -1,3 +1,6 @@
+DESCRIBE FUNCTION ascii;
+DESCRIBE FUNCTION EXTENDED ascii;
+
 EXPLAIN SELECT
   ascii('Facebook'),
   ascii(''),

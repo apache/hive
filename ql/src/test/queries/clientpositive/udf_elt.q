@@ -1,3 +1,6 @@
+DESCRIBE FUNCTION elt;
+DESCRIBE FUNCTION EXTENDED elt;
+
 EXPLAIN
 SELECT elt(2, 'abc', 'defg'),
        elt(3, 'aa', 'bb', 'cc', 'dd', 'ee', 'ff', 'gg'),

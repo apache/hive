@@ -1,3 +1,6 @@
+DESCRIBE FUNCTION size;
+DESCRIBE FUNCTION EXTENDED size;
+
 EXPLAIN
 FROM src_thrift
 SELECT size(src_thrift.lint), 

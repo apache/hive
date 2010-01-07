@@ -1,33 +1,43 @@
+PREHOOK: query: DESCRIBE FUNCTION pmod
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION pmod
+POSTHOOK: type: DESCFUNCTION
+a pmod b - Compute the positive modulo
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED pmod
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED pmod
+POSTHOOK: type: DESCFUNCTION
+a pmod b - Compute the positive modulo
 PREHOOK: query: SELECT pmod(null, null)
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1384517913/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1159318893/10000
 POSTHOOK: query: SELECT pmod(null, null)
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1384517913/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1159318893/10000
 NULL
 PREHOOK: query: SELECT pmod(-100,9), pmod(-50,101), pmod(-1000,29)
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1606180544/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1059038526/10000
 POSTHOOK: query: SELECT pmod(-100,9), pmod(-50,101), pmod(-1000,29)
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1606180544/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1059038526/10000
 8	51	15
 PREHOOK: query: SELECT pmod(100,19), pmod(50,125), pmod(300,15)
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1250421811/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/2064781823/10000
 POSTHOOK: query: SELECT pmod(100,19), pmod(50,125), pmod(300,15)
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1250421811/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/2064781823/10000
 5	50	0

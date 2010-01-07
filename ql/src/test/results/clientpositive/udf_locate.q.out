@@ -1,3 +1,16 @@
+PREHOOK: query: DESCRIBE FUNCTION locate
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION locate
+POSTHOOK: type: DESCFUNCTION
+locate(substr, str[, pos]) - Returns the position of the first occurance of substr in str after position pos
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED locate
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED locate
+POSTHOOK: type: DESCFUNCTION
+locate(substr, str[, pos]) - Returns the position of the first occurance of substr in str after position pos
+Example:
+  > SELECT locate('bar', 'foobarbar', 5) FROM src LIMIT 1;
+  7
 PREHOOK: query: EXPLAIN
 SELECT locate('abc', 'abcd'),
        locate('ccc', 'abcabc'),
@@ -122,7 +135,7 @@ PREHOOK: query: SELECT locate('abc', 'abcd'),
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/572327680/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/155745966/10000
 POSTHOOK: query: SELECT locate('abc', 'abcd'),
        locate('ccc', 'abcabc'),
        locate('23', 123),
@@ -143,5 +156,5 @@ POSTHOOK: query: SELECT locate('abc', 'abcd'),
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/572327680/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/155745966/10000
 1	0	2	2	4	4	0	0	2	3	4	2	3	NULL	NULL	0	0

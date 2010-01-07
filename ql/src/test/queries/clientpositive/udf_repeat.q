@@ -1,3 +1,6 @@
+DESCRIBE FUNCTION repeat;
+DESCRIBE FUNCTION EXTENDED repeat;
+
 EXPLAIN SELECT
   repeat("Facebook", 3),
   repeat("", 4),

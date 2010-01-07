@@ -1,3 +1,6 @@
+DESCRIBE FUNCTION negative;
+DESCRIBE FUNCTION EXTENDED negative;
+
 select - null from src limit 1;
 select - cast(null as int) from src limit 1;
 select - cast(null as smallint) from src limit 1;

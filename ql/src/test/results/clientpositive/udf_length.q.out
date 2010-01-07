@@ -1,3 +1,16 @@
+PREHOOK: query: DESCRIBE FUNCTION length
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION length
+POSTHOOK: type: DESCFUNCTION
+length(str) - Returns the length of str 
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED length
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED length
+POSTHOOK: type: DESCFUNCTION
+length(str) - Returns the length of str 
+Example:
+  > SELECT length('Facebook') FROM src LIMIT 1;
+  8
 PREHOOK: query: CREATE TABLE dest1(len INT)
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE dest1(len INT)
@@ -42,10 +55,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/njain/hive5/hive5/build/ql/tmp/777850344/10000
+                destination: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1622212784/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/njain/hive5/hive5/build/ql/tmp/1274386623/10002 
+              file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/92165457/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -88,11 +101,11 @@ POSTHOOK: Output: default@dest1
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/775750892/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/2077609609/10000
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/775750892/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/2077609609/10000
 7
 0
 7
@@ -173,11 +186,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT length(dest1.name) FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1564729330/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/394449121/10000
 POSTHOOK: query: SELECT length(dest1.name) FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1564729330/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/394449121/10000
 2
 PREHOOK: query: DROP TABLE dest1
 PREHOOK: type: DROPTABLE

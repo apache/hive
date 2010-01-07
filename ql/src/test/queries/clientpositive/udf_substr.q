@@ -1,3 +1,6 @@
+DESCRIBE FUNCTION substr;
+DESCRIBE FUNCTION EXTENDED substr;
+
 SELECT
   substr(null, 1), substr(null, 1, 1),
   substr('ABC', null), substr('ABC', null, 1),

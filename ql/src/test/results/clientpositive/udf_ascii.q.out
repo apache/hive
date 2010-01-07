@@ -1,3 +1,18 @@
+PREHOOK: query: DESCRIBE FUNCTION ascii
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION ascii
+POSTHOOK: type: DESCFUNCTION
+ascii(str) - returns the numeric value of the first character of str
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED ascii
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED ascii
+POSTHOOK: type: DESCFUNCTION
+ascii(str) - returns the numeric value of the first character of str
+Returns 0 if str is empty or NULL if str is NULL
+Example:
+  > SELECT ascii('222') FROM src LIMIT 1;  50
+  > SELECT ascii(2) FROM src LIMIT 1;
+  50
 PREHOOK: query: EXPLAIN SELECT
   ascii('Facebook'),
   ascii(''),
@@ -53,7 +68,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/772117818/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1375319396/10000
 POSTHOOK: query: SELECT
   ascii('Facebook'),
   ascii(''),
@@ -61,5 +76,5 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/772117818/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1375319396/10000
 70	0	33

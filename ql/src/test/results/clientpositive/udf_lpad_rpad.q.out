@@ -1,3 +1,33 @@
+PREHOOK: query: DESCRIBE FUNCTION lpad
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION lpad
+POSTHOOK: type: DESCFUNCTION
+lpad(str, len, pad) - Returns str, left-padded with pad to a length of len
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED lpad
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED lpad
+POSTHOOK: type: DESCFUNCTION
+lpad(str, len, pad) - Returns str, left-padded with pad to a length of len
+If str is longer than len, the return value is shortened to len characters.
+Example:
+  > SELECT lpad('hi', 5, '??') FROM src LIMIT 1;
+  '???hi'  > SELECT lpad('hi', 1, '??') FROM src LIMIT 1;
+  'h'
+PREHOOK: query: DESCRIBE FUNCTION rpad
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION rpad
+POSTHOOK: type: DESCFUNCTION
+rpad(str, len, pad) - Returns str, right-padded with pad to a length of len
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED rpad
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED rpad
+POSTHOOK: type: DESCFUNCTION
+rpad(str, len, pad) - Returns str, right-padded with pad to a length of len
+If str is longer than len, the return value is shortened to len characters.
+Example:
+  > SELECT rpad('hi', 5, '??') FROM src LIMIT 1;
+  'hi???'  > SELECT rpad('hi', 1, '??') FROM src LIMIT 1;
+  'h'
 PREHOOK: query: EXPLAIN SELECT
   lpad('hi', 1, '?'),
   lpad('hi', 5, '.'),
@@ -53,7 +83,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/369345424/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/361452356/10000
 POSTHOOK: query: SELECT
   lpad('hi', 1, '?'),
   lpad('hi', 5, '.'),
@@ -61,7 +91,7 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/369345424/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/361452356/10000
 h	...hi	1231hi
 PREHOOK: query: EXPLAIN SELECT
   rpad('hi', 1, '?'),
@@ -118,7 +148,7 @@ PREHOOK: query: SELECT
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/975123871/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1704470803/10000
 POSTHOOK: query: SELECT
   rpad('hi', 1, '?'),
   rpad('hi', 5, '.'),
@@ -126,5 +156,5 @@ POSTHOOK: query: SELECT
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/975123871/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1704470803/10000
 h	hi...	hi1231

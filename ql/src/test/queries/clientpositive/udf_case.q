@@ -1,3 +1,7 @@
+-- Parsing bug requires us to quote case
+DESCRIBE FUNCTION 'case';
+DESCRIBE FUNCTION EXTENDED 'case';
+
 EXPLAIN
 SELECT CASE 1
         WHEN 1 THEN 2

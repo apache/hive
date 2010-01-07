@@ -56,9 +56,8 @@ public class FunctionRegistry {
   /**
    * The mapping from expression function names to expression classes.
    */
-  static LinkedHashMap<String, FunctionInfo> mFunctions;
+  static Map<String, FunctionInfo> mFunctions = new LinkedHashMap<String, FunctionInfo>();
   static {
-    mFunctions = new LinkedHashMap<String, FunctionInfo>();
     registerUDF("concat", UDFConcat.class, false);
     registerUDF("substr", UDFSubstr.class, false);
     registerUDF("substring", UDFSubstr.class, false);
@@ -641,19 +640,26 @@ public class FunctionRegistry {
    * Create a copy of an existing GenericUDF.
    */
   public static GenericUDF cloneGenericUDF(GenericUDF genericUDF) {
+    if (null == genericUDF) {
+      return null;
+    }
+    
     if (genericUDF instanceof GenericUDFBridge) {
       GenericUDFBridge bridge = (GenericUDFBridge)genericUDF;
       return new GenericUDFBridge(bridge.getUdfName(), bridge.isOperator(), bridge.getUdfClass());
-    } else {
-      return (GenericUDF)ReflectionUtils.newInstance(genericUDF.getClass(), null);
     }
+    
+    return (GenericUDF)ReflectionUtils.newInstance(genericUDF.getClass(), null);
   }
 
   /**
    * Create a copy of an existing GenericUDTF.
    */
   public static GenericUDTF cloneGenericUDTF(GenericUDTF genericUDTF) {
-      return (GenericUDTF)ReflectionUtils.newInstance(genericUDTF.getClass(), null);
+    if (null == genericUDTF) {
+      return null;
+    }
+    return (GenericUDTF)ReflectionUtils.newInstance(genericUDTF.getClass(), null);
   }
   
   /**

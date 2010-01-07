@@ -1,44 +1,59 @@
+PREHOOK: query: DESCRIBE FUNCTION asin
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION asin
+POSTHOOK: type: DESCFUNCTION
+asin(x) - returns the arc sine of x if -1<=x<=1 or NULL otherwise
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED asin
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED asin
+POSTHOOK: type: DESCFUNCTION
+asin(x) - returns the arc sine of x if -1<=x<=1 or NULL otherwise
+Example:
+  > SELECT asin(0) FROM src LIMIT 1;
+  0
+  > SELECT asin(2) FROM src LIMIT 1;
+  NULL
 PREHOOK: query: SELECT asin(null)
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/335338053/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/267750936/10000
 POSTHOOK: query: SELECT asin(null)
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/335338053/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/267750936/10000
 NULL
 PREHOOK: query: SELECT asin(0)
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1930989265/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/833606284/10000
 POSTHOOK: query: SELECT asin(0)
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1930989265/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/833606284/10000
 0.0
 PREHOOK: query: SELECT asin(-0.5), asin(0.66)
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1036919646/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/604043294/10000
 POSTHOOK: query: SELECT asin(-0.5), asin(0.66)
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1036919646/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/604043294/10000
 -0.5235987755982989	0.7208187608700897
 PREHOOK: query: SELECT asin(2)
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1231279693/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1494381105/10000
 POSTHOOK: query: SELECT asin(2)
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1231279693/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1494381105/10000
 NaN

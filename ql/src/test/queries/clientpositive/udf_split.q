@@ -1,3 +1,6 @@
+DESCRIBE FUNCTION split;
+DESCRIBE FUNCTION EXTENDED split;
+
 EXPLAIN SELECT 
   split('a b c', ' '),
   split('oneAtwoBthreeC', '[ABC]'),

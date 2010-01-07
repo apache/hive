@@ -1,22 +1,35 @@
+PREHOOK: query: DESCRIBE FUNCTION cos
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION cos
+POSTHOOK: type: DESCFUNCTION
+cos(x) - returns the cosine of x (x is in radians)
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED cos
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED cos
+POSTHOOK: type: DESCFUNCTION
+cos(x) - returns the cosine of x (x is in radians)
+Example:
+   > SELECT cos(0) FROM src LIMIT 1;
+  1
 PREHOOK: query: SELECT cos(null)
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1521763480/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/2017515612/10000
 POSTHOOK: query: SELECT cos(null)
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1521763480/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/2017515612/10000
 NULL
 PREHOOK: query: SELECT cos(0.98), cos(1.57), cos(-0.5)
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1918624552/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1873387849/10000
 POSTHOOK: query: SELECT cos(0.98), cos(1.57), cos(-0.5)
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1918624552/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1873387849/10000
 0.5570225467662173	7.963267107332633E-4	0.8775825618903728

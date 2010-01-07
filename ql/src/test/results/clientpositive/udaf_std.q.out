@@ -1,0 +1,60 @@
+PREHOOK: query: DESCRIBE FUNCTION std
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION std
+POSTHOOK: type: DESCFUNCTION
+std(x) - Returns the standard deviation of a set of numbers
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED std
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED std
+POSTHOOK: type: DESCFUNCTION
+std(x) - Returns the standard deviation of a set of numbers
+PREHOOK: query: DESCRIBE FUNCTION stddev
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION stddev
+POSTHOOK: type: DESCFUNCTION
+stddev(x) - Returns the standard deviation of a set of numbers
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED stddev
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED stddev
+POSTHOOK: type: DESCFUNCTION
+stddev(x) - Returns the standard deviation of a set of numbers
+PREHOOK: query: DESCRIBE FUNCTION stddev_pop
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION stddev_pop
+POSTHOOK: type: DESCFUNCTION
+stddev_pop(x) - Returns the standard deviation of a set of numbers
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED stddev_pop
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED stddev_pop
+POSTHOOK: type: DESCFUNCTION
+stddev_pop(x) - Returns the standard deviation of a set of numbers
+PREHOOK: query: DESCRIBE FUNCTION std
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION std
+POSTHOOK: type: DESCFUNCTION
+std(x) - Returns the standard deviation of a set of numbers
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED std
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED std
+POSTHOOK: type: DESCFUNCTION
+std(x) - Returns the standard deviation of a set of numbers
+PREHOOK: query: DESCRIBE FUNCTION stddev
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION stddev
+POSTHOOK: type: DESCFUNCTION
+stddev(x) - Returns the standard deviation of a set of numbers
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED stddev
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED stddev
+POSTHOOK: type: DESCFUNCTION
+stddev(x) - Returns the standard deviation of a set of numbers
+PREHOOK: query: DESCRIBE FUNCTION stddev_pop
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION stddev_pop
+POSTHOOK: type: DESCFUNCTION
+stddev_pop(x) - Returns the standard deviation of a set of numbers
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED stddev_pop
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED stddev_pop
+POSTHOOK: type: DESCFUNCTION
+stddev_pop(x) - Returns the standard deviation of a set of numbers

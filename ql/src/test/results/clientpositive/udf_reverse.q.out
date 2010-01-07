@@ -1,3 +1,16 @@
+PREHOOK: query: DESCRIBE FUNCTION reverse
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION reverse
+POSTHOOK: type: DESCFUNCTION
+reverse(str) - reverse str
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED reverse
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED reverse
+POSTHOOK: type: DESCFUNCTION
+reverse(str) - reverse str
+Example:
+  > SELECT reverse('Facebook') FROM src LIMIT 1;
+  'koobecaF'
 PREHOOK: query: CREATE TABLE dest1(len STRING)
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE dest1(len STRING)
@@ -42,10 +55,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/njain/hive5/hive5/build/ql/tmp/1305154928/10000
+                destination: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/520090506/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/njain/hive5/hive5/build/ql/tmp/925020569/10002 
+              file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/468564432/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -88,11 +101,11 @@ POSTHOOK: Output: default@dest1
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/516796328/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/255390900/10000
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/516796328/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/255390900/10000
 832_lav
 
 113_lav
@@ -142,11 +155,11 @@ POSTHOOK: Output: default@dest1
 PREHOOK: query: SELECT count(1) FROM dest1 WHERE reverse(dest1.name) = _UTF-8 0xE993AEE982B5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/465925440/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1130378645/10000
 POSTHOOK: query: SELECT count(1) FROM dest1 WHERE reverse(dest1.name) = _UTF-8 0xE993AEE982B5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/465925440/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1130378645/10000
 1
 PREHOOK: query: DROP TABLE dest1
 PREHOOK: type: DROPTABLE

@@ -1,3 +1,13 @@
+PREHOOK: query: DESCRIBE FUNCTION size
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION size
+POSTHOOK: type: DESCFUNCTION
+size(a) - Returns the size of a
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED size
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED size
+POSTHOOK: type: DESCFUNCTION
+size(a) - Returns the size of a
 PREHOOK: query: EXPLAIN
 FROM src_thrift
 SELECT size(src_thrift.lint), 
@@ -71,7 +81,7 @@ WHERE  src_thrift.lint IS NOT NULL
        AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_thrift
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1116336737/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/961043186/10000
 POSTHOOK: query: FROM src_thrift
 SELECT size(src_thrift.lint), 
        size(src_thrift.lintstring), 
@@ -81,5 +91,5 @@ WHERE  src_thrift.lint IS NOT NULL
        AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_thrift
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1116336737/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/961043186/10000
 3	1	1	-1

@@ -1,22 +1,35 @@
+PREHOOK: query: DESCRIBE FUNCTION sin
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION sin
+POSTHOOK: type: DESCFUNCTION
+sin(x) - returns the sine of x (x is in radians)
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED sin
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED sin
+POSTHOOK: type: DESCFUNCTION
+sin(x) - returns the sine of x (x is in radians)
+Example:
+   > SELECT sin(0) FROM src LIMIT 1;
+  0
 PREHOOK: query: SELECT sin(null)
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1281720904/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1659199524/10000
 POSTHOOK: query: SELECT sin(null)
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1281720904/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1659199524/10000
 NULL
 PREHOOK: query: SELECT sin(0.98), sin(1.57), sin(-0.5)
 FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/820458381/10000
+PREHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1109863230/10000
 POSTHOOK: query: SELECT sin(0.98), sin(1.57), sin(-0.5)
 FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/820458381/10000
+POSTHOOK: Output: file:/Users/carl/Projects/hd9/hive-trunk/build/ql/tmp/1109863230/10000
 0.8304973704919705	0.9999996829318346	-0.479425538604203

@@ -26,10 +26,8 @@ import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -75,8 +73,6 @@ import org.apache.hadoop.hive.ql.plan.showPartitionsDesc;
 import org.apache.hadoop.hive.ql.plan.showTableStatusDesc;
 import org.apache.hadoop.hive.ql.plan.showTablesDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.serde.Constants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
@@ -473,8 +469,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @throws HiveException
    */
   private int describeFunction(descFunctionDesc descFunc)
-      throws HiveException {
-    String name = descFunc.getName();
+  throws HiveException {
+    String funcName = descFunc.getName();
 
     // write the results in the file
     try {
@@ -483,30 +479,25 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       // get the function documentation
       description desc = null;
-      FunctionInfo fi = FunctionRegistry.getFunctionInfo(name);
-
       Class<?> funcClass = null;
-      GenericUDF udf = fi.getGenericUDF();
-      if (udf != null) {
-        // If it's a GenericUDFBridge, then let's use the
-        if (udf instanceof GenericUDFBridge) {
-          funcClass = ((GenericUDFBridge)udf).getUdfClass();
-        } else {
-          funcClass = udf.getClass();
-        }
+      FunctionInfo functionInfo = FunctionRegistry.getFunctionInfo(funcName);
+      if (functionInfo != null) {
+        funcClass = functionInfo.getFunctionClass();
       }
-
       if (funcClass != null) {
         desc = funcClass.getAnnotation(description.class);
       }
       if (desc != null) {
-        outStream.writeBytes(desc.value().replace("_FUNC_", name));
-        if(descFunc.isExtended() && desc.extended().length()>0) {
-          outStream.writeBytes("\n"+desc.extended().replace("_FUNC_", name));
+        outStream.writeBytes(desc.value().replace("_FUNC_", funcName));
+        if(descFunc.isExtended() && desc.extended().length() > 0) {
+          outStream.writeBytes("\n"+desc.extended().replace("_FUNC_", funcName));
         }
       } else {
-        outStream.writeBytes("Function " + name + " does not exist or cannot" +
-        		" find documentation for it.");
+        if (funcClass != null) {
+          outStream.writeBytes("There is no documentation for function " + funcName);
+        } else {
+          outStream.writeBytes("Function " + funcName + " does not exist.");
+        }
       }
 
       outStream.write(terminator);
@@ -533,10 +524,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @return Return 0 when execution succeeds and above 0 if it fails.
    */
   private int showTableStatus(Hive db, showTableStatusDesc showTblStatus)
-      throws HiveException {
+  throws HiveException {
     // get the tables for the desired pattenn - populate the output stream
     List<Table> tbls = new ArrayList<Table>();
-    HashMap<String, String> part = showTblStatus.getPartSpec();
+    Map<String, String> part = showTblStatus.getPartSpec();
     Partition par = null;
     if (part != null) {
       Table tbl = db.getTable(showTblStatus.getDbName(), showTblStatus
@@ -613,10 +604,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         List<Path> locations = new ArrayList<Path>();
         if (isPartitioned) {
           if (par == null) {
-            List<Partition> parts = db.getPartitions(tbl);
-            for (Partition curPart : parts)
-              locations.add(new Path(curPart.getTPartition().getSd()
-                  .getLocation()));
+            for (Partition curPart : db.getPartitions(tbl)) {
+              locations.add(new Path(curPart.getTPartition().getSd().getLocation()));
+            }
           } else {
             locations.add(new Path(par.getTPartition().getSd().getLocation()));
           }
@@ -649,7 +639,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    * @throws HiveException Throws this exception if an unexpected error occurs.
    */
   private int describeTable(Hive db, descTableDesc descTbl)
-      throws HiveException {
+  throws HiveException {
     String colPath = descTbl.getTableName();
     String tableName = colPath.substring(0,
         colPath.indexOf('.') == -1 ? colPath.length() : colPath.indexOf('.'));
