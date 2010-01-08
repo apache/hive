@@ -37,6 +37,7 @@ class ThriftHiveMetastoreIf : virtual public facebook::fb303::FacebookServiceIf 
   virtual void get_partitions(std::vector<Partition> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_parts) = 0;
   virtual void get_partition_names(std::vector<std::string> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_parts) = 0;
   virtual void alter_partition(const std::string& db_name, const std::string& tbl_name, const Partition& new_part) = 0;
+  virtual void get_config_value(std::string& _return, const std::string& name, const std::string& defaultValue) = 0;
 };
 
 class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual public facebook::fb303::FacebookServiceNull {
@@ -111,6 +112,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void alter_partition(const std::string& /* db_name */, const std::string& /* tbl_name */, const Partition& /* new_part */) {
+    return;
+  }
+  void get_config_value(std::string& /* _return */, const std::string& /* name */, const std::string& /* defaultValue */) {
     return;
   }
 };
@@ -2496,6 +2500,110 @@ class ThriftHiveMetastore_alter_partition_presult {
 
 };
 
+class ThriftHiveMetastore_get_config_value_args {
+ public:
+
+  ThriftHiveMetastore_get_config_value_args() : name(""), defaultValue("") {
+  }
+
+  virtual ~ThriftHiveMetastore_get_config_value_args() throw() {}
+
+  std::string name;
+  std::string defaultValue;
+
+  struct __isset {
+    __isset() : name(false), defaultValue(false) {}
+    bool name;
+    bool defaultValue;
+  } __isset;
+
+  bool operator == (const ThriftHiveMetastore_get_config_value_args & rhs) const
+  {
+    if (!(name == rhs.name))
+      return false;
+    if (!(defaultValue == rhs.defaultValue))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_config_value_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_config_value_args & ) const;
+
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+class ThriftHiveMetastore_get_config_value_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_config_value_pargs() throw() {}
+
+  const std::string* name;
+  const std::string* defaultValue;
+
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+class ThriftHiveMetastore_get_config_value_result {
+ public:
+
+  ThriftHiveMetastore_get_config_value_result() : success("") {
+  }
+
+  virtual ~ThriftHiveMetastore_get_config_value_result() throw() {}
+
+  std::string success;
+  ConfigValSecurityException o1;
+
+  struct __isset {
+    __isset() : success(false), o1(false) {}
+    bool success;
+    bool o1;
+  } __isset;
+
+  bool operator == (const ThriftHiveMetastore_get_config_value_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_config_value_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_config_value_result & ) const;
+
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+class ThriftHiveMetastore_get_config_value_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_config_value_presult() throw() {}
+
+  std::string* success;
+  ConfigValSecurityException o1;
+
+  struct __isset {
+    __isset() : success(false), o1(false) {}
+    bool success;
+    bool o1;
+  } __isset;
+
+  uint32_t read(apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public facebook::fb303::FacebookServiceClient {
  public:
   ThriftHiveMetastoreClient(boost::shared_ptr<apache::thrift::protocol::TProtocol> prot) :
@@ -2574,6 +2682,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public f
   void alter_partition(const std::string& db_name, const std::string& tbl_name, const Partition& new_part);
   void send_alter_partition(const std::string& db_name, const std::string& tbl_name, const Partition& new_part);
   void recv_alter_partition();
+  void get_config_value(std::string& _return, const std::string& name, const std::string& defaultValue);
+  void send_get_config_value(const std::string& name, const std::string& defaultValue);
+  void recv_get_config_value(std::string& _return);
 };
 
 class ThriftHiveMetastoreProcessor : virtual public apache::thrift::TProcessor, public facebook::fb303::FacebookServiceProcessor {
@@ -2604,6 +2715,7 @@ class ThriftHiveMetastoreProcessor : virtual public apache::thrift::TProcessor, 
   void process_get_partitions(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
   void process_get_partition_names(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
   void process_alter_partition(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
+  void process_get_config_value(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot);
  public:
   ThriftHiveMetastoreProcessor(boost::shared_ptr<ThriftHiveMetastoreIf> iface) :
     facebook::fb303::FacebookServiceProcessor(iface),
@@ -2630,6 +2742,7 @@ class ThriftHiveMetastoreProcessor : virtual public apache::thrift::TProcessor, 
     processMap_["get_partitions"] = &ThriftHiveMetastoreProcessor::process_get_partitions;
     processMap_["get_partition_names"] = &ThriftHiveMetastoreProcessor::process_get_partition_names;
     processMap_["alter_partition"] = &ThriftHiveMetastoreProcessor::process_alter_partition;
+    processMap_["get_config_value"] = &ThriftHiveMetastoreProcessor::process_get_config_value;
   }
 
   virtual bool process(boost::shared_ptr<apache::thrift::protocol::TProtocol> piprot, boost::shared_ptr<apache::thrift::protocol::TProtocol> poprot);
@@ -2889,6 +3002,18 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     uint32_t sz = ifaces_.size();
     for (uint32_t i = 0; i < sz; ++i) {
       ifaces_[i]->alter_partition(db_name, tbl_name, new_part);
+    }
+  }
+
+  void get_config_value(std::string& _return, const std::string& name, const std::string& defaultValue) {
+    uint32_t sz = ifaces_.size();
+    for (uint32_t i = 0; i < sz; ++i) {
+      if (i == sz - 1) {
+        ifaces_[i]->get_config_value(_return, name, defaultValue);
+        return;
+      } else {
+        ifaces_[i]->get_config_value(_return, name, defaultValue);
+      }
     }
   }
 

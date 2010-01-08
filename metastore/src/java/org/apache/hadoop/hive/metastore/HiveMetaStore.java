@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.metastore;
 
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,6 +30,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Index;
@@ -711,6 +714,38 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       public String getCpuProfile(int profileDurationInSec) throws TException {
         return "";
+      }
+
+      /**
+       * Returns the value of the given configuration variable name. If the
+       * configuration variable with the given name doesn't exist, or if there 
+       * were an exception thrown while retrieving the variable, or if name is 
+       * null, defaultValue is returned.
+       */
+      public String get_config_value(String name, String defaultValue) 
+      throws TException, ConfigValSecurityException {
+        this.incrementCounter("get_config_value");
+        logStartFunction("get_config_value: name=" + name + 
+            " defaultValue=" + defaultValue);
+        if(name == null) {
+          return defaultValue;
+        }
+        // Allow only keys that start with hive.*, hdfs.*, mapred.* for security
+        // i.e. don't allow access to db password
+        if(!Pattern.matches("(hive|hdfs|mapred).*", name)) {
+          throw new ConfigValSecurityException("For security reasons, the " + 
+              "config key " + name + " cannot be accessed");
+        }
+        
+        String toReturn = defaultValue;
+        try {
+          toReturn = hiveConf.get(name, defaultValue);
+        } catch(RuntimeException e) {
+          LOG.error(threadLocalId.get().toString() + ": " + 
+              "RuntimeException thrown in get_config_value - msg: " + 
+              e.getMessage() + " cause: " + e.getCause());
+        }
+        return toReturn;
       }
   }
 

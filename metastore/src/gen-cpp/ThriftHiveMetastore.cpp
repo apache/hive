@@ -4872,6 +4872,198 @@ uint32_t ThriftHiveMetastore_alter_partition_presult::read(apache::thrift::proto
   return xfer;
 }
 
+uint32_t ThriftHiveMetastore_get_config_value_args::read(apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->name);
+          this->__isset.name = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->defaultValue);
+          this->__isset.defaultValue = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ThriftHiveMetastore_get_config_value_args::write(apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_config_value_args");
+  xfer += oprot->writeFieldBegin("name", apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->name);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldBegin("defaultValue", apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->defaultValue);
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+uint32_t ThriftHiveMetastore_get_config_value_pargs::write(apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_config_value_pargs");
+  xfer += oprot->writeFieldBegin("name", apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString((*(this->name)));
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldBegin("defaultValue", apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString((*(this->defaultValue)));
+  xfer += oprot->writeFieldEnd();
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+uint32_t ThriftHiveMetastore_get_config_value_result::read(apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->success);
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 1:
+        if (ftype == apache::thrift::protocol::T_STRUCT) {
+          xfer += this->o1.read(iprot);
+          this->__isset.o1 = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ThriftHiveMetastore_get_config_value_result::write(apache::thrift::protocol::TProtocol* oprot) const {
+
+  uint32_t xfer = 0;
+
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_config_value_result");
+
+  if (this->__isset.success) {
+    xfer += oprot->writeFieldBegin("success", apache::thrift::protocol::T_STRING, 0);
+    xfer += oprot->writeString(this->success);
+    xfer += oprot->writeFieldEnd();
+  } else if (this->__isset.o1) {
+    xfer += oprot->writeFieldBegin("o1", apache::thrift::protocol::T_STRUCT, 1);
+    xfer += this->o1.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+uint32_t ThriftHiveMetastore_get_config_value_presult::read(apache::thrift::protocol::TProtocol* iprot) {
+
+  uint32_t xfer = 0;
+  std::string fname;
+  apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+        if (ftype == apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString((*(this->success)));
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 1:
+        if (ftype == apache::thrift::protocol::T_STRUCT) {
+          xfer += this->o1.read(iprot);
+          this->__isset.o1 = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
 bool ThriftHiveMetastoreClient::create_database(const std::string& name, const std::string& description)
 {
   send_create_database(name, description);
@@ -6322,6 +6514,70 @@ void ThriftHiveMetastoreClient::recv_alter_partition()
   return;
 }
 
+void ThriftHiveMetastoreClient::get_config_value(std::string& _return, const std::string& name, const std::string& defaultValue)
+{
+  send_get_config_value(name, defaultValue);
+  recv_get_config_value(_return);
+}
+
+void ThriftHiveMetastoreClient::send_get_config_value(const std::string& name, const std::string& defaultValue)
+{
+  int32_t cseqid = 0;
+  oprot_->writeMessageBegin("get_config_value", apache::thrift::protocol::T_CALL, cseqid);
+
+  ThriftHiveMetastore_get_config_value_pargs args;
+  args.name = &name;
+  args.defaultValue = &defaultValue;
+  args.write(oprot_);
+
+  oprot_->writeMessageEnd();
+  oprot_->getTransport()->flush();
+  oprot_->getTransport()->writeEnd();
+}
+
+void ThriftHiveMetastoreClient::recv_get_config_value(std::string& _return)
+{
+
+  int32_t rseqid = 0;
+  std::string fname;
+  apache::thrift::protocol::TMessageType mtype;
+
+  iprot_->readMessageBegin(fname, mtype, rseqid);
+  if (mtype == apache::thrift::protocol::T_EXCEPTION) {
+    apache::thrift::TApplicationException x;
+    x.read(iprot_);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+    throw x;
+  }
+  if (mtype != apache::thrift::protocol::T_REPLY) {
+    iprot_->skip(apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+    throw apache::thrift::TApplicationException(apache::thrift::TApplicationException::INVALID_MESSAGE_TYPE);
+  }
+  if (fname.compare("get_config_value") != 0) {
+    iprot_->skip(apache::thrift::protocol::T_STRUCT);
+    iprot_->readMessageEnd();
+    iprot_->getTransport()->readEnd();
+    throw apache::thrift::TApplicationException(apache::thrift::TApplicationException::WRONG_METHOD_NAME);
+  }
+  ThriftHiveMetastore_get_config_value_presult result;
+  result.success = &_return;
+  result.read(iprot_);
+  iprot_->readMessageEnd();
+  iprot_->getTransport()->readEnd();
+
+  if (result.__isset.success) {
+    // _return pointer has now been filled
+    return;
+  }
+  if (result.__isset.o1) {
+    throw result.o1;
+  }
+  throw apache::thrift::TApplicationException(apache::thrift::TApplicationException::MISSING_RESULT, "get_config_value failed: unknown result");
+}
+
 bool ThriftHiveMetastoreProcessor::process(boost::shared_ptr<apache::thrift::protocol::TProtocol> piprot, boost::shared_ptr<apache::thrift::protocol::TProtocol> poprot) {
 
   apache::thrift::protocol::TProtocol* iprot = piprot.get();
@@ -7093,6 +7349,37 @@ void ThriftHiveMetastoreProcessor::process_alter_partition(int32_t seqid, apache
   }
 
   oprot->writeMessageBegin("alter_partition", apache::thrift::protocol::T_REPLY, seqid);
+  result.write(oprot);
+  oprot->writeMessageEnd();
+  oprot->getTransport()->flush();
+  oprot->getTransport()->writeEnd();
+}
+
+void ThriftHiveMetastoreProcessor::process_get_config_value(int32_t seqid, apache::thrift::protocol::TProtocol* iprot, apache::thrift::protocol::TProtocol* oprot)
+{
+  ThriftHiveMetastore_get_config_value_args args;
+  args.read(iprot);
+  iprot->readMessageEnd();
+  iprot->getTransport()->readEnd();
+
+  ThriftHiveMetastore_get_config_value_result result;
+  try {
+    iface_->get_config_value(result.success, args.name, args.defaultValue);
+    result.__isset.success = true;
+  } catch (ConfigValSecurityException &o1) {
+    result.o1 = o1;
+    result.__isset.o1 = true;
+  } catch (const std::exception& e) {
+    apache::thrift::TApplicationException x(e.what());
+    oprot->writeMessageBegin("get_config_value", apache::thrift::protocol::T_EXCEPTION, seqid);
+    x.write(oprot);
+    oprot->writeMessageEnd();
+    oprot->getTransport()->flush();
+    oprot->getTransport()->writeEnd();
+    return;
+  }
+
+  oprot->writeMessageBegin("get_config_value", apache::thrift::protocol::T_REPLY, seqid);
   result.write(oprot);
   oprot->writeMessageEnd();
   oprot->getTransport()->flush();

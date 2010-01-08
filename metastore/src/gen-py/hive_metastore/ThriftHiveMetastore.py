@@ -192,6 +192,14 @@ class Iface(fb303.FacebookService.Iface):
     """
     pass
 
+  def get_config_value(self, name, defaultValue):
+    """
+    Parameters:
+     - name
+     - defaultValue
+    """
+    pass
+
 
 class Client(fb303.FacebookService.Client, Iface):
   """
@@ -977,6 +985,40 @@ class Client(fb303.FacebookService.Client, Iface):
       raise result.o2
     return
 
+  def get_config_value(self, name, defaultValue):
+    """
+    Parameters:
+     - name
+     - defaultValue
+    """
+    self.send_get_config_value(name, defaultValue)
+    return self.recv_get_config_value()
+
+  def send_get_config_value(self, name, defaultValue):
+    self._oprot.writeMessageBegin('get_config_value', TMessageType.CALL, self._seqid)
+    args = get_config_value_args()
+    args.name = name
+    args.defaultValue = defaultValue
+    args.write(self._oprot)
+    self._oprot.writeMessageEnd()
+    self._oprot.trans.flush()
+
+  def recv_get_config_value(self, ):
+    (fname, mtype, rseqid) = self._iprot.readMessageBegin()
+    if mtype == TMessageType.EXCEPTION:
+      x = TApplicationException()
+      x.read(self._iprot)
+      self._iprot.readMessageEnd()
+      raise x
+    result = get_config_value_result()
+    result.read(self._iprot)
+    self._iprot.readMessageEnd()
+    if result.success != None:
+      return result.success
+    if result.o1 != None:
+      raise result.o1
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "get_config_value failed: unknown result");
+
 
 class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
   def __init__(self, handler):
@@ -1003,6 +1045,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     self._processMap["get_partitions"] = Processor.process_get_partitions
     self._processMap["get_partition_names"] = Processor.process_get_partition_names
     self._processMap["alter_partition"] = Processor.process_alter_partition
+    self._processMap["get_config_value"] = Processor.process_get_config_value
 
   def process(self, iprot, oprot):
     (name, type, seqid) = iprot.readMessageBegin()
@@ -1365,6 +1408,20 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     except MetaException, o2:
       result.o2 = o2
     oprot.writeMessageBegin("alter_partition", TMessageType.REPLY, seqid)
+    result.write(oprot)
+    oprot.writeMessageEnd()
+    oprot.trans.flush()
+
+  def process_get_config_value(self, seqid, iprot, oprot):
+    args = get_config_value_args()
+    args.read(iprot)
+    iprot.readMessageEnd()
+    result = get_config_value_result()
+    try:
+      result.success = self._handler.get_config_value(args.name, args.defaultValue)
+    except ConfigValSecurityException, o1:
+      result.o1 = o1
+    oprot.writeMessageBegin("get_config_value", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -4658,6 +4715,142 @@ class alter_partition_result:
     if self.o2 != None:
       oprot.writeFieldBegin('o2', TType.STRUCT, 2)
       self.o2.write(oprot)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class get_config_value_args:
+  """
+  Attributes:
+   - name
+   - defaultValue
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'name', None, None, ), # 1
+    (2, TType.STRING, 'defaultValue', None, None, ), # 2
+  )
+
+  def __init__(self, name=None, defaultValue=None,):
+    self.name = name
+    self.defaultValue = defaultValue
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.name = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.defaultValue = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('get_config_value_args')
+    if self.name != None:
+      oprot.writeFieldBegin('name', TType.STRING, 1)
+      oprot.writeString(self.name)
+      oprot.writeFieldEnd()
+    if self.defaultValue != None:
+      oprot.writeFieldBegin('defaultValue', TType.STRING, 2)
+      oprot.writeString(self.defaultValue)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class get_config_value_result:
+  """
+  Attributes:
+   - success
+   - o1
+  """
+
+  thrift_spec = (
+    (0, TType.STRING, 'success', None, None, ), # 0
+    (1, TType.STRUCT, 'o1', (ConfigValSecurityException, ConfigValSecurityException.thrift_spec), None, ), # 1
+  )
+
+  def __init__(self, success=None, o1=None,):
+    self.success = success
+    self.o1 = o1
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 0:
+        if ftype == TType.STRING:
+          self.success = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.o1 = ConfigValSecurityException()
+          self.o1.read(iprot)
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('get_config_value_result')
+    if self.success != None:
+      oprot.writeFieldBegin('success', TType.STRING, 0)
+      oprot.writeString(self.success)
+      oprot.writeFieldEnd()
+    if self.o1 != None:
+      oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+      self.o1.write(oprot)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()

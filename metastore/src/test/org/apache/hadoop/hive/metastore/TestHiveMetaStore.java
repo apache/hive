@@ -28,6 +28,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde.Constants;
+import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
@@ -39,6 +40,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.thrift.TException;
 
 public class TestHiveMetaStore extends TestCase {
   private HiveMetaStoreClient client;
@@ -47,6 +49,13 @@ public class TestHiveMetaStore extends TestCase {
   protected void setUp() throws Exception {
     super.setUp();
     hiveConf = new HiveConf(this.getClass());
+    
+    // set some values to use for getting conf. vars
+    hiveConf.set("hive.key1", "value1");
+    hiveConf.set("hive.key2", "http://www.example.com");
+    hiveConf.set("hive.key3", "");
+    hiveConf.set("hive.key4", "0");
+    
     try {
       client = new HiveMetaStoreClient(hiveConf);
     } catch (Throwable e) {
@@ -662,5 +671,38 @@ public class TestHiveMetaStore extends TestCase {
       ret = client.dropDatabase(dbName);
       assertTrue("Unable to create the databse " + dbName, ret);
     }
+  }
+  
+  public void testGetConfigValue() {
+
+    String val = "value";
+    
+    try {
+      assertEquals(client.getConfigValue("hive.key1", val), "value1");
+      assertEquals(client.getConfigValue("hive.key2", val), 
+                                         "http://www.example.com");
+      assertEquals(client.getConfigValue("hive.key3", val), "");
+      assertEquals(client.getConfigValue("hive.key4", val), "0");
+      assertEquals(client.getConfigValue("hive.key5", val), val);
+      assertEquals(client.getConfigValue(null, val), val);
+    } catch (TException e) {
+      e.printStackTrace();
+      assert(false);
+    } catch (ConfigValSecurityException e) {
+      e.printStackTrace();
+      assert(false);
+    }
+    
+    boolean threwException = false;
+    try {
+      // Attempting to get the password should throw an exception
+      client.getConfigValue("javax.jdo.option.ConnectionPassword", "password");
+    } catch (TException e) {
+      e.printStackTrace();
+      assert(false);
+    } catch (ConfigValSecurityException e) {
+      threwException = true;
+    }
+    assert(threwException);
   }
 }

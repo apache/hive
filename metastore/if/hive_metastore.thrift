@@ -136,6 +136,10 @@ exception InvalidOperationException {
   1: string message
 }
 
+exception ConfigValSecurityException {
+  1: string message
+}
+
 /**
 * This interface is live.
 */
@@ -202,6 +206,13 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // in the new_part
   void alter_partition(1:string db_name, 2:string tbl_name, 3:Partition new_part)
                        throws(1:InvalidOperationException o1, 2:MetaException o2)
+
+  // gets the value of the configuration key in the metastore server. returns
+  // defaultValue if the key does not exist. if the configuration key does not
+  // begin with "hive", "mapred", or "hdfs", a ConfigValSecurityException is
+  // thrown.
+  string get_config_value(1:string name, 2:string defaultValue)
+                          throws(1:ConfigValSecurityException o1)
 }
 
 // these should be needed only for backward compatibility with filestore

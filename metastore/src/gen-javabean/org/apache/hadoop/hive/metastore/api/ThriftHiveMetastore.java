@@ -69,6 +69,8 @@ public class ThriftHiveMetastore {
 
     public void alter_partition(String db_name, String tbl_name, Partition new_part) throws InvalidOperationException, MetaException, TException;
 
+    public String get_config_value(String name, String defaultValue) throws ConfigValSecurityException, TException;
+
   }
 
   public static class Client extends com.facebook.fb303.FacebookService.Client implements Iface {
@@ -946,6 +948,43 @@ public class ThriftHiveMetastore {
       return;
     }
 
+    public String get_config_value(String name, String defaultValue) throws ConfigValSecurityException, TException
+    {
+      send_get_config_value(name, defaultValue);
+      return recv_get_config_value();
+    }
+
+    public void send_get_config_value(String name, String defaultValue) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("get_config_value", TMessageType.CALL, seqid_));
+      get_config_value_args args = new get_config_value_args();
+      args.name = name;
+      args.defaultValue = defaultValue;
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public String recv_get_config_value() throws ConfigValSecurityException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      get_config_value_result result = new get_config_value_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.o1 != null) {
+        throw result.o1;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "get_config_value failed: unknown result");
+    }
+
   }
   public static class Processor extends com.facebook.fb303.FacebookService.Processor implements TProcessor {
     private static final Logger LOGGER = Logger.getLogger(Processor.class.getName());
@@ -975,6 +1014,7 @@ public class ThriftHiveMetastore {
       processMap_.put("get_partitions", new get_partitions());
       processMap_.put("get_partition_names", new get_partition_names());
       processMap_.put("alter_partition", new alter_partition());
+      processMap_.put("get_config_value", new get_config_value());
     }
 
     private Iface iface_;
@@ -1653,6 +1693,34 @@ public class ThriftHiveMetastore {
           return;
         }
         oprot.writeMessageBegin(new TMessage("alter_partition", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class get_config_value implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        get_config_value_args args = new get_config_value_args();
+        args.read(iprot);
+        iprot.readMessageEnd();
+        get_config_value_result result = new get_config_value_result();
+        try {
+          result.success = iface_.get_config_value(args.name, args.defaultValue);
+        } catch (ConfigValSecurityException o1) {
+          result.o1 = o1;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing get_config_value", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing get_config_value");
+          oprot.writeMessageBegin(new TMessage("get_config_value", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("get_config_value", TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -14536,6 +14604,525 @@ public class ThriftHiveMetastore {
         sb.append("null");
       } else {
         sb.append(this.o2);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class get_config_value_args implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_config_value_args");
+    private static final TField NAME_FIELD_DESC = new TField("name", TType.STRING, (short)1);
+    private static final TField DEFAULT_VALUE_FIELD_DESC = new TField("defaultValue", TType.STRING, (short)2);
+
+    private String name;
+    public static final int NAME = 1;
+    private String defaultValue;
+    public static final int DEFAULTVALUE = 2;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(NAME, new FieldMetaData("name", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      put(DEFAULTVALUE, new FieldMetaData("defaultValue", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(get_config_value_args.class, metaDataMap);
+    }
+
+    public get_config_value_args() {
+    }
+
+    public get_config_value_args(
+      String name,
+      String defaultValue)
+    {
+      this();
+      this.name = name;
+      this.defaultValue = defaultValue;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_config_value_args(get_config_value_args other) {
+      if (other.isSetName()) {
+        this.name = other.name;
+      }
+      if (other.isSetDefaultValue()) {
+        this.defaultValue = other.defaultValue;
+      }
+    }
+
+    @Override
+    public get_config_value_args clone() {
+      return new get_config_value_args(this);
+    }
+
+    public String getName() {
+      return this.name;
+    }
+
+    public void setName(String name) {
+      this.name = name;
+    }
+
+    public void unsetName() {
+      this.name = null;
+    }
+
+    // Returns true if field name is set (has been asigned a value) and false otherwise
+    public boolean isSetName() {
+      return this.name != null;
+    }
+
+    public String getDefaultValue() {
+      return this.defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue) {
+      this.defaultValue = defaultValue;
+    }
+
+    public void unsetDefaultValue() {
+      this.defaultValue = null;
+    }
+
+    // Returns true if field defaultValue is set (has been asigned a value) and false otherwise
+    public boolean isSetDefaultValue() {
+      return this.defaultValue != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case NAME:
+        if (value == null) {
+          unsetName();
+        } else {
+          setName((String)value);
+        }
+        break;
+
+      case DEFAULTVALUE:
+        if (value == null) {
+          unsetDefaultValue();
+        } else {
+          setDefaultValue((String)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case NAME:
+        return getName();
+
+      case DEFAULTVALUE:
+        return getDefaultValue();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case NAME:
+        return isSetName();
+      case DEFAULTVALUE:
+        return isSetDefaultValue();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_config_value_args)
+        return this.equals((get_config_value_args)that);
+      return false;
+    }
+
+    public boolean equals(get_config_value_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_name = true && this.isSetName();
+      boolean that_present_name = true && that.isSetName();
+      if (this_present_name || that_present_name) {
+        if (!(this_present_name && that_present_name))
+          return false;
+        if (!this.name.equals(that.name))
+          return false;
+      }
+
+      boolean this_present_defaultValue = true && this.isSetDefaultValue();
+      boolean that_present_defaultValue = true && that.isSetDefaultValue();
+      if (this_present_defaultValue || that_present_defaultValue) {
+        if (!(this_present_defaultValue && that_present_defaultValue))
+          return false;
+        if (!this.defaultValue.equals(that.defaultValue))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case NAME:
+            if (field.type == TType.STRING) {
+              this.name = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case DEFAULTVALUE:
+            if (field.type == TType.STRING) {
+              this.defaultValue = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.name != null) {
+        oprot.writeFieldBegin(NAME_FIELD_DESC);
+        oprot.writeString(this.name);
+        oprot.writeFieldEnd();
+      }
+      if (this.defaultValue != null) {
+        oprot.writeFieldBegin(DEFAULT_VALUE_FIELD_DESC);
+        oprot.writeString(this.defaultValue);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_config_value_args(");
+      boolean first = true;
+
+      sb.append("name:");
+      if (this.name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("defaultValue:");
+      if (this.defaultValue == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.defaultValue);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+      // check that fields of type enum have valid values
+    }
+
+  }
+
+  public static class get_config_value_result implements TBase, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("get_config_value_result");
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.STRING, (short)0);
+    private static final TField O1_FIELD_DESC = new TField("o1", TType.STRUCT, (short)1);
+
+    private String success;
+    public static final int SUCCESS = 0;
+    private ConfigValSecurityException o1;
+    public static final int O1 = 1;
+
+    private final Isset __isset = new Isset();
+    private static final class Isset implements java.io.Serializable {
+    }
+
+    public static final Map<Integer, FieldMetaData> metaDataMap = Collections.unmodifiableMap(new HashMap<Integer, FieldMetaData>() {{
+      put(SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      put(O1, new FieldMetaData("o1", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+    }});
+
+    static {
+      FieldMetaData.addStructMetaDataMap(get_config_value_result.class, metaDataMap);
+    }
+
+    public get_config_value_result() {
+    }
+
+    public get_config_value_result(
+      String success,
+      ConfigValSecurityException o1)
+    {
+      this();
+      this.success = success;
+      this.o1 = o1;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public get_config_value_result(get_config_value_result other) {
+      if (other.isSetSuccess()) {
+        this.success = other.success;
+      }
+      if (other.isSetO1()) {
+        this.o1 = new ConfigValSecurityException(other.o1);
+      }
+    }
+
+    @Override
+    public get_config_value_result clone() {
+      return new get_config_value_result(this);
+    }
+
+    public String getSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(String success) {
+      this.success = success;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    // Returns true if field success is set (has been asigned a value) and false otherwise
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public ConfigValSecurityException getO1() {
+      return this.o1;
+    }
+
+    public void setO1(ConfigValSecurityException o1) {
+      this.o1 = o1;
+    }
+
+    public void unsetO1() {
+      this.o1 = null;
+    }
+
+    // Returns true if field o1 is set (has been asigned a value) and false otherwise
+    public boolean isSetO1() {
+      return this.o1 != null;
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      switch (fieldID) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((String)value);
+        }
+        break;
+
+      case O1:
+        if (value == null) {
+          unsetO1();
+        } else {
+          setO1((ConfigValSecurityException)value);
+        }
+        break;
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    public Object getFieldValue(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return getSuccess();
+
+      case O1:
+        return getO1();
+
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    // Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise
+    public boolean isSet(int fieldID) {
+      switch (fieldID) {
+      case SUCCESS:
+        return isSetSuccess();
+      case O1:
+        return isSetO1();
+      default:
+        throw new IllegalArgumentException("Field " + fieldID + " doesn't exist!");
+      }
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof get_config_value_result)
+        return this.equals((get_config_value_result)that);
+      return false;
+    }
+
+    public boolean equals(get_config_value_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_o1 = true && this.isSetO1();
+      boolean that_present_o1 = true && that.isSetO1();
+      if (this_present_o1 || that_present_o1) {
+        if (!(this_present_o1 && that_present_o1))
+          return false;
+        if (!this.o1.equals(that.o1))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id)
+        {
+          case SUCCESS:
+            if (field.type == TType.STRING) {
+              this.success = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case O1:
+            if (field.type == TType.STRUCT) {
+              this.o1 = new ConfigValSecurityException();
+              this.o1.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+            break;
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        oprot.writeString(this.success);
+        oprot.writeFieldEnd();
+      } else if (this.isSetO1()) {
+        oprot.writeFieldBegin(O1_FIELD_DESC);
+        this.o1.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("get_config_value_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("o1:");
+      if (this.o1 == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.o1);
       }
       first = false;
       sb.append(")");

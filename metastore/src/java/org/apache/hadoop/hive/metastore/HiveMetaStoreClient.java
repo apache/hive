@@ -27,6 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
@@ -507,6 +508,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   public List<FieldSchema> getSchema(String db, String tableName) 
       throws MetaException, TException, UnknownTableException, UnknownDBException {
     return client.get_schema(db, tableName);
+  }
+
+  public String getConfigValue(String name, String defaultValue) 
+      throws TException, ConfigValSecurityException {
+    return client.get_config_value(name, defaultValue);
   }
 
 }

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -214,4 +215,14 @@ public interface IMetaStoreClient {
    */
   public List<FieldSchema> getSchema(String db, String tableName) 
       throws MetaException, TException, UnknownTableException, UnknownDBException;
+  
+  /**
+   * @param name name of the configuration property to get the value of
+   * @param defaultValue the value to return if property with the given name doesn't exist
+   * @return
+   * @throws TException
+   * @throws ConfigValSecurityException 
+   */
+  public String getConfigValue(String name, String defaultValue)
+      throws TException, ConfigValSecurityException;
 }
