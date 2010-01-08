@@ -5,7 +5,7 @@ cli () {
   CLASS=org.apache.hadoop.hive.cli.CliDriver
 
   # cli specific code
-  if [ ! -f "${HIVE_LIB}/hive_cli.jar" ]; then
+  if [ ! -f ${HIVE_LIB}/hive-cli-*.jar ]; then
     echo "Missing Hive CLI Jar"
     exit 3;
   fi
@@ -32,10 +32,10 @@ cli () {
   fi
 
   if [ $minor_ver -lt 20 ]; then
-      exec $HADOOP jar $AUX_JARS_CMD_LINE ${HIVE_LIB}/hive_cli.jar $CLASS $HIVE_OPTS "$@"
+      exec $HADOOP jar $AUX_JARS_CMD_LINE ${HIVE_LIB}/hive-cli-*.jar $CLASS $HIVE_OPTS "$@"
   else
       # hadoop 20 or newer - skip the aux_jars option. picked up from hiveconf
-      exec $HADOOP jar ${HIVE_LIB}/hive_cli.jar $CLASS $HIVE_OPTS "$@" 
+      exec $HADOOP jar ${HIVE_LIB}/hive-cli-*.jar $CLASS $HIVE_OPTS "$@" 
   fi
 
 }

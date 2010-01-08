@@ -7,7 +7,7 @@ hiveserver() {
   if $cygwin; then
     HIVE_LIB=`cygpath -w "$HIVE_LIB"`
   fi
-  JAR=${HIVE_LIB}/hive_service.jar
+  JAR=${HIVE_LIB}/hive-service-*.jar
 
   version=$($HADOOP version | awk '{if (NR == 1) {print $2;}}');
 

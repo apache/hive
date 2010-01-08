@@ -4,7 +4,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 
 import junit.framework.TestCase;
+import java.util.Properties;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.apache.commons.logging.Log;
@@ -32,11 +35,23 @@ public class TestHWIServer extends TestCase{
   }
 
   public final void testServerInit() throws Exception {
-    
+    StringBuilder warFile = new StringBuilder("../build/hwi/hive-hwi-");
+    Properties props = new Properties();
+
+    // try retrieve version from build.properties file
+    try {
+        props.load(new FileInputStream("../build.properties"));
+        warFile.append(props.getProperty("version")).append(".war");
+    } catch (FileNotFoundException e) {
+        e.printStackTrace();
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+
     JettyShims.Server webServer;
     webServer = ShimLoader.getJettyShims().startServer("0.0.0.0", 9999);
     assertNotNull(webServer);
-    webServer.addWar("../build/hwi/hive_hwi.war", "/hwi");
+    webServer.addWar(warFile.toString(), "/hwi");
     webServer.start();
  //   webServer.join();
     webServer.stop();

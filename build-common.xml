@@ -167,7 +167,7 @@
   <target name="jar" depends="compile">
     <echo message="Jar: ${ant.project.name}"/>
     <jar
-      jarfile="${build.dir}/hive_${ant.project.name}.jar"
+      jarfile="${build.dir}/hive-${ant.project.name}-${version}.jar"
       basedir="${build.classes}">
       <manifest>
         <!-- Not putting these in their own manifest section, since that inserts
@@ -276,7 +276,7 @@
     </subant>
 
     <taskdef name="getversionpref" classname="org.apache.hadoop.hive.ant.GetVersionPref"
-             classpath="${build.dir.hive}/anttasks/hive_anttasks.jar"/>
+             classpath="${build.dir.hive}/anttasks/hive-anttasks-${version}.jar"/>
 
   </target>
 

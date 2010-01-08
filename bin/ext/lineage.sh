@@ -20,7 +20,7 @@ lineage () {
   CLASS=org.apache.hadoop.hive.ql.tools.LineageInfo
 
   # cli specific code
-  if [ ! -f "${HIVE_LIB}/hive_exec.jar" ]; then
+  if [ ! -f ${HIVE_LIB}/hive-exec-*.jar ]; then
     echo "Missing Hive exec Jar"
     exit 3;
   fi
@@ -29,7 +29,7 @@ lineage () {
     HIVE_LIB=`cygpath -w "$HIVE_LIB"`
   fi
 
-  exec $HADOOP jar ${HIVE_LIB}/hive_exec.jar $CLASS  "$@"
+  exec $HADOOP jar ${HIVE_LIB}/hive-exec-*.jar $CLASS  "$@"
 }
 
 lineage_help () {

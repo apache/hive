@@ -96,7 +96,7 @@
   <path id="common-classpath">
     <pathelement location="${hadoop.jar}"/>
     <pathelement location="${build.dir.hive}/classes"/>
-    <fileset dir="${hive.root}" includes="hive_*.jar"/>
+    <fileset dir="${hive.root}" includes="hive-*.jar"/>
     <fileset dir="${hive.root}/lib" includes="*.jar"/>
     <fileset dir="${hive.root}/ql/lib" includes="*.jar"/>
   </path>
@@ -242,12 +242,12 @@
     <!-- copy jar files -->
     <copy todir="${target.lib.dir}" preservelastmodified="true" flatten="true">
       <fileset dir="${hive.root}" includes="*/*.jar, */*/*.jar" excludes="**/antlr-2*,**/antlr-3*,**/TestSerDe.jar"/>
-      <fileset file="${build.dir.hive}/cli/hive_cli.jar"/>
-      <fileset file="${build.dir.hive}/common/hive_common.jar"/>
-      <fileset file="${build.dir.hive}/ql/hive_exec.jar"/>
-      <fileset file="${build.dir.hive}/metastore/hive_metastore.jar"/>
-      <fileset file="${build.dir.hive}/hwi/hive_hwi.war"/>
-      <fileset file="${build.dir.hive}/contrib/hive_contrib.jar"/>
+      <fileset file="${build.dir.hive}/cli/hive-cli-${version}.jar"/>
+      <fileset file="${build.dir.hive}/common/hive-common-${version}.jar"/>
+      <fileset file="${build.dir.hive}/ql/hive-exec-${version}.jar"/>
+      <fileset file="${build.dir.hive}/metastore/hive-metastore-${version}.jar"/>
+      <fileset file="${build.dir.hive}/hive-hwi-${version}.war"/>
+      <fileset file="${build.dir.hive}/contrib/hive-contrib-${version}.jar"/>
     </copy>
     <copy todir="${target.example.dir}/files" preservelastmodified="true" flatten="true">
       <fileset dir="${test.data.dir}/files" includes="*.*" excludes="**/.svn"/>
@@ -275,7 +275,7 @@
     <echo message="Using hadoop version ${hadoop.version.ant-internal}"/>
 
     <taskdef name="getversionpref" classname="org.apache.hadoop.hive.ant.GetVersionPref"
-             classpath="${build.dir.hive}/anttasks/hive_anttasks.jar"/>
+             classpath="${build.dir.hive}/anttasks/hive-anttasks-{$version}.jar"/>
 
     <getversionpref property="hadoop.version.ant-internal.prefix" input="${hadoop.version.ant-internal}"/>
 

@@ -44,7 +44,7 @@
 
   <!--hive_hwi.war file contains only the JSP sources -->
   <target name="war">
-    <jar jarfile="${build.dir.hive}/hwi/hive_hwi.war" basedir="${basedir}/web"/>
+    <jar jarfile="${build.dir.hive}/hwi/hive-hwi-${version}.war" basedir="${basedir}/web"/>
   </target>
 
   <!-- Compile is a clone of the build-common.xml compile, with one exception:

@@ -58,7 +58,7 @@
 
   <target name="gen-test" depends="deploy-ant-tasks, test-conditions, test-init" >
     <taskdef name="qtestgen" classname="org.apache.hadoop.hive.ant.QTestGenTask"
-             classpath="${build.dir.hive}/anttasks/hive_anttasks.jar:${hive.root}/lib/velocity-1.5.jar:${hive.root}/lib/commons-collections-3.2.1.jar:${hive.root}/lib/commons-lang-2.4.jar"/>
+             classpath="${build.dir.hive}/anttasks/hive-anttasks-${version}.jar:${hive.root}/lib/velocity-1.5.jar:${hive.root}/lib/commons-collections-3.2.1.jar:${hive.root}/lib/commons-lang-2.4.jar"/>
     
     <mkdir dir="${test.build.src}/org/apache/hadoop/hive/ql/parse"/>
     <mkdir dir="${test.build.src}/org/apache/hadoop/hive/cli"/>
@@ -105,5 +105,23 @@
               logDirectory="${test.log.dir}/contribclientnegative"/>
 
   </target>
+
+  <!-- override target jar because contrib tests need to add contrib jars,
+       which needs to be a constant without the version number -->
+  <target name="jar" depends="compile">
+    <echo message="Jar: ${ant.project.name}"/>
+    <jar
+      jarfile="${build.dir}/hive_${ant.project.name}.jar"
+      basedir="${build.classes}">
+      <manifest>
+        <!-- Not putting these in their own manifest section, since that inserts
+        a new-line, which breaks the reading of the attributes. -->
+        <attribute name="Implementation-Title" value="Hive"/>
+        <attribute name="Implementation-Version" value="${version}"/>
+        <attribute name="Implementation-Vendor" value="Apache"/>
+      </manifest>
+    </jar>
+  </target>
+
 
 </project>

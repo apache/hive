@@ -421,6 +421,9 @@ Trunk -  Unreleased
     HIVE-1031 describe function array throws ParseException
     (Carl Steinbach via namit)
 
+    HIVE-978 Hive jars should follow Hadoop naming and include version
+    (Chad Metcalf and Zheng Shao via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

@@ -8,8 +8,10 @@ hwi() {
   fi
 
   CLASS=org.apache.hadoop.hive.hwi.HWIServer
-  export HWI_JAR_FILE=${HIVE_LIB}/hive_hwi.jar
-  export HWI_WAR_FILE=${HIVE_LIB}/hive_hwi.war
+  # The ls hack forces the * to be expanded which is required because 
+  # System.getenv doesn't do globbing
+  export HWI_JAR_FILE=$(ls ${HIVE_LIB}/hive-hwi-*.jar)
+  export HWI_WAR_FILE=$(ls ${HIVE_LIB}/hive-hwi-*.war)
 
   #hwi requires ant jars
   if [ "$ANT_LIB" = "" ] ; then

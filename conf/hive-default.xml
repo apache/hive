@@ -336,12 +336,6 @@
 </property>
 
 <property>
-  <name>hive.hwi.war.file</name>
-  <value>lib/hive_hwi.war</value>
-  <description>path appended to HIVE_HOME to locate the HWI WAR file</description>
-</property>
-
-<property>
   <name>hive.exec.pre.hooks</name>
   <value></value>
   <description>Pre Execute Hook for Tests</description>

@@ -30,18 +30,18 @@ CLASSPATH="${HIVE_CONF_DIR}"
 HIVE_LIB=${HIVE_HOME}/lib
 
 # needed for execution
-if [ ! -f "${HIVE_LIB}/hive_exec.jar" ]; then
-  echo "Missing Hive Execution Jar: ${HIVE_LIB}/hive_exec.jar"
+if [ ! -f ${HIVE_LIB}/hive-exec-*.jar ]; then
+  echo "Missing Hive Execution Jar: ${HIVE_LIB}/hive-exec-*.jar"
   exit 1;
 fi
 
-if [ ! -f "${HIVE_LIB}/hive_metastore.jar" ]; then
+if [ ! -f ${HIVE_LIB}/hive-metastore-*.jar ]; then
   echo "Missing Hive MetaStore Jar"
   exit 2;
 fi
 
 # cli specific code
-if [ ! -f "${HIVE_LIB}/hive_cli.jar" ]; then
+if [ ! -f ${HIVE_LIB}/hive-cli-*.jar ]; then
   echo "Missing Hive CLI Jar"
   exit 3;
 fi

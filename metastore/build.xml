@@ -56,7 +56,7 @@
 
   <uptodate property="enhanceModel.notRequired">
     <srcfiles dir= "${model.dir}" includes="**/*.java,*.jdo"/>
-    <mapper type="merge" to="${build.dir}/hive_${name}.jar"/>
+    <mapper type="merge" to="${build.dir}/hive-${name}-${version}.jar"/>
   </uptodate>
 
   <target name="model-enhance" depends="model-compile" unless="enhanceModel.notRequired" >
@@ -80,7 +80,7 @@
   <target name="model-jar" depends="model-enhance">
     <echo message="Jar: ${name}"/>
     <jar
-      jarfile="${build.dir}/${name}_model.jar"
+      jarfile="${build.dir}/${name}-model-${version}.jar"
       basedir="${build.classes}"
       includes="**/model/M*"
     />

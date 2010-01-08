@@ -60,7 +60,7 @@
 
   <target name="gen-test" depends="deploy-ant-tasks, test-conditions, test-init" >
     <taskdef name="qtestgen" classname="org.apache.hadoop.hive.ant.QTestGenTask"
-             classpath="${build.dir.hive}/anttasks/hive_anttasks.jar:${hive.root}/lib/velocity-1.5.jar:${hive.root}/lib/commons-collections-3.2.1.jar:${hive.root}/lib/commons-lang-2.4.jar"/>
+             classpath="${build.dir.hive}/anttasks/hive-anttasks-${version}.jar:${hive.root}/lib/velocity-1.5.jar:${hive.root}/lib/commons-collections-3.2.1.jar:${hive.root}/lib/commons-lang-2.4.jar"/>
     
     <qtestgen outputDirectory="${test.build.src}/org/apache/hadoop/hive/ql/parse" 
               templatePath="${ql.test.template.dir}" template="TestParse.vm" 
@@ -156,7 +156,7 @@
       </patternset>
     </unzip>
     <!-- jar jarfile="${build.dir}/hive_${name}.jar" basedir="${build.classes}" / -->
-    <jar jarfile="${build.dir}/hive_exec.jar">
+    <jar jarfile="${build.dir}/hive-exec-${version}.jar">
       <fileset dir="${build.dir.hive}/common/classes" includes="**/*.class"/>
       <fileset dir="${build.dir.hive}/ql/classes" includes="**/*.class"/>
       <fileset dir="${build.dir.hive}/serde/classes" includes="**/*.class"/>
@@ -171,7 +171,7 @@
   <target name="deploy" depends="jar">
     <echo message="hive: ${name}"/>
     <mkdir dir="${deploy.dir}"/>
-    <copy file="${build.dir}/hive_exec.jar"
+    <copy file="${build.dir}/hive-exec-${version}.jar"
           todir="${deploy.dir}"/>
   </target>
 
