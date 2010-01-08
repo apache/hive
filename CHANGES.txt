@@ -424,6 +424,9 @@ Trunk -  Unreleased
     HIVE-978 Hive jars should follow Hadoop naming and include version
     (Chad Metcalf and Zheng Shao via namit)
 
+    HIVE-1038 mapjoin dies if the join prunes all the columns 
+    (namit via He Yongqiang)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
