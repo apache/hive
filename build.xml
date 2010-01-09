@@ -28,7 +28,7 @@
   <!-- This is the version added to the manifest, which must be manually rev'ed
   whenever a branch version is created. The non-numberic/dot characters are
   silently dropped from the Implementation-Version when added to the manifest. -->
-  <property name="version" value="0.5.0-dev"/>
+  <property name="version" value="0.6.0-dev"/>
 
   <property name="target.dir" location="${build.dir.hive}/dist"/>
   <property name="target.lib.dir" location="${target.dir}/lib"/>
