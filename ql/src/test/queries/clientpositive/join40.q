@@ -38,3 +38,7 @@ FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.
 SELECT /*+ MAPJOIN(y) */ x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key);
 
+EXPLAIN
+SELECT COUNT(1) FROM SRC A JOIN SRC B ON (A.KEY=B.KEY);
+
+SELECT COUNT(1) FROM SRC A JOIN SRC B ON (A.KEY=B.KEY);

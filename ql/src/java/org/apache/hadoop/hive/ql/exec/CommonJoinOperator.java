@@ -31,6 +31,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.exprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.joinCond;
@@ -45,6 +46,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
+import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.util.ReflectionUtils;
 
 /**
@@ -112,6 +114,7 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
   transient private Map<Integer, Set<String>> posToAliasMap;
   
   transient LazyBinarySerDe[] spillTableSerDe;
+  transient protected Map<Byte, tableDesc> spillTableDesc; // spill tables are used if the join input is too large to fit in memory
 
   HashMap<Byte, RowContainer<ArrayList<Object>>> storage; // map b/w table alias to RowContainer
   int joinEmitInterval = -1;
@@ -236,8 +239,8 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
       // if serde is null, the input doesn't need to be spilled out 
       // e.g., the output columns does not contains the input table
       SerDe serde = getSpillSerDe(pos);
+      RowContainer rc = new RowContainer(joinCacheSize);
       if ( serde != null ) {
-        RowContainer rc = new RowContainer(joinCacheSize);
         
         // arbitrary column names used internally for serializing to spill table
         List<String> colList = new ArrayList<String>();
@@ -251,10 +254,8 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
                             joinValuesStandardObjectInspectors.get(pos));
         
         rc.setSerDe(serde, rcOI);
-        storage.put(pos, rc);
-      } else {
-        storage.put(pos, new RowContainer(1)); // empty row container just for place holder
       }
+      storage.put(pos, rc);
       pos++;
     }
 
@@ -265,8 +266,8 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
     
   }
   
-  private SerDe getSpillSerDe(int pos) {
-    tableDesc desc = conf.getSpillTableDesc(pos);
+  private SerDe getSpillSerDe(byte pos) {
+    tableDesc desc = getSpillTableDesc(pos);
     if ( desc == null )
       return null;
     SerDe sd = (SerDe) ReflectionUtils.newInstance(desc.getDeserializerClass(),  null);
@@ -278,7 +279,44 @@ public abstract class CommonJoinOperator<T extends joinDesc> extends Operator<T>
     }
     return sd;
   }
-
+  
+  private void initSpillTables() {
+    Map<Byte, List<exprNodeDesc>> exprs = conf.getExprs();
+    spillTableDesc = new HashMap<Byte, tableDesc>(exprs.size());
+    for (int tag = 0; tag < exprs.size(); tag++) {
+      List<exprNodeDesc> valueCols = exprs.get((byte)tag);
+      int columnSize = valueCols.size();
+      StringBuffer colNames = new StringBuffer();
+      StringBuffer colTypes = new StringBuffer();
+      if ( columnSize <= 0 )
+        continue;
+      for (int k = 0; k < columnSize; k++) {
+        String newColName = tag + "_VALUE_" + k; // any name, it does not matter.
+        colNames.append(newColName);
+  	    colNames.append(',');
+   	    colTypes.append(valueCols.get(k).getTypeString());
+   	    colTypes.append(',');
+      }
+      // remove the last ','
+      colNames.setLength(colNames.length()-1);
+      colTypes.setLength(colTypes.length()-1);
+      tableDesc tblDesc = 
+        new tableDesc(LazyBinarySerDe.class,
+         SequenceFileInputFormat.class,
+         HiveSequenceFileOutputFormat.class, 
+         Utilities.makeProperties(org.apache.hadoop.hive.serde.Constants.SERIALIZATION_FORMAT, "" + Utilities.ctrlaCode,
+               org.apache.hadoop.hive.serde.Constants.LIST_COLUMNS, colNames.toString(),
+               org.apache.hadoop.hive.serde.Constants.LIST_COLUMN_TYPES, colTypes.toString()));
+      spillTableDesc.put((byte)tag, tblDesc);
+    }
+  }
+  
+  public tableDesc getSpillTableDesc(Byte alias) {
+    if(spillTableDesc == null || spillTableDesc.size() == 0)
+      initSpillTables();
+    return spillTableDesc.get(alias);
+  }
+  
   public void startGroup() throws HiveException {
     LOG.trace("Join: Starting new group");
     for (RowContainer<ArrayList<Object>> alw: storage.values()) {

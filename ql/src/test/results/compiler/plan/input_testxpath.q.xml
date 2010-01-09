@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_16" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_07" class="java.beans.XMLDecoder"> 
  <object class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
   <void property="id"> 
    <string>Stage-2</string> 
@@ -70,7 +70,7 @@
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1262739208</string> 
+          <string>1262980260</string> 
          </void> 
         </object> 
        </void> 
@@ -115,7 +115,7 @@
                 <void property="conf"> 
                  <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                   <void property="dirName"> 
-                   <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/2063408437/10001</string> 
+                   <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/607622382/10001</string> 
                   </void> 
                   <void property="tableInfo"> 
                    <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -289,7 +289,34 @@
                       <void property="typeInfo"> 
                        <object id="ListTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo"> 
                         <void property="listElementTypeInfo"> 
-                         <object id="StructTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo"/> 
+                         <object id="StructTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo"> 
+                          <void property="allStructFieldNames"> 
+                           <object class="java.util.ArrayList"> 
+                            <void method="add"> 
+                             <string>myint</string> 
+                            </void> 
+                            <void method="add"> 
+                             <string>mystring</string> 
+                            </void> 
+                            <void method="add"> 
+                             <string>underscore_int</string> 
+                            </void> 
+                           </object> 
+                          </void> 
+                          <void property="allStructFieldTypeInfos"> 
+                           <object class="java.util.ArrayList"> 
+                            <void method="add"> 
+                             <object idref="PrimitiveTypeInfo0"/> 
+                            </void> 
+                            <void method="add"> 
+                             <object idref="PrimitiveTypeInfo1"/> 
+                            </void> 
+                            <void method="add"> 
+                             <object idref="PrimitiveTypeInfo0"/> 
+                            </void> 
+                           </object> 
+                          </void> 
+                         </object> 
                         </void> 
                        </object> 
                       </void> 

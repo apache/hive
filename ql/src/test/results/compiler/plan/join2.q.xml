@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.6.0_16" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_07" class="java.beans.XMLDecoder"> 
  <object id="MapRedTask0" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
   <void property="childTasks"> 
    <object class="java.util.ArrayList"> 
@@ -30,7 +30,7 @@
                <boolean>true</boolean> 
               </void> 
               <void property="sourceDir"> 
-               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1369275629/10000</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/246140773/10000</string> 
               </void> 
               <void property="table"> 
                <object id="tableDesc0" class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -87,7 +87,7 @@
                   </void> 
                   <void method="put"> 
                    <string>transient_lastDdlTime</string> 
-                   <string>1262739216</string> 
+                   <string>1262980269</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -97,7 +97,7 @@
                </object> 
               </void> 
               <void property="tmpDir"> 
-               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1369275629/10001</string> 
+               <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/246140773/10001</string> 
               </void> 
              </object> 
             </void> 
@@ -179,7 +179,7 @@
              </void> 
              <void method="put"> 
               <string>transient_lastDdlTime</string> 
-              <string>1262739216</string> 
+              <string>1262980268</string> 
              </void> 
             </object> 
            </void> 
@@ -766,7 +766,7 @@
         <void property="pathToAliases"> 
          <object class="java.util.LinkedHashMap"> 
           <void method="put"> 
-           <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/569065061/10002</string> 
+           <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/280770505/10002</string> 
            <object class="java.util.ArrayList"> 
             <void method="add"> 
              <string>$INTNAME</string> 
@@ -786,7 +786,7 @@
         <void property="pathToPartitionInfo"> 
          <object class="java.util.LinkedHashMap"> 
           <void method="put"> 
-           <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/569065061/10002</string> 
+           <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/280770505/10002</string> 
            <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
             <void property="deserializerClass"> 
              <class>org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe</class> 
@@ -891,7 +891,7 @@
                      <int>1</int> 
                     </void> 
                     <void property="dirName"> 
-                     <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1369275629/10000</string> 
+                     <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/246140773/10000</string> 
                     </void> 
                     <void property="tableInfo"> 
                      <object idref="tableDesc0"/> 
@@ -1172,68 +1172,6 @@
                <byte>0</byte> 
               </void> 
              </object> 
-            </void> 
-            <void property="spillTableDesc"> 
-             <array class="org.apache.hadoop.hive.ql.plan.tableDesc" length="2"> 
-              <void index="0"> 
-               <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
-                <void property="deserializerClass"> 
-                 <class>org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe</class> 
-                </void> 
-                <void property="inputFileFormatClass"> 
-                 <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
-                </void> 
-                <void property="outputFileFormatClass"> 
-                 <class>org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat</class> 
-                </void> 
-                <void property="properties"> 
-                 <object class="java.util.Properties"> 
-                  <void method="put"> 
-                   <string>columns</string> 
-                   <string>0_VALUE_0,0_VALUE_1,0_VALUE_2,0_VALUE_3</string> 
-                  </void> 
-                  <void method="put"> 
-                   <string>serialization.format</string> 
-                   <string>1</string> 
-                  </void> 
-                  <void method="put"> 
-                   <string>columns.types</string> 
-                   <string>string,string,string,string</string> 
-                  </void> 
-                 </object> 
-                </void> 
-               </object> 
-              </void> 
-              <void index="1"> 
-               <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
-                <void property="deserializerClass"> 
-                 <class>org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe</class> 
-                </void> 
-                <void property="inputFileFormatClass"> 
-                 <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
-                </void> 
-                <void property="outputFileFormatClass"> 
-                 <class>org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat</class> 
-                </void> 
-                <void property="properties"> 
-                 <object class="java.util.Properties"> 
-                  <void method="put"> 
-                   <string>columns</string> 
-                   <string>1_VALUE_0,1_VALUE_1</string> 
-                  </void> 
-                  <void method="put"> 
-                   <string>serialization.format</string> 
-                   <string>1</string> 
-                  </void> 
-                  <void method="put"> 
-                   <string>columns.types</string> 
-                   <string>string,string</string> 
-                  </void> 
-                 </object> 
-                </void> 
-               </object> 
-              </void> 
-             </array> 
             </void> 
             <void property="tagOrder"> 
              <array class="java.lang.Byte" length="2"> 
@@ -2006,7 +1944,7 @@
           <void property="conf"> 
            <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
             <void property="dirName"> 
-             <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/569065061/10002</string> 
+             <string>file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/280770505/10002</string> 
             </void> 
             <void property="tableInfo"> 
              <object idref="tableDesc4"/> 
@@ -2140,68 +2078,6 @@
            <byte>0</byte> 
           </void> 
          </object> 
-        </void> 
-        <void property="spillTableDesc"> 
-         <array class="org.apache.hadoop.hive.ql.plan.tableDesc" length="2"> 
-          <void index="0"> 
-           <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
-            <void property="deserializerClass"> 
-             <class>org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe</class> 
-            </void> 
-            <void property="inputFileFormatClass"> 
-             <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
-            </void> 
-            <void property="outputFileFormatClass"> 
-             <class>org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat</class> 
-            </void> 
-            <void property="properties"> 
-             <object class="java.util.Properties"> 
-              <void method="put"> 
-               <string>columns</string> 
-               <string>0_VALUE_0,0_VALUE_1</string> 
-              </void> 
-              <void method="put"> 
-               <string>serialization.format</string> 
-               <string>1</string> 
-              </void> 
-              <void method="put"> 
-               <string>columns.types</string> 
-               <string>string,string</string> 
-              </void> 
-             </object> 
-            </void> 
-           </object> 
-          </void> 
-          <void index="1"> 
-           <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
-            <void property="deserializerClass"> 
-             <class>org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe</class> 
-            </void> 
-            <void property="inputFileFormatClass"> 
-             <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
-            </void> 
-            <void property="outputFileFormatClass"> 
-             <class>org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat</class> 
-            </void> 
-            <void property="properties"> 
-             <object class="java.util.Properties"> 
-              <void method="put"> 
-               <string>columns</string> 
-               <string>1_VALUE_0,1_VALUE_1</string> 
-              </void> 
-              <void method="put"> 
-               <string>serialization.format</string> 
-               <string>1</string> 
-              </void> 
-              <void method="put"> 
-               <string>columns.types</string> 
-               <string>string,string</string> 
-              </void> 
-             </object> 
-            </void> 
-           </object> 
-          </void> 
-         </array> 
         </void> 
         <void property="tagOrder"> 
          <array class="java.lang.Byte" length="2"> 

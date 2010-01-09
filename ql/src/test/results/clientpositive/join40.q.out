@@ -99,12 +99,12 @@ PREHOOK: query: SELECT x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/655426101/10000
+PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1575961079/10000
 POSTHOOK: query: SELECT x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/655426101/10000
+POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1575961079/10000
 0	val_0	0	val_0
 0	val_0	0	val_0
 0	val_0	0	val_0
@@ -749,12 +749,12 @@ PREHOOK: query: select src1.key, src2.value
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/423795716/10000
+PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1535877066/10000
 POSTHOOK: query: select src1.key, src2.value 
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/423795716/10000
+POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1535877066/10000
 0	val_0
 0	val_0
 0	val_0
@@ -1905,7 +1905,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/940947061/10002 
+        file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/448458798/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1953,12 +1953,12 @@ PREHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/147679359/10000
+PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1868126511/10000
 POSTHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/147679359/10000
+POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1868126511/10000
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	11	val_11
 NULL	NULL	NULL	NULL	12	val_12
@@ -2157,7 +2157,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-        file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1105492309/10002 
+        file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/825173402/10002 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2205,12 +2205,12 @@ PREHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/2022916403/10000
+PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1638684247/10000
 POSTHOOK: query: SELECT * FROM src src1 JOIN src src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key < 15) RIGHT OUTER JOIN src src3 ON (src1.key = src3.key AND src3.key < 20)
 SORT BY src1.key, src1.value, src2.key, src2.value, src3.key, src3.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/2022916403/10000
+POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1638684247/10000
 NULL	NULL	NULL	NULL	10	val_10
 NULL	NULL	NULL	NULL	11	val_11
 NULL	NULL	NULL	NULL	12	val_12
@@ -2414,12 +2414,12 @@ PREHOOK: query: SELECT /*+ MAPJOIN(y) */ x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1235512843/10000
+PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/902015943/10000
 POSTHOOK: query: SELECT /*+ MAPJOIN(y) */ x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1235512843/10000
+POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/902015943/10000
 238	val_238	NULL	NULL
 86	val_86	86	val_86
 311	val_311	NULL	NULL
@@ -2986,3 +2986,109 @@ POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1235
 200	val_200	NULL	NULL
 97	val_97	97	val_97
 97	val_97	97	val_97
+PREHOOK: query: EXPLAIN
+SELECT COUNT(1) FROM SRC A JOIN SRC B ON (A.KEY=B.KEY)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT COUNT(1) FROM SRC A JOIN SRC B ON (A.KEY=B.KEY)
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF SRC A) (TOK_TABREF SRC B) (= (. (TOK_TABLE_OR_COL A) KEY) (. (TOK_TABLE_OR_COL B) KEY)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION COUNT 1)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        b 
+          TableScan
+            alias: b
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 1
+        a 
+          TableScan
+            alias: a
+            Reduce Output Operator
+              key expressions:
+                    expr: key
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: key
+                    type: string
+              tag: 0
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          condition expressions:
+            0 
+            1 
+          Select Operator
+            Group By Operator
+              aggregations:
+                    expr: count(1)
+              bucketGroup: false
+              mode: hash
+              outputColumnNames: _col0
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1616259380/10002 
+            Reduce Output Operator
+              sort order: 
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: bigint
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT COUNT(1) FROM SRC A JOIN SRC B ON (A.KEY=B.KEY)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/623243330/10000
+POSTHOOK: query: SELECT COUNT(1) FROM SRC A JOIN SRC B ON (A.KEY=B.KEY)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/623243330/10000
+1028

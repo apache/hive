@@ -424,8 +424,11 @@ Trunk -  Unreleased
     HIVE-978 Hive jars should follow Hadoop naming and include version
     (Chad Metcalf and Zheng Shao via namit)
 
-    HIVE-1038 mapjoin dies if the join prunes all the columns 
+    HIVE-1038 mapjoin dies if the join prunes all the columns
     (namit via He Yongqiang)
+
+    HIVE-1037 SerDe & ObjectInspector for RowContainer mismatch with the
+    input data (Ning Zhang via namit)
 
 Release 0.4.0 -  Unreleased
 

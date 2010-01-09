@@ -83,11 +83,11 @@ public class StructTypeInfo extends TypeInfo implements Serializable{
     return Category.STRUCT;
   }
   
-  public List<String> getAllStructFieldNames() {
+  public ArrayList<String> getAllStructFieldNames() {
     return allStructFieldNames;
   }
   
-  public List<TypeInfo> getAllStructFieldTypeInfos() {
+  public ArrayList<TypeInfo> getAllStructFieldTypeInfos() {
     return allStructFieldTypeInfos;
   }
   

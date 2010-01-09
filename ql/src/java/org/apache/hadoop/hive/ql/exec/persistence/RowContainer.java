@@ -22,8 +22,8 @@ import java.io.File;
 import java.io.RandomAccessFile;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -88,6 +88,7 @@ public class RowContainer<Row extends List> {
   private int pBlock;        // pointer to the iterator block
   private SerDe serde;       // serialization/deserialization for the row
   private ObjectInspector standardOI;  // object inspector for the row
+  private ArrayList dummyRow; // representing empty row (no columns since value art is null)
   
   public RowContainer() {
     this(BLOCKSIZE);
@@ -107,6 +108,7 @@ public class RowContainer<Row extends List> {
     this.off_len   = new long[BLKMETA_LEN * 2];
     this.serde     = null;
     this.standardOI= null;
+    this.dummyRow  = new ArrayList(0);
   }
   
   public RowContainer(int blockSize, SerDe sd, ObjectInspector oi) {
@@ -182,7 +184,7 @@ public class RowContainer<Row extends List> {
         rFile = new RandomAccessFile(tmpFile, "rw");
       }
       byte[] buf = serialize(block);
-      long offset = rFile.getFilePointer();
+      long offset = rFile.length();
       long len = buf.length;
       // append the block at the end
       rFile.seek(offset);
@@ -221,18 +223,22 @@ public class RowContainer<Row extends List> {
     assert(serde != null && standardOI != null);
     
     ByteArrayOutputStream  baos;
-    ObjectOutputStream     oos;
+    DataOutputStream     oos;
     
     try {
       baos = new ByteArrayOutputStream();
-      oos = new ObjectOutputStream(baos);
+      oos = new DataOutputStream(baos);
       
       // # of rows
       oos.writeInt(obj.length); 
       
-      for ( int i = 0; i < obj.length; ++i ) {
-        Writable outVal = serde.serialize(obj[i], standardOI);
-        outVal.write(oos);
+      // if serde or OI is null, meaning the join value is null, we don't need
+      // to serialize anything to disk, just need to keep the length.
+      if ( serde != null && standardOI != null ) {
+        for ( int i = 0; i < obj.length; ++i ) {
+          Writable outVal = serde.serialize(obj[i], standardOI);
+          outVal.write(oos);
+        }
       }
       oos.close();
     } catch (Exception e) {
@@ -249,24 +255,30 @@ public class RowContainer<Row extends List> {
    */
   private Row[] deserialize(byte[] buf) throws HiveException {
     ByteArrayInputStream  bais;
-    ObjectInputStream     ois;
+    DataInputStream     ois;
     
     try {
       bais = new ByteArrayInputStream(buf);
-      ois = new ObjectInputStream(bais);
+      ois = new DataInputStream(bais);
       int sz = ois.readInt();
       assert sz == blockSize: 
              "deserialized size " + sz + " is not the same as block size " + blockSize;
       Row[] ret = (Row[]) new ArrayList[sz];
+      
+      // if serde or OI is null, meaning the join value is null, we don't need
+      // to serialize anything to disk, just need to keep the length.
       for ( int i = 0; i < sz; ++i ) {
+        if ( serde != null && standardOI != null ) {
+          Writable val = serde.getSerializedClass().newInstance();
+          val.readFields(ois);
         
-        Writable val = serde.getSerializedClass().newInstance();
-        val.readFields(ois);
-        
-        ret[i] = (Row) ObjectInspectorUtils.copyToStandardObject(
-                         serde.deserialize(val),
-                         serde.getObjectInspector(),
-                         ObjectInspectorCopyOption.WRITABLE);
+          ret[i] = (Row) ObjectInspectorUtils.copyToStandardObject(
+                           serde.deserialize(val),
+                           serde.getObjectInspector(),
+                           ObjectInspectorCopyOption.WRITABLE);
+        } else {
+          ret[i] = (Row) dummyRow;
+        }
       }
       return ret;
     } catch (Exception e) {
@@ -290,7 +302,8 @@ public class RowContainer<Row extends List> {
     itrCursor = 0;
     addCursor = 0;
     numBlocks = 0;
-    size = 0;
+    pBlock    = 0;
+    size      = 0;
     try {
       if ( rFile != null )
         rFile.close();
