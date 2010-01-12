@@ -443,6 +443,9 @@ Release 0.5.0 -  Unreleased
     HIVE-1037 SerDe & ObjectInspector for RowContainer mismatch with the
     input data (Ning Zhang via namit)
 
+    HIVE-1042 incorrect error for function within transform
+    (Paul Yang via namit)
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES
