@@ -122,11 +122,14 @@
     <iterate-all target="test-init"/>
   </target>
 
-  <target name="compile-cpp" depends="init">
+  <target name="compile-cpp"
+          depends="init"
+          description="Build CPP artifacts" >
     <iterate-cpp target="compile-cpp"/>
   </target>
 
-  <target name="compile-cpp-clean">
+  <target name="compile-cpp-clean"
+          description="Clean CPP artifacts">
     <iterate-cpp target="clean"/>
   </target>
 
@@ -134,17 +137,21 @@
     <iterate target="compile"/>
   </target>
 
-  <target name="jar">
+  <target name="jar"
+          description="Build JAR artifacts">
     <iterate target="jar"/>
   </target>
 
-  <target name="test" depends="clean-test,jar">
+  <target name="test"
+          depends="clean-test,jar"
+          description="Run tests">
     <iterate target="test"/>
     <iterate-cpp target="test"/>
   </target>
 
   <!-- create an html report from junit output files -->
-  <target name="testreport">
+  <target name="testreport"
+          description="Generate JUnit HTML test report">
     <junitreport todir="${test.build.dir}">
       <fileset dir="${build.dir.hive}">
         <include name="**/TEST-*.xml"/>
@@ -153,12 +160,14 @@
     </junitreport>
   </target>
 
-  <target name="clean-test">
+  <target name="clean-test"
+          description="Clean test results">
     <iterate target="clean-test"/>
     <delete dir="${build.dir.hive}/test"/>
   </target>
 
-  <target name="clean">
+  <target name="clean"
+          description="Clean build artifacts">
     <iterate-all target="clean"/>
     <iterate-cpp target="clean"/>
     <delete dir="${target.dir}"/>
@@ -168,13 +177,17 @@
   <!-- ====================================================== -->
   <!-- Generate some of the test data.                        -->
   <!-- ====================================================== -->
-  <target name="gen-testdata" depends="jar">
+  <target name="gen-testdata"
+          depends="jar"
+          description="Generate test data">
     <subant target="gen-testdata">
       <fileset dir="." includes="serde/build.xml"/>
     </subant>
   </target>
 
-  <target name="package-cpp" depends="package,compile-cpp">
+  <target name="package-cpp"
+          depends="package,compile-cpp"
+          description="Deploy CPP artifacts">
     <mkdir dir="${target.dir}/include"/>
     <copy todir="${target.dir}/include" preservelastmodified="true" flatten="true">
       <fileset file="${build.dir.hive}/odbc/include/*"/>
@@ -186,7 +199,9 @@
 
   </target>
 
-  <target name="package" depends="jar">
+  <target name="package"
+          depends="jar"
+          description="Deploy JAR artifacts">
     <echo message="Deploying Hive jars to ${target.dir}"/>
     <mkdir dir="${target.dir}"/>
     <mkdir dir="${target.lib.dir}"/>
@@ -275,7 +290,7 @@
     <echo message="Using hadoop version ${hadoop.version.ant-internal}"/>
 
     <taskdef name="getversionpref" classname="org.apache.hadoop.hive.ant.GetVersionPref"
-             classpath="${build.dir.hive}/anttasks/hive-anttasks-{$version}.jar"/>
+             classpath="${build.dir.hive}/anttasks/hive-anttasks-${version}.jar"/>
 
     <getversionpref property="hadoop.version.ant-internal.prefix" input="${hadoop.version.ant-internal}"/>
 
@@ -347,9 +362,10 @@
     </copy>
   </target>
 
-  <target name="javadoc" depends="package" description="Generate javadoc">
+  <target name="javadoc" depends="package" description="Generate Javadoc">
     <mkdir dir="${build.javadoc}"/>
     <javadoc
+      maxmemory="1024m"
       packagenames="org.apache.hadoop.hive.*"
       destdir="${build.javadoc}"
       author="true"
