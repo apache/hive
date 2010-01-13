@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Stack;
@@ -79,8 +80,16 @@ public class GenMRUnion1 implements NodeProcessor {
     // Map-only subqueries can be optimized in future to not write to a file in future
     Map<Operator<? extends Serializable>, GenMapRedCtx> mapCurrCtx = ctx.getMapCurrCtx();
 
-    // The plan needs to be broken only if one of the sub-queries involve a map-reduce job
+   // The plan needs to be broken only if one of the sub-queries involve a map-reduce job
     if (uCtx.isMapOnlySubq()) {
+      // merge currTask from multiple topOps
+      HashMap<Operator<? extends Serializable>, Task<? extends Serializable>> opTaskMap = ctx.getOpTaskMap();
+    	if ( opTaskMap != null && opTaskMap.size() > 0 ) {
+     		Task<? extends Serializable> tsk = opTaskMap.get(null);
+        if ( tsk != null )
+          ctx.setCurrTask(tsk);
+      }
+ 
       UnionParseContext uPrsCtx = uCtx.getUnionParseContext(union);
       if ((uPrsCtx != null) && (uPrsCtx.getMapJoinQuery())) {
         GenMapRedUtils.mergeMapJoinUnion(union, ctx, UnionProcFactory.getPositionParent(union, stack));

@@ -291,11 +291,10 @@ public class GenMRFileSink1 implements NodeProcessor {
           seenOps.add(currTopOp);
           GenMapRedUtils.setTaskPlan(currAliasId, currTopOp, (mapredWork) mapTask.getWork(), false, ctx);
         }
-        // TODO: merge the currTask with mapTask in GenMRUnion1 so that we will
-        // always seen 1 mapTask (which is equals to currTask). After doing this
-        // the block should be removed.
-        if ( ret && mapTask != currTask )
-          currTask.removeDependentTask(mvTask);
+        // mapTask and currTask should be merged by and join/union operator 
+        // (e.g., GenMRUnion1j) which has multiple topOps.
+        assert mapTask == currTask :
+               "mapTask.id = " + mapTask.getId() + "; currTask.id = " + currTask.getId();
       }
 
       return dest;

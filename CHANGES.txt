@@ -12,6 +12,9 @@ Trunk -  Unreleased
 
   BUG FIXES
 
+    HIVE-1047. Merge tasks in GenMRUnion1
+    (Ning Zhang via namit)
+
 
 Release 0.5.0 -  Unreleased
 
