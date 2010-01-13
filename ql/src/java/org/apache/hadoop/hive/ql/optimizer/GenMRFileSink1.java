@@ -102,7 +102,8 @@ public class GenMRFileSink1 implements NodeProcessor {
           // or for a map-reduce job
           if ((parseCtx.getConf().getBoolVar(HiveConf.ConfVars.HIVEMERGEMAPFILES) &&
               (((mapredWork)currTask.getWork()).getReducer() == null)) ||
-              parseCtx.getConf().getBoolVar(HiveConf.ConfVars.HIVEMERGEMAPREDFILES))
+              (parseCtx.getConf().getBoolVar(HiveConf.ConfVars.HIVEMERGEMAPREDFILES) &&
+              (((mapredWork)currTask.getWork()).getReducer() != null)))
             chDir = true;
         }
       }
@@ -290,7 +291,10 @@ public class GenMRFileSink1 implements NodeProcessor {
           seenOps.add(currTopOp);
           GenMapRedUtils.setTaskPlan(currAliasId, currTopOp, (mapredWork) mapTask.getWork(), false, ctx);
         }
-        if (ret)
+        // TODO: merge the currTask with mapTask in GenMRUnion1 so that we will
+        // always seen 1 mapTask (which is equals to currTask). After doing this
+        // the block should be removed.
+        if ( ret && mapTask != currTask )
           currTask.removeDependentTask(mvTask);
       }
 
