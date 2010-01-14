@@ -26,6 +26,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.description;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
 @description(
@@ -59,20 +60,44 @@ public class UDFFromUnixTime extends UDF {
    * @param format See http://java.sun.com/j2se/1.4.2/docs/api/java/text/SimpleDateFormat.html
    * @return a String in the format specified.
    */
+  public Text evaluate(LongWritable unixtime, Text format)  {
+    if (unixtime == null || format == null) {
+      return null;
+    }
+    
+    return eval(unixtime.get(), format);
+  }
+
+  /**
+   * Convert UnixTime to a string format.
+   * @param unixtime  The number of seconds from 1970-01-01 00:00:00
+   * @param format See http://java.sun.com/j2se/1.4.2/docs/api/java/text/SimpleDateFormat.html
+   * @return a String in the format specified.
+   */
   public Text evaluate(IntWritable unixtime, Text format)  {
     if (unixtime == null || format == null) {
       return null;
     }
     
+    return eval((long)unixtime.get(), format);
+  }
+
+  /**
+   * Internal evaluation function given the seconds from 1970-01-01 00:00:00
+   * and the output text format.
+   * @param unixtime seconds of type long from 1970-01-01 00:00:00
+   * @param format display format. See http://java.sun.com/j2se/1.4.2/docs/api/java/text/SimpleDateFormat.html
+   * @return elapsed time in the given format.
+   */
+  private Text eval(long unixtime, Text format) {
     if (!format.equals(lastFormat)) {
       formatter = new SimpleDateFormat(format.toString());
       lastFormat.set(format);
     }
     
     // convert seconds to milliseconds
-    Date date = new Date(unixtime.get() * 1000L);
+    Date date = new Date(unixtime * 1000L);
     result.set(formatter.format(date));
     return result;
   }
-
 }

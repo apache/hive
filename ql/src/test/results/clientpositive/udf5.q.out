@@ -65,9 +65,55 @@ STAGE PLANS:
 PREHOOK: query: SELECT from_unixtime(1226446340), to_date(from_unixtime(1226446340)), day('2008-11-01'), month('2008-11-01'), year('2008-11-01'), day('2008-11-01 15:32:20'), month('2008-11-01 15:32:20'), year('2008-11-01 15:32:20') FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/478157482/10000
+PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1960950507/10000
 POSTHOOK: query: SELECT from_unixtime(1226446340), to_date(from_unixtime(1226446340)), day('2008-11-01'), month('2008-11-01'), year('2008-11-01'), day('2008-11-01 15:32:20'), month('2008-11-01 15:32:20'), year('2008-11-01 15:32:20') FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/478157482/10000
+POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1960950507/10000
 2008-11-11 15:32:20	2008-11-11	1	11	2008	1	11	2008
+PREHOOK: query: EXPLAIN
+SELECT from_unixtime(unix_timestamp('2010-01-13 11:57:40', 'yyyy-MM-dd HH:mm:ss'), 'MM/dd/yy HH:mm:ss') from dest1
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT from_unixtime(unix_timestamp('2010-01-13 11:57:40', 'yyyy-MM-dd HH:mm:ss'), 'MM/dd/yy HH:mm:ss') from dest1
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF dest1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION from_unixtime (TOK_FUNCTION unix_timestamp '2010-01-13 11:57:40' 'yyyy-MM-dd HH:mm:ss') 'MM/dd/yy HH:mm:ss')))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        dest1 
+          TableScan
+            alias: dest1
+            Select Operator
+              expressions:
+                    expr: from_unixtime(unix_timestamp('2010-01-13 11:57:40', 'yyyy-MM-dd HH:mm:ss'), 'MM/dd/yy HH:mm:ss')
+                    type: string
+              outputColumnNames: _col0
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT from_unixtime(unix_timestamp('2010-01-13 11:57:40', 'yyyy-MM-dd HH:mm:ss'), 'MM/dd/yy HH:mm:ss') from dest1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dest1
+PREHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1373998585/10000
+POSTHOOK: query: SELECT from_unixtime(unix_timestamp('2010-01-13 11:57:40', 'yyyy-MM-dd HH:mm:ss'), 'MM/dd/yy HH:mm:ss') from dest1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dest1
+POSTHOOK: Output: file:/data/users/nzhang/work/876/apache-hive/build/ql/tmp/1373998585/10000
+01/13/10 11:57:40
