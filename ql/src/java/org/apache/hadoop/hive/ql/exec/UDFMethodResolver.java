@@ -43,5 +43,5 @@ public interface UDFMethodResolver {
    *                   function signature.
    */
   public Method getEvalMethod(List<TypeInfo> argClasses) 
-    throws AmbiguousMethodException;
+    throws AmbiguousMethodException, UDFArgumentException;
 }

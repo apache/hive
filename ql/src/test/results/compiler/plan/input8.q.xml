@@ -62,11 +62,11 @@
          </void> 
          <void method="put"> 
           <string>location</string> 
-          <string>file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/test/data/warehouse/src1</string> 
+          <string>file:/data/users/pyang/merge/trunk/VENDOR.hive/trunk/build/ql/test/data/warehouse/src1</string> 
          </void> 
          <void method="put"> 
           <string>transient_lastDdlTime</string> 
-          <string>1263415297</string> 
+          <string>1263432182</string> 
          </void> 
         </object> 
        </void> 
@@ -111,7 +111,7 @@
                 <void property="conf"> 
                  <object class="org.apache.hadoop.hive.ql.plan.fileSinkDesc"> 
                   <void property="dirName"> 
-                   <string>file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/tmp/37685710/10001</string> 
+                   <string>file:/data/users/pyang/merge/trunk/VENDOR.hive/trunk/build/ql/tmp/1534510969/10001</string> 
                   </void> 
                   <void property="tableInfo"> 
                    <object class="org.apache.hadoop.hive.ql.plan.tableDesc"> 
@@ -136,7 +136,7 @@
                       </void> 
                       <void method="put"> 
                        <string>columns.types</string> 
-                       <string>double:double:double</string> 
+                       <string>int:double:tinyint</string> 
                       </void> 
                      </object> 
                     </void> 
@@ -182,7 +182,7 @@
                       <void property="type"> 
                        <object id="PrimitiveTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
                         <void property="typeName"> 
-                         <string>double</string> 
+                         <string>int</string> 
                         </void> 
                        </object> 
                       </void> 
@@ -194,7 +194,11 @@
                        <string>_col1</string> 
                       </void> 
                       <void property="type"> 
-                       <object idref="PrimitiveTypeInfo0"/> 
+                       <object id="PrimitiveTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
+                        <void property="typeName"> 
+                         <string>double</string> 
+                        </void> 
+                       </object> 
                       </void> 
                      </object> 
                     </void> 
@@ -204,7 +208,11 @@
                        <string>_col2</string> 
                       </void> 
                       <void property="type"> 
-                       <object idref="PrimitiveTypeInfo0"/> 
+                       <object id="PrimitiveTypeInfo2" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
+                        <void property="typeName"> 
+                         <string>tinyint</string> 
+                        </void> 
+                       </object> 
                       </void> 
                      </object> 
                     </void> 
@@ -245,7 +253,7 @@
                  </object> 
                 </void> 
                 <void property="typeInfo"> 
-                 <object idref="PrimitiveTypeInfo0"/> 
+                 <object idref="PrimitiveTypeInfo2"/> 
                 </void> 
                </object> 
               </void> 
@@ -263,7 +271,7 @@
                      <string>src1</string> 
                     </void> 
                     <void property="typeInfo"> 
-                     <object id="PrimitiveTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
+                     <object id="PrimitiveTypeInfo3" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
                       <void property="typeName"> 
                        <string>string</string> 
                       </void> 
@@ -290,7 +298,7 @@
                  </object> 
                 </void> 
                 <void property="typeInfo"> 
-                 <object idref="PrimitiveTypeInfo0"/> 
+                 <object idref="PrimitiveTypeInfo1"/> 
                 </void> 
                </object> 
               </void> 
@@ -302,11 +310,7 @@
                   <void method="add"> 
                    <object class="org.apache.hadoop.hive.ql.plan.exprNodeConstantDesc"> 
                     <void property="typeInfo"> 
-                     <object class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
-                      <void property="typeName"> 
-                       <string>int</string> 
-                      </void> 
-                     </object> 
+                     <object idref="PrimitiveTypeInfo0"/> 
                     </void> 
                     <void property="value"> 
                      <int>4</int> 
@@ -420,7 +424,7 @@
                    <string>_col1</string> 
                   </void> 
                   <void property="type"> 
-                   <object idref="PrimitiveTypeInfo0"/> 
+                   <object idref="PrimitiveTypeInfo1"/> 
                   </void> 
                  </object> 
                 </void> 
@@ -433,7 +437,7 @@
                    <string>_col2</string> 
                   </void> 
                   <void property="type"> 
-                   <object idref="PrimitiveTypeInfo0"/> 
+                   <object idref="PrimitiveTypeInfo2"/> 
                   </void> 
                  </object> 
                 </void> 
@@ -488,7 +492,7 @@
                <string>key</string> 
               </void> 
               <void property="type"> 
-               <object idref="PrimitiveTypeInfo1"/> 
+               <object idref="PrimitiveTypeInfo3"/> 
               </void> 
              </object> 
             </void> 
@@ -498,7 +502,7 @@
                <string>value</string> 
               </void> 
               <void property="type"> 
-               <object idref="PrimitiveTypeInfo1"/> 
+               <object idref="PrimitiveTypeInfo3"/> 
               </void> 
              </object> 
             </void> 
@@ -513,7 +517,7 @@
     <void property="pathToAliases"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/test/data/warehouse/src1</string> 
+       <string>file:/data/users/pyang/merge/trunk/VENDOR.hive/trunk/build/ql/test/data/warehouse/src1</string> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 
          <string>src1</string> 
@@ -525,7 +529,7 @@
     <void property="pathToPartitionInfo"> 
      <object class="java.util.LinkedHashMap"> 
       <void method="put"> 
-       <string>file:/data/users/pyang/mstore/trunk/VENDOR.hive/trunk/build/ql/test/data/warehouse/src1</string> 
+       <string>file:/data/users/pyang/merge/trunk/VENDOR.hive/trunk/build/ql/test/data/warehouse/src1</string> 
        <object class="org.apache.hadoop.hive.ql.plan.partitionDesc"> 
         <void property="deserializerClass"> 
          <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 

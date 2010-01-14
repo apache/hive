@@ -19,8 +19,10 @@ Trunk -  Unreleased
     (Ning Zhang via namit)
 
     HIVE-1048. Make output of TestParse determinisitc
-    (Paul Yang Zhang via namit)
+    (Paul Yang via namit)
 
+    HIVE-1045. (bigint % int) should return bigint instead of double.
+    (Paul Yang via zshao)
 
 Release 0.5.0 -  Unreleased
 
