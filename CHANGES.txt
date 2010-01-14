@@ -15,6 +15,9 @@ Trunk -  Unreleased
     HIVE-1047. Merge tasks in GenMRUnion1
     (Ning Zhang via namit)
 
+    HIVE-1048. Make output of TestParse determinisitc
+    (Paul Yang Zhang via namit)
+
 
 Release 0.5.0 -  Unreleased
 

@@ -38,6 +38,9 @@ public class DfsProcessor implements CommandProcessor {
     dfs = new FsShell(conf);
   }
 
+  public void init() {
+  }
+  
   public int run(String command) {
     String[] tokens = command.split("\\s+");
 

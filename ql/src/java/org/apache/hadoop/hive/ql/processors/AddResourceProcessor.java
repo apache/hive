@@ -29,6 +29,9 @@ public class AddResourceProcessor implements CommandProcessor {
   public static final Log LOG = LogFactory.getLog(AddResourceProcessor.class.getName());
   public static final LogHelper console = new LogHelper(LOG);
 
+  public void init() {
+  }
+  
   public int run(String command) {
     SessionState ss = SessionState.get();
     String[] tokens = command.split("\\s+");

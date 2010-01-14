@@ -19,5 +19,6 @@
 package org.apache.hadoop.hive.ql.processors;
 
 public interface CommandProcessor {
+  public void init();
   public int run(String command);
 }

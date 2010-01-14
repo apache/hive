@@ -55,6 +55,9 @@ public class SetProcessor implements CommandProcessor {
     }
   }
 
+  public void init() {
+  }
+  
   public int run(String command) {
     SessionState ss = SessionState.get();
 
