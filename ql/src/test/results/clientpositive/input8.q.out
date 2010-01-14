@@ -29,19 +29,19 @@ STAGE PLANS:
             Select Operator
               expressions:
                     expr: (4 + null)
-                    type: double
+                    type: int
                     expr: (key - null)
                     type: double
                     expr: (null + null)
-                    type: double
+                    type: tinyint
               outputColumnNames: _col0, _col1, _col2
               Select Operator
                 expressions:
                       expr: _col0
-                      type: double
+                      type: int
                       expr: UDFToInteger(_col1)
                       type: int
-                      expr: _col2
+                      expr: UDFToDouble(_col2)
                       type: double
                 outputColumnNames: _col0, _col1, _col2
                 File Output Operator
@@ -59,10 +59,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/njain/hive5/hive5/build/ql/tmp/539046228/10000
+                destination: file:/data/users/pyang/task/trunk/VENDOR.hive/trunk/build/ql/tmp/1595941981/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/njain/hive5/hive5/build/ql/tmp/1447024085/10002 
+              file:/data/users/pyang/task/trunk/VENDOR.hive/trunk/build/ql/tmp/1940258641/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -111,11 +111,11 @@ POSTHOOK: Output: default@dest1
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1333594748/10000
+PREHOOK: Output: file:/data/users/pyang/task/trunk/VENDOR.hive/trunk/build/ql/tmp/398951059/10000
 POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1333594748/10000
+POSTHOOK: Output: file:/data/users/pyang/task/trunk/VENDOR.hive/trunk/build/ql/tmp/398951059/10000
 NULL	NULL	NULL
 NULL	NULL	NULL
 NULL	NULL	NULL

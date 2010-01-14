@@ -37,12 +37,17 @@ import org.apache.hadoop.hive.ql.exec.NumericOpMethodResolver;
         "  > SELECT 3 _FUNC_ 2 FROM src LIMIT 1;\n" +
         "  1.5"
 )
+/**
+ * Note that in SQL, the return type of divide is not necessarily the same 
+ * as the parameters. For example, 3 / 2 = 1.5, not 1. To follow SQL, we always
+ * return a double for divide.
+ */
 public class UDFOPDivide extends UDF {
 
   private static Log LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.udf.UDFOPDivide");
 
   protected DoubleWritable doubleWritable = new DoubleWritable();
-  
+ 
   public DoubleWritable evaluate(DoubleWritable a, DoubleWritable b)  {
     // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":" + b);
     if ((a == null) || (b == null))

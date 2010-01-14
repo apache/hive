@@ -29,19 +29,19 @@ STAGE PLANS:
             Select Operator
               expressions:
                     expr: (4 + null)
-                    type: double
+                    type: int
                     expr: (key - null)
                     type: double
                     expr: (null + null)
-                    type: double
+                    type: tinyint
               outputColumnNames: _col0, _col1, _col2
               Select Operator
                 expressions:
                       expr: _col0
-                      type: double
+                      type: int
                       expr: UDFToInteger(_col1)
                       type: int
-                      expr: _col2
+                      expr: UDFToDouble(_col2)
                       type: double
                 outputColumnNames: _col0, _col1, _col2
                 File Output Operator
@@ -59,10 +59,10 @@ STAGE PLANS:
           Move Operator
             files:
                 hdfs directory: true
-                destination: file:/data/users/njain/hive5/hive5/build/ql/tmp/1422233089/10000
+                destination: file:/data/users/pyang/task/trunk/VENDOR.hive/trunk/build/ql/tmp/1689506606/10000
           Map Reduce
             Alias -> Map Operator Tree:
-              file:/data/users/njain/hive5/hive5/build/ql/tmp/70851087/10002 
+              file:/data/users/pyang/task/trunk/VENDOR.hive/trunk/build/ql/tmp/552481309/10002 
                   Reduce Output Operator
                     sort order: 
                     Map-reduce partition columns:
@@ -111,11 +111,11 @@ POSTHOOK: Output: default@ppd_constant_expr
 PREHOOK: query: SELECT ppd_constant_expr.* FROM ppd_constant_expr
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ppd_constant_expr
-PREHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1300457424/10000
+PREHOOK: Output: file:/data/users/pyang/task/trunk/VENDOR.hive/trunk/build/ql/tmp/1743239897/10000
 POSTHOOK: query: SELECT ppd_constant_expr.* FROM ppd_constant_expr
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ppd_constant_expr
-POSTHOOK: Output: file:/data/users/njain/hive5/hive5/build/ql/tmp/1300457424/10000
+POSTHOOK: Output: file:/data/users/pyang/task/trunk/VENDOR.hive/trunk/build/ql/tmp/1743239897/10000
 NULL	NULL	NULL
 NULL	NULL	NULL
 NULL	NULL	NULL
