@@ -167,6 +167,9 @@ Release 0.5.0 -  Unreleased
     HIVE-1023. typedbytes: datatypes should be derived from data
     (namit via He Yongqiang)
 
+    HIVE-983. Function from_unixtime takes long.
+    (Ning Zhang via zshao)
+
   OPTIMIZATIONS
 
   BUG FIXES
