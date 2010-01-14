@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.parse.ErrorMsg;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.exec.ExecDriver;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.exec.TaskResult;
@@ -81,6 +82,10 @@ public class Driver implements CommandProcessor {
   private int maxthreads = 8;
   private int sleeptime = 2000;
 
+  public void init() {
+    Operator.resetId();
+  }
+  
   public int countJobs(List<Task<? extends Serializable>> tasks) {
     return countJobs(tasks, new ArrayList<Task<? extends Serializable>>());
   }

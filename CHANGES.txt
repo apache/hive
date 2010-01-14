@@ -439,6 +439,10 @@ Release 0.5.0 -  Unreleased
     HIVE-1049. Fix ant targets "eclipse-files" and "javadoc".
     (Carl Steinbach via zshao)
 
+    HIVE-1048. Make output of TestParse deterministic
+    (Paul Yang via namit)
+
+
 Release 0.4.0 -  Unreleased
 
   INCOMPATIBLE CHANGES

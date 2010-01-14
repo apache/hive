@@ -99,6 +99,10 @@ public abstract class Operator <T extends Serializable> implements Serializable,
     id = String.valueOf(seqId++);
   }
 
+  public static void resetId() {
+    seqId = 0;
+  }
+  
   /**
    * Create an operator with a reporter.
    * @param reporter Used to report progress of certain operators.

@@ -391,6 +391,7 @@ public class QTestUtil {
     db = Hive.get(conf);
     fs = FileSystem.get(conf);
     drv = new Driver(conf);
+    drv.init();
     pd = new ParseDriver();
     sem = new SemanticAnalyzer(conf);
   }
